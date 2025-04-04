@@ -11,16 +11,15 @@ from django.conf import settings
 from django.core.management import call_command, find_commands
 from django.core.management.base import CommandError
 from django.test import override_settings
-from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
-from zerver.actions.reactions import do_add_reaction
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
-from zerver.models import Message, Reaction, Realm, Recipient, UserProfile
+from zerver.models import Realm, Recipient, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_profile_by_email
@@ -515,90 +514,27 @@ class TestDowngradeSmallRealmsBehindOnPayments(ZulipTestCase):
 class TestExport(ZulipTestCase):
     COMMAND_NAME = "export"
 
-    def test_command_with_consented_message_id(self) -> None:
-        realm = get_realm("zulip")
-        self.send_stream_message(
-            self.example_user("othello"),
-            "Verona",
-            topic_name="Export",
-            content="Outbox emoji for export",
+    def test_command_to_export_full_with_consent(self) -> None:
+        do_change_user_setting(
+            self.example_user("iago"), "allow_private_data_export", True, acting_user=None
         )
-        message = Message.objects.last()
-        assert message is not None
-        do_add_reaction(
-            self.example_user("iago"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
-        )
-        do_add_reaction(
-            self.example_user("hamlet"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
+        do_change_user_setting(
+            self.example_user("desdemona"), "allow_private_data_export", True, acting_user=None
         )
 
         with (
             patch("zerver.management.commands.export.export_realm_wrapper") as m,
             patch("builtins.print") as mock_print,
-            patch("builtins.input", return_value="y") as mock_input,
         ):
-            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
+            call_command(self.COMMAND_NAME, "-r=zulip", "--export-full-with-consent")
             m.assert_called_once_with(
-                realm=realm,
-                public_only=False,
-                consent_message_id=message.id,
+                export_row=mock.ANY,
                 threads=mock.ANY,
                 output_dir=mock.ANY,
                 percent_callback=mock.ANY,
                 upload=False,
                 export_as_active=None,
             )
-            mock_input.assert_called_once_with("Continue? [y/N] ")
-
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("\033[94mExporting realm\033[0m: zulip"),
-                call("\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n"),
-                call(
-                    "\033[94mNumber of users that reacted outbox:\033[0m 2 / 9 total non-guest users\n"
-                ),
-            ],
-        )
-
-        with (
-            self.assertRaisesRegex(CommandError, "Message with given ID does not"),
-            patch("builtins.print") as mock_print,
-        ):
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("\033[94mExporting realm\033[0m: zulip"),
-            ],
-        )
-
-        message.last_edit_time = timezone_now()
-        message.save()
-        with (
-            self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."),
-            patch("builtins.print") as mock_print,
-        ):
-            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("\033[94mExporting realm\033[0m: zulip"),
-            ],
-        )
-
-        message.last_edit_time = None
-        message.save()
-        do_add_reaction(
-            self.mit_user("sipbtest"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
-        )
-        with (
-            self.assertRaisesRegex(
-                CommandError, "Users from a different realm reacted to message. Aborting..."
-            ),
-            patch("builtins.print") as mock_print,
-        ):
-            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
 
         self.assertEqual(
             mock_print.mock_calls,
@@ -652,3 +588,17 @@ class TestSendCustomEmail(ZulipTestCase):
                     call("  hamlet@zulip.com (zulip)"),
                 ],
             )
+
+
+class TestSendZulipUpdateAnnouncements(ZulipTestCase):
+    COMMAND_NAME = "send_zulip_update_announcements"
+
+    def test_reset_level(self) -> None:
+        realm = get_realm("zulip")
+        realm.zulip_update_announcements_level = 9
+        realm.save()
+
+        call_command(self.COMMAND_NAME, "--reset-level=5")
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.zulip_update_announcements_level, 5)

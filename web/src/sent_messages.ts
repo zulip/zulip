@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 
 export let next_local_id = 0;
 export const messages = new Map<string, MessageState>();
@@ -19,7 +19,7 @@ export class MessageState {
     server_acked = false;
     saw_event = false;
 
-    txn: Sentry.Transaction | undefined = undefined;
+    span: Sentry.Span | undefined = undefined;
     event_span: Sentry.Span | undefined = undefined;
 
     constructor(opts: {local_id: string; locally_echoed: boolean}) {
@@ -27,17 +27,27 @@ export class MessageState {
         this.locally_echoed = opts.locally_echoed;
     }
 
-    start_send(): Sentry.Transaction {
-        this.txn = Sentry.startTransaction({
-            op: "function",
-            description: "message send",
-            name: "message send",
-        });
-        this.event_span = this.txn.startChild({
-            op: "function",
-            description: "message send (server event loop)",
-        });
-        return this.txn;
+    wrap_send(callback: () => void): void {
+        Sentry.startSpanManual(
+            {
+                op: "function",
+                name: "message send",
+            },
+            (span) => {
+                try {
+                    this.span = span;
+                    this.event_span = Sentry.startInactiveSpan({
+                        op: "function",
+                        name: "message send (server event loop)",
+                    });
+                    callback();
+                } catch (error) {
+                    this.event_span?.end();
+                    span?.end();
+                    throw error;
+                }
+            },
+        );
     }
 
     mark_disparity(): void {
@@ -54,8 +64,13 @@ export class MessageState {
             return;
         }
         this.saw_event = true;
-        this.event_span.finish();
+        this.event_span?.end();
         this.maybe_finish_txn();
+    }
+
+    report_error(): void {
+        this.event_span?.end();
+        this.span?.end();
     }
 
     maybe_finish_txn(): void {
@@ -64,12 +79,12 @@ export class MessageState {
         }
         const setTag = (name: string, val: boolean): void => {
             const str_val = val ? "true" : "false";
-            this.event_span!.setTag(name, str_val);
-            this.txn!.setTag(name, str_val);
+            this.event_span?.setAttribute(name, str_val);
+            this.span?.setAttribute(name, str_val);
         };
         setTag("rendered_changed", this.rendered_changed);
         setTag("locally_echoed", this.locally_echoed);
-        this.txn!.finish();
+        this.span?.end();
         messages.delete(this.local_id);
     }
 }
@@ -83,7 +98,7 @@ export function start_tracking_message(opts: {local_id: string; locally_echoed: 
     }
 
     if (messages.has(local_id)) {
-        blueslip.error("We are re-using a local_id");
+        blueslip.error("We are reusing a local_id");
         return;
     }
 
@@ -102,13 +117,13 @@ export function get_message_state(local_id: string): MessageState | undefined {
     return state;
 }
 
-export function start_send(local_id: string): Sentry.Transaction | undefined {
+export function wrap_send(local_id: string, callback: () => void): void {
     const state = get_message_state(local_id);
-    if (!state) {
-        return undefined;
+    if (state) {
+        state.wrap_send(callback);
+    } else {
+        callback();
     }
-
-    return state.start_send();
 }
 
 export function mark_disparity(local_id: string): void {

@@ -102,10 +102,11 @@ Shakesepeare characters, and they are part of the "zulip.com" realm.
 Generally, you will also do some explicit data setup of your own. Here
 are a couple useful methods in ZulipTestCase:
 
-- common_subscribe_to_streams
-- send_message
 - make_stream
-- subscribe_to_stream
+- subscribe
+- unsubscribe
+- send_stream_message
+- send_personal_message
 
 More typically, you will use methods directly from the backend code.
 (This ensures more end-to-end testing, and avoids false positives from

@@ -39,12 +39,12 @@ def direct_message_group_narrow_url(
 
 
 def stream_narrow_url(realm: Realm, stream: Stream) -> str:
-    base_url = f"{realm.url}/#narrow/stream/"
+    base_url = f"{realm.url}/#narrow/channel/"
     return base_url + encode_stream(stream.id, stream.name)
 
 
 def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
-    base_url = f"{realm.url}/#narrow/stream/"
+    base_url = f"{realm.url}/#narrow/channel/"
     return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
 
 
@@ -74,7 +74,7 @@ def near_stream_message_url(realm: Realm, message: dict[str, Any]) -> str:
     parts = [
         realm.url,
         "#narrow",
-        "stream",
+        "channel",
         encoded_stream,
         "topic",
         encoded_topic_name,

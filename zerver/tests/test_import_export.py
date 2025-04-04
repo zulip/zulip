@@ -11,11 +11,14 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
+from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.models import UserCount
+from version import ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_user import do_create_user
 from zerver.actions.custom_profile_fields import (
@@ -24,7 +27,7 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.presence import do_update_user_presence
-from zerver.actions.reactions import check_add_reaction, do_add_reaction
+from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
@@ -32,8 +35,11 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_authentication_methods,
 )
+from zerver.actions.saved_snippets import do_create_saved_snippet
 from zerver.actions.scheduled_messages import check_schedule_message
+from zerver.actions.streams import do_change_stream_description
 from zerver.actions.user_activity import do_update_user_activity_interval
+from zerver.actions.user_settings import do_change_user_delivery_email, do_change_user_setting
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
@@ -41,8 +47,16 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
+from zerver.lib.export import (
+    PRESERVED_AUDIT_LOG_EVENT_TYPES,
+    Record,
+    do_export_realm,
+    do_export_user,
+    export_usermessages_batch,
+    get_consented_user_ids,
+)
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
+from zerver.lib.migration_status import STALE_MIGRATIONS, AppMigrations, MigrationStatusJson
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -56,7 +70,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
-from zerver.lib.utils import assert_is_not_none
+from zerver.lib.utils import assert_is_not_none, get_fk_field_name
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -75,6 +89,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmEmoji,
+    RealmExport,
     RealmUserDefault,
     Recipient,
     ScheduledMessage,
@@ -89,9 +104,11 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
-from zerver.models.clients import get_client
+from zerver.models.clients import Client, get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.messages import ImageAttachment
 from zerver.models.presence import PresenceSequence
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.streams import get_active_streams, get_stream
@@ -167,7 +184,7 @@ class ExportFile(ZulipTestCase):
         self, user_profile: UserProfile, *, emoji_name: str = "whatever"
     ) -> None:
         message = most_recent_message(user_profile)
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
         attachment_path_id = url.replace("/user_uploads/", "")
         claim_attachment(
             path_id=attachment_path_id,
@@ -330,24 +347,75 @@ class ExportFile(ZulipTestCase):
         db_paths = {user_avatar_path(user) + ".original"}
         self.assertEqual(exported_paths, db_paths)
 
+    def get_applied_migrations_fixture(self, fixture_name: str) -> AppMigrations:
+        fixture = orjson.loads(
+            self.fixture_data(fixture_name, "import_fixtures/applied_migrations_fixtures")
+        )
+        return fixture
+
+    def get_applied_migrations_error_message(self, fixture_name: str) -> str:
+        fixture = self.fixture_data(fixture_name, "import_fixtures/check_migrations_errors")
+        fixture = fixture.format(version_placeholder=ZULIP_VERSION)
+        return fixture.strip()
+
+    def verify_migration_status_json(self) -> None:
+        # This function asserts that the generated migration_status.json
+        # is structurally familiar for it to be used for assertion at
+        # import_realm.py. Hence, it doesn't really matter if the individual
+        # apps' migrations in migration_status.json fixture are outdated as
+        # long as they have the same format.
+        exported: MigrationStatusJson = read_json("migration_status.json")
+
+        applied_migrations_fixtures = os.listdir(
+            self.fixture_file_name("", "import_fixtures/applied_migrations_fixtures")
+        )
+
+        for fixture in applied_migrations_fixtures:
+            migration_by_app: AppMigrations = self.get_applied_migrations_fixture(fixture)
+            with self.subTest(migration_fixture=fixture):
+                self.assertTrue(
+                    set(migration_by_app).issubset(set(exported["migrations_by_app"])),
+                    f"""
+                    Please make sure the `{fixture}` fixture represents the actual
+                    `migration_status.json` file. If the format for the same migration
+                    status differs, this fixture is probably stale and needs
+                    updating.
+
+                    If this variation is needed for testing purposes feel free to
+                    exempt the fixture from this test.""",
+                )
+
+        # Make sure export doesn't produce a migration_status.json with stale
+        # migrations.
+        stale_migrations = []
+        for app, stale_migration in STALE_MIGRATIONS:
+            installed_app = exported["migrations_by_app"].get(app)
+            if installed_app:
+                stale_migrations = [mig for mig in installed_app if mig.endswith(stale_migration)]
+        self.assert_length(stale_migrations, 0)
+
 
 class RealmImportExportTest(ExportFile):
+    def create_user_and_login(self, email: str, realm: Realm) -> None:
+        self.register(email, "test", subdomain=realm.subdomain)
+
     def export_realm(
         self,
         realm: Realm,
+        export_type: int,
         exportable_user_ids: set[int] | None = None,
-        consent_message_id: int | None = None,
-        public_only: bool = False,
     ) -> None:
         output_dir = make_export_output_dir()
+        if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+            assert exportable_user_ids is not None
+
         with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
                 threads=0,
+                export_type=export_type,
                 exportable_user_ids=exportable_user_ids,
-                consent_message_id=consent_message_id,
-                public_only=public_only,
             )
 
             # This is a unique field and thus the cycle of export->import
@@ -359,20 +427,22 @@ class RealmImportExportTest(ExportFile):
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, "messages-000001.json.partial"),
                 output_path=os.path.join(output_dir, "messages-000001.json"),
-                consent_message_id=consent_message_id,
+                export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
+                consented_user_ids=exportable_user_ids,
             )
 
     def export_realm_and_create_auditlog(
         self,
         original_realm: Realm,
+        export_type: int = RealmExport.EXPORT_FULL_WITHOUT_CONSENT,
         exportable_user_ids: set[int] | None = None,
-        consent_message_id: int | None = None,
-        public_only: bool = False,
     ) -> None:
         RealmAuditLog.objects.create(
-            realm=original_realm, event_type=RealmAuditLog.REALM_EXPORTED, event_time=timezone_now()
+            realm=original_realm,
+            event_type=AuditLogEventType.REALM_EXPORTED,
+            event_time=timezone_now(),
         )
-        self.export_realm(original_realm, exportable_user_ids, consent_message_id, public_only)
+        self.export_realm(original_realm, export_type, exportable_user_ids)
 
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
@@ -386,6 +456,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=False)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_public_only_export_files_private_uploads_not_included(self) -> None:
         """
@@ -399,7 +470,7 @@ class RealmImportExportTest(ExportFile):
         # We create an attachment tied to a personal message. That means it shouldn't be
         # included in a public export, as it's private data.
         personal_message_id = self.send_personal_message(user_profile, self.example_user("othello"))
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
         attachment_path_id = url.replace("/user_uploads/", "")
         attachment = claim_attachment(
             path_id=attachment_path_id,
@@ -407,7 +478,7 @@ class RealmImportExportTest(ExportFile):
             is_message_realm_public=True,
         )
 
-        self.export_realm_and_create_auditlog(realm, public_only=True)
+        self.export_realm_and_create_auditlog(realm, export_type=RealmExport.EXPORT_PUBLIC)
 
         # The attachment row shouldn't have been exported:
         self.assertEqual(read_json("attachment.json")["zerver_attachment"], [])
@@ -433,6 +504,7 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=True)
         self.verify_realm_logo_and_icon()
+        self.verify_migration_status_json()
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
@@ -497,7 +569,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         exported_usergroups = data["zerver_usergroup"]
-        self.assert_length(exported_usergroups, 9)
+        self.assert_length(exported_usergroups, 14)
         self.assertFalse("direct_members" in exported_usergroups[2])
         self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
@@ -536,47 +608,282 @@ class RealmImportExportTest(ExportFile):
     def test_export_realm_with_exportable_user_ids(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
 
-        cordelia = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
-        user_ids = {cordelia.id, hamlet.id}
+        polonius = self.example_user("polonius")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
 
-        pm_a_msg_id = self.send_personal_message(
-            self.example_user("AARON"), self.example_user("othello")
-        )
-        pm_b_msg_id = self.send_personal_message(
-            self.example_user("cordelia"), self.example_user("iago")
-        )
-        pm_c_msg_id = self.send_personal_message(
-            self.example_user("hamlet"), self.example_user("othello")
-        )
-        pm_d_msg_id = self.send_personal_message(
-            self.example_user("iago"), self.example_user("hamlet")
+        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=cordelia)
+        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=hamlet)
+        exportable_user_ids = {cordelia.id, hamlet.id}
+
+        pm_a_msg_id = self.send_personal_message(polonius, othello)
+        pm_b_msg_id = self.send_personal_message(cordelia, iago)
+        pm_c_msg_id = self.send_personal_message(hamlet, othello)
+        pm_d_msg_id = self.send_personal_message(iago, hamlet)
+
+        self.export_realm_and_create_auditlog(
+            realm,
+            export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            exportable_user_ids=exportable_user_ids,
         )
 
-        self.export_realm_and_create_auditlog(realm, exportable_user_ids=user_ids)
+        realm_data = read_json("realm.json")
 
-        data = read_json("realm.json")
-
-        exported_user_emails = self.get_set(data["zerver_userprofile"], "delivery_email")
-        self.assertIn(self.example_email("iago"), exported_user_emails)
-        self.assertIn(self.example_email("hamlet"), exported_user_emails)
+        exported_user_emails = self.get_set(realm_data["zerver_userprofile"], "delivery_email")
+        self.assertIn(cordelia.delivery_email, exported_user_emails)
+        self.assertIn(hamlet.delivery_email, exported_user_emails)
         self.assertNotIn("default-bot@zulip.com", exported_user_emails)
-        self.assertNotIn(self.example_email("cordelia"), exported_user_emails)
+        self.assertNotIn(iago.delivery_email, exported_user_emails)
+        self.assertNotIn(polonius.delivery_email, exported_user_emails)
 
-        dummy_user_emails = self.get_set(data["zerver_userprofile_mirrordummy"], "delivery_email")
-        self.assertIn(self.example_email("cordelia"), dummy_user_emails)
-        self.assertIn(self.example_email("othello"), dummy_user_emails)
+        dummy_user_emails = self.get_set(
+            realm_data["zerver_userprofile_mirrordummy"], "delivery_email"
+        )
+        self.assertIn(iago.delivery_email, dummy_user_emails)
+        self.assertIn(othello.delivery_email, dummy_user_emails)
+        self.assertIn(polonius.delivery_email, dummy_user_emails)
         self.assertIn("default-bot@zulip.com", dummy_user_emails)
-        self.assertNotIn(self.example_email("iago"), dummy_user_emails)
-        self.assertNotIn(self.example_email("hamlet"), dummy_user_emails)
+        self.assertNotIn(cordelia.delivery_email, dummy_user_emails)
+        self.assertNotIn(hamlet.delivery_email, dummy_user_emails)
 
-        data = read_json("messages-000001.json")
+        message_data = read_json("messages-000001.json")
 
-        exported_message_ids = self.get_set(data["zerver_message"], "id")
+        exported_message_ids = self.get_set(message_data["zerver_message"], "id")
         self.assertNotIn(pm_a_msg_id, exported_message_ids)
         self.assertIn(pm_b_msg_id, exported_message_ids)
         self.assertIn(pm_c_msg_id, exported_message_ids)
         self.assertIn(pm_d_msg_id, exported_message_ids)
+
+        personal_recipient_type_ids = (
+            r["type_id"] for r in realm_data["zerver_recipient"] if r["type"] == Recipient.PERSONAL
+        )
+        for user_profile_id in [cordelia.id, hamlet.id, iago.id, othello.id, polonius.id]:
+            self.assertIn(user_profile_id, personal_recipient_type_ids)
+
+    def test_get_consented_user_ids(self) -> None:
+        realm = get_realm("zulip")
+        consented_user = self.example_user("iago")
+        do_change_user_setting(consented_user, "allow_private_data_export", True, acting_user=None)
+
+        non_consented_user = self.example_user("hamlet")
+        do_change_user_setting(
+            non_consented_user, "allow_private_data_export", False, acting_user=None
+        )
+
+        bot_of_consented_user = self.create_test_bot(
+            "bot-of-consented-user", consented_user, full_name="Bot of consented user"
+        )
+        # Bots don't really use allow_private_data_export setting (and it should be False by default)
+        # but set explicitly just to be clear on the setup.
+        # A bot of a consented user is considered consented no matter what.
+        do_change_user_setting(
+            bot_of_consented_user, "allow_private_data_export", False, acting_user=None
+        )
+
+        deactivated_bot_of_consented_user = self.create_test_bot(
+            "deactivated-bot-of-consented-user",
+            consented_user,
+            full_name="Deactivated bot of consented user",
+        )
+        do_change_user_setting(
+            deactivated_bot_of_consented_user, "allow_private_data_export", False, acting_user=None
+        )
+        do_deactivate_user(deactivated_bot_of_consented_user, acting_user=None)
+
+        # A bot of a non-consented user is considered not consented.
+        bot_of_non_consented_user = self.create_test_bot(
+            "bot-of-non-consented-user", non_consented_user, full_name="Bot of non-consented user"
+        )
+        do_change_user_setting(
+            bot_of_consented_user, "allow_private_data_export", False, acting_user=None
+        )
+
+        # Unless the bot has allow_private_data_export explicitly set to True. This is a rather
+        # unlikely case to encounter, since bots don't have a UI for editing such settings; but it could
+        # be flipped by a server admin.
+        consented_bot_of_non_consented_user = self.create_test_bot(
+            "consented-bot-of-non-consented-user",
+            non_consented_user,
+            full_name="Consented bot of non-consented user",
+        )
+        do_change_user_setting(
+            consented_bot_of_non_consented_user, "allow_private_data_export", True, acting_user=None
+        )
+
+        consented_user_ids = get_consented_user_ids(realm)
+
+        self.assertIn(consented_user.id, consented_user_ids)
+        self.assertNotIn(non_consented_user.id, consented_user_ids)
+
+        self.assertIn(bot_of_consented_user.id, consented_user_ids)
+        self.assertIn(deactivated_bot_of_consented_user.id, consented_user_ids)
+
+        self.assertNotIn(bot_of_non_consented_user.id, consented_user_ids)
+        self.assertIn(consented_bot_of_non_consented_user.id, consented_user_ids)
+
+        # A deactivated consented user is still considered consented.
+        do_deactivate_user(consented_user, acting_user=None)
+        self.assertIn(consented_user.id, get_consented_user_ids(realm))
+
+        # A mirror dummy is always considered consented, no matter the setting.
+        do_deactivate_user(non_consented_user, acting_user=None)
+        non_consented_user.is_mirror_dummy = True
+        non_consented_user.save(update_fields=["is_mirror_dummy"])
+        self.assertIn(non_consented_user.id, get_consented_user_ids(realm))
+
+    def test_client_objects_export(self) -> None:
+        """
+        Client objects require some special handling when exporting. They aren't
+        scoped to a realm - e.g. a Client object "website" can be used by multiple
+        realms. Any Message sent from the web app in any realm will have sending_client
+        pointing to the "website" Client row.
+
+        However, we cannot just export the whole server table when exporting a realm,
+        as it'll leak information about Clients which might only be used by some other realm(s).
+        Instead, the export system needs to carefully determine the set of Clients which are pointed
+        to by other objects in the export and only export those.
+
+        In an export with consent, this means only exporting Clients which were used by at least
+        one consented user in the realm - omitting those that may have only been used by a non-consenting
+        user, as those should be considered private.
+        """
+
+        realm = get_realm("zulip")
+        lear_realm = get_realm("lear")
+
+        # Set up a message in the lear realm for more ease of testing.
+        cordelia_lear = self.lear_user("cordelia")
+        king_lear = self.lear_user("king")
+        self.send_personal_message(cordelia_lear, king_lear)
+
+        # Consented users:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        # Iago will be non-consenting.
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
+
+        a_message_id = self.send_personal_message(hamlet, othello)
+
+        # This Client won't be used by the realm.
+        non_realm_client = Client.objects.create(name="Non-realm client")
+
+        # This Client will be used by both of the realms.
+        realm_shared_client = Client.objects.create(name="Client shared between realms")
+        last_realm_message = Message.objects.get(id=a_message_id)
+        last_second_realm_message = Message.objects.filter(realm=lear_realm).latest("id")
+        last_realm_message.sending_client = realm_shared_client
+        last_second_realm_message.sending_client = realm_shared_client
+        last_realm_message.save()
+        last_second_realm_message.save()
+
+        # This Client will be used by a message sent to a consenting user.
+        b_message_id = self.send_personal_message(iago, hamlet)
+        consented_user_client = Client.objects.create(name="Consented user client")
+        b_message = Message.objects.get(id=b_message_id)
+        b_message.sending_client = consented_user_client
+        b_message.save()
+
+        # This Client will be used in a message sent between non-consented users
+        # and therefore should not be exported an export with consent.
+        c_message_id = self.send_personal_message(iago, cordelia)
+        non_consented_user_client = Client.objects.create(name="Non-consented user client")
+        c_message = Message.objects.get(id=c_message_id)
+        c_message.sending_client = non_consented_user_client
+        c_message.save()
+
+        all_our_client_ids = [
+            non_realm_client.id,
+            realm_shared_client.id,
+            consented_user_client.id,
+            non_consented_user_client.id,
+        ]
+        Client.objects.exclude(id__in=all_our_client_ids).delete()
+
+        self.export_realm_and_create_auditlog(
+            realm,
+            export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            exportable_user_ids=get_consented_user_ids(realm),
+        )
+
+        realm_data = read_json("realm.json")
+
+        exported_client_ids = self.get_set(realm_data["zerver_client"], "id")
+        self.assertEqual({realm_shared_client.id, consented_user_client.id}, exported_client_ids)
+
+        # Now verify that in a full export without consent, also the non_consented_user_client
+        # is included.
+        self.export_realm_and_create_auditlog(
+            realm,
+            export_type=RealmExport.EXPORT_FULL_WITHOUT_CONSENT,
+        )
+
+        realm_data = read_json("realm.json")
+
+        exported_client_ids = self.get_set(realm_data["zerver_client"], "id")
+        self.assertEqual(
+            {non_consented_user_client.id, realm_shared_client.id, consented_user_client.id},
+            exported_client_ids,
+        )
+
+    def test_public_export_private_and_public_data(self) -> None:
+        """
+        Public exports are essentially a special case of exports with consent: where
+        none of the users are consenting. The difference is that in a public export
+        we don't turn these non-consenting users into is_mirror_dummy=True.
+
+        Therefore it's enough to just test the basics here, as the detailed logic
+        is covered in tests for exports with consent.
+        """
+
+        realm = get_realm("zulip")
+
+        # Consented users:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        # Iago will be non-consenting.
+        iago = self.example_user("iago")
+
+        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
+
+        # Despite both hamlet and othello having consent enabled, in a public export
+        # everyone is non-consenting - so a Client object used only in a DM will not
+        # be exported.
+        a_message_id = self.send_personal_message(hamlet, othello)
+        private_client = Client.objects.create(name="private client")
+        a_message = Message.objects.get(id=a_message_id)
+        a_message.sending_client = private_client
+        a_message.save()
+
+        # SavedSnippets are private content - so in a public export, despite
+        # hamlet having consent enabled, such objects should not be exported.
+        saved_snippet = do_create_saved_snippet("test", "test", hamlet)
+
+        # Data of some other tables (e.g. UserPresence) is public, so will
+        # be exported regardless of consent - even in a public export.
+        iago_presence = UserPresence.objects.create(user_profile=iago, realm=realm)
+
+        self.export_realm_and_create_auditlog(realm, export_type=RealmExport.EXPORT_PUBLIC)
+
+        realm_data = read_json("realm.json")
+
+        exported_client_ids = self.get_set(realm_data["zerver_client"], "id")
+        self.assertNotEqual(len(exported_client_ids), 0)
+        self.assertNotIn(private_client.id, exported_client_ids)
+
+        exported_saved_snippet_ids = self.get_set(realm_data["zerver_savedsnippet"], "id")
+        self.assertNotIn(saved_snippet.id, exported_saved_snippet_ids)
+        self.assertEqual(exported_saved_snippet_ids, set())
+
+        exported_user_presence_ids = self.get_set(realm_data["zerver_userpresence"], "id")
+        self.assertIn(iago_presence.id, exported_user_presence_ids)
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
@@ -632,6 +939,7 @@ class RealmImportExportTest(ExportFile):
             self.example_user("AARON"),
             [self.example_user("cordelia"), self.example_user("ZOE"), self.example_user("othello")],
         )
+        direct_message_group_c = DirectMessageGroup.objects.last()
 
         # Create direct messages
         pm_a_msg_id = self.send_personal_message(
@@ -647,39 +955,129 @@ class RealmImportExportTest(ExportFile):
             self.example_user("iago"), self.example_user("hamlet")
         )
 
-        # Send message advertising export and make users react
-        self.send_stream_message(
-            self.example_user("othello"),
-            "Verona",
-            topic_name="Export",
-            content="Thumbs up for export",
-        )
-        message = Message.objects.last()
-        assert message is not None
-        consented_user_ids = [self.example_user(user).id for user in ["iago", "hamlet"]]
-        do_add_reaction(
-            self.example_user("iago"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
-        )
-        do_add_reaction(
-            self.example_user("hamlet"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
+        # Create some non-message private data for users. We will use SavedSnippet objects as they're simple
+        # to create and are private data that should not be exported for non-consenting users. There are many
+        # such private types of data (e.g. UserTopic, Draft) - we could test any of them equivalently.
+        iago_saved_snippet = do_create_saved_snippet("test", "test", self.example_user("iago"))
+        cordelia_saved_snippet = do_create_saved_snippet(
+            "test", "test", self.example_user("cordelia")
         )
 
-        assert message is not None
-        self.export_realm_and_create_auditlog(realm, consent_message_id=message.id)
+        # Iago and Hamlet consented to export their private data.
+        do_change_user_setting(
+            self.example_user("iago"), "allow_private_data_export", True, acting_user=None
+        )
+        do_change_user_setting(
+            self.example_user("hamlet"), "allow_private_data_export", True, acting_user=None
+        )
 
-        data = read_json("realm.json")
+        # Additionally, we set prospero's email visibility to NOBODY in order to test this is respected by the
+        # export. His real email value should not be exported.
+        non_consented_user_with_private_email = self.example_user("prospero")
+        do_change_user_setting(
+            non_consented_user_with_private_email,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+        # Do the same for the consenting iago, just to verify consent causes the private email address to be
+        # exported
+        do_change_user_setting(
+            self.example_user("iago"),
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
 
-        self.assert_length(data["zerver_userprofile_crossrealm"], 3)
-        self.assert_length(data["zerver_userprofile_mirrordummy"], 0)
+        # default-bot is a bot of a non-consenting user - let's also set up a bot for a consenting user
+        # to verify the bot gets treated as consenting.
+        consented_bot = self.create_test_bot(
+            "non-consented-bot", self.example_user("iago"), "Non consented bot"
+        )
+        consented_user_ids = {self.example_user(user).id for user in ["iago", "hamlet"]}
+        consented_user_ids.add(consented_bot.id)
 
-        exported_user_emails = self.get_set(data["zerver_userprofile"], "delivery_email")
-        self.assertIn(self.example_email("cordelia"), exported_user_emails)
+        # Set up a non-consented, deactivated user to test the special behavior we have for them. In order to prevent
+        # originally deactivated users from being able to reactivate their account via signup after
+        # export->import cycle, we don't turn them into mirror dummies. Instead, they stay as regular deactivated
+        # users.
+        # At the same time, we have to be careful - despite ending up in zerver_userprofile in the export,
+        # they might not be consented to exporting their private data - so we have to test that this is handled
+        # correctly.
+        deactivated_non_consented_user = self.example_user("polonius")
+        deactivated_non_consented_user_saved_snippet = do_create_saved_snippet(
+            "test", "test", deactivated_non_consented_user
+        )
+        do_deactivate_user(deactivated_non_consented_user, acting_user=None)
+
+        self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
+
+        self.export_realm_and_create_auditlog(
+            realm,
+            export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            exportable_user_ids=consented_user_ids,
+        )
+
+        realm_data = read_json("realm.json")
+
+        user_count = UserProfile.objects.filter(realm=realm).count()
+
+        self.assert_length(realm_data["zerver_userprofile_crossrealm"], 3)
+        # Non-consenting users will become mirror dummy users - with the exception of deactivated users.
+        # Those stay as regular, deactivated users.
+        # We offset the counts below by 1 exactly to account for deactivated_non_consented_user.
+        self.assert_length(
+            realm_data["zerver_userprofile_mirrordummy"], user_count - len(consented_user_ids) - 1
+        )
+        self.assert_length(realm_data["zerver_userprofile"], len(consented_user_ids) + 1)
+
+        exported_user_emails = self.get_set(realm_data["zerver_userprofile"], "delivery_email")
+        exported_mirror_dummy_user_emails = self.get_set(
+            realm_data["zerver_userprofile_mirrordummy"], "delivery_email"
+        )
+
+        self.assertIn(self.example_email("cordelia"), exported_mirror_dummy_user_emails)
         self.assertIn(self.example_email("hamlet"), exported_user_emails)
         self.assertIn(self.example_email("iago"), exported_user_emails)
-        self.assertIn(self.example_email("othello"), exported_user_emails)
-        self.assertIn("default-bot@zulip.com", exported_user_emails)
+        self.assertIn(consented_bot.delivery_email, exported_user_emails)
+        self.assertIn(self.example_email("othello"), exported_mirror_dummy_user_emails)
+        self.assertIn(deactivated_non_consented_user.delivery_email, exported_user_emails)
+        self.assertIn("default-bot@zulip.com", exported_mirror_dummy_user_emails)
 
-        exported_streams = self.get_set(data["zerver_stream"], "name")
+        # Verify that the _mirrordummy tables is the table of mirror dummy users, as expected.
+        self.assertTrue(
+            all(row["is_active"] is False for row in realm_data["zerver_userprofile_mirrordummy"])
+        )
+        self.assertTrue(
+            all(
+                row["is_mirror_dummy"] is True
+                for row in realm_data["zerver_userprofile_mirrordummy"]
+            )
+        )
+        self.assertTrue(
+            all(row["is_mirror_dummy"] is False for row in realm_data["zerver_userprofile"])
+        )
+
+        # Verify that the deactivated_non_consented_user did not not become a mirror dummy.
+        exported_deactivated_non_consented_user = next(
+            user
+            for user in realm_data["zerver_userprofile"]
+            if user["id"] == deactivated_non_consented_user.id
+        )
+        self.assertEqual(exported_deactivated_non_consented_user["is_active"], False)
+        self.assertEqual(exported_deactivated_non_consented_user["is_mirror_dummy"], False)
+
+        exported_non_consented_user_with_private_email = next(
+            user
+            for user in realm_data["zerver_userprofile_mirrordummy"]
+            if user["id"] == non_consented_user_with_private_email.id
+        )
+        self.assertRegex(
+            exported_non_consented_user_with_private_email["delivery_email"],
+            r"exported-user-[a-zA-Z0-9]+@zulip\.testserver",
+        )
+
+        exported_streams = self.get_set(realm_data["zerver_stream"], "name")
         self.assertEqual(
             exported_streams,
             {
@@ -753,9 +1151,13 @@ class RealmImportExportTest(ExportFile):
             .values_list("id", flat=True)
         )
 
+        assert (
+            direct_message_group_a is not None
+            and direct_message_group_b is not None
+            and direct_message_group_c is not None
+        )
         # Third direct message group is not exported since none of
         # the members gave consent
-        assert direct_message_group_a is not None and direct_message_group_b is not None
         direct_message_group_recipients = Recipient.objects.filter(
             type_id__in=[direct_message_group_a.id, direct_message_group_b.id],
             type=Recipient.DIRECT_MESSAGE_GROUP,
@@ -763,7 +1165,7 @@ class RealmImportExportTest(ExportFile):
         pm_query = Q(recipient__in=direct_message_group_recipients) | Q(
             sender__in=consented_user_ids
         )
-        exported_direct_message_group_ids = (
+        exported_dm_group_message_ids = (
             Message.objects.filter(pm_query, realm=realm.id)
             .values_list("id", flat=True)
             .values_list("id", flat=True)
@@ -774,7 +1176,7 @@ class RealmImportExportTest(ExportFile):
             *private_stream_message_ids,
             stream_b_second_message_id,
             *exported_pm_ids,
-            *exported_direct_message_group_ids,
+            *exported_dm_group_message_ids,
         }
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
 
@@ -787,6 +1189,212 @@ class RealmImportExportTest(ExportFile):
         self.assertIn(pm_b_msg_id, exported_msg_ids)
         self.assertIn(pm_c_msg_id, exported_msg_ids)
         self.assertIn(pm_d_msg_id, exported_msg_ids)
+
+        # iago is the only consented user with a SavedSnippet. cordelia didn't consent so her SavedSnippet
+        # should not be exported.
+        exported_saved_snippet_ids = self.get_set(realm_data["zerver_savedsnippet"], "id")
+        self.assertNotIn(cordelia_saved_snippet.id, exported_saved_snippet_ids)
+        self.assertNotIn(
+            deactivated_non_consented_user_saved_snippet.id, exported_saved_snippet_ids
+        )
+        self.assertEqual(exported_saved_snippet_ids, {iago_saved_snippet.id})
+
+        exported_direct_message_group_ids = self.get_set(realm_data["zerver_huddle"], "id")
+        self.assertNotIn(direct_message_group_c.id, exported_direct_message_group_ids)
+        self.assertEqual(
+            exported_direct_message_group_ids,
+            {direct_message_group_a.id, direct_message_group_b.id},
+        )
+
+        # We also want to verify Subscriptions to the DirectMessageGroups were exported correctly.
+        # As long as a DirectMessageGroup is exported (due to having at least one consenting user
+        # in it), *all* the Subscriptions to it should be exported - to maintain the expected
+        # structure of the data.
+        exported_direct_message_group_a_recipient = next(
+            huddle["recipient"]
+            for huddle in realm_data["zerver_huddle"]
+            if huddle["id"] == direct_message_group_a.id
+        )
+        exported_direct_message_group_a_sub_ids = [
+            sub["id"]
+            for sub in realm_data["zerver_subscription"]
+            if sub["recipient"] == exported_direct_message_group_a_recipient
+        ]
+        self.assert_length(exported_direct_message_group_a_sub_ids, 3)
+
+        exported_direct_message_group_b_recipient = next(
+            huddle["recipient"]
+            for huddle in realm_data["zerver_huddle"]
+            if huddle["id"] == direct_message_group_b.id
+        )
+        exported_direct_message_group_b_sub_ids = [
+            sub["id"]
+            for sub in realm_data["zerver_subscription"]
+            if sub["recipient"] == exported_direct_message_group_b_recipient
+        ]
+        self.assert_length(exported_direct_message_group_b_sub_ids, 4)
+
+    def test_export_realm_data_scrubbing(self) -> None:
+        realm = get_realm("zulip")
+        consented_user = self.example_user("iago")
+        non_consented_user = self.example_user("hamlet")
+        do_change_user_setting(
+            non_consented_user,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+
+        # Change some user settings to test the scrubbing of settings for non-consenting users.
+        do_change_user_setting(consented_user, "web_font_size_px", 123, acting_user=None)
+        do_change_user_setting(non_consented_user, "web_font_size_px", 456, acting_user=None)
+
+        # For testing the scrubbing of RealmAuditLogs, we generate some events that will get
+        # RealmAuditLog events.
+        # RealmAuditLogs where the modified_user is consenting will be preserved, while those
+        # where the modified_user is not consenting will not be included in the export, with
+        # the exception of a few event types such as SUBSCRIPTION_CREATED - which are exported.
+        do_change_user_delivery_email(consented_user, "iago-new@zulip.com", acting_user=None)
+        consented_user_email_change_log = RealmAuditLog.objects.last()
+        assert consented_user_email_change_log is not None
+
+        self.subscribe(consented_user, "some-new-stream")
+        consented_user_subscription_event = RealmAuditLog.objects.last()
+        assert consented_user_subscription_event is not None
+        assert (
+            consented_user_subscription_event.event_type == AuditLogEventType.SUBSCRIPTION_CREATED
+        )
+
+        do_change_user_delivery_email(non_consented_user, "hamlet-new@zulip.com", acting_user=None)
+        non_consented_user_email_change_log = RealmAuditLog.objects.last()
+        assert non_consented_user_email_change_log is not None
+
+        self.subscribe(non_consented_user, "some-new-stream")
+        non_consented_user_subscription_event = RealmAuditLog.objects.last()
+        assert non_consented_user_subscription_event is not None
+        assert (
+            non_consented_user_subscription_event.event_type
+            == AuditLogEventType.SUBSCRIPTION_CREATED
+        )
+
+        # Make sure we also have a RealmAuditLog of a type with modified_user=None to test that edge case
+        # and ensure we don't accidentally drop such entries.
+        stream = get_stream("Denmark", realm)
+        do_change_stream_description(
+            # Ensure that logs with non-consenting acting_acting user aren't accidentally dropped either.
+            stream,
+            "some new description",
+            acting_user=non_consented_user,
+        )
+        stream_description_change_log = RealmAuditLog.objects.last()
+        assert stream_description_change_log is not None
+
+        consented_user_original_subs_count = Subscription.objects.filter(
+            user_profile=consented_user
+        ).count()
+        non_consented_user_original_subs_count = Subscription.objects.filter(
+            user_profile=non_consented_user
+        ).count()
+
+        self.assertNotEqual(consented_user_original_subs_count, 0)
+        self.assertNotEqual(non_consented_user_original_subs_count, 0)
+
+        # Change the color of subscription as an easy reference point to use to detect if they Subscription
+        # attributes are getting scrubbed or not.
+        Subscription.objects.filter(user_profile__in=[consented_user, non_consented_user]).update(
+            color="#foo"
+        )
+        consented_user_ids = {consented_user.id}
+        do_change_user_setting(consented_user, "allow_private_data_export", True, acting_user=None)
+
+        self.export_realm_and_create_auditlog(
+            realm,
+            export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            exportable_user_ids=consented_user_ids,
+        )
+
+        realm_data = read_json("realm.json")
+
+        exported_realm_audit_logs = realm_data["zerver_realmauditlog"]
+        exported_realm_audit_log_ids = self.get_set(exported_realm_audit_logs, "id")
+        self.assertNotIn(non_consented_user_email_change_log.id, exported_realm_audit_log_ids)
+        self.assertIn(non_consented_user_subscription_event.id, exported_realm_audit_log_ids)
+        self.assertIn(consented_user_subscription_event.id, exported_realm_audit_log_ids)
+        self.assertIn(consented_user_email_change_log.id, exported_realm_audit_log_ids)
+        self.assertIn(stream_description_change_log.id, exported_realm_audit_log_ids)
+
+        # More general assertions on the entire sets of audit logs pertaining to our users.
+        for log in RealmAuditLog.objects.filter(modified_user=non_consented_user).exclude(
+            event_type__in=PRESERVED_AUDIT_LOG_EVENT_TYPES
+        ):
+            self.assertNotIn(log.id, exported_realm_audit_log_ids)
+        for log in RealmAuditLog.objects.filter(modified_user=consented_user):
+            self.assertIn(log.id, exported_realm_audit_log_ids)
+
+        # Now check scrubbing of Subscriptions data.
+        consented_user_exported_subscriptions = {
+            sub["id"]: sub
+            for sub in realm_data["zerver_subscription"]
+            if sub["user_profile"] == consented_user.id
+        }
+        non_consented_user_exported_subscriptions = {
+            sub["id"]: sub
+            for sub in realm_data["zerver_subscription"]
+            if sub["user_profile"] == non_consented_user.id
+        }
+        self.assertEqual(
+            len(consented_user_exported_subscriptions), consented_user_original_subs_count
+        )
+        self.assertEqual(
+            len(non_consented_user_exported_subscriptions), non_consented_user_original_subs_count
+        )
+        for sub in Subscription.objects.filter(user_profile=consented_user):
+            original_sub = model_to_dict(sub)
+            exported_sub = consented_user_exported_subscriptions[sub.id]
+            # Subscriptions of the consenting users get exported fully as they are,
+            # so the #foo color should be preserved.
+            self.assertEqual(original_sub, exported_sub)
+            self.assertEqual(exported_sub["color"], "#foo")
+        for sub in Subscription.objects.filter(user_profile=non_consented_user):
+            original_sub = model_to_dict(sub)
+            exported_sub = non_consented_user_exported_subscriptions[sub.id]
+            self.assertNotEqual(original_sub, exported_sub)
+            # Subscriptions of the non-consenting users get get scrubbed to replace
+            # "user setting"-type attributes with default values, so the #foo color
+            # will be overwritten in the process.
+            self.assertNotEqual(exported_sub["color"], "#foo")
+
+        # Verify the export/scrubbing of user settings for consenting/non-consenting users.
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        exported_consented_user = next(
+            user for user in realm_data["zerver_userprofile"] if user["id"] == consented_user.id
+        )
+        exported_non_consented_user = next(
+            user
+            for user in realm_data["zerver_userprofile_mirrordummy"]
+            if user["id"] == non_consented_user.id
+        )
+
+        # Settings get exported with the user-set values for consenting users, but are
+        # scrubbed to realm default values for non-consenting users.
+        self.assertEqual(exported_consented_user["web_font_size_px"], 123)
+        self.assertNotEqual(exported_non_consented_user["web_font_size_px"], 456)
+        self.assertEqual(
+            exported_non_consented_user["web_font_size_px"], realm_user_default.web_font_size_px
+        )
+        # Email visibility is an exception, as we should preserve user's choice in who to show their real
+        # email address to across the export->import cycle - regardless of export consent.
+        self.assertEqual(
+            exported_non_consented_user["email_address_visibility"],
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        )
+        # Sanity check that this doesn't match the realm default -
+        # since with a matching realm default, the above assertion
+        # would be moot and not testing the preservation of the
+        # email_address_visibility setting.
+        self.assertNotEqual(
+            realm_user_default.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
 
     """
     Tests for import_realm
@@ -816,8 +1424,40 @@ class RealmImportExportTest(ExportFile):
             )
             self.assertEqual(realm_emoji.name, "hawaii")
 
+        # We want to set up some image data to verify image attachment thumbnailing works correctly
+        # in the import.
+        # We'll create a new user to use as the sender of the messages with such images,
+        # so that we can easily find them after importing - by fetching messages sent
+        # by the thumbnailing_test_user_email account.
+        thumbnailing_test_user_email = "thumbnailing_test@zulip.com"
+        self.create_user_and_login(thumbnailing_test_user_email, original_realm)
+        thumbnailing_test_user = get_user_by_delivery_email(
+            thumbnailing_test_user_email, original_realm
+        )
+
+        # Send a message with the image. After the import, we'll verify that this message
+        # and the associated ImageAttachment have been created correctly.
+        image_path_id = self.upload_and_thumbnail_image("img.png")
+        self.send_stream_message(
+            sender=thumbnailing_test_user,
+            stream_name="Verona",
+            content=f"An [image](/user_uploads/{image_path_id})",
+        )
+        image_attachment = ImageAttachment.objects.get(path_id=image_path_id)
+        # Malform some ImageAttachment info. These shouldn't get exported (and certainly not imported!)
+        # anyway, so we can test that this misinformation doesn't make its way into the imported realm.
+        image_attachment.original_width_px = 9999
+        image_attachment.original_height_px = 9999
+        image_attachment.save()
+
         # Deactivate a user to ensure such a case is covered.
         do_deactivate_user(self.example_user("aaron"), acting_user=None)
+        # Turn another user into a mirror dummy
+        prospero = self.example_user("prospero")
+        prospero_email = prospero.delivery_email
+        do_deactivate_user(prospero, acting_user=None)
+        prospero.is_mirror_dummy = True
+        prospero.save()
 
         # Change some authentication_methods so that some are enabled and some disabled
         # for this to be properly tested, as opposed to some special case
@@ -834,12 +1474,12 @@ class RealmImportExportTest(ExportFile):
         # by the export, so we'll test that it is handled by getting set to None.
         self.assertTrue(
             RealmAuditLog.objects.filter(
-                modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+                modified_user=hamlet, event_type=AuditLogEventType.USER_CREATED
             ).count(),
             1,
         )
         RealmAuditLog.objects.filter(
-            modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+            modified_user=hamlet, event_type=AuditLogEventType.USER_CREATED
         ).update(acting_user_id=cross_realm_bot.id)
 
         # data to test import of direct message groups
@@ -881,6 +1521,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
         # data to test import of onboaring step
+        OnboardingStep.objects.filter(user=sample_user).delete()
         OnboardingStep.objects.create(
             user=sample_user,
             onboarding_step="intro_inbox_view_modal",
@@ -994,7 +1635,9 @@ class RealmImportExportTest(ExportFile):
         new_realm_emoji.save()
 
         RealmAuditLog.objects.create(
-            realm=original_realm, event_type=RealmAuditLog.REALM_EXPORTED, event_time=timezone_now()
+            realm=original_realm,
+            event_type=AuditLogEventType.REALM_EXPORTED,
+            event_time=timezone_now(),
         )
 
         getters = self.get_realm_getters()
@@ -1004,9 +1647,16 @@ class RealmImportExportTest(ExportFile):
         for f in getters:
             snapshots[f.__name__] = f(original_realm)
 
-        self.export_realm(original_realm)
+        self.export_realm(original_realm, export_type=RealmExport.EXPORT_FULL_WITHOUT_CONSENT)
 
-        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="INFO"),
+            # With captureOnCommitCallbacks we ensure that tasks delegated to the queue workers
+            # are executed immediately. We use this to make thumbnailing runs in the import
+            # process in this test.
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             do_import_realm(get_output_dir(), "test-zulip")
 
         # Make sure our export/import didn't somehow leak info into the
@@ -1142,7 +1792,7 @@ class RealmImportExportTest(ExportFile):
 
         imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         realmauditlog = RealmAuditLog.objects.get(
-            modified_user=imported_hamlet, event_type=RealmAuditLog.USER_CREATED
+            modified_user=imported_hamlet, event_type=AuditLogEventType.USER_CREATED
         )
         self.assertEqual(realmauditlog.realm, imported_realm)
         # As explained above when setting up the RealmAuditLog row, the .acting_user should have been
@@ -1166,6 +1816,54 @@ class RealmImportExportTest(ExportFile):
             Message.objects.filter(realm=original_realm).count(),
             Message.objects.filter(realm=imported_realm).count(),
         )
+
+        # Verify thumbnailing.
+        imported_thumbnailing_test_user = get_user_by_delivery_email(
+            thumbnailing_test_user_email, imported_realm
+        )
+        imported_messages_with_thumbnail = Message.objects.filter(
+            sender=imported_thumbnailing_test_user, realm=imported_realm
+        )
+        imported_message_with_thumbnail = imported_messages_with_thumbnail.latest("id")
+        attachment_with_thumbnail = Attachment.objects.get(
+            owner=imported_thumbnailing_test_user, messages=imported_message_with_thumbnail
+        )
+
+        path_id = attachment_with_thumbnail.path_id
+        # An ImageAttachment has been created in the import process.
+        imported_image_attachment = ImageAttachment.objects.get(
+            path_id=path_id, realm=imported_realm
+        )
+
+        # It figured out the dimensions correctly and didn't inherit the bad data in the
+        # original ImageAttachment.
+        self.assertEqual(imported_image_attachment.original_width_px, 128)
+        self.assertEqual(imported_image_attachment.original_height_px, 128)
+        # ImageAttachment.thumbnail_metadata contains information about thumbnails that actually
+        # got generated. By asserting it's not empty, we make sure thumbnailing ran for the image
+        # and that we didn't merely create the ImageAttachment row in the database.
+        self.assertNotEqual(len(imported_image_attachment.thumbnail_metadata), 0)
+        self.assertTrue(imported_image_attachment.thumbnail_metadata[0])
+
+        # Content and rendered_content got updated correctly, to point to the correct, new path_id
+        # and include the HTML for image preview using the thumbnail.
+        self.assertEqual(
+            imported_message_with_thumbnail.content, f"An [image](/user_uploads/{path_id})"
+        )
+        expected_rendered_preview = (
+            f'<p>An <a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assertEqual(
+            imported_message_with_thumbnail.rendered_content, expected_rendered_preview
+        )
+
+        imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
+        self.assertIsNotNone(imported_prospero_user.recipient)
 
     def test_import_message_edit_history(self) -> None:
         realm = get_realm("zulip")
@@ -1318,9 +2016,9 @@ class RealmImportExportTest(ExportFile):
         def get_realm_audit_log_event_type(r: Realm) -> set[int]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
                 event_type__in=[
-                    RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
-                    RealmAuditLog.STREAM_CREATED,
-                    RealmAuditLog.REALM_IMPORTED,
+                    AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                    AuditLogEventType.CHANNEL_CREATED,
+                    AuditLogEventType.REALM_IMPORTED,
                 ]
             )
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
@@ -1407,7 +2105,12 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_user_group_names(r: Realm) -> set[str]:
-            return {group.named_user_group.name for group in UserGroup.objects.filter(realm=r)}
+            result = set()
+            for group in UserGroup.objects.filter(realm=r):
+                if hasattr(group, "named_user_group"):
+                    result.add(group.named_user_group.name)
+
+            return result
 
         @getter
         def get_named_user_group_names(r: Realm) -> set[str]:
@@ -1484,7 +2187,9 @@ class RealmImportExportTest(ExportFile):
         def get_usermessages_user(r: Realm) -> set[str]:
             messages = get_stream_messages(r).order_by("content")
             usermessage = UserMessage.objects.filter(message=messages[0])
-            usermessage_user = {um.user_profile.email for um in usermessage}
+            usermessage_user = {
+                um.user_profile.email for um in usermessage if not um.user_profile.is_mirror_dummy
+            }
             return usermessage_user
 
         # tests to make sure that various data-*-ids in rendered_content
@@ -1581,8 +2286,15 @@ class RealmImportExportTest(ExportFile):
     def test_import_realm_with_no_realm_user_default_table(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
 
-        RealmUserDefault.objects.get(realm=original_realm).delete()
         self.export_realm_and_create_auditlog(original_realm)
+
+        # We want to remove the RealmUserDefault object from the export.
+        realm_data = read_json("realm.json")
+        realm_data["zerver_realmuserdefault"] = []
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(realm_data))
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
@@ -1870,7 +2582,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(imported_realm.message_visibility_limit, 10000)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
 
@@ -1887,7 +2599,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(imported_realm.message_visibility_limit, None)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
 
@@ -1915,7 +2627,7 @@ class RealmImportExportTest(ExportFile):
             imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
         user_membership_logs = RealmAuditLog.objects.filter(
             realm=imported_realm,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
         ).values_list("modified_user_id", "modified_user_group__name")
         logged_membership_by_user_id = defaultdict(set)
         for user_id, user_group_name in user_membership_logs:
@@ -1928,6 +2640,202 @@ class RealmImportExportTest(ExportFile):
             if SystemGroups.MEMBERS in expected_group_names:
                 expected_group_names.add(SystemGroups.FULL_MEMBERS)
             self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)
+
+    def test_import_realm_with_unapplied_migrations(self) -> None:
+        realm = get_realm("zulip")
+        with (
+            self.assertRaises(Exception) as e,
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture(
+                "with_unapplied_migrations.json"
+            )
+            mock_import.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            self.export_realm(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+                exportable_user_ids=get_consented_user_ids(realm),
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        expected_error_message = self.get_applied_migrations_error_message(
+            "unapplied_migrations_error.txt"
+        )
+        error_message = str(e.exception).strip()
+        self.assertEqual(expected_error_message, error_message)
+
+    def test_import_realm_with_extra_migrations(self) -> None:
+        realm = get_realm("zulip")
+        with (
+            self.assertRaises(Exception) as e,
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            mock_import.return_value = self.get_applied_migrations_fixture(
+                "with_unapplied_migrations.json"
+            )
+            self.export_realm(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+                exportable_user_ids=get_consented_user_ids(realm),
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
+        expected_error_message = self.get_applied_migrations_error_message(
+            "extra_migrations_error.txt"
+        )
+        error_message = str(e.exception).strip()
+        self.assertEqual(expected_error_message, error_message)
+
+    def test_import_realm_with_extra_exported_apps(self) -> None:
+        realm = get_realm("zulip")
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="WARNING") as mock_log,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            mock_import.return_value = self.get_applied_migrations_fixture("with_missing_apps.json")
+            self.export_realm_and_create_auditlog(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+                exportable_user_ids=get_consented_user_ids(realm),
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
+        missing_apps_log = [
+            "WARNING:root:Exported realm has 'phonenumber' app installed, but this server does not.",
+            "WARNING:root:Exported realm has 'sessions' app installed, but this server does not.",
+        ]
+        # The log output is sorted because it's order is nondeterministic.
+        self.assertEqual(sorted(mock_log.output), sorted(missing_apps_log))
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertNotEqual(imported_realm.id, realm.id)
+
+    def test_import_realm_with_missing_apps(self) -> None:
+        realm = get_realm("zulip")
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="WARNING") as mock_log,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture("with_missing_apps.json")
+            mock_import.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            self.export_realm_and_create_auditlog(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+                exportable_user_ids=get_consented_user_ids(realm),
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
+        missing_apps_log = [
+            "WARNING:root:This server has 'phonenumber' app installed, but exported realm does not.",
+            "WARNING:root:This server has 'sessions' app installed, but exported realm does not.",
+        ]
+        self.assertEqual(sorted(mock_log.output), sorted(missing_apps_log))
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertNotEqual(imported_realm.id, realm.id)
+
+    def test_check_migration_for_zulip_cloud_realm(self) -> None:
+        # This test ensures that `check_migrations_status` correctly handles
+        # checking the migrations of a Zulip Cloud-like realm (with zilencer/
+        # corporate apps installed) when importing into a self-hosted realm
+        # (where these apps are not installed).
+        realm = get_realm("zulip")
+        with (
+            self.settings(BILLING_ENABLED=False),
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            self_hosted_migrations = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            for key in ["zilencer", "corporate"]:
+                self_hosted_migrations.pop(key, None)
+            mock_import.return_value = self_hosted_migrations
+            self.export_realm_and_create_auditlog(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+                exportable_user_ids=get_consented_user_ids(realm),
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertNotEqual(imported_realm.id, realm.id)
+
+    def test_import_realm_without_migration_status_file(self) -> None:
+        realm = get_realm("zulip")
+        with patch("zerver.lib.export.export_migration_status"):
+            self.export_realm_and_create_auditlog(realm)
+
+        with self.assertRaises(Exception) as e, self.assertLogs(level="INFO"):
+            do_import_realm(
+                get_output_dir(),
+                "test-zulip",
+            )
+        expected_error_message = "Missing migration_status.json file! Make sure you're using the same Zulip version as the exported realm."
+        self.assertEqual(expected_error_message, str(e.exception))
+
+    def test_import_realm_with_different_stated_zulip_version(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm_and_create_auditlog(realm)
+
+        with (
+            patch("zerver.lib.import_realm.ZULIP_VERSION", "8.0"),
+            self.assertRaises(CommandError) as e,
+            self.assertLogs(level="INFO"),
+        ):
+            do_import_realm(
+                get_output_dir(),
+                "test-zulip",
+            )
+        expected_error_message = (
+            "Error: Export was generated on a different Zulip major version.\n"
+            f"Export version: {ZULIP_VERSION}\n"
+            "Server version: 8.0"
+        )
+        self.assertEqual(expected_error_message, str(e.exception))
+
+    def test_import_realm_with_identical_but_unsorted_migrations(self) -> None:
+        # Two identical migration sets should pass `check_migrations_status`
+        # regardless of how the list of migrations are ordered in
+        # `migrations_status.json`.
+        realm = get_realm("zulip")
+        with (
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture(
+                "with_unsorted_migrations_list.json"
+            )
+            mock_import.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            self.export_realm_and_create_auditlog(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+                exportable_user_ids=get_consented_user_ids(realm),
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
 
 
 class SingleUserExportTest(ExportFile):
@@ -2124,6 +3032,15 @@ class SingleUserExportTest(ExportFile):
                 ),
             )
 
+        # We violate alphabetical order here but this creates a RealmAuditLog entry and we want the stream
+        # subscription event which will occur next to be the last RealmAuditLog entry.
+        do_create_saved_snippet("snippet title", "snippet content", cordelia)
+
+        @checker
+        def zerver_savedsnippet(records: list[Record]) -> None:
+            self.assertEqual(records[-1]["title"], "snippet title")
+            self.assertEqual(records[-1]["content"], "snippet content")
+
         self.subscribe(cordelia, "Scotland")
 
         create_stream_if_needed(realm, "bogus")
@@ -2292,3 +3209,10 @@ class SingleUserExportTest(ExportFile):
                     Try to mostly keep checkers in alphabetical order.
                     """
                 )
+
+
+class GetFKFieldNameTest(ZulipTestCase):
+    def test_get_fk_field_name(self) -> None:
+        self.assertEqual(get_fk_field_name(UserProfile, Realm), "realm")
+        self.assertEqual(get_fk_field_name(Reaction, Stream), None)
+        self.assertEqual(get_fk_field_name(Message, UserProfile), "sender")

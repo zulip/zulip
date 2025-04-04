@@ -4,29 +4,30 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as typeahead from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
 import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.hbs";
 import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.hbs";
 import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.hbs";
 import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_ui from "./compose_ui";
-import * as composebox_typeahead from "./composebox_typeahead";
-import * as emoji from "./emoji";
-import type {EmojiDict} from "./emoji";
-import * as keydown_util from "./keydown_util";
-import * as message_store from "./message_store";
-import {page_params} from "./page_params";
-import * as popover_menus from "./popover_menus";
-import * as reactions from "./reactions";
-import * as rows from "./rows";
-import * as scroll_util from "./scroll_util";
-import * as spectators from "./spectators";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as user_status_ui from "./user_status_ui";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as emoji from "./emoji.ts";
+import type {EmojiDict} from "./emoji.ts";
+import {$t} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as message_store from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as reactions from "./reactions.ts";
+import * as rows from "./rows.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as spectators from "./spectators.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status_ui from "./user_status_ui.ts";
+import * as util from "./util.ts";
 
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
@@ -57,17 +58,29 @@ let edit_message_id: number | null = null;
 let current_message_id: number | null = null;
 
 const EMOJI_CATEGORIES = [
-    {name: "Popular", icon: "fa-star-o"},
-    {name: "Smileys & Emotion", icon: "fa-smile-o"},
-    {name: "People & Body", icon: "fa-thumbs-o-up"},
-    {name: "Animals & Nature", icon: "fa-leaf"},
-    {name: "Food & Drink", icon: "fa-cutlery"},
-    {name: "Activities", icon: "fa-soccer-ball-o"},
-    {name: "Travel & Places", icon: "fa-car"},
-    {name: "Objects", icon: "fa-lightbulb-o"},
-    {name: "Symbols", icon: "fa-hashtag"},
-    {name: "Flags", icon: "fa-flag"},
-    {name: "Custom", icon: "fa-cog"},
+    {name: "Popular", icon: "fa-star-o", translated: $t({defaultMessage: "Popular"})},
+    {
+        name: "Smileys & Emotion",
+        icon: "fa-smile-o",
+        translated: $t({defaultMessage: "Smileys & Emotion"}),
+    },
+    {
+        name: "People & Body",
+        icon: "fa-thumbs-o-up",
+        translated: $t({defaultMessage: "People & Body"}),
+    },
+    {
+        name: "Animals & Nature",
+        icon: "fa-leaf",
+        translated: $t({defaultMessage: "Animals & Nature"}),
+    },
+    {name: "Food & Drink", icon: "fa-cutlery", translated: $t({defaultMessage: "Food & Drink"})},
+    {name: "Activities", icon: "fa-soccer-ball-o", translated: $t({defaultMessage: "Activities"})},
+    {name: "Travel & Places", icon: "fa-car", translated: $t({defaultMessage: "Travel & Places"})},
+    {name: "Objects", icon: "fa-lightbulb-o", translated: $t({defaultMessage: "Objects"})},
+    {name: "Symbols", icon: "fa-hashtag", translated: $t({defaultMessage: "Symbols"})},
+    {name: "Flags", icon: "fa-flag", translated: $t({defaultMessage: "Flags"})},
+    {name: "Custom", icon: "fa-cog", translated: $t({defaultMessage: "Custom"})},
 ];
 
 function get_total_sections(): number {
@@ -173,6 +186,7 @@ export function rebuild_catalog(): void {
         icon: category.icon,
         // The ! type assertion is correct because of the filter above.
         emojis: catalog.get(category.name)!,
+        translated: category.translated,
     }));
     const emojis_by_category = complete_emoji_catalog.flatMap((category) => {
         if (category.name === "Popular") {
@@ -308,7 +322,7 @@ function toggle_reaction(emoji_name: string, event: JQuery.ClickEvent | JQuery.K
     // doesn't have a concept of toggling.
     // TODO: Ideally we never even get here in
     // that context, see #28464.
-    if ($("#set-user-status-modal").length) {
+    if ($("#set-user-status-modal").length > 0) {
         return;
     }
 
@@ -711,7 +725,7 @@ function get_default_emoji_popover_options(): Partial<tippy.Props> {
 
 export function toggle_emoji_popover(
     target: tippy.ReferenceElement,
-    id?: number | undefined,
+    id?: number,
     additional_popover_options?: Partial<tippy.Props>,
 ): void {
     if (id) {
@@ -727,6 +741,9 @@ export function toggle_emoji_popover(
         {
             show_as_overlay_on_mobile: true,
             show_as_overlay_always: false,
+            // We want to hide the popover if the reference is
+            // hidden but not on first attempt to show it.
+            message_feed_overlay_detection: true,
         },
     );
 }
@@ -814,16 +831,15 @@ function register_click_handlers(): void {
         e.preventDefault();
         e.stopPropagation();
 
-        const compose_click_target = compose_ui.get_compose_click_target(this);
-        if ($(compose_click_target).parents(".message_edit_form").length === 1) {
+        if ($(this).parents(".message_edit_form").length === 1) {
             // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.
-            assert(compose_click_target instanceof HTMLElement);
-            edit_message_id = rows.get_message_id(compose_click_target);
+            assert(this instanceof HTMLElement);
+            edit_message_id = rows.get_message_id(this);
         } else {
             edit_message_id = null;
         }
-        toggle_emoji_popover(compose_click_target);
+        toggle_emoji_popover(this);
     });
 
     $("#main_div").on(

@@ -1,6 +1,6 @@
 # Find administrators
 
-[Administrators](/help/roles-and-permissions) can take actions other users are
+[Administrators](/help/user-roles) can take actions other users are
 not permitted to, such as managing your organization's permissions settings.
 
 !!! tip ""
@@ -11,5 +11,5 @@ not permitted to, such as managing your organization's permissions settings.
 
 ## Related articles
 
-* [Roles and permissions](/help/roles-and-permissions)
+* [User roles](/help/user-roles)
 * [Customize organization settings](/help/customize-organization-settings)

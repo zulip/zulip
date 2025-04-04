@@ -24,6 +24,7 @@ from zerver.lib.integrations import (
     INTEGRATIONS,
     META_CATEGORY,
     HubotIntegration,
+    PythonAPIIntegration,
     WebhookIntegration,
     get_all_event_types_for_integration,
 )
@@ -287,8 +288,9 @@ class MarkdownDirectoryView(ApiURLView):
             old_class = a.attrib.get("class", "")
             assert isinstance(old_class, str)
             a.attrib["class"] = old_class + " highlighted"
-        sidebar_html = "".join(html.tostring(child, encoding="unicode") for child in tree)
-        context["sidebar_html"] = Markup(sidebar_html)
+        context["sidebar_html"] = Markup().join(
+            Markup(html.tostring(child, encoding="unicode")) for child in tree
+        )
 
         add_google_analytics_context(context)
         return context
@@ -380,14 +382,21 @@ def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) ->
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name
-    context["recommended_channel_name"] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
-        context["integration_url"] = integration.url[3:]
+        assert integration.url.startswith("api/")
+        context["integration_url"] = integration.url.removeprefix("api")
         all_event_types = get_all_event_types_for_integration(integration)
         if all_event_types is not None:
             context["all_event_types"] = all_event_types
     if isinstance(integration, HubotIntegration):
         context["hubot_docs_url"] = integration.hubot_docs_url
+    if isinstance(integration, PythonAPIIntegration):
+        context["config_file_path"] = (
+            f"/usr/local/share/zulip/integrations/{integration.directory_name}/zulip_{integration.directory_name}_config.py"
+        )
+        context["integration_path"] = (
+            f"/usr/local/share/zulip/integrations/{integration.directory_name}"
+        )
 
     doc_html_str = render_markdown_path(integration.doc, context, integration_doc=True)
 

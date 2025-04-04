@@ -47,7 +47,7 @@ organization in Zulip). The following files are involved in the process:
 - `web/templates/settings/organization_permissions_admin.hbs`: defines
   the structure of the admin permissions page (checkboxes for each organization
   permission setting).
-- `web/src/settings_org.js`: handles organization setting form submission.
+- `web/src/settings_org.ts`: handles organization setting form submission.
 - `web/src/server_events_dispatch.js`: handles events coming from the server
   (ex: pushing an organization change to other open browsers and updating
   the application's state).
@@ -62,7 +62,7 @@ organization in Zulip). The following files are involved in the process:
 
 - `web/e2e-tests/admin.test.ts`: end-to-end tests for the organization
   admin settings pages.
-- `web/tests/dispatch.test.js`
+- `web/tests/dispatch.test.cjs`
 
 **Documentation**
 
@@ -277,11 +277,13 @@ first contacts the server, the server sends the client its
 initial state. Subsequently, clients subscribe to "events," which can
 (among other things) indicate that settings have changed.
 
-For the backend piece, we will need our action to make a call to `send_event`
-to send the event to clients that are active. We will also need to
-modify `fetch_initial_state_data` so that the new field is passed to
-clients. See [our event system docs](../subsystems/events-system.md) for all the
-gory details.
+For the backend piece, we will need our action to make a call to
+`send_event_on_commit` to send the event to clients that are active
+(The event is only sent after the current database transaction
+commits, hence the name). We will also need to modify
+`fetch_initial_state_data` so that the new field is passed to
+clients. See [our event system docs](../subsystems/events-system.md)
+for all the gory details.
 
 Anyway, getting back to implementation details...
 
@@ -299,7 +301,7 @@ help catch coding mistakes, not to check for bad user input.
 
 After updating the given realm field, `do_set_realm_property` creates
 an 'update' event with the name of the property and the new value. It
-then calls `send_event`, passing the event and the list of users whose
+then calls `send_event_on_commit`, passing the event and the list of users whose
 browser sessions should be notified as the second argument. The latter
 argument can be a single user (if the setting is a personal one, like
 time display format), members in a particular channel only or all
@@ -312,7 +314,7 @@ def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
-       value to update and and the user who initiated the update.
+       value to update and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
     assert isinstance(value, property_type), (
@@ -327,7 +329,7 @@ def do_set_realm_property(
         property=name,
         value=value,
     )
-    send_event(realm, event, active_user_ids(realm))
+    send_event_on_commit(realm, event, active_user_ids(realm))
 ```
 
 If the new realm property being added does not fit into the
@@ -351,7 +353,7 @@ def do_set_realm_authentication_methods(
         property='default',
         data=dict(authentication_methods=realm.authentication_methods_dict())
     )
-    send_event(realm, event, active_user_ids(realm))
+    send_event_on_commit(realm, event, active_user_ids(realm))
 ```
 
 ### Update application state
@@ -538,10 +540,10 @@ If you're adding a non-checkbox field, you'll need to specify the type
 of the field via the `data-setting-widget-type` attribute in the HTML
 template.
 
-Then add the new form control in `web/src/admin.js`.
+Then add the new form control in `web/src/admin.ts`.
 
 ```diff
- // web/src/admin.js
+ // web/src/admin.ts
 
  export function build_page() {
      const options = {
@@ -554,7 +556,7 @@ Then add the new form control in `web/src/admin.js`.
 ```
 
 The JavaScript code for organization settings and permissions can be found in
-`web/src/settings_org.js`.
+`web/src/settings_org.ts`.
 
 In frontend, we have split the `property_types` into three objects:
 
@@ -575,7 +577,7 @@ In frontend, we have split the `property_types` into three objects:
 Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting
 in. For example in this case of `mandatory_topics` it will lie in
-"Other settings" (`other_settings`) subsection.
+"Compose settings" (`org-compose-settings`) subsection.
 
 _If you're not sure in which section your feature belongs, it's
 better to discuss it in
@@ -665,12 +667,12 @@ frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
 [Puppeteer end-to-end tests](../testing/testing-with-puppeteer.md).
 
 At the minimum, if you created a new function to update UI in
-`settings_org.js`, you will need to mock that function in
-`web/tests/dispatch.test.js`. Add the name of the UI
+`settings_org.ts`, you will need to mock that function in
+`web/tests/dispatch.test.cjs`. Add the name of the UI
 function you created to the following object with `noop` as the value:
 
 ```js
-// web/tests/dispatch.test.js
+// web/tests/dispatch.test.cjs
 
 set_global('settings_org', {
     update_email_change_display: noop,

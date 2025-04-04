@@ -1,37 +1,33 @@
 /* Compose box module responsible for the message's recipient */
 
 import $ from "jquery";
-import _, {isNumber} from "lodash";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
-import * as compose_banner from "./compose_banner";
-import * as compose_fade from "./compose_fade";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import type {ComposeTriggeredOptions} from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as dropdown_widget from "./dropdown_widget";
-import type {Option} from "./dropdown_widget";
-import {$t} from "./i18n";
-import * as narrow_state from "./narrow_state";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as ui_util from "./ui_util";
-import * as user_groups from "./user_groups";
-import * as util from "./util";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_fade from "./compose_fade.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import type {ComposeTriggeredOptions} from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget, Option} from "./dropdown_widget.ts";
+import {$t} from "./i18n.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as ui_util from "./ui_util.ts";
+import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 type MessageType = "stream" | "private";
-type DirectMessagesOption = {
-    is_direct_message: boolean;
-    unique_id: string | number;
-    name: string;
-};
+
+let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 function composing_to_current_topic_narrow(): boolean {
     return (
@@ -62,7 +58,7 @@ function composing_to_current_private_message_narrow(): boolean {
     );
 }
 
-export function update_narrow_to_recipient_visibility(): void {
+export let update_narrow_to_recipient_visibility = (): void => {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_exists = Boolean(compose_state.stream_id());
@@ -87,6 +83,12 @@ export function update_narrow_to_recipient_visibility(): void {
         }
     }
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
+};
+
+export function rewire_update_narrow_to_recipient_visibility(
+    value: typeof update_narrow_to_recipient_visibility,
+): void {
+    update_narrow_to_recipient_visibility = value;
 }
 
 function update_fade(): void {
@@ -108,45 +110,32 @@ function update_fade(): void {
 export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
+    compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
+    compose_validate.validate_and_update_send_button_status();
 }
 
-export function get_posting_policy_error_message(): string {
-    if (compose_state.selected_recipient_id === "direct") {
-        const recipients = compose_pm_pill.get_user_ids_string();
-        return compose_validate.check_dm_permissions_and_get_error_string(recipients);
-    }
-
-    if (!isNumber(compose_state.selected_recipient_id)) {
-        return "";
-    }
-
-    const stream = sub_store.get(compose_state.selected_recipient_id);
-    if (stream && !stream_data.can_post_messages_in_stream(stream)) {
-        return $t({
-            defaultMessage: "You do not have permission to post in this channel.",
-        });
-    }
-    return "";
-}
-
-export function check_posting_policy_for_compose_box(): void {
-    const banner_text = get_posting_policy_error_message();
+export let check_posting_policy_for_compose_box = (): void => {
+    const banner_text = compose_validate.get_posting_policy_error_message();
     if (banner_text === "") {
-        compose_validate.set_recipient_disallowed(false);
         compose_banner.clear_errors();
         return;
     }
 
     let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    compose_validate.set_recipient_disallowed(true);
     if (compose_state.selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
         compose_banner.cannot_send_direct_message_error(banner_text);
     } else {
         compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
     }
+};
+
+export function rewire_check_posting_policy_for_compose_box(
+    value: typeof check_posting_policy_for_compose_box,
+): void {
+    check_posting_policy_for_compose_box = value;
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -162,7 +151,7 @@ function switch_message_type(message_type: MessageType): void {
         private_message_recipient: compose_state.private_message_recipient(),
     };
     update_compose_for_message_type(opts);
-    update_placeholder_text();
+    update_compose_area_placeholder_text();
     compose_ui.set_focus(opts);
 }
 
@@ -207,7 +196,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
     compose_banner.clear_uploads();
 }
 
-export function on_compose_select_recipient_update(): void {
+export let on_compose_select_recipient_update = (): void => {
     const prev_message_type = compose_state.get_message_type();
 
     let curr_message_type: MessageType = "stream";
@@ -226,6 +215,12 @@ export function on_compose_select_recipient_update(): void {
     }
 
     update_on_recipient_change();
+};
+
+export function rewire_on_compose_select_recipient_update(
+    value: typeof on_compose_select_recipient_update,
+): void {
+    on_compose_select_recipient_update = value;
 }
 
 export function possibly_update_stream_name_in_compose(stream_id: number): void {
@@ -244,14 +239,14 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     compose_state.set_selected_recipient_id(recipient_id);
     compose_state.set_recipient_edited_manually(true);
     on_compose_select_recipient_update();
+    compose_select_recipient_dropdown_widget.item_clicked = true;
     dropdown.hide();
     event.preventDefault();
     event.stopPropagation();
 }
 
 function get_options_for_recipient_widget(): Option[] {
-    const options: (Option | DirectMessagesOption)[] =
-        stream_data.get_options_for_dropdown_widget();
+    const options: Option[] = stream_data.get_options_for_dropdown_widget();
 
     const direct_messages_option = {
         is_direct_message: true,
@@ -259,7 +254,7 @@ function get_options_for_recipient_widget(): Option[] {
         name: $t({defaultMessage: "Direct message"}),
     };
 
-    if (!user_groups.is_empty_group(realm.realm_direct_message_permission_group)) {
+    if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
         options.unshift(direct_messages_option);
     } else {
         options.push(direct_messages_option);
@@ -267,7 +262,7 @@ function get_options_for_recipient_widget(): Option[] {
     return options;
 }
 
-export function open_compose_recipient_dropdown(): void {
+export function toggle_compose_recipient_dropdown(): void {
     $("#compose_select_recipient_widget").trigger("click");
 }
 
@@ -277,6 +272,11 @@ function focus_compose_recipient(): void {
 
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
+    if (!compose_select_recipient_dropdown_widget.item_clicked) {
+        // If the dropdown was NOT closed due to selecting an item,
+        // don't do anything.
+        return;
+    }
     if (compose_state.get_message_type() === "stream") {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
@@ -289,6 +289,7 @@ function on_hidden_callback(): void {
             $("textarea#compose-textarea").trigger("focus");
         }
     }
+    compose_select_recipient_dropdown_widget.item_clicked = false;
 }
 
 export function handle_middle_pane_transition(): void {
@@ -298,7 +299,7 @@ export function handle_middle_pane_transition(): void {
 }
 
 export function initialize(): void {
-    new dropdown_widget.DropdownWidget({
+    compose_select_recipient_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "compose_select_recipient",
         get_options: get_options_for_recipient_widget,
         item_click_callback,
@@ -312,7 +313,8 @@ export function initialize(): void {
         tippy_props: {
             offset: [-10, 5],
         },
-    }).setup();
+    });
+    compose_select_recipient_dropdown_widget.setup();
 
     // `input` isn't relevant for streams since it registers as a change only
     // when an item in the dropdown is selected.
@@ -325,11 +327,69 @@ export function initialize(): void {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);
     });
+
+    $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export function update_placeholder_text(): void {
+export function update_topic_inputbox_on_mandatory_topics_change(): void {
+    if (realm.realm_mandatory_topics) {
+        const $input = $("input#stream_message_recipient_topic");
+        $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+        $input.removeClass("empty-topic-display");
+        const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+        $topic_not_mandatory_placeholder.removeClass("visible");
+        $topic_not_mandatory_placeholder.hide();
+        return;
+    }
+    update_topic_displayed_text(compose_state.topic());
+}
+
+export function update_topic_displayed_text(
+    topic_name: string | undefined,
+    has_topic_focus = false,
+): void {
+    if (topic_name === undefined) {
+        topic_name = "";
+    }
+    compose_state.topic(topic_name);
+
+    // When topics are mandatory, no additional adjustments are needed.
+    if (realm.realm_mandatory_topics) {
+        return;
+    }
+    // Otherwise, we have some adjustments to make to display:
+    // * a placeholder with the default topic name stylized
+    // * the empty string topic stylized
+    const $input = $("input#stream_message_recipient_topic");
+    const is_empty_string_topic = topic_name === "";
+    const recipient_widget_hidden =
+        $(".compose_select_recipient-dropdown-list-container").length === 0;
+    const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+
+    // reset
+    $input.attr("placeholder", "");
+    $input.removeClass("empty-topic-display");
+    $topic_not_mandatory_placeholder.removeClass("visible");
+    $topic_not_mandatory_placeholder.hide();
+
+    function update_placeholder_visibility(): void {
+        $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
+    }
+
+    if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
+        $input.attr("placeholder", util.get_final_topic_display_name(""));
+        $input.addClass("empty-topic-display");
+    } else {
+        $topic_not_mandatory_placeholder.show();
+        update_placeholder_visibility();
+        $input.on("input", update_placeholder_visibility);
+    }
+}
+
+export let update_compose_area_placeholder_text = (): void => {
+    const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
-    if (!$("textarea#compose-textarea").is(":visible")) {
+    if (!$textarea.is(":visible")) {
         return;
     }
     const message_type = compose_state.get_message_type();
@@ -349,5 +409,24 @@ export function update_placeholder_text(): void {
         });
     }
 
-    $("textarea#compose-textarea").attr("placeholder", placeholder);
+    $textarea.attr("placeholder", placeholder);
+    compose_ui.autosize_textarea($textarea);
+};
+
+export function rewire_update_compose_area_placeholder_text(
+    value: typeof update_compose_area_placeholder_text,
+): void {
+    update_compose_area_placeholder_text = value;
+}
+
+// This function addresses the issue of the placeholder not reappearing in Firefox
+// when the user types into an input field and then deletes the content.
+// The problem arises due to the `contenteditable` attribute, which in some browsers
+// (like Firefox) inserts a <br> tag when the input is emptied. This <br> tag prevents
+// the placeholder from showing up again. The function checks if the input is empty
+// and contains a <br> tag, then removes it to restore the placeholder functionality.
+export function restore_placeholder_in_firefox_for_no_input(): void {
+    if ($("#private_message_recipient").text().trim() === "") {
+        $("#private_message_recipient").empty();
+    }
 }

@@ -11,23 +11,47 @@
     }
 
     & ul {
-        margin: 0 0 var(--markdown-interelement-space-px) 20px;
-    }
-
-    /* Swap the left and right margins of bullets for Right-To-Left languages */
-    &.rtl ul {
-        margin-right: 20px;
-        margin-left: 0;
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 3.5ch;
     }
 
     & ol {
-        margin: 0 0 var(--markdown-interelement-space-px) 20px;
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 3.5ch;
     }
 
-    /* Swap the left and right margins of ordered list for Right-To-Left languages */
-    &.rtl ol {
-        margin-right: 8px;
-        margin-left: 0;
+    /* To avoid cutting off the focus ring on links, we set
+       padding on first children most likely to take links.
+       We account for this extra space on `.message_content`. */
+    & > p:first-child,
+    & > ul:first-child,
+    & > ol:first-child {
+        padding-top: var(--message-box-link-focus-ring-block-padding);
+    }
+
+    /* We set margin according to the length of the longest list counter. */
+    .counter-length-1 {
+        margin-inline-start: 2.5ch;
+    }
+
+    .counter-length-2 {
+        margin-inline-start: 3.5ch;
+    }
+
+    .counter-length-3 {
+        margin-inline-start: 4.5ch;
+    }
+
+    .counter-length-4 {
+        margin-inline-start: 5.5ch;
+    }
+
+    .counter-length-5 {
+        margin-inline-start: 6.5ch;
+    }
+
+    .counter-length-6 {
+        margin-inline-start: 7.5ch;
     }
 
     & hr {
@@ -35,13 +59,6 @@
         border-top: 1px solid hsl(0deg 0% 87%);
         /* Override Bootstrap with doubled interelement space */
         margin: calc(var(--markdown-interelement-space-px) * 2) 0;
-
-        &:first-child {
-            /* When a horizontal rule opens a message, or any other
-               area in the message area (e.g., spoilers), there
-               should be no space above the rule. */
-            margin-top: 0;
-        }
     }
 
     /* Headings */
@@ -272,6 +289,16 @@
         overflow: auto hidden;
     }
 
+    .katex-mathml annotation {
+        /* Because annotations are never displayable, browser user-agent
+           stylesheets mark them as not displayable, which has the
+           side effect of having them not be included in the HTML
+           version of copying the content. Override this, so KaTeX can
+           be copy/pasted within Zulip. */
+        user-select: all;
+        display: inline;
+    }
+
     .tex-error {
         color: hsl(0deg 0% 50%);
     }
@@ -293,7 +320,7 @@
             padding: 8px 5px;
             font-weight: bold;
 
-            > :not(.spoiler-button) {
+            .spoiler-header-text {
                 /* Disallow margin from ordinary rendered-markdown
                    elements. The header's vertical space is handled
                    independently by padding on .spoiler-header. */
@@ -316,18 +343,20 @@
             overflow: hidden;
             border-top: hsl(0deg 0% 50%) 0 solid;
             transition:
+                /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
                 height 0.4s ease-in-out,
                 border-top 0.4s step-end,
-                padding 0.4s step-end;
+                padding 0.4s step-end; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
             padding: 0;
             height: 0;
 
             &.spoiler-content-open {
                 border-top: hsl(0deg 0% 50%) 1px solid;
                 transition:
+                    /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
                     height 0.4s ease-in-out,
                     border-top 0.4s step-start,
-                    padding 0.4s step-start;
+                    padding 0.4s step-start; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
                 padding: 5px;
                 height: auto;
             }
@@ -349,7 +378,7 @@
             float: right;
             width: 15px;
             cursor: pointer;
-            transition: 0.4s ease;
+            transition: transform 0.4s ease;
             transform: rotate(45deg);
 
             &::before,
@@ -360,7 +389,7 @@
                 width: 12px;
                 height: 3px;
                 background-color: hsl(0deg 0% 83%);
-                transition: 0.4s ease;
+                transition: transform 0.4s ease;
             }
 
             &::after {
@@ -404,7 +433,7 @@
            subtle).
 
            We prevent this by setting a fixed height for inline
-           previews. 100px is chosen because we don't want images to
+           previews. 8em is chosen because we don't want images to
            overwhelm conversation in message feeds, as it does in chat
            tools that show images at half-screen height or larger.
 
@@ -413,8 +442,8 @@
            that either use a scrollable region or set a fixed width
            for images so that the browser statically knows whether
            it'll need to overflow. We choose fixed width here. */
-        height: 100px;
-        width: 150px;
+        height: 8em;
+        width: 12em;
 
         /* Inline image containers also need an inline-block display in order
            to implement the desired grid layout. */
@@ -426,6 +455,10 @@
         border: solid 1px transparent;
         transition: background 0.3s ease;
         background: hsl(0deg 0% 0% / 3%);
+
+        &:first-child {
+            margin-top: var(--markdown-interelement-space-px);
+        }
 
         &:hover {
             background: hsl(0deg 0% 0% / 15%);
@@ -522,7 +555,7 @@
         border: 1px solid hsl(0deg 0% 87%);
         padding: 0.5em 0.75em;
         margin-bottom: 0.25em;
-        word-break: break-word;
+        overflow-wrap: anywhere;
         min-height: 48px;
     }
 
@@ -576,6 +609,14 @@
         cursor: pointer;
     }
 
+    .youtube-video img {
+        /* We do this for the sake of increasing
+           the size of older YouTube thumbnail
+           previews, but there are no ill effects
+           on newer preview images. */
+        object-fit: contain;
+    }
+
     &.rtl .twitter-image img,
     &.rtl .message_inline_image img,
     &.rtl .message_inline_ref img {
@@ -589,27 +630,37 @@
     }
 
     .message_inline_video,
-    .message_inline_animated_image_still {
+    .message_inline_animated_image_still,
+    .youtube-video a[data-id] {
         &:hover {
             &::after {
                 transform: scale(1);
-                transition: transform 0.2s;
             }
         }
 
         &::after {
             content: "";
             background-image: url("../images/play_button.svg");
-            display: block;
-            width: 32px;
-            height: 32px;
+            background-position: center center;
+            background-repeat: no-repeat;
+            /* 32px at 14px/1em */
+            background-size: 2.2857em;
             position: absolute;
-            /* video width (100px) / 2 - icon width (32px) / 2 */
-            top: 34px;
-            /* video height (150px) / 2 - icon height (32px) / 2 */
-            left: 59px;
+            /* Match the width to the background size. */
+            width: 2.2857em;
+            height: 2.2857em;
+            /* Center according to those widths; at present,
+               thumbnails are 8em tall and 12em wide. So,
+               2.2857em / 2 = 1.1429em as the center of the
+               play button. We subtract that value from half
+               the height (8em/2) to get the `top:` value,
+               and then subtract the same from half the width
+               (12em/2) to get the `left:` value. */
+            top: 2.8571em;
+            left: 4.8571em;
             border-radius: 100%;
             transform: scale(0.8);
+            transition: transform 0.2s;
         }
 
         & video {
@@ -618,20 +669,6 @@
             height: 100%;
             width: 100%;
         }
-    }
-
-    .youtube-video .fa-play::before,
-    .embed-video .fa-play::before {
-        position: absolute;
-        margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
-        padding: 5px 8px 5px 10px;
-        font-size: 12px;
-        border-radius: 4px;
-        background-color: hsl(0deg 0% 0%);
-        color: hsl(0deg 0% 100%);
-        opacity: 0.7;
-        top: 0;
-        left: 0;
     }
 
     .message_embed {
@@ -738,6 +775,14 @@
         &:hover .code-buttons-container {
             visibility: visible;
         }
+
+        /* Hide the code buttons container when the user is
+           clicking on the code block other than the buttons.
+           This allows the user to select part of the the code
+           without the buttons interfering with the selection. */
+        &:active .code-buttons-container:not(:hover) {
+            visibility: hidden;
+        }
     }
 
     & pre code {
@@ -759,7 +804,8 @@
         unicode-bidi: embed;
         direction: ltr;
         white-space: pre-wrap;
-        padding: 1px 2px;
+        /* 1px at 14px/1em */
+        padding: 0.0714em 2px;
         color: var(--color-markdown-code-text);
         background-color: var(--color-markdown-code-background);
         border-radius: 3px;
@@ -776,85 +822,40 @@
         /* Having absolute positioning here ensures that the element
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
-        top: 2px;
+        top: 4px;
         right: 0;
         padding: 0 4px;
         /* Invisible unless <pre> is hovered. */
         visibility: hidden;
         z-index: 0;
-
-        &::after {
-            content: " ";
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            z-index: -1;
-            /* Blur the background behind the button container */
-            backdrop-filter: blur(5px);
-            /* Use a radial gradient to avoid obvious hard edges
-               to the blur. */
-            mask-image: radial-gradient(
-                farthest-corner,
-                hsl(0deg 0% 0% / 100%),
-                hsl(0deg 0% 0% / 50%)
-            );
-        }
-
-        #clipboard_image {
-            /* Zero out legacy negative margins */
-            margin: 0;
-        }
     }
 
-    /* Style copy-to-clipboard button inside code blocks */
-    .copy_codeblock {
-        display: flex;
-        align-content: center;
-        /* Push back on legacy styles from .copy_button_base,
-           which are not necessary in the flex setting established
-           on the .code-buttons-container. */
-        height: auto;
-        width: auto;
-        background-clip: unset;
-        /* Don't let the default button color appear
-           behind the icon. Regrettably, !important
-           is necessary for a thorny selector-specificity
-           issue in dark mode. */
-        background-color: transparent !important;
-        /* Square off the box around the copy-to-clipboard icon. */
-        padding: 0 2px 0 4px;
-
-        &:hover {
-            /* Regrettably, !important is necessary for a thorny
-               selector-specificity issue in dark mode. */
-            background-color: transparent !important;
-        }
-
-        /* Remove the outline when clicking on the copy-to-clipboard button */
-        &:focus {
-            outline: none;
-        }
-    }
-
+    /* The properties of the code_external_link button are copied from the
+       copy-button class in app_components.css. */
     .code_external_link {
-        /* Match the apparent size of the playground icon
-           to the copy-to-clipboard icon. */
-        font-size: 16px;
-        /* Center the icon vertically in the link container. */
         display: flex;
-        align-content: center;
-        /* The font-icon footprint still requires 2px of
-           top padding to get better alignment with the
-           copy-to-clipboard icon. */
-        padding-top: 2px;
-        /* The default icon and on-hover colors are inherited from <a> tag.
-        so we set our own to match the copy-to-clipbord icon */
-        color: hsl(0deg 0% 47%);
+        border-radius: 4px;
+        color: var(--color-copy-button);
+        /* 2px at 16px/1em */
+        padding: 0.125em;
+        cursor: pointer;
 
-        &:hover {
-            color: hsl(200deg 100% 40%);
-            text-decoration: none;
+        &:hover,
+        :focus-visible {
+            background-color: var(--color-copy-button-square-bg-hover);
         }
+
+        &:active {
+            background-color: var(--color-copy-button-square-bg-active);
+            color: var(--color-copy-button-square-active);
+        }
+    }
+
+    .copy_codeblock,
+    .code_external_link {
+        font-size: 1.1363em;
+        border: 1px solid var(--color-copy-button-square-bg-active);
+        backdrop-filter: blur(20px);
     }
 }
 
@@ -954,7 +955,8 @@
     &::-webkit-scrollbar-thumb {
         background-color: hsl(0deg 0% 0% / 30%);
         border-radius: 20px;
-        transition: all 0.2s ease;
+        cursor: auto;
+        transition: background-color 0.2s ease;
     }
 
     &::-webkit-scrollbar-thumb:hover {
@@ -974,5 +976,14 @@
     code,
     .stream-topic {
         white-space: nowrap;
+    }
+}
+
+.user-mention {
+    i.zulip-icon-bot {
+        vertical-align: middle;
+        position: relative;
+        top: -1px;
+        padding-left: 0.3em;
     }
 }

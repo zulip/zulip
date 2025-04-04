@@ -27,13 +27,13 @@
     {{#if has_billing_access}}
         {{#tr}}
             To invite users, please <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>.
-            {{#*inline "z-link-billing"}}<a href="/billing/#settings">{{> @partial-block}}</a>{{/inline}}
+            {{#*inline "z-link-billing"}}<a href="/billing/">{{> @partial-block}}</a>{{/inline}}
             {{#*inline "z-link-help-page"}}<a href="/help/deactivate-or-reactivate-a-user" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
     {{else}}
         {{#tr}}
-            Please ask a billing administrator to <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>, and try again.
-            {{#*inline "z-link-billing"}}<a href="/billing/#settings">{{> @partial-block}}</a>{{/inline}}
+            Please ask a user with billing permission to <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>, and try again.
+            {{#*inline "z-link-billing"}}<a href="/billing/">{{> @partial-block}}</a>{{/inline}}
             {{#*inline "z-link-help-page"}}<a href="/help/deactivate-or-reactivate-a-user" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
     {{/if}}

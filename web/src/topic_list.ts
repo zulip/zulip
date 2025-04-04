@@ -6,14 +6,16 @@ import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
-import * as blueslip from "./blueslip";
-import * as popover_menus from "./popover_menus";
-import * as scroll_util from "./scroll_util";
-import * as stream_topic_history from "./stream_topic_history";
-import * as stream_topic_history_util from "./stream_topic_history_util";
-import * as topic_list_data from "./topic_list_data";
-import type {TopicInfo} from "./topic_list_data";
-import * as vdom from "./vdom";
+import * as blueslip from "./blueslip.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as topic_list_data from "./topic_list_data.ts";
+import type {TopicInfo} from "./topic_list_data.ts";
+import * as vdom from "./vdom.ts";
 
 /*
     Track all active widgets with a Map by stream_id.
@@ -42,6 +44,13 @@ export function clear(): void {
     }
 
     active_widgets.clear();
+}
+
+export function focus_topic_search_filter(): void {
+    popovers.hide_all();
+    sidebar_ui.show_left_sidebar();
+    const $filter = $("#filter-topic-input").expectOne();
+    $filter.trigger("focus");
 }
 
 export function close(): void {
@@ -166,7 +175,13 @@ export class TopicListWidget {
             list_info.items.length === num_possible_topics &&
             stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
 
-        const attrs: [string, string][] = [["class", "topic-list"]];
+        const topic_list_classes: [string] = ["topic-list"];
+
+        if (list_info.items.length > 0) {
+            topic_list_classes.push("topic-list-has-topics");
+        }
+
+        const attrs: [string, string][] = [["class", topic_list_classes.join(" ")]];
 
         const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
 
@@ -216,19 +231,13 @@ export class TopicListWidget {
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
         this.prior_dom = new_dom;
-
-        if ($("#filter-topic-input").val() !== "") {
-            $("#clear_search_topic_button").show();
-        } else {
-            $("#clear_search_topic_button").hide();
-        }
     }
 }
 
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
     const $input = $("#filter-topic-input");
-    if ($input.length) {
+    if ($input.length > 0) {
         $input.val("");
         $input.trigger("blur");
 
@@ -282,6 +291,21 @@ export function rebuild($stream_li: JQuery, stream_id: number): void {
     active_widgets.set(stream_id, widget);
 }
 
+export function scroll_zoomed_in_topic_into_view(): void {
+    const $selected_topic = $(".topic-list .topic-list-item.active-sub-filter");
+    if ($selected_topic.length === 0) {
+        // If we don't have a selected topic, scroll to top.
+        scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
+        return;
+    }
+    const $container = $("#left_sidebar_scroll_container");
+    const stream_header_height =
+        $(".narrow-filter.stream-expanded .bottom_left_row").outerHeight(true) ?? 0;
+    const topic_header_height = $("#topics_header").outerHeight(true) ?? 0;
+    const sticky_header_height = stream_header_height + topic_header_height;
+    scroll_util.scroll_element_into_container($selected_topic, $container, sticky_header_height);
+}
+
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
 export function zoom_in(): void {
@@ -312,14 +336,19 @@ export function zoom_in(): void {
         }
 
         active_widget!.build();
+        if (zoomed) {
+            // It is fine to force scroll here even if user has scrolled to a different
+            // position since we just added some topics to the list which moved user
+            // to a different position anyway.
+            scroll_zoomed_in_topic_into_view();
+        }
     }
-
-    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
 
     const spinner = true;
     active_widget.build(spinner);
 
     stream_topic_history_util.get_server_history(stream_id, on_success);
+    scroll_zoomed_in_topic_into_view();
 }
 
 export function get_topic_search_term(): string {
@@ -338,7 +367,7 @@ export function initialize({
 }): void {
     $("#stream_filters").on(
         "click",
-        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-controls",
+        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-unreads",
         (e) => {
             if (e.metaKey || e.ctrlKey || e.shiftKey) {
                 return;
@@ -359,6 +388,7 @@ export function initialize({
             on_topic_click(stream_id, topic);
 
             e.preventDefault();
+            e.stopPropagation();
         },
     );
 

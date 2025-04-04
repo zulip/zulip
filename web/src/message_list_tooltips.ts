@@ -6,18 +6,21 @@ import render_message_edit_notice_tooltip from "../templates/message_edit_notice
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
-import * as message_lists from "./message_lists";
-import * as popover_menus from "./popover_menus";
-import * as reactions from "./reactions";
-import * as rows from "./rows";
-import {realm} from "./state_data";
-import * as timerender from "./timerender";
+import * as compose_validate from "./compose_validate.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as reactions from "./reactions.ts";
+import * as rows from "./rows.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
+import {realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
     LONG_HOVER_DELAY,
     topic_visibility_policy_tooltip_props,
-} from "./tippyjs";
-import {parse_html} from "./ui_util";
+} from "./tippyjs.ts";
+import {parse_html} from "./ui_util.ts";
 
 type Config = {
     attributes: boolean;
@@ -120,6 +123,24 @@ export function destroy_all_message_list_tooltips(): void {
     message_list_tippy_instances.clear();
 }
 
+function get_time_string(timestamp: number): string {
+    const last_modified_time = new Date(timestamp * 1000);
+    let date = timerender.render_date(last_modified_time).textContent;
+    // If the date is today or yesterday, we don't want to show the date as capitalized.
+    // Thus, we need to check if the date string contains a digit or not using regex,
+    // since any other date except today/yesterday will contain a digit.
+    if (date && !/\d/.test(date)) {
+        date = date.toLowerCase();
+    }
+    return $t(
+        {defaultMessage: "{date} at {time}"},
+        {
+            date,
+            time: timerender.stringify_time(last_modified_time),
+        },
+    );
+}
+
 export function initialize(): void {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
@@ -131,7 +152,7 @@ export function initialize(): void {
     });
 
     // message reaction tooltip showing who reacted.
-    let observer: MutationObserver;
+    let observer: MutationObserver | undefined;
     message_list_tooltip(".message_reaction", {
         delay: INTERACTIVE_HOVER_DELAY,
         placement: "bottom",
@@ -211,9 +232,14 @@ export function initialize(): void {
             if (tippy_content !== undefined) {
                 instance.setContent(tippy_content);
             } else {
-                const $template = $(`#${CSS.escape($elem.attr("data-tooltip-template-id")!)}`);
+                const template_id = $elem.attr("data-tooltip-template-id");
+                if (template_id === undefined) {
+                    return false;
+                }
+                const $template = $(`#${CSS.escape(template_id)}`);
                 instance.setContent(parse_html($template.html()));
             }
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
@@ -240,8 +266,7 @@ export function initialize(): void {
     message_list_tooltip(".message-list .message-time", {
         onShow(instance) {
             const $time_elem = $(instance.reference);
-            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-            const $row = $time_elem.closest(".message_row") as JQuery;
+            const $row = $time_elem.closest(".message_row");
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row))!;
             // Don't show time tooltip for locally echoed message.
@@ -257,26 +282,49 @@ export function initialize(): void {
         },
     });
 
+    message_list_tooltip(".disabled-message-edit-save", {
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const $row = $elem.closest(".message_row");
+            assert($row !== undefined);
+            instance.setContent(compose_validate.get_disabled_save_tooltip($row));
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     message_list_tooltip(".recipient_row_date > span", {
         onHidden(instance) {
             instance.destroy();
         },
     });
 
-    message_list_tooltip(".code_external_link");
+    message_list_tooltip(
+        ".rendered_markdown .copy_codeblock, .rendered_markdown .code_external_link",
+        {
+            onHidden(instance) {
+                instance.destroy();
+            },
+        },
+    );
 
     message_list_tooltip("#message_feed_container .change_visibility_policy > i", {
         ...topic_visibility_policy_tooltip_props,
     });
 
-    message_list_tooltip("#message_feed_container .recipient_bar_icon", {
-        delay: LONG_HOVER_DELAY,
-        onHidden(instance) {
-            instance.destroy();
+    message_list_tooltip(
+        "#message_feed_container .recipient_bar_icon:not(.recipient-row-topic-menu)",
+        {
+            delay: LONG_HOVER_DELAY,
+            onHidden(instance) {
+                instance.destroy();
+            },
         },
-    });
+    );
 
-    message_list_tooltip(".rendered_markdown time, .rendered_markdown .copy_codeblock", {
+    message_list_tooltip(".rendered_markdown time", {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         content: timerender.get_markdown_time_tooltip as tippy.Content,
         onHidden(instance) {
@@ -316,7 +364,7 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".message_edit_notice", {
+    message_list_tooltip(".message_edit_notice, .edit-notifications", {
         trigger: "mouseenter",
         delay: LONG_HOVER_DELAY,
         popperOptions: {
@@ -331,16 +379,58 @@ export function initialize(): void {
         },
         onShow(instance) {
             const $elem = $(instance.reference);
-            const edited_notice_str = $elem.attr("data-tippy-content");
+            const message_id = Number($elem.closest(".message_row").attr("data-message-id"));
+
+            assert(message_lists.current !== undefined);
+            const message_container = message_lists.current.view.message_containers.get(message_id);
+            assert(message_container !== undefined);
+            // If there is no indicator that the message has been modified (saving,
+            // edited, moved), then we don't show the message edit notice tooltip.
+            if (!message_container.modified) {
+                return false;
+            }
+            let edited_time_string = "";
+            let moved_time_string = "";
+            if (message_container.edited) {
+                // We know the message has been edited, so we either have a timestamp
+                // from the server or from a local edit.
+                assert(message_container.last_edit_timestamp !== undefined);
+                edited_time_string = get_time_string(message_container.last_edit_timestamp);
+            }
+            if (message_container.moved) {
+                // We know the message has been moved, so we have a timestamp from
+                // the server.
+                assert(message_container.last_moved_timestamp !== undefined);
+                moved_time_string = get_time_string(message_container.last_moved_timestamp);
+            }
+            const edit_history_access =
+                realm.realm_message_edit_history_visibility_policy ===
+                message_edit_history_visibility_policy_values.always.code;
+            const message_moved_and_move_history_access =
+                realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.moves_only.code &&
+                message_container.moved;
             instance.setContent(
                 parse_html(
                     render_message_edit_notice_tooltip({
-                        edited_notice_str,
-                        realm_allow_edit_history: realm.realm_allow_edit_history,
+                        moved: message_container.moved,
+                        edited: message_container.edited,
+                        edited_time_string,
+                        moved_time_string,
+                        edit_history_access,
+                        message_moved_and_move_history_access,
                     }),
                 ),
             );
+            return undefined;
         },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_expander, .message_condenser", {
+        delay: LONG_HOVER_DELAY,
         onHidden(instance) {
             instance.destroy();
         },

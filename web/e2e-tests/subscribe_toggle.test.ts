@@ -1,6 +1,6 @@
 import type {ElementHandle, Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function test_subscription_button(page: Page): Promise<void> {
     const all_stream_selector = "[data-tab-key='all-streams']";

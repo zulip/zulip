@@ -76,6 +76,18 @@ location ~ ^/internal/tornado/(\d+)(/.*)$ {
     include /etc/nginx/zulip-include/proxy_longpolling;
 }
 
+location /api/v1/tus {
+    include /etc/nginx/zulip-include/api_headers;
+    include /etc/nginx/zulip-include/proxy;
+    # https://github.com/tus/tusd/blob/main/examples/nginx.conf
+    # Disable request body size limits, and stream the request and
+    # response from tusd directly.
+    client_max_body_size    0;
+    proxy_request_buffering off;
+    proxy_buffering         off;
+    proxy_pass              http://tusd;
+}
+
 # Send everything else to Django via uWSGI
 location / {
     include uwsgi_params;
@@ -99,6 +111,16 @@ location /avatar {
 location /user_uploads {
     include /etc/nginx/zulip-include/api_headers;
 
+    include uwsgi_params;
+}
+
+location /api/internal/ {
+    # These only need be accessed from localhost
+    allow 127.0.0.1;
+    allow ::1;
+    deny all;
+
+    include /etc/nginx/zulip-include/api_headers;
     include uwsgi_params;
 }
 

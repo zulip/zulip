@@ -5,7 +5,7 @@
         {{else if (eq zulip_view "recent_conversations")}}
             {{#tr}}You’ll see a list of <b>ongoing conversations</b>.{{/tr}}
         {{/if}}
-        {{#tr}}Each conversation is <b>labeled with a topic</b> by the person started it.{{/tr}}
+        {{#tr}}Each conversation is <b>labeled with a topic</b> by the person who started it.{{/tr}}
     </p>
     <p>
         {{t 'Click on a conversation to view it. To return here, you can:'}}
@@ -28,7 +28,7 @@
                 <li>
                     {{#tr}}
                         Use <z-button>Esc</z-button> to go to your home view.
-                        {{#*inline "z-button"}}<span class="keyboard-button">{{@partial-block}}</span>{{/inline}}
+                        {{#*inline "z-button"}}<span class="keyboard-button">{{> @partial-block}}</span>{{/inline}}
                     {{/tr}}
                 </li>
             {{/if}}

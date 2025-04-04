@@ -1,26 +1,28 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as portico_modals from "../portico/portico_modals";
+import * as portico_modals from "../portico/portico_modals.ts";
 
-import * as helpers from "./helpers";
+import * as helpers from "./helpers.ts";
 
 const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
 const billing_base_url = $("#billing-page").attr("data-billing-base-url")!;
 
 // Matches the CustomerPlan model in the backend.
-enum BillingFrequency {
-    BILLING_SCHEDULE_ANNUAL = 1,
-    BILLING_SCHEDULE_MONTHLY = 2,
-}
+const BillingFrequency = {
+    BILLING_SCHEDULE_ANNUAL: 1,
+    BILLING_SCHEDULE_MONTHLY: 2,
+} as const;
+type BillingFrequency = (typeof BillingFrequency)[keyof typeof BillingFrequency];
 
-enum CustomerPlanStatus {
-    ACTIVE = 1,
-    DOWNGRADE_AT_END_OF_CYCLE = 2,
-    FREE_TRIAL = 3,
-    SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4,
-    SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6,
-}
+const CustomerPlanStatus = {
+    ACTIVE: 1,
+    DOWNGRADE_AT_END_OF_CYCLE: 2,
+    FREE_TRIAL: 3,
+    SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: 4,
+    SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: 6,
+} as const;
+type CustomerPlanStatus = (typeof CustomerPlanStatus)[keyof typeof CustomerPlanStatus];
 
 export function create_update_current_cycle_license_request(): void {
     $("#current-manual-license-count-update-button .billing-button-text").text("");
@@ -101,9 +103,10 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    function get_old_and_new_license_count_for_current_cycle(): {
+    function get_license_counts_for_current_cycle(): {
         new_current_manual_license_count: number;
         old_current_manual_license_count: number;
+        min_current_manual_license_count: number;
     } {
         const new_current_manual_license_count: number = Number.parseInt(
             $<HTMLInputElement>("input#current-manual-license-count").val()!,
@@ -113,15 +116,25 @@ export function initialize(): void {
             $<HTMLInputElement>("input#current-manual-license-count").attr("data-original-value")!,
             10,
         );
+        let min_current_manual_license_count: number = Number.parseInt(
+            $<HTMLInputElement>("input#current-manual-license-count").attr("min")!,
+            10,
+        );
+        if (Number.isNaN(min_current_manual_license_count)) {
+            // Customer is exempt from license number checks.
+            min_current_manual_license_count = 0;
+        }
         return {
             new_current_manual_license_count,
             old_current_manual_license_count,
+            min_current_manual_license_count,
         };
     }
 
-    function get_old_and_new_license_count_for_next_cycle(): {
+    function get_license_counts_for_next_cycle(): {
         new_next_manual_license_count: number;
         old_next_manual_license_count: number;
+        min_next_manual_license_count: number;
     } {
         const new_next_manual_license_count: number = Number.parseInt(
             $<HTMLInputElement>("input#next-manual-license-count").val()!,
@@ -131,10 +144,41 @@ export function initialize(): void {
             $<HTMLInputElement>("input#next-manual-license-count").attr("data-original-value")!,
             10,
         );
+        let min_next_manual_license_count: number = Number.parseInt(
+            $<HTMLInputElement>("input#next-manual-license-count").attr("min")!,
+            10,
+        );
+        if (Number.isNaN(min_next_manual_license_count)) {
+            // Customer is exempt from license number checks.
+            min_next_manual_license_count = 0;
+        }
         return {
             new_next_manual_license_count,
             old_next_manual_license_count,
+            min_next_manual_license_count,
         };
+    }
+
+    function check_for_manual_billing_errors(): void {
+        const {old_next_manual_license_count, min_next_manual_license_count} =
+            get_license_counts_for_next_cycle();
+        if (old_next_manual_license_count < min_next_manual_license_count) {
+            $("#next-license-change-error").text(
+                "Number of licenses for next billing period less than licenses in use.",
+            );
+        } else {
+            $("#next-license-change-error").text("");
+        }
+
+        const {old_current_manual_license_count, min_current_manual_license_count} =
+            get_license_counts_for_current_cycle();
+        if (old_current_manual_license_count < min_current_manual_license_count) {
+            $("#current-license-change-error").text(
+                "Number of licenses for current billing period less than licenses in use.",
+            );
+        } else {
+            $("#current-license-change-error").text("");
+        }
     }
 
     $("#current-license-change-form, #next-license-change-form").on("submit", (e) => {
@@ -149,7 +193,7 @@ export function initialize(): void {
         }
         e.preventDefault();
         const {new_current_manual_license_count, old_current_manual_license_count} =
-            get_old_and_new_license_count_for_current_cycle();
+            get_license_counts_for_current_cycle();
         const $modal = $("#confirm-licenses-modal-increase");
         $modal.find(".new_license_count_holder").text(new_current_manual_license_count);
         $modal.find(".current_license_count_holder").text(old_current_manual_license_count);
@@ -166,7 +210,7 @@ export function initialize(): void {
         }
         e.preventDefault();
         const {new_next_manual_license_count, old_next_manual_license_count} =
-            get_old_and_new_license_count_for_next_cycle();
+            get_license_counts_for_next_cycle();
         let $modal;
         if (new_next_manual_license_count > old_next_manual_license_count) {
             $modal = $("#confirm-licenses-modal-increase");
@@ -183,26 +227,29 @@ export function initialize(): void {
         portico_modals.open($modal.attr("id")!);
     });
 
-    $("#cancel-legacy-server-upgrade").on("click", (e) => {
+    $("#cancel-complimentary-access-upgrade").on("click", (e) => {
         e.preventDefault();
-        portico_modals.open("confirm-cancel-legacy-server-upgrade-modal");
+        portico_modals.open("confirm-cancel-complimentary-access-upgrade-modal");
     });
 
-    $("#confirm-cancel-legacy-server-upgrade-modal .dialog_submit_button").on("click", (e) => {
-        helpers.create_ajax_request(
-            `/json${billing_base_url}/billing/plan`,
-            "planchange",
-            [],
-            "PATCH",
-            () => {
-                window.location.replace(
-                    `${billing_base_url}/upgrade/?success_message=` +
-                        encodeURIComponent("Your plan is no longer scheduled for an upgrade."),
-                );
-            },
-        );
-        e.preventDefault();
-    });
+    $("#confirm-cancel-complimentary-access-upgrade-modal .dialog_submit_button").on(
+        "click",
+        (e) => {
+            helpers.create_ajax_request(
+                `/json${billing_base_url}/billing/plan`,
+                "planchange",
+                [],
+                "PATCH",
+                () => {
+                    window.location.replace(
+                        `${billing_base_url}/upgrade/?success_message=` +
+                            encodeURIComponent("Your plan is no longer scheduled for an upgrade."),
+                    );
+                },
+            );
+            e.preventDefault();
+        },
+    );
 
     $("#confirm-licenses-modal-increase, #confirm-licenses-modal-decrease").on(
         "click",
@@ -290,15 +337,23 @@ export function initialize(): void {
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
 
+    check_for_manual_billing_errors();
+
     $("#current-manual-license-count").on("keyup", () => {
         if (timeout !== null) {
             clearTimeout(timeout);
         }
 
         timeout = setTimeout(() => {
-            const {new_current_manual_license_count, old_current_manual_license_count} =
-                get_old_and_new_license_count_for_current_cycle();
-            if (new_current_manual_license_count > old_current_manual_license_count) {
+            const {
+                new_current_manual_license_count,
+                old_current_manual_license_count,
+                min_current_manual_license_count,
+            } = get_license_counts_for_current_cycle();
+            if (
+                new_current_manual_license_count > old_current_manual_license_count &&
+                new_current_manual_license_count > min_current_manual_license_count
+            ) {
                 $("#current-manual-license-count-update-button").toggleClass("hide", false);
                 $("#current-license-change-error").text("");
             } else if (new_current_manual_license_count < old_current_manual_license_count) {
@@ -308,7 +363,7 @@ export function initialize(): void {
                 $("#current-manual-license-count-update-button").toggleClass("hide", true);
             } else {
                 $("#current-manual-license-count-update-button").toggleClass("hide", true);
-                $("#current-license-change-error").text("");
+                check_for_manual_billing_errors();
             }
         }, 300); // Wait for 300ms after the user stops typing
     });
@@ -319,16 +374,26 @@ export function initialize(): void {
         }
 
         timeout = setTimeout(() => {
-            const {new_next_manual_license_count, old_next_manual_license_count} =
-                get_old_and_new_license_count_for_next_cycle();
+            const {
+                new_next_manual_license_count,
+                old_next_manual_license_count,
+                min_next_manual_license_count,
+            } = get_license_counts_for_next_cycle();
             if (
                 !new_next_manual_license_count ||
                 new_next_manual_license_count < 0 ||
                 new_next_manual_license_count === old_next_manual_license_count
             ) {
                 $("#next-manual-license-count-update-button").toggleClass("hide", true);
+                check_for_manual_billing_errors();
+            } else if (new_next_manual_license_count < min_next_manual_license_count) {
+                $("#next-manual-license-count-update-button").toggleClass("hide", true);
+                $("#next-license-change-error").text(
+                    "Cannot be less than the number of licenses currently in use.",
+                );
             } else {
                 $("#next-manual-license-count-update-button").toggleClass("hide", false);
+                $("#next-license-change-error").text("");
             }
         }, 300); // Wait for 300ms after the user stops typing
     });
@@ -347,7 +412,7 @@ export function initialize(): void {
             (switch_to_monthly_eoc && billing_frequency_selected === "Annual")
         ) {
             $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
-            let new_status = CustomerPlanStatus.ACTIVE;
+            let new_status: CustomerPlanStatus = CustomerPlanStatus.ACTIVE;
             if (downgrade_at_end_of_cycle) {
                 new_status = CustomerPlanStatus.DOWNGRADE_AT_END_OF_CYCLE;
             } else if (free_trial) {
@@ -356,10 +421,10 @@ export function initialize(): void {
             $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
         } else if (current_billing_frequency !== billing_frequency_selected) {
             $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
-            let new_status = free_trial
+            let new_status: CustomerPlanStatus = free_trial
                 ? CustomerPlanStatus.FREE_TRIAL
                 : CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
-            let new_schedule = BillingFrequency.BILLING_SCHEDULE_ANNUAL;
+            let new_schedule: BillingFrequency = BillingFrequency.BILLING_SCHEDULE_ANNUAL;
             if (billing_frequency_selected === "Monthly") {
                 new_status = free_trial
                     ? CustomerPlanStatus.FREE_TRIAL
@@ -399,6 +464,24 @@ export function initialize(): void {
                 }
             },
         });
+    });
+
+    $(".toggle-license-management").on("click", (e) => {
+        e.preventDefault();
+        portico_modals.open("confirm-toggle-license-management-modal");
+    });
+
+    $("#confirm-toggle-license-management-modal").on("click", ".dialog_submit_button", (e) => {
+        helpers.create_ajax_request(
+            `/json${billing_base_url}/billing/plan`,
+            "toggle-license-management",
+            [],
+            "PATCH",
+            () => {
+                window.location.replace(`${billing_base_url}/billing/`);
+            },
+        );
+        e.preventDefault();
     });
 }
 

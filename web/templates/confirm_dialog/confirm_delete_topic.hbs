@@ -1,4 +1,9 @@
 <p>
     {{t "Deleting a topic will immediately remove it and its messages for everyone. Other users may find this confusing, especially if they had received an email or push notification related to the deleted messages." }}
 </p>
-<p class="white-space-preserve-wrap">{{#tr}}Are you sure you want to permanently delete <b>{topic_name}</b>?{{/tr}}</p>
+<p class="white-space-preserve-wrap">
+    {{#tr}}
+        Are you sure you want to permanently delete <z-topic-display-name></z-topic-display-name>?
+        {{#*inline "z-topic-display-name"}}<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}><b>{{topic_display_name}}</b></span>{{/inline}}
+    {{/tr}}
+</p>

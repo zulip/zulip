@@ -1,7 +1,7 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
-import * as overlay_util from "./overlay_util";
+import * as blueslip from "./blueslip.ts";
+import * as overlay_util from "./overlay_util.ts";
 
 type Hook = () => void;
 

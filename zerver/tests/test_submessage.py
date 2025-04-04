@@ -187,16 +187,16 @@ class TestBasics(ZulipTestCase):
 
     def test_submessage_event_sent_after_transaction_commits(self) -> None:
         """
-        Tests that `send_event` is hooked to `transaction.on_commit`. This is important, because
-        we don't want to end up holding locks on message rows for too long if the event queue runs
-        into a problem.
+        Tests that `send_event_rollback_unsafe` is hooked to `transaction.on_commit`.
+        This is important, because we don't want to end up holding locks on message rows
+        for too long if the event queue runs into a problem.
         """
         hamlet = self.example_user("hamlet")
         message_id = self.send_stream_message(hamlet, "Denmark")
 
         with (
             self.capture_send_event_calls(expected_num_events=1),
-            mock.patch("zerver.tornado.django_api.queue_json_publish") as m,
+            mock.patch("zerver.tornado.django_api.queue_json_publish_rollback_unsafe") as m,
         ):
             m.side_effect = AssertionError(
                 "Events should be sent only after the transaction commits."

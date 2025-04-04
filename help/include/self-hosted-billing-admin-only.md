@@ -1,3 +1,3 @@
 !!! warn ""
 
-    This feature is only available to organization [owners](/help/roles-and-permissions) and billing administrators.
+    This feature is only available to organization [owners](/help/user-roles) and billing administrators.

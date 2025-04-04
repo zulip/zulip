@@ -1,140 +1,139 @@
-<div id="settings_page" class="new-style overlay-content overlay-container">
+<div id="settings_page" class="overlay-content overlay-container">
     <div class="settings-header mobile">
         <i class="fa fa-chevron-left" aria-hidden="true"></i>
         <h1>{{t "Settings" }}<span class="section"></span></h1>
         <div class="exit">
             <span class="exit-sign">&times;</span>
         </div>
-        <div class="clear-float"></div>
     </div>
     <div class="sidebar-wrapper">
-        <div class="center tab-container"></div>
+        <div class="tab-container"></div>
         <div class="sidebar left" data-simplebar data-simplebar-tab-index="-1">
             <div class="sidebar-list dark-grey small-text">
                 <ul class="normal-settings-list">
-                    <li tabindex="0" data-section="profile">
-                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="profile">
+                        <i class="sidebar-item-icon fa fa-user" aria-hidden="true"></i>
                         <div class="text">{{t "Profile" }}</div>
                     </li>
-                    <li tabindex="0" data-section="account-and-privacy">
-                        <i class="icon fa fa-lock" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="account-and-privacy">
+                        <i class="sidebar-item-icon fa fa-lock" aria-hidden="true"></i>
                         <div class="text">{{t "Account & privacy" }}</div>
                     </li>
-                    <li tabindex="0" data-section="preferences">
-                        <i class="icon fa fa-sliders" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="preferences">
+                        <i class="sidebar-item-icon fa fa-sliders" aria-hidden="true"></i>
                         <div class="text">{{t "Preferences" }}</div>
                     </li>
-                    <li tabindex="0" data-section="notifications">
-                        <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="notifications">
+                        <i class="sidebar-item-icon fa fa-exclamation-triangle" aria-hidden="true"></i>
                         <div class="text">{{t "Notifications" }}</div>
                     </li>
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="your-bots">
-                        <i class="icon zulip-icon zulip-icon-smart-toy" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="your-bots">
+                        <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
                     </li>
                     {{/unless}}
-                    <li tabindex="0" data-section="alert-words">
-                        <i class="icon fa fa-book" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="alert-words">
+                        <i class="sidebar-item-icon fa fa-book" aria-hidden="true"></i>
                         <div class="text">{{t "Alert words" }}</div>
                     </li>
                     {{#if show_uploaded_files_section}}
-                    <li tabindex="0" data-section="uploaded-files">
-                        <i class="icon fa fa-paperclip" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="uploaded-files">
+                        <i class="sidebar-item-icon fa fa-paperclip" aria-hidden="true"></i>
                         <div class="text">{{t "Uploaded files" }}</div>
                     </li>
                     {{/if}}
-                    <li tabindex="0" data-section="topics">
-                        <i class="icon zulip-icon zulip-icon-topic" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="topics">
+                        <i class="sidebar-item-icon zulip-icon zulip-icon-topic" aria-hidden="true"></i>
                         <div class="text">{{t "Topics" }}</div>
                     </li>
-                    <li tabindex="0" data-section="muted-users">
-                        <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="muted-users">
+                        <i class="sidebar-item-icon fa fa-eye-slash" aria-hidden="true"></i>
                         <div class="text">{{t "Muted users" }}</div>
                     </li>
                 </ul>
 
                 <ul class="org-settings-list">
-                    <li tabindex="0" data-section="organization-profile">
-                        <i class="icon fa fa-id-card" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="organization-profile">
+                        <i class="sidebar-item-icon fa fa-id-card" aria-hidden="true"></i>
                         <div class="text">{{t "Organization profile" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
-                        <i class="icon fa fa-sliders" aria-hidden="true"></i>
+                    <li class="sidebar-item" class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
+                        <i class="sidebar-item-icon fa fa-sliders" aria-hidden="true"></i>
                         <div class="text">{{t "Organization settings" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings' }}"></i>
                     </li>
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-permissions">
-                        <i class="icon fa fa-lock" aria-hidden="true"></i>
+                    <li class="sidebar-item" class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-permissions">
+                        <i class="sidebar-item-icon fa fa-lock" aria-hidden="true"></i>
                         <div class="text">{{t "Organization permissions" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
-                    <li tabindex="0" data-section="emoji-settings">
-                        <i class="icon fa fa-smile-o" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="emoji-settings">
+                        <i class="sidebar-item-icon fa fa-smile-o" aria-hidden="true"></i>
                         <div class="text">{{t "Custom emoji" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#unless show_emoji_settings_lock}}style="display: none;"{{/unless}} data-tippy-content="{{t 'You do not have permission to add custom emoji.'}}"></i>
                     </li>
-                    <li tabindex="0" data-section="linkifier-settings">
-                        <i class="icon fa fa-font" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="linkifier-settings">
+                        <i class="sidebar-item-icon fa fa-font" aria-hidden="true"></i>
                         <div class="text">{{t "Linkifiers" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
-                    <li tabindex="0" data-section="playground-settings">
-                        <i class="icon fa fa-external-link" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="playground-settings">
+                        <i class="sidebar-item-icon fa fa-external-link" aria-hidden="true"></i>
                         <div class="text">{{t "Code playgrounds" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="users">
-                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="users">
+                        <i class="sidebar-item-icon fa fa-user" aria-hidden="true"></i>
                         <div class="text">{{t "Users" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if can_edit_user_panel }}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="bot-list-admin">
-                        <i class="icon zulip-icon zulip-icon-smart-toy" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="bot-list-admin">
+                        <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if can_create_new_bots}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{/unless}}
                     {{#if is_admin}}
-                    <li tabindex="0" data-section="profile-field-settings">
-                        <i class="icon fa fa-id-card" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="profile-field-settings">
+                        <i class="sidebar-item-icon fa fa-id-card" aria-hidden="true"></i>
                         <div class="text">{{t "Custom profile fields" }}</div>
                     </li>
                     {{/if}}
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-level-user-defaults">
-                        <i class="icon fa fa-cog" aria-hidden="true"></i>
+                    <li class="sidebar-item collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-level-user-defaults">
+                        <i class="sidebar-item-icon fa fa-cog" aria-hidden="true"></i>
                         <div class="text">{{t "Default user settings" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
                     {{#unless is_guest}}
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-channels-list">
-                        <i class="icon fa fa-exchange" aria-hidden="true"></i>
+                    <li class="sidebar-item collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-channels-list">
+                        <i class="sidebar-item-icon fa fa-exchange" aria-hidden="true"></i>
                         <div class="text">{{t "Default channels" }}</div>
                         {{#unless is_admin}}
                         <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                         {{/unless}}
                     </li>
                     {{/unless}}
-                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="auth-methods">
-                        <i class="icon fa fa-key" aria-hidden="true"></i>
+                    <li class="sidebar-item collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="auth-methods">
+                        <i class="sidebar-item-icon fa fa-key" aria-hidden="true"></i>
                         <div class="text">{{t "Authentication methods" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_owner}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization owners can edit these settings.' }}"></i>
                     </li>
                     {{#if is_admin}}
-                    <li tabindex="0" data-section="data-exports-admin">
-                        <i class="icon fa fa-database" aria-hidden="true"></i>
+                    <li class="sidebar-item" tabindex="0" data-section="data-exports-admin">
+                        <i class="sidebar-item-icon fa fa-database" aria-hidden="true"></i>
                         <div class="text">{{t "Data exports" }}</div>
                     </li>
                     {{/if}}
                     {{#unless is_admin}}
-                    <div class="collapse-settings-btn">
-                        <i id='toggle_collapse_chevron' class='fa fa-angle-double-down'></i>
-                        <p id='toggle_collapse'>{{t "Show more" }}</p>
-                    </div>
+                    <li class="sidebar-item collapse-settings-button">
+                        <i id='toggle_collapse_chevron' class='sidebar-item-icon fa fa-angle-double-down'></i>
+                        <div class="text" id='toggle_collapse'>{{t "Show more" }}</div>
+                    </li>
                     {{/unless}}
                 </ul>
             </div>

@@ -49,7 +49,7 @@
             padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
 
-        & i {
+        .navbar-icon {
             margin: 0 6px 0 5px;
             /* Align all icons to center. */
             align-self: center;
@@ -64,6 +64,12 @@
         flex: 0 1 auto;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .message-header-archived {
+        color: var(--color-text-message-header-archived);
+        cursor: default;
+        padding-left: 5px;
     }
 
     .narrow_description {
@@ -112,5 +118,51 @@
                which is present on the .fa class. */
             vertical-align: middle;
         }
+    }
+
+    .view-description-extended {
+        overflow-wrap: break-word;
+        hyphens: auto;
+        overflow: hidden;
+        white-space: normal;
+        background-color: var(--color-background-navbar);
+        border-radius: 5px;
+        animation: expand-extended-description 100ms ease-in both;
+
+        &.leaving-extended-view-description {
+            animation: contract-extended-description 100ms ease-in both !important;
+        }
+    }
+}
+
+/* Media Queries */
+@media only screen and (width <= 620px) {
+    .view-description-extended {
+        padding-top: 0.5em !important;
+    }
+}
+
+/* stylelint-disable plugin/no-low-performance-animation-properties */
+@keyframes expand-extended-description {
+    from {
+        max-height: var(--header-height);
+        padding-bottom: 0;
+    }
+
+    to {
+        max-height: 1000px;
+        padding-bottom: 5px;
+    }
+}
+
+@keyframes contract-extended-description {
+    from {
+        max-height: 1000px;
+        padding-bottom: 5px;
+    }
+
+    to {
+        max-height: var(--header-height);
+        padding-bottom: 0;
     }
 }

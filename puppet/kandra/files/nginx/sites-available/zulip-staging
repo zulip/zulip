@@ -1,8 +1,13 @@
 server {
-    listen 80;
-    listen [::]:80;
-    server_name staging.zulip.com;
-    return 301 https://$server_name$request_uri;
+    # If coming from localhost, we do allow access to internal
+    # APIs over HTTP.
+    listen 127.0.0.1:80;
+    listen [::1]:80;
+
+    location /api/internal/ {
+        include /etc/nginx/zulip-include/api_headers;
+        include uwsgi_params;
+    }
 }
 
 include /etc/nginx/zulip-include/trusted-proto;

@@ -24,6 +24,8 @@ class kandra::profile::base {
     'emacs-nox',
     # Prevent accidental reboots
     'molly-guard',
+    # For extracting Teleport certs
+    'sqlite3',
     # Useful tools in a production environment
     'screen',
     'strace',

@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as util from "./util";
+import * as util from "./util.ts";
 
 function collapse_spoiler($spoiler: JQuery): void {
     const spoiler_height = $spoiler.height() ?? 0;

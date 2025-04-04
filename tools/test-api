@@ -32,10 +32,15 @@ with test_server_running(
     # zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
     from zerver.actions.create_user import do_create_user, do_reactivate_user
-    from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+    from zerver.actions.realm_settings import (
+        do_change_realm_permission_group_setting,
+        do_deactivate_realm,
+        do_reactivate_realm,
+    )
+    from zerver.actions.user_settings import do_change_user_setting
     from zerver.actions.users import change_user_is_active
     from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-    from zerver.lib.users import get_api_key
+    from zerver.models.groups import NamedUserGroup, SystemGroups
     from zerver.models.realms import get_realm
     from zerver.models.users import get_user
     from zerver.openapi.javascript_examples import test_js_bindings
@@ -54,12 +59,23 @@ with test_server_running(
     # Prepare the admin client
     email = "iago@zulip.com"  # Iago is an admin
     realm = get_realm("zulip")
-    user = get_user(email, realm)
-    # Required to test can_create_users endpoints.
-    user.can_create_users = True
-    user.save(update_fields=["can_create_users"])
+    iago = get_user(email, realm)
+    user = iago
 
-    api_key = get_api_key(user)
+    # Iago needs permission to manage all user groups.
+    admins_group = NamedUserGroup.objects.get(
+        name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+    )
+    do_change_realm_permission_group_setting(
+        realm, "can_manage_all_groups", admins_group, acting_user=None
+    )
+
+    # Required to test can_create_users and can_change_user_emails endpoints.
+    user.can_create_users = True
+    user.can_change_user_emails = True
+    user.save(update_fields=["can_create_users", "can_change_user_emails"])
+
+    api_key = user.api_key
     site = "http://zulip.zulipdev.com:9981"
     client = Client(
         email=email,
@@ -71,7 +87,10 @@ with test_server_running(
     email = "desdemona@zulip.com"  # desdemona is an owner
     realm = get_realm("zulip")
     user = get_user(email, realm)
-    api_key = get_api_key(user)
+
+    do_change_user_setting(user, "allow_private_data_export", True, acting_user=user)
+
+    api_key = user.api_key
     site = "http://zulip.zulipdev.com:9981"
     owner_client = Client(
         email=email,
@@ -84,7 +103,7 @@ with test_server_running(
     guest_user = do_create_user(
         "guest@zulip.com", "secret", get_realm("zulip"), "Mr. Guest", acting_user=None
     )
-    api_key = get_api_key(guest_user)
+    api_key = guest_user.api_key
     nonadmin_client = Client(
         email=email,
         api_key=api_key,

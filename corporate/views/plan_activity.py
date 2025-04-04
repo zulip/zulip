@@ -47,9 +47,17 @@ def get_plan_ledger(request: HttpRequest, plan_id: int) -> HttpResponse:
     )
     header_entries.append(
         ActivityHeaderEntry(
-            name="Next invoice (UTC)", value=format_optional_datetime(plan.next_invoice_date, True)
+            name="Start of next billing cycle (UTC)",
+            value=format_optional_datetime(plan.next_invoice_date, True),
         )
     )
+    if plan.invoiced_through is not None:
+        header_entries.append(
+            ActivityHeaderEntry(
+                name="Entry for last invoice",
+                value=str(plan.invoiced_through),
+            )
+        )
 
     content = make_table(title, cols, rows, header=header_entries)
 

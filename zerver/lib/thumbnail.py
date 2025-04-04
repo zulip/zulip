@@ -4,28 +4,30 @@ import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import TypeVar
 
 import pyvips
 from bs4 import BeautifulSoup
+from bs4.formatter import EntitySubstitution, HTMLFormatter
 from django.utils.translation import gettext as _
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.queue import queue_event_on_commit
-from zerver.models import AbstractAttachment, ImageAttachment
+from zerver.models import ImageAttachment
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
 
-# We refuse to deal with any image whose total pixelcount exceeds this.
+# We refuse to deal with any image whose total pixelcount exceeds
+# this.  This is chosen to be around a quarter of a gigabyte for a
+# 24-bit (3bpp) image.
 IMAGE_BOMB_TOTAL_PIXELS = 90000000
+IMAGE_MAX_ANIMATED_PIXELS = IMAGE_BOMB_TOTAL_PIXELS / 3
 
 # Reject emoji which, after resizing, have stills larger than this
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
-
-T = TypeVar("T", bound="BaseThumbnailFormat")
 
 
 @dataclass(frozen=True)
@@ -47,7 +49,7 @@ class BaseThumbnailFormat:
         return f"{self.max_width}x{self.max_height}{animated}.{self.extension}"
 
     @classmethod
-    def from_string(cls: type[T], format_string: str) -> T | None:
+    def from_string(cls, format_string: str) -> Self | None:
         format_parts = re.match(r"(\d+)x(\d+)(-anim)?\.(\w+)$", format_string)
         if format_parts is None:
             return None
@@ -78,7 +80,7 @@ class StoredThumbnailFormat(BaseThumbnailFormat):
 # Formats that we generate; the first animated and non-animated
 # options on this list are the ones which are written into
 # rendered_content.
-THUMBNAIL_OUTPUT_FORMATS = [
+THUMBNAIL_OUTPUT_FORMATS = (
     # We generate relatively large default "thumbnails", so that
     # clients that do not understand the thumbnailing protocol
     # (e.g. mobile) get something which does not look pixelated.  This
@@ -86,7 +88,13 @@ THUMBNAIL_OUTPUT_FORMATS = [
     # upsized thumbnail while loading the full resolution image.
     ThumbnailFormat("webp", 840, 560, animated=True),
     ThumbnailFormat("webp", 840, 560, animated=False),
-]
+)
+
+# This format is generated, in addition to THUMBNAIL_OUTPUT_FORMATS,
+# for images in THUMBNAIL_ACCEPT_IMAGE_TYPES which are not in
+# INLINE_MIME_TYPES: somewhat-common image types which are not broadly
+# supported by browsers.
+TRANSCODED_IMAGE_FORMAT = ThumbnailFormat("webp", 4032, 3024, animated=False)
 
 
 # These are the image content-types which the server supports parsing
@@ -137,7 +145,9 @@ class BadImageError(JsonableError):
 
 
 @contextmanager
-def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
+def libvips_check_image(
+    image_data: bytes | pyvips.Source, truncated_animation: bool = False
+) -> Iterator[pyvips.Image]:
     # The primary goal of this is to verify that the image is valid,
     # and raise BadImageError otherwise.  The yielded `source_image`
     # may be ignored, since calling `thumbnail_buffer` is faster than
@@ -145,15 +155,41 @@ def libvips_check_image(image_data: bytes) -> Iterator[pyvips.Image]:
     # cannot make use of shrink-on-load optimizations:
     # https://www.libvips.org/API/current/libvips-resample.html#vips-thumbnail-image
     try:
-        source_image = pyvips.Image.new_from_buffer(image_data, "")
+        if isinstance(image_data, bytes):
+            source_image = pyvips.Image.new_from_buffer(image_data, "")
+        else:
+            source_image = pyvips.Image.new_from_source(image_data, "", access="sequential")
     except pyvips.Error:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
 
-    if (
-        source_image.width * source_image.height * source_image.get_n_pages()
-        > IMAGE_BOMB_TOTAL_PIXELS
-    ):
-        raise BadImageError(_("Image size exceeds limit."))
+    if not truncated_animation:
+        # For places where we do not truncate animations (e.g. emoji,
+        # where the original is never served to clients, so we must
+        # preserve the full animation) we count total pixels across
+        # all frames for the limit.
+        if (
+            source_image.width * source_image.height * source_image.get_n_pages()
+            > IMAGE_BOMB_TOTAL_PIXELS
+        ):
+            raise BadImageError(_("Image size exceeds limit."))
+    else:
+        # When thumbnailing image uploads, we truncate thumbnailed
+        # animations, so we have different checks for animated vs
+        # still images.
+        if source_image.get_n_pages() == 1:
+            if source_image.width * source_image.height > IMAGE_BOMB_TOTAL_PIXELS:
+                raise BadImageError(_("Image size exceeds limit."))
+
+        else:
+            # For animated images, we have an additional limit -- we
+            # want to be able to render at least 3 frames, and spend
+            # no more than 1/3 of that IMAGE_BOMB_TOTAL_PIXELS budget
+            # in doing so.
+            if (
+                source_image.width * source_image.height * min(3, source_image.get_n_pages())
+                > IMAGE_MAX_ANIMATED_PIXELS
+            ):
+                raise BadImageError(_("Image size exceeds limit."))
 
     try:
         yield source_image
@@ -173,6 +209,10 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
             height=size,
             crop=pyvips.Interesting.CENTRE,
         ).write_to_buffer(".png")
+
+
+def resize_realm_icon(image_data: bytes) -> bytes:
+    return resize_avatar(image_data)
 
 
 def resize_logo(image_data: bytes) -> bytes:
@@ -248,10 +288,31 @@ def resize_emoji(
         return (animated.write_to_buffer(write_file_ext), first_still)
 
 
-def missing_thumbnails(image_attachment: ImageAttachment) -> list[ThumbnailFormat]:
+def missing_thumbnails(
+    image_attachment: ImageAttachment,
+) -> list[ThumbnailFormat]:
     seen_thumbnails: set[StoredThumbnailFormat] = set()
     for existing_thumbnail in image_attachment.thumbnail_metadata:
         seen_thumbnails.add(StoredThumbnailFormat(**existing_thumbnail))
+
+    potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
+    if image_attachment.content_type not in INLINE_MIME_TYPES:
+        if image_attachment.original_width_px >= image_attachment.original_height_px:
+            additional_format = ThumbnailFormat(
+                TRANSCODED_IMAGE_FORMAT.extension,
+                TRANSCODED_IMAGE_FORMAT.max_width,
+                TRANSCODED_IMAGE_FORMAT.max_height,
+                TRANSCODED_IMAGE_FORMAT.animated,
+            )
+        else:
+            additional_format = ThumbnailFormat(
+                TRANSCODED_IMAGE_FORMAT.extension,
+                # Swap width and height to make a portrait-oriented version
+                TRANSCODED_IMAGE_FORMAT.max_height,
+                TRANSCODED_IMAGE_FORMAT.max_width,
+                TRANSCODED_IMAGE_FORMAT.animated,
+            )
+        potential_output_formats.append(additional_format)
 
     # We use the shared `__eq__` method from BaseThumbnailFormat to
     # compare between the StoredThumbnailFormat values pulled from the
@@ -259,7 +320,7 @@ def missing_thumbnails(image_attachment: ImageAttachment) -> list[ThumbnailForma
     # THUMBNAIL_OUTPUT_FORMATS.
     needed_thumbnails = [
         thumbnail_format
-        for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS
+        for thumbnail_format in potential_output_formats
         if thumbnail_format not in seen_thumbnails
     ]
 
@@ -274,14 +335,20 @@ def missing_thumbnails(image_attachment: ImageAttachment) -> list[ThumbnailForma
     return needed_thumbnails
 
 
-def maybe_thumbnail(attachment: AbstractAttachment, content: bytes) -> ImageAttachment | None:
-    if attachment.content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+def maybe_thumbnail(
+    content: bytes | pyvips.Source,
+    content_type: str | None,
+    path_id: str,
+    realm_id: int,
+    skip_events: bool = False,
+) -> ImageAttachment | None:
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         # If it doesn't self-report as an image file that we might want
         # to thumbnail, don't parse the bytes at all.
         return None
     try:
         # This only attempts to read the header, not the full image content
-        with libvips_check_image(content) as image:
+        with libvips_check_image(content, truncated_animation=True) as image:
             # "original_width_px" and "original_height_px" here are
             # _as rendered_, after applying the orientation
             # information which the image may contain.
@@ -295,14 +362,21 @@ def maybe_thumbnail(attachment: AbstractAttachment, content: bytes) -> ImageAtta
                 (width, height) = (image.width, image.height)
 
             image_row = ImageAttachment.objects.create(
-                realm_id=attachment.realm_id,
-                path_id=attachment.path_id,
+                realm_id=realm_id,
+                path_id=path_id,
                 original_width_px=width,
                 original_height_px=height,
                 frames=image.get_n_pages(),
                 thumbnail_metadata=[],
+                content_type=content_type,
             )
-            queue_event_on_commit("thumbnail", {"id": image_row.id})
+            if not skip_events:
+                # The only reason to skip sending thumbnail events is
+                # during import, when the events are separately
+                # enqueued during message rendering; thumbnailing them
+                # before/during message rendering can cause race
+                # conditions.
+                queue_event_on_commit("thumbnail", {"id": image_row.id})
             return image_row
     except BadImageError:
         return None
@@ -326,34 +400,54 @@ def split_thumbnail_path(file_path: str) -> tuple[str, BaseThumbnailFormat]:
 
 @dataclass
 class MarkdownImageMetadata:
-    url: str
+    url: str | None
     is_animated: bool
     original_width_px: int
     original_height_px: int
+    original_content_type: str | None
+    transcoded_image: StoredThumbnailFormat | None = None
 
 
 def get_user_upload_previews(
     realm_id: int,
     content: str,
     lock: bool = False,
+    enqueue: bool = True,
     path_ids: list[str] | None = None,
-) -> dict[str, MarkdownImageMetadata | None]:
+) -> dict[str, MarkdownImageMetadata]:
     if path_ids is None:
         path_ids = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
     if not path_ids:
         return {}
 
-    upload_preview_data: dict[str, MarkdownImageMetadata | None] = {}
+    upload_preview_data: dict[str, MarkdownImageMetadata] = {}
 
-    image_attachments = ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=path_ids)
+    image_attachments = ImageAttachment.objects.filter(
+        realm_id=realm_id, path_id__in=path_ids
+    ).order_by("id")
     if lock:
-        image_attachments = image_attachments.select_for_update()
+        image_attachments = image_attachments.select_for_update(of=("self",))
     for image_attachment in image_attachments:
         if image_attachment.thumbnail_metadata == []:
             # Image exists, and header of it parsed as a valid image,
             # but has not been thumbnailed yet; we will render a
             # spinner.
-            upload_preview_data[image_attachment.path_id] = None
+            upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
+                url=None,
+                is_animated=False,
+                original_width_px=image_attachment.original_width_px,
+                original_height_px=image_attachment.original_height_px,
+                original_content_type=image_attachment.content_type,
+            )
+
+            # We re-queue the row for thumbnailing to make sure that
+            # we do eventually thumbnail it (e.g. if this is a
+            # historical upload from before this system, which we
+            # backfilled ImageAttachment rows for); this is a no-op in
+            # the worker if all of the currently-configured thumbnail
+            # formats have already been generated.
+            if enqueue:
+                queue_event_on_commit("thumbnail", {"id": image_attachment.id})
         else:
             url, is_animated = get_default_thumbnail_url(image_attachment)
             upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
@@ -361,6 +455,8 @@ def get_user_upload_previews(
                 is_animated=is_animated,
                 original_width_px=image_attachment.original_width_px,
                 original_height_px=image_attachment.original_height_px,
+                original_content_type=image_attachment.content_type,
+                transcoded_image=get_transcoded_format(image_attachment),
             )
     return upload_preview_data
 
@@ -386,9 +482,39 @@ def get_default_thumbnail_url(image_attachment: ImageAttachment) -> tuple[str, b
     )
 
 
+def get_transcoded_format(
+    image_attachment: ImageAttachment,
+) -> StoredThumbnailFormat | None:
+    # Returns None if the original content-type is judged to be
+    # renderable inline.  Otherwise, we return the largest thumbnail
+    # that we generated.  Since formats which are thumbnailable but
+    # not in INLINE_MIME_TYPES get an extra large-resolution thumbnail
+    # added to their list of formats, this is thus either None or a
+    # high-resolution thumbnail.
+    if image_attachment.content_type is None or image_attachment.content_type in INLINE_MIME_TYPES:
+        return None
+
+    thumbs_by_size = sorted(
+        (StoredThumbnailFormat(**d) for d in image_attachment.thumbnail_metadata),
+        key=lambda t: t.width * t.height,
+    )
+    return thumbs_by_size.pop() if thumbs_by_size else None
+
+
+# Like HTMLFormatter.REGISTRY["html5"], this formatter avoids producing
+# self-closing tags, but it differs by avoiding unnecessary escaping with
+# HTML5-specific entities that cannot be parsed by lxml and libxml2
+# (https://bugs.launchpad.net/lxml/+bug/2031045).
+html_formatter = HTMLFormatter(
+    entity_substitution=EntitySubstitution.substitute_xml,  # not substitute_html
+    void_element_close_prefix="",
+    empty_attributes_are_booleans=True,
+)
+
+
 def rewrite_thumbnailed_images(
     rendered_content: str,
-    images: dict[str, MarkdownImageMetadata | None],
+    images: dict[str, MarkdownImageMetadata],
     to_delete: set[str] | None = None,
 ) -> tuple[str | None, set[str]]:
     if not images and not to_delete:
@@ -416,7 +542,7 @@ def rewrite_thumbnailed_images(
             # second image, the first image will have no placeholder.
             continue
 
-        path_id = image_link["href"][len("/user_uploads/") :]
+        path_id = image_link["href"].removeprefix("/user_uploads/")
         if to_delete and path_id in to_delete:
             # This was not a valid thumbnail target, for some reason.
             # Trim out the whole "message_inline_image" element, since
@@ -427,10 +553,13 @@ def rewrite_thumbnailed_images(
 
         image_data = images.get(path_id)
         if image_data is None:
-            # Has not been thumbnailed yet; leave it as a spinner.
-            # This happens routinely when a message contained multiple
-            # unthumbnailed images, and only one of those images just
-            # completed thumbnailing.
+            # The message has multiple images, and we're updating just
+            # one image, and it's not this one.  Leave this one as-is.
+            remaining_thumbnails.add(path_id)
+        elif image_data.url is None:
+            # We're re-rendering the whole message, so fetched all of
+            # the image metadata rows; this is one of the images we
+            # about, but is not thumbnailed yet.
             remaining_thumbnails.add(path_id)
         else:
             changed = True
@@ -439,11 +568,16 @@ def rewrite_thumbnailed_images(
             image_tag["data-original-dimensions"] = (
                 f"{image_data.original_width_px}x{image_data.original_height_px}"
             )
+            image_tag["data-original-content-type"] = image_data.original_content_type
             if image_data.is_animated:
                 image_tag["data-animated"] = "true"
+            if image_data.transcoded_image is not None:
+                image_tag["data-transcoded-image"] = str(image_data.transcoded_image)
 
     if changed:
-        # The formatter="html5" means we do not produce self-closing tags
-        return parsed_message.encode(formatter="html5").decode().strip(), remaining_thumbnails
+        return (
+            parsed_message.encode(formatter=html_formatter).decode().strip(),
+            remaining_thumbnails,
+        )
     else:
         return None, remaining_thumbnails

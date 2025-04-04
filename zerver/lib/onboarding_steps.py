@@ -52,6 +52,12 @@ ONE_TIME_NOTICES: list[OneTimeNotice] = [
     OneTimeNotice(
         name="interleaved_view_messages_fading",
     ),
+    OneTimeNotice(
+        name="intro_resolve_topic",
+    ),
+    OneTimeNotice(
+        name="navigation_tour_video",
+    ),
 ]
 
 ONE_TIME_ACTIONS = [OneTimeAction(name="narrow_to_dm_with_welcome_bot_new_user")]
@@ -65,13 +71,17 @@ def get_next_onboarding_steps(user: UserProfile) -> list[dict[str, Any]]:
     if not settings.TUTORIAL_ENABLED:
         return []
 
-    seen_onboarding_steps = frozenset(
+    seen_onboarding_steps: list[str] = list(
         OnboardingStep.objects.filter(user=user).values_list("onboarding_step", flat=True)
     )
+    if settings.NAVIGATION_TOUR_VIDEO_URL is None:
+        # Server admin disabled navigation tour video, treat it as seen.
+        seen_onboarding_steps.append("navigation_tour_video")
+    seen_onboarding_steps_set = frozenset(seen_onboarding_steps)
 
     onboarding_steps: list[dict[str, Any]] = []
     for onboarding_step in ALL_ONBOARDING_STEPS:
-        if onboarding_step.name in seen_onboarding_steps:
+        if onboarding_step.name in seen_onboarding_steps_set:
             continue
         onboarding_steps.append(onboarding_step.to_dict())
 

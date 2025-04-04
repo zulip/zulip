@@ -18,4 +18,8 @@ uwsgi_param HTTP_X_FORWARDED_PROTO $trusted_x_forwarded_proto;
 uwsgi_param HTTP_X_FORWARDED_SSL "";
 uwsgi_param HTTP_X_PROXY_MISCONFIGURATION $x_proxy_misconfiguration;
 
+# This value is the default, and is provided for explicitness; it must
+# be longer than the configured 55s "harakiri" timeout in uwsgi
+uwsgi_read_timeout 60s;
+
 uwsgi_pass django;

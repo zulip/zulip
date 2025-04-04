@@ -97,6 +97,8 @@ If set to true, [configures Zulip to allow HTTP access][using-http];
 use if Zulip is deployed behind a reverse proxy that is handling
 SSL/TLS termination.
 
+[using-http]: reverse-proxies.md#configuring-zulip-to-allow-http
+
 #### `nginx_listen_port`
 
 Set to the port number if you [prefer to listen on a port other than
@@ -175,6 +177,13 @@ large numbers of very large image files are uploaded at once. (When
 backlogged, image previews for images that have not yet been
 thumbnailed will appear as loading spinners).
 
+#### `email_senders_workers`
+
+How many email-sending workers to run. Defaults to 1; adding more
+workers can prevent email-sending queue backlogging when large numbers
+of very large emails are enqueued at once. This is generally only
+necessary on quite large installs.
+
 #### `nameserver`
 
 When the [S3 storage backend][s3-backend] is in use, downloads from S3 are
@@ -191,8 +200,9 @@ Override the default uwsgi backlog of 128 connections.
 
 #### `uwsgi_processes`
 
-Override the default `uwsgi` (Django) process count of 6 on hosts with
-more than 3.5GiB of RAM, 4 on hosts with less.
+Override the default `uwsgi` (Django) process count. It defaults to a sliding
+scale between 3 workers for hosts with under 3GB RAM, up to 16 workers for hosts
+with more than 24GB of RAM.
 
 #### `access_log_retention_days`
 
@@ -258,6 +268,8 @@ would be taken on all non-replicated hosts and [all warm standby
 replicas](postgresql.md#postgresql-warm-standby). This is generally only set if you have
 multiple warm standby replicas, in order to avoid taking multiple backups, one
 per replica.
+
+[wal-g]: export-and-import.md#database-only-backup-tools
 
 #### `backups_disk_concurrency`
 
@@ -364,6 +376,16 @@ memcached_exporter to report precise item size distribution.
 Comma-separated list of IP addresses or netmasks of external load balancers
 whose `X-Forwarded-For` and `X-Forwarded-Proto` should be respected. These can
 be individual IP addresses, or CIDR IP address ranges.
+
+#### `rejects_http_requests`
+
+Set to a true value if incoming requests from load loadbalancer's IP addresses
+which do not contain an `X-Forwarded-Proto` should be assumed to have come into
+them over HTTPS. This setting _is a security vulnerability_ unless the load
+balancer unilaterally rejects unencrypted HTTP connections, or responds to them
+with 301 status codes. Note that Zulip's HSTS headers are not sufficient
+protection here, since API clients do not respect them; the load balancer _must
+not_ send any requests to Zulip which came in unencrypted.
 
 ### `[http_proxy]`
 

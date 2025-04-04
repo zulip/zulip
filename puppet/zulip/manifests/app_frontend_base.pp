@@ -2,6 +2,7 @@
 # Default nginx configuration is included in extension app_frontend.pp.
 class zulip::app_frontend_base {
   include zulip::nginx
+  include zulip::tusd
   include zulip::sasl_modules
   include zulip::supervisor
   include zulip::tornado_sharding
@@ -13,8 +14,22 @@ class zulip::app_frontend_base {
     # package already includes the client.
     include zulip::postgresql_client
   }
-  # For Slack import
-  zulip::safepackage { 'unzip': ensure => installed }
+  zulip::safepackage {
+    [
+      # For `manage.py compilemessages` when upgrading from Git.
+      'gettext',
+      # For Slack import.
+      'unzip',
+      # Ensures `/etc/ldap/ldap.conf` exists; the default
+      # `TLS_CACERTDIR` specified there is necessary for LDAP
+      # authentication to work. This package is "Recommended" by
+      # `libldap` where is required by postgres, so has been on most
+      # Zulip servers by default; adding it here explicitly ensures it
+      # is available on those that don't include the database server.
+      'libldap-common',
+    ]:
+      ensure => installed,
+  }
 
   file { '/etc/nginx/zulip-include/app':
     require => Package[$zulip::common::nginx],
@@ -33,6 +48,12 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/app.d/':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  file { '/etc/nginx/zulip-include/localhost.d/':
     ensure => directory,
     owner  => 'root',
     group  => 'root',
@@ -138,6 +159,7 @@ class zulip::app_frontend_base {
     'embed_links',
     'embedded_bots',
     'email_senders',
+    'deferred_email_senders',
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
@@ -160,7 +182,11 @@ class zulip::app_frontend_base {
 
   # Not the different naming scheme for sharded workers, where each gets its own queue,
   # vs when multiple workers service the same queue.
-  $thumbnail_workers = Integer(zulipconf('application_server', 'thumbnail_workers', 1))
+  $worker_counts = Hash(zulipconf_keys('application_server').filter |$key| {
+    $key =~ /_workers$/
+  }.map |$key| {
+    [regsubst($key, '_workers$', ''), Integer(zulipconf('application_server', $key, 1))]
+  })
   $mobile_notification_shards = Integer(zulipconf('application_server', 'mobile_notification_shards', 1))
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
 
@@ -173,6 +199,8 @@ class zulip::app_frontend_base {
 
   $katex_server = zulipconf('application_server', 'katex_server', true)
   $katex_server_port = zulipconf('application_server', 'katex_server_port', '9700')
+
+  $tusd_server_listen = zulipconf('application_server', 'tusd_server_listen', '127.0.0.1')
 
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"

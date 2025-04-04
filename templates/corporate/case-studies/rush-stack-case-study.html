@@ -1,0 +1,38 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Case study: Rush Stack open-source community | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Learn how Zulip makes it easy for the Rush Stack
+  community to provide the level of support required for mission-critical
+  enterprise tools." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page case-study-page">
+    <div class="hero bg-pycon">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Case study: Rush Stack <br /> open-source community</h1>
+        </div>
+        <div class="hero-text">
+            Learn more about using Zulip for<br /> <a href="/for/open-source/">open
+            source projects</a> and <a href="/for/communities/">communities</a>.
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/case-studies/rush-stack-case-study.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -15,6 +15,12 @@ We also support an `S3` backend, which uses the Python `boto` library
 to upload files to Amazon S3 (or an S3-compatible block storage
 provider supported by the `boto` library).
 
+Regardless of the backend you choose, you can configure the maximum
+size of individual uploaded files using the `MAX_FILE_UPLOAD_SIZE`
+[server setting](../production/settings.md). Setting it to 0 disables
+file uploads, and hides the UI for uploading files from the web and
+desktop apps.
+
 ## S3 backend configuration
 
 Here, we document the process for configuring Zulip's S3 file upload
@@ -29,7 +35,8 @@ backend. To enable this backend, you need to do the following:
 1. Set `s3_key` and `s3_secret_key` in /etc/zulip/zulip-secrets.conf
    to be the S3 access and secret keys for the IAM account.
    Alternately, if your Zulip server runs on an EC2 instance, set the
-   IAM role for the EC2 instance to the role.
+   IAM role for the EC2 instance to the role created in the previous
+   step.
 
 1. Set the `S3_AUTH_UPLOADS_BUCKET` and `S3_AVATAR_BUCKET` settings in
    `/etc/zulip/settings.py` to be the names of the S3 buckets you
@@ -241,3 +248,64 @@ lifecycle transition cost][s3-pricing].
 [s3-storage-class]: https://aws.amazon.com/s3/storage-classes/
 [s3-storage-class-constant]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html#AmazonS3-PutObject-request-header-StorageClass
 [s3-pricing]: https://aws.amazon.com/s3/pricing/
+
+## Data export bucket
+
+The [data export process](export-and-import.md#data-export) process, when
+[triggered from the
+UI](https://zulip.com/help/export-your-organization), uploads the
+completed export so it is available to download from the server; this
+is also available [from the command
+line](export-and-import.md#export-your-zulip-data) by passing
+`--upload`. When the S3 backend is used, these uploads are done to S3.
+
+By default, they are uploaded to the bucket with user avatars
+(`S3_AVATAR_BUCKET`), because that bucket is world-readable, allowing
+easy generation of links to download the export.
+
+If you would like to store exports in a dedicated bucket, you can set
+`S3_EXPORT_BUCKET` in your `/etc/zulip/settings.py`. This bucket
+should also be configured like the uploads bucket, only allowing write
+access to the Zulip account, as it will generate links which are valid
+for 1 week at a time:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1468991802322",
+    "Statement": [
+        {
+            "Sid": "Stmt1468991795390",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:PutObject"
+            ],
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
+        },
+        {
+            "Sid": "Stmt1468991795391",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE"
+        }
+    ]
+}
+```
+
+You should copy existing exports to the new bucket. For instance,
+using the [AWS CLI](https://aws.amazon.com/cli/)'s [`aws s3
+sync`](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html),
+if the old bucket was named `example-zulip-avatars` and the new export
+bucket is named `example-zulip-exports`:
+
+```
+aws s3 sync s3://example-zulip-avatars/exports/ s3://example-zulip-exports/
+```

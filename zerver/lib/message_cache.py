@@ -25,8 +25,6 @@ class RawReactionRow(TypedDict):
     emoji_name: str
     message_id: int
     reaction_type: str
-    user_profile__email: str
-    user_profile__full_name: str
     user_profile_id: int
 
 
@@ -113,18 +111,6 @@ class ReactionDict:
             "emoji_name": row["emoji_name"],
             "emoji_code": row["emoji_code"],
             "reaction_type": row["reaction_type"],
-            # TODO: We plan to remove this redundant user dictionary once
-            # clients are updated to support accessing use user_id.  See
-            # https://github.com/zulip/zulip/pull/14711 for details.
-            #
-            # When we do that, we can likely update the `.values()` query to
-            # not fetch the extra user_profile__* fields from the database
-            # as a small performance optimization.
-            "user": {
-                "email": row["user_profile__email"],
-                "id": row["user_profile_id"],
-                "full_name": row["user_profile__full_name"],
-            },
             "user_id": row["user_profile_id"],
         }
 
@@ -175,9 +161,12 @@ class MessageDict:
     @staticmethod
     def post_process_dicts(
         objs: list[dict[str, Any]],
+        *,
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         realm: Realm,
+        user_recipient_id: int | None,
     ) -> None:
         """
         NOTE: This function mutates the objects in
@@ -194,22 +183,27 @@ class MessageDict:
             can_access_sender = obj.get("can_access_sender", True)
             MessageDict.finalize_payload(
                 obj,
-                apply_markdown,
-                client_gravatar,
+                apply_markdown=apply_markdown,
+                client_gravatar=client_gravatar,
+                allow_empty_topic_name=allow_empty_topic_name,
                 skip_copy=True,
                 can_access_sender=can_access_sender,
                 realm_host=realm.host,
+                is_incoming_1_to_1=obj["recipient_id"] == user_recipient_id,
             )
 
     @staticmethod
     def finalize_payload(
         obj: dict[str, Any],
+        *,
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         keep_rendered_content: bool = False,
         skip_copy: bool = False,
-        can_access_sender: bool = True,
-        realm_host: str = "",
+        can_access_sender: bool,
+        realm_host: str,
+        is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
         """
         By default, we make a shallow copy of the incoming dict to avoid
@@ -218,6 +212,15 @@ class MessageDict:
         """
         if not skip_copy:
             obj = copy.copy(obj)
+
+        # Compatibility code to change topic="" to topic=Message.EMPTY_TOPIC_FALLBACK_NAME
+        # for older clients with no support for empty topic name.
+        if (
+            obj["recipient_type"] == Recipient.STREAM
+            and obj["subject"] == ""
+            and not allow_empty_topic_name
+        ):
+            obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         if obj["sender_email_address_visibility"] != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
             # If email address of the sender is only available to administrators,
@@ -246,8 +249,25 @@ class MessageDict:
         else:
             obj["content_type"] = "text/x-markdown"
 
+        if is_incoming_1_to_1 and "sender_recipient_id" in obj:
+            # For an incoming 1:1 DM, the recipient’s own recipient_id is
+            # useless to the recipient themselves. Substitute the sender’s
+            # recipient_id, so the recipient can use recipient_id as documented
+            # to uniquely represent the set of 2 users in this conversation.
+            obj["recipient_id"] = obj["sender_recipient_id"]
+
+        for item in obj.get("edit_history", []):
+            if "prev_rendered_content_version" in item:
+                del item["prev_rendered_content_version"]
+            if not allow_empty_topic_name:
+                if "prev_topic" in item and item["prev_topic"] == "":
+                    item["prev_topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+                if "topic" in item and item["topic"] == "":
+                    item["topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
         if not keep_rendered_content:
             del obj["rendered_content"]
+        obj.pop("sender_recipient_id")
         del obj["sender_realm_id"]
         del obj["sender_avatar_source"]
         del obj["sender_delivery_email"]
@@ -467,6 +487,7 @@ class MessageDict:
             "full_name",
             "delivery_email",
             "email",
+            "recipient_id",
             "realm__string_id",
             "avatar_source",
             "avatar_version",
@@ -481,6 +502,7 @@ class MessageDict:
         for obj in objs:
             sender_id = obj["sender_id"]
             user_row = sender_dict[sender_id]
+            obj["sender_recipient_id"] = user_row["recipient_id"]
             obj["sender_full_name"] = user_row["full_name"]
             obj["sender_email"] = user_row["email"]
             obj["sender_delivery_email"] = user_row["delivery_email"]

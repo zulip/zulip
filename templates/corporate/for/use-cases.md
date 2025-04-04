@@ -28,3 +28,4 @@
 * [Asciidoctor open-source community](/case-studies/asciidoctor/)
 * [Rust language community](/case-studies/rust/)
 * [Recurse Center](/case-studies/recurse-center/)
+* [Rush Stack](/case-studies/rush-stack/)

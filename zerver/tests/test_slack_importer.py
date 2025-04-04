@@ -23,6 +23,7 @@ from zerver.data_import.import_util import (
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
+    SLACK_IMPORT_TOKEN_SCOPES,
     AddedChannelsT,
     AddedMPIMsT,
     DMMembersT,
@@ -31,7 +32,7 @@ from zerver.data_import.slack import (
     channels_to_zerver_stream,
     check_token_access,
     convert_slack_workspace_messages,
-    do_convert_data,
+    do_convert_zipfile,
     fetch_shared_channel_users,
     get_admin,
     get_guest,
@@ -50,6 +51,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 
 
@@ -64,6 +66,8 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
         "https://slack.com/api/users.list",
         "https://slack.com/api/users.info",
         "https://slack.com/api/team.info",
+        "https://slack.com/api/bots.info",
+        "https://slack.com/api/api.test",
     ]
     for endpoint in endpoints:
         if request.url and endpoint in request.url:
@@ -95,6 +99,31 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
         except KeyError:
             return (200, {}, orjson.dumps({"ok": False, "error": "user_not_found"}))
         return (200, {}, orjson.dumps({"ok": True, "user": {"id": user_id, "team_id": team_id}}))
+
+    if request.url and "https://slack.com/api/bots.info" in request.url:
+        bot_info_dict = {
+            "B06NWMNUQ3W": {
+                "id": "B06NWMNUQ3W",
+                "deleted": False,
+                "name": "ClickUp",
+                "updated": 1714669546,
+                "app_id": "A3G4A68V9",
+                "icons": {
+                    "image_36": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_36.png",
+                    "image_48": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_48.png",
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_72.png",
+                },
+            }
+        }
+        try:
+            bot_id = qs["bot"][0]
+            bot_info = bot_info_dict[bot_id]
+        except KeyError:
+            return (200, {}, orjson.dumps({"ok": False, "error": "bot_not_found"}))
+        return (200, {}, orjson.dumps({"ok": True, "bot": bot_info}))
+
+    if request.url and "https://slack.com/api/api.test" in request.url:
+        return (200, {}, orjson.dumps({"ok": True}))
     # Else, https://slack.com/api/team.info
     team_not_found: tuple[int, dict[str, str], bytes] = (
         200,
@@ -118,6 +147,77 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
 
 
 class SlackImporter(ZulipTestCase):
+    @responses.activate
+    def test_get_slack_api_data_with_pagination(self) -> None:
+        token = "xoxb-valid-token"
+        pagination_limit = 40
+
+        api_users_list = [f"user{i}" for i in range(100)]
+        count = 0
+
+        def paginated_request_callback(
+            request: PreparedRequest,
+        ) -> tuple[int, dict[str, str], bytes]:
+            """
+            A callback that in a very simple way simulates Slack's /users.list API
+            with support for Pagination and some rate-limiting behavior.
+            """
+            assert request.url is not None
+            assert request.url.startswith("https://slack.com/api/users.list")
+            # Otherwise mypy complains about PreparedRequest not having params attribute:
+            assert hasattr(request, "params")
+
+            nonlocal count
+            count += 1
+
+            self.assertEqual(request.params["limit"], str(pagination_limit))
+            cursor = int(request.params.get("cursor", 0))
+            next_cursor = cursor + pagination_limit
+
+            if count % 3 == 0:
+                # Simulate a rate limit hit on every third request.
+                return (
+                    429,
+                    {"retry-after": "30"},
+                    orjson.dumps({"ok": False, "error": "rate_limit_hit"}),
+                )
+
+            result_user_data = api_users_list[cursor:next_cursor]
+
+            if next_cursor >= len(api_users_list):
+                # The fetch is completed.
+                response_metadata = {}
+            else:
+                response_metadata = {"next_cursor": str(next_cursor)}
+            return (
+                200,
+                {},
+                orjson.dumps(
+                    {
+                        "ok": True,
+                        "members": result_user_data,
+                        "response_metadata": response_metadata,
+                    }
+                ),
+            )
+
+        responses.add_callback(
+            responses.GET, "https://slack.com/api/users.list", callback=paginated_request_callback
+        )
+        with (
+            mock.patch("zerver.data_import.slack.time.sleep", return_value=None) as mock_sleep,
+            self.assertLogs(level="INFO") as mock_log,
+        ):
+            result = get_slack_api_data(
+                "https://slack.com/api/users.list",
+                "members",
+                token=token,
+                pagination_limit=pagination_limit,
+            )
+        self.assertEqual(result, api_users_list)
+        self.assertEqual(mock_sleep.call_count, 1)
+        self.assertIn("INFO:root:Rate limit exceeded. Retrying in 30 seconds...", mock_log.output)
+
     @responses.activate
     def test_get_slack_api_data(self) -> None:
         token = "xoxb-valid-token"
@@ -146,6 +246,18 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_users_info_url, "user", token=token, user="idontexist")
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: user_not_found",))
 
+        # Bot info
+        slack_bots_info_url = "https://slack.com/api/bots.info"
+        responses.add_callback(responses.GET, slack_bots_info_url, callback=request_callback)
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_bots_info_url, "XXXYYYZZZ", token=token)
+        self.assertEqual(invalid.exception.args, ("Error accessing Slack API: bot_not_found",))
+
+        # Api test
+        api_test_info_url = "https://slack.com/api/api.test"
+        responses.add_callback(responses.GET, api_test_info_url, callback=request_callback)
+        self.assertTrue(get_slack_api_data(api_test_info_url, "ok", token=token))
+
         # Team info
         slack_team_info_url = "https://slack.com/api/team.info"
         responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
@@ -169,9 +281,10 @@ class SlackImporter(ZulipTestCase):
         token = "xoxb-status404"
         wrong_url = "https://slack.com/api/wrong"
         responses.add_callback(responses.GET, wrong_url, callback=request_callback)
-        with self.assertRaises(Exception) as invalid:
+        with self.assertRaises(Exception) as invalid, self.assertLogs(level="INFO") as mock_log:
             get_slack_api_data(wrong_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("HTTP error accessing the Slack API.",))
+        self.assertEqual(mock_log.output, ["INFO:root:HTTP error: 404, Response: "])
 
     def test_build_zerver_realm(self) -> None:
         realm_id = 2
@@ -228,12 +341,12 @@ class SlackImporter(ZulipTestCase):
                 raise Exception("Unknown token mock")
 
         responses.add_callback(
-            responses.GET, "https://slack.com/api/team.info", callback=token_request_callback
+            responses.GET, "https://slack.com/api/api.test", callback=token_request_callback
         )
 
-        def exception_for(token: str) -> str:
+        def exception_for(token: str, required_scopes: set[str] = SLACK_IMPORT_TOKEN_SCOPES) -> str:
             with self.assertRaises(Exception) as invalid:
-                check_token_access(token)
+                check_token_access(token, required_scopes)
             return invalid.exception.args[0]
 
         self.assertEqual(
@@ -260,7 +373,7 @@ class SlackImporter(ZulipTestCase):
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
-        check_token_access("xoxb-valid-token")
+        check_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
 
     def test_get_owner(self) -> None:
         user_data = [
@@ -326,9 +439,10 @@ class SlackImporter(ZulipTestCase):
             ],
         ]
         messages_mock.return_value = [
-            {"user": "U061A1R2R"},
-            {"user": "U061A5N1G"},
-            {"user": "U061A8H1G"},
+            {"user": "U061A1R2R", "team": "T6LARQE2Z"},
+            {"user": "U061A5N1G", "team": "T6LARQE2Z"},
+            {"user": "U061A8H1G", "team": "T6LARQE2Z"},
+            {"subtype": "bot_message", "text": "", "username": "ClickUp", "bot_id": "B06NWMNUQ3W"},
         ]
         # Users info
         slack_users_info_url = "https://slack.com/api/users.info"
@@ -336,11 +450,15 @@ class SlackImporter(ZulipTestCase):
         # Team info
         slack_team_info_url = "https://slack.com/api/team.info"
         responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
+        # Bot info
+        slack_bot_info_url = "https://slack.com/api/bots.info"
+        responses.add_callback(responses.GET, slack_bot_info_url, callback=request_callback)
+
         slack_data_dir = self.fixture_file_name("", type="slack_fixtures")
         fetch_shared_channel_users(users, slack_data_dir, "xoxb-valid-token")
 
         # Normal users
-        self.assert_length(users, 8)
+        self.assert_length(users, 9)
         self.assertEqual(users[0]["id"], "U061A1R2R")
         self.assertEqual(users[0]["is_mirror_dummy"], False)
         self.assertFalse("team_domain" in users[0])
@@ -352,6 +470,7 @@ class SlackImporter(ZulipTestCase):
         # not deterministic.
         later_users = sorted(users[3:], key=lambda x: x["id"])
         expected_users = [
+            ("B06NWMNUQ3W", "ClickUp"),
             ("U061A3E0G", "foreignteam1"),
             ("U061A8H1G", "foreignteam2"),
             ("U11111111", "foreignteam2"),
@@ -360,8 +479,12 @@ class SlackImporter(ZulipTestCase):
         ]
         for expected, found in zip(expected_users, later_users, strict=False):
             self.assertEqual(found["id"], expected[0])
-            self.assertEqual(found["team_domain"], expected[1])
-            self.assertEqual(found["is_mirror_dummy"], True)
+            if "bot_id" in found.get("profile", {}):
+                self.assertEqual(found["real_name"], expected[1])
+                self.assertEqual(found["is_mirror_dummy"], False)
+            else:
+                self.assertEqual(found["team_domain"], expected[1])
+                self.assertEqual(found["is_mirror_dummy"], True)
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:
@@ -373,7 +496,7 @@ class SlackImporter(ZulipTestCase):
             "Xf06054BBB": {"value": "random2"},
             "Xf023DSCdd": {"value": "employer"},
         }
-        user_data = [
+        user_data: list[dict[str, Any]] = [
             {
                 "id": "U08RGD1RD",
                 "team_id": "T5YFFM2QY",
@@ -513,6 +636,53 @@ class SlackImporter(ZulipTestCase):
                     "image_32": "https://secure.gravatar.com/avatar/random7.png",
                 },
             },
+            # Unknown user data format.
+            {
+                "id": "U1ZYFEC91",
+                "team_id": "T5YFFM2QZ",
+                "name": "daniel.who",
+                "real_name": "Daniel Who",
+                "is_admin": True,
+                "is_owner": False,
+                "is_primary_owner": False,
+                "is_restricted": False,
+                "is_ultra_restricted": False,
+                "is_bot": False,
+                "is_mirror_dummy": False,
+                "profile": {
+                    "email": "daniel.who@gmail.com",
+                },
+                # Missing the `avatar_hash` value.
+            },
+            {
+                "id": "U1MBOTC81",
+                "name": "Integration Bot",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "real_name": "Integration Bot",
+                "is_integration_bot": True,
+                "profile": {
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_512.png",
+                    "bot_id": "B06NWMNUQ3W",
+                    "first_name": "Integration Bot",
+                },
+            },
+            # Test error-handling for a bot user with an unknown avatar URL format.
+            # In reality, we expect the file to have a file extension type to be
+            # `.png` or within the range of `THUMBNAIL_ACCEPT_IMAGE_TYPES`.
+            {
+                "id": "U1RDFEC90",
+                "name": "Unknown Bot",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "real_name": "Unknown Bot",
+                "is_integration_bot": True,
+                "profile": {
+                    "image_72": "https://avatars.slack-edge.com/2024-05-01/dasdasdasdasdXXXXXX",
+                    "bot_id": "B0DSAMNUQ3W",
+                    "first_name": "Unknown Bot",
+                },
+            },
         ]
 
         mock_get_data_file.return_value = user_data
@@ -527,6 +697,9 @@ class SlackImporter(ZulipTestCase):
             "U8X25EBAB": 5,
             "U015J7JSE": 6,
             "U1RDFEC80": 7,
+            "U1ZYFEC91": 8,
+            "U1MBOTC81": 9,
+            "U1RDFEC90": 10,
         }
         slack_data_dir = "./random_path"
         timestamp = int(timezone_now().timestamp())
@@ -539,7 +712,9 @@ class SlackImporter(ZulipTestCase):
                 slack_user_id_to_zulip_user_id,
                 customprofilefield,
                 customprofilefield_value,
-            ) = users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+            ) = users_to_zerver_userprofile(
+                slack_data_dir, user_data, 1, timestamp, "testdomain.com"
+            )
 
         # Test custom profile fields
         self.assertEqual(customprofilefield[0]["field_type"], 1)
@@ -560,9 +735,9 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
-        self.assert_length(avatar_list, 8)
+        self.assert_length(avatar_list, 9)
 
-        self.assert_length(zerver_userprofile, 8)
+        self.assert_length(zerver_userprofile, 11)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -634,6 +809,36 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[7]["is_staff"], False)
         self.assertEqual(zerver_userprofile[7]["is_active"], True)
         self.assertEqual(zerver_userprofile[7]["is_mirror_dummy"], False)
+
+        # Importer should raise error when user emails are malformed
+        bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"
+        bad_email2 = user_data[1]["profile"]["email"] = "jane@gmail.m"
+        with self.assertRaises(Exception) as e, self.assertLogs(level="INFO"):
+            users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+        error_message = str(e.exception)
+        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
+        self.assertEqual(error_message, expected_error_message)
+
+        # Test converting unknown user data format that doesn't have
+        # an `avatar_hash` in its user profile.
+        self.assertEqual(
+            zerver_userprofile[8]["id"], test_slack_user_id_to_zulip_user_id["U1ZYFEC91"]
+        )
+        self.assertEqual(zerver_userprofile[8]["is_active"], True)
+        self.assertEqual(zerver_userprofile[8]["avatar_source"], "G")
+
+        # Test converting Slack's integration bot
+        self.assertEqual(
+            zerver_userprofile[9]["id"], test_slack_user_id_to_zulip_user_id["U1MBOTC81"]
+        )
+        self.assertEqual(zerver_userprofile[9]["is_active"], True)
+        self.assertEqual(zerver_userprofile[9]["avatar_source"], "U")
+
+        self.assertEqual(
+            zerver_userprofile[10]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC90"]
+        )
+        self.assertEqual(zerver_userprofile[10]["is_active"], True)
+        self.assertEqual(zerver_userprofile[10]["avatar_source"], "G")
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
@@ -893,7 +1098,13 @@ class SlackImporter(ZulipTestCase):
         user_data = [
             {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
             {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
-            {"id": "U061A1R2R", "name": "jon", "deleted": False, "real_name": "Jon"},
+            {
+                "id": "U061A1R2R",
+                "name": "jon",
+                "deleted": False,
+                "real_name": "Jon",
+                "profile": {"email": "jon@example.com"},
+            },
         ]
 
         slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
@@ -988,6 +1199,24 @@ class SlackImporter(ZulipTestCase):
                 "ts": "1553607595.000700",
                 "pm_name": "DJ47BL849",
             },
+            {
+                "text": "Look!",
+                "user": "U061A1R2R",
+                "ts": "1553607596.000700",
+                "has_image": True,
+                "channel_name": "random",
+                "files": [
+                    {
+                        "url_private": "https://files.slack.com/apple.png",
+                        "title": "Apple",
+                        "name": "apple.png",
+                        "mimetype": "image/png",
+                        "timestamp": 9999,
+                        "created": 8888,
+                        "size": 3000000,
+                    }
+                ],
+            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1031,10 +1260,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 9)
-
-        self.assertEqual(uploads, [])
-        self.assertEqual(attachment, [])
+        self.assert_length(zerver_message, 10)
 
         # Test reactions
         self.assertEqual(reaction[0]["user_profile"], 24)
@@ -1047,6 +1273,11 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]["has_link"], True)
         self.assertEqual(zerver_message[5]["has_link"], False)
         self.assertEqual(zerver_message[7]["has_link"], False)
+
+        # Test that topic_name is an empty string for direct messages and
+        # group direct messages.
+        self.assertEqual(zerver_message[6][EXPORT_TOPIC_NAME], "")
+        self.assertEqual(zerver_message[8][EXPORT_TOPIC_NAME], "")
 
         self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], "imported from Slack")
         self.assertEqual(zerver_message[3]["content"], "/me added bot")
@@ -1088,6 +1319,19 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[6]["sender"], 24)
         self.assertEqual(zerver_message[7]["sender"], 43)
         self.assertEqual(zerver_message[8]["sender"], 5)
+
+        # Test uploads
+        self.assert_length(uploads, 1)
+        self.assertEqual(uploads[0]["path"], "https://files.slack.com/apple.png")
+        self.assert_length(attachment, 1)
+        self.assertEqual(attachment[0]["file_name"], "apple.png")
+        self.assertEqual(attachment[0]["is_realm_public"], True)
+        self.assertEqual(attachment[0]["is_web_public"], False)
+        self.assertEqual(attachment[0]["content_type"], "image/png")
+
+        self.assertEqual(zerver_message[9]["has_image"], True)
+        self.assertEqual(zerver_message[9]["has_attachment"], True)
+        self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_threads(
@@ -1279,7 +1523,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
-    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_token_access")
@@ -1323,10 +1567,11 @@ class SlackImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_data(test_slack_zip_file, output_dir, token)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token)
 
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
+        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
 
         realm_icons_path = os.path.join(output_dir, "realm_icons")
         realm_icon_records_path = os.path.join(realm_icons_path, "records.json")
@@ -1354,15 +1599,15 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(
             realmauditlog_event_type,
             {
-                RealmAuditLog.SUBSCRIPTION_CREATED,
-                RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
-                RealmAuditLog.REALM_PROPERTY_CHANGED,
-                RealmAuditLog.REALM_CREATED,
-                RealmAuditLog.REALM_IMPORTED,
-                RealmAuditLog.USER_GROUP_CREATED,
-                RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-                RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
-                RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                AuditLogEventType.SUBSCRIPTION_CREATED,
+                AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                AuditLogEventType.REALM_PROPERTY_CHANGED,
+                AuditLogEventType.REALM_CREATED,
+                AuditLogEventType.REALM_IMPORTED,
+                AuditLogEventType.USER_GROUP_CREATED,
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
             },
         )
 
@@ -1486,7 +1731,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
-    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_token_access")
@@ -1531,4 +1776,4 @@ class SlackImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_data(test_slack_zip_file, output_dir, token)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token)

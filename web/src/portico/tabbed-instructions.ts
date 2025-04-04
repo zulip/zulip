@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import * as blueslip from "../blueslip";
-import * as common from "../common";
-import * as util from "../util";
+import * as blueslip from "../blueslip.ts";
+import * as common from "../common.ts";
+import * as util from "../util.ts";
 
 export type UserOS = "android" | "ios" | "mac" | "windows" | "linux";
 
@@ -57,7 +57,7 @@ export function activate_correct_tab($tabbed_section: JQuery): void {
 
     // if no tab was activated, just activate the first one
     const $active_list_items = $li.filter(".active");
-    if (!$active_list_items.length) {
+    if ($active_list_items.length === 0) {
         $li.first().addClass("active");
         const tab_key = util.the($li.first()).dataset.tabKey;
         if (tab_key) {

@@ -6,7 +6,7 @@ from django.core.management.base import CommandParser
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.queue import SimpleQueueClient, queue_json_publish
+from zerver.lib.queue import SimpleQueueClient, queue_json_publish_rollback_unsafe
 from zerver.worker.test import BatchNoopWorker, NoopWorker
 
 
@@ -71,7 +71,7 @@ class Command(ZulipBaseCommand):
                 for i in range(1, reps + 1):
                     worker.consumed = 0
                     timeit(
-                        lambda: queue_json_publish(queue_name, {}),
+                        lambda: queue_json_publish_rollback_unsafe(queue_name, {}),
                         number=count,
                     )
                     duration = timeit(worker.start, number=1)

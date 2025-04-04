@@ -4,8 +4,6 @@ Get Wekan notifications in Zulip!
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
@@ -19,10 +17,6 @@ Get Wekan notifications in Zulip!
 {!congrats.md!}
 
 ![](/static/images/integrations/wekan/001.png)
-
-### Configuration options
-
-{!git-branches-additional-feature.md!}
 
 ### Related documentation
 

@@ -67,7 +67,7 @@ class Command(ZulipBaseCommand):
         # This is an additional filter which is composed with the above
         parser.add_argument(
             "--admins-only",
-            help="Filter recipients selected via other options to to only organization administrators",
+            help="Filter recipients selected via other options to only organization administrators",
             action="store_true",
         )
 
@@ -84,6 +84,10 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--from-name",
             help="From line for the email. It can be declared in Markdown file in headers",
+        )
+        parser.add_argument(
+            "--from-address",
+            help="From email address",
         )
         parser.add_argument("--reply-to", help="Optional reply-to line for the email")
 

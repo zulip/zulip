@@ -25,6 +25,7 @@ from django_scim.settings import scim_settings
 from sentry_sdk import set_tag
 from typing_extensions import ParamSpec, override
 
+from zerver.actions.message_summary import get_ai_requests, get_ai_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db_connections import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
@@ -32,7 +33,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import RequestNotes
+from zerver.lib.request import RequestNotes, get_preferred_type
 from zerver.lib.response import (
     AsynchronousResponse,
     json_response,
@@ -97,6 +98,8 @@ def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
     log_data["remote_cache_requests_start"] = get_remote_cache_requests()
     log_data["markdown_time_start"] = get_markdown_time()
     log_data["markdown_requests_start"] = get_markdown_requests()
+    log_data["ai_time_start"] = get_ai_time()
+    log_data["ai_requests_start"] = get_ai_time()
 
 
 def timedelta_ms(timedelta: float) -> float:
@@ -186,6 +189,14 @@ def write_log_line(
                 f" (md: {format_timedelta(markdown_time_delta)}/{markdown_count_delta})"
             )
 
+    ai_output = ""
+    if "ai_time_start" in log_data:
+        ai_time_delta = get_ai_time() - log_data["ai_time_start"]
+        ai_count_delta = get_ai_requests() - log_data["ai_requests_start"]
+
+        if ai_time_delta > 0.005:
+            ai_output = f" (ai: {format_timedelta(ai_time_delta)}/{ai_count_delta})"
+
     # Get the amount of time spent doing database queries
     db_time_output = ""
     queries = connection.connection.queries if connection.connection is not None else []
@@ -201,7 +212,7 @@ def write_log_line(
         logger_client = f"({requester_for_logs} via {client_name})"
     else:
         logger_client = f"({requester_for_logs} via {client_name}/{client_version})"
-    logger_timing = f"{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}"
+    logger_timing = f"{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{ai_output}{db_time_output}{startup_output} {path}"
     logger_line = f"{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}"
     if status_code in [200, 304] and method == "GET" and path.startswith("/static"):
         logger.debug(logger_line)
@@ -366,7 +377,7 @@ class LogRequests(MiddlewareMixin):
 class JsonErrorHandler(MiddlewareMixin):
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
         if isinstance(exception, MissingAuthenticationError):
-            if "text/html" in request.headers.get("Accept", ""):
+            if get_preferred_type(request, ["application/json", "text/html"]) == "text/html":
                 # If this looks like a request from a top-level page in a
                 # browser, send the user to the login page.
                 #
@@ -392,7 +403,9 @@ class JsonErrorHandler(MiddlewareMixin):
                 # just return the response without logging further.
                 return response
         elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
-            response = json_response(res_type="error", msg=_("Internal server error"), status=500)
+            response = json_response(
+                res_type="error", msg=_("Internal server error"), status=500, exception=exception
+            )
         else:
             return None
 

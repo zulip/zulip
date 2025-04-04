@@ -22,7 +22,8 @@
 
     <div class="input-box">
         <div class="inline-block relative">
-            <select name="realm_type" id="realm_type">
+            <select name="realm_type" id="realm_type" required>
+                <option disabled selected value>-- {{ _("Select one") }} --</option>
                 {% for realm_type in sorted_realm_types %}
                     {% if not realm_type.hidden %}
                     <option value="{{ realm_type.id }}" {% if form.realm_type.value() == realm_type.id %}selected{% endif %} >{{ _(realm_type.name) }}</option>
@@ -59,7 +60,7 @@
         <label class="checkbox static" for="realm_in_root_domain">
             <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
               {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
-            <span></span>
+            <span class="rendered-checkbox"></span>
             {% trans %}Use {{ external_host }}{% endtrans %}
         </label>
         {% endif %}

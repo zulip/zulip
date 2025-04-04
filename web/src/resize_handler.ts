@@ -1,13 +1,13 @@
 import $ from "jquery";
 
-import * as compose_ui from "./compose_ui";
-import * as condense from "./condense";
-import * as message_lists from "./message_lists";
-import * as message_viewport from "./message_viewport";
-import * as resize from "./resize";
-import * as scroll_bar from "./scroll_bar";
-import * as sidebar_ui from "./sidebar_ui";
-import * as util from "./util";
+import * as compose_ui from "./compose_ui.ts";
+import * as condense from "./condense.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as resize from "./resize.ts";
+import * as scroll_bar from "./scroll_bar.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as util from "./util.ts";
 
 export let _old_width = $(window).width();
 
@@ -26,7 +26,9 @@ export function handler(): void {
     }
     resize.resize_page_components();
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
-    resize.update_recent_view_filters_height();
+    compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
+    compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
+    resize.update_recent_view();
     scroll_bar.handle_overlay_scrollbars();
 
     // Re-compute and display/remove 'Show more' buttons to messages

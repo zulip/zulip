@@ -1,4 +1,3 @@
-import {subDays} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -7,24 +6,29 @@ import {z} from "zod";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 
-import * as blueslip from "./blueslip";
-import * as compose_state from "./compose_state";
-import * as confirm_dialog from "./confirm_dialog";
-import {$t, $t_html} from "./i18n";
-import {localstorage} from "./localstorage";
-import * as markdown from "./markdown";
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import * as stream_color from "./stream_color";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as ui_util from "./ui_util";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as compose_state from "./compose_state.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import {$t, $t_html} from "./i18n.ts";
+import {localstorage} from "./localstorage.ts";
+import * as markdown from "./markdown.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
+import * as stream_color from "./stream_color.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
-export function set_count(count: number): void {
+export let set_count = (count: number): void => {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
+};
+
+export function rewire_set_count(value: typeof set_count): void {
+    set_count = value;
 }
 
 function getTimestamp(): number {
@@ -57,7 +61,7 @@ const draft_schema = z.intersection(
     ]),
 );
 
-type LocalStorageDraft = z.infer<typeof draft_schema>;
+export type LocalStorageDraft = z.infer<typeof draft_schema>;
 
 // The id is added to the draft in format_drafts in drafts_overlay_ui.
 // We should probably just include it in the draft object itself always?
@@ -135,10 +139,12 @@ export const draft_model = (function () {
             // intermediate versions may have generated some bugged drafts with
             // this invalid topic value.
             //
-            // TODO/compatibility: This can be deleted once servers can no longer
-            // directly upgrade from Zulip 6.0beta1 and earlier development branch where the bug was present,
-            // since we expect bugged drafts will have either been run through
-            // this code or else been deleted after 30 (DRAFT_LIFETIME) days.
+            // TODO/compatibility: This can be deleted once servers
+            // can no longer directly upgrade from Zulip 6.0beta1 and
+            // earlier development branch where the bug was present,
+            // since we expect bugged drafts will have either been run
+            // through this code or been deleted by the previous
+            // behavior of deleting them after 30 days.
             if (draft.topic === undefined) {
                 draft.topic = "";
             }
@@ -219,7 +225,7 @@ export const draft_model = (function () {
     };
 })();
 
-export function update_compose_draft_count(): void {
+export let update_compose_draft_count = (): void => {
     const $count_container = $(".compose-drafts-count-container");
     const $count_ele = $count_container.find(".compose-drafts-count");
     if (!compose_state.has_full_recipient()) {
@@ -235,11 +241,19 @@ export function update_compose_draft_count(): void {
         $count_ele.text("");
         $count_container.hide();
     }
+};
+
+export function rewire_update_compose_draft_count(value: typeof update_compose_draft_count): void {
+    update_compose_draft_count = value;
 }
 
-export function sync_count(): void {
+export let sync_count = (): void => {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
+};
+
+export function rewire_sync_count(value: typeof sync_count): void {
+    sync_count = value;
 }
 
 export function delete_all_drafts(): void {
@@ -262,8 +276,8 @@ export function confirm_delete_all_drafts(): void {
 export function rename_stream_recipient(
     old_stream_id: number,
     old_topic: string,
-    new_stream_id: number,
-    new_topic: string,
+    new_stream_id: number | undefined,
+    new_topic: string | undefined,
 ): void {
     for (const [draft_id, draft] of Object.entries(draft_model.get())) {
         if (draft.type !== "stream" || draft.stream_id === undefined) {
@@ -396,7 +410,7 @@ type UpdateDraftOptions = {
     is_sending_saving?: boolean;
 };
 
-export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
+export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined => {
     const draft_id = compose_draft_id;
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
@@ -439,9 +453,11 @@ export function update_draft(opts: UpdateDraftOptions = {}): string | undefined 
     maybe_notify(no_notify);
 
     return new_draft_id;
-}
+};
 
-export const DRAFT_LIFETIME = 30;
+export function rewire_update_draft(value: typeof update_draft): void {
+    update_draft = value;
+}
 
 export function current_recipient_data(): {
     stream_name: string | undefined;
@@ -490,9 +506,9 @@ export function filter_drafts_by_compose_box_and_recipient(
         // Match by stream and topic.
         if (
             stream_id &&
-            topic &&
+            topic !== undefined &&
             draft.type === "stream" &&
-            draft.topic &&
+            draft.topic !== undefined &&
             draft.stream_id !== undefined &&
             util.same_recipient(
                 {type: "stream", stream_id: draft.stream_id, topic: draft.topic},
@@ -502,7 +518,12 @@ export function filter_drafts_by_compose_box_and_recipient(
             narrow_drafts_ids.push(id);
         }
         // Match by only stream.
-        else if (draft.type === "stream" && stream_id && !topic && draft.stream_id === stream_id) {
+        else if (
+            draft.type === "stream" &&
+            stream_id &&
+            topic === undefined &&
+            draft.stream_id === stream_id
+        ) {
             narrow_drafts_ids.push(id);
         }
         // Match by direct message recipient.
@@ -542,24 +563,15 @@ export function get_last_restorable_draft_based_on_compose_state():
         .findLast((draft) => !draft.is_sending_saving && draft.drafts_version >= 1);
 }
 
-export function remove_old_drafts(): void {
-    const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
-    const drafts = draft_model.get();
-    for (const [id, draft] of Object.entries(drafts)) {
-        if (draft.updatedAt !== undefined && draft.updatedAt < old_date) {
-            draft_model.deleteDraft(id);
-        }
-    }
-}
-
-type FormattedDraft =
+export type FormattedDraft =
     | {
           is_stream: true;
           draft_id: string;
           stream_name?: string | undefined;
           recipient_bar_color: string;
           stream_privacy_icon_color: string;
-          topic: string;
+          topic_display_name: string;
+          is_empty_string_topic: boolean;
           raw_content: string;
           stream_id: number | undefined;
           time_stamp: string;
@@ -616,8 +628,14 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
             invite_only = sub.invite_only;
             is_web_public = sub.is_web_public;
         }
-        const draft_topic = draft.topic || compose_state.empty_topic_placeholder();
         const draft_stream_color = stream_data.get_color(draft.stream_id);
+
+        let draft_topic_display_name = draft.topic;
+        let is_empty_string_topic = false;
+        if (draft.topic === "" && !realm.realm_mandatory_topics) {
+            draft_topic_display_name = util.get_final_topic_display_name("");
+            is_empty_string_topic = true;
+        }
 
         return {
             draft_id: draft.id,
@@ -626,7 +644,8 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
             recipient_bar_color: stream_color.get_recipient_bar_color(draft_stream_color),
             stream_privacy_icon_color:
                 stream_color.get_stream_privacy_icon_color(draft_stream_color),
-            topic: draft_topic,
+            topic_display_name: draft_topic_display_name,
+            is_empty_string_topic,
             raw_content: draft.content,
             stream_id: draft.stream_id,
             time_stamp,
@@ -649,8 +668,6 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
 }
 
 export function initialize(): void {
-    remove_old_drafts();
-
     // It's possible that drafts will get still have
     // `is_sending_saving` set to true if the page was
     // refreshed in the middle of sending a message. We

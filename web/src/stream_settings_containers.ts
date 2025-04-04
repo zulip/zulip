@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import type {StreamSubscription} from "./sub_store";
+import type {StreamSubscription} from "./sub_store.ts";
 
 export function get_edit_container(sub: StreamSubscription): JQuery {
     assert(sub !== undefined, "Stream subscription is undefined.");

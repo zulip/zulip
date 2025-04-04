@@ -17,6 +17,7 @@ from corporate.lib.remote_billing_util import (
 from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession, add_months
 from corporate.models import (
     CustomerPlan,
+    LicenseLedger,
     get_current_plan_by_customer,
     get_customer_by_remote_realm,
     get_customer_by_remote_server,
@@ -499,7 +500,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 1),
             tick=False,
         ):
-            result = self.client_get(final_url, subdomain="selfhosting")
+            result = self.client_get(
+                final_url, subdomain="selfhosting", HTTP_ACCEPT="text/html, */*;q=0.8"
+            )
 
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
@@ -728,7 +731,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         )
 
     @responses.activate
-    def test_transfer_legacy_plan_scheduled_for_upgrade_from_server_to_realm(
+    def test_transfer_complimentary_access_plan_scheduled_for_upgrade_from_server_to_realm(
         self,
     ) -> None:
         self.login("desdemona")
@@ -740,9 +743,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         start_date = timezone_now()
         end_date = add_months(timezone_now(), 10)
 
-        # Migrate server to legacy to plan.
+        # Migrate server to complimentary access plan.
         server_billing_session = RemoteServerBillingSession(self.server)
-        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+        server_billing_session.create_complimentary_access_plan(start_date, end_date)
 
         server_customer = server_billing_session.get_customer()
         assert server_customer is not None
@@ -818,8 +821,8 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             ["zephyr.testserver", "lear.testserver"],
         )
 
-        # Check legacy CustomerPlan exists for the one non-deactivated "real" realm
-        # and does not for the bot realm.
+        # Check complimentary access CustomerPlan exists for the one non-deactivated
+        # "real" realm and does not for the bot realm.
 
         # Sanity check that the setup for this test is the way we think it is.
         self.assertEqual(RemoteRealm.objects.filter(realm_deactivated=False).count(), 2)
@@ -1019,6 +1022,15 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
             status=CustomerPlan.ACTIVE,
+            automanage_licenses=True,
+        )
+        initial_license_count = 100
+        LicenseLedger.objects.create(
+            plan=server_plan,
+            is_renewal=True,
+            event_time=timezone_now(),
+            licenses=initial_license_count,
+            licenses_at_next_renewal=initial_license_count,
         )
         self.server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
         self.server.save(update_fields=["plan_type"])
@@ -1096,6 +1108,16 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
         self.assertEqual(plan.status, CustomerPlan.ACTIVE)
 
+        # Check that an updated license ledger entry was created.
+        billing_session = RemoteRealmBillingSession(remote_realm=remote_realm_with_plan)
+        license_ledger = billing_session.get_last_ledger_for_automanaged_plan_if_exists()
+        billable_licenses = billing_session.get_billable_licenses_for_customer(customer, plan.tier)
+        assert license_ledger is not None
+        self.assertNotEqual(initial_license_count, billable_licenses)
+        self.assertEqual(license_ledger.licenses, initial_license_count)
+        self.assertEqual(license_ledger.licenses_at_next_renewal, billable_licenses)
+        self.assertFalse(license_ledger.is_renewal)
+
     @responses.activate
     def test_transfer_plan_from_server_to_realm_edge_cases(self) -> None:
         self.login("desdemona")
@@ -1131,11 +1153,11 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Server still has no plan.
         self.assertIsNone(get_current_plan_by_customer(server_customer))
 
-        # CASE: Server has legacy plan but all realms are deactivated.
+        # CASE: Server has complimentary access plan but all realms are deactivated.
         start_date = timezone_now()
         end_date = add_months(timezone_now(), 10)
         server_billing_session = RemoteServerBillingSession(self.server)
-        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+        server_billing_session.create_complimentary_access_plan(start_date, end_date)
         # All realms are deactivated.
         Realm.objects.all().update(deactivated=True)
 
@@ -1466,8 +1488,7 @@ class LegacyServerLoginTest(RemoteServerTestCase):
         self.assertEqual(result["Location"], f"/server/{self.uuid}/sponsorship/")
 
         result = self.client_get(result["Location"], subdomain="selfhosting")
-        # TODO Update the string when we have a complete sponsorship page for legacy servers.
-        self.assert_in_success_response(["Request Zulip", "sponsorship"], result)
+        self.assert_in_success_response(["Request Zulip", "sponsorship", "Community"], result)
 
     def test_server_login_next_page_in_form_persists(self) -> None:
         result = self.client_get("/serverlogin/?next_page=billing", subdomain="selfhosting")
@@ -1491,7 +1512,11 @@ class LegacyServerLoginTest(RemoteServerTestCase):
         hamlet = self.example_user("hamlet")
         now = timezone_now()
         # Try to open a page with no auth at all.
-        result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
+        result = self.client_get(
+            f"/server/{self.uuid}/billing/",
+            subdomain="selfhosting",
+            HTTP_ACCEPT="text/html, */*;q=0.8",
+        )
         self.assertEqual(result.status_code, 302)
         # Redirects to the login form with appropriate next_page value.
         self.assertEqual(result["Location"], "/serverlogin/?next_page=billing")
@@ -1515,7 +1540,11 @@ class LegacyServerLoginTest(RemoteServerTestCase):
                 next_page="upgrade",
                 return_without_clicking_confirmation_link=True,
             )
-        result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
+        result = self.client_get(
+            f"/server/{self.uuid}/billing/",
+            subdomain="selfhosting",
+            HTTP_ACCEPT="text/html, */*;q=0.8",
+        )
         self.assertEqual(result.status_code, 302)
         # Redirects to the login form with appropriate next_page value.
         self.assertEqual(result["Location"], "/serverlogin/?next_page=billing")
@@ -1542,7 +1571,11 @@ class LegacyServerLoginTest(RemoteServerTestCase):
             now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
             tick=False,
         ):
-            result = self.client_get(f"/server/{self.uuid}/upgrade/", subdomain="selfhosting")
+            result = self.client_get(
+                f"/server/{self.uuid}/upgrade/",
+                subdomain="selfhosting",
+                HTTP_ACCEPT="text/html, */*;q=0.8",
+            )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/serverlogin/?next_page=upgrade")
 

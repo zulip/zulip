@@ -92,6 +92,7 @@
         color: hsl(225deg 100% 84%);
         padding: 0 5px;
         text-align: center;
+        white-space: nowrap;
     }
 
     .stream-privacy-type-icon {

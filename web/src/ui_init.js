@@ -3,153 +3,171 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as fenced_code from "../shared/src/fenced_code";
+import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
 import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
+import render_try_zulip_modal from "../templates/try_zulip_modal.hbs";
 
-import * as about_zulip from "./about_zulip";
-import * as activity from "./activity";
-import * as activity_ui from "./activity_ui";
-import * as add_stream_options_popover from "./add_stream_options_popover";
-import * as alert_words from "./alert_words";
-import {all_messages_data} from "./all_messages_data";
-import * as audible_notifications from "./audible_notifications";
-import * as blueslip from "./blueslip";
-import * as bot_data from "./bot_data";
-import * as channel from "./channel";
-import * as click_handlers from "./click_handlers";
-import * as common from "./common";
-import * as compose from "./compose";
-import * as compose_closed_ui from "./compose_closed_ui";
-import * as compose_notifications from "./compose_notifications";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_popovers from "./compose_popovers";
-import * as compose_recipient from "./compose_recipient";
-import * as compose_reply from "./compose_reply";
-import * as compose_send_menu_popover from "./compose_send_menu_popover";
-import * as compose_setup from "./compose_setup";
-import * as compose_textarea from "./compose_textarea";
-import * as compose_tooltips from "./compose_tooltips";
-import * as composebox_typeahead from "./composebox_typeahead";
-import * as condense from "./condense";
-import * as copy_and_paste from "./copy_and_paste";
-import * as desktop_integration from "./desktop_integration";
-import * as desktop_notifications from "./desktop_notifications";
-import * as drafts from "./drafts";
-import * as drafts_overlay_ui from "./drafts_overlay_ui";
-import * as echo from "./echo";
-import * as emoji from "./emoji";
-import * as emoji_picker from "./emoji_picker";
-import * as emojisets from "./emojisets";
-import * as gear_menu from "./gear_menu";
-import * as giphy from "./giphy";
-import * as giphy_state from "./giphy_state";
-import * as hashchange from "./hashchange";
-import * as hotkey from "./hotkey";
-import * as i18n from "./i18n";
-import * as inbox_ui from "./inbox_ui";
-import * as information_density from "./information_density";
-import * as invite from "./invite";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
-import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers";
-import * as lightbox from "./lightbox";
-import * as linkifiers from "./linkifiers";
-import * as local_message from "./local_message";
-import * as markdown from "./markdown";
-import * as markdown_config from "./markdown_config";
-import * as message_actions_popover from "./message_actions_popover";
-import * as message_edit_history from "./message_edit_history";
-import * as message_fetch from "./message_fetch";
-import * as message_list_hover from "./message_list_hover";
-import * as message_list_tooltips from "./message_list_tooltips";
-import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
-import * as message_view from "./message_view";
-import * as message_view_header from "./message_view_header";
-import * as message_viewport from "./message_viewport";
-import * as modals from "./modals";
-import * as muted_users from "./muted_users";
-import * as narrow_history from "./narrow_history";
-import * as narrow_state from "./narrow_state";
-import * as narrow_title from "./narrow_title";
-import * as navbar_alerts from "./navbar_alerts";
-import * as navbar_help_menu from "./navbar_help_menu";
-import * as navigate from "./navigate";
-import * as onboarding_steps from "./onboarding_steps";
-import * as overlays from "./overlays";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as personal_menu_popover from "./personal_menu_popover";
-import * as playground_links_popover from "./playground_links_popover";
-import * as pm_conversations from "./pm_conversations";
-import * as pm_list from "./pm_list";
-import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import * as presence from "./presence";
-import * as pygments_data from "./pygments_data";
-import * as realm_logo from "./realm_logo";
-import * as realm_playground from "./realm_playground";
-import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
-import * as recent_view_ui from "./recent_view_ui";
-import * as reload_setup from "./reload_setup";
-import * as resize_handler from "./resize_handler";
-import * as scheduled_messages from "./scheduled_messages";
-import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as scheduled_messages_ui from "./scheduled_messages_ui";
-import * as scroll_bar from "./scroll_bar";
-import * as scroll_util from "./scroll_util";
-import * as search from "./search";
-import * as server_events from "./server_events";
-import * as settings from "./settings";
-import * as settings_data from "./settings_data";
-import * as settings_notifications from "./settings_notifications";
-import * as settings_panel_menu from "./settings_panel_menu";
-import * as settings_preferences from "./settings_preferences";
-import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
-import * as settings_sections from "./settings_sections";
-import * as settings_toggle from "./settings_toggle";
-import * as sidebar_ui from "./sidebar_ui";
-import * as spoilers from "./spoilers";
-import * as starred_messages from "./starred_messages";
-import * as starred_messages_ui from "./starred_messages_ui";
-import {current_user, realm, set_current_user, set_realm, state_data_schema} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
-import * as stream_edit_subscribers from "./stream_edit_subscribers";
-import * as stream_list from "./stream_list";
-import * as stream_list_sort from "./stream_list_sort";
-import * as stream_popover from "./stream_popover";
-import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_topic_history from "./stream_topic_history";
-import * as stream_topic_history_util from "./stream_topic_history_util";
-import * as sub_store from "./sub_store";
-import * as theme from "./theme";
-import * as thumbnail from "./thumbnail";
-import * as timerender from "./timerender";
-import * as tippyjs from "./tippyjs";
-import * as topic_list from "./topic_list";
-import * as topic_popover from "./topic_popover";
-import * as transmit from "./transmit";
-import * as typeahead_helper from "./typeahead_helper";
-import * as typing from "./typing";
-import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
-import * as unread_ui from "./unread_ui";
-import * as upload from "./upload";
-import * as user_card_popover from "./user_card_popover";
-import * as user_group_edit from "./user_group_edit";
-import * as user_group_edit_members from "./user_group_edit_members";
-import * as user_group_popover from "./user_group_popover";
-import * as user_groups from "./user_groups";
-import * as user_profile from "./user_profile";
-import {initialize_user_settings, user_settings} from "./user_settings";
-import * as user_status from "./user_status";
-import * as user_status_ui from "./user_status_ui";
-import * as user_topic_popover from "./user_topic_popover";
-import * as user_topics from "./user_topics";
-import * as widgets from "./widgets";
+import * as about_zulip from "./about_zulip.ts";
+import * as activity from "./activity.ts";
+import * as activity_ui from "./activity_ui.ts";
+import * as add_stream_options_popover from "./add_stream_options_popover.ts";
+import * as alert_words from "./alert_words.ts";
+import {all_messages_data} from "./all_messages_data.ts";
+import * as audible_notifications from "./audible_notifications.ts";
+import * as banners from "./banners.ts";
+import * as blueslip from "./blueslip.ts";
+import * as bot_data from "./bot_data.ts";
+import * as channel from "./channel.ts";
+import * as click_handlers from "./click_handlers.ts";
+import * as color_picker_popover from "./color_picker_popover.ts";
+import * as common from "./common.ts";
+import * as compose from "./compose.js";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
+import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_paste from "./compose_paste.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_reply from "./compose_reply.ts";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
+import * as compose_setup from "./compose_setup.js";
+import * as compose_textarea from "./compose_textarea.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as condense from "./condense.ts";
+import * as copy_messages from "./copy_messages.ts";
+import * as desktop_integration from "./desktop_integration.ts";
+import * as desktop_notifications from "./desktop_notifications.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as drafts from "./drafts.ts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
+import * as echo from "./echo.ts";
+import * as emoji from "./emoji.ts";
+import * as emoji_picker from "./emoji_picker.ts";
+import * as emojisets from "./emojisets.ts";
+import * as gear_menu from "./gear_menu.ts";
+import * as giphy from "./giphy.ts";
+import * as giphy_state from "./giphy_state.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import * as hashchange from "./hashchange.ts";
+import * as hotkey from "./hotkey.js";
+import * as i18n from "./i18n.ts";
+import * as inbox_ui from "./inbox_ui.ts";
+import * as information_density from "./information_density.ts";
+import * as invite from "./invite.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers.ts";
+import * as left_sidebar_tooltips from "./left_sidebar_tooltips.ts";
+import * as lightbox from "./lightbox.ts";
+import * as linkifiers from "./linkifiers.ts";
+import * as local_message from "./local_message.ts";
+import * as markdown from "./markdown.ts";
+import * as markdown_config from "./markdown_config.ts";
+import * as message_actions_popover from "./message_actions_popover.ts";
+import * as message_edit_history from "./message_edit_history.ts";
+import * as message_fetch from "./message_fetch.ts";
+import * as message_list_hover from "./message_list_hover.ts";
+import * as message_list_tooltips from "./message_list_tooltips.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_scroll from "./message_scroll.ts";
+import * as message_view from "./message_view.ts";
+import * as message_view_header from "./message_view_header.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as modals from "./modals.ts";
+import * as muted_users from "./muted_users.ts";
+import * as narrow_history from "./narrow_history.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
+import * as navbar_alerts from "./navbar_alerts.ts";
+import * as navbar_help_menu from "./navbar_help_menu.ts";
+import * as navigate from "./navigate.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as personal_menu_popover from "./personal_menu_popover.ts";
+import * as playground_links_popover from "./playground_links_popover.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as pm_list from "./pm_list.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
+import * as popup_banners from "./popup_banners.ts";
+import * as presence from "./presence.ts";
+import * as pygments_data from "./pygments_data.ts";
+import * as realm_logo from "./realm_logo.ts";
+import * as realm_playground from "./realm_playground.ts";
+import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import * as reload_setup from "./reload_setup.js";
+import * as resize_handler from "./resize_handler.ts";
+import * as saved_snippets from "./saved_snippets.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
+import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
+import * as scroll_bar from "./scroll_bar.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as search from "./search.ts";
+import * as server_events from "./server_events.js";
+import * as settings from "./settings.ts";
+import * as settings_notifications from "./settings_notifications.ts";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
+import * as settings_preferences from "./settings_preferences.ts";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
+import * as settings_sections from "./settings_sections.ts";
+import * as settings_toggle from "./settings_toggle.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as spoilers from "./spoilers.ts";
+import * as starred_messages from "./starred_messages.ts";
+import * as starred_messages_ui from "./starred_messages_ui.ts";
+import {
+    current_user,
+    realm,
+    set_current_user,
+    set_realm,
+    set_realm_billing,
+    state_data_schema,
+} from "./state_data.ts";
+import * as stream_card_popover from "./stream_card_popover.ts";
+import * as stream_create from "./stream_create.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_edit from "./stream_edit.ts";
+import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
+import * as stream_list from "./stream_list.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import * as stream_popover from "./stream_popover.ts";
+import * as stream_settings_ui from "./stream_settings_ui.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as sub_store from "./sub_store.ts";
+import * as theme from "./theme.ts";
+import * as thumbnail from "./thumbnail.ts";
+import * as timerender from "./timerender.ts";
+import * as tippyjs from "./tippyjs.ts";
+import * as topic_list from "./topic_list.ts";
+import * as topic_popover from "./topic_popover.ts";
+import * as transmit from "./transmit.js";
+import * as typeahead_helper from "./typeahead_helper.ts";
+import * as typing from "./typing.ts";
+import * as unread from "./unread.ts";
+import * as unread_ops from "./unread_ops.ts";
+import * as unread_ui from "./unread_ui.ts";
+import * as upload from "./upload.ts";
+import * as user_card_popover from "./user_card_popover.ts";
+import * as user_group_edit from "./user_group_edit.ts";
+import * as user_group_edit_members from "./user_group_edit_members.ts";
+import * as user_group_popover from "./user_group_popover.ts";
+import * as user_groups from "./user_groups.ts";
+import * as user_profile from "./user_profile.ts";
+import {initialize_user_settings, user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
+import * as user_status_ui from "./user_status_ui.ts";
+import * as user_topic_popover from "./user_topic_popover.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
+import * as widgets from "./widgets.js";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -182,7 +200,7 @@ function initialize_compose_box() {
                 giphy_enabled: giphy_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
-                max_message_length: realm.max_message_length,
+                empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
         ),
     );
@@ -264,8 +282,12 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
-        // Except for the compose banners, which still need scroll events.
-        if ($(e.target).closest("#compose_banners").length) {
+        // Except for the compose banners or formatting buttons,
+        // which still need scroll events.
+        if (
+            $(e.target).closest("#compose_banners, #message-formatting-controls-container").length >
+            0
+        ) {
             return;
         }
         e.stopPropagation();
@@ -283,19 +305,6 @@ export function initialize_kitchen_sink_stuff() {
     if (user_settings.high_contrast_mode) {
         $("body").addClass("high-contrast");
     }
-
-    if (!user_settings.dense_mode) {
-        $("body").addClass("less-dense-mode");
-    } else {
-        $("body").addClass("more-dense-mode");
-    }
-
-    // To keep the specificity same for the CSS related to hiding the
-    // sidebars, we add the class to the body which is then later replaced
-    // by the class to hide right / left sidebar. We can take our time to do
-    // this since we are still showing the loading indicator screen and
-    // the rendered sidebars hasn't been displayed to the user yet.
-    $("body").addClass("default-sidebar-behaviour");
 
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
@@ -317,7 +326,6 @@ export function initialize_kitchen_sink_stuff() {
         const $row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
         $row.addClass("selected_message");
-        narrow_history.save_narrow_state();
 
         if (event.then_scroll) {
             if ($row.length === 0) {
@@ -353,6 +361,9 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
         }
+
+        // Save selected message and scroll position after we have scrolled to it.
+        narrow_history.save_narrow_state();
     });
 
     if (!realm.realm_allow_message_editing) {
@@ -418,6 +429,7 @@ export function initialize_everything(state_data) {
 
     set_current_user(state_data.current_user);
     set_realm(state_data.realm);
+    set_realm_billing(state_data.realm_billing);
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information
@@ -435,11 +447,11 @@ export function initialize_everything(state_data) {
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
+    left_sidebar_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(state_data.scheduled_messages);
     scheduled_messages_ui.initialize();
     popover_menus.initialize();
-    compose_popovers.initialize();
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
@@ -449,18 +461,6 @@ export function initialize_everything(state_data) {
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
     people.initialize(current_user.user_id, state_data.people);
     starred_messages.initialize(state_data.starred_messages);
-
-    let date_joined;
-    if (!page_params.is_spectator) {
-        const user = people.get_by_user_id(current_user.user_id);
-        date_joined = user.date_joined;
-    } else {
-        // Spectators don't have an account, so we just prevent their
-        // date_joined is now.
-        date_joined = new Date();
-    }
-
-    settings_data.initialize(date_joined);
 
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
@@ -497,6 +497,7 @@ export function initialize_everything(state_data) {
 
     realm_logo.initialize();
     message_lists.initialize();
+    // Needs to be initialized before activity to register window.focus event.
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {
             const user = people.get_by_user_id(participant_user_id);
@@ -517,10 +518,13 @@ export function initialize_everything(state_data) {
     });
     inbox_ui.initialize();
     alert_words.initialize(state_data.alert_words);
+    saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
+    banners.initialize();
     navbar_alerts.initialize();
+    popup_banners.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
     local_message.initialize(state_data.local_message);
@@ -528,16 +532,19 @@ export function initialize_everything(state_data) {
         on_send_message_success: compose.send_message_success,
         send_message: transmit.send_message,
     });
+    stream_create.initialize();
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(state_data.stream_data);
     user_group_edit_members.initialize();
+    stream_card_popover.initialize();
     pm_conversations.recent.initialize(state_data.pm_conversations);
     user_topics.initialize(state_data.user_topics);
     muted_users.initialize(state_data.muted_users);
     stream_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
+    stream_list_sort.initialize();
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
@@ -547,24 +554,24 @@ export function initialize_everything(state_data) {
                 [
                     {
                         operator: "stream",
-                        operand: sub.name,
+                        operand: sub.stream_id.toString(),
                     },
                 ],
                 {trigger},
             );
         },
     });
-    stream_list_sort.initialize();
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();
+    color_picker_popover.initialize();
     add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
-    copy_and_paste.initialize();
+    compose_paste.initialize();
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
@@ -573,7 +580,7 @@ export function initialize_everything(state_data) {
     compose_recipient.initialize();
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
-            compose_recipient.update_placeholder_text();
+            compose_recipient.update_compose_area_placeholder_text();
             compose_recipient.check_posting_policy_for_compose_box();
         },
     });
@@ -595,11 +602,13 @@ export function initialize_everything(state_data) {
         playground_data: realm.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
+    copy_messages.initialize();
     compose_setup.initialize();
     // Typeahead must be initialized after compose_setup.initialize()
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
+    compose_validate.initialize();
     compose_textarea.initialize();
     upload.initialize();
     search.initialize({
@@ -628,6 +637,16 @@ export function initialize_everything(state_data) {
 
     initialize_unread_ui();
     activity.initialize();
+    activity.register_on_new_user_input_hook(() => {
+        // Instead of marking new messages as read immediately when bottom
+        // of feed is visible, we wait for user input to mark them as read.
+        // This is to prevent marking messages as read unintentionally,
+        // especially when user is away from screen and the window is focused.
+        if (activity.received_new_messages && activity.new_user_input) {
+            unread_ops.process_visible();
+            activity.set_received_new_messages(false);
+        }
+    });
     activity_ui.initialize({
         narrow_by_email(email) {
             message_view.show(
@@ -642,7 +661,7 @@ export function initialize_everything(state_data) {
         },
     });
 
-    // All overlays, and also activity_ui, must be initialized before hashchange.js
+    // All overlays, and also activity_ui, must be initialized before hashchange.ts
     hashchange.initialize();
 
     emoji_picker.initialize();
@@ -654,20 +673,41 @@ export function initialize_everything(state_data) {
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);
-            message_view.show(
-                [
-                    {operator: "channel", operand: sub.name},
-                    {operator: "topic", operand: topic},
-                ],
-                {trigger: "sidebar"},
+            const latest_msg_id = stream_topic_history.get_latest_known_message_id_in_topic(
+                stream_id,
+                topic,
             );
+
+            const narrow = [
+                {operator: "channel", operand: sub.stream_id.toString()},
+                {operator: "topic", operand: topic},
+            ];
+
+            if (latest_msg_id !== undefined) {
+                narrow.push({operator: "with", operand: latest_msg_id});
+            }
+
+            message_view.show(narrow, {trigger: "sidebar"});
+
+            if (sidebar_ui.left_sidebar_expanded_as_overlay) {
+                // If the left sidebar is drawn over the center pane,
+                // hide it so that the user can actually see the
+                // topic. We don't need to also hide the user list
+                // sidebar, since its own click-outside handler will
+                // hide it.
+                sidebar_ui.hide_streamlist_sidebar();
+            }
         },
     });
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
     // This needs to happen after activity_ui.initialize, so that user_filter
     // is defined. Also, must happen after people.initialize()
-    onboarding_steps.initialize(state_data.onboarding_steps, message_view.show);
+    onboarding_steps.initialize(
+        state_data.onboarding_steps,
+        state_data.navigation_tour_video_url,
+        message_view.show,
+    );
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
@@ -676,11 +716,38 @@ export function initialize_everything(state_data) {
     hotkey.initialize();
     desktop_integration.initialize();
 
+    group_permission_settings.initialize();
+
     $("#app-loading").addClass("loaded");
 }
 
+function show_try_zulip_modal() {
+    const html_body = render_try_zulip_modal();
+    dialog_widget.launch({
+        text_heading: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
+        html_body,
+        html_submit_button: i18n.$t({defaultMessage: "Let's go!"}),
+        on_click() {
+            // Do nothing
+        },
+        single_footer_button: true,
+        focus_submit_on_open: true,
+        close_on_submit: true,
+    });
+}
+
 $(() => {
+    // Remove '?show_try_zulip_modal', if present.
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("show_try_zulip_modal")) {
+        url.searchParams.delete("show_try_zulip_modal");
+        window.history.replaceState(window.history.state, "", url.toString());
+    }
+
     if (page_params.is_spectator) {
+        if (page_params.show_try_zulip_modal) {
+            show_try_zulip_modal();
+        }
         const data = {
             apply_markdown: true,
             client_capabilities: JSON.stringify({
@@ -690,6 +757,7 @@ $(() => {
                 // Set this to true when stream typing notifications are implemented.
                 stream_typing_notifications: false,
                 user_settings_object: true,
+                empty_topic_name: true,
             }),
             client_gravatar: false,
         };

@@ -1,13 +1,14 @@
 // TODO: Rewrite this module to use window.history.pushState.
+import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as hash_parser from "./hash_parser";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import * as hash_parser from "./hash_parser.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 export const state: {
     is_internal_change: boolean;
-    hash_before_overlay: string | null;
+    hash_before_overlay: string | null | undefined;
     old_hash: string;
     changing_hash: boolean;
     spectator_old_hash: string | null;
@@ -35,7 +36,7 @@ export function old_hash(): string {
     return state.old_hash;
 }
 
-export function set_hash_before_overlay(hash: string): void {
+export function set_hash_before_overlay(hash: string | undefined): void {
     state.hash_before_overlay = hash;
 }
 
@@ -57,7 +58,7 @@ export function save_old_hash(): boolean {
     return was_internal_change;
 }
 
-export function update(new_hash: string): void {
+export let update = (new_hash: string): void => {
     const old_hash = window.location.hash;
 
     if (!new_hash.startsWith("#")) {
@@ -77,6 +78,10 @@ export function update(new_hash: string): void {
     state.old_hash = old_hash;
     state.is_internal_change = true;
     window.location.hash = new_hash;
+};
+
+export function rewire_update(value: typeof update): void {
+    update = value;
 }
 
 export function exit_overlay(): void {
@@ -155,20 +160,62 @@ export function set_hash(hash: string): void {
     }
 }
 
-type StateData = {
-    narrow_pointer?: number;
-    narrow_offset?: number;
-    show_more_topics?: boolean;
-};
+export const state_data_schema = z.object({
+    narrow_pointer: z.number().optional(),
+    narrow_offset: z.number().optional(),
+    show_more_topics: z.boolean().optional(),
+});
 
-export function update_current_history_state_data(new_data: StateData): void {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const current_state = window.history.state as StateData | null;
+type StateData = z.infer<typeof state_data_schema>;
+
+export function current_scroll_offset(): number | undefined {
+    const current_state = state_data_schema.nullable().parse(window.history.state);
+    return current_state?.narrow_offset;
+}
+
+export function update_current_history_state_data(
+    new_data: StateData,
+    url: string | undefined = undefined,
+): void {
+    // The optional url parameter is for those rare situations where
+    // we want to adjust the URL without adding a new history entry.
+    if (url === undefined) {
+        url = window.location.href;
+    }
+    const current_state = state_data_schema.nullable().parse(window.history.state);
     const current_state_data = {
         narrow_pointer: current_state?.narrow_pointer,
         narrow_offset: current_state?.narrow_offset,
         show_more_topics: current_state?.show_more_topics,
     };
     const state_data = {...current_state_data, ...new_data};
-    window.history.replaceState(state_data, "", window.location.href);
+    window.history.replaceState(state_data, "", url);
+}
+
+export function get_current_state_show_more_topics(): boolean | undefined {
+    const current_state = state_data_schema.nullable().parse(window.history.state);
+    return current_state?.show_more_topics;
+}
+
+export function get_home_view_hash(): string {
+    let home_view_hash = `#${user_settings.web_home_view}`;
+    if (home_view_hash === "#recent_topics") {
+        home_view_hash = "#recent";
+    }
+
+    if (home_view_hash === "#all_messages") {
+        home_view_hash = "#feed";
+    }
+
+    return home_view_hash;
+}
+
+export function is_current_hash_home_view(): boolean {
+    const current_hash = window.location.hash;
+    if (current_hash === "") {
+        // Empty hash for home view is always valid.
+        return true;
+    }
+
+    return current_hash === get_home_view_hash();
 }

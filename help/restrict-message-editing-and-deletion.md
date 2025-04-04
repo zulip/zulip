@@ -4,12 +4,10 @@
 
 Zulip lets you separately configure permissions for editing and deleting
 messages, and you can set time limits for both actions. Regardless of the
-configuration you select:
+configuration you select, message content can only ever be modified by the
+original author.
 
-* Message content can only ever be modified by the original author.
-* Any message can be deleted at any time by an organization administrator.
-
-Note that if a user can edit a message, they can also "delete" it by removing
+Note that if a user can edit a message, they can also “delete” it by removing
 all the message content. This is different from proper message deletion in two
 ways: the original content will still show up in [message edit
 history](/help/view-a-messages-edit-history), and will be included in
@@ -36,6 +34,10 @@ irretrievably) removes the message from Zulip.
 
 ## Configure message deletion permissions
 
+These permissions can be granted to any combination of
+[roles](/help/user-roles), [groups](/help/user-groups), and individual
+[users](/help/introduction-to-users).
+
 {start_tabs}
 
 {settings_tab|organization-permissions}
@@ -60,6 +62,6 @@ irretrievably) removes the message from Zulip.
 * [Edit a message](/help/edit-a-message)
 * [Delete a message](/help/delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
-* [Disable message edit history](/help/disable-message-edit-history)
+* [Restrict message edit history access](/help/restrict-message-edit-history-access)
 * [Configure message retention policy](/help/message-retention-policy)
 * [Restrict moving messages](/help/restrict-moving-messages)

@@ -6,7 +6,10 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
-from zerver.lib.streams import render_stream_description
+from zerver.lib.streams import (
+    get_default_values_for_stream_permission_group_settings,
+    render_stream_description,
+)
 from zerver.models import (
     NamedUserGroup,
     Realm,
@@ -19,6 +22,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 def bulk_create_users(
@@ -96,7 +100,7 @@ def bulk_create_users(
         RealmAuditLog(
             realm=realm,
             modified_user=profile_,
-            event_type=RealmAuditLog.USER_CREATED,
+            event_type=AuditLogEventType.USER_CREATED,
             event_time=profile_.date_joined,
         )
         for profile_ in profiles_to_create
@@ -153,7 +157,7 @@ def bulk_create_users(
             realm=realm,
             modified_user=membership.user_profile,
             modified_user_group=membership.user_group.named_user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=None,
         )
@@ -199,33 +203,30 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
     existing_streams = {
         name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
-    administrators_user_group = NamedUserGroup.objects.get(
-        name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
-    )
     streams_to_create: list[Stream] = []
     for name, options in stream_dict.items():
         if "history_public_to_subscribers" not in options:
             options["history_public_to_subscribers"] = (
                 not options.get("invite_only", False) and not realm.is_zephyr_mirror_realm
             )
+        creator = options.get("creator", None)
         if name.lower() not in existing_streams:
-            streams_to_create.append(
-                Stream(
-                    realm=realm,
-                    name=name,
-                    description=options["description"],
-                    rendered_description=render_stream_description(options["description"], realm),
-                    invite_only=options.get("invite_only", False),
-                    stream_post_policy=options.get(
-                        "stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE
-                    ),
-                    history_public_to_subscribers=options["history_public_to_subscribers"],
-                    is_web_public=options.get("is_web_public", False),
-                    is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
-                    can_remove_subscribers_group=administrators_user_group,
-                    creator=options.get("creator", None),
-                ),
+            stream = Stream(
+                realm=realm,
+                name=name,
+                description=options["description"],
+                rendered_description=render_stream_description(options["description"], realm),
+                invite_only=options.get("invite_only", False),
+                history_public_to_subscribers=options["history_public_to_subscribers"],
+                is_web_public=options.get("is_web_public", False),
+                is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+                creator=options.get("creator", None),
+                **get_default_values_for_stream_permission_group_settings(realm, creator),
             )
+            if "can_send_message_group" in options:
+                stream.can_send_message_group = options["can_send_message_group"]
+
+            streams_to_create.append(stream)
     # Sort streams by name before creating them so that we can have a
     # reliable ordering of `stream_id` across different python versions.
     # This is required for test fixtures which contain `stream_id`. Prior

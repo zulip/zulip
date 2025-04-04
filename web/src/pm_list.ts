@@ -1,21 +1,28 @@
 import $ from "jquery";
 import _ from "lodash";
+import {z} from "zod";
 
-import type {Filter} from "./filter";
-import * as pm_list_data from "./pm_list_data";
-import * as pm_list_dom from "./pm_list_dom";
-import type {PMNode} from "./pm_list_dom";
-import * as resize from "./resize";
-import * as scroll_util from "./scroll_util";
-import * as ui_util from "./ui_util";
-import type {FullUnreadCountsData} from "./unread";
-import * as vdom from "./vdom";
+import type {Filter} from "./filter.ts";
+import {localstorage} from "./localstorage.ts";
+import * as pm_list_data from "./pm_list_data.ts";
+import * as pm_list_dom from "./pm_list_dom.ts";
+import type {PMNode} from "./pm_list_dom.ts";
+import * as popovers from "./popovers.ts";
+import * as resize from "./resize.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as ui_util from "./ui_util.ts";
+import type {FullUnreadCountsData} from "./unread.ts";
+import * as vdom from "./vdom.ts";
 
 let prior_dom: vdom.Tag<PMNode> | undefined;
 
 // This module manages the direct messages section in the upper
 // left corner of the app.  This was split out from stream_list.ts.
 
+const ls_key = "left_sidebar_direct_messages_collapsed_state";
+const ls_schema = z.boolean().default(false);
+const ls = localstorage();
 let private_messages_collapsed = false;
 
 // The direct messages section can be zoomed in to view more messages.
@@ -24,6 +31,13 @@ let zoomed = false;
 
 export function is_zoomed_in(): boolean {
     return zoomed;
+}
+
+export function focus_pm_search_filter(): void {
+    popovers.hide_all();
+    sidebar_ui.show_left_sidebar();
+    const $filter = $(".direct-messages-list-filter").expectOne();
+    $filter.trigger("focus");
 }
 
 function get_private_messages_section_header(): JQuery {
@@ -36,8 +50,9 @@ export function set_count(count: number): void {
 
 export function close(): void {
     private_messages_collapsed = true;
-    $("#toggle-direct-messages-section-icon").removeClass("fa-caret-down");
-    $("#toggle-direct-messages-section-icon").addClass("fa-caret-right");
+    ls.set(ls_key, private_messages_collapsed);
+    $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
+    $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
 
     update_private_messages();
 }
@@ -62,11 +77,6 @@ export function _build_direct_messages_list(): vdom.Tag<PMNode> {
     }
     const dom_ast = pm_list_dom.pm_ul(pm_list_nodes);
 
-    if (search_term === "") {
-        $("#clear-direct-messages-search-button").hide();
-    } else {
-        $("#clear-direct-messages-search-button").show();
-    }
     return dom_ast;
 }
 
@@ -113,9 +123,10 @@ export function update_private_messages(): void {
 
 export function expand(): void {
     private_messages_collapsed = false;
+    ls.set(ls_key, private_messages_collapsed);
 
-    $("#toggle-direct-messages-section-icon").addClass("fa-caret-down");
-    $("#toggle-direct-messages-section-icon").removeClass("fa-caret-right");
+    $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
+    $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
     update_private_messages();
 }
 
@@ -155,7 +166,7 @@ function scroll_all_private_into_view(): void {
 export function handle_narrow_activated(filter: Filter): void {
     const active_filter = filter;
     const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), ["is-dm"]);
-    const narrow_to_private_messages_section = active_filter.operands("dm").length !== 0;
+    const narrow_to_private_messages_section = active_filter.operands("dm").length > 0;
     const is_private_messages_in_view = active_filter.has_operator("dm");
 
     if (is_all_private_message_view) {
@@ -233,9 +244,16 @@ export function clear_search(force_rerender = false): void {
     $filter.trigger("blur");
 }
 
-const throttled_update_private_message = _.throttle(update_private_messages, 50);
-
 export function initialize(): void {
+    // Restore collapsed status.
+    private_messages_collapsed = ls_schema.parse(ls.get(ls_key));
+    if (private_messages_collapsed) {
+        close();
+    } else {
+        expand();
+    }
+
+    const throttled_update_private_message = _.throttle(update_private_messages, 50);
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -262,5 +280,13 @@ export function initialize(): void {
         e.preventDefault();
 
         clear_search();
+    });
+
+    $(".direct-messages-container").on("mouseenter", () => {
+        $("#direct-messages-section-header").addClass("hover-over-dm-section");
+    });
+
+    $(".direct-messages-container").on("mouseleave", () => {
+        $("#direct-messages-section-header").removeClass("hover-over-dm-section");
     });
 }

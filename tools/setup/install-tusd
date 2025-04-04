@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -eu
+
+# This should be kept in sync with puppet/zulip/manifests/common.pp
+version=2.6.0
+arch="$(uname -m)"
+
+case $arch in
+    x86_64)
+        tarball="tusd_linux_amd64"
+        sha256=8616b1985a7494da91b019972ad8f7be5a2238f802eed7d097917af20e6f8186
+        ;;
+
+    aarch64)
+        tarball="tusd_linux_arm64"
+        sha256=474c46502c19fb633b9fa4e518e4dfcce9f445b119663757332a9485b525b599
+        ;;
+esac
+
+check_version() {
+    out="$(tusd --version)" && [[ "$out" = "Version: v$version
+"* ]]
+}
+
+if ! check_version 2>/dev/null; then
+    set -x
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl_opts=(-fLO --retry 3)
+    curl "${curl_opts[@]}" "https://github.com/tus/tusd/releases/download/v${version}/${tarball}.tar.gz"
+    sha256sum -c <<<"${sha256} ${tarball}.tar.gz"
+    tar -xzf "${tarball}.tar.gz" --no-same-owner "${tarball}/tusd"
+    install -Dm755 "${tarball}/tusd" /usr/local/bin/tusd
+    check_version
+fi

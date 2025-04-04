@@ -1,7 +1,7 @@
 import _ from "lodash";
 
-import type {Message} from "./message_store";
-import * as people from "./people";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
 
 const direct_message_group_timestamps = new Map<string, number>();
 

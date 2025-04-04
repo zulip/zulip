@@ -18,7 +18,7 @@ recipient address and retrieve, forward, and archive the message.
 
 """
 
-import email
+import email.parser
 import email.policy
 import logging
 from collections.abc import Generator
@@ -69,10 +69,9 @@ def get_imap_messages() -> Generator[EmailMessage, None, None]:
                 status, msg_data = mbox.fetch(message_id, "(RFC822)")
                 assert isinstance(msg_data[0], tuple)
                 msg_as_bytes = msg_data[0][1]
-                message = email.message_from_bytes(msg_as_bytes, policy=email.policy.default)
-                # https://github.com/python/typeshed/issues/2417
-                assert isinstance(message, EmailMessage)
-                yield message
+                yield email.parser.BytesParser(
+                    _class=EmailMessage, policy=email.policy.default
+                ).parsebytes(msg_as_bytes)
                 mbox.store(message_id, "+FLAGS", "\\Deleted")
             mbox.expunge()
         finally:

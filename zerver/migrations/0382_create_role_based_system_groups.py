@@ -55,16 +55,15 @@ def create_role_based_system_groups(
                 # failure, and had already processed this realm.
                 continue
 
-            role_system_groups_dict = {}
-            for role in SYSTEM_USER_GROUP_ROLE_MAP:
-                user_group_params = SYSTEM_USER_GROUP_ROLE_MAP[role]
-                user_group = UserGroup(
+            role_system_groups_dict = {
+                role: UserGroup(
                     name=user_group_params["name"],
                     description=user_group_params["description"],
                     realm=realm,
                     is_system_group=True,
                 )
-                role_system_groups_dict[role] = user_group
+                for role, user_group_params in SYSTEM_USER_GROUP_ROLE_MAP.items()
+            }
 
             full_members_system_group = UserGroup(
                 name="@role:fullmembers",

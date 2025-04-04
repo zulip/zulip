@@ -54,6 +54,8 @@ rules:
 
   - id: dont-import-models-in-migrations
     patterns:
+      - pattern-not: from zerver.lib.migrate import $X
+      - pattern-not: from zerver.lib.partial import partial
       - pattern-not: from zerver.lib.mime_types import $X
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
       - pattern-not: from zerver.lib.utils import generate_api_key
@@ -177,24 +179,6 @@ rules:
           regex: (^|.*[^{])(\{\{)*\{[:!}].*
     severity: ERROR
     message: "Prefer {named} fields over positional {} in translated strings"
-
-  - id: mutable-default-type
-    languages: [python]
-    pattern-either:
-      - pattern: |
-          def $F(..., $A: typing.List[...] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.List[...]] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Dict[...] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.Dict[...]] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
-              ...
-    severity: ERROR
-    message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"
 
   - id: percent-formatting
     languages: [python]

@@ -26,12 +26,12 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.send_email import FromAddress, send_future_email
+from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import get_topic_resolution_and_bare_name
+from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     personal_narrow_url,
@@ -111,7 +111,15 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         # which does not have historical content with old hashed
         # filenames).
         image_url = f"{settings.STATIC_URL}generated/emoji/images-{emojiset}-64/{emoji_code}.png"
-        img_elem = e.IMG(alt=alt_code, src=image_url, title=emoji_name, style="height: 20px;")
+        img_elem = e.IMG(
+            alt=alt_code,
+            src=image_url,
+            title=emoji_name,
+            # We specify dimensions with these attributes, rather than
+            # CSS, because Outlook doesn't support these CSS properties.
+            height="20",
+            width="20",
+        )
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
@@ -120,9 +128,11 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         img_elem = make_emoji_img_elem(elem)
         parent.replace(elem, img_elem)
 
-    for realm_emoji in fragment.cssselect(".emoji"):
+    for realm_emoji in fragment.cssselect("img.emoji"):
         del realm_emoji.attrib["class"]
-        realm_emoji.set("style", "height: 20px;")
+        # See above note about Outlook.
+        realm_emoji.set("height", "20")
+        realm_emoji.set("width", "20")
 
 
 def fix_spoilers_in_html(fragment: lxml.html.HtmlElement, language: str) -> None:
@@ -531,10 +541,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             topic_name=message.topic_name(),
         )
         context.update(narrow_url=narrow_url)
-        topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())
+        topic_resolved, bare_topic_name = get_topic_resolution_and_bare_name(message.topic_name())
+        display_topic_name = get_topic_display_name(bare_topic_name, user_profile.default_language)
         context.update(
             channel_name=stream.name,
-            topic_name=topic_name,
+            topic_name=display_topic_name,
             topic_resolved=topic_resolved,
         )
     else:
@@ -575,6 +586,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         )
     from_address = FromAddress.NOREPLY
 
+    user_tz = user_profile.timezone or settings.TIME_ZONE
+    local_time = timezone_now().astimezone(zoneinfo.ZoneInfo(canonicalize_timezone(user_tz)))
     email_dict = {
         "template_prefix": "zerver/emails/missed_message",
         "to_user_ids": [user_profile.id],
@@ -582,8 +595,9 @@ def do_send_missedmessage_events_reply_in_zulip(
         "from_address": from_address,
         "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         "context": context,
+        "date": local_time.strftime(EMAIL_DATE_FORMAT),
     }
-    queue_json_publish("email_senders", email_dict)
+    queue_event_on_commit("email_senders", email_dict)
 
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=["last_reminder"])
@@ -599,14 +613,9 @@ def handle_missedmessage_emails(
     user_profile_id: int, message_ids: dict[int, MissedMessageData]
 ) -> None:
     user_profile = get_user_profile_by_id(user_profile_id)
-    if user_profile.is_bot:  # nocoverage
-        # We don't expect to reach here for bot users. However, this code exists
-        # to find and throw away any pre-existing events in the queue while
-        # upgrading from versions before our notifiability logic was implemented.
-        # TODO/compatibility: This block can be removed when one can no longer
-        # upgrade from versions <= 4.0 to versions >= 5.0
-        logger.warning("Send-email event found for bot user %s. Skipping.", user_profile_id)
-        return
+    # Bots don't have real email addresses, and should have been
+    # filtered previously.
+    assert not user_profile.is_bot
 
     if not user_profile.enable_offline_email_notifications:
         # BUG: Investigate why it's possible to get here.
@@ -645,7 +654,9 @@ def handle_missedmessage_emails(
         msg = min(msg_list, key=lambda msg: msg.date_sent)
         if msg.is_stream_message() and UserMessage.has_any_mentions(user_profile_id, msg.id):
             context_messages = get_context_for_message(msg)
-            filtered_context_messages = bulk_access_messages(user_profile, context_messages)
+            filtered_context_messages = bulk_access_messages(
+                user_profile, context_messages, is_modifying_message=False
+            )
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
@@ -795,7 +806,7 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
     )
 
     account_registered_context["getting_organization_started_link"] = (
-        realm_url + "/help/getting-your-organization-started-with-zulip"
+        realm_url + "/help/moving-to-zulip"
     )
 
     account_registered_context["getting_user_started_link"] = (
@@ -908,8 +919,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         onboarding_team_to_zulip_context = common_context(user)
         onboarding_team_to_zulip_context.update(
             unsubscribe_link=unsubscribe_link,
-            get_organization_started=realm_url
-            + "/help/getting-your-organization-started-with-zulip",
+            get_organization_started=realm_url + "/help/moving-to-zulip",
             invite_users=realm_url + "/help/invite-users-to-join",
             trying_out_zulip=realm_url + "/help/trying-out-zulip",
             why_zulip="https://zulip.com/why-zulip/",
@@ -929,7 +939,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 def convert_html_to_markdown(html: str) -> str:
     # html2text is GPL licensed, so run it as a subprocess.
     markdown = subprocess.check_output(
-        [os.path.join(sys.prefix, "bin", "html2text")], input=html, text=True
+        [os.path.join(sys.prefix, "bin", "html2text"), "--unicode-snob"], input=html, text=True
     ).strip()
 
     # We want images to get linked and inline previewed, but html2text will turn

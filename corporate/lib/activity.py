@@ -16,11 +16,6 @@ from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
 from psycopg2.sql import Composable
 
-from corporate.lib.stripe import (
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-)
 from corporate.models import CustomerPlan, LicenseLedger
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_encoding import append_url_query_string
@@ -132,7 +127,7 @@ def realm_activity_link(realm_str: str) -> Markup:
     from corporate.views.realm_activity import get_realm_activity
 
     url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
-    return Markup('<a href="{url}">{realm_str}</a>').format(url=url, realm_str=realm_str)
+    return Markup('<a href="{url}"><i class="fa fa-table"></i></a>').format(url=url)
 
 
 def realm_stats_link(realm_str: str) -> Markup:
@@ -153,7 +148,7 @@ def realm_support_link(realm_str: str) -> Markup:
     support_url = reverse("support")
     query = urlencode({"q": realm_str})
     url = append_url_query_string(support_url, query)
-    return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
+    return Markup('<a href="{url}">{realm}</i></a>').format(url=url, realm=realm_str)
 
 
 def realm_url_link(realm_str: str) -> Markup:
@@ -196,6 +191,8 @@ def get_remote_activity_plan_data(
     remote_realm: RemoteRealm | None = None,
     remote_server: RemoteZulipServer | None = None,
 ) -> RemoteActivityPlanData:
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
+
     if plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY or plan.status in (
         CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
         CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
@@ -226,6 +223,8 @@ def get_remote_activity_plan_data(
 
 
 def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str]]:  # nocoverage
+    from corporate.lib.stripe import RealmBillingSession
+
     # NOTE: Customers without a plan might still have a discount attached to them which
     # are not included in `plan_rate`.
     annual_revenue = {}
@@ -367,13 +366,13 @@ def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanDat
 
 
 def get_remote_realm_user_counts(
-    event_time: datetime = timezone_now(),
+    event_time: datetime | None = None,
 ) -> dict[int, RemoteCustomerUserCount]:  # nocoverage
     user_counts_by_realm: dict[int, RemoteCustomerUserCount] = {}
     for log in (
         RemoteRealmAuditLog.objects.filter(
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
-            event_time__lte=event_time,
+            event_time__lte=timezone_now() if event_time is None else event_time,
             remote_realm__isnull=False,
         )
         # Important: extra_data is empty for some pre-2020 audit logs
@@ -394,13 +393,13 @@ def get_remote_realm_user_counts(
 
 
 def get_remote_server_audit_logs(
-    event_time: datetime = timezone_now(),
+    event_time: datetime | None = None,
 ) -> dict[int, list[RemoteRealmAuditLog]]:
     logs_per_server: dict[int, list[RemoteRealmAuditLog]] = defaultdict(list)
     for log in (
         RemoteRealmAuditLog.objects.filter(
             event_type__in=RemoteRealmAuditLog.SYNCED_BILLING_EVENTS,
-            event_time__lte=event_time,
+            event_time__lte=timezone_now() if event_time is None else event_time,
         )
         # Important: extra_data is empty for some pre-2020 audit logs
         # prior to the introduction of realm_user_count_by_role

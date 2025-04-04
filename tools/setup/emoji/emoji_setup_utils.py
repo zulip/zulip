@@ -87,8 +87,8 @@ def generate_emoji_catalog(
 
     # Sort the emojis according to iamcal's sort order. This sorting determines the
     # order in which emojis will be displayed in emoji picker.
-    for category in emoji_catalog:
-        emoji_catalog[category].sort(key=lambda emoji_code: sort_order[emoji_code])
+    for emoji_codes in emoji_catalog.values():
+        emoji_codes.sort(key=lambda emoji_code: sort_order[emoji_code])
 
     return dict(emoji_catalog)
 

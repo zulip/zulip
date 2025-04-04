@@ -98,10 +98,12 @@ def render_markdown_path(
     # We set this global hackishly
     from zerver.lib.markdown.help_settings_links import set_relative_settings_links
 
-    set_relative_settings_links(bool(context is not None and context.get("html_settings_links")))
+    relative_links = bool(context is not None and context.get("html_settings_links"))
+    set_relative_settings_links(relative_links)
     from zerver.lib.markdown.help_relative_links import set_relative_help_links
 
-    set_relative_help_links(bool(context is not None and context.get("html_settings_links")))
+    billing_relative_links = bool(context is not None and context.get("corporate_enabled"))
+    set_relative_help_links(relative_links, billing_relative_links)
 
     global md_extensions, md_macro_extension
     if md_extensions is None:

@@ -333,11 +333,15 @@ above.
    make sure that copy-pasting the code in your examples works, and
    post an example of the output in the pull request.
 
-1. Document the new API in `api_docs/changelog.md` and
-   bump the `API_FEATURE_LEVEL` in `version.py`. Also, make sure to
-   add a `**Changes**` entry in the description of the new API/event
-   in `zerver/openapi/zulip.yaml`, which mentions the API feature level
-   at which they were added.
+1. Run `./tools/create-api-changelog` which will create a new empty
+   changelog file in `api_docs/unmerged.d/` directory. Open this
+   file and document the API changes. The content of this file will be
+   merged into `api_docs/changelog.md` when your commit is merged into the
+   `main` branch.
+
+1. Add a `**Changes**` entry in the description of the new API/event in
+   `zerver/openapi/zulip.yaml`, and mention the name of the file generated
+   in the previous step in place of the API feature level.
 
 ## Why a custom system?
 

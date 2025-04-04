@@ -1,8 +1,8 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function check_compose_form_empty(page: Page): Promise<void> {
     await common.check_compose_state(page, {
@@ -85,7 +85,7 @@ async function test_reply_by_click_prepopulates_private_message_recipient(
     await private_message.click();
     await page.waitForSelector("#private_message_recipient", {visible: true});
     const email = await common.get_internal_email_from_name(page, common.fullname.cordelia);
-    assert(email !== undefined);
+    assert.ok(email !== undefined);
     await common.pm_recipient.expect(page, email);
     await close_compose_box(page);
 }
@@ -136,7 +136,6 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     const multiple_recipients_pm = "A direct message group to check spaces";
     await common.send_message(page, "private", {
         recipient: recipients.join(", "),
-        outside_view: true,
         content: multiple_recipients_pm,
     });
 

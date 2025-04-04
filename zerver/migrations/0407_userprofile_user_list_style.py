@@ -12,11 +12,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="realmuserdefault",
             name="user_list_style",
-            field=models.PositiveSmallIntegerField(default=2),
+            field=models.PositiveSmallIntegerField(default=3),
         ),
         migrations.AddField(
             model_name="userprofile",
             name="user_list_style",
-            field=models.PositiveSmallIntegerField(default=2),
+            field=models.PositiveSmallIntegerField(default=3),
         ),
     ]

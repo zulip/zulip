@@ -3,7 +3,7 @@ import re
 from email.headerregistry import Address
 from typing import Any
 
-import DNS
+import dns.resolver
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation
@@ -12,16 +12,15 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_toke
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpRequest
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import get_language, gettext_lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from markupsafe import Markup
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_password
+from zerver.actions.users import do_send_password_reset_email
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
@@ -31,8 +30,6 @@ from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import get_language_list
 from zerver.lib.name_restrictions import is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
-from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, UserProfile
@@ -46,10 +43,6 @@ from zerver.models.realms import (
 from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
-if settings.BILLING_ENABLED:
-    from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
-    from corporate.lib.stripe import LicenseLimitError
-
 # We don't mark this error for translation, because it's displayed
 # only to MIT users.
 MIT_VALIDATION_ERROR = Markup(
@@ -59,6 +52,7 @@ MIT_VALIDATION_ERROR = Markup(
     ' <a href="mailto:support@zulip.com">contact us</a>.'
 )
 
+INVALID_ACCOUNT_CREDENTIALS_ERROR = gettext_lazy("Incorrect email or password.")
 DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     "Your account {username} has been deactivated."
     " Please contact your organization administrator to reactivate it."
@@ -72,14 +66,11 @@ def email_is_not_mit_mailing_list(email: str) -> None:
     if address.domain == "mit.edu":
         # Check whether the user exists and can get mail.
         try:
-            DNS.dnslookup(f"{address.username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
-        except DNS.Base.ServerError as e:
-            if e.rcode == DNS.Status.NXDOMAIN:
-                # This error is Markup only because 1. it needs to render HTML
-                # 2. It's not formatted with any user input.
-                raise ValidationError(MIT_VALIDATION_ERROR)
-            else:
-                raise AssertionError("Unexpected DNS error")
+            dns.resolver.resolve(f"{address.username}.pobox.ns.athena.mit.edu", "TXT")
+        except dns.resolver.NXDOMAIN:
+            # This error is Markup only because 1. it needs to render HTML
+            # 2. It's not formatted with any user input.
+            raise ValidationError(MIT_VALIDATION_ERROR)
 
 
 class OverridableValidationError(ValidationError):
@@ -91,7 +82,7 @@ def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = F
         "too short": _("Subdomain needs to have length 3 or greater."),
         "extremal dash": _("Subdomain cannot start or end with a '-'."),
         "bad character": _("Subdomain can only have lowercase letters, numbers, and '-'s."),
-        "unavailable": _("Subdomain already in use. Please choose a different one."),
+        "unavailable": _("Subdomain is already in use. Please choose a different one."),
         "reserved": _("Subdomain reserved. Please choose a different one."),
     }
 
@@ -213,6 +204,9 @@ class RegistrationForm(RealmDetailsForm):
         self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
             max_length=100, required=False
         )
+        self.fields["how_realm_creator_found_zulip_review_site"] = forms.CharField(
+            max_length=100, required=False
+        )
 
     def clean_full_name(self) -> str:
         try:
@@ -234,6 +228,7 @@ class RegistrationForm(RealmDetailsForm):
 
 class ToSForm(forms.Form):
     terms = forms.BooleanField(required=False)
+    enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
         required=False,
         coerce=int,
@@ -275,9 +270,7 @@ class HomepageForm(forms.Form):
         if not from_multiuse_invite and realm.invite_required:
             raise ValidationError(
                 _(
-                    "Please request an invite for {email} "
-                    "from the organization "
-                    "administrator."
+                    "Please request an invite for {email} from the organization administrator."
                 ).format(email=email)
             )
 
@@ -301,6 +294,11 @@ class HomepageForm(forms.Form):
             email_is_not_mit_mailing_list(email)
 
         if settings.BILLING_ENABLED:
+            from corporate.lib.registration import (
+                check_spare_licenses_available_for_registering_new_user,
+            )
+            from corporate.lib.stripe import LicenseLimitError
+
             role = self.invited_as if self.invited_as is not None else UserProfile.ROLE_MEMBER
             try:
                 check_spare_licenses_available_for_registering_new_user(realm, email, role=role)
@@ -353,15 +351,6 @@ class LoggingSetPasswordForm(SetPasswordForm):
         assert isinstance(self.user, UserProfile)
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
         return self.user
-
-
-def generate_password_reset_url(
-    user_profile: UserProfile, token_generator: PasswordResetTokenGenerator
-) -> str:
-    token = token_generator.make_token(user_profile)
-    uid = urlsafe_base64_encode(str(user_profile.id).encode())
-    endpoint = reverse("password_reset_confirm", kwargs=dict(uidb64=uid, token=token))
-    return f"{user_profile.realm.url}{endpoint}"
 
 
 class ZulipPasswordResetForm(PasswordResetForm):
@@ -429,48 +418,9 @@ class ZulipPasswordResetForm(PasswordResetForm):
         except UserProfile.DoesNotExist:
             user = None
 
-        context = {
-            "email": email,
-            "realm_url": realm.url,
-            "realm_name": realm.name,
-        }
-
-        if user is not None and not user.is_active:
-            context["user_deactivated"] = True
-            user = None
-
-        if user is not None:
-            context["active_account_in_realm"] = True
-            context["reset_url"] = generate_password_reset_url(user, token_generator)
-            queue_soft_reactivation(user.id)
-            send_email(
-                "zerver/emails/password_reset",
-                to_user_ids=[user.id],
-                from_name=FromAddress.security_email_from_name(user_profile=user),
-                from_address=FromAddress.tokenized_no_reply_address(),
-                context=context,
-                realm=realm,
-                request=request,
-            )
-        else:
-            context["active_account_in_realm"] = False
-            active_accounts_in_other_realms = UserProfile.objects.filter(
-                delivery_email__iexact=email, is_active=True
-            )
-            if active_accounts_in_other_realms:
-                context["active_accounts_in_other_realms"] = active_accounts_in_other_realms
-            language = get_language()
-
-            send_email(
-                "zerver/emails/password_reset",
-                to_emails=[email],
-                from_name=FromAddress.security_email_from_name(language=language),
-                from_address=FromAddress.tokenized_no_reply_address(),
-                language=language,
-                context=context,
-                realm=realm,
-                request=request,
-            )
+        do_send_password_reset_email(
+            email, realm, user, token_generator=token_generator, request=request
+        )
 
 
 class RateLimitedPasswordResetByEmail(RateLimitedObject):
@@ -560,9 +510,7 @@ class OurAuthenticationForm(AuthenticationForm):
 
             if self.user_cache is None:
                 raise forms.ValidationError(
-                    self.error_messages["invalid_login"],
-                    code="invalid_login",
-                    params={"username": self.username_field.verbose_name},
+                    INVALID_ACCOUNT_CREDENTIALS_ERROR,
                 )
 
             self.confirm_login_allowed(self.user_cache)

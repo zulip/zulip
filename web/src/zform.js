@@ -2,9 +2,9 @@ import $ from "jquery";
 
 import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";
 
-import * as blueslip from "./blueslip";
-import {zform_widget_extra_data_schema} from "./submessage";
-import * as transmit from "./transmit";
+import * as blueslip from "./blueslip.ts";
+import {zform_widget_extra_data_schema} from "./submessage.ts";
+import * as transmit from "./transmit.js";
 
 export function activate(opts) {
     const self = {};

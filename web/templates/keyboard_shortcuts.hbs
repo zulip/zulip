@@ -30,7 +30,7 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Cancel compose and save draft' }}</td>
-                    <td><span class="hotkey"><kbd>Esc</kbd> or <kbd>Ctrl</kbd> + <kbd>[</kbd></span></td>
+                    <td><span class="hotkey"><kbd>Esc</kbd> or <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'View drafts' }}</td>
@@ -66,7 +66,7 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Go to your home view' }}</td>
-                    <td><span class="hotkey"><kbd>Ctrl</kbd> + <kbd>[</kbd><span id="go-to-home-view-hotkey-help"> or <kbd>Esc</kbd></span></span></td>
+                    <td><span class="hotkey"><kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd><span id="go-to-home-view-hotkey-help"> or <kbd>Esc</kbd></span></span></td>
                 </tr>
             </table>
         </div>
@@ -86,7 +86,7 @@
                     <td><span class="hotkey"><kbd>Q</kbd></span></td>
                 </tr>
                 <tr>
-                    <td class="definition">{{t 'Search people' }}</td>
+                    <td class="definition">{{t 'Filter users' }}</td>
                     <td><span class="hotkey"><kbd>W</kbd></span></td>
                 </tr>
             </table>
@@ -108,19 +108,19 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Scroll up' }}</td>
-                    <td><span class="hotkey"><kbd>PgUp</kbd> or <kbd>Shift</kbd> + <kbd>K</kbd></span></td>
+                    <td><span class="hotkey"><kbd>PgUp</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↑</kbd> or <kbd>Shift</kbd> + <kbd>K</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Scroll down' }}</td>
-                    <td><span class="hotkey"><kbd>PgDn</kbd> or <kbd>Shift</kbd> + <kbd>J</kbd> or <kbd>Space</kbd></span></td>
+                    <td><span class="hotkey"><kbd>PgDn</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↓</kbd> or <kbd>Shift</kbd> + <kbd>J</kbd> or <kbd>Space</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Last message' }}</td>
-                    <td><span class="hotkey"><kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd></span></td>
+                    <td><span class="hotkey"><kbd>End</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">→</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'First message' }}</td>
-                    <td><span class="hotkey"><kbd>Home</kbd></span></td>
+                    <td><span class="hotkey"><kbd>Home</kbd >or <kbd>Fn</kbd> + <kbd class="arrow-key">←</kbd></span></td>
                 </tr>
             </table>
         </div>
@@ -160,12 +160,24 @@
                     <td><span class="hotkey"><kbd>N</kbd></span></td>
                 </tr>
                 <tr>
+                    <td class="definition">{{t 'Go to next unread followed topic' }}</td>
+                    <td><span class="hotkey"><kbd>Shift</kbd> + <kbd>N</kbd></span></td>
+                </tr>
+                <tr>
                     <td class="definition">{{t 'Go to next unread direct message' }}</td>
                     <td><span class="hotkey"><kbd>P</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Cycle between channel views' }}</td>
                     <td><span class="hotkey"><kbd>Shift</kbd> + <kbd>A</kbd> or <kbd>Shift</kbd> + <kbd>D</kbd></span></td>
+                </tr>
+                <tr>
+                    <td class="definition">{{t 'Go to inbox' }}</td>
+                    <td><span class="hotkey"><kbd>Shift</kbd> + <kbd>I</kbd></span></td>
+                </tr>
+                <tr>
+                    <td class="definition">{{t 'Go to recent conversations' }}</td>
+                    <td><span class="hotkey"><kbd>T</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Go to combined feed' }}</td>
@@ -201,8 +213,12 @@
                     <td><span class="hotkey"><kbd>Enter</kbd> or <kbd>R</kbd></span></td>
                 </tr>
                 <tr>
-                    <td class="definition">{{t 'Quote and reply to message' }}</td>
+                    <td class="definition">{{t 'Quote message' }}</td>
                     <td><span class="hotkey"><kbd>></kbd></span></td>
+                </tr>
+                <tr>
+                    <td class="definition">{{t 'Forward message' }}</td>
+                    <td><span class="hotkey"><kbd>&lt;</kbd></span></td> <!-- &lt; is the HTML entity for < -->
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Reply directly to sender' }}</td>
@@ -214,11 +230,15 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Send message' }}</td>
-                    <td><span class="hotkey"><span class="small_hotkey"><kbd>Tab</kbd> then <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span></span></td>
+                    <td><span class="hotkey"><kbd>Tab</kbd> then <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Insert new line' }}</td>
                     <td><span class="hotkey"><kbd>Shift</kbd> + <kbd>Enter</kbd></span></td>
+                </tr>
+                <tr>
+                    <td class="definition">{{t 'Use or create a saved snippet' }}</td>
+                    <td><span class="hotkey"><kbd>Ctrl</kbd> + <kbd>'</kbd></span></td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Toggle preview mode' }}</td>
@@ -226,7 +246,7 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Cancel compose and save draft' }}</td>
-                    <td><span class="hotkey"><kbd>Esc</kbd> or <kbd>Ctrl</kbd> + <kbd>[</kbd></span></td>
+                    <td><span class="hotkey"><kbd>Esc</kbd> or <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd></span></td>
                 </tr>
             </table>
         </div>

@@ -6,7 +6,6 @@ import subprocess
 import tempfile
 from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
-from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
@@ -16,6 +15,7 @@ import orjson
 import responses
 from django.apps import apps
 from django.conf import settings
+from django.core.files.uploadedfile import UploadedFile
 from django.core.mail import EmailMessage
 from django.core.signals import got_request_exception
 from django.db import connection, transaction
@@ -41,25 +41,25 @@ from typing_extensions import override
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
-from zerver.actions.realm_settings import (
-    do_change_realm_permission_group_setting,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
+from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
+from zerver.lib.response import MutableJsonResponse
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
+    get_default_values_for_stream_permission_group_settings,
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.test_console_output import (
@@ -71,13 +71,14 @@ from zerver.lib.test_console_output import (
 from zerver.lib.test_helpers import (
     cache_tries_captured,
     find_key_by_email,
+    get_test_image_file,
     instrument_url,
     queries_captured,
 )
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
+from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_fixture_http_headers,
@@ -100,7 +101,6 @@ from zerver.models import (
     UserProfile,
     UserStatus,
 )
-from zerver.models.groups import SystemGroups
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.streams import get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
@@ -529,6 +529,9 @@ Output:
                 encoded = urlencode(info, doseq=True)
             else:
                 content_type = MULTIPART_CONTENT
+        elif content_type.startswith("multipart/form-data"):
+            # To support overriding webhooks' default content_type (application/json)
+            content_type = MULTIPART_CONTENT
         return django_client.post(
             url,
             encoded,
@@ -952,7 +955,7 @@ Output:
         # TODO: use encode_user where possible
         assert "@" in email
         user = get_user_by_delivery_email(email, get_realm(realm))
-        api_key = get_api_key(user)
+        api_key = user.api_key
 
         return self.encode_credentials(email, api_key)
 
@@ -1224,23 +1227,32 @@ Output:
             json = orjson.loads(result.content)
         except orjson.JSONDecodeError:  # nocoverage
             json = {"msg": "Error parsing JSON in response!"}
-        self.assertEqual(result.status_code, 200, json["msg"])
-        self.assertEqual(json.get("result"), "success")
-        # We have a msg key for consistency with errors, but it typically has an
-        # empty value.
-        self.assertIn("msg", json)
-        self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
-        # Check ignored parameters.
-        if ignored_parameters is None:
-            self.assertNotIn("ignored_parameters_unsupported", json)
-        else:
-            self.assertIn("ignored_parameters_unsupported", json)
-            self.assert_length(json["ignored_parameters_unsupported"], len(ignored_parameters))
-            for param in ignored_parameters:
-                self.assertTrue(param in json["ignored_parameters_unsupported"])
+
+        try:
+            self.assertEqual(result.status_code, 200, json["msg"])
+            self.assertEqual(json.get("result"), "success")
+            # We have a msg key for consistency with errors, but it typically has an
+            # empty value.
+            self.assertIn("msg", json)
+            self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
+            # Check ignored parameters.
+            if ignored_parameters is None:
+                self.assertNotIn("ignored_parameters_unsupported", json)
+            else:
+                self.assertIn("ignored_parameters_unsupported", json)
+                self.assert_length(json["ignored_parameters_unsupported"], len(ignored_parameters))
+                for param in ignored_parameters:
+                    self.assertTrue(param in json["ignored_parameters_unsupported"])
+        except AssertionError as e:  # nocoverage
+            if isinstance(result, MutableJsonResponse):
+                raise e from result.exception
+            raise
+
         return json
 
-    def get_json_error(self, result: "TestHttpResponse", status_code: int = 400) -> str:
+    def get_json_error(
+        self, result: Union["TestHttpResponse", HttpResponse], status_code: int = 400
+    ) -> str:
         try:
             json = orjson.loads(result.content)
         except orjson.JSONDecodeError:  # nocoverage
@@ -1250,13 +1262,18 @@ Output:
         return json["msg"]
 
     def assert_json_error(
-        self, result: "TestHttpResponse", msg: str, status_code: int = 400
+        self, result: Union["TestHttpResponse", HttpResponse], msg: str, status_code: int = 400
     ) -> None:
         """
         Invalid POSTs return an error status code and JSON of the form
         {"result": "error", "msg": "reason"}.
         """
-        self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
+        try:
+            self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
+        except AssertionError as e:  # nocoverage
+            if isinstance(result, MutableJsonResponse):
+                raise e from result.exception
+            raise
 
     def assert_length(self, items: Collection[Any] | QuerySet[Any, Any], count: int) -> None:
         actual_count = len(items)
@@ -1302,9 +1319,17 @@ Output:
             )
 
     def assert_json_error_contains(
-        self, result: "TestHttpResponse", msg_substring: str, status_code: int = 400
+        self,
+        result: Union["TestHttpResponse", HttpResponse],
+        msg_substring: str,
+        status_code: int = 400,
     ) -> None:
-        self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
+        try:
+            self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
+        except AssertionError as e:  # nocoverage
+            if isinstance(result, MutableJsonResponse):
+                raise e from result.exception
+            raise
 
     def assert_in_response(
         self, substring: str, response: Union["TestHttpResponse", HttpResponse]
@@ -1374,9 +1399,6 @@ Output:
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers
         )
-        administrators_user_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
-        )
 
         try:
             stream = Stream.objects.create(
@@ -1385,7 +1407,7 @@ Output:
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
-                can_remove_subscribers_group=administrators_user_group,
+                **get_default_values_for_stream_permission_group_settings(realm),
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception(
@@ -1425,7 +1447,11 @@ Output:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(
-                realm, stream_name, invite_only=invite_only, is_web_public=is_web_public
+                realm,
+                stream_name,
+                invite_only=invite_only,
+                is_web_public=is_web_public,
+                acting_user=user_profile,
             )
         bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
@@ -1436,7 +1462,7 @@ Output:
         bulk_remove_subscriptions(realm, [user_profile], [stream], acting_user=None)
 
     # Subscribe to a stream by making an API request
-    def common_subscribe_to_streams(
+    def subscribe_via_post(
         self,
         user: UserProfile,
         subscriptions_raw: list[str] | list[dict[str, str]],
@@ -1459,10 +1485,10 @@ Output:
             "invite_only": orjson.dumps(invite_only).decode(),
         }
         post_data.update(extra_post_data)
-        # We wrap the API call with a 'transaction.atomic()' context
+        # We wrap the API call with a 'transaction.atomic' context
         # manager as it helps us with NOT rolling back the entire
         # test transaction due to error responses.
-        with transaction.atomic():
+        with transaction.atomic(savepoint=True):
             result = self.api_post(
                 user,
                 "/api/v1/users/me/subscriptions",
@@ -1480,14 +1506,10 @@ Output:
 
         return "".join(sorted(f"        * {stream['name']}\n" for stream in subscribed_streams))
 
-    def check_user_subscribed_only_to_streams(self, user_name: str, streams: list[Stream]) -> None:
-        streams = sorted(streams, key=lambda x: x.name)
+    def check_user_subscribed_only_to_streams(self, user_name: str, streams: set[Stream]) -> None:
+        stream_names = {stream.name for stream in streams}
         subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
-
-        self.assert_length(subscribed_streams, len(streams))
-
-        for x, y in zip(subscribed_streams, streams, strict=False):
-            self.assertEqual(x["name"], y.name)
+        self.assertEqual(stream_names, {stream["name"] for stream in subscribed_streams})
 
     def resolve_topic_containing_message(
         self,
@@ -1498,7 +1520,7 @@ Output:
         """
         Mark all messages within the topic associated with message `target_message_id` as resolved.
         """
-        message = access_message(acting_user, target_message_id)
+        message = access_message(acting_user, target_message_id, is_modifying_message=False)
         return self.api_patch(
             acting_user,
             f"/api/v1/messages/{target_message_id}",
@@ -1647,7 +1669,7 @@ Output:
             # as the actual value of the attribute in LDAP.
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
-                    with open(value[5:], "rb") as f:
+                    with open(value.removeprefix("file:"), "rb") as f:
                         attrs[attr] = [f.read()]
 
         ldap_patcher = mock.patch("django_auth_ldap.config.ldap.initialize")
@@ -1713,98 +1735,6 @@ Output:
         """
         # See email_display_from, above.
         return email_message.from_email
-
-    def check_has_permission_policies(
-        self, policy: str, validation_func: Callable[[UserProfile], bool]
-    ) -> None:
-        realm = get_realm("zulip")
-
-        owner = "desdemona"
-        admin = "iago"
-        moderator = "shiva"
-        member = "hamlet"
-        new_member = "othello"
-        guest = "polonius"
-
-        def set_age(user_name: str, age: int) -> None:
-            user = self.example_user(user_name)
-            user.date_joined = timezone_now() - timedelta(days=age)
-            user.save()
-
-        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
-        set_age(member, age=realm.waiting_period_threshold + 1)
-        set_age(new_member, age=realm.waiting_period_threshold - 1)
-
-        def allow(user_name: str) -> None:
-            # Fetch a clean object for the user.
-            user = self.example_user(user_name)
-            with self.assert_database_query_count(0):
-                self.assertTrue(validation_func(user))
-
-        def prevent(user_name: str) -> None:
-            # Fetch a clean object for the user.
-            user = self.example_user(user_name)
-            with self.assert_database_query_count(0):
-                self.assertFalse(validation_func(user))
-
-        def set_policy(level: int) -> None:
-            do_set_realm_property(realm, policy, level, acting_user=None)
-
-        set_policy(Realm.POLICY_NOBODY)
-        prevent(owner)
-        prevent(admin)
-        prevent(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_OWNERS_ONLY)
-        allow(owner)
-        prevent(admin)
-        prevent(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_ADMINS_ONLY)
-        allow(owner)
-        allow(admin)
-        prevent(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_MODERATORS_ONLY)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        prevent(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_FULL_MEMBERS_ONLY)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        allow(member)
-        prevent(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_MEMBERS_ONLY)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        allow(member)
-        allow(new_member)
-        prevent(guest)
-
-        set_policy(Realm.POLICY_EVERYONE)
-        allow(owner)
-        allow(admin)
-        allow(moderator)
-        allow(member)
-        allow(new_member)
-        allow(guest)
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
@@ -1892,7 +1822,7 @@ Output:
             user_notifications_data=user_notifications_data,
             message_id=message_id,
             acting_user_id=acting_user_id,
-            mentioned_user_group_id=kwargs.get("mentioned_user_group_id", None),
+            mentioned_user_group_id=kwargs.get("mentioned_user_group_id"),
             idle=kwargs.get("idle", True),
             already_notified=kwargs.get(
                 "already_notified", {"email_notified": False, "push_notified": False}
@@ -2027,6 +1957,14 @@ Output:
         ):
             yield
 
+    def create_attachment_helper(self, user: UserProfile) -> str:
+        with tempfile.NamedTemporaryFile() as attach_file:
+            attach_file.write(b"Hello, World!")
+            attach_file.flush()
+            with open(attach_file.name, "rb") as fp:
+                file_path = upload_message_attachment_from_request(UploadedFile(fp), user)[0]
+                return file_path
+
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     @contextmanager
@@ -2042,11 +1980,18 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         # So explicitly change parameter name to 'notice' to work around this problem
         with (
             mock.patch("zerver.tornado.event_queue.process_notification", lst.append),
-            # Some `send_event` calls need to be executed only after the current transaction
-            # commits (using `on_commit` hooks). Because the transaction in Django tests never
-            # commits (rather, gets rolled back after the test completes), such events would
-            # never be sent in tests, and we would be unable to verify them. Hence, we use
-            # this helper to make sure the `send_event` calls actually run.
+            # Some `send_event_rollback_unsafe` calls need to be
+            # executed only after the current transaction commits
+            # (mainly those using the `send_event_on_commit` wrapper, which
+            # sends the actual event inside an `on_commit` hook).
+            #
+            # Because the outer transaction in Django tests never
+            # commits (it gets rolled back when the test completes
+            # to restore the database to the desired state for the
+            # next test), such events would never be sent in
+            # tests, and we would be unable to verify them.
+            # Hence, we use this helper to make sure the
+            # `send_event_rollback_unsafe` calls actually run.
             self.captureOnCommitCallbacks(execute=True),
         ):
             yield lst
@@ -2181,6 +2126,26 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
                     read_by_sender=read_by_sender,
                 )
         return message_id
+
+    def upload_image(self, image_name: str) -> str:
+        with get_test_image_file(image_name) as image_file:
+            response = self.assert_json_success(
+                self.client_post("/json/user_uploads", {"file": image_file})
+            )
+            return re.sub(r"/user_uploads/", "", response["url"])
+
+    def upload_and_thumbnail_image(self, image_name: str) -> str:
+        with self.captureOnCommitCallbacks(execute=True):
+            # Running captureOnCommitCallbacks includes inserting into
+            # the Rabbitmq queue, which in testing means we
+            # immediately run the worker for it, producing the thumbnails.
+            return self.upload_image(image_name)
+
+    def handle_missedmessage_emails(
+        self, user_profile_id: int, message_ids: dict[int, MissedMessageData]
+    ) -> None:
+        with self.captureOnCommitCallbacks(execute=True):
+            handle_missedmessage_emails(user_profile_id, message_ids)
 
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
@@ -2471,7 +2436,7 @@ one or more new messages.
     def build_webhook_url(self, *args: str, **kwargs: str) -> str:
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
-            api_key = get_api_key(self.test_user)
+            api_key = self.test_user.api_key
             url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.CHANNEL_NAME)
         else:
             url = self.URL_TEMPLATE.format(stream=self.CHANNEL_NAME)
@@ -2522,9 +2487,9 @@ class MigrationsTestCase(ZulipTransactionTestCase):  # nocoverage
     @override
     def setUp(self) -> None:
         super().setUp()
-        assert (
-            self.migrate_from and self.migrate_to
-        ), f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"
+        assert self.migrate_from and self.migrate_to, (
+            f"TestCase '{type(self).__name__}' must define migrate_from and migrate_to properties"
+        )
         migrate_from: list[tuple[str, str]] = [(self.app, self.migrate_from)]
         migrate_to: list[tuple[str, str]] = [(self.app, self.migrate_to)]
         executor = MigrationExecutor(connection)

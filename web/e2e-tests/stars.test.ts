@@ -1,8 +1,8 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 const message = "test star";
 
@@ -61,7 +61,7 @@ async function stars_test(page: Page): Promise<void> {
 
     await toggle_test_star_message(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    message_list_id = await common.get_current_msg_list_id(page, true);
+    message_list_id = await common.get_current_msg_list_id(page, false);
     await page.waitForSelector(
         `.message-list[data-message-list-id='${message_list_id}'] .zulip-icon-star-filled`,
         {visible: true},

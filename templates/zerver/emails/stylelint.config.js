@@ -1,6 +1,4 @@
-"use strict";
-
-module.exports = {
+export default {
     extends: ["../../../stylelint.config"],
     rules: {
         // Add some exceptions for recommended rules

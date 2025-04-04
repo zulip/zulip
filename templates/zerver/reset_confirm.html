@@ -31,7 +31,7 @@
                     <label for="id_new_password1" class="">{{ _('Password') }}</label>
                     <input id="id_new_password1" class="required" type="password" name="new_password1" autocomplete="new-password"
                       value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
-                      maxlength="100"
+                      data-max-length="{{ password_max_length }}"
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" autofocus required />
                     <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>

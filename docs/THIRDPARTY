@@ -117,11 +117,6 @@ Copyright: Google, Inc.
 License: Apache-2.0
 Comment: Material volume icon (rounded) with custom cross symbol
 
-Files: web/shared/icons/scheduled-messages.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
 Files: web/shared/icons/smart-toy.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:smart_toy
 Copyright: Google, Inc.
@@ -202,6 +197,16 @@ Files: web/shared/icons/user-plus.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 
+Files: web/shared/icons/user-cog.svg
+Source: https://lucide.dev/icons/user-cog
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/user-x.svg
+Source: https://lucide.dev/icons/user-x
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
 Files: web/shared/icons/clock.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -252,6 +257,11 @@ Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Custom made out of feather icons by Vlad Koborov
 
+Files: web/shared/icons/user-group-x.svg
+Copyright: 2013-2024 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Custom made out of feather icons by Vlad Koborov
+
 Files: web/shared/icons/unmute.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_up
 Copyright: Google, Inc.
@@ -265,6 +275,11 @@ Comment: GitHub theme (light and dark); Selectors have been modified for use wit
 
 Files: web/shared/icons/recent.svg
 Source: https://lucide.dev/icons/clock-10
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/plus.svg
+Source: https://lucide.dev/icons/plus
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
 
@@ -1497,5 +1512,5 @@ License: ISC License
  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
  FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY
  DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
+ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
  ARISING OUT OF OR IN CONNECTION  WITH THE USE ORPERFORMANCE OF THIS SOFTWARE

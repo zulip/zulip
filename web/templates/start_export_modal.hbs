@@ -1,0 +1,24 @@
+<p id="allow_private_data_export_banner_container"></p>
+<p>
+    {{#tr}}
+        A public data export is a complete data export for your organization other than
+        <z-private-channel-link>private channel</z-private-channel-link> messages and
+        <z-direct-messages-link>direct messages</z-direct-messages-link>.
+        {{#*inline "z-private-channel-link"}}<a href="/help/channel-permissions#private-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-direct-messages-link"}}<a href="/help/direct-messages" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</p>
+<p>
+    {{t 'A standard export additionally includes private data accessible to users who have allowed administrators to export their private data.' }}
+</p>
+<form id="start-export-form">
+    <div class="input-group">
+        <label for="export_type" class="modal-field-label">{{t "Export type" }}</label>
+        <select id="export_type" class="modal_select bootstrap-focus-style">
+            {{#each export_type_values}}
+                <option {{#if this.default }}selected{{/if}} value="{{this.value}}">{{this.description}}</option>
+            {{/each}}
+        </select>
+    </div>
+    <p id="allow_private_data_export_stats"></p>
+</form>

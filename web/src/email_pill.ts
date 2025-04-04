@@ -1,5 +1,5 @@
-import type {InputPillConfig, InputPillContainer} from "./input_pill";
-import * as input_pill from "./input_pill";
+import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
+import * as input_pill from "./input_pill.ts";
 
 type EmailPill = {
     type: "email";
@@ -45,7 +45,7 @@ export function get_current_email(
 
 export function create_pills(
     $pill_container: JQuery,
-    pill_config?: InputPillConfig | undefined,
+    pill_config?: InputPillConfig,
 ): input_pill.InputPillContainer<EmailPill> {
     const pill_container = input_pill.create({
         $container: $pill_container,

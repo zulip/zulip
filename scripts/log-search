@@ -120,7 +120,7 @@ def parser() -> argparse.ArgumentParser:
 def maybe_gzip(logfile_name: str) -> TextIO:
     if logfile_name.endswith(".gz"):
         return gzip.open(logfile_name, "rt")
-    return open(logfile_name)  # noqa: SIM115
+    return open(logfile_name)
 
 
 NGINX_LOG_LINE_RE = re.compile(
@@ -454,9 +454,9 @@ def print_line(
         ts = match["time"]
 
     if match["duration"].endswith("ms"):
-        duration_ms = int(match["duration"][:-2])
+        duration_ms = int(match["duration"].removesuffix("ms"))
     else:
-        duration_ms = int(float(match["duration"][:-1]) * 1000)
+        duration_ms = int(float(match["duration"].removesuffix("s")) * 1000)
 
     code = int(match["code"])
     indicator = " "

@@ -43,10 +43,10 @@ edit the content of a message sent by another user.
 
 !!! tip ""
 
-    After you have edited a message, the message is publicly
-    marked as **EDITED**. You can
-    [view a message's edit history](/help/view-a-messages-edit-history)
-    if it is [enabled](/help/disable-message-edit-history) in your organization.
+    When you edit a message, everyone will see it labeled as **edited**. You
+    can [view a message's edit history](/help/view-a-messages-edit-history)
+    if it is [allowed](/help/restrict-message-edit-history-access) in your
+    organization.
 
 ## Message notifications
 
@@ -55,7 +55,7 @@ the newly mentioned users will receive notifications just as if they had been
 mentioned in the original message.
 
 If you edit a message soon after sending it, the edit will be reflected in any
-[email notifications that have not yet been sent](/help/email-notifications#delay-before-sending-emails).
+[email notifications that have not yet been sent](/help/email-notifications#configure-delay-for-message-notification-emails).
 This includes canceling notifications for users whose
 [mention](/help/format-your-message-using-markdown#mention-a-user-or-group) was
 removed or changed from a regular mention to a

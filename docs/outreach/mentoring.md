@@ -116,7 +116,7 @@ administrators as early as possible. Situations you should bring up include:
 - Any significant questions or concerns raised by your mentee that you cannot
   resolve, which for some reason your mentee cannot raise directly.
 
-- If it turns out that cannot dedicate sufficient time to support your mentee
+- If it turns out that you cannot dedicate sufficient time to support your mentee
   for all or part of the remaining duration of the program. As long as Zulip's
   program administrators are informed, we can make sure someone else covers for
   you.

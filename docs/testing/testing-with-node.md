@@ -18,7 +18,7 @@ name when debugging something.
 
 The JS unit tests are written to work with node. You can find them
 in `web/tests`. Here is an example test from
-`web/tests/stream_data.test.js`:
+`web/tests/stream_data.test.cjs`:
 
 ```js
 (function test_get_by_id() {
@@ -45,7 +45,7 @@ there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
 
 A good first test to read is
-[example1.js](https://github.com/zulip/zulip/blob/main/web/tests/example1.test.js).
+[example1.test.cjs](https://github.com/zulip/zulip/blob/main/web/tests/example1.test.cjs).
 (And then there are several other example files.)
 
 ## How the node tests work
@@ -60,10 +60,10 @@ those slow down the tests a lot, and often don't add much value.
 Instead, the preferred model for our unit tests is to mock DOM
 manipulations (which in Zulip are almost exclusively done via
 `jQuery`) using a custom library
-[zjquery](https://github.com/zulip/zulip/blob/main/web/tests/lib/zjquery.js).
+[zjquery](https://github.com/zulip/zulip/blob/main/web/tests/lib/zjquery.cjs).
 
 The
-[unit test file](https://github.com/zulip/zulip/blob/main/web/tests/zjquery.test.js)
+[unit test file](https://github.com/zulip/zulip/blob/main/web/tests/zjquery.test.cjs)
 for `zjquery` is designed to be also serve as nice documentation for
 how to use `zjquery`, and is **highly recommended reading** for anyone
 working on or debugging the Zulip node tests.
@@ -149,7 +149,7 @@ narrow_state.stream = function () {
 
 ## Creating new test modules
 
-The test runner (`index.js`) automatically runs all .js files in the
+The test runner (`index.cjs`) automatically runs all .test.cjs files in the
 `web/tests` directory, so you can simply start editing a file
 in that directory to create a new test.
 
@@ -278,7 +278,7 @@ These instructions assume you're using the Vagrant development environment.
       1. **Set the `Node.js interpreter path` to `/usr/local/bin/node`**
       1. Hit `OK` 2 times to get back to the `Run/Debug Configurations` window.
    1. Under `Working Directory` select the root `zulip` directory.
-   1. Under `JavaScript file`, enter `web/tests/lib/index.js`
+   1. Under `JavaScript file`, enter `web/tests/lib/index.cjs`
       -- this is the root script for Zulip's node unit tests.
 
 Congratulations! You've now set up the integration.
@@ -288,7 +288,7 @@ Congratulations! You've now set up the integration.
 To use Webstorm to debug a given node test file, do the following:
 
 1. Under `Application parameters` choose the node test file that you
-   are trying to test (e.g., `web/tests/message_store.test.js`).
+   are trying to test (e.g., `web/tests/message_store.test.cjs`).
 1. Under `Path Mappings`, set `Project Root` to `/srv/zulip`
    (i.e. where the `zulip` Git repository is mounted in the Vagrant guest).
 1. Use the WebStorm debugger; see [this overview][webstorm-debugging]

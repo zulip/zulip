@@ -1,3 +1,9 @@
+.with-container-query-support {
+    #message-lists-container {
+        container: message-lists / inline-size;
+    }
+}
+
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
@@ -15,10 +21,6 @@
 
     &.private-message {
         background-color: var(--color-background-private-message-content);
-
-        .date_row {
-            background-color: var(--color-background-private-message-content);
-        }
 
         .data-container::after {
             background: linear-gradient(
@@ -77,8 +79,7 @@
       padding on either side of the message box. */
     padding: 0 5px 0 3px;
 
-    &:hover .message_controls,
-    &:hover .message_failed {
+    &:hover .message_controls {
         .empty-star:hover {
             cursor: pointer;
         }
@@ -104,10 +105,8 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        var(--message-box-sender-line-height) repeat(3, auto) /
-        var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-            3 * var(--message-box-icon-width)
-        )
+        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
+        var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
        reliably, even if the row or column definitions of the grid change. */
@@ -129,27 +128,11 @@
             );
     }
 
-    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-        grid-template-columns:
-            var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-                2 * var(--message-box-icon-width)
-            )
-            8px minmax(var(--message-box-timestamp-column-width), max-content);
-    }
-
-    .message_controls {
-        grid-area: controls;
-
-        @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-            /* This is intended to target the first message_controls child
-               when there are 3 displayed. 4 = 3 + hidden message_failed element. */
-            .message_control_button:nth-last-child(4) {
-                display: none;
-            }
-        }
-    }
-
     .message_edit_notice {
+        grid-area: edited;
+    }
+
+    .edit-notifications {
         grid-area: edited;
     }
 
@@ -163,10 +146,6 @@
 
     .message_content {
         grid-area: message;
-        /*
-        Space between two single line messages is kept in
-        lockstep with adjacent Markdown elements.
-        */
         padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
         color: var(--color-text-message-default);
         /* We explicitly set line-height here so that
@@ -177,6 +156,16 @@
         display: block;
         position: relative;
         overflow: hidden;
+
+        /* For the sake of paragraphs and lists that include
+           links, we adjust the vertical space here to keep
+           it uniform. */
+        &:has(> p:first-child, > ol:first-child, > ul:first-child) {
+            padding-top: calc(
+                var(--message-box-markdown-aligned-vertical-space) -
+                    var(--message-box-link-focus-ring-block-padding)
+            );
+        }
 
         &:empty {
             display: none;
@@ -245,6 +234,31 @@
         }
     }
 
+    .message_length_toggle {
+        width: 100%;
+        height: 1.714em; /* 24px / 14px em */
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
+        color: var(--color-text-show-more-less-button);
+        background-color: var(--color-show-more-less-button-background);
+        border-radius: 4px;
+        border: none;
+        outline: none;
+        font-variant: all-small-caps;
+
+        &:hover {
+            background-color: var(
+                --color-show-more-less-button-background-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-show-more-less-button-background-active
+            );
+            scale: 0.98;
+        }
+    }
+
     &.content_edit_mode .message_length_controller {
         /* If entering edit mode on a collapsed message,
            just hide the controller area. This preserves
@@ -270,10 +284,16 @@
 
         &.is-me-message {
             grid-template-areas:
+                ".      .         .        . .   "
                 "avatar sender    controls . time"
                 "avatar sender    .        . .   "
                 ".      more      .        . .   "
                 ".      reactions .        . .   ";
+            grid-template-rows:
+                var(--message-box-vertical-margin) var(
+                    --message-box-avatar-height
+                )
+                minmax(0, auto) repeat(3, auto);
 
             .message-avatar {
                 /* Set the line-height to match the height of the avatar image
@@ -284,6 +304,19 @@
                    single-line me message, this margin preserves the
                    overall height of the message box. */
                 margin-bottom: var(--message-box-vertical-margin);
+
+                .inline_profile_picture {
+                    /* We adjust the vertical space in me messages via
+                       the grid definition above. */
+                    margin-top: 0;
+                }
+            }
+
+            .message_controls {
+                /* Because the controls height is smaller than the
+                   available grid row height on me-messages, we
+                   align to center here. */
+                align-self: center;
             }
 
             .message_sender {
@@ -329,7 +362,14 @@
             grid-area: avatar;
             /* The picture should not participate in the baseline group. */
             align-self: start;
-            margin-top: var(--message-box-vertical-margin);
+
+            .inline_profile_picture {
+                /* Setting the margin inside this element prevents
+                   unwanted shifts in the placement of especially
+                   sender-line elements on the .messagebox-content
+                   grid. */
+                margin-top: var(--message-box-vertical-margin);
+            }
         }
 
         .status-message {
@@ -342,7 +382,10 @@
                of the avatar. We also need to account for the
                padding atop .message_content. */
             margin-top: calc(
-                (var(--message-box-markdown-aligned-vertical-space) * 0.5 * -1) -
+                (
+                        var(--message-box-markdown-aligned-vertical-space) *
+                            0.5 * -1
+                    ) -
                     var(--message-box-markdown-aligned-vertical-space)
             );
             grid-area: message;
@@ -364,6 +407,10 @@
             margin-left: 4px;
             /* Unset the padding used on edited notices under the avatar. */
             padding-right: 0;
+
+            &.hide {
+                display: none;
+            }
         }
 
         .message_sender {
@@ -381,9 +428,8 @@
             align-items: baseline;
 
             .zulip-icon.zulip-icon-bot {
-                font-size: 12px;
                 align-self: center;
-                padding: 0 0 0 5px;
+                margin-left: 5px;
             }
 
             .sender_name {
@@ -410,12 +456,50 @@
             }
         }
     }
+
+    .collapsed ~ .message_length_controller .message_length_toggle {
+        /* Collapse top margin to avoid extra space
+           between the button and sender line. */
+        margin-top: 0;
+    }
 }
 
 .message_controls {
+    grid-area: controls;
+    /* Let the controls occupy the entire height
+       of the row; inner flexboxes handle the
+       centering of the icons. */
+    align-self: stretch;
+    /* Controls flex to the height of the top
+       row of the message box, and center
+       themselves within it. */
     display: flex;
-    align-items: baseline;
-    font-size: 16px;
+    align-items: center;
+    /* Ensure square icons for better centering. */
+    line-height: 1;
+
+    @container message-lists (width < $cq_sm_min) {
+        /* This is intended to target the first message_controls child
+           when there are 3 displayed. */
+        .message_control_button:nth-last-child(3) {
+            display: none;
+        }
+    }
+
+    /* Media-query fallback. Note that because we're treating
+       #message-lists-container as its own container, we can
+       express a much simpler query there. The more complex
+       conditions are necessary only for media queries. */
+    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+        .without-container-query-support {
+            /* This is intended to target the first message_controls child
+            when there are 3 displayed. */
+            .message_control_button:nth-last-child(3) {
+                display: none;
+            }
+        }
+    }
+
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
        doesn't disturb the layout.  Usually that would be just
@@ -424,19 +508,33 @@
     .message_control_button {
         opacity: 0;
         visibility: hidden;
-        transition: all 0.2s ease;
-        width: var(--message-box-icon-width);
-        height: var(--message-box-icon-height);
-        text-align: center;
+        transition: 0.2s ease;
+        transition-property: opacity, visibility;
+        /* Allow buttons to grow to fill the available space,
+           in concord with the column calculated for the
+           .messagebox-content grid. */
+        flex: 1 0 0;
+        /* Set the height to 100% to effectively flex open
+           on the vertical axis. */
+        height: 100%;
+        /* Control buttons are their own flex containers,
+           to more gracefully center the icons. */
+        display: flex;
+        place-items: center center;
         color: var(--color-message-action-visible);
 
+        .emoji-message-control-button-container {
+            /* This button has an extra div for Tippy purposes,
+               so it becomes its own flex container. */
+            display: flex;
+        }
+
         & .message-controls-icon {
-            vertical-align: middle;
-            /* TODO: Math for these values, possibly with variables.
-               In short, the icon body is 16px square; the current
+            /* The icon body is 16px square at 16px/1em; the clickable
                area for the icon is 26px wide by 25px tall, so these
                values ensure a 26px x 25px clickable area for the icon. */
-            padding: 2.5px 3px;
+            /* 2.5px at 16px/1em; 3px at 16px/1em */
+            padding: 0.1563em 0.1875em;
 
             &::before {
                 /* We specify block display so the
@@ -472,11 +570,6 @@
                 color: var(--color-message-star-action);
             }
         }
-
-        .zulip-icon-more-vertical {
-            /* Increase visual prominence of the vdots. */
-            font-size: 21px;
-        }
     }
 
     /* Tooltips should not follow the width restrictions of their parent element. */
@@ -486,46 +579,39 @@
     }
 
     .edit_content {
-        /* Icons for editing content are determined on message hover;
-           we set an empty `.edit_content` to have 0 height in order to
-           preserve the layout of the other icons prior to any hovering. */
-        &:empty {
-            height: 0;
-        }
+        width: var(--message-box-icon-width);
 
         &:hover {
             cursor: pointer;
         }
-    }
 
-    .message_failed {
-        display: inline-flex;
-        justify-content: space-between;
-        cursor: pointer;
-        position: relative;
-        vertical-align: middle;
-        padding-left: 2px;
-
-        &.hide {
+        .move_message_button,
+        .edit_content_button {
             display: none;
         }
 
+        &.can-edit-content {
+            .edit_content_button {
+                display: inline;
+            }
+        }
+
+        &.can-move-message {
+            .move_message_button {
+                display: inline;
+            }
+        }
+    }
+
+    .failed_message_action {
+        color: var(--color-failed-message-send-icon);
+        font-weight: bold;
+        padding: 1px;
+        opacity: 1;
+        visibility: visible;
+
         .rotating {
-            display: inline-block;
-            outline: none;
-
             animation: rotate 1s infinite linear;
-        }
-
-        .failed_message_action {
-            opacity: 1 !important;
-            color: var(--color-failed-message-send-icon);
-            font-weight: bold;
-            padding: 1px;
-        }
-
-        .message_control_button {
-            visibility: inherit;
         }
     }
 
@@ -542,14 +628,14 @@
 .unread_marker {
     margin-left: var(--unread-marker-left);
     opacity: 0;
-    transition: all 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
 
     &.slow_fade {
-        transition: all 2s ease-out;
+        transition: opacity 2s ease-out;
     }
 
     &.fast_fade {
-        transition: all 0.3s ease-out;
+        transition: opacity 0.3s ease-out;
     }
 
     &.date_unread_marker {
@@ -577,7 +663,7 @@
 }
 
 .unread .unread_marker {
-    transition: all 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
     opacity: 1;
 }
 
@@ -627,17 +713,30 @@
 
 .message-actions-button {
     box-sizing: border-box;
+    align-self: stretch;
     /* Display the actions buttons as
        flex containers for positioning
        text and spinners. */
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
+    /* 28px at 16px/1em, per Vlad's spec. */
+    height: 1.75em;
+    /* 65px at 16px/1em, which is the width of
+       the Cancel button. */
+    min-width: 4.0625em;
     padding: 0 10px;
     border-radius: 4px;
     border: 0;
     line-height: 1;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
 }
 
 .message_edit_save {
@@ -653,8 +752,7 @@
     }
 
     &:disabled {
-        /* Replicate the `.new-style` disabled values,
-           without any color shifts. */
+        /* Replicate disabled values, without any color shifts. */
         cursor: not-allowed;
         opacity: 0.5;
     }
@@ -673,10 +771,32 @@
 .edit-content-container {
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border 0.2s ease;
+    transition: border-color 0.2s ease;
+    display: grid;
+    grid-template-areas: "message-edit-content";
 
     &:has(.message_edit_content:focus) {
         border-color: var(--color-message-content-container-border-focus);
+    }
+
+    .message-edit-textbox {
+        /* Setting `position:relative` on this container ensures that .copy-button
+           (a possible immediate child with `position: absolute`) is positioned
+           relative to this container instead of <html>. */
+        position: relative;
+        grid-area: message-edit-content;
+
+        .textarea-over-limit {
+            background-color: var(
+                --color-compose-message-content-background-over-limit
+            );
+        }
+
+        .textarea-approaching-limit {
+            background-color: var(
+                --color-compose-message-content-background-approaching-limit
+            );
+        }
     }
 }
 
@@ -717,6 +837,56 @@ of the base style defined for a read-only textarea in dark mode. */
     opacity: 1;
 }
 
+.message-editing-animation {
+    display: inline-flex;
+    align-items: baseline;
+    margin-left: 3px;
+    width: 40px;
+    height: 5px;
+
+    /* Avoid this animation element blocking clicks on .edit-notifications
+       to display the message's edit history. */
+    pointer-events: none;
+
+    .y-animated-dot {
+        width: 4px;
+        height: 4px;
+        background-color: hsl(0deg 0% 53%);
+        border-radius: 50%;
+        margin-left: 3px;
+        opacity: 0;
+
+        &:nth-child(1) {
+            animation: typing 1s infinite 0.2s;
+        }
+
+        &:nth-child(2) {
+            animation: typing 1s infinite 0.4s;
+        }
+
+        &:nth-child(3) {
+            animation: typing 1s infinite 0.6s;
+        }
+    }
+}
+
+@keyframes typing {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+}
+
 .message_edit_countdown_timer {
     text-align: right;
     display: inline;
@@ -738,8 +908,6 @@ of the base style defined for a read-only textarea in dark mode. */
 }
 
 .message-edit-feature-group {
-    display: flex;
-    align-items: baseline;
     border-radius: 0 0 3px 3px;
     background-color: var(--color-message-formatting-controls-container);
     /* margin on either side to let the border of
@@ -749,28 +917,49 @@ of the base style defined for a read-only textarea in dark mode. */
 
 .message_edit_save .loader {
     display: none;
-    height: 28px;
-    width: 28px;
+    /* 28px at 16px/1em */
+    height: 1.75em;
+    width: 1.75em;
+    grid-area: button-display;
+    justify-self: center;
+    z-index: 1;
+}
+
+.message_edit_save:has(.showing-button-spinner) {
+    /* We want to maintain the width of the Save button
+       in an i18n friendly way; this quick grid ensures
+       that the width of the text holds the button open,
+       while the styles above ensure the spinner's
+       centering. */
+    display: grid;
+    grid-template: "button-display";
+}
+
+.showing-button-spinner {
+    visibility: hidden;
+    grid-area: button-display;
+    z-index: 0;
 }
 
 .edit-controls {
-    .btn-wrapper {
+    .button-wrapper {
         cursor: not-allowed;
-    }
-
-    .disable-btn {
-        pointer-events: none;
     }
 }
 
-.message_edit {
-    display: none;
+.message-edit-button-disabled {
+    pointer-events: none;
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
 .message_edit_form {
     margin-bottom: 10px;
     cursor: default;
+
+    .edit-form {
+        /* Override Bootstrap. */
+        margin-bottom: 0;
+    }
 
     .edit-controls {
         margin-left: 0;
@@ -779,11 +968,13 @@ of the base style defined for a read-only textarea in dark mode. */
 
     .preview_message_area {
         max-height: var(--max-message-edit-height);
+        grid-area: message-edit-content;
     }
 }
 
 .message_edit_notice {
-    font-size: 10px;
+    /* 10px at 14px/1em */
+    font-size: 0.7143em;
     opacity: 0.5;
     user-select: none;
     white-space: nowrap;
@@ -822,6 +1013,21 @@ of the base style defined for a read-only textarea in dark mode. */
     cursor: default;
 }
 
+/* Placehold the control buttons, unless there's a failure. */
+.locally-echoed {
+    .messagebox:hover
+        .message_controls
+        .message_control_button:not(.failed_message_action) {
+        visibility: hidden;
+    }
+    /* The actual star icon is not added to the DOM when a
+       message is locally echoed, so we set the equivalent
+       width on its container. */
+    .star_container {
+        width: var(--message-box-icon-width);
+    }
+}
+
 .recipient_row {
     /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
        for details on how this works */
@@ -857,4 +1063,18 @@ of the base style defined for a read-only textarea in dark mode. */
         /* Right padding matches time in message row and date in recipient row. */
         padding: 8px 6px 8px 4px;
     }
+}
+
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
+/* Only show links on the trailing bookend. */
+.bookend-channel-settings-link {
+    display: none;
+}
+
+.trailing_bookend .bookend-channel-settings-link {
+    display: inline;
 }

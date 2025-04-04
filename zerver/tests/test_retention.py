@@ -44,9 +44,6 @@ from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 
-# Class with helper functions useful for testing archiving of reactions:
-from zerver.tornado.django_api import send_event
-
 ZULIP_REALM_DAYS = 30
 MIT_REALM_DAYS = 100
 
@@ -955,24 +952,30 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
         self._make_expired_zulip_messages(7)
         archive_messages(chunk_size=2)  # Small chunk size to have multiple transactions
 
-        transactions = list(ArchiveTransaction.objects.all())
+        transactions = list(ArchiveTransaction.objects.all().order_by("id"))
         for transaction in transactions[0:-1]:
             transaction.timestamp = timezone_now() - timedelta(
                 days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS + 1
             )
             transaction.save()
 
+        # This transaction would up for deletion, but we enable the flag preventing
+        # it from automatic deletion:
+        transactions[-2].protect_from_deletion = True
+        transactions[-2].save()
+
         message_ids_to_clean = list(
-            ArchivedMessage.objects.filter(archive_transaction__in=transactions[0:-1]).values_list(
+            ArchivedMessage.objects.filter(archive_transaction__in=transactions[0:-2]).values_list(
                 "id", flat=True
             )
         )
 
         clean_archived_data()
-        remaining_transactions = list(ArchiveTransaction.objects.all())
-        self.assert_length(remaining_transactions, 1)
-        # All transactions except the last one were deleted:
+        remaining_transactions = list(ArchiveTransaction.objects.order_by("-id"))
+        self.assert_length(remaining_transactions, 2)
+        # All transactions except the last two were deleted:
         self.assertEqual(remaining_transactions[0].id, transactions[-1].id)
+        self.assertEqual(remaining_transactions[1].id, transactions[-2].id)
         # And corresponding ArchivedMessages should have been deleted:
         self.assertFalse(ArchivedMessage.objects.filter(id__in=message_ids_to_clean).exists())
         self.assertFalse(
@@ -980,7 +983,10 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
         )
 
         for message in ArchivedMessage.objects.all():
-            self.assertEqual(message.archive_transaction_id, remaining_transactions[0].id)
+            self.assertIn(
+                message.archive_transaction_id,
+                [remaining_transactions[0].id, remaining_transactions[1].id],
+            )
 
 
 class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
@@ -1145,35 +1151,10 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             do_delete_messages(realm, messages, acting_user=None)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))
         self.assert_length({message.archive_transaction_id for message in archived_messages}, 1)
-
-    def test_old_event_format_processed_correctly(self) -> None:
-        """
-        do_delete_messages used to send events with users in dict format {"id": <int>}.
-        We have a block in process_notification to deal with that old format, that should be
-        deleted in a later release. This test is meant to ensure correctness of that block.
-        """
-        realm = get_realm("zulip")
-        cordelia = self.example_user("cordelia")
-        hamlet = self.example_user("hamlet")
-        message_id = self.send_personal_message(cordelia, hamlet)
-        message = Message.objects.get(id=message_id)
-
-        event = {
-            "type": "delete_message",
-            "sender": message.sender.email,
-            "sender_id": message.sender_id,
-            "message_id": message.id,
-            "message_type": "private",
-            "recipient_id": message.recipient_id,
-        }
-        move_messages_to_archive([message_id])
-        # We only send the event to see no exception is thrown - as it would be if the block
-        # in process_notification to handle this old format of "users to notify" wasn't correct.
-        send_event(realm, event, [{"id": cordelia.id}, {"id": hamlet.id}])

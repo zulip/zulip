@@ -6,10 +6,10 @@ import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
 import {z} from "zod";
 
-import * as blueslip from "../blueslip";
-import {$t, $t_html} from "../i18n";
+import * as blueslip from "../blueslip.ts";
+import {$t, $t_html} from "../i18n.ts";
 
-import {page_params} from "./page_params";
+import {page_params} from "./page_params.ts";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 
@@ -55,9 +55,9 @@ type DataByTime<T> = {
 const datum_schema: z.ZodType<Plotly.Datum> = z.any();
 
 // Define a schema factory function for the utility generic type
-// The inferred types from zod have to be used to type the return values
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(schema: T) {
+function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(
+    schema: T,
+): z.ZodObject<{everyone: T; user: T}> {
     return z.object({
         everyone: schema,
         user: schema,
@@ -162,7 +162,7 @@ function partial_sums(array: number[]): number[] {
 
 // Assumes date is a round number of hours
 function floor_to_local_day(date: Date): Date {
-    const date_copy = new Date(date.getTime());
+    const date_copy = new Date(date);
     date_copy.setHours(0);
     return date_copy;
 }
@@ -678,7 +678,7 @@ function compute_summary_chart_data(
             values.push(0);
         }
     }
-    if (data.size !== 0) {
+    if (data.size > 0) {
         labels[labels.length - 1] = "Other";
         for (const sum of data.values()) {
             values[labels.length - 1]! += sum;

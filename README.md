@@ -43,7 +43,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
   issue](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#reporting-issues),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip into your language, or [give us
-  feedback](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#user-feedback).
+  feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html).
   We'd love to hear from you, whether you've been using Zulip for years, or are just
   trying it out for the first time.
 

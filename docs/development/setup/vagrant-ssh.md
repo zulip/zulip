@@ -14,14 +14,14 @@ Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-92-generic x86_64)
 Congrats, you're now inside the Zulip development environment!
 
 You can confirm this by looking at the command prompt, which starts
-with `(zulip-py3-venv)vagrant@`. If it just starts with `vagrant@`, your
+with `(zulip-server) vagrant@`. If it just starts with `vagrant@`, your
 provisioning failed and you should look at the
 [troubleshooting section](/development/setup-recommended.md#troubleshooting-and-common-errors).
 
 Next, start the Zulip server:
 
 ```console
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ ./tools/run-dev
+(zulip-server) vagrant@vagrant:/srv/zulip$ ./tools/run-dev
 ```
 
 You will see something like:

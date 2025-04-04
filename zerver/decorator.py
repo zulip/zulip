@@ -43,7 +43,7 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
     WebhookError,
 )
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.rate_limiter import is_local_addr, rate_limit_request_by_ip, rate_limit_user
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_method_not_allowed
@@ -91,7 +91,7 @@ def update_user_activity(
         "time": datetime_to_timestamp(timezone_now()),
         "client_id": request_notes.client.id,
     }
-    queue_json_publish("user_activity", event, lambda event: None)
+    queue_json_publish_rollback_unsafe("user_activity", event, lambda event: None)
 
 
 # Based on django.views.decorators.http.require_http_methods
@@ -158,6 +158,24 @@ def require_realm_admin(
     return wrapper
 
 
+def check_if_user_can_manage_default_streams(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
+    @wraps(func)
+    def wrapper(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> HttpResponse:
+        if not user_profile.can_manage_default_streams():
+            raise OrganizationAdministratorRequiredError
+        return func(request, user_profile, *args, **kwargs)
+
+    return wrapper
+
+
 def require_organization_member(
     func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
@@ -188,7 +206,7 @@ def require_billing_access(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.has_billing_access:
-            raise JsonableError(_("Must be a billing administrator or an organization owner"))
+            raise JsonableError(_("Insufficient permission"))
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -256,20 +274,31 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
     if not user_profile.is_active:
         raise UserDeactivatedError
 
-    # Either the subdomain matches, or we're accessing Tornado from
-    # and to localhost (aka spoofing a request as the user).
-    if not user_matches_subdomain(get_subdomain(request), user_profile) and not (
+    remote_addr = request.META.get("REMOTE_ADDR", None)
+    server_name = request.META.get("SERVER_NAME", None)
+
+    if (
         settings.RUNNING_INSIDE_TORNADO
-        and request.META["SERVER_NAME"] == "127.0.0.1"
-        and request.META["REMOTE_ADDR"] == "127.0.0.1"
-    ):
-        logging.warning(
-            "User %s (%s) attempted to access API on wrong subdomain (%s)",
-            user_profile.delivery_email,
-            user_profile.realm.subdomain,
-            get_subdomain(request),
-        )
-        raise JsonableError(_("Account is not associated with this subdomain"))
+        and remote_addr == "127.0.0.1"
+        and server_name == "127.0.0.1"
+    ):  # nocoverage
+        # We're accessing Tornado from and to localhost (aka spoofing
+        # a request as the user)
+        return
+    if remote_addr == "127.0.0.1" and server_name == "localhost":  # nocoverage
+        # For tusd hook requests.
+        return
+
+    if user_matches_subdomain(get_subdomain(request), user_profile):
+        return
+
+    logging.warning(
+        "User %s (%s) attempted to access API on wrong subdomain (%s)",
+        user_profile.delivery_email,
+        user_profile.realm.subdomain,
+        get_subdomain(request),
+    )
+    raise JsonableError(_("Account is not associated with this subdomain"))
 
 
 def access_user_by_api_key(
@@ -521,7 +550,9 @@ def human_users_only(
         request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
         assert request.user.is_authenticated
-        if request.user.is_bot:
+        # Check bot_type here, rather than is_bot, because  the
+        # narrow user cache only has that (nullable) type
+        if request.user.bot_type is not None:
             raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
 
@@ -652,7 +683,9 @@ def require_member_or_admin(
     ) -> HttpResponse:
         if user_profile.is_guest:
             raise JsonableError(_("Not allowed for guest users"))
-        if user_profile.is_bot:
+        # Check bot_type here, rather than is_bot, because  the
+        # narrow user cache only has that (nullable) type
+        if user_profile.bot_type is not None:
             raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, user_profile, *args, **kwargs)
 
@@ -911,6 +944,7 @@ def authenticated_json_view(
 # from command-line tools into Django.  We protect them from the
 # outside world by checking a shared secret, and also the originating
 # IP (for now).
+@typed_endpoint
 def authenticate_internal_api(request: HttpRequest, *, secret: str) -> bool:
     return is_local_addr(request.META["REMOTE_ADDR"]) and constant_time_compare(
         secret, settings.SHARED_SECRET
@@ -933,11 +967,10 @@ def internal_api_view(
         @csrf_exempt
         @require_post
         @wraps(view_func)
-        @typed_endpoint
         def _wrapped_func_arguments(
-            request: HttpRequest, /, *args: ParamT.args, secret: str, **kwargs: ParamT.kwargs
+            request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            if not authenticate_internal_api(request, secret=secret):
+            if not authenticate_internal_api(request):  # type: ignore[call-arg] # @typed_endpoint fills in secret from the request
                 raise AccessDeniedError
             request_notes = RequestNotes.get_notes(request)
             is_tornado_request = request_notes.tornado_handler_id is not None

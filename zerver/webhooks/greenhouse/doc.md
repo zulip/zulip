@@ -4,8 +4,6 @@ Receive Greenhouse notifications in Zulip!
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
@@ -27,7 +25,7 @@ Receive Greenhouse notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/greenhouse/000.png)
+![](/static/images/integrations/greenhouse/001.png)
 
 ### Related documentation
 

@@ -1,12 +1,12 @@
 <div class="micromodal" id="user-profile-modal" data-user-id="{{user_id}}" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
-        <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <div class="modal__header">
                 <h1 class="modal__title user-profile-name-heading" id="name">
                     {{#unless is_bot}}
                         {{#if is_active}}
-                            <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
-                                <span class="{{user_circle_class}} user_circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
+                            <div class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
+                                <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
                             </div>
                         {{else}}
                             <div>
@@ -18,23 +18,23 @@
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
                     <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
-                    <a class="copy-link-to-user-profile user-profile-manage-own-copy-link-button" tabindex="0" data-user-id="{{user_id}}">
-                        <i class="zulip-icon zulip-icon-link tippy-zulip-tooltip " data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
-                    </a>
-                    {{#if is_me}}
-                        <a class="user-profile-manage-own-edit-button" href="/#settings/profile">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
-                        </a>
-                    {{/if}}
-                    {{#if can_manage_profile}}
-                        <div class="user-profile-manage-others-edit-button">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Manage user' }}" aria-hidden="true"></i>
-                        </div>
-                    {{/if}}
+                    <span class="user-profile-header-actions">
+                        {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
+                        {{#if is_me}}
+                            {{> components/icon_button custom_classes="user-profile-manage-own-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                        {{/if}}
+                        {{#if can_manage_profile}}
+                            {{#if is_bot}}
+                                {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage bot") aria-label=(t "Manage bot") }}
+                            {{else}}
+                                {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage user") aria-label=(t 'Manage user') }}
+                            {{/if}}
+                        {{/if}}
+                    </span>
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </div>
-            <div id="tab-toggle" class="center"></div>
+            <div id="tab-toggle"></div>
             <main class="modal__body" id="body" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                 <div class="tab-data">
                     <div class="tabcontent active" id="profile-tab">
@@ -117,10 +117,12 @@
                             <div class="header-section">
                                 <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
                             </div>
-                            <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter channels' }}" />
-                            <button type="button" class="clear_search_button" id="clear_stream_search">
-                                <i class="fa fa-remove" aria-hidden="true"></i>
-                            </button>
+                            <div class="stream-search-container">
+                                <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter' }}" />
+                                <button type="button" class="clear_search_button" id="clear_stream_search">
+                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="subscription-stream-list empty-list">
                             <table class="user-stream-list" data-empty="{{t 'No channel subscriptions.'}}" data-search-results-empty="{{t 'No matching channels' }}"></table>
@@ -128,8 +130,38 @@
                     </div>
 
                     <div class="tabcontent" id="user-profile-groups-tab">
+                        <div class="alert user-profile-group-list-alert"></div>
+                        {{#if show_user_group_container}}
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                            </div>
+                            <div id="groups-to-add" class="add-button-container">
+                                <div id="user-group-to-add">
+                                    <div class="add-user-group-container">
+                                        <div class="pill-container">
+                                            <div class="input" contenteditable="true"
+                                              data-placeholder="{{t 'Add user groups' }}">
+                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
+                            </div>
+                        {{/if}}
+                        <div class="group-list-top-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Group membership' }}</h3>
+                            </div>
+                            <div class="group-search-container">
+                                <input type="text" class="group-search modal_text_input" placeholder="{{t 'Filter' }}" />
+                                <button type="button" class="clear_search_button" id="clear_groups_search">
+                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
                         <div class="subscription-group-list empty-list">
-                            <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
+                            <table class="user-group-list" data-empty="{{t 'Not a member of any groups.'}}" data-search-results-empty="{{t 'No matching user groups' }}"></table>
                         </div>
                     </div>
                     <div class="tabcontent" id="manage-profile-tab"></div>
@@ -138,9 +170,9 @@
             <div class="manage-profile-tab-footer">
                 <footer class="modal__footer">
                     <div class="save-success"></div>
-                    <button type="button" class="modal__btn dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
-                    <button type="button" class="modal__btn dialog_submit_button">
-                        <span>{{t "Save changes"}}</span>
+                    <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+                    <button type="button" class="modal__button dialog_submit_button">
+                        <span class="submit-button-text">{{t "Save changes"}}</span>
                         <div class="modal__spinner"></div>
                     </button>
                 </footer>

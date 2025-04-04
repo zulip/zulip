@@ -1,13 +1,14 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as common from "../common";
-import {$t} from "../i18n";
-import {password_quality, password_warning} from "../password_quality";
-import * as settings_config from "../settings_config";
+import * as common from "../common.ts";
+import {$t} from "../i18n.ts";
+import {password_quality, password_warning} from "../password_quality.ts";
+import * as settings_config from "../settings_config.ts";
 
-import * as portico_modals from "./portico_modals";
+import * as portico_modals from "./portico_modals.ts";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -24,10 +25,19 @@ $(() => {
         // was just reloaded due to a validation failure on the backend.
         password_quality($password_field.val()!, $("#pw_strength .bar"), $password_field);
 
+        const debounced_password_quality = _.debounce((password_value: string, $field: JQuery) => {
+            password_quality(password_value, $("#pw_strength .bar"), $field);
+        }, 300);
+
         $password_field.on("input", function () {
-            // Update the password strength bar even if we aren't validating
-            // the field yet.
-            password_quality($(this).val()!, $("#pw_strength .bar"), $(this));
+            const password_value = $(this).val()!;
+
+            if (password_value.length > 30) {
+                debounced_password_quality(password_value, $(this));
+            } else {
+                debounced_password_quality.cancel();
+                password_quality(password_value, $("#pw_strength .bar"), $(this));
+            }
         });
     }
 
@@ -153,8 +163,8 @@ $(() => {
     $<HTMLInputElement>(".register-page input#email, .login-page-container input#id_username").on(
         "focusout keydown",
         function (e) {
-            // check if it is the "focusout" or if it is a keydown, then check if
-            // the keycode was the one for "Enter".
+            // check if it is the "focusout" or if it is a keydown, then check
+            // if the key was "Enter"
             if (e.type === "focusout" || e.key === "Enter") {
                 $(this).val($(this).val()!.trim());
             }
@@ -204,7 +214,7 @@ $(() => {
     }
 
     function update_full_name_section(): void {
-        if ($("#source_realm_select").length && $("#source_realm_select").val() !== "") {
+        if ($("#source_realm_select").length > 0 && $("#source_realm_select").val() !== "") {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
             const avatar_url = $($("#source_realm_select").prop("selectedOptions")).attr(
@@ -307,38 +317,37 @@ $(() => {
         $(e.target).hide();
     });
 
-    $("#how-realm-creator-found-zulip select").on("change", function () {
-        const elements: Record<string, string> = {
-            Other: "how-realm-creator-found-zulip-other",
-            Advertisement: "how-realm-creator-found-zulip-where-ad",
-            "At an organization that's using it":
-                "how-realm-creator-found-zulip-which-organization",
-        };
+    $<HTMLSelectElement>("#how-realm-creator-found-zulip select").on("change", function () {
+        const elements = new Map([
+            ["other", "how-realm-creator-found-zulip-other"],
+            ["ad", "how-realm-creator-found-zulip-where-ad"],
+            ["existing_user", "how-realm-creator-found-zulip-which-organization"],
+            ["review_site", "how-realm-creator-found-zulip-review-site"],
+        ]);
 
         const hideElement = (element: string): void => {
-            const $element = $(`#${element}`);
+            const $element = $(`#${CSS.escape(element)}`);
             $element.hide();
             $element.removeAttr("required");
-            $(`#${element}-error`).hide();
+            $(`#${CSS.escape(element)}-error`).hide();
         };
 
         const showElement = (element: string): void => {
-            const $element = $(`#${element}`);
+            const $element = $(`#${CSS.escape(element)}`);
             $element.show();
             $element.attr("required", "required");
         };
 
         // Reset state
-        for (const element of Object.values(elements)) {
+        for (const element of elements.values()) {
             if (element) {
                 hideElement(element);
             }
         }
 
         // Show the additional input box if needed.
-        const selected_option = $("option:selected", this).text();
-        const selected_element = elements[selected_option];
-        if (selected_element) {
+        const selected_element = elements.get(this.value);
+        if (selected_element !== undefined) {
             showElement(selected_element);
         }
     });

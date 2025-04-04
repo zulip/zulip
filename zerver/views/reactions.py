@@ -12,7 +12,7 @@ from zerver.models import Reaction, UserProfile
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message
-@transaction.atomic
+@transaction.atomic(durable=True)
 @typed_endpoint
 def add_reaction(
     request: HttpRequest,
@@ -29,7 +29,7 @@ def add_reaction(
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message
-@transaction.atomic
+@transaction.atomic(durable=True)
 @typed_endpoint
 def remove_reaction(
     request: HttpRequest,
@@ -40,15 +40,12 @@ def remove_reaction(
     emoji_code: str | None = None,
     reaction_type: str = "unicode_emoji",
 ) -> HttpResponse:
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
     if emoji_code is None:
         if emoji_name is None:
             raise JsonableError(
-                _(
-                    "At least one of the following arguments "
-                    "must be present: emoji_name, emoji_code"
-                )
+                _("At least one of the following arguments must be present: emoji_name, emoji_code")
             )
         # A correct full Zulip client implementation should always
         # pass an emoji_code, because of the corner cases discussed in

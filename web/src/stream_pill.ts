@@ -2,12 +2,11 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import {$t} from "./i18n";
-import type {InputPillContainer} from "./input_pill";
-import * as peer_data from "./peer_data";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
-import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper";
+import type {InputPillContainer} from "./input_pill.ts";
+import * as peer_data from "./peer_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 
 export type StreamPill = {
     type: "stream";
@@ -18,14 +17,6 @@ export type StreamPill = {
 export type StreamPillWidget = InputPillContainer<StreamPill>;
 
 export type StreamPillData = StreamSubscription & {type: "stream"};
-
-function format_stream_name_and_subscriber_count(sub: StreamSubscription): string {
-    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-    return $t(
-        {defaultMessage: "{stream_name}: {sub_count} users"},
-        {stream_name: sub.name, sub_count},
-    );
-}
 
 export function create_item_from_stream_name(
     stream_name: string,
@@ -83,9 +74,6 @@ export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContain
 export function get_display_value_from_item(item: StreamPill): string {
     const stream = stream_data.get_sub_by_id(item.stream_id);
     assert(stream !== undefined);
-    if (item.show_subscriber_count) {
-        return format_stream_name_and_subscriber_count(stream);
-    }
     return stream.name;
 }
 
@@ -96,6 +84,7 @@ export function generate_pill_html(item: StreamPill): string {
         has_stream: true,
         stream,
         display_value: get_display_value_from_item(item),
+        stream_id: item.stream_id,
     });
 }
 
@@ -133,7 +122,10 @@ export function typeahead_source(
     const potential_streams = invite_streams
         ? stream_data.get_invite_stream_data()
         : stream_data.get_unsorted_subs();
-    return filter_taken_streams(potential_streams, pill_widget).map((stream) => ({
+
+    const active_streams = potential_streams.filter((sub) => !sub.is_archived);
+
+    return filter_taken_streams(active_streams, pill_widget).map((stream) => ({
         ...stream,
         type: "stream",
     }));

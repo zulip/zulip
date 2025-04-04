@@ -6,6 +6,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.message_flags import do_mark_muted_user_messages_as_read
 from zerver.lib.muted_users import add_user_mute, get_user_mutes
 from zerver.models import MutedUser, RealmAuditLog, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -26,7 +27,7 @@ def do_mute_user(
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_MUTED,
+        event_type=AuditLogEventType.USER_MUTED,
         event_time=date_muted,
         extra_data={"muted_user_id": muted_user.id},
     )
@@ -44,7 +45,7 @@ def do_unmute_user(mute_object: MutedUser) -> None:
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_UNMUTED,
+        event_type=AuditLogEventType.USER_UNMUTED,
         event_time=timezone_now(),
         extra_data={"unmuted_user_id": muted_user.id},
     )

@@ -244,6 +244,11 @@ things you need to be careful about when configuring it:
    connection mechanism from your proxy to Zulip. Note that the proxies _must_
    set the header, overriding any existing values, not add a new header.
 
+   If your proxy _cannot_ set the `X-Forwarded-Proto` header, you can opt to do
+   all HTTP-to-HTTPS redirection at the load-balancer level, and set
+   [`loadbalancer.rejects_http_requests` in `zulip.conf`][no-proto-header]; but
+   note the important security caveats for that in its documentation.
+
 1. Configure your proxy to pass along the `Host:` header as was sent
    from the client, not the internal hostname as seen by the proxy.
    If this is not possible, you can set `USE_X_FORWARDED_HOST = True`
@@ -255,13 +260,13 @@ things you need to be careful about when configuring it:
    browsers. This [nginx code snippet][nginx-proxy-longpolling-config]
    does this.
 
-   The key configuration options are, for the `/json/events` and
-   `/api/1/events` endpoints:
+   The key configuration options are:
 
-   - `proxy_read_timeout 1200;`. It's critical that this be
-     significantly above 60s, but the precise value isn't important.
-   - `proxy_buffering off`. If you don't do this, your `nginx` proxy may
-     return occasional 502 errors to clients using Zulip's events API.
+   - `proxy_read_timeout 1200;`. It's critical that this be significantly above
+     60s, but the precise value isn't important. This is most important for the
+     events API, but must be applied to all endpoints.
+   - `proxy_buffering off`. If you don't do this, your `nginx` proxy may return
+     occasional 502 errors to clients using Zulip's events API.
 
 1. The other tricky failure mode we've seen with `nginx` reverse
    proxies is that they can load-balance between the IPv4 and IPv6
@@ -272,4 +277,5 @@ things you need to be careful about when configuring it:
    with multiple IPs for your Zulip machine; sometimes this happens with
    IPv6 configuration).
 
+[no-proto-header]: system-configuration.md#rejects_http_requests
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling

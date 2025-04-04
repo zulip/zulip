@@ -41,8 +41,9 @@ def check_schedule_message(
     *,
     forwarder_user_profile: UserProfile | None = None,
     read_by_sender: bool | None = None,
+    skip_events: bool = False,
 ) -> int:
-    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name, realm)
     send_request = check_message(
         sender,
         client,
@@ -61,7 +62,9 @@ def check_schedule_message(
             client.default_read_by_sender() and send_request.message.recipient != sender.recipient
         )
 
-    return do_schedule_messages([send_request], sender, read_by_sender=read_by_sender)[0]
+    return do_schedule_messages(
+        [send_request], sender, read_by_sender=read_by_sender, skip_events=skip_events
+    )[0]
 
 
 def do_schedule_messages(
@@ -69,6 +72,7 @@ def do_schedule_messages(
     sender: UserProfile,
     *,
     read_by_sender: bool = False,
+    skip_events: bool = False,
 ) -> list[int]:
     scheduled_messages: list[tuple[ScheduledMessage, SendMessageRequest]] = []
 
@@ -93,7 +97,7 @@ def do_schedule_messages(
 
         scheduled_messages.append((scheduled_message, send_request))
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         ScheduledMessage.objects.bulk_create(
             [scheduled_message for scheduled_message, ignored in scheduled_messages]
         )
@@ -104,14 +108,15 @@ def do_schedule_messages(
                 scheduled_message.has_attachment = True
                 scheduled_message.save(update_fields=["has_attachment"])
 
-        event = {
-            "type": "scheduled_messages",
-            "op": "add",
-            "scheduled_messages": [
-                scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
-            ],
-        }
-        send_event_on_commit(sender.realm, event, [sender.id])
+        if not skip_events:
+            event = {
+                "type": "scheduled_messages",
+                "op": "add",
+                "scheduled_messages": [
+                    scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
+                ],
+            }
+            send_event_on_commit(sender.realm, event, [sender.id])
 
     return [scheduled_message.id for scheduled_message, ignored in scheduled_messages]
 
@@ -223,9 +228,10 @@ def edit_scheduled_message(
         )
         scheduled_message_object.content = send_request.message.content
         scheduled_message_object.rendered_content = rendering_result.rendered_content
-        scheduled_message_object.has_attachment = check_attachment_reference_change(
+        attachment_reference_change = check_attachment_reference_change(
             scheduled_message_object, rendering_result
         )
+        scheduled_message_object.has_attachment = attachment_reference_change.did_attachment_change
 
     if deliver_at is not None:
         # User has updated the scheduled message's send timestamp.
@@ -358,7 +364,7 @@ def send_failed_scheduled_message_notification(
 
 
 @transaction.atomic(durable=True)
-def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
+def try_deliver_one_scheduled_message() -> bool:
     # Returns whether there was a scheduled message to attempt
     # delivery on, regardless of whether delivery succeeded.
     scheduled_message = (
@@ -374,7 +380,7 @@ def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
     if scheduled_message is None:
         return False
 
-    logger.info(
+    logging.info(
         "Sending scheduled message %s with date %s (sender: %s)",
         scheduled_message.id,
         scheduled_message.scheduled_timestamp,
@@ -391,12 +397,12 @@ def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
 
             if isinstance(e, JsonableError):
                 scheduled_message.failure_message = e.msg
-                logger.info("Failed with message: %s", e.msg)
+                logging.info("Failed with message: %s", e.msg)
             else:
                 # An unexpected failure; store and send user a generic
                 # internal server error in notification message.
                 scheduled_message.failure_message = _("Internal server error")
-                logger.exception(
+                logging.exception(
                     "Unexpected error sending scheduled message %s (sent: %s)",
                     scheduled_message.id,
                     was_delivered,

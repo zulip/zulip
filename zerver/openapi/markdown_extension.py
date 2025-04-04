@@ -160,7 +160,7 @@ def render_python_code_example(
         "```python",
         *config,
         # Remove one level of indentation and strip newlines
-        *(line[4:].rstrip() for snippet in snippets for line in snippet),
+        *(line.removeprefix("    ").rstrip() for snippet in snippets for line in snippet),
         "print(result)",
         "\n",
         "```",

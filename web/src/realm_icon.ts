@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import * as channel from "./channel";
-import {$t} from "./i18n";
-import {current_user, realm} from "./state_data";
-import * as upload_widget from "./upload_widget";
-import type {CropperOptions, UploadFunction} from "./upload_widget";
+import * as channel from "./channel.ts";
+import {$t} from "./i18n.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as upload_widget from "./upload_widget.ts";
+import type {CropperOptions, UploadFunction} from "./upload_widget.ts";
 
 export function build_realm_icon_widget(upload_function: UploadFunction): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
@@ -44,10 +44,7 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
 }
 
 export function rerender(): void {
-    $("#realm-icon-upload-widget .image-block, #realm-navbar-icon-logo").attr(
-        "src",
-        realm.realm_icon_url,
-    );
+    $("#realm-icon-upload-widget .image-block").attr("src", realm.realm_icon_url);
     if (realm.realm_icon_source === "U") {
         $("#realm-icon-upload-widget .image-delete-button").show();
     } else {

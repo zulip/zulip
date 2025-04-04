@@ -20,10 +20,9 @@ from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import upload_message_attachment
-from zerver.lib.users import get_api_key
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import Parameter
 
 GENERATOR_FUNCTIONS: dict[str, Callable[[], dict[str, object]]] = {}
@@ -126,7 +125,7 @@ def add_emoji_to_message() -> dict[str, object]:
 
     # The message ID here is hardcoded based on the corresponding value
     # for the example message IDs we use in zulip.yaml.
-    message_id = 47
+    message_id = 48
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
@@ -252,6 +251,19 @@ def create_user() -> dict[str, object]:
     }
 
 
+@openapi_param_value_generator(["/users/{email]:patch", "/users/{user_id}:patch"])
+def new_email_value() -> dict[str, object]:
+    count = 0
+    exists = True
+    while exists:
+        email = f"new{count}@zulip.com"
+        exists = UserProfile.objects.filter(delivery_email=email).exists()
+        count += 1
+    return {
+        "new_email": email,
+    }
+
+
 @openapi_param_value_generator(["/user_groups/create:post"])
 def create_user_group_data() -> dict[str, object]:
     return {
@@ -259,15 +271,36 @@ def create_user_group_data() -> dict[str, object]:
     }
 
 
-@openapi_param_value_generator(
-    ["/user_groups/{user_group_id}:patch", "/user_groups/{user_group_id}:delete"]
-)
+@openapi_param_value_generator(["/user_groups/{user_group_id}:patch"])
 def get_temp_user_group_id() -> dict[str, object]:
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp",
         realm=get_realm("zulip"),
+        can_add_members_group_id=11,
+        can_join_group_id=11,
+        can_leave_group_id=15,
         can_manage_group_id=11,
         can_mention_group_id=11,
+        can_remove_members_group_id=11,
+        realm_for_sharding=get_realm("zulip"),
+    )
+    return {
+        "user_group_id": user_group.id,
+    }
+
+
+@openapi_param_value_generator(["/user_groups/{user_group_id}/deactivate:post"])
+def get_temp_user_group_id_for_deactivation() -> dict[str, object]:
+    print(NamedUserGroup.objects.all())
+    user_group, _ = NamedUserGroup.objects.get_or_create(
+        name="temp-deactivation",
+        realm=get_realm("zulip"),
+        can_add_members_group_id=11,
+        can_join_group_id=11,
+        can_leave_group_id=15,
+        can_manage_group_id=11,
+        can_mention_group_id=11,
+        can_remove_members_group_id=11,
         realm_for_sharding=get_realm("zulip"),
     )
     return {
@@ -343,7 +376,7 @@ def deactivate_own_user() -> dict[str, object]:
     )
     realm = get_realm("zulip")
     test_user = get_user(test_user_email, realm)
-    test_user_api_key = get_api_key(test_user)
+    test_user_api_key = test_user.api_key
     # change authentication line to allow test_client to delete itself.
     AUTHENTICATION_LINE[0] = f"{deactivate_test_user.email}:{test_user_api_key}"
     return {}
@@ -352,7 +385,7 @@ def deactivate_own_user() -> dict[str, object]:
 @openapi_param_value_generator(["/attachments/{attachment_id}:delete"])
 def remove_attachment() -> dict[str, object]:
     user_profile = helpers.example_user("iago")
-    url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+    url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
     attachment_id = url.replace("/user_uploads/", "").split("/")[0]
 
     return {"attachment_id": attachment_id}

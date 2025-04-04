@@ -1,6 +1,16 @@
 # Start a call
 
+Zulip makes it convenient to add a video or voice call link to any message,
+using the call provider (Jitsi, Zoom, etc.)
+[configured](/help/configure-call-provider) by your organization's
+administrators.
+
 ## Start a video call
+
+!!! warn ""
+
+    When you join a call, you may need to log in to a separate account for the
+    call provider (Jitsi, Zoom, etc.).
 
 {start_tabs}
 
@@ -8,7 +18,7 @@
 
 {!start-composing.md!}
 
-1. Click the **video camera** (<i class="zulip-icon zulip-icon-video-call"></i>)
+1. Click the **Add video call** (<i class="zulip-icon zulip-icon-video-call"></i>)
    icon at the bottom of the compose box. This will insert a **Join video call.**
    link into your message.
 
@@ -25,9 +35,10 @@
 
 1. Navigate to a channel, topic, or direct message view.
 
-1. Tap the **video camera**
-   (<img src="/static/images/help/mobile-video-icon.svg" alt="video" class="help-center-icon"/>)
-   button at the bottom of the app. This will insert a **Click to join video call**
+1. Tap the **Add video call**
+   ( <img src="/static/images/help/mobile-video-icon.svg" alt="video"
+   class="help-center-icon"/> )
+   icon at the bottom of the app. This will insert a **Click to join video call**
    link into your message.
 
 1. If you are in a channel view, choose a destination topic by tapping the
@@ -52,9 +63,9 @@
 
 {!start-composing.md!}
 
-1. Click the **phone** (<i class="zulip-icon zulip-icon-voice-call"></i>) icon
-   at the bottom of the compose box. This will insert a **Join voice call.**
-   link into your message.
+1. Click the **Add voice call** (<i class="zulip-icon
+   zulip-icon-voice-call"></i>) icon at the bottom of the compose box. This
+   will insert a **Join voice call.** link into your message.
 
 1. Send the message.
 
@@ -67,58 +78,19 @@
 
 {end_tabs}
 
-## Change your call provider
+## Unlink your Zoom account from Zulip
 
-{!admin-only.md!}
-
-By default, Zulip integrates with
-[Jitsi Meet](https://jitsi.org/jitsi-meet/), a fully-encrypted, 100% open
-source video conferencing solution. Organization administrators can also
-change the organization's call provider. The call providers
-supported by Zulip are:
-
-* [Jitsi Meet](/integrations/doc/jitsi)
-* [Zoom integration](/integrations/doc/zoom)
-* [BigBlueButton integration](/integrations/doc/big-blue-button)
-
-If you choose BigBlueButton as the call provider, there will be a single button
-(<i class="zulip-icon zulip-icon-video-call"></i>) for starting a call in the
-compose box. The call is initiated with cameras turned off.
-
-!!! tip ""
-
-    It is also possible to disable the video and voice call buttons for your organization
-    by setting the provider to "None".
-
-### Change your organization's call provider
+If you linked your Zoom account to Zulip, and no longer want it to be connected,
+you can unlink it.
 
 {start_tabs}
 
-{settings_tab|organization-settings}
+1. Log in to the [Zoom App Marketplace](https://marketplace.zoom.us/), and
+   select **Manage**.
 
-1. Under **Other settings**, select the desired provider from the
-   **Call provider** dropdown.
+1. Select **Added Apps** and click the **Remove** button next to the Zulip app.
 
-{!save-changes.md!}
-
-{end_tabs}
-
-### Use a self-hosted instance of Jitsi Meet
-
-Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
-as its default call provider. You can also use a self-hosted
-instance of Jitsi Meet.
-
-{start_tabs}
-
-{settings_tab|organization-settings}
-
-1. Under **Other settings**, select **Custom URL** from the
-   **Jitsi server URL** dropdown.
-
-1. Enter the URL of your self-hosted Jitsi Meet server.
-
-{!save-changes.md!}
+1. Click **Confirm**.
 
 {end_tabs}
 
@@ -127,4 +99,8 @@ instance of Jitsi Meet.
 
 ## Related articles
 
+* [Configure call provider](/help/configure-call-provider)
+* [Jitsi Meet integration](/integrations/doc/jitsi)
+* [Zoom integration](/integrations/doc/zoom)
+* [BigBlueButton integration](/integrations/doc/big-blue-button)
 * [Insert a link](/help/insert-a-link)

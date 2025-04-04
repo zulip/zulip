@@ -12,8 +12,6 @@ Get Zulip notifications for the issues in your Sentry projects!
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
@@ -54,10 +52,9 @@ Get Zulip notifications for the issues in your Sentry projects!
 {!congrats.md!}
 
 ![](/static/images/integrations/sentry/001.png)
-![](/static/images/integrations/sentry/002.png)
 
 ### Related documentation
 
 {!webhooks-url-specification.md!}
 
-[dev-community]: https://chat.zulip.org/#narrow/stream/127-integrations
+[dev-community]: https://chat.zulip.org/#narrow/channel/127-integrations

@@ -1,15 +1,17 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as favicon from "./favicon";
-import type {Filter} from "./filter";
-import {$t} from "./i18n";
-import * as inbox_util from "./inbox_util";
-import * as people from "./people";
-import * as recent_view_util from "./recent_view_util";
-import {realm} from "./state_data";
-import * as unread from "./unread";
-import type {FullUnreadCountsData} from "./unread";
+import {electron_bridge} from "./electron_bridge.ts";
+import * as favicon from "./favicon.ts";
+import type {Filter} from "./filter.ts";
+import {$t} from "./i18n.ts";
+import * as inbox_util from "./inbox_util.ts";
+import * as people from "./people.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as unread from "./unread.ts";
+import type {FullUnreadCountsData} from "./unread.ts";
 
 export let unread_count = 0;
 let pm_count = 0;
@@ -34,10 +36,11 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("channel")) {
-        if (!filter._sub) {
+        const sub = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        if (!sub) {
             // The stream is not set because it does not currently
-            // exist (possibly due to a stream name change), or it
-            // is a private stream and the user is not subscribed.
+            // exist, or it is a private stream and the user is not
+            // subscribed.
             return filter_title;
         }
         if (filter.has_operator("topic")) {
@@ -52,7 +55,7 @@ export function compute_narrow_title(filter?: Filter): string {
         const user_ids = people.emails_strings_to_user_ids_string(emails);
 
         if (user_ids !== undefined) {
-            return people.get_recipients(user_ids);
+            return people.format_recipients(user_ids, "long");
         }
         if (emails.includes(",")) {
             return $t({defaultMessage: "Invalid users"});
@@ -113,11 +116,9 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
     favicon.update_favicon(unread_count, pm_count);
 
     // Notify the current desktop app's UI about the new unread count.
-    if (window.electron_bridge !== undefined) {
-        window.electron_bridge.send_event("total_unread_count", unread_count);
-    }
+    electron_bridge?.send_event("total_unread_count", unread_count);
 
-    // TODO: Add a `window.electron_bridge.updateDirectMessageCount(new_pm_count);` call?
+    // TODO: Add a `electron_bridge.updateDirectMessageCount(new_pm_count);` call?
     redraw_title();
 }
 

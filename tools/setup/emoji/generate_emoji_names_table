@@ -121,7 +121,7 @@ SORTED_CATEGORIES = [
     "Objects",
     "Symbols",
     "Flags",
-    "Skin Tones",
+    "Component",
 ]
 
 emoji_code_to_zulip_names: dict[str, str] = {}
@@ -140,10 +140,8 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
         else:
             reverse_unified_reactions_map[emoji_code] = [name]
 
-    for emoji_code in reverse_unified_reactions_map:
-        emoji_code_to_gemoji_names[emoji_code] = ", ".join(
-            reverse_unified_reactions_map[emoji_code]
-        )
+    for emoji_code, names in reverse_unified_reactions_map.items():
+        emoji_code_to_gemoji_names[emoji_code] = ", ".join(names)
 
     # Prepare iamcal names map.
     for emoji_dict in EMOJI_DATA:

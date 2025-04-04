@@ -1,6 +1,5 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
-import cgi
 import html
 import logging
 import mimetypes
@@ -10,6 +9,7 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from email.message import EmailMessage
 from functools import lru_cache
 from re import Match, Pattern
 from typing import Any, Generic, Optional, TypeAlias, TypedDict, TypeVar, cast
@@ -48,9 +48,11 @@ from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
     BEFORE_MENTION_ALLOWED_REGEX,
+    ChannelTopicInfo,
     FullNameInfo,
     MentionBackend,
     MentionData,
+    get_user_group_mention_display_name,
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
@@ -65,7 +67,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import Message, Realm
+from zerver.models import Message, Realm, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_realm_emoji
 
@@ -129,8 +131,9 @@ class DbData:
     active_realm_emoji: dict[str, EmojiInfo]
     sent_by_bot: bool
     stream_names: dict[str, int]
+    topic_info: dict[ChannelTopicInfo, int | None]
     translate_emoticons: bool
-    user_upload_previews: dict[str, MarkdownImageMetadata | None]
+    user_upload_previews: dict[str, MarkdownImageMetadata]
 
 
 # Format version of the Markdown rendering; stored along with rendered
@@ -176,7 +179,7 @@ STREAM_TOPIC_LINK_REGEX = rf"""
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
-                         (?P<topic_name>[^\*]+)      # topic name can contain anything
+                         (?P<topic_name>[^\*]*)      # topic name can be an empty string or contain anything
                      \*\*                            # ends by double asterisks
                    """
 
@@ -190,6 +193,31 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     # are not required.
     return re.compile(
         STREAM_TOPIC_LINK_REGEX,
+        re.DOTALL | re.VERBOSE,
+    )
+
+
+STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
+                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     \#\*\*                          # and after hash sign followed by double asterisks
+                         (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
+                         >                           # > acts as separator
+                         (?P<topic_name>[^\*]*)      # topic name can be an empty string or contain anything
+                         @
+                         (?P<message_id>\d+)         # message id
+                     \*\*                            # ends by double asterisks
+                   """
+
+
+@lru_cache(None)
+def get_compiled_stream_topic_message_link_regex() -> Pattern[str]:
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_TOPIC_MESSAGE_LINK_REGEX,
         re.DOTALL | re.VERBOSE,
     )
 
@@ -269,7 +297,7 @@ def rewrite_local_links_to_relative(db_data: DbData | None, link: str) -> str:
     if db_data:
         realm_url_prefix = db_data.realm_url + "/"
         if link.startswith((realm_url_prefix + "#", realm_url_prefix + "user_uploads/")):
-            return link[len(realm_url_prefix) :]
+            return link.removeprefix(realm_url_prefix)
 
     return link
 
@@ -441,7 +469,9 @@ def fetch_open_graph_image(url: str) -> dict[str, Any] | None:
             if res.status_code != requests.codes.ok:
                 return None
 
-            mimetype, options = cgi.parse_header(res.headers["Content-Type"])
+            m = EmailMessage()
+            m["Content-Type"] = res.headers.get("Content-Type")
+            mimetype = m.get_content_type()
             if mimetype not in ("text/html", "application/xhtml+xml"):
                 return None
             html = mimetype == "text/html"
@@ -549,12 +579,11 @@ class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
             if is_static_or_current_realm_url(url, self.zmd.zulip_realm):
                 # Don't rewrite videos on our own site (e.g. user uploads).
                 continue
-            # Pass down both camo generated URL and the original video URL to the client.
-            # Camo URL is only used to generate preview of the video. When user plays the
-            # video, we switch to the source url to fetch the video. This allows playing
-            # the video with no load on our servers.
+            # The href= is still set to the non-Camo'd version, which
+            # is used by clients to play the full video without
+            # imposing load on the Camo server; this src is used to
+            # load the initial thumbnail and metadata (through Camo)
             video.set("src", get_camo_url(url))
-            video.set("data-video-original-url", url)
 
 
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
@@ -622,12 +651,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             a.set("data-id", data_id)
         img = SubElement(a, "img")
         if image_url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
-            path_id = image_url[len("/user_uploads/") :]
+            path_id = image_url.removeprefix("/user_uploads/")
 
             # We should have pulled the preview data for this image
             # (even if that's "no preview yet") from the database
             # before rendering; is_image should have enforced that.
             assert path_id in self.zmd.zulip_db_data.user_upload_previews
+            metadata = self.zmd.zulip_db_data.user_upload_previews[path_id]
 
             # Insert a placeholder image spinner.  We post-process
             # this content (see rewrite_thumbnailed_images in
@@ -636,6 +666,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # already exists when the message is sent.
             img.set("class", "image-loading-placeholder")
             img.set("src", "/static/images/loading/loader-black.svg")
+            img.set(
+                "data-original-dimensions",
+                f"{metadata.original_width_px}x{metadata.original_height_px}",
+            )
+            if metadata.original_content_type:
+                img.set(
+                    "data-original-content-type",
+                    metadata.original_content_type,
+                )
         else:
             img.set("src", image_url)
 
@@ -737,7 +776,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # a row for the ImageAttachment, then its header didn't parse
         # as a valid image type which libvips handles.
         if url.startswith("/user_uploads/") and self.zmd.zulip_db_data:
-            path_id = url[len("/user_uploads/") :]
+            path_id = url.removeprefix("/user_uploads/")
             return path_id in self.zmd.zulip_db_data.user_upload_previews
 
         return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
@@ -825,7 +864,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 elif split_url.path.startswith(("/embed/", "/shorts/", "/v/")):
                     id = split_url.path.split("/", 3)[2]
             elif split_url.hostname == "youtu.be" and split_url.path.startswith("/"):
-                id = split_url.path[len("/") :]
+                id = split_url.path.removeprefix("/")
 
         if id is not None and re.fullmatch(r"[0-9A-Za-z_-]+", id):
             return id
@@ -840,7 +879,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_id = self.youtube_id(url)
 
         if yt_id is not None:
-            return f"https://i.ytimg.com/vi/{yt_id}/default.jpg"
+            return f"https://i.ytimg.com/vi/{yt_id}/mqdefault.jpg"
         return None
 
     def vimeo_id(self, url: str) -> str | None:
@@ -1274,7 +1313,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if not parsed_url.path.startswith("/user_uploads/"):
                     continue
 
-                path_id = parsed_url.path[len("/user_uploads/") :]
+                path_id = parsed_url.path.removeprefix("/user_uploads/")
                 self.zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
         if len(found_urls) == 0:
@@ -1423,7 +1462,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         if timestamp.tzinfo:
             try:
                 timestamp = timestamp.astimezone(timezone.utc)
-            except ValueError:
+            except (ValueError, OverflowError):
                 error_element = Element("span")
                 error_element.set("class", "timestamp-error")
                 error_element.text = markdown.util.AtomicString(
@@ -1952,9 +1991,12 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
         if db_data is not None:
             user_group = db_data.mention_data.get_user_group(name)
             if user_group:
+                if user_group.deactivated:
+                    silent = True
+
                 if not silent:
                     self.zmd.zulip_rendering_result.mentions_user_group_ids.add(user_group.id)
-                name = user_group.name
+                name = get_user_group_mention_display_name(user_group)
                 user_group_id = str(user_group.id)
             else:
                 # Don't highlight @-mentions that don't refer to a valid user
@@ -1974,7 +2016,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
         return None, None, None
 
 
-class StreamPattern(CompiledInlineProcessor):
+class StreamTopicMessageProcessor(CompiledInlineProcessor):
     def find_stream_id(self, name: str) -> int | None:
         db_data: DbData | None = self.zmd.zulip_db_data
         if db_data is None:
@@ -1982,6 +2024,8 @@ class StreamPattern(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+
+class StreamPattern(StreamTopicMessageProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
@@ -2000,19 +2044,19 @@ class StreamPattern(CompiledInlineProcessor):
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
         stream_url = encode_stream(stream_id, name)
-        el.set("href", f"/#narrow/stream/{stream_url}")
+        el.set("href", f"/#narrow/channel/{stream_url}")
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
         return el, m.start(), m.end()
 
 
-class StreamTopicPattern(CompiledInlineProcessor):
-    def find_stream_id(self, name: str) -> int | None:
+class StreamTopicPattern(StreamTopicMessageProcessor):
+    def get_with_operand(self, channel_topic: ChannelTopicInfo) -> int | None:
         db_data: DbData | None = self.zmd.zulip_db_data
         if db_data is None:
             return None
-        stream_id = db_data.stream_names.get(name)
-        return stream_id
+        with_operand = db_data.topic_info.get(channel_topic)
+        return with_operand
 
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
@@ -2029,20 +2073,85 @@ class StreamTopicPattern(CompiledInlineProcessor):
         el.set("data-stream-id", str(stream_id))
         stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
-        link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
+        channel_topic_object = ChannelTopicInfo(stream_name, topic_name)
+        with_operand = self.get_with_operand(channel_topic_object)
+        if with_operand is not None:
+            link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/with/{with_operand}"
+        else:
+            link = f"/#narrow/channel/{stream_url}/topic/{topic_url}"
+
         el.set("href", link)
-        text = f"#{stream_name} > {topic_name}"
-        el.text = markdown.util.AtomicString(text)
+
+        if topic_name == "":
+            topic_el = Element("em")
+            topic_el.text = Message.EMPTY_TOPIC_FALLBACK_NAME
+            el.text = markdown.util.AtomicString(f"#{stream_name} > ")
+            el.append(topic_el)
+        else:
+            text = f"#{stream_name} > {topic_name}"
+            el.text = markdown.util.AtomicString(text)
+
+        return el, m.start(), m.end()
+
+
+class StreamTopicMessagePattern(StreamTopicMessageProcessor):
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> tuple[Element | str | None, int | None, int | None]:
+        stream_name = m.group("stream_name")
+        topic_name = m.group("topic_name")
+        message_id = m.group("message_id")
+
+        stream_id = self.find_stream_id(stream_name)
+        if stream_id is None or topic_name is None:
+            return None, None, None
+        el = Element("a")
+        el.set("class", "message-link")
+        stream_url = encode_stream(stream_id, stream_name)
+        topic_url = hash_util_encode(topic_name)
+        link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/near/{message_id}"
+        el.set("href", link)
+
+        if topic_name == "":
+            topic_el = Element("em")
+            topic_el.text = Message.EMPTY_TOPIC_FALLBACK_NAME
+            el.text = markdown.util.AtomicString(f"#{stream_name} > ")
+            el.append(topic_el)
+            topic_el.tail = markdown.util.AtomicString(" @ 💬")
+        else:
+            text = f"#{stream_name} > {topic_name} @ 💬"
+            el.text = markdown.util.AtomicString(text)
+
         return el, m.start(), m.end()
 
 
 def possible_linked_stream_names(content: str) -> set[str]:
+    """Returns all stream names referenced in syntax that could be
+    channel/topic/message links.
+
+    Does not attempt to filter references in code blocks, but this
+    should always be a superset of actual link syntax.
+    """
     return {
         *re.findall(STREAM_LINK_REGEX, content, re.VERBOSE),
         *(
             match.group("stream_name")
             for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE)
         ),
+        # In theory, we should include
+        # `STREAM_TOPIC_MESSAGE_LINK_REGEX` here, but the way channel
+        # names are separated, STREAM_TOPIC_LINK_REGEX will have
+        # already found them.
+    }
+
+
+def possible_linked_topics(content: str) -> set[ChannelTopicInfo]:
+    # Here, we do not consider STREAM_TOPIC_MESSAGE_LINK_REGEX, since
+    # our callers only want to process links without a message ID.
+    return {
+        ChannelTopicInfo(match.group("stream_name"), match.group("topic_name"))
+        for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE)
     }
 
 
@@ -2300,6 +2409,11 @@ class ZulipMarkdown(markdown.Markdown):
         )
         reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
         reg.register(Tex(TEX_RE, self), "tex", 90)
+        reg.register(
+            StreamTopicMessagePattern(get_compiled_stream_topic_message_link_regex(), self),
+            "stream_topic_message",
+            89,
+        )
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
         reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
@@ -2394,8 +2508,7 @@ linkifier_data: dict[int, list[LinkifierDict]] = {}
 
 def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
     md_engine_key = (linkifiers_key, email_gateway)
-    if md_engine_key in md_engines:
-        del md_engines[md_engine_key]
+    md_engines.pop(md_engine_key, None)
 
     linkifiers = linkifier_data[linkifiers_key]
     md_engines[md_engine_key] = ZulipMarkdown(
@@ -2583,6 +2696,7 @@ def do_convert(
     mention_data: MentionData | None = None,
     email_gateway: bool = False,
     no_previews: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
@@ -2650,15 +2764,24 @@ def do_convert(
         # the fetches are somewhat expensive and these types of syntax
         # are uncommon enough that it's a useful optimization.
 
+        message_sender = None
+        if message is not None:
+            message_sender = message.sender
+
         if mention_data is None:
             mention_backend = MentionBackend(message_realm.id)
-            message_sender = None
-            if message is not None:
-                message_sender = message.sender
             mention_data = MentionData(mention_backend, content, message_sender)
 
+        if acting_user is None:
+            acting_user = message_sender
+
         stream_names = possible_linked_stream_names(content)
-        stream_name_info = mention_data.get_stream_name_map(stream_names)
+        stream_name_info = mention_data.get_stream_name_map(stream_names, acting_user=acting_user)
+
+        linked_stream_topic_data = possible_linked_topics(content)
+        topic_info = mention_data.get_topic_info_map(
+            linked_stream_topic_data, acting_user=acting_user
+        )
 
         if content_has_emoji_syntax(content):
             active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
@@ -2673,6 +2796,7 @@ def do_convert(
             realm_url=message_realm.url,
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
+            topic_info=topic_info,
             translate_emoticons=translate_emoticons,
             user_upload_previews=user_upload_previews,
         )
@@ -2756,6 +2880,7 @@ def markdown_convert(
     mention_data: MentionData | None = None,
     email_gateway: bool = False,
     no_previews: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     markdown_stats_start()
     ret = do_convert(
@@ -2769,6 +2894,7 @@ def markdown_convert(
         mention_data,
         email_gateway,
         no_previews=no_previews,
+        acting_user=acting_user,
     )
     markdown_stats_finish()
     return ret
@@ -2782,6 +2908,7 @@ def render_message_markdown(
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     mention_data: MentionData | None = None,
     email_gateway: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     """
     This is basically just a wrapper for do_render_markdown.
@@ -2804,6 +2931,7 @@ def render_message_markdown(
         url_embed_data=url_embed_data,
         mention_data=mention_data,
         email_gateway=email_gateway,
+        acting_user=acting_user,
     )
 
     return rendering_result

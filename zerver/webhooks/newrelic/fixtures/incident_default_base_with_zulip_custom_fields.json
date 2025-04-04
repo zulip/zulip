@@ -1,0 +1,33 @@
+{
+    "id": "13bbcdca-f0b6-470d-b0be-b34583c58869",
+    "issueUrl": "https://radar-api.service.newrelic.com/accounts/4420147/issues/13bbcdca-f0b6-470d-b0be-b34583c58869?notifier=WEBHOOK",
+    "title": "PIETER-UBUNTU query result is > 1.0 for 5 minutes on 'Storage on Host Exceeded Threshold'",
+    "priority": "HIGH",
+    "impactedEntities": [
+      "PIETER-UBUNTU"
+    ],
+    "totalIncidents": 1,
+    "state": "ACTIVATED",
+    "trigger": "STATE_CHANGE",
+    "isCorrelated": "false",
+    "createdAt": 1713769949493,
+    "updatedAt": 1713769949494,
+    "sources": [
+      "newrelic"
+    ],
+    "alertPolicyNames": [
+      "Golden Signals"
+    ],
+    "alertConditionNames": [
+      "Storage on Host Exceeded Threshold"
+    ],
+    "workflowName": "issue workflow",
+    "owner": "N/A",
+    "zulipCustomFields": {
+      "Your custom payload": "somedata123",
+      "custom status 1": true,
+      "Custom list 1": ["SSD", 2000, false, null, 13.33],
+      "Custom field 1": null,
+      "Custom field 2": 9000
+    }
+  }

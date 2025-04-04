@@ -3,16 +3,18 @@ import $ from "jquery";
 import render_new_stream_user from "../templates/stream_settings/new_stream_user.hbs";
 import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";
 
-import * as add_subscribers_pill from "./add_subscribers_pill";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as people from "./people";
-import {current_user} from "./state_data";
-import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
-import type {CombinedPillContainer} from "./typeahead_helper";
-import * as user_sort from "./user_sort";
+import * as add_subscribers_pill from "./add_subscribers_pill.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as people from "./people.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_create_subscribers_data from "./stream_create_subscribers_data.ts";
+import type {CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_groups from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import * as user_sort from "./user_sort.ts";
 
-let pill_widget: CombinedPillContainer;
+export let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<number, people.User>;
 
 export function get_principals(): number[] {
@@ -54,9 +56,11 @@ function build_pill_widget({
 }): CombinedPillContainer {
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
+    const get_user_groups = user_groups.get_all_realm_user_groups;
     return add_subscribers_pill.create_without_add_button({
         $pill_container,
         get_potential_subscribers,
+        get_user_groups,
         onPillCreateAction: add_user_ids,
         // It is better to sync the current set of user ids in the input
         // instead of removing user_ids from the user_ids_set, otherwise
@@ -74,19 +78,23 @@ export function create_handlers($container: JQuery): void {
         $(".add-user-list-filter").trigger("focus");
     });
 
-    $container.on("click", ".remove_potential_subscriber", (e) => {
+    $container.on("click", ".remove_potential_subscriber", function (this: HTMLElement, e) {
         e.preventDefault();
-        const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
+        const $subscriber_row = $(this).closest(".settings-subscriber-row");
+        const user_id = Number.parseInt($subscriber_row.attr("data-user-id")!, 10);
         soft_remove_user_id(user_id);
     });
 
-    $container.on("click", ".undo_soft_removed_potential_subscriber", (e) => {
-        e.preventDefault();
-        const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
-        undo_soft_remove_user_id(user_id);
-    });
+    $container.on(
+        "click",
+        ".undo_soft_removed_potential_subscriber",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            const $subscriber_row = $(this).closest(".settings-subscriber-row");
+            const user_id = Number.parseInt($subscriber_row.attr("data-user-id")!, 10);
+            undo_soft_remove_user_id(user_id);
+        },
+    );
 }
 
 export function build_widgets(): void {
@@ -110,7 +118,6 @@ export function build_widgets(): void {
                 user_id: user.user_id,
                 full_name: user.full_name,
                 is_current_user: user.user_id === current_user_id,
-                disabled: stream_create_subscribers_data.must_be_subscribed(user.user_id),
                 img_src: people.small_avatar_url_for_person(user),
                 soft_removed: stream_create_subscribers_data.user_id_in_soft_remove_list(
                     user.user_id,
@@ -134,6 +141,8 @@ export function build_widgets(): void {
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
         },
     });
+    const current_person = people.get_by_user_id(current_user.user_id);
+    user_pill.append_user(current_person, pill_widget);
 }
 
 export function add_user_id_to_new_stream(user_id: number): void {

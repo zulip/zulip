@@ -1,27 +1,26 @@
 import _ from "lodash";
-import assert from "minimalistic-assert";
 
-import * as narrow_state from "./narrow_state";
-import * as pm_conversations from "./pm_conversations";
-import * as stream_data from "./stream_data";
-import * as stream_list_sort from "./stream_list_sort";
-import * as stream_topic_history from "./stream_topic_history";
-import * as unread from "./unread";
-import * as user_topics from "./user_topics";
+import * as narrow_state from "./narrow_state.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as unread from "./unread.ts";
+import * as user_topics from "./user_topics.ts";
 
 export function next_topic(
     stream_ids: number[],
     get_topics: (stream_id: number) => string[],
     has_unread_messages: (stream_id: number, topic: string) => boolean,
-    curr_stream_id: number,
-    curr_topic: string,
+    curr_stream_id: number | undefined,
+    curr_topic: string | undefined,
 ): {stream_id: number; topic: string} | undefined {
-    const curr_stream_index = stream_ids.indexOf(curr_stream_id); // -1 if not found
+    const curr_stream_index = curr_stream_id ? stream_ids.indexOf(curr_stream_id) : -1; // -1 if not found
 
     if (curr_stream_index >= 0) {
         const stream_id = stream_ids[curr_stream_index]!;
         const topics = get_topics(stream_id);
-        const curr_topic_index = topics.indexOf(curr_topic); // -1 if not found
+        const curr_topic_index = curr_topic ? topics.indexOf(curr_topic) : -1; // -1 if not found
 
         for (let i = curr_topic_index + 1; i < topics.length; i += 1) {
             const topic = topics[i]!;
@@ -60,8 +59,8 @@ export function next_topic(
 }
 
 export function get_next_topic(
-    curr_stream_id: number,
-    curr_topic: string,
+    curr_stream_id: number | undefined,
+    curr_topic: string | undefined,
     only_followed_topics: boolean,
 ): {stream_id: number; topic: string} | undefined {
     let my_streams = stream_list_sort.get_stream_ids();
@@ -87,7 +86,6 @@ export function get_next_topic(
 
     function get_unmuted_topics(stream_id: number): string[] {
         const narrowed_steam_id = narrow_state.stream_id();
-        assert(stream_id !== undefined);
         const topics = stream_topic_history.get_recent_topic_names(stream_id);
         const narrowed_topic = narrow_state.topic();
         if (
@@ -119,16 +117,11 @@ export function get_next_topic(
         return topics;
     }
 
-    function has_unread_messages(stream_id: number, topic: string): boolean {
-        assert(stream_id !== undefined);
-        return unread.topic_has_any_unread(stream_id, topic);
-    }
-
     if (only_followed_topics) {
         return next_topic(
             my_streams,
             get_followed_topics,
-            has_unread_messages,
+            unread.topic_has_any_unread,
             curr_stream_id,
             curr_topic,
         );
@@ -137,15 +130,19 @@ export function get_next_topic(
     return next_topic(
         my_streams,
         get_unmuted_topics,
-        has_unread_messages,
+        unread.topic_has_any_unread,
         curr_stream_id,
         curr_topic,
     );
 }
 
-export function get_next_unread_pm_string(curr_pm: string): string | undefined {
+export function get_next_unread_pm_string(curr_pm: string | undefined): string | undefined {
     const my_pm_strings = pm_conversations.recent.get_strings();
-    const curr_pm_index = my_pm_strings.indexOf(curr_pm); // -1 if not found
+    // undefined translates to "not found".
+    let curr_pm_index = -1;
+    if (curr_pm !== undefined) {
+        curr_pm_index = my_pm_strings.indexOf(curr_pm);
+    }
 
     for (let i = curr_pm_index + 1; i < my_pm_strings.length; i += 1) {
         if (unread.num_unread_for_user_ids_string(my_pm_strings[i]!) > 0) {
@@ -166,7 +163,7 @@ export function get_next_stream(curr_stream_id: number): number | undefined {
     const my_streams = stream_list_sort.get_stream_ids();
     const curr_stream_index = my_streams.indexOf(curr_stream_id);
     return my_streams[
-        curr_stream_index < 0 || curr_stream_index === my_streams.length - 1
+        curr_stream_index === -1 || curr_stream_index === my_streams.length - 1
             ? 0
             : curr_stream_index + 1
     ];

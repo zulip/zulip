@@ -4,6 +4,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import {
     insertTextIntoField,
     replaceFieldText,
@@ -12,23 +13,23 @@ import {
 } from "text-field-edit";
 import {z} from "zod";
 
-import type {Typeahead} from "./bootstrap_typeahead";
-import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
-import * as channel from "./channel";
-import * as common from "./common";
-import type {TypeaheadSuggestion} from "./composebox_typeahead";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as markdown from "./markdown";
-import * as people from "./people";
-import * as popover_menus from "./popover_menus";
-import {postprocess_content} from "./postprocess_content";
-import * as rendered_markdown from "./rendered_markdown";
-import * as rtl from "./rtl";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as user_status from "./user_status";
-import * as util from "./util";
+import type {Typeahead} from "./bootstrap_typeahead.ts";
+import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
+import * as channel from "./channel.ts";
+import * as common from "./common.ts";
+import * as compose_state from "./compose_state.ts";
+import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as markdown from "./markdown.ts";
+import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as rtl from "./rtl.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as user_status from "./user_status.ts";
+import * as util from "./util.ts";
 
 export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your message here"});
 
@@ -70,6 +71,11 @@ const message_render_response_schema = z.object({
 });
 
 export let compose_spinner_visible = false;
+
+export function rewire_compose_spinner_visible(value: typeof compose_spinner_visible): void {
+    compose_spinner_visible = value;
+}
+
 export let shift_pressed = false; // true or false
 export let code_formatting_button_triggered = false; // true or false
 export let compose_textarea_typeahead: Typeahead<TypeaheadSuggestion> | undefined;
@@ -102,20 +108,24 @@ export function is_full_size(): boolean {
     return full_size_status;
 }
 
-export function autosize_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
+export let autosize_textarea = ($textarea: JQuery<HTMLTextAreaElement>): void => {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
     if (!is_expanded()) {
         autosize.update($textarea);
     }
+};
+
+export function rewire_autosize_textarea(value: typeof autosize_textarea): void {
+    autosize_textarea = value;
 }
 
-export function insert_and_scroll_into_view(
+export let insert_and_scroll_into_view = (
     content: string,
     $textarea: JQuery<HTMLTextAreaElement>,
     replace_all = false,
     replace_all_without_undo_support = false,
-): void {
+): void => {
     if (replace_all_without_undo_support) {
         // setFieldText is very slow and noticeable when inserting 10k+
         // characters of text like from a drafted response,
@@ -132,18 +142,79 @@ export function insert_and_scroll_into_view(
     $textarea.trigger("blur");
     $textarea.trigger("focus");
     autosize_textarea($textarea);
+};
+
+export function rewire_insert_and_scroll_into_view(
+    value: typeof insert_and_scroll_into_view,
+): void {
+    insert_and_scroll_into_view = value;
+}
+
+export function maybe_show_scrolling_formatting_buttons(container_selector: string): void {
+    const button_container = document.querySelector(container_selector);
+    const button_bar = document.querySelector(
+        `${container_selector} .compose-control-buttons-container`,
+    );
+
+    if (!button_container || !button_bar) {
+        return;
+    }
+
+    const button_container_width = button_container?.clientWidth;
+    const button_bar_width = button_bar?.scrollWidth;
+    const button_bar_scroll_left = button_bar?.scrollLeft;
+
+    const button_bar_max_left_scroll = button_bar_width - button_container_width;
+
+    assert(
+        typeof button_container_width === "number" &&
+            typeof button_bar_width === "number" &&
+            typeof button_bar_scroll_left === "number",
+    );
+
+    // Set these values as data attributes for ready access by
+    // other scrolling logic
+    //
+    // TODO: Modify eslint config, if we wish to avoid dataset
+    //
+    /* eslint unicorn/prefer-dom-node-dataset: "off" */
+    button_container.setAttribute("data-button-container-width", button_container_width.toString());
+    button_container.setAttribute("data-button-bar-width", button_bar_width.toString());
+    button_container.setAttribute(
+        "data-button-bar-max-left-scroll",
+        button_bar_max_left_scroll.toString(),
+    );
+
+    button_container.classList.remove("can-scroll-forward", "can-scroll-backward");
+
+    if (button_container_width < button_bar_width) {
+        // It's possible that the buttons may be scrolled prior
+        // to the viewport being resized
+        if (button_bar_scroll_left < button_bar_max_left_scroll) {
+            button_container?.classList.add("can-scroll-forward");
+        }
+
+        if (button_bar_scroll_left > 0) {
+            button_container?.classList.add("can-scroll-backward");
+        }
+    }
 }
 
 function get_focus_area(opts: ComposeTriggeredOptions): string {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
-    if (opts.message_type === "stream" && opts.stream_id && !opts.topic) {
+    if (
+        opts.message_type === "stream" &&
+        opts.stream_id &&
+        !opts.topic &&
+        realm.realm_mandatory_topics
+    ) {
         return "input#stream_message_recipient_topic";
     } else if (
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
         (opts.message_type === "private" && opts.private_message_recipient)
     ) {
-        if (opts.trigger === "clear topic button") {
+        if (opts.trigger === "clear topic button" || opts.trigger === "compose_hotkey") {
             return "input#stream_message_recipient_topic";
         }
         return "textarea#compose-textarea";
@@ -168,7 +239,7 @@ export function set_focus(opts: ComposeTriggeredOptions): void {
     }
 }
 
-export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void {
+export let smart_insert_inline = ($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void => {
     function is_space(c: string | undefined): boolean {
         return c === " " || c === "\t" || c === "\n";
     }
@@ -200,6 +271,10 @@ export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, synt
     }
 
     insert_and_scroll_into_view(syntax, $textarea);
+};
+
+export function rewire_smart_insert_inline(value: typeof smart_insert_inline): void {
+    smart_insert_inline = value;
 }
 
 export function smart_insert_block(
@@ -252,12 +327,12 @@ export function smart_insert_block(
     insert_and_scroll_into_view(syntax, $textarea);
 }
 
-export function insert_syntax_and_focus(
+export let insert_syntax_and_focus = (
     syntax: string,
     $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
     mode = "inline",
     padding_newlines?: number,
-): void {
+): void => {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert_inline and smart_inline_block.
@@ -277,13 +352,18 @@ export function insert_syntax_and_focus(
     } else if (mode === "block") {
         smart_insert_block($textarea, syntax, padding_newlines);
     }
+};
+
+export function rewire_insert_syntax_and_focus(value: typeof insert_syntax_and_focus): void {
+    insert_syntax_and_focus = value;
 }
 
-export function replace_syntax(
+export let replace_syntax = (
     old_syntax: string,
     new_syntax: string,
     $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
-): boolean {
+    ignore_caret = false,
+): boolean => {
     // The following couple lines are needed to later restore the initial
     // logical position of the cursor after the replacement
     const prev_caret = $textarea.caret();
@@ -302,6 +382,14 @@ export function replace_syntax(
     const old_text = $textarea.val();
     replaceFieldText(util.the($textarea), old_syntax, () => new_syntax, "after-replacement");
     const new_text = $textarea.val();
+    const has_changed = old_text !== new_text;
+
+    // If the caller wants to ignore the caret position, we return early.
+    // This is useful e.g. when we are replacing content without affecting
+    // which element has focus.
+    if (ignore_caret) {
+        return has_changed;
+    }
 
     // When replacing content in a textarea, we need to move the cursor
     // to preserve its logical position if and only if the content we
@@ -321,7 +409,11 @@ export function replace_syntax(
     }
 
     // Return if anything was actually replaced.
-    return old_text !== new_text;
+    return has_changed;
+};
+
+export function rewire_replace_syntax(value: typeof replace_syntax): void {
+    replace_syntax = value;
 }
 
 export function compute_placeholder_text(opts: ComposePlaceholderOptions): string {
@@ -340,10 +432,20 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             }
         }
 
-        if (stream_name && opts.topic) {
+        let topic_display_name: string | undefined;
+        if (opts.topic !== "") {
+            topic_display_name = opts.topic;
+        } else if (
+            !realm.realm_mandatory_topics &&
+            !$("input#stream_message_recipient_topic").is(":focus")
+        ) {
+            topic_display_name = util.get_final_topic_display_name(opts.topic);
+        }
+
+        if (stream_name && topic_display_name !== undefined) {
             return $t(
                 {defaultMessage: "Message #{channel_name} > {topic_name}"},
-                {channel_name: stream_name, topic_name: opts.topic},
+                {channel_name: stream_name, topic_name: topic_display_name},
             );
         } else if (stream_name) {
             return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
@@ -374,7 +476,7 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
     return DEFAULT_COMPOSE_PLACEHOLDER;
 }
 
-export function set_compose_box_top(set_top: boolean): void {
+export let set_compose_box_top = (set_top: boolean): void => {
     if (set_top) {
         // As `#compose` has `position: fixed` property, we cannot
         // make the compose-box to attain the correct height just by
@@ -386,6 +488,10 @@ export function set_compose_box_top(set_top: boolean): void {
     } else {
         $("#compose").css("top", "");
     }
+};
+
+export function rewire_set_compose_box_top(value: typeof set_compose_box_top): void {
+    set_compose_box_top = value;
 }
 
 export function make_compose_box_full_size(): void {
@@ -438,6 +544,31 @@ export function make_compose_box_original_size(): void {
     autosize($("textarea#compose-textarea"));
 
     $("textarea#compose-textarea").trigger("focus");
+}
+
+export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): void {
+    event.stopPropagation();
+    const $button_bar = $(event.currentTarget);
+    const $button_container = $button_bar.closest(".compose-scrolling-buttons-container");
+    const button_bar_max_left_scroll = Number(
+        $button_container.attr("data-button-bar-max-left-scroll"),
+    );
+    const button_bar_left_scroll = $button_bar.scrollLeft();
+
+    // If we're within 4px of the start or end of the formatting buttons,
+    // go ahead and hide the respective scrolling button
+    const hide_scroll_button_threshold_px = 4;
+
+    $button_container.addClass("can-scroll-forward can-scroll-backward");
+
+    assert(typeof button_bar_left_scroll === "number");
+
+    if (button_bar_left_scroll >= button_bar_max_left_scroll - hide_scroll_button_threshold_px) {
+        $button_container.removeClass("can-scroll-forward");
+    }
+    if (button_bar_left_scroll <= hide_scroll_button_threshold_px) {
+        $button_container.removeClass("can-scroll-backward");
+    }
 }
 
 export function handle_keydown(
@@ -504,11 +635,11 @@ export function position_inside_code_block(content: string, position: number): b
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
 }
 
-export function format_text(
+export let format_text = (
     $textarea: JQuery<HTMLTextAreaElement>,
     type: string,
     inserted_content = "",
-): void {
+): void => {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
@@ -618,16 +749,12 @@ export function format_text(
                 .split("\n")
                 .map((line, i) => mark(line, i))
                 .join("\n");
-            // We always ensure a blank line before and after the list, as we want
+            // We always ensure a blank line after the list, as we want
             // a clean separation between the list and the rest of the text, especially
             // when the markdown is rendered.
 
-            // Add blank line between text before and list if not already present.
-            if (before_lines.length && before_lines.at(-1) !== "\n") {
-                before_lines += "\n";
-            }
             // Add blank line between list and rest of text if not already present.
-            if (after_lines.length && after_lines.at(0) !== "\n") {
+            if (after_lines.length > 0 && after_lines.at(0) !== "\n") {
                 after_lines = "\n" + after_lines;
             }
         } else {
@@ -1156,6 +1283,10 @@ export function format_text(
             break;
         }
     }
+};
+
+export function rewire_format_text(value: typeof format_text): void {
+    format_text = value;
 }
 
 /* TODO: This functions don't belong in this module, as they have
@@ -1164,7 +1295,7 @@ export function hide_compose_spinner(): void {
     compose_spinner_visible = false;
     $(".compose-submit-button .loader").hide();
     $(".compose-submit-button .zulip-icon-send").show();
-    $(".compose-submit-button").removeClass("disable-btn");
+    $(".compose-submit-button").removeClass("compose-button-disabled");
 }
 
 export function show_compose_spinner(): void {
@@ -1172,25 +1303,18 @@ export function show_compose_spinner(): void {
     // Always use white spinner.
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
     $(".compose-submit-button .zulip-icon-send").hide();
-    $(".compose-submit-button").addClass("disable-btn");
-}
-
-export function get_compose_click_target(element: HTMLElement): Element {
-    const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
-    if (
-        compose_control_buttons_popover &&
-        $(compose_control_buttons_popover.popper).has(element).length
-    ) {
-        return compose_control_buttons_popover.reference;
-    }
-    return element;
+    $(".compose-submit-button").addClass("compose-button-disabled");
 }
 
 export function render_and_show_preview(
+    $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
 ): void {
+    const preview_render_count = compose_state.get_preview_render_count() + 1;
+    compose_state.set_preview_render_count(preview_render_count);
+
     function show_preview(rendered_content: string, raw_content?: string): void {
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
@@ -1231,6 +1355,16 @@ export function render_and_show_preview(
             url: "/json/messages/render",
             data: {content},
             success(response_data) {
+                if (
+                    preview_render_count !== compose_state.get_preview_render_count() ||
+                    !$preview_container.hasClass("preview_mode")
+                ) {
+                    // The user is no longer in preview mode or the compose
+                    // input has already been updated with new raw Markdown
+                    // since this rendering request was sent off to the server, so
+                    // there's nothing to do.
+                    return;
+                }
                 const data = message_render_response_schema.parse(response_data);
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);

@@ -47,6 +47,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import get_topic_display_name
 from zerver.lib.url_decoding import is_same_server_message_link
 from zerver.lib.users import check_can_access_user
 from zerver.models import (
@@ -286,9 +287,9 @@ def send_apple_push_notification(
     if have_missing_app_id:
         devices = [device for device in devices if device.ios_app_id is not None]
 
-    async def send_all_notifications() -> (
-        Iterable[tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]]
-    ):
+    async def send_all_notifications() -> Iterable[
+        tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]
+    ]:
         requests = [
             aioapns.NotificationRequest(
                 apns_topic=device.ios_app_id,
@@ -992,7 +993,7 @@ def get_message_payload(
         data["recipient_type"] = "stream"
         data["stream"] = get_message_stream_name_from_database(message)
         data["stream_id"] = message.recipient.type_id
-        data["topic"] = message.topic_name()
+        data["topic"] = get_topic_display_name(message.topic_name(), user_profile.default_language)
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         data["recipient_type"] = "private"
         data["pm_users"] = direct_message_group_users(message.recipient.id)
@@ -1002,7 +1003,7 @@ def get_message_payload(
     return data
 
 
-def get_apns_alert_title(message: Message) -> str:
+def get_apns_alert_title(message: Message, language: str) -> str:
     """
     On an iOS notification, this is the first bolded line.
     """
@@ -1012,7 +1013,8 @@ def get_apns_alert_title(message: Message) -> str:
         return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_stream_message():
         stream_name = get_message_stream_name_from_database(message)
-        return f"#{stream_name} > {message.topic_name()}"
+        topic_display_name = get_topic_display_name(message.topic_name(), language)
+        return f"#{stream_name} > {topic_display_name}"
     # For 1:1 direct messages, we just show the sender name.
     return message.sender.full_name
 
@@ -1105,7 +1107,7 @@ def get_message_payload_apns(
         content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
         apns_data = {
             "alert": {
-                "title": get_apns_alert_title(message),
+                "title": get_apns_alert_title(message, user_profile.default_language),
                 "subtitle": get_apns_alert_subtitle(
                     message, trigger, user_profile, mentioned_user_group_name, can_access_sender
                 ),
@@ -1275,18 +1277,9 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     """
     if not push_notifications_configured():
         return
-    user_profile = get_user_profile_by_id(user_profile_id)
 
-    if user_profile.is_bot:  # nocoverage
-        # We don't expect to reach here for bot users. However, this code exists
-        # to find and throw away any pre-existing events in the queue while
-        # upgrading from versions before our notifiability logic was implemented.
-        # TODO/compatibility: This block can be removed when one can no longer
-        # upgrade from versions <= 4.0 to versions >= 5.0
-        logger.warning(
-            "Send-push-notification event found for bot user %s. Skipping.", user_profile_id
-        )
-        return
+    user_profile = get_user_profile_by_id(user_profile_id)
+    assert not user_profile.is_bot
 
     if not (
         user_profile.enable_offline_push_notifications
@@ -1298,7 +1291,10 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     with transaction.atomic(savepoint=False):
         try:
             (message, user_message) = access_message_and_usermessage(
-                user_profile, missed_message["message_id"], lock_message=True
+                user_profile,
+                missed_message["message_id"],
+                lock_message=True,
+                is_modifying_message=False,
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
@@ -1528,3 +1524,19 @@ class InvalidRemotePushDeviceTokenError(JsonableError):
 class PushNotificationsDisallowedByBouncerError(Exception):
     def __init__(self, reason: str) -> None:
         self.reason = reason
+
+
+class HostnameAlreadyInUseBouncerError(JsonableError):
+    code = ErrorCode.HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR
+
+    data_fields = ["hostname"]
+
+    def __init__(self, hostname: str) -> None:
+        self.hostname: str = hostname
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        # This message is not read by any of the client apps, just potentially displayed
+        # via server administration tools, so it doesn't need translations.
+        return "A server with hostname {hostname} already exists"

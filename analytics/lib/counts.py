@@ -2,11 +2,12 @@ import logging
 import time
 from collections import OrderedDict, defaultdict
 from collections.abc import Callable, Sequence
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TypeAlias, Union
 
 from django.conf import settings
 from django.db import connection, models
+from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 from typing_extensions import override
 
@@ -20,7 +21,8 @@ from analytics.models import (
     installation_epoch,
 )
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
+from zerver.models import Message, Realm, Stream, UserActivityInterval, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -36,6 +38,7 @@ logger = logging.getLogger("zulip.analytics")
 
 # You can't subtract timedelta.max from a datetime, so use this instead
 TIMEDELTA_MAX = timedelta(days=365 * 1000)
+
 
 ## Class definitions ##
 
@@ -80,6 +83,27 @@ class CountStat:
         if fillstate.state == FillState.DONE:
             return fillstate.end_time
         return fillstate.end_time - self.time_increment
+
+    def current_month_accumulated_count_for_user(self, user: UserProfile) -> int:
+        now = timezone_now()
+        start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+        if now.month == 12:  # nocoverage
+            start_of_next_month = datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+        else:  # nocoverage
+            start_of_next_month = datetime(now.year, now.month + 1, 1, tzinfo=timezone.utc)
+
+        # We just want to check we are not using BaseCount, otherwise all
+        # `output_table` have `objects` property.
+        assert self.data_collector.output_table == UserCount
+        result = self.data_collector.output_table.objects.filter(  # type: ignore[attr-defined] # see above
+            user=user,
+            property=self.property,
+            end_time__gt=start_of_month,
+            end_time__lte=start_of_next_month,
+        ).aggregate(models.Sum("value"))
+
+        total_value = result["value__sum"] or 0
+        return total_value
 
 
 class LoggingCountStat(CountStat):
@@ -679,7 +703,7 @@ def count_message_by_stream_query(realm: Realm | None) -> QueryFn:
 
 # Hardcodes the query needed for active_users_audit:is_bot:day.
 # Assumes that a user cannot have two RealmAuditLog entries with the
-# same event_time and event_type in [RealmAuditLog.USER_CREATED,
+# same event_time and event_type in [AuditLogEventType.USER_CREATED,
 # USER_DEACTIVATED, etc].  In particular, it's important to ensure
 # that migrations don't cause that to happen.
 def check_realmauditlog_by_user_query(realm: Realm | None) -> QueryFn:
@@ -713,10 +737,10 @@ def check_realmauditlog_by_user_query(realm: Realm | None) -> QueryFn:
     """
     ).format(
         **kwargs,
-        user_created=Literal(RealmAuditLog.USER_CREATED),
-        user_activated=Literal(RealmAuditLog.USER_ACTIVATED),
-        user_deactivated=Literal(RealmAuditLog.USER_DEACTIVATED),
-        user_reactivated=Literal(RealmAuditLog.USER_REACTIVATED),
+        user_created=Literal(AuditLogEventType.USER_CREATED),
+        user_activated=Literal(AuditLogEventType.USER_ACTIVATED),
+        user_deactivated=Literal(AuditLogEventType.USER_DEACTIVATED),
+        user_reactivated=Literal(AuditLogEventType.USER_REACTIVATED),
         realm_clause=realm_clause,
     )
 
@@ -789,10 +813,10 @@ def count_realm_active_humans_query(realm: Realm | None) -> QueryFn:
 """
     ).format(
         **kwargs,
-        user_created=Literal(RealmAuditLog.USER_CREATED),
-        user_activated=Literal(RealmAuditLog.USER_ACTIVATED),
-        user_deactivated=Literal(RealmAuditLog.USER_DEACTIVATED),
-        user_reactivated=Literal(RealmAuditLog.USER_REACTIVATED),
+        user_created=Literal(AuditLogEventType.USER_CREATED),
+        user_activated=Literal(AuditLogEventType.USER_ACTIVATED),
+        user_deactivated=Literal(AuditLogEventType.USER_DEACTIVATED),
+        user_reactivated=Literal(AuditLogEventType.USER_REACTIVATED),
         realm_clause=realm_clause,
     )
 
@@ -850,6 +874,9 @@ def get_count_stats(realm: Realm | None = None) -> dict[str, CountStat]:
             ),
             CountStat.DAY,
         ),
+        # AI credit usage stats for users, in units of $1/10^9, which is safe for
+        # aggregation because we're using bigints for the values.
+        LoggingCountStat("ai_credit_usage::day", UserCount, CountStat.DAY),
         # Counts the number of active users in the UserProfile.is_active sense.
         # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
         CountStat(

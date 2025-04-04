@@ -1,10 +1,13 @@
+import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
-import assert from "minimalistic-assert";
+import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import type {MatchedMessage, Message, RawMessage} from "./message_store";
-import type {UpdateMessageEvent} from "./types";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
+import type {MatchedMessage, Message, RawMessage} from "./message_store.ts";
+import type {UpdateMessageEvent} from "./server_event_types.ts";
+import {realm} from "./state_data.ts";
+import {user_settings} from "./user_settings.ts";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
@@ -92,17 +95,6 @@ export const same_recipient = function util_same_recipient(a?: Recipient, b?: Re
     }
 
     return false;
-};
-
-export const same_sender = function util_same_sender(
-    a: RawMessage | undefined,
-    b: RawMessage | undefined,
-): boolean {
-    return (
-        a !== undefined &&
-        b !== undefined &&
-        a.sender_email.toLowerCase() === b.sender_email.toLowerCase()
-    );
 };
 
 export function normalize_recipients(recipients: string): string {
@@ -272,25 +264,20 @@ export function is_topic_synonym(operator: string): boolean {
     return operator === "subject";
 }
 
-// TODO: When "stream" is renamed to "channel", update these stream
-// synonym helper functions for the reverse logic.
-export function is_stream_synonym(text: string): boolean {
-    return text === "channel";
+export function is_channel_synonym(text: string): boolean {
+    return text === "stream";
 }
 
-export function is_streams_synonym(text: string): boolean {
-    return text === "channels";
+export function is_channels_synonym(text: string): boolean {
+    return text === "streams";
 }
 
-// For parts of the codebase that have been converted to use
-// channel/channels internally, this is used to convert those
-// back into stream/streams for external presentation.
-export function canonicalize_stream_synonyms(text: string): string {
-    if (is_stream_synonym(text.toLowerCase())) {
-        return "stream";
+export function canonicalize_channel_synonyms(text: string): string {
+    if (is_channel_synonym(text.toLowerCase())) {
+        return "channel";
     }
-    if (is_streams_synonym(text.toLowerCase())) {
-        return "streams";
+    if (is_channels_synonym(text.toLowerCase())) {
+        return "channels";
     }
     return text;
 }
@@ -332,7 +319,7 @@ export function get_time_from_date_muted(date_muted: number | undefined): number
     return date_muted * 1000;
 }
 
-export function call_function_periodically(callback: () => void, delay: number): void {
+export let call_function_periodically = (callback: () => void, delay: number): void => {
     // We previously used setInterval for this purpose, but
     // empirically observed that after unsuspend, Chrome can end
     // up trying to "catch up" by doing dozens of these requests
@@ -354,6 +341,10 @@ export function call_function_periodically(callback: () => void, delay: number):
         // exception.
         callback();
     }, delay);
+};
+
+export function rewire_call_function_periodically(value: typeof call_function_periodically): void {
+    call_function_periodically = value;
 }
 
 export function get_string_diff(string1: string, string2: string): [number, number, number] {
@@ -426,7 +417,7 @@ export function is_valid_url(url: string, require_absolute = false): boolean {
         // provide a base element with an absolute URL, JavaScript ignores the base element.
         new URL(url, base_url);
     } catch (error) {
-        blueslip.log(`Invalid URL: ${url}.`, error);
+        blueslip.log(`Invalid URL: ${url}.`, {error});
         return false;
     }
     return true;
@@ -450,14 +441,163 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
+export function format_array_as_list_with_conjuction(
+    array: string[],
+    // long uses "and", narrow uses commas.
+    join_strategy: "long" | "narrow",
+): string {
+    return format_array_as_list(array, join_strategy, "conjunction");
+}
+
+export function format_array_as_list_with_highlighted_elements(
+    array: string[],
+    style: Intl.ListFormatStyle,
+    type: Intl.ListFormatType,
+): string {
+    // If Intl.ListFormat is not supported
+    if (Intl.ListFormat === undefined) {
+        return array.map((item) => `<b>${Handlebars.Utils.escapeExpression(item)}</b>`).join(", ");
+    }
+
+    // Use Intl.ListFormat to format the array as a Internationalized list.
+    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style, type});
+
+    const formatted_parts = list_formatter.formatToParts(array);
+    return formatted_parts
+        .map((part) => {
+            if (part.type === "element") {
+                // Only highlight the values passed in array and not commas, etc.
+                return `<b>${Handlebars.Utils.escapeExpression(part.value)}</b>`;
+            }
+            return part.value;
+        })
+        .join("");
+}
+
 // Returns the remaining time in milliseconds from the start_time and duration.
 export function get_remaining_time(start_time: number, duration: number): number {
     return Math.max(0, start_time + duration - Date.now());
 }
 
+export function get_custom_time_in_minutes(time_unit: string, time_input: number): number {
+    switch (time_unit) {
+        case "minutes":
+            return time_input;
+        case "hours":
+            return time_input * 60;
+        case "days":
+            return time_input * 24 * 60;
+        case "weeks":
+            return time_input * 7 * 24 * 60;
+    }
+    blueslip.error(`Unexpected custom time unit: ${time_unit}`);
+    return time_input;
+}
+
+export function check_time_input(input_value: string, keep_number_as_float = false): number {
+    // This check is important to make sure that inputs like "24a" are
+    // considered invalid and this function returns NaN for such inputs.
+    // Number.parseInt and Number.parseFloat will convert strings like
+    // "24a" to 24.
+    if (Number.isNaN(Number(input_value))) {
+        return Number.NaN;
+    }
+
+    if (keep_number_as_float) {
+        return Number.parseFloat(Number.parseFloat(input_value).toFixed(1));
+    }
+
+    return Number.parseInt(input_value, 10);
+}
+
+export function validate_custom_time_input(time_input: number, can_be_zero = true): boolean {
+    if (can_be_zero) {
+        if (Number.isNaN(time_input) || time_input < 0) {
+            return false;
+        }
+    } else {
+        if (Number.isNaN(time_input) || time_input <= 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // Helper for shorthand for Typescript to get an item from a list with
 // exactly one item.
 export function the<T>(items: T[] | JQuery<T>): T {
-    assert.equal(items.length, 1, "the: expected exactly one item");
+    if (items.length === 0) {
+        blueslip.error("the: expected only 1 item, got none");
+    } else if (items.length > 1) {
+        blueslip.error("the: expected only 1 item, got more", {
+            num_items: items.length,
+        });
+    }
     return items[0]!;
+}
+
+export function compare_a_b<T>(a: T, b: T): number {
+    if (a > b) {
+        return 1;
+    } else if (a === b) {
+        return 0;
+    }
+    return -1;
+}
+
+export function get_final_topic_display_name(topic_name: string): string {
+    if (topic_name === "") {
+        if (realm.realm_empty_topic_display_name === "general chat") {
+            return $t({defaultMessage: "general chat"});
+        }
+        return realm.realm_empty_topic_display_name;
+    }
+    return topic_name;
+}
+
+export function is_topic_name_considered_empty(topic: string): boolean {
+    // NOTE: Use this check only when realm.realm_mandatory_topics is set to true.
+    topic = topic.trim();
+    // When the topic is mandatory in a realm via realm_mandatory_topics, the topic
+    // can't be an empty string, "(no topic)", or the displayed topic name for empty string.
+    if (topic === "" || topic === "(no topic)" || topic === get_final_topic_display_name("")) {
+        return true;
+    }
+    return false;
+}
+
+export function get_retry_backoff_seconds(
+    xhr: JQuery.jqXHR<unknown>,
+    attempts: number,
+    tighter_backoff = false,
+): number {
+    // We need to respect the server's rate-limiting headers, but beyond
+    // that, we also want to avoid contributing to a thundering herd if
+    // the server is giving us 500/502 responses.
+    //
+    // We do the maximum of the retry-after header and an exponential
+    // backoff.
+    let backoff_scale: number;
+    if (tighter_backoff) {
+        // Starts at 1-2s and ends at 16-32s after enough failures.
+        backoff_scale = Math.min(2 ** attempts, 32);
+    } else {
+        // Starts at 1-2s and ends at 45-90s after enough failures.
+        backoff_scale = Math.min(2 ** ((attempts + 1) / 2), 90);
+    }
+    // Add a bit jitter to backoff scale.
+    const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
+    let rate_limit_delay_secs = 0;
+    const rate_limited_error_schema = z.object({
+        "retry-after": z.number(),
+        code: z.literal("RATE_LIMIT_HIT"),
+    });
+    const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
+    if (xhr.status === 429 && parsed?.success && parsed?.data) {
+        // Add a bit of jitter to the required delay suggested by the
+        // server, because we may be racing with other copies of the web
+        // app.
+        rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
+    }
+    return Math.max(backoff_delay_secs, rate_limit_delay_secs);
 }

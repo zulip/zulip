@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models import CASCADE
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
 
 from zerver.lib.types import GroupPermissionSetting
@@ -15,6 +17,17 @@ class SystemGroups:
     MEMBERS = "role:members"
     EVERYONE = "role:everyone"
     NOBODY = "role:nobody"
+
+    GROUP_DISPLAY_NAME_MAP = {
+        NOBODY: gettext_lazy("Nobody"),
+        OWNERS: gettext_lazy("Owners"),
+        ADMINISTRATORS: gettext_lazy("Administrators"),
+        MODERATORS: gettext_lazy("Moderators"),
+        FULL_MEMBERS: gettext_lazy("Full members"),
+        MEMBERS: gettext_lazy("Members"),
+        EVERYONE: gettext_lazy("Everyone"),
+        EVERYONE_ON_INTERNET: gettext_lazy("Everyone on the internet"),
+    }
 
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
@@ -52,14 +65,27 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     )
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
     description = models.TextField(default="", db_column="description")
+    date_created = models.DateTimeField(default=timezone_now, null=True)
+    creator = models.ForeignKey(
+        UserProfile, null=True, on_delete=models.SET_NULL, related_name="+", db_column="creator_id"
+    )
     is_system_group = models.BooleanField(default=False, db_column="is_system_group")
 
+    can_add_members_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_join_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
+    can_leave_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
     can_manage_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
     can_mention_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, db_column="can_mention_group_id"
     )
+    can_remove_members_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
 
     realm_for_sharding = models.ForeignKey("zerver.Realm", on_delete=CASCADE, db_column="realm_id")
+    deactivated = models.BooleanField(default=False, db_default=False)
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -88,25 +114,53 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     }
 
     GROUP_PERMISSION_SETTINGS = {
-        "can_manage_group": GroupPermissionSetting(
+        "can_add_members_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=True,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name="group_creator",
+            default_for_system_groups=SystemGroups.NOBODY,
+        ),
+        "can_join_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
             default_for_system_groups=SystemGroups.NOBODY,
-            id_field_name="can_manage_group_id",
         ),
-        "can_mention_group": GroupPermissionSetting(
+        "can_leave_group": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
-            id_field_name="can_mention_group_id",
+        ),
+        "can_manage_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name="group_creator",
+            default_for_system_groups=SystemGroups.NOBODY,
+        ),
+        "can_mention_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            default_for_system_groups=SystemGroups.NOBODY,
+        ),
+        "can_remove_members_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+            default_for_system_groups=SystemGroups.NOBODY,
         ),
     }
 

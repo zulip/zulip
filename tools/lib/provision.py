@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import contextlib
 import hashlib
 import logging
 import os
@@ -23,9 +24,9 @@ from scripts.lib.zulip_tools import (
     get_dev_uuid_var_path,
     os_families,
     parse_os_release,
+    run,
     run_as_root,
 )
-from tools.setup import setup_venvs
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
@@ -149,7 +150,7 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in ["24.04"]):
+if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in []):
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -421,7 +422,20 @@ def main(options: argparse.Namespace) -> NoReturn:
     # Install transifex-cli.
     run_as_root([*proxy_env, "tools/setup/install-transifex-cli"])
 
-    setup_venvs.main()
+    # Install tusd
+    run_as_root([*proxy_env, "tools/setup/install-tusd"])
+
+    # Install Python environment
+    run_as_root([*proxy_env, "scripts/lib/install-uv"])
+    run(
+        [*proxy_env, "uv", "sync", "--frozen"],
+        env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
+    )
+    # Clean old symlinks used before uv migration
+    with contextlib.suppress(FileNotFoundError):
+        os.unlink("zulip-py3-venv")
+    if os.path.lexists("/srv/zulip-py3-venv"):
+        run_as_root(["rm", "/srv/zulip-py3-venv"])
 
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
@@ -448,13 +462,13 @@ def main(options: argparse.Namespace) -> NoReturn:
     # bad idea, and empirically it can cause Python to segfault on
     # certain cffi-related imports.  Instead, start a new Python
     # process inside the virtualenv.
-    activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
     provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
-    with open(activate_this) as f:
-        exec(f.read(), dict(__file__=activate_this))  # noqa: S102
     os.execvp(
-        provision_inner,
+        "uv",
         [
+            "uv",
+            "run",
+            "--no-sync",
             provision_inner,
             *(["--force"] if options.is_force else []),
             *(["--build-release-tarball-only"] if options.is_build_release_tarball_only else []),

@@ -86,9 +86,9 @@ class DocPageTest(ZulipTestCase):
             )
         return result
 
-    def _test(self, url: str, expected_strings: Sequence[str]) -> None:
+    def _test(self, url: str, expected_strings: Sequence[str]) -> "TestHttpResponse":
         # Test the URL on the root subdomain
-        self._check_basic_fetch(
+        response = self._check_basic_fetch(
             url=url,
             subdomain="",
             expected_strings=expected_strings,
@@ -96,7 +96,7 @@ class DocPageTest(ZulipTestCase):
         )
 
         if not self._is_landing_page(url):
-            return
+            return response
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             # Test the URL on the root subdomain with the landing page setting
@@ -119,6 +119,7 @@ class DocPageTest(ZulipTestCase):
                     ],
                     result,
                 )
+        return response
 
     def test_zephyr_disallows_robots(self) -> None:
         sample_urls = [
@@ -130,7 +131,6 @@ class DocPageTest(ZulipTestCase):
             "/emails/",
             "/errors/404/",
             "/errors/5xx/",
-            "/integrations/",
             "/integrations/",
             "/integrations/bots",
             "/integrations/doc-html/asana",
@@ -264,7 +264,6 @@ class DocPageTest(ZulipTestCase):
         self._test("/security/", ["TLS encryption"])
         self._test("/use-cases/", ["Use cases and customer stories"])
         self._test("/why-zulip/", ["Why Zulip?"])
-        self._test("/try-zulip/", ["check out the Zulip app"])
         # /for/... pages
         self._test("/for/open-source/", ["for open source projects"])
         self._test("/for/events/", ["for conferences and events"])
@@ -282,6 +281,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/end-point/", ["Case study: End Point"])
         self._test("/case-studies/atolio/", ["Case study: Atolio"])
         self._test("/case-studies/asciidoctor/", ["Case study: Asciidoctor"])
+        self._test("/case-studies/rush-stack/", ["Case study: Rush Stack"])
 
     def test_oddball_attributions_page(self) -> None:
         # Look elsewhere in the code--this page never allows robots nor does
@@ -319,7 +319,9 @@ class DocPageTest(ZulipTestCase):
         )
 
     def test_integration_doc_endpoints(self) -> None:
-        self._test(
+        images_in_docs = set()
+
+        response = self._test(
             "/integrations/",
             expected_strings=[
                 "native integrations.",
@@ -328,10 +330,16 @@ class DocPageTest(ZulipTestCase):
                 "IFTTT",
             ],
         )
+        page = response.content.decode("utf-8")
+        for image in re.findall(r"/static/images/integrations/(logos/.*)\"", page):
+            images_in_docs.add(image)
 
         for integration in INTEGRATIONS:
             url = f"/integrations/doc-html/{integration}"
-            self._test(url, expected_strings=[])
+            response = self._test(url, expected_strings=[])
+            doc = response.content.decode("utf-8")
+            for image in re.findall(r"/static/images/integrations/(.*)\"", doc):
+                images_in_docs.add(image)
 
         result = self.client_get(
             "/integrations/doc-html/nonexistent_integration",
@@ -339,6 +347,32 @@ class DocPageTest(ZulipTestCase):
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(result.status_code, 404)
+
+        directory = "static/images/integrations"
+        images_in_dir = {
+            image_path
+            for root, _, files in os.walk(directory)
+            for file in files
+            if "bot_avatars"
+            not in (image_path := os.path.relpath(os.path.join(root, file), directory))
+        }
+
+        self.assertEqual(
+            images_in_dir,
+            images_in_docs,
+            (
+                "\n\nThe following images are not used in documentation and can be removed:\n"
+                + "\n".join(extra_images)
+                if (extra_images := images_in_dir - images_in_docs)
+                else ""
+            )
+            + (
+                "\n\nThe following images are used in documentation but do not exist:\n"
+                + "\n".join(missing_images)
+                if (missing_images := images_in_docs - images_in_dir)
+                else ""
+            ),
+        )
 
     def test_integration_pages_open_graph_metadata(self) -> None:
         og_description = '<meta property="og:description" content="Zulip comes with over'
@@ -423,6 +457,32 @@ class HelpTest(ZulipTestCase):
             str(result.content),
         )
         self.assertNotIn("/stats", str(result.content))
+
+    def test_help_relative_gear_billing_links(self) -> None:
+        result = self.client_get("/help/zulip-cloud-billing")
+        self.assertIn(
+            '<a href="/plans/"><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</a>',
+            str(result.content),
+        )
+        self.assertEqual(result.status_code, 200)
+
+        with self.settings(CORPORATE_ENABLED=False):
+            result = self.client_get("/help/zulip-cloud-billing")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(
+            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
+            str(result.content),
+        )
+        self.assertNotIn('<a href="/plans/">', str(result.content))
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get("/help/zulip-cloud-billing", subdomain="")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(
+            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
+            str(result.content),
+        )
+        self.assertNotIn('a href="/plans/">', str(result.content))
 
     def test_help_relative_links_for_stream(self) -> None:
         result = self.client_get("/help/message-a-channel-by-email")
@@ -534,9 +594,8 @@ class PlansPageTest(ZulipTestCase):
         organization_member = "hamlet"
         self.login(organization_member)
         result = self.client_get("/plans/", subdomain="zulip")
-        self.assert_in_success_response(["Current plan"], result)
-        self.assert_in_success_response(["/sponsorship/"], result)
-        self.assert_not_in_success_response(["/accounts/go/?next=%2Fsponsorship%2F"], result)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual("/billing/", result["Location"])
 
         # Test root domain, with login on different domain
         result = self.client_get("/plans/", subdomain="")

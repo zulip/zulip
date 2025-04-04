@@ -2,10 +2,16 @@
   needed. For small teams, you can start with the default channels
   and go from there.
 
-* For large organizations, we recommend using a consistent naming
+* A channel's name can be in any language, and can include spaces, punctuation,
+  and Unicode emoji. For large organizations, we recommend using a consistent naming
   scheme, like `#marketing/<name>` or `#mk/<name>` for all channels
   pertaining to the marketing team, `#help/<team name>` for
   `<team name>`'s internal support channel, etc.
+
+* You can [pin reference information](/help/pin-information), such as important
+  messages or topics, and external references, in the
+  [description](/help/view-channel-information#view-channel-description) for a
+  channel.
 
 * For open source projects or other volunteer organizations, consider
   adding default channels like `#announce` for announcements, `#new

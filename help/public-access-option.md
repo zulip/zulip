@@ -2,8 +2,6 @@
 
 {!web-public-channels-intro.md!}
 
-Web-public channels are indicated with a **globe** (<i class="zulip-icon zulip-icon-globe"></i>) icon.
-
 ## Enabling web-public channels in your organization
 
 Enabling web-public channels makes it possible to create web-public
@@ -65,14 +63,14 @@ communities such as open-source projects and research communities.
 
 ## Creating a web-public channel
 
-To create a new web-public channel, follow the [instructions for
-creating a channel](/help/create-a-channel#create-a-channel_1), selecting
-the **Web-public** option for **Who can access the channel?**.
+To create a new web-public channel, follow the [instructions for creating a
+channel](/help/create-a-channel), selecting the **Web-public** option for **Who
+can access this channel**.
 
 To make an existing channel web-public, follow the instructions to
 [change the privacy of a
 channel](/help/change-the-privacy-of-a-channel), selecting the
-**Web-public** option for **Who can access the channel?**.
+**Web-public** option for **Who can access this channel**.
 
 ## What can logged out visitors do?
 

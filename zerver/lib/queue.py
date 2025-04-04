@@ -434,7 +434,11 @@ def set_queue_client(queue_client: SimpleQueueClient | TornadoQueueClient) -> No
     thread_data.queue_client = queue_client
 
 
-def queue_json_publish(
+# One should generally use `queue_event_on_commit` unless there's a strong
+# reason to use `queue_json_publish_rollback_unsafe` directly, as it doesn't
+# wait for the db transaction (within which it gets called, if any) to commit
+# and sends event irrespective of commit or rollback.
+def queue_json_publish_rollback_unsafe(
     queue_name: str,
     event: dict[str, Any],
     processor: Callable[[Any], None] | None = None,
@@ -442,17 +446,24 @@ def queue_json_publish(
     if settings.USING_RABBITMQ:
         get_queue_client().json_publish(queue_name, event)
     elif processor:
-        processor(event)
+        # Round-trip through orjson to simulate what RabbitMQ does.
+        processor(orjson.loads(orjson.dumps(event)))
     else:
         # The else branch is only hit during tests, where rabbitmq is not enabled.
         # Must be imported here: A top section import leads to circular imports
         from zerver.worker.queue_processors import get_worker
 
-        get_worker(queue_name, disable_timeout=True).consume_single_event(event)
+        # As above, we round-trip the event through orjson to emulate
+        # what happens with RabbitMQ enqueueing and dequeueing the
+        # event.  This ensures that we don't rely on non-JSON'able
+        # datatypes in the events.
+        get_worker(queue_name, disable_timeout=True).consume_single_event(
+            orjson.loads(orjson.dumps(event))
+        )
 
 
 def queue_event_on_commit(queue_name: str, event: dict[str, Any]) -> None:
-    transaction.on_commit(lambda: queue_json_publish(queue_name, event))
+    transaction.on_commit(lambda: queue_json_publish_rollback_unsafe(queue_name, event))
 
 
 def retry_event(
@@ -464,4 +475,4 @@ def retry_event(
     if event["failed_tries"] > MAX_REQUEST_RETRIES:
         failure_processor(event)
     else:
-        queue_json_publish(queue_name, event)
+        queue_json_publish_rollback_unsafe(queue_name, event)

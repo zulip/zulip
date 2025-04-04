@@ -1,13 +1,14 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function navigate_using_left_sidebar(page: Page, stream_name: string): Promise<void> {
     console.log("Visiting #" + stream_name);
-    await page.click(`.stream-name[title="${stream_name}"]`);
-    await page.waitForSelector(`#message_feed_container`, {visible: true});
+    const stream_id = await page.evaluate(() => zulip_test.get_sub("Verona")!.stream_id);
+    await page.click(`.narrow-filter[data-stream-id="${stream_id}"] .stream-name`);
+    await page.waitForSelector("#message_view_header .zulip-icon-hashtag", {visible: true});
 }
 
 async function open_menu(page: Page): Promise<void> {
@@ -65,14 +66,12 @@ async function navigate_to_private_messages(page: Page): Promise<void> {
 
 async function test_reload_hash(page: Page): Promise<void> {
     const initial_page_load_time = await page.evaluate(() => zulip_test.page_load_time);
-    assert(initial_page_load_time !== undefined);
+    assert.ok(initial_page_load_time !== undefined);
     console.log(`initial load time: ${initial_page_load_time}`);
 
     const initial_hash = await page.evaluate(() => window.location.hash);
 
     await page.evaluate(() => {
-        // We haven't converted reload.js to TypeScript yet.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         zulip_test.initiate_reload({immediate: true});
     });
     await page.waitForNavigation();
@@ -82,7 +81,7 @@ async function test_reload_hash(page: Page): Promise<void> {
     });
 
     const page_load_time = await page.evaluate(() => zulip_test.page_load_time);
-    assert(page_load_time !== undefined);
+    assert.ok(page_load_time !== undefined);
     assert.ok(page_load_time > initial_page_load_time, "Page not reloaded.");
 
     const hash = await page.evaluate(() => window.location.hash);
@@ -97,12 +96,12 @@ async function navigation_tests(page: Page): Promise<void> {
     await navigate_using_left_sidebar(page, "Verona");
 
     await page.click("#left-sidebar-navigation-list .home-link");
-    await page.waitForSelector("#message_feed_container", {visible: true});
+    await page.waitForSelector("#message_view_header .zulip-icon-all-messages", {visible: true});
 
     await navigate_to_subscriptions(page);
 
     await page.click("#left-sidebar-navigation-list .home-link");
-    await page.waitForSelector(`#message_feed_container`, {visible: true});
+    await page.waitForSelector("#message_view_header .zulip-icon-all-messages", {visible: true});
 
     await navigate_to_settings(page);
     await navigate_to_private_messages(page);

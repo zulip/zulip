@@ -1,18 +1,23 @@
-import {strict as assert} from "assert";
-import "css.escape";
-import path from "path";
-import timersPromises from "timers/promises";
+import assert from "node:assert/strict";
+import * as fs from "node:fs";
+import path from "node:path";
+import timersPromises from "node:timers/promises";
+import * as url from "node:url";
 
+import "css.escape";
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
 import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
+import {z} from "zod";
 
-import {test_credentials} from "../../../var/puppeteer/test_credentials";
-
-const root_dir = path.resolve(__dirname, "../../..");
+const root_dir = url.fileURLToPath(new URL("../../..", import.meta.url));
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
+
+export const test_credentials = z
+    .object({default_user: z.object({username: z.string(), password: z.string()})})
+    .parse(JSON.parse(fs.readFileSync(path.join(puppeteer_dir, "test_credentials.json"), "utf8")));
 
 type Message = Record<string, string | boolean> & {
     recipient?: string;
@@ -313,7 +318,7 @@ export async function assert_compose_box_content(
     expected_value: string,
 ): Promise<void> {
     const compose_box_element = await page.waitForSelector("textarea#compose-textarea");
-    assert(compose_box_element !== null);
+    assert.ok(compose_box_element !== null);
     const compose_box_content = await page.evaluate(
         (element) => element.value,
         compose_box_element,
@@ -403,7 +408,7 @@ export async function select_stream_in_compose_via_dropdown(
     const stream_to_select = `.dropdown-list-container .list-item[data-name="${stream_name}"]`;
     await page.waitForSelector(stream_to_select, {visible: true});
     await page.click(stream_to_select);
-    assert((await page.$(".dropdown-list-container")) === null);
+    assert.ok((await page.$(".dropdown-list-container")) === null);
 }
 
 // Wait for any previous send to finish, then send a message.
@@ -411,12 +416,8 @@ export async function send_message(
     page: Page,
     type: "stream" | "private",
     params: Message,
+    wait_for_narrow_change = true,
 ): Promise<void> {
-    // If a message is outside the view, we do not need
-    // to wait for it to be processed later.
-    const outside_view = params.outside_view;
-    delete params.outside_view;
-
     // Compose box content should be empty before sending the message.
     await assert_compose_box_content(page, "");
 
@@ -449,12 +450,15 @@ export async function send_message(
     await page.waitForSelector("#compose-send-button", {visible: true});
     await page.click("#compose-send-button");
 
+    if (wait_for_narrow_change) {
+        // After the message is sent, wait for the narrow
+        // to change to the message recipient.
+        await get_current_msg_list_id(page, true);
+    }
+
     // Sending should clear compose box content.
     await assert_compose_box_content(page, "");
-
-    if (!outside_view) {
-        await wait_for_fully_processed_message(page, params.content);
-    }
+    await wait_for_fully_processed_message(page, params.content);
 
     // Close the compose box after sending the message.
     await page.evaluate(() => {
@@ -465,8 +469,24 @@ export async function send_message(
 }
 
 export async function send_multiple_messages(page: Page, msgs: Message[]): Promise<void> {
+    let last_msg_stream;
+    let last_msg_topic;
+    let last_msg_recipient;
     for (const msg of msgs) {
-        await send_message(page, msg.stream_name !== undefined ? "stream" : "private", msg);
+        const msg_type = msg.stream_name !== undefined ? "stream" : "private";
+        // Check if `msg` and `last_msg` are in the same narrow.
+        let wait_for_narrow_change = true;
+        if (
+            msg.stream_name === last_msg_stream &&
+            msg.topic === last_msg_topic &&
+            msg.recipient === last_msg_recipient
+        ) {
+            wait_for_narrow_change = false;
+        }
+        last_msg_stream = msg.stream_name;
+        last_msg_topic = msg.topic;
+        last_msg_recipient = msg.recipient;
+        await send_message(page, msg_type, msg, wait_for_narrow_change);
     }
 }
 
@@ -538,7 +558,7 @@ export async function open_streams_modal(page: Page): Promise<void> {
     await page.waitForSelector(all_streams_selector, {visible: true});
     await page.click(all_streams_selector);
 
-    await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
+    await page.waitForSelector("#subscription_overlay", {visible: true});
     const url = await page_url_with_fragment(page);
     assert.ok(url.includes("#channels/notsubscribed"));
 }
@@ -737,6 +757,6 @@ export async function get_current_msg_list_id(
         );
     }
     last_current_msg_list_id = await page.evaluate(() => zulip_test.current_msg_list?.id);
-    assert(last_current_msg_list_id !== undefined);
+    assert.ok(last_current_msg_list_id !== undefined);
     return last_current_msg_list_id;
 }

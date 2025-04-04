@@ -40,6 +40,7 @@ from zerver.data_import.import_util import (
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.export import do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
@@ -132,15 +133,11 @@ def convert_user_data(
     realm_id: int,
     team_name: str,
 ) -> None:
-    user_data_list = []
-    for username in user_data_map:
-        user = user_data_map[username]
-        if check_user_in_team(user, team_name) or user["is_mirror_dummy"]:
-            user_data_list.append(user)
-
-    for raw_item in user_data_list:
-        user = process_user(raw_item, realm_id, team_name, user_id_mapper)
-        user_handler.add_user(user)
+    for user_data in user_data_map.values():
+        if check_user_in_team(user_data, team_name) or user_data["is_mirror_dummy"]:
+            user = process_user(user_data, realm_id, team_name, user_id_mapper)
+            user_handler.add_user(user)
+    user_handler.validate_user_emails()
 
 
 def convert_channel_data(
@@ -163,8 +160,7 @@ def convert_channel_data(
             channel_members_map[channel_name] = []
             channel_admins_map[channel_name] = []
 
-        for username in user_data_map:
-            user_dict = user_data_map[username]
+        for username, user_dict in user_data_map.items():
             teams = user_dict["teams"]
             if user_dict["teams"] is None:
                 continue
@@ -244,6 +240,9 @@ def convert_direct_message_group_data(
     for direct_message_group in direct_message_group_data:
         if len(direct_message_group["members"]) > 2:
             direct_message_group_members = frozenset(direct_message_group["members"])
+            if direct_message_group_id_mapper.has(direct_message_group_members):
+                logging.info("Duplicate direct message group found in the export data. Skipping.")
+                continue
             direct_message_group_id = direct_message_group_id_mapper.get(
                 direct_message_group_members
             )
@@ -340,7 +339,7 @@ def process_message_attachments(
         attachment_full_path = os.path.join(mattermost_data_dir, "data", attachment_path)
 
         file_name = attachment_path.split("/")[-1]
-        file_ext = f'.{file_name.split(".")[-1]}'
+        file_ext = f".{file_name.split('.')[-1]}"
 
         if file_ext.lower() in IMAGE_EXTENSIONS:
             has_image = True
@@ -441,21 +440,20 @@ def process_raw_message_batch(
         )
 
         # html2text is GPL licensed, so run it as a subprocess.
-        content = subprocess.check_output(["html2text"], input=content, text=True)
-
-        if len(content) > 10000:  # nocoverage
-            logging.info("skipping too-long message of length %s", len(content))
-            continue
+        content = subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
 
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
+            is_direct_message_type = False
             recipient_id = get_recipient_id_from_channel_name(raw_message["channel_name"])
         elif "direct_message_group_members" in raw_message:
+            is_direct_message_type = True
             recipient_id = get_recipient_id_from_direct_message_group_members(
                 raw_message["direct_message_group_members"]
             )
         elif "pm_members" in raw_message:
+            is_direct_message_type = True
             members = raw_message["pm_members"]
             member_ids = {user_id_mapper.get(member) for member in members}
             pm_members[message_id] = member_ids
@@ -502,9 +500,11 @@ def process_raw_message_batch(
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,
+            is_channel_message=not is_pm_data,
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
+            is_direct_message_type=is_direct_message_type,
         )
         zerver_message.append(message)
         build_reactions(
@@ -848,8 +848,7 @@ def label_mirror_dummy_users(
 
 
 def reset_mirror_dummy_users(username_to_user: dict[str, dict[str, Any]]) -> None:
-    for username in username_to_user:
-        user = username_to_user[username]
+    for user in username_to_user.values():
         user["is_mirror_dummy"] = False
 
 
@@ -1018,3 +1017,5 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         attachment: dict[str, list[Any]] = {"zerver_attachment": zerver_attachment}
         create_converted_data_files(uploads_list, realm_output_dir, "/uploads/records.json")
         create_converted_data_files(attachment, realm_output_dir, "/attachment.json")
+
+        do_common_export_processes(realm_output_dir)

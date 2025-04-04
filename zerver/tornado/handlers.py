@@ -38,8 +38,7 @@ def allocate_handler_id(handler: "AsyncDjangoHandler") -> int:
 
 
 def clear_handler_by_id(handler_id: int) -> None:
-    if handler_id in handlers:
-        del handlers[handler_id]
+    handlers.pop(handler_id, None)
 
 
 def handler_stats_string() -> str:
@@ -132,10 +131,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # Django's WSGIHandler.__call__ before the call to
         # `get_response()`.
         set_script_prefix(get_script_name(environ))
-        await sync_to_async(
-            lambda: signals.request_started.send(sender=type(self.django_handler)),
-            thread_sensitive=True,
-        )()
+        await signals.request_started.asend(sender=type(self.django_handler))
         self._request = WSGIRequest(environ)
 
         # We do the import during runtime to avoid cyclic dependency
@@ -259,10 +255,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # Add to this new HttpRequest logging data from the processing of
         # the original request; we will need these for logging.
         request_notes.log_data = old_request_notes.log_data
-        if request_notes.rate_limit is not None:
-            request_notes.rate_limit = old_request_notes.rate_limit
-        if request_notes.requester_for_logs is not None:
-            request_notes.requester_for_logs = old_request_notes.requester_for_logs
+        request_notes.ratelimits_applied += old_request_notes.ratelimits_applied
+        request_notes.requester_for_logs = old_request_notes.requester_for_logs
         request.user = old_request.user
         request_notes.client = old_request_notes.client
         request_notes.client_name = old_request_notes.client_name

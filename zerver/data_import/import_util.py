@@ -10,16 +10,18 @@ from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
 import requests
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
-from zerver.lib.mime_types import guess_extension
+from zerver.lib.message import normalize_body_for_import
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -467,10 +469,10 @@ def build_stream(
         date_created=date_created,
         invite_only=invite_only,
         id=stream_id,
-        stream_post_policy=stream_post_policy,
         history_public_to_subscribers=history_public_to_subscribers,
     )
     stream_dict = model_to_dict(stream, exclude=["realm"])
+    stream_dict["stream_post_policy"] = stream_post_policy
     stream_dict["realm"] = realm_id
     return stream_dict
 
@@ -485,7 +487,7 @@ def build_direct_message_group(direct_message_group_id: int, group_size: int) ->
 
 def build_message(
     *,
-    topic_name: str,
+    topic_name: str = "",
     date_sent: float,
     message_id: int,
     content: str,
@@ -493,19 +495,26 @@ def build_message(
     user_id: int,
     recipient_id: int,
     realm_id: int,
+    is_channel_message: bool,
     has_image: bool = False,
     has_link: bool = False,
     has_attachment: bool = True,
+    is_direct_message_type: bool,
 ) -> ZerverFieldsT:
+    # check and remove NULL Bytes if any.
+    content = normalize_body_for_import(content)
     zulip_message = Message(
         rendered_content_version=1,  # this is Zulip specific
         id=message_id,
         content=content,
         rendered_content=rendered_content,
+        is_channel_message=is_channel_message,
         has_image=has_image,
         has_attachment=has_attachment,
         has_link=has_link,
     )
+    if is_direct_message_type:
+        topic_name = ""
     zulip_message.set_topic_name(topic_name)
     zulip_message_dict = model_to_dict(
         zulip_message, exclude=["recipient", "sender", "sending_client"]
@@ -539,6 +548,7 @@ def build_attachment(
         is_realm_public=True,
         path_id=s3_path,
         file_name=fileinfo["name"],
+        content_type=fileinfo.get("mimetype"),
     )
 
     attachment_dict = model_to_dict(attachment, exclude=["owner", "messages", "realm"])
@@ -555,7 +565,11 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
     image_path = os.path.join(avatar_dir, avatar_upload_item[1])
     original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
 
-    response = requests.get(avatar_url + size_url_suffix, stream=True)
+    if avatar_url.startswith("https://ca.slack-edge.com/"):
+        # Adjust the avatar size for a typical Slack user.
+        avatar_url += size_url_suffix
+
+    response = requests.get(avatar_url, stream=True)
     with open(image_path, "wb") as image_file:
         shutil.copyfileobj(response.raw, image_file)
     shutil.copy(image_path, original_image_path)
@@ -825,3 +839,19 @@ def long_term_idle_helper(
             user_profile_row["last_active_message_id"] = 1
 
     return long_term_idle
+
+
+def validate_user_emails_for_import(user_emails: list[str]) -> None:
+    invalid_emails = []
+    for email in user_emails:
+        try:
+            validate_email(email)
+        except ValidationError:
+            invalid_emails.append(email)
+
+    if invalid_emails:
+        details = ", ".join(invalid_emails)
+        error_log = (
+            f"Invalid email format, please fix the following email(s) and try again: {details}"
+        )
+        raise ValidationError(error_log)

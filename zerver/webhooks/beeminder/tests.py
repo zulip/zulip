@@ -14,7 +14,7 @@ class BeeminderHookTests(WebhookTestCase):
         expected_topic_name = "beekeeper"
         expected_message = """
 You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2 in 7 days (60)** to avoid derailing.
-* Pledge: **0$** :relieved:
+* Pledge: **$0** :relieved:
 """.strip()
 
         self.check_webhook(
@@ -30,7 +30,7 @@ You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2
         expected_topic_name = "beekeeper"
         expected_message = """
 You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2 in 7 days (60)** to avoid derailing.
-* Pledge: **5$** :worried:
+* Pledge: **$5** :worried:
 """.strip()
 
         self.check_webhook(

@@ -17,7 +17,7 @@ Some examples are:
   channel.)
 
 The main module in the frontend that manages this all is
-`web/src/hashchange.js` (plus `hash_util.js` for all the parsing
+`web/src/hashchange.ts` (plus `hash_util.js` for all the parsing
 code), which is unfortunately one of our thorniest modules. Part of
 the reason that it's thorny is that it needs to support a lot of
 different flows:
@@ -97,7 +97,7 @@ reload itself:
   start looking for a good time to reload, based on when the user is
   idle (ideally, we'd reload when they're not looking and restore
   state so that the user never knew it happened!). The logic for
-  doing this is in `web/src/reload.js`; but regardless we'll reload
+  doing this is in `web/src/reload.ts`; but regardless we'll reload
   within 30 minutes unconditionally.
 
   An important detail in server-initiated reloads is that we

@@ -2,6 +2,7 @@
 
 import datetime
 import uuid
+from enum import IntEnum
 
 import bitfield.models
 import django.contrib.auth.models
@@ -19,6 +20,37 @@ import zerver.lib.utils
 import zerver.models.linkifiers
 import zerver.models.realms
 import zerver.models.streams
+
+
+class LegacyBotCreationPolicyEnum(IntEnum):
+    EVERYONE = 1
+    LIMIT_GENERIC_BOTS = 2
+    ADMINS_ONLY = 3
+
+
+class LegacyCommonMessagePolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
+
+
+class LegacyEditTopicPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    EVERYONE = 5
+    NOBODY = 6
+
+
+class LegacyInviteToRealmPolicyEnum(IntEnum):
+    MEMBERS_ONLY = 1
+    ADMINS_ONLY = 2
+    FULL_MEMBERS_ONLY = 3
+    MODERATORS_ONLY = 4
+    NOBODY = 6
 
 
 def get_fts_sql() -> str:
@@ -729,19 +761,17 @@ class Migration(migrations.Migration):
                 (
                     "delete_own_message_policy",
                     models.PositiveSmallIntegerField(
-                        default=zerver.models.realms.CommonMessagePolicyEnum["EVERYONE"]
+                        default=LegacyCommonMessagePolicyEnum["EVERYONE"]
                     ),
                 ),
                 (
                     "edit_topic_policy",
-                    models.PositiveSmallIntegerField(
-                        default=zerver.models.realms.EditTopicPolicyEnum["EVERYONE"]
-                    ),
+                    models.PositiveSmallIntegerField(default=LegacyEditTopicPolicyEnum["EVERYONE"]),
                 ),
                 (
                     "invite_to_realm_policy",
                     models.PositiveSmallIntegerField(
-                        default=zerver.models.realms.InviteToRealmPolicyEnum["MEMBERS_ONLY"]
+                        default=LegacyInviteToRealmPolicyEnum["MEMBERS_ONLY"]
                     ),
                 ),
                 (
@@ -807,7 +837,7 @@ class Migration(migrations.Migration):
                 (
                     "bot_creation_policy",
                     models.PositiveSmallIntegerField(
-                        default=zerver.models.realms.BotCreationPolicyEnum["EVERYONE"]
+                        default=LegacyBotCreationPolicyEnum["EVERYONE"]
                     ),
                 ),
                 ("custom_upload_quota_gb", models.IntegerField(null=True)),
@@ -900,7 +930,7 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("user_list_style", models.PositiveSmallIntegerField(default=2)),
+                ("user_list_style", models.PositiveSmallIntegerField(default=3)),
                 (
                     "web_stream_unreads_count_display_policy",
                     models.PositiveSmallIntegerField(default=2),
@@ -1630,7 +1660,7 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("user_list_style", models.PositiveSmallIntegerField(default=2)),
+                ("user_list_style", models.PositiveSmallIntegerField(default=3)),
                 (
                     "web_stream_unreads_count_display_policy",
                     models.PositiveSmallIntegerField(default=2),
@@ -3303,6 +3333,23 @@ class Migration(migrations.Migration):
                 name="zerver_userpresence_realm_last_update_id_idx",
             ),
         ),
+        # Ensure users have unique email addresses, case-insensitive, within their realm.
+        migrations.AddConstraint(
+            model_name="userprofile",
+            constraint=models.UniqueConstraint(
+                models.F("realm"),
+                django.db.models.functions.text.Upper(models.F("email")),
+                name="zerver_userprofile_realm_id_email_uniq",
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="userprofile",
+            constraint=models.UniqueConstraint(
+                models.F("realm"),
+                django.db.models.functions.text.Upper(models.F("delivery_email")),
+                name="zerver_userprofile_realm_id_delivery_email_uniq",
+            ),
+        ),
         migrations.AddIndex(
             model_name="usertopic",
             index=models.Index(
@@ -3392,13 +3439,6 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             """
             CREATE UNIQUE INDEX zerver_stream_realm_id_name_uniq ON zerver_stream (realm_id, upper(name::text));
-        """
-        ),
-        # Ensure users have unique email addresses, case-insensitive, within their realm.
-        migrations.RunSQL(
-            """
-            CREATE UNIQUE INDEX zerver_userprofile_realm_id_email_uniq ON zerver_userprofile (realm_id, upper(email::text));
-            CREATE UNIQUE INDEX zerver_userprofile_realm_id_delivery_email_uniq ON zerver_userprofile (realm_id, upper(delivery_email::text));
         """
         ),
         # Set up full-text search indexes.

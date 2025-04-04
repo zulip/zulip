@@ -94,7 +94,7 @@ class GogsHookTests(WebhookTestCase):
 
     def test_pull_request_assigned(self) -> None:
         expected_topic_name = "test / PR #1349 Test"
-        expected_message = """kostekIV assigned [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
+        expected_message = """kostekIV assigned kostekIV to [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
         self.check_webhook("pull_request__assigned", expected_topic_name, expected_message)
 
     def test_pull_request_synchronized(self) -> None:
@@ -119,7 +119,7 @@ class GogsHookTests(WebhookTestCase):
 
     def test_issues_assignee(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV assigned [issue #3](https://try.gogs.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest\n~~~"""
+        expected_message = """kostekIV assigned kostekIV to [issue #3](https://try.gogs.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest\n~~~"""
         self.check_webhook("issues__assigned", expected_topic_name, expected_message)
 
     def test_issues_closed(self) -> None:

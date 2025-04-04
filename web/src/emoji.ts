@@ -1,8 +1,8 @@
 import _ from "lodash";
 import type {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data";
+import * as blueslip from "./blueslip.ts";
+import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data.ts";
 
 // This is the data structure that we get from the server on initialization.
 export type ServerEmoji = z.infer<typeof server_emoji_schema>;

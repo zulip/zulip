@@ -1,6 +1,6 @@
 {{#if stream_settings_link}}
 <a class="message-header-stream-settings-button tippy-zulip-tooltip" data-tooltip-template-id="stream-details-tooltip-template" data-tippy-placement="bottom" href="{{stream_settings_link}}">
-    {{> navbar_icon_and_title }}
+    {{> navbar_icon_and_title . }}
 </a>
 <template id="stream-details-tooltip-template">
     <div>
@@ -25,7 +25,7 @@
 </span>
 {{else}}
 <span class="navbar_title">
-    {{> navbar_icon_and_title }}
+    {{> navbar_icon_and_title . }}
 </span>
 {{#if description}}
     <span class="narrow_description rendered_markdown single-line-rendered-markdown">{{description}}

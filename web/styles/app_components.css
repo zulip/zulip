@@ -25,17 +25,27 @@
 
 kbd {
     display: inline-block;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-kbd-border);
     border-radius: 4px;
     font-weight: 600;
     white-space: nowrap;
-    background-color: hsl(0deg 0% 98%);
-    color: hsl(0deg 0% 20%);
+    background-color: var(--color-kbd-background);
+    color: var(--color-kbd-text);
     margin: 0.25em 0.1em;
-    padding: 0.1em 0.4em;
+    padding: 0.2em 0.4em;
     text-shadow: 0 1px 0 hsl(0deg 0% 100%);
     /* Prevent selection */
     user-select: none;
+    position: relative;
+    min-height: 1em;
+    min-width: 1em;
+
+    .zulip-icon::before {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 }
 
 @media (width < $sm_min) {
@@ -109,236 +119,231 @@ input::placeholder {
     @extend .placeholder;
 }
 
-.new-style {
-    /* -- base button styling -- */
-    .button {
-        padding: 7px 14px;
-        margin: 0;
-        min-width: 130px;
+/* -- base button styling -- */
 
-        font-weight: 400;
-        line-height: normal;
-        text-align: center;
+.button {
+    padding: 7px 14px;
+    margin: 0;
+    min-width: 130px;
 
-        background-color: hsl(0deg 0% 100%);
-        color: inherit;
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+
+    background-color: var(--color-background-zulip-button);
+    color: inherit;
+    outline: none;
+    border: 1px solid var(--color-border-zulip-button);
+    border-radius: 2px;
+
+    box-shadow: none;
+
+    cursor: pointer;
+
+    /* -- button style variations -- */
+    &.no-style {
+        padding: 0;
+        background-color: transparent;
+        border: none;
+        min-width: 0;
+        width: auto;
         outline: none;
-        border: 1px solid hsl(0deg 0% 80%);
-        border-radius: 2px;
+        box-shadow: none !important;
+    }
 
-        box-shadow: none;
+    &.rounded {
+        border-radius: 4px;
+    }
 
-        cursor: pointer;
+    &.green {
+        background-color: hsl(150deg 31% 53%);
+    }
 
-        /* -- button style variations -- */
-        &.no-style {
-            padding: 0;
-            background-color: transparent;
-            border: none;
-            min-width: 0;
-            width: auto;
-            outline: none;
-            box-shadow: none !important;
+    &.grey {
+        background-color: hsl(0deg 0% 67%);
+    }
+
+    &.small {
+        /* 16 / 14 * 0.8 = 0.9143, from original 0.8rem */
+        font-size: 0.9143em;
+        min-width: inherit;
+        padding: 6px 10px;
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+        border-color: var(--color-border-zulip-button-interactive);
+    }
+
+    &:hover {
+        background-color: var(--color-background-zulip-button-hover);
+        /* Reset styles on a.button instances. */
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &:focus {
+        /* Maintain no outline for pointer focus. */
+        outline: 0;
+    }
+
+    &:focus-visible {
+        /* Set Zulip outline style with keyboard/assistive focus. */
+        outline: 2px solid var(--color-outline-focus);
+    }
+
+    &:active {
+        color: inherit;
+        background-color: var(--color-background-zulip-button-active);
+    }
+
+    &.add-subscription-button {
+        &:focus-visible {
+            border: 1px solid;
+            border-color: var(
+                --color-border-add-subscription-button-focus
+            ) !important;
         }
+    }
 
-        &.rounded {
-            border-radius: 4px;
-        }
-
-        &.green {
-            background-color: hsl(150deg 31% 53%);
-        }
-
-        &.grey {
-            background-color: hsl(0deg 0% 67%);
-        }
-
-        &.small {
-            /* This value was 0.8rem in the past. When using rem,
-               the root font size was 16px when the base font-size was
-               14px. Now, we have two modes, one with 14px base
-               font-size and one with 16px base font-size. We multiply
-               by (16 / 14 * 0.8 = 0.9143) so rem equivalent value
-               will remain the same in the legacy 14px mode, while
-               scaling the size up for 16px mode. The font-size will
-               resolve in pixels.
-               TODO: Refactor this part to either use `em` or `rem`
-               and not this temporary hack of using calc() and
-               variables. */
-            font-size: calc(0.9143 * var(--base-font-size-px));
-            min-width: inherit;
-            padding: 6px 10px;
-        }
+    &.sea-green {
+        color: hsl(156deg 41% 40%);
+        border-color: hsl(156deg 28% 70%);
 
         &:hover,
         &:focus {
-            border-color: hsl(0deg 0% 60%);
+            border-color: hsl(156deg 30% 50%);
         }
 
         &:active {
-            border-color: hsl(0deg 0% 60%);
-            color: inherit;
-            background-color: hsl(0deg 0% 95%);
-        }
-
-        &.add-subscription-button {
-            &:focus-visible {
-                border: 1px solid;
-                border-color: var(
-                    --color-border-add-subscription-button-focus
-                ) !important;
-            }
-        }
-
-        &.sea-green {
-            color: hsl(156deg 41% 40%);
-            border-color: hsl(156deg 28% 70%);
-
-            &:hover,
-            &:focus {
-                border-color: hsl(156deg 30% 50%);
-            }
-
-            &:active {
-                border-color: hsl(156deg 30% 40%);
-                color: hsl(156deg 44% 43%);
-                background-color: hsl(154deg 33% 96%);
-            }
-        }
-
-        &.btn-warning {
-            color: hsl(35deg 70% 56%);
-            border-color: hsl(35deg 98% 84%);
-
-            &:hover,
-            &:focus {
-                border-color: hsl(35deg 55% 70%);
-            }
-
-            &:active {
-                color: hsl(35deg 82% 40%);
-                border-color: hsl(35deg 55% 70%);
-                background-color: hsl(33deg 48% 96%);
-            }
-        }
-
-        &.btn-danger {
-            color: hsl(357deg 64% 72%);
-            border-color: hsl(4deg 56% 82%);
-
-            &:hover,
-            &:focus {
-                border-color: hsl(2deg 46% 68%);
-            }
-
-            &:active {
-                color: hsl(357deg 55% 63%);
-                border-color: hsl(2deg 46% 68%);
-                background-color: hsl(7deg 82% 98%);
-            }
-        }
-
-        &.btn-link {
-            color: hsl(208deg 56% 53%);
-            text-decoration: none;
-
-            &:hover,
-            &:focus {
-                color: hsl(208deg 56% 38%);
-            }
-        }
-
-        &:disabled {
-            cursor: not-allowed;
-            filter: saturate(0);
-            background-color: hsl(0deg 0% 93%);
-            color: hsl(0deg 3% 52%);
-
-            &:hover {
-                background-color: hsl(0deg 0% 93%);
-                color: hsl(156deg 39% 54%);
-                border-color: hsl(156deg 39% 77%);
-            }
+            border-color: hsl(156deg 30% 40%);
+            color: hsl(156deg 44% 43%);
         }
     }
 
-    /* -- tab switcher -- */
+    &.button-warning {
+        color: hsl(35deg 70% 56%);
+        border-color: hsl(35deg 98% 84%);
 
-    .tab-switcher {
-        font-weight: initial;
-        margin: 2px 4px;
+        &:hover,
+        &:focus {
+            border-color: hsl(35deg 55% 70%);
+        }
+
+        &:active {
+            color: hsl(35deg 82% 40%);
+            border-color: hsl(35deg 55% 70%);
+        }
+    }
+
+    &.button-danger {
+        color: hsl(357deg 64% 72%);
+        border-color: hsl(4deg 56% 82%);
+
+        &:hover,
+        &:focus {
+            border-color: hsl(2deg 46% 68%);
+        }
+
+        &:active {
+            color: hsl(357deg 55% 63%);
+            border-color: hsl(2deg 46% 68%);
+        }
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        filter: saturate(0);
+        background-color: var(--color-background-zulip-button-disabled);
+        color: hsl(0deg 3% 52%);
+
+        &:hover {
+            background-color: var(--color-background-zulip-button-disabled);
+            color: hsl(156deg 39% 54%);
+            border-color: hsl(156deg 39% 77%);
+        }
+    }
+}
+
+/* -- tab switcher -- */
+
+.tab-switcher {
+    font-weight: initial;
+    margin: 2px 4px;
+    display: inline-block;
+
+    .ind-tab {
         display: inline-block;
+        width: 90px;
+        margin: 0 -0.5px;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
+        padding: 3px 10px;
+        background-color: var(--color-background-tab-switcher-ind-tab);
+        cursor: pointer;
+        justify-content: center;
+        align-items: center;
+
+        &:focus {
+            outline: none;
+        }
+
+        &:not(.selected) {
+            border: 1px solid var(--color-border-tab-switcher-ind-tab);
+        }
+
+        &.first {
+            border-radius: 5px 0 0 5px;
+            border-right: 1px solid transparent;
+        }
+
+        &.middle {
+            border-right: 1px solid transparent;
+        }
+
+        &.last {
+            border-radius: 0 5px 5px 0;
+        }
+
+        &.selected {
+            position: relative;
+            background-color: var(
+                --color-background-tab-switcher-ind-tab-selected
+            );
+            color: hsl(0deg 0% 100%);
+            border: 1px solid var(--color-border-tab-switcher-ind-tab-selected);
+            z-index: 2;
+        }
+
+        &.disabled {
+            cursor: default;
+            color: var(--color-text-tab-switcher-ind-tab-disabled);
+            border-color: var(--color-border-tab-switcher-ind-tab-disabled);
+        }
+    }
+
+    &.large .ind-tab {
+        width: 100%;
+    }
+
+    &.allow-overflow {
+        display: flex;
 
         .ind-tab {
-            display: inline-block;
-            width: 90px;
-            margin: 0 -0.5px;
-            text-align: center;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-            vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
-            padding: 3px 10px;
-            background-color: hsl(0deg 0% 100%);
-            cursor: pointer;
-            justify-content: center;
-            align-items: center;
-
-            &:focus {
-                outline: none;
-            }
-
-            &:not(.selected) {
-                border: 1px solid hsl(0deg 0% 80%);
-            }
-
-            &.first {
-                border-radius: 5px 0 0 5px;
-                border-right: 1px solid transparent;
-            }
-
-            &.middle {
-                border-right: 1px solid transparent;
-            }
-
-            &.last {
-                border-radius: 0 5px 5px 0;
-            }
-
-            &.selected {
-                position: relative;
-                background-color: hsl(0deg 0% 53%);
-                color: hsl(0deg 0% 100%);
-                border: 1px solid hsl(0deg 0% 47%);
-                z-index: 2;
-            }
-
-            &.disabled {
-                cursor: default;
-                color: hsl(0deg 0% 80%);
-                border-color: hsl(0deg 0% 87%);
-            }
-        }
-
-        &.large .ind-tab {
-            width: 100%;
-        }
-
-        &.allow-overflow {
             display: flex;
-
-            .ind-tab {
-                display: flex;
-                text-overflow: initial;
-                white-space: initial;
-                vertical-align: middle;
-            }
+            text-overflow: initial;
+            white-space: initial;
+            vertical-align: middle;
         }
     }
+}
 
-    .stream_sorter_toggle {
-        margin-left: auto;
-    }
+.stream_sorter_toggle {
+    margin-left: auto;
 }
 
 /* -- unified overlay design component -- */
@@ -357,7 +362,8 @@ div.overlay {
     opacity: 0;
     visibility: hidden;
 
-    transition: all 0.2s ease-in;
+    transition: 0.2s ease-in;
+    transition-property: opacity, visibility;
     overflow: hidden;
 
     .overlay-content {
@@ -395,56 +401,42 @@ div.overlay {
 }
 
 .input-append input[type="text"],
-.new-style input[type="text"] {
+input.settings_text_input {
     border-radius: 5px;
     box-shadow: none;
     margin: 0;
 }
 
-/* TODO: Once all layouts using this button
-   are modernized, the Font Awesome icon
-   should be replaced with a Zulip icon,
-   and its formatting should have no extra
-   space around its viewbox in SVG. */
 .clear_search_button {
+    grid-area: 1 / 2 / 2 / 3;
+    padding: 0;
+    background: none;
+    color: var(--color-icons-inbox);
+    opacity: 0.4;
+    display: grid;
+    border: none;
+
     &:hover {
-        color: hsl(0deg 0% 0%);
+        opacity: 1;
     }
 
-    &:disabled {
-        visibility: hidden;
-    }
-
-    &,
     &:focus,
-    &:active,
-    &:disabled:hover {
-        position: relative;
-        right: 20px;
-        background: none;
-        border: none;
-        text-align: center;
-        padding-top: 8px;
-        padding-left: 4px;
-        color: hsl(0deg 0% 80%);
-        text-shadow: none;
-        outline: none !important;
+    &:focus-visible,
+    &:active {
         box-shadow: none;
-        z-index: 5;
+        outline: none;
+    }
 
-        #set-user-status-modal & {
-            margin-left: -26px;
-            right: 0;
-            padding-top: 6px;
-        }
+    .zulip-icon-close {
+        align-self: center;
     }
 }
 
 .grey-box {
     margin: 0;
     padding: 5px 10px;
-    background-color: hsl(0deg 0% 98%);
-    border: 1px solid hsl(0deg 0% 87%);
+    background-color: var(--color-background-modal-bar);
+    border: 1px solid var(--color-border-modal-bar);
     border-radius: 4px;
 
     list-style-type: none;
@@ -475,16 +467,6 @@ div.overlay {
     margin: 15px 0 -5px 23px;
 }
 
-.topic-list-filter {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-
-    & input {
-        padding-right: 20px;
-    }
-}
-
 .stream-selection-header-colorblock {
     /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
     box-shadow:
@@ -496,8 +478,7 @@ div.overlay {
     border-bottom: 0;
 }
 
-.edit-controls .fa-angle-right,
-.topic_stream_edit_header .fa-angle-right {
+.edit-controls .fa-angle-right {
     font-size: 0.9em;
     -webkit-text-stroke: 0.05em;
     position: relative;
@@ -547,11 +528,12 @@ div.overlay {
 .invite-stream-notice {
     position: relative;
     display: block;
-    background-color: hsl(46deg 63% 95%);
-    border: 1px solid hsl(49deg 20% 84%);
+    background-color: var(--color-background-tip);
+    border: 1px solid var(--color-border-tip);
     border-radius: 4px;
     padding: 10px;
-    font-size: 1rem;
+    /* previously 1rem = 16px at 14px em = 1.1428em */
+    font-size: 1.1428em;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
 
@@ -581,14 +563,16 @@ div.overlay {
 .demo-organization-warning {
     position: relative;
     display: block;
-    background-color: hsl(4deg 35% 90%);
-    border: 1px solid hsl(3deg 57% 33% / 40%);
+    background-color: var(
+        --color-background-settings-demo-organization-warning
+    );
+    border: 1px solid var(--color-border-settings-demo-organization-warning);
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
-    color: hsl(4deg 58% 33%);
+    color: var(--color-text-settings-demo-organization-warning);
 
     a {
         text-decoration: none;
@@ -596,9 +580,25 @@ div.overlay {
 
     .convert-demo-organization-button {
         &:focus {
-            outline: 1px solid hsl(200deg 100% 25%);
+            outline: 1px solid
+                var(--color-focus-outline-settings-convert-demo-organization);
             outline-offset: 0;
         }
+    }
+}
+
+.user_status_icon_wrapper {
+    display: inline;
+    white-space: nowrap;
+}
+
+.user-status-microlayout {
+    display: inline-grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    .user-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
@@ -620,19 +620,29 @@ div.overlay {
     color: hsl(0deg 0% 100%);
 }
 
+/* Unread-count attention levels. */
+
+.prominent-count {
+    background-color: var(--color-background-unread-counter-prominent);
+    color: var(--color-unread-counter-prominent);
+}
+
+.normal-count {
+    background-color: var(--color-background-unread-counter-normal);
+    color: var(--color-unread-counter-normal);
+    box-shadow: var(--box-shadow-unread-counter-normal);
+}
+
+.quiet-count {
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
+    font-weight: 475;
+}
+
 .unread_mention_info:not(:empty) {
     margin-right: 5px;
     margin-left: 2px;
-    opacity: 0.7;
-}
-
-.masked_unread_count {
-    float: right;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--color-masked-unread-marker);
-    display: none;
+    opacity: 0.5;
 }
 
 /* Implement the web app's default-hidden convention for alert
@@ -676,7 +686,8 @@ div.overlay {
 
 .animated-purple-button {
     color: hsl(0deg 0% 100%);
-    transition: all 80ms linear;
+    transition: 80ms linear;
+    transition-property: background-color, box-shadow;
     box-shadow: none;
     /* This color just passes WCAG AA */
     background-color: hsl(240deg 96% 68%);
@@ -694,7 +705,8 @@ div.overlay {
 
     &:focus {
         background-color: hsl(240deg 41% 50%);
-        box-shadow: 0 1px 4px 0 hsl(235deg 18% 7%);
+        box-shadow: 0 1px 4px 0
+            var(--color-box-shadow-animated-purple-button-focus);
         outline: none;
     }
 
@@ -707,25 +719,26 @@ div.overlay {
 .color_animated_button {
     display: flex;
     justify-content: center;
-    background-color: hsl(0deg 0% 90%);
+    background-color: var(--color-background-animated-button);
     color: hsl(0deg 0% 0%);
     border-radius: 4px;
 
     .color-animated-button-text {
-        color: hsl(0deg 0% 0%);
+        color: var(--color-animated-button-text);
     }
 
     &:hover {
         cursor: pointer;
-        background-color: hsl(240deg 96% 68%);
+        background-color: var(--color-background-animated-button-hover);
         color: hsl(0deg 0% 100%);
 
         .color-animated-button-text {
             color: hsl(0deg 0% 100%);
-            transition: all 0.2s ease;
+            transition: color 0.2s ease;
         }
 
-        transition: all 0.2s ease;
+        transition: 0.2s ease;
+        transition-property: background-color, color;
     }
 
     .zulip-icon,
@@ -757,48 +770,57 @@ div.overlay {
         }
     }
 
+    & thead {
+        background-color: var(--color-background-table-header);
+    }
+
     & thead th {
+        /* Prevent headers from collapsing.
+           For headers that sort, this keeps
+           the icon on the same line as the
+           header text. */
+        min-width: max-content;
+        white-space: nowrap;
         color: inherit;
-        background-color: hsl(0deg 0% 100%);
         word-break: normal;
 
-        &[data-sort] {
-            padding-right: var(--table-header-sortable-column-padding-right);
+        .table-sortable-arrow {
+            /* Sub alignment works perfectly in this context,
+               where the table header is a text node. */
+            vertical-align: sub;
+            transform: rotate(180deg);
+            opacity: 0;
+            transition: opacity 100ms ease-out;
         }
 
-        &.active::after,
-        &[data-sort]:hover::after {
-            content: " \f0d8";
-            white-space: pre;
-            display: inline-block;
-            position: absolute;
-            padding-top: 3px;
-            font: normal normal normal 12px/1 FontAwesome;
-            font-size: inherit;
+        &.descend .table-sortable-arrow {
+            transform: rotate(0deg);
+        }
+
+        &:not(.active)[data-sort]:hover .table-sortable-arrow {
+            opacity: 0.3;
+        }
+
+        &.active .table-sortable-arrow {
+            opacity: 1;
         }
 
         &.active {
             opacity: 1;
             transition: opacity 100ms ease-out;
-
-            &.descend::after {
-                content: " \f0d7";
-            }
         }
 
         &[data-sort]:hover {
             cursor: pointer;
-            background-color: hsl(0deg 0% 95%) !important;
+            background-color: var(
+                --color-background-table-header-sortable-hover
+            );
             transition: background-color 100ms ease-in-out;
-
-            &:not(.active)::after {
-                opacity: 0.3;
-            }
         }
     }
 
     tbody > tr:nth-child(odd) > td {
-        background-color: hsl(0deg 0% 98%);
+        background-color: var(--color-background-modal);
     }
 
     /* Force the actions column to use the minimum space necessary */
@@ -863,11 +885,21 @@ div.overlay {
     }
 }
 
+#stream_settings,
+#settings_page,
+#user_group_settings {
+    .subsection-header {
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
+
 #stream_settings .save-button-controls,
 #settings_page .save-button-controls,
 #user_group_settings .save-button-controls {
-    display: inline;
-    margin-left: 15px;
+    display: flex;
+    margin: 0.2857em 0.5714em; /* 4px 8px at 14px/em */
+    align-items: center;
 
     &.hide {
         display: none;
@@ -876,13 +908,12 @@ div.overlay {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0deg 0% 80%);
-        padding: 3px 14px 4px 11px;
         text-decoration: none;
         color: hsl(0deg 0% 47%);
-        min-width: 80px;
-        /* Limit the height of the button */
-        line-height: 1.2;
-        vertical-align: text-bottom;
+        min-width: 5.7142em; /* 80px at 14px/em */
+        display: flex;
+        align-items: center;
+        height: 1.8429em; /* 25.8px at 14px/em */
 
         &:hover,
         &:focus {
@@ -912,6 +943,7 @@ div.overlay {
             &.saving {
                 background-color: hsl(156deg 14% 40%);
                 border-color: hsl(156deg 14% 40%);
+                display: flex;
             }
         }
 
@@ -928,22 +960,18 @@ div.overlay {
                 }
 
                 .save-discard-widget-button-loading {
-                    display: inline-block;
-                    margin-right: 2px;
+                    display: block;
+                    margin-right: 0.5em; /* 7px at 14px/em */
                 }
             }
         }
 
         .save-discard-widget-button-icon {
-            vertical-align: middle;
             margin-right: 3px;
-            font-size: 15px;
+            font-size: 1.0714em; /* 15px at 14px/em */
             font-weight: 400;
-        }
-
-        .save-discard-widget-button-text {
-            vertical-align: middle;
-            line-height: 1;
+            display: flex;
+            align-items: center;
         }
     }
 }
@@ -955,6 +983,7 @@ div.overlay {
     width: 12px;
 
     &.zulip-icon-globe,
+    &.zulip-icon-archive,
     &.zulip-icon-hashtag {
         font-size: 0.75em;
     }
@@ -980,7 +1009,7 @@ div.overlay {
     /* We do not need to pull up lock icons in dropdowns
        so we reset their margin-top to the original value
        for a dropdown's .zulip-icon */
-    margin-top: 2px !important;
+    margin-top: 0 !important;
 }
 
 /* This includes css needed to display messages in an overlay. */
@@ -1007,7 +1036,8 @@ div.overlay {
         padding-top: 4px;
         padding-bottom: 8px;
         text-align: center;
-        border-bottom: 1px solid hsl(0deg 0% 87%);
+        background-color: var(--color-background-modal-bar);
+        border-bottom: 1px solid var(--color-border-modal-bar);
 
         & h1 {
             margin: 0;
@@ -1105,6 +1135,10 @@ div.overlay {
                 word-wrap: unset;
             }
 
+            .copy-overlay-message {
+                font-size: 1.2em;
+            }
+
             .restore-overlay-message {
                 cursor: pointer;
                 color: hsl(170deg 48% 54%);
@@ -1136,19 +1170,22 @@ div.overlay {
 }
 
 .dropdown-widget-button {
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-dropdown-widget-button);
     padding: 4px 6px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-border-dropdown-widget-button);
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     outline: none;
     color: var(--color-text-default);
+    width: 206px;
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(
+            --color-background-disabled-dropdown-widget-button
+        );
         opacity: 0.7;
     }
 }
@@ -1161,7 +1198,7 @@ div.overlay {
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);
 
-    & i {
+    .setting-disabled-option-icon {
         /* Values set to match text alignment in stream dropdown. */
         padding: 0 5px 0 1px;
     }
@@ -1181,7 +1218,7 @@ div.overlay {
     color: hsl(0deg 0% 33%);
     border: 1px solid hsl(0deg 0% 80%);
     transition:
-        border linear 0.2s,
+        border-color linear 0.2s,
         box-shadow linear 0.2s;
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     border-radius: 4px;
@@ -1325,10 +1362,158 @@ div.overlay {
     }
 }
 
+.copy-button {
+    display: flex;
+    border-radius: 4px;
+    color: var(--color-copy-button);
+    /* 2px at 16px/1em */
+    padding: 0.125em;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-copy-button-hover);
+    }
+
+    &:active {
+        color: var(--color-copy-button-active);
+    }
+
+    &.copy-button-square {
+        &:hover,
+        :focus-visible {
+            background-color: var(--color-copy-button-square-bg-hover);
+        }
+
+        &:active {
+            background-color: var(--color-copy-button-square-bg-active);
+            color: var(--color-copy-button-square-active);
+        }
+    }
+
+    &.copy-button-success {
+        color: var(--color-copy-button-success);
+    }
+}
+
 .text-success {
     color: hsl(120.91deg 32.04% 40.39%);
 }
 
 .text-error {
     color: hsl(1.06deg 44.66% 50.39%);
+}
+
+.sticky-bottom-option {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    color: var(--color-dropdown-item);
+    border: none;
+    border-top: 1px solid var(--color-border-zulip-button);
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+
+    &:hover {
+        color: var(--color-dropdown-item);
+        background-color: var(--background-color-active-dropdown-item);
+    }
+
+    &:focus {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
+}
+
+/* Styling for invalid inputs */
+input.invalid-input {
+    /* The use of !important is necessary here to override
+       border-color specified for text input elements in
+       dark_theme.css which has a higher specificity. */
+    border-color: var(--color-invalid-input-border) !important;
+
+    &:focus {
+        box-shadow: var(--color-invalid-input-box-shadow);
+    }
+}
+
+/* This is a utility class for line clamping. */
+.line-clamp {
+    /* Despite the below prefixed properties being deprecated,
+       the co-dependency of these three properties is a fully
+       specified behavior and will continue to be supported.
+       Reference: https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* The value of --line-clamp-value is not defined globally and instead
+       inherits the value from another class or the parent element. If it
+       is not defined, it defaults to 2. */
+    -webkit-line-clamp: var(--line-clamp-value, 2);
+    /* Also define the standard property 'line-clamp' for compatibility,
+       for when the vendor prefix "-webkit-" is no longer required. */
+    line-clamp: var(--line-clamp-value, 2);
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.info-density-controls {
+    .button-group {
+        border-radius: 5px;
+        border: 1px solid var(--color-info-density-control-border);
+        width: 100%;
+        display: grid;
+        grid-auto-flow: column;
+
+        .info-density-button-container {
+            display: inline-flex;
+            flex-direction: column;
+
+            &:first-of-type {
+                .info-density-button {
+                    border-top-left-radius: 5px;
+                    border-bottom-left-radius: 5px;
+                }
+            }
+
+            &:last-of-type {
+                .info-density-button {
+                    border-top-right-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                }
+            }
+        }
+
+        .info-density-button {
+            border: none;
+            background-color: var(--color-background-popover);
+            padding: 0.25em 0.4375em;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: unset;
+            justify-content: center;
+            margin: 0;
+
+            &:hover:not(:disabled) {
+                background-color: var(
+                    --color-info-density-button-hover-background
+                );
+            }
+
+            &:focus {
+                outline: none;
+            }
+
+            &:disabled {
+                cursor: default;
+                opacity: 0.4;
+            }
+
+            .zulip-icon {
+                display: flex;
+                align-items: center;
+                color: var(--color-info-denisty-button-icon);
+                opacity: 0.7;
+            }
+        }
+    }
 }

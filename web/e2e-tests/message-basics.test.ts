@@ -1,12 +1,12 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function get_stream_li(page: Page, stream_name: string): Promise<string> {
     const stream_id = await common.get_stream_id(page, stream_name);
-    assert(stream_id !== undefined);
+    assert.ok(stream_id !== undefined);
     return `#stream_filters [data-stream-id="${CSS.escape(stream_id.toString())}"]`;
 }
 
@@ -404,21 +404,21 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
 async function test_users_search(page: Page): Promise<void> {
     console.log("Search users using right sidebar");
     async function assert_in_list(page: Page, name: string): Promise<void> {
-        await page.waitForSelector(`#buddy-list-other-users li [data-name="${CSS.escape(name)}"]`, {
+        await page.waitForSelector(`#buddy-list-other-users li[data-name="${CSS.escape(name)}"]`, {
             visible: true,
         });
     }
 
     async function assert_selected(page: Page, name: string): Promise<void> {
         await page.waitForSelector(
-            `#buddy-list-other-users li.highlighted_user [data-name="${CSS.escape(name)}"]`,
+            `#buddy-list-other-users li.highlighted_user[data-name="${CSS.escape(name)}"]`,
             {visible: true},
         );
     }
 
     async function assert_not_selected(page: Page, name: string): Promise<void> {
         await page.waitForSelector(
-            `#buddy-list-other-users li.highlighted_user [data-name="${CSS.escape(name)}"]`,
+            `#buddy-list-other-users li.highlighted_user[data-name="${CSS.escape(name)}"]`,
             {hidden: true},
         );
     }
@@ -429,7 +429,7 @@ async function test_users_search(page: Page): Promise<void> {
     await assert_in_list(page, "aaron");
 
     // Enter the search box and test selected suggestion navigation
-    await page.click("#user_filter_icon");
+    await page.click(".user-list-filter");
     await page.waitForSelector("#buddy-list-other-users .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
     await assert_not_selected(page, "Cordelia, Lear's daughter");
@@ -452,7 +452,7 @@ async function test_users_search(page: Page): Promise<void> {
     await arrow(page, "Down");
 
     // Now Iago must be highlighted
-    await page.waitForSelector('#buddy-list-other-users li.highlighted_user [data-name="Iago"]', {
+    await page.waitForSelector('#buddy-list-other-users li.highlighted_user[data-name="Iago"]', {
         visible: true,
     });
     await assert_not_selected(page, "King Hamlet");
@@ -477,7 +477,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
     );
     await page.click(".subscriptions-header .exit-sign");
     await page.waitForSelector("#subscription_overlay", {hidden: true});
-    await page.goto(`http://zulip.zulipdev.com:9981/#narrow/stream/${stream_id}-Denmark`);
+    await page.goto(`http://zulip.zulipdev.com:9981/#narrow/channel/${stream_id}-Denmark`);
     let message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
         `.message-list[data-message-list-id='${message_list_id}'] .recipient_row ~ .recipient_row ~ .recipient_row`,
@@ -488,7 +488,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
         )) !== null,
     );
 
-    await page.goto("http://zulip.zulipdev.com:9981/#narrow/streams/public");
+    await page.goto("http://zulip.zulipdev.com:9981/#narrow/channels/public");
     message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
         `.message-list[data-message-list-id='${message_list_id}'] .recipient_row ~ .recipient_row ~ .recipient_row`,
@@ -517,27 +517,23 @@ async function message_basic_tests(page: Page): Promise<void> {
             stream_name: "Verona",
             topic: "other topic",
             content: "verona other topic c",
-            outside_view: true,
         },
-        {stream_name: "Denmark", topic: "test", content: "denmark message", outside_view: true},
+        {stream_name: "Denmark", topic: "test", content: "denmark message"},
         {
             recipient: "cordelia@zulip.com, hamlet@zulip.com",
             content: "group direct message a",
-            outside_view: true,
         },
         {
             recipient: "cordelia@zulip.com, hamlet@zulip.com",
             content: "group direct message b",
-            outside_view: true,
         },
-        {recipient: "cordelia@zulip.com", content: "direct message c", outside_view: true},
+        {recipient: "cordelia@zulip.com", content: "direct message c"},
         {stream_name: "Verona", topic: "test", content: "verona test d"},
         {
             recipient: "cordelia@zulip.com, hamlet@zulip.com",
             content: "group direct message d",
-            outside_view: true,
         },
-        {recipient: "cordelia@zulip.com", content: "direct message e", outside_view: true},
+        {recipient: "cordelia@zulip.com", content: "direct message e"},
     ]);
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");

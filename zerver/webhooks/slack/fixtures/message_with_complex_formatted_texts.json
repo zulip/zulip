@@ -1,0 +1,94 @@
+{
+  "token": "CqCsBJmXoNSHaNCt3wGWYSEe",
+  "team_id": "T06NRA6HM3P",
+  "context_team_id": "T06NRA6HM3P",
+  "context_enterprise_id": null,
+  "api_app_id": "A0757RM31HN",
+  "event": {
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1719211406.531029",
+    "client_msg_id": "f9b21f6a-690b-4acb-b04d-d264cd7512a2",
+    "text": "this is text messages with overlapping formatting\n_*bold with italic*_\n~*bold with strike through*~\n~_italic with strike through_~\n~_*all three*_~",
+    "team": "T06NRA6HM3P",
+    "blocks": [
+      {
+        "type": "rich_text",
+        "block_id": "Gx+b7",
+        "elements": [
+          {
+            "type": "rich_text_section",
+            "elements": [
+              {
+                "type": "text",
+                "text": "this is text messages with overlapping formatting\n"
+              },
+              {
+                "type": "text",
+                "text": "bold with italic",
+                "style": {
+                  "bold": true,
+                  "italic": true
+                }
+              },
+              {
+                "type": "text",
+                "text": "\n"
+              },
+              {
+                "type": "text",
+                "text": "bold with strike through",
+                "style": {
+                  "bold": true,
+                  "strike": true
+                }
+              },
+              {
+                "type": "text",
+                "text": "\n"
+              },
+              {
+                "type": "text",
+                "text": "italic with strike through",
+                "style": {
+                  "italic": true,
+                  "strike": true
+                }
+              },
+              {
+                "type": "text",
+                "text": "\n"
+              },
+              {
+                "type": "text",
+                "text": "all three",
+                "style": {
+                  "bold": true,
+                  "italic": true,
+                  "strike": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "channel": "C06NRA6JLER",
+    "event_ts": "1719211406.531029",
+    "channel_type": "channel"
+  },
+  "type": "event_callback",
+  "event_id": "Ev07A30U5YEL",
+  "event_time": 1719211406,
+  "authorizations": [
+    {
+      "enterprise_id": null,
+      "team_id": "T06NRA6HM3P",
+      "user_id": "U074G5E1ANR",
+      "is_bot": true,
+      "is_enterprise_install": false
+    }
+  ],
+  "is_ext_shared_channel": false,
+  "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDZOUkE2SE0zUCIsImFpZCI6IkEwNzU3Uk0zMUhOIiwiY2lkIjoiQzA2TlJBNkpMRVIifQ"
+}

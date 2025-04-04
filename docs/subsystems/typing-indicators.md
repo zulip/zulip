@@ -11,8 +11,8 @@ the Zulip web app, and our main audience is developers who want to
 understand the system and possibly improve it. Any client should
 be able follow the protocol documented here.
 
-Right now typing indicators are only implemented for direct
-message conversations in the web app.
+Typing indicators are implemented for both direct message conversations
+and channel conversations in the web app.
 
 There are two major roles for users in this system:
 
@@ -101,6 +101,10 @@ Once the request has been validated, the server sends events to
 potential recipients of the message. The event type for that
 payload is `typing`. See the function `do_send_typing_notification`
 in `zerver/actions/typing.py` for more details.
+
+For channel typing notifications, the server also handles the logic
+for determining which users should receive the typing events based
+on channel subscribers.
 
 ## Receiving user
 

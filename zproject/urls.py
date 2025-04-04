@@ -60,7 +60,7 @@ from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_d
 from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
-from zerver.views.home import accounts_accept_terms, desktop_home, home
+from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
     get_user_invites,
@@ -84,6 +84,7 @@ from zerver.views.message_flags import (
     update_message_flags_for_narrow,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
+from zerver.views.message_summary import get_messages_summary
 from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.onboarding_steps import mark_onboarding_step_as_read
 from zerver.views.presence import (
@@ -101,6 +102,7 @@ from zerver.views.push_notifications import (
     self_hosting_auth_json_endpoint,
     self_hosting_auth_not_configured,
     self_hosting_auth_redirect_endpoint,
+    self_hosting_registration_transfer_challenge_verify,
     send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
@@ -119,7 +121,12 @@ from zerver.views.realm_domains import (
     patch_realm_domain,
 )
 from zerver.views.realm_emoji import delete_emoji, list_emoji, upload_emoji
-from zerver.views.realm_export import delete_realm_export, export_realm, get_realm_exports
+from zerver.views.realm_export import (
+    delete_realm_export,
+    export_realm,
+    get_realm_exports,
+    get_users_export_consents,
+)
 from zerver.views.realm_icon import delete_icon_backend, get_icon_backend, upload_icon
 from zerver.views.realm_linkifiers import (
     create_linkifier,
@@ -143,6 +150,12 @@ from zerver.views.registration import (
     signup_send_confirm,
 )
 from zerver.views.report import report_csp_violations
+from zerver.views.saved_snippets import (
+    create_saved_snippet,
+    delete_saved_snippet,
+    edit_saved_snippet,
+    get_saved_snippets,
+)
 from zerver.views.scheduled_messages import (
     create_scheduled_message_backend,
     delete_scheduled_messages,
@@ -176,7 +189,8 @@ from zerver.views.streams import (
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
-from zerver.views.typing import send_notification_backend
+from zerver.views.tusd import handle_tusd_hook
+from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
@@ -188,12 +202,12 @@ from zerver.views.upload import (
 )
 from zerver.views.user_groups import (
     add_user_group,
-    delete_user_group,
+    deactivate_user_group,
     edit_user_group,
     get_is_user_group_member,
     get_subgroups_of_user_group,
-    get_user_group,
     get_user_group_members,
+    get_user_groups,
     update_subgroups_of_user_group,
     update_user_group_backend,
 )
@@ -207,7 +221,8 @@ from zerver.views.user_settings import (
 from zerver.views.user_topics import update_muted_topic, update_user_topic
 from zerver.views.users import (
     add_bot_backend,
-    avatar,
+    avatar_by_email,
+    avatar_by_id,
     avatar_medium,
     create_user_backend,
     deactivate_bot_backend,
@@ -221,7 +236,8 @@ from zerver.views.users import (
     patch_bot_backend,
     reactivate_user_backend,
     regenerate_bot_api_key,
-    update_user_backend,
+    update_user_by_email_api,
+    update_user_by_id_api,
 )
 from zerver.views.video_calls import (
     complete_zoom_user,
@@ -305,11 +321,11 @@ v1_api_and_json_patterns = [
     rest_path(
         "users/<int:user_id>",
         GET=get_members_backend,
-        PATCH=update_user_backend,
+        PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
-    rest_path("users/<email>", GET=get_user_by_email),
+    rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
@@ -329,6 +345,13 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # saved_snippets -> zerver.views.saved_snippets
+    rest_path("saved_snippets", GET=get_saved_snippets, POST=create_saved_snippet),
+    rest_path(
+        "saved_snippets/<int:saved_snippet_id>",
+        DELETE=delete_saved_snippet,
+        PATCH=edit_saved_snippet,
+    ),
     # New scheduled messages are created via send_message_backend.
     rest_path(
         "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend
@@ -351,6 +374,14 @@ v1_api_and_json_patterns = [
         PATCH=update_message_backend,
         DELETE=delete_message_backend,
     ),
+    rest_path(
+        "messages/summary",
+        GET=(
+            get_messages_summary,
+            # Not documented since the API details haven't been finalized yet.
+            {"intentionally_undocumented"},
+        ),
+    ),
     rest_path("messages/render", POST=render_message_backend),
     rest_path("messages/flags", POST=update_message_flags),
     rest_path("messages/flags/narrow", POST=update_message_flags_for_narrow),
@@ -372,6 +403,8 @@ v1_api_and_json_patterns = [
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
     rest_path("typing", POST=send_notification_backend),
+    # POST sends a message edit typing notification
+    rest_path("messages/<int:message_id>/typing", POST=send_message_edit_notification_backend),
     # user_uploads -> zerver.views.upload
     rest_path("user_uploads", POST=upload_file_backend),
     rest_path(
@@ -388,7 +421,9 @@ v1_api_and_json_patterns = [
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
     rest_path("mobile_push/test_notification", POST=send_test_push_notification_api),
     # users/*/presence => zerver.views.presence.
-    rest_path("users/me/presence", POST=update_active_status_backend),
+    rest_path(
+        "users/me/presence", POST=(update_active_status_backend, {"narrow_user_session_cache"})
+    ),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
     # /users/me/presence endpoint.
@@ -397,9 +432,9 @@ v1_api_and_json_patterns = [
     rest_path("users/me/status", POST=update_user_status_backend),
     rest_path("users/<int:user_id>/status", GET=get_status_backend),
     # user_groups -> zerver.views.user_groups
-    rest_path("user_groups", GET=get_user_group),
+    rest_path("user_groups", GET=get_user_groups),
     rest_path("user_groups/create", POST=add_user_group),
-    rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group, DELETE=delete_user_group),
+    rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group),
     rest_path(
         "user_groups/<int:user_group_id>/members",
         GET=get_user_group_members,
@@ -413,6 +448,7 @@ v1_api_and_json_patterns = [
     rest_path(
         "user_groups/<int:user_group_id>/members/<int:user_id>", GET=get_is_user_group_member
     ),
+    rest_path("user_groups/<int:user_group_id>/deactivate", POST=deactivate_user_group),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/onboarding_steps -> zerver.views.onboarding_steps
@@ -494,7 +530,11 @@ v1_api_and_json_patterns = [
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
-    rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
+    rest_path(
+        "events",
+        GET=(get_events, {"narrow_user_session_cache"}),
+        DELETE=(cleanup_event_queue, {"narrow_user_session_cache"}),
+    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
@@ -502,6 +542,7 @@ v1_api_and_json_patterns = [
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
+    rest_path("export/realm/consents", GET=get_users_export_consents),
 ]
 
 integrations_view = IntegrationView.as_view()
@@ -663,11 +704,22 @@ urls += [
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
     rest_path(
-        "avatar/<email_or_id>",
-        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+        "avatar/<int:user_id>",
+        GET=(avatar_by_id, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
-        "avatar/<email_or_id>/medium",
+        "avatar/<email>",
+        GET=(avatar_by_email, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
+        "avatar/<int:user_id>/medium",
+        GET=(
+            avatar_medium,
+            {"override_api_url_scheme", "allow_anonymous_user_web"},
+        ),
+    ),
+    rest_path(
+        "avatar/<email>/medium",
         GET=(
             avatar_medium,
             {"override_api_url_scheme", "allow_anonymous_user_web"},
@@ -731,11 +783,12 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
-# Used internally for communication between command-line, Django,
+# Used internally for communication between command-line, tusd, Django,
 # and Tornado processes
 urls += [
     path("api/internal/email_mirror_message", email_mirror_message),
     path("api/internal/notify_tornado", notify),
+    path("api/internal/tusd", handle_tusd_hook),
     path("api/internal/web_reload_clients", web_reload_clients),
     path("api/v1/events/internal", get_events_internal),
 ]
@@ -811,6 +864,7 @@ urls += [
     path("api/<slug:article>", api_documentation_view),
     path("policies/", policy_documentation_view),
     path("policies/<slug:article>", policy_documentation_view),
+    path("doc-permalinks/<str:doc_id>", doc_permalinks_view),
 ]
 
 urls += [
@@ -826,6 +880,13 @@ urls += [
     rest_path(
         "json/self-hosted-billing",
         GET=self_hosting_auth_json_endpoint,
+    ),
+]
+
+urls += [
+    path(
+        "api/v1/zulip-services/verify/<str:access_token>/",
+        self_hosting_registration_transfer_challenge_verify,
     ),
 ]
 

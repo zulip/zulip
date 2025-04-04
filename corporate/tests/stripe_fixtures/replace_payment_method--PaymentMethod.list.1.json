@@ -1,13 +1,14 @@
 {
   "data": [
     {
+      "allow_redisplay": "unspecified",
       "billing_details": {
         "address": {
           "city": "San Francisco",
           "country": "US",
           "line1": "123 Main St",
           "line2": null,
-          "postal_code": "94105",
+          "postal_code": "12345",
           "state": "CA"
         },
         "email": null,
@@ -17,15 +18,15 @@
       "card": {
         "brand": "visa",
         "checks": {
-          "address_line1_check": null,
-          "address_postal_code_check": null,
+          "address_line1_check": "pass",
+          "address_postal_code_check": "pass",
           "cvc_check": "pass"
         },
         "country": "US",
         "display_brand": "visa",
-        "exp_month": 4,
-        "exp_year": 2025,
-        "fingerprint": "NORMALIZED000002",
+        "exp_month": 1,
+        "exp_year": 9999,
+        "fingerprint": "NORMALIZED",
         "funding": "credit",
         "generated_from": null,
         "last4": "0341",
@@ -41,21 +42,22 @@
         "wallet": null
       },
       "created": 1000000000,
-      "customer": "cus_NORMALIZED0001",
-      "id": "pm_1P41mIDEQaroqDjsZiKi7fzH",
+      "customer": "cus_NORMALIZED",
+      "id": "replace_payment_method--Customer.retrieve.6.json",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
       "type": "card"
     },
     {
+      "allow_redisplay": "unspecified",
       "billing_details": {
         "address": {
           "city": "San Francisco",
           "country": "US",
           "line1": "123 Main St",
           "line2": null,
-          "postal_code": "94105",
+          "postal_code": "12345",
           "state": "CA"
         },
         "email": null,
@@ -65,15 +67,15 @@
       "card": {
         "brand": "visa",
         "checks": {
-          "address_line1_check": null,
-          "address_postal_code_check": null,
+          "address_line1_check": "pass",
+          "address_postal_code_check": "pass",
           "cvc_check": "pass"
         },
         "country": "US",
         "display_brand": "visa",
-        "exp_month": 4,
-        "exp_year": 2025,
-        "fingerprint": "NORMALIZED000001",
+        "exp_month": 1,
+        "exp_year": 9999,
+        "fingerprint": "NORMALIZED",
         "funding": "credit",
         "generated_from": null,
         "last4": "4242",
@@ -89,8 +91,8 @@
         "wallet": null
       },
       "created": 1000000000,
-      "customer": "cus_NORMALIZED0001",
-      "id": "pm_1P41m2DEQaroqDjspSh2kAXh",
+      "customer": "cus_NORMALIZED",
+      "id": "replace_payment_method--Customer.retrieve.1.json",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",

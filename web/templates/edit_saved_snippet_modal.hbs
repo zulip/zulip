@@ -1,0 +1,10 @@
+<div id="edit-saved-snippet-modal">
+    <form id="edit-saved-snippet-form">
+        <label for="title" class="modal-field-label">{{t "Title" }}</label>
+        <input id="edit-saved-snippet-title" type="text" name="title" class="modal_text_input saved-snippet-title" value="{{title}}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
+        <div>{{t "Content" }}</div>
+        <textarea class="settings_textarea saved-snippet-content" rows="4">
+            {{~content~}}
+        </textarea>
+    </form>
+</div>

@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as loading from "./loading";
+import * as loading from "./loading.ts";
 
 let loading_older_messages_indicator_showing = false;
 let loading_newer_messages_indicator_showing = false;

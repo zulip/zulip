@@ -23,7 +23,8 @@ preference settings, including the following:
     * [Language](/help/change-your-language)
     * [Time format](/help/change-the-time-format)
     * [Light theme vs. dark theme](/help/dark-theme)
-    * [Font size and line spacing](/help/font-size)
+    * [Font size](/help/font-size)
+    * [Line spacing](/help/line-spacing)
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
     * [Home view](/help/configure-home-view)
       ([Inbox](/help/inbox) vs.
@@ -68,7 +69,7 @@ API](/api/create-user).
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)

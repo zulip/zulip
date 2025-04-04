@@ -19,7 +19,7 @@ log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
 
 # Run this on a cron job to pick up on name changes.
-@transaction.atomic
+@transaction.atomic(durable=True)
 def sync_ldap_user_data(
     user_profiles: QuerySet[UserProfile], deactivation_protection: bool = True
 ) -> None:

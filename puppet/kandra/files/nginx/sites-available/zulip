@@ -1,3 +1,15 @@
+server {
+    # If coming from localhost, we do allow access to internal
+    # APIs over HTTP.
+    listen 127.0.0.1:80;
+    listen [::1]:80;
+
+    location /api/internal/ {
+        include /etc/nginx/zulip-include/api_headers;
+        include uwsgi_params;
+    }
+}
+
 include /etc/nginx/zulip-include/trusted-proto;
 include /etc/nginx/zulip-include/s3-cache;
 include /etc/nginx/zulip-include/upstreams;

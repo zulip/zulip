@@ -14,7 +14,7 @@ from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import Message, Reaction, Realm, RealmFilter, Recipient, Stream, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
 
@@ -71,7 +71,7 @@ class MessageDictTest(ZulipTestCase):
             return msg
 
         def get_send_message_payload(
-            msg_id: int, apply_markdown: bool, client_gravatar: bool
+            msg_id: int, *, apply_markdown: bool, client_gravatar: bool
         ) -> dict[str, Any]:
             msg = reload_message(msg_id)
             wide_dict = MessageDict.wide_dict(msg)
@@ -80,11 +80,15 @@ class MessageDictTest(ZulipTestCase):
                 wide_dict,
                 apply_markdown=apply_markdown,
                 client_gravatar=client_gravatar,
+                allow_empty_topic_name=True,
+                can_access_sender=True,
+                realm_host=get_realm("zulip").host,
+                is_incoming_1_to_1=False,
             )
             return narrow_dict
 
         def get_fetch_payload(
-            msg_id: int, apply_markdown: bool, client_gravatar: bool
+            msg_id: int, *, apply_markdown: bool, client_gravatar: bool
         ) -> dict[str, Any]:
             msg = reload_message(msg_id)
             unhydrated_dict = MessageDict.messages_to_encoded_cache_helper([msg])[0]
@@ -94,7 +98,9 @@ class MessageDictTest(ZulipTestCase):
                 [unhydrated_dict],
                 apply_markdown=apply_markdown,
                 client_gravatar=client_gravatar,
+                allow_empty_topic_name=True,
                 realm=get_realm("zulip"),
+                user_recipient_id=None,
             )
             final_dict = unhydrated_dict
             return final_dict
@@ -173,7 +179,12 @@ class MessageDictTest(ZulipTestCase):
         with self.assert_database_query_count(7):
             objs = MessageDict.ids_to_dict(ids)
             MessageDict.post_process_dicts(
-                objs, apply_markdown=False, client_gravatar=False, realm=realm
+                objs,
+                apply_markdown=False,
+                client_gravatar=False,
+                allow_empty_topic_name=True,
+                realm=realm,
+                user_recipient_id=None,
             )
 
         self.assert_length(objs, num_ids)
@@ -297,9 +308,6 @@ class MessageDictTest(ZulipTestCase):
         msg_dict = MessageDict.ids_to_dict([message.id])[0]
         self.assertEqual(msg_dict["reactions"][0]["emoji_name"], reaction.emoji_name)
         self.assertEqual(msg_dict["reactions"][0]["user_id"], sender.id)
-        self.assertEqual(msg_dict["reactions"][0]["user"]["id"], sender.id)
-        self.assertEqual(msg_dict["reactions"][0]["user"]["email"], sender.email)
-        self.assertEqual(msg_dict["reactions"][0]["user"]["full_name"], sender.full_name)
 
     def test_missing_anchor(self) -> None:
         self.login("hamlet")
@@ -412,7 +420,8 @@ class MessageHydrationTest(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            allow_empty_topic_name=True,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -460,7 +469,8 @@ class MessageHydrationTest(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            allow_empty_topic_name=True,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=self.example_user("polonius"),
             realm=realm,
         )
@@ -505,7 +515,8 @@ class MessageHydrationTest(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            allow_empty_topic_name=True,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -550,7 +561,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            allow_empty_topic_name=True,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -573,7 +585,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            allow_empty_topic_name=True,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -597,7 +610,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            allow_empty_topic_name=True,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -633,7 +647,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            allow_empty_topic_name=True,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )

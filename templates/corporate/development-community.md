@@ -23,60 +23,83 @@ developers during daylight hours in North America (roughly between
 15:00 UTC and 1:00 UTC), but the sun never sets on the Zulip
 community. Most questions get a reply within minutes to a few hours.
 
+Before posting your first message, please read the [community
+norms](#community-norms) section below in its entirety. It explains how to
+engage with the Zulip community.
+
 You can also [read conversations](https://chat.zulip.org/) in the community
 without creating an account. If you are evaluating using Zulip for your
-organization, check out these [tips](/try-zulip/) for exploring the product in
-action in the development community.
+organization, check out these [tips](https://chat.zulip.org/?show_try_zulip_modal)
+for exploring the product in action in the development community.
 
 <br/>
 # Community norms
 
-Zulip is a friendly and welcoming community, and we love meeting new
-people, hearing about what brought them to Zulip, and getting their
-feedback.
+## How we communicate
 
-## Getting started
+- Use **informal language**; there’s no need for titles like “Sir” or “Madam”.
+- Use **[gender-neutral
+  language](https://en.wikipedia.org/wiki/Gender-neutral_language)**. For
+  example:
+    - **Good**: Does anyone need a review on **their** PR?
+    - **Not good**: Does anyone need a review on **his** PR?
+- Aim to **communicate professionally**, using full sentences with correct spelling
+  and grammar.
+- Follow the community **[code of
+  conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html)**.
 
-- Send test messages to [#test
-  here](https://chat.zulip.org/#narrow/channel/7-test-here) or as a PM
-  to yourself to avoid disturbing others.
-- Start a [new topic](/help/introduction-to-topics) unless you’re replying
-  to an existing conversation. If you see a new user talking about
-  something unrelated on an existing topic, [move the messages to an
-  appropriate new topic](/help/move-content-to-another-topic).
-- If you’re not sure where to start, introduce yourself and your
-  interests in [#new
-  members](https://chat.zulip.org/#narrow/channel/95-new-members),
-  using your name as the topic to create a dedicated space.
-- Follow the community [code of
-  conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
+Read the [guide on how we
+communicate](https://zulip.readthedocs.io/en/latest/contributing/how-we-communicate.html)
+to learn more.
 
-## Communication style
+## How to ask for help
 
-- Converse informally; there’s no need to use titles like “Sir” or “Madam”.
-- Use [gender-neutral
-  language](https://en.wikipedia.org/wiki/Gender-neutral_language). For
-  example, avoid using a pronoun like “her” or “his” in sentences like
-  “Every developer should clean [their] keyboard at least once a
-  week.”
+- Formulate a **clear question**, which includes an appropriate amount of context
+  and a specific request for help. Link to **relevant references** (e.g., GitHub
+  issues, Zulip's documentation, etc.).
+- When relevant, include the **full traceback** in a [code
+  block](/help/code-blocks) (not a screenshot).
+- If working on a code contribution, **try to solve your own problem first**,
+  including reading through relevant documentation and code. Identify and
+  describe the precise point on which you feel stuck.
 
-## Getting help
-- When asking for help, provide the details needed for others to help
-  you. For example, include the **full traceback** in a [code
-  block](/help/code-blocks) (not a screenshot), a link to the code or
-  a draft PR you’re having trouble debugging, etc.
-- Ask questions on channels rather than DMing core contributors. You’ll
-  get answers faster since other people can help, and it makes it
-  possible for others to benefit from the discussion.
-- Don’t ask the same question in multiple places. Moderators read
-  every public channel, and make sure every question gets a reply.
-- Use @-mentions sparingly. Unlike IRC or Slack, Zulip’s topics make
-  it easy to see what you’re replying to, so you don’t need to mention
-  your conversation partner to make sure they will see or understand
-  your reply. Core contributors will often @-mention someone who asked
-  a question hours earlier to make sure they see the reply, but there
-  is generally no need to @-mention a core contributor unless you need
-  their timely attention.
+ Moderators read every public channel, and make sure that questions are
+ addressed. To avoid disrupting work in the community:
+
+- **Never ask the same question in multiple places**.
+- If you are new to the community, **default to never using @-mentions**.
+  Unnecessary mentions make it harder for Zulip's maintainers to see and respond
+  to urgent messages. You can use Zulip's [silent
+  mentions](https://zulip.com/help/mention-a-user-or-group#silently-mention-a-user)
+  to refer to a user without notifying them.
+
+## How to give feedback
+
+If you have ideas for how to make Zulip better, we’d love to hear from you!
+Learn how to [report
+bugs](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
+[suggest features and
+improvements](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html),
+and [share your
+experience](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html#evaluation-and-onboarding-feedback)
+with Zulip.
+
+## Where to post
+
+- **Ask questions in channels**, rather than DMing core contributors. You’ll get
+  answers faster since more people can help, and others will be able to benefit
+  from the discussion.
+- **Start a [new topic](/help/introduction-to-topics)** unless you’re replying
+  to an existing conversation.
+- If you like, **introduce yourself** in the [#new members
+  channel](https://chat.zulip.org/#narrow/channel/95-new-members), using your
+  name as the topic. Tells us what brings you to the community!
+- **Test messages** should only be sent to the [#test
+  here](https://chat.zulip.org/#narrow/channel/7-test-here) channel, or as DMs
+  to yourself.
+
+The section below gives a detailed overview of the channels in the Zulip
+community — take a look there to learn more.
 
 <br/>
 # Where do I send my message?
@@ -85,7 +108,7 @@ This section describes popular public channels on chat.zulip.org. Kick
 off the discussion by starting a [new topic](/help/introduction-to-topics)
 in the appropriate channel! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
-topic name, and [moderators](/help/roles-and-permissions) can [move a
+topic name, and [moderators](/help/user-roles) can [move a
 topic to a different channel](/help/move-content-to-another-channel).
 
 ## Channels for everyone
@@ -129,16 +152,8 @@ topic to a different channel](/help/move-content-to-another-channel).
 
 ## Channels for code contributors
 
-- [#development
-  help](https://chat.zulip.org/#narrow/channel/49-development-help) is
-  for asking for help with any Zulip server/web app development work
-  (use the app channels #mobile-dev-help, #desktop, or #zulip-terminal for help
-  working on one of the apps).
-- [#provision
-  help](https://chat.zulip.org/#narrow/channel/21-provision-help) is
-  for help specifically on setting up the server/web app development
-  environment. [#tools](https://chat.zulip.org/#narrow/channel/18-tools)
-  is other conversations about the server/web app developer tooling.
+### All codebases
+
 - [#git help](https://chat.zulip.org/#narrow/channel/44-git-help) is
   for help with using Git.
 - [#code review](https://chat.zulip.org/#narrow/channel/91-code-review)
@@ -148,24 +163,62 @@ topic to a different channel](/help/move-content-to-another-channel).
   and even just manually testing a proposed new feature and posting
   feedback is super helpful. Note that GitHub is our primary system
   for managing code reviews.
-- [#backend](https://chat.zulip.org/#narrow/channel/3-backend),
-  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend),
-  [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation),
-  and app-specific channels
-  ([#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team), etc.)
-  are the right place for general conversations about work in those
-  areas (including design discussions, questions, updates on a
+- [#api design](https://chat.zulip.org/#narrow/channel/378-api-design)
+  is a low-traffic channel for discussing and coordinating changes to
+  the [Zulip API](https://zulip.com/api/rest), with all stakeholders
+  present.
+- [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
+  is the right place for general conversations about work on
+  documentation (including design discussions, questions, updates on a
   project, or anything else).
+
+### Server and web app
+
+- [#development help](https://chat.zulip.org/#narrow/channel/49-development-help)
+  is for asking for help with any Zulip server/web app development work.
+- [#provision help](https://chat.zulip.org/#narrow/channel/21-provision-help)
+  is for help specifically on setting up the server/web app development
+  environment. [#tools](https://chat.zulip.org/#narrow/channel/18-tools)
+  is other conversations about the server/web app developer tooling.
+- [#backend](https://chat.zulip.org/#narrow/channel/3-backend) and
+  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend) are
+  the right place for general conversations about work on the Zulip
+  server and web app respectively (including design discussions,
+  questions, updates on a project, or anything else).
+- [#design](https://chat.zulip.org/#narrow/channel/101-design) is the
+  place to discuss the detailed UI and UX design of a change you're
+  working on, meaning how it looks and how it behaves as seen by the
+  user.  (Technical discussions, including how the code itself is
+  designed, go in one of the other channels above.)
 - [#automated
   testing](https://chat.zulip.org/#narrow/channel/43-automated-testing)
   is primarily used for automated notifications about [CI
   failures](https://zulip.readthedocs.io/en/latest/testing/continuous-integration.html),
   but is also a good place to discuss projects to improve Zulip’s
   automated testing infrastructure.
-- [#api design](https://chat.zulip.org/#narrow/channel/378-api-design)
-  is a low-traffic channel for discussing and coordinating changes to
-  the [Zulip API](https://zulip.com/api/rest), with all stakeholders
-  present.
+
+### Mobile app
+
+- [#mobile-dev-help](https://chat.zulip.org/#narrow/channel/516-mobile-dev-help)
+  is for asking for help with any development work on the Zulip mobile app.
+- [#mobile-team](https://chat.zulip.org/#narrow/channel/243-mobile-team)
+  is the right place for general conversations about work on the
+  mobile app (including technical design discussions, questions,
+  updates on a project, or anything else).
+- [#mobile-design](https://chat.zulip.org/#narrow/channel/530-mobile-design)
+  is the place to discuss the detailed UI and UX design of a change
+  you're working on, meaning how it looks and how it behaves as seen
+  by the user.  (Technical discussions, including how the code itself
+  is designed, go in one of the other channels above.)
+- [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile) is
+  primarily for user feedback and issue reports, not work on the code.
+
+### Desktop and terminal apps
+
+- [#desktop](https://chat.zulip.org/#narrow/channel/16-desktop) and
+  [#zulip-terminal](https://chat.zulip.org/#narrow/channel/206-zulip-terminal)
+  are for discussing work on the Zulip desktop and terminal apps
+  respectively.
 
 ## Channels for translators
 - [#translation](https://chat.zulip.org/#narrow/channel/58-translation)
@@ -184,21 +237,23 @@ topic to a different channel](/help/move-content-to-another-channel).
   for progress updates on what you’re working on and its status;
   usually folks post with their name as the topic. Everyone is welcome
   to participate!
-- [#design](https://chat.zulip.org/#narrow/channel/101-design) is where
-  we discuss UI and feature design and collect feedback on potential
-  design changes. We love feedback, so don’t hesitate to speak up!
-  Note that
-  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) is
-  usually the best place for end users to start a topic about a
-  proposed design change;
-  [#design](https://chat.zulip.org/#narrow/channel/101-design) is
-  primarily intended for discussing changes the community is actively
-  working on.
+- [#design](https://chat.zulip.org/#narrow/channel/101-design) and
+  [#mobile-design](https://chat.zulip.org/#narrow/channel/530-mobile-design)
+  are where we discuss UI and feature design and collect feedback on
+  potential design changes. We love feedback, so take a look at the
+  active discussions and don’t hesitate to speak up!
+  <br><p>These "design" channels are primarily intended for discussing
+  changes the community is actively working on. For starting a topic
+  to propose a new design change, the best place is
+  [#feedback](https://chat.zulip.org/#narrow/channel/137-feedback) or
+  [#mobile](https://chat.zulip.org/#narrow/channel/48-mobile).</p>
 - [#discussions](https://chat.zulip.org/#narrow/channel/277-discussions)
   is where we do fun community conversations like “Ask Me Anything”
   Q&A sessions with project members.
 - [#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
-  is where we discuss improving Zulip’s user, sysadmin, API, and
+  and
+  [#api documentation](https://chat.zulip.org/#narrow/channel/412-api-documentation)
+  are where we discuss improving Zulip’s user, sysadmin, API, and
   developer documentation.
 - [#general](https://chat.zulip.org/#narrow/channel/2-general) is for
   all topics of general interest.

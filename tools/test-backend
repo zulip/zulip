@@ -57,6 +57,7 @@ not_yet_fully_covered = [
     "corporate/views/plan_activity.py",
     "corporate/views/realm_activity.py",
     "corporate/views/remote_billing_page.py",
+    "corporate/views/audit_logs.py",
     "corporate/views/support.py",
     "corporate/lib/activity.py",
     "corporate/lib/remote_billing_util.py",
@@ -75,8 +76,6 @@ not_yet_fully_covered = [
     "zerver/lib/markdown/nested_code_blocks.py",
     # Workers should get full coverage; many have it already
     "zerver/worker/deferred_work.py",
-    "zerver/worker/email_senders.py",
-    "zerver/worker/invites.py",
     "zerver/worker/missedmessage_emails.py",
     # Worker-associated files; lower-priority to get testing on
     "zerver/worker/base.py",
@@ -212,10 +211,10 @@ def main() -> None:
     test-backend zerver.tests.test_markdown # run all tests in a test module
     test-backend zerver/tests/test_markdown.py # run all tests in a test module
     test-backend test_markdown # run all tests in a test module
-    test-backend zerver.tests.test_markdown.MarkdownTest # run all tests in a test class
-    test-backend MarkdownTest # run all tests in a test class
-    test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube # run a single test
-    test-backend MarkdownTest.test_inline_youtube # run a single test"""
+    test-backend zerver.tests.test_markdown.MarkdownEmbedsTest # run all tests in a test class
+    test-backend MarkdownEmbedsTest # run all tests in a test class
+    test-backend zerver.tests.test_markdown.MarkdownEmbedsTest.test_inline_youtube # run a single test
+    test-backend MarkdownEmbedsTest.test_inline_youtube # run a single test"""
 
     parser = argparse.ArgumentParser(
         description=usage, formatter_class=argparse.RawTextHelpFormatter
@@ -278,6 +277,11 @@ def main() -> None:
         "--generate-stripe-fixtures",
         action="store_true",
         help="Generate Stripe test fixtures by making requests to Stripe test network",
+    )
+    parser.add_argument(
+        "--generate-litellm-fixtures",
+        action="store_true",
+        help="Generate litellm test fixtures using credentials in zproject/dev-secrets.conf",
     )
     parser.add_argument("args", nargs="*")
     parser.add_argument(
@@ -383,7 +387,19 @@ def main() -> None:
                 "corporate.tests.test_stripe",
             ]
             full_suite = False
+        print("-- Forcing serial mode for generating stripe fixtures.", flush=True)
+        default_parallel = 1
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
+
+    if options.generate_litellm_fixtures:
+        if full_suite:
+            suites = [
+                "zerver.tests.test_message_summary",
+            ]
+            full_suite = False
+        print("-- Forcing serial mode for generating litellm fixtures.", flush=True)
+        default_parallel = 1
+        os.environ["GENERATE_LITELLM_FIXTURES"] = "1"
 
     assert_provisioning_status_ok(options.skip_provision_check)
 

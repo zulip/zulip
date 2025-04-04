@@ -39,6 +39,7 @@ from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
+from zerver.lib.onboarding_steps import ALL_ONBOARDING_STEPS
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
@@ -70,8 +71,10 @@ from zerver.models import (
 )
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.onboarding_steps import OnboardingStep
-from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
+from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
@@ -171,7 +174,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 modified_user=profile,
                 modified_stream=stream,
                 event_last_message_id=0,
-                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
                 event_time=event_time,
             )
             all_subscription_logs.append(log)
@@ -299,8 +302,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--test-suite",
             action="store_true",
-            help="Configures populate_db to create a deterministic "
-            "data set for the backend tests.",
+            help="Configures populate_db to create a deterministic data set for the backend tests.",
         )
 
     @override
@@ -384,12 +386,6 @@ class Command(ZulipBaseCommand):
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
 
-                # Default to allowing all members to send mentions in
-                # large streams for the test suite to keep
-                # mention-related tests simple.
-                zulip_realm.wildcard_mention_policy = WildcardMentionPolicyEnum.MEMBERS
-                zulip_realm.save(update_fields=["wildcard_mention_policy"])
-
             # Realms should have matching RemoteRealm entries - simulating having realms registered
             # with the bouncer, which is going to be the primary case for modern servers. Tests
             # wanting to have missing registrations, or simulating legacy server scenarios,
@@ -405,7 +401,7 @@ class Command(ZulipBaseCommand):
                 contact_email="remotezulipserver@zulip.com",
             )
             RemoteZulipServerAuditLog.objects.create(
-                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
                 server=server,
                 event_time=server.last_updated,
             )
@@ -751,7 +747,7 @@ class Command(ZulipBaseCommand):
                     modified_user=profile,
                     modified_stream_id=recipient.type_id,
                     event_last_message_id=0,
-                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                    event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
                     event_time=event_time,
                 )
                 all_subscription_logs.append(log)
@@ -937,16 +933,16 @@ class Command(ZulipBaseCommand):
                 )
 
         user_profiles_ids = []
-        onboarding_steps = []
+        onboarding_steps: list[OnboardingStep] = []
         for user_profile in user_profiles:
             user_profiles_ids.append(user_profile.id)
-            onboarding_steps.append(
-                OnboardingStep(
-                    user=user_profile, onboarding_step="narrow_to_dm_with_welcome_bot_new_user"
-                )
+            onboarding_steps.extend(
+                OnboardingStep(user=user_profile, onboarding_step=onboarding_step.name)
+                for onboarding_step in ALL_ONBOARDING_STEPS
             )
 
-        # Existing users shouldn't narrow to DM with welcome bot on first login.
+        # Mark onboarding steps as seen for existing users to avoid
+        # unnecessary popups during development.
         OnboardingStep.objects.bulk_create(onboarding_steps)
 
         # Create several initial direct message groups
@@ -1023,6 +1019,9 @@ class Command(ZulipBaseCommand):
                 # to imitate emoji insertions in stream names
                 raw_emojis = ["😎", "😂", "🐱‍👤"]
 
+                admins_system_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.ADMINISTRATORS, realm=zulip_realm, is_system_group=True
+                )
                 zulip_stream_dict: dict[str, dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
@@ -1032,7 +1031,7 @@ class Command(ZulipBaseCommand):
                     },
                     "announce": {
                         "description": "For announcements",
-                        "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
+                        "can_send_message_group": admins_system_group,
                     },
                     "design": {"description": "For design", "creator": hamlet},
                     "support": {"description": "For support"},
@@ -1115,7 +1114,7 @@ class Command(ZulipBaseCommand):
             if not options["test_suite"]:
                 # We populate the analytics database here for
                 # development purpose only
-                call_command("populate_analytics_db")
+                call_command("populate_analytics_db", skip_checks=True)
 
         threads = options["threads"]
         jobs: list[tuple[int, list[list[int]], dict[str, Any], int]] = []
@@ -1247,17 +1246,17 @@ def generate_and_send_messages(
             and random.randint(1, random_max) * 100.0 / random_max < options["stickiness"]
         ):
             # Use an old recipient
-            message_type, recipient_id, saved_data = recipients[num_messages - 1]
-            if message_type == Recipient.PERSONAL:
+            recipient_type, recipient_id, saved_data = recipients[num_messages - 1]
+            if recipient_type == Recipient.PERSONAL:
                 personals_pair = saved_data["personals_pair"]
                 random.shuffle(personals_pair)
-            elif message_type == Recipient.STREAM:
+            elif recipient_type == Recipient.STREAM:
                 message.subject = saved_data["subject"]
                 message.recipient = get_recipient_by_id(recipient_id)
-            elif message_type == Recipient.DIRECT_MESSAGE_GROUP:
+            elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
                 message.recipient = get_recipient_by_id(recipient_id)
         elif randkey <= random_max * options["percent_direct_message_groups"] / 100.0:
-            message_type = Recipient.DIRECT_MESSAGE_GROUP
+            recipient_type = Recipient.DIRECT_MESSAGE_GROUP
             message.recipient = get_recipient_by_id(random.choice(recipient_direct_message_groups))
         elif (
             randkey
@@ -1265,23 +1264,23 @@ def generate_and_send_messages(
             * (options["percent_direct_message_groups"] + options["percent_personals"])
             / 100.0
         ):
-            message_type = Recipient.PERSONAL
+            recipient_type = Recipient.PERSONAL
             personals_pair = random.choice(personals_pairs)
             random.shuffle(personals_pair)
         elif randkey <= random_max * 1.0:
-            message_type = Recipient.STREAM
+            recipient_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
-        if message_type == Recipient.DIRECT_MESSAGE_GROUP:
+        if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(direct_message_group_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
-        elif message_type == Recipient.PERSONAL:
+        elif recipient_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(
                 type=Recipient.PERSONAL, type_id=personals_pair[0]
             )
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data["personals_pair"] = personals_pair
-        elif message_type == Recipient.STREAM:
+        elif recipient_type == Recipient.STREAM:
             # Pick a random subscriber to the stream
             message.sender = random.choice(
                 list(Subscription.objects.filter(recipient=message.recipient))
@@ -1289,12 +1288,13 @@ def generate_and_send_messages(
             message.subject = random.choice(possible_topic_names[message.recipient.id])
             saved_data["subject"] = message.subject
 
+        message.is_channel_message = recipient_type == Recipient.STREAM
         message.date_sent = choose_date_sent(
             num_messages, tot_messages, options["oldest_message_days"], options["threads"]
         )
         messages.append(message)
 
-        recipients[num_messages] = (message_type, message.recipient.id, saved_data)
+        recipients[num_messages] = (recipient_type, message.recipient.id, saved_data)
         num_messages += 1
 
         if (num_messages % message_batch_size) == 0:
@@ -1413,10 +1413,11 @@ def choose_date_sent(
 
 def create_user_groups() -> None:
     zulip = get_realm("zulip")
+    cordelia = get_user_by_delivery_email("cordelia@zulip.com", zulip)
     members = [
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
     create_user_group_in_database(
-        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
+        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=cordelia
     )

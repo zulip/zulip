@@ -2,6 +2,9 @@
 set -e
 set -x
 
+ZULIP_PATH="$(dirname "${BASH_SOURCE[0]}")/../.."
+. "$ZULIP_PATH/tools/python-warnings.bash"
+
 # This is just a thin wrapper around provision.
 # Provisioning may fail due to many issues but most of the times a network
 # connection issue is the reason. So we are going to retry entire provisioning

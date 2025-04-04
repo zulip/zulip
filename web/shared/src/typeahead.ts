@@ -222,6 +222,55 @@ export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => bo
 // from BEFORE_MENTION_ALLOWED_REGEX in zerver/lib/mention.py later.
 export const word_boundary_chars = " _/-";
 
+export function triage_raw_with_multiple_items<T>(
+    query: string,
+    objs: T[],
+    get_items: (x: T) => string[],
+): {
+    exact_matches: T[];
+    begins_with_case_sensitive_matches: T[];
+    begins_with_case_insensitive_matches: T[];
+    word_boundary_matches: T[];
+    no_matches: T[];
+} {
+    const exact_matches = [];
+    const begins_with_case_sensitive_matches = [];
+    const begins_with_case_insensitive_matches = [];
+    const word_boundary_matches = [];
+    const no_matches = [];
+    const lower_query = query ? query.toLowerCase() : "";
+
+    const word_boundary_match_regex = new RegExp(
+        `[${word_boundary_chars}]${_.escapeRegExp(lower_query)}`,
+    );
+
+    for (const obj of objs) {
+        const items = get_items(obj);
+
+        const lower_items = items.map((item) => item.toLowerCase());
+
+        if (lower_items.includes(lower_query)) {
+            exact_matches.push(obj);
+        } else if (items.some((item) => item.startsWith(query))) {
+            begins_with_case_sensitive_matches.push(obj);
+        } else if (lower_items.some((item) => item.startsWith(lower_query))) {
+            begins_with_case_insensitive_matches.push(obj);
+        } else if (lower_items.some((item) => word_boundary_match_regex.test(item))) {
+            word_boundary_matches.push(obj);
+        } else {
+            no_matches.push(obj);
+        }
+    }
+
+    return {
+        exact_matches,
+        begins_with_case_sensitive_matches,
+        begins_with_case_insensitive_matches,
+        word_boundary_matches,
+        no_matches,
+    };
+}
+
 export function triage_raw<T>(
     query: string,
     objs: T[],

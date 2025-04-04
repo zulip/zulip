@@ -8,7 +8,7 @@ import render_blueslip_stacktrace from "../templates/blueslip_stacktrace.hbs";
 export class BlueslipError extends Error {
     override name = "BlueslipError";
     more_info?: object;
-    constructor(msg: string, more_info?: object | undefined, cause?: unknown) {
+    constructor(msg: string, more_info?: object, cause?: unknown) {
         super(msg, {cause});
         if (more_info !== undefined) {
             this.more_info = more_info;
@@ -123,7 +123,7 @@ export async function display_stacktrace(ex: unknown, message?: string): Promise
                     "constructor" in prototype
                         ? `thrown ${prototype.constructor.name}`
                         : "thrown",
-                message: ex === undefined ? message : String(ex),
+                message: ex === undefined || ex === null ? message : JSON.stringify(ex),
                 stackframes: [],
             });
             break;
@@ -158,7 +158,7 @@ export async function display_stacktrace(ex: unknown, message?: string): Promise
             stackframes,
         });
         ex = ex.cause;
-    } while (ex !== undefined);
+    } while (ex !== undefined && ex !== null);
 
     const $alert = $("<div>").addClass("stacktrace").html(render_blueslip_stacktrace({errors}));
     $(".alert-box").append($alert);

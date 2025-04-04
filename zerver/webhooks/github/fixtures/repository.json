@@ -23,7 +23,7 @@
       "type": "Organization",
       "site_admin": false
     },
-    "private": true,
+    "private": false,
     "html_url": "https://github.com/baxterandthehackers/public-repo",
     "description": "",
     "fork": false,

@@ -28,7 +28,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_redirect_to_login
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mime_types import guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import (
@@ -42,15 +42,13 @@ from zerver.lib.upload import (
     get_public_upload_root_url,
     upload_message_attachment_from_request,
 )
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
-from zerver.models import ImageAttachment, UserProfile
+from zerver.models import Attachment, ImageAttachment, Realm, UserProfile
 from zerver.worker.thumbnail import ensure_thumbnails
 
 
-def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
-    filename = os.path.basename(urlsplit(url).path)
+def patch_disposition_header(response: HttpResponse, filename: str, is_attachment: bool) -> None:
     content_disposition = content_disposition_header(is_attachment, filename)
 
     if content_disposition is not None:
@@ -80,8 +78,10 @@ def internal_nginx_redirect(internal_path: str, content_type: str | None = None)
     return response
 
 
-def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -> HttpResponse:
-    url = get_signed_upload_url(path_id, force_download=force_download)
+def serve_s3(
+    request: HttpRequest, path_id: str, filename: str, force_download: bool = False
+) -> HttpResponse:
+    url = get_signed_upload_url(path_id, filename, force_download=force_download)
     assert url.startswith("https://")
 
     if settings.DEVELOPMENT:
@@ -112,7 +112,11 @@ def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -
 
 
 def serve_local(
-    request: HttpRequest, path_id: str, force_download: bool = False
+    request: HttpRequest,
+    path_id: str,
+    filename: str,
+    force_download: bool = False,
+    mimetype: str | None = None,
 ) -> HttpResponseBase:
     assert settings.LOCAL_FILES_DIR is not None
     local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -120,7 +124,8 @@ def serve_local(
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
 
-    mimetype, encoding = guess_type(path_id)
+    if mimetype is None:
+        mimetype = guess_type(filename)[0]
     download = force_download or mimetype not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:
@@ -130,6 +135,8 @@ def serve_local(
         response: HttpResponseBase = FileResponse(
             open(local_path, "rb"),  # noqa: SIM115
             as_attachment=download,
+            filename=filename,
+            content_type=mimetype,
         )
         patch_cache_control(response, private=True, immutable=True)
         return response
@@ -143,7 +150,7 @@ def serve_local(
     response = internal_nginx_redirect(
         quote(f"/internal/local/uploads/{path_id}"), content_type=mimetype
     )
-    patch_disposition_header(response, local_path, download)
+    patch_disposition_header(response, filename, download)
     patch_cache_control(response, private=True, immutable=True)
     return response
 
@@ -250,15 +257,15 @@ def serve_file(
 ) -> HttpResponseBase:
     path_id = f"{realm_id_str}/{filename}"
     realm = get_valid_realm_from_request(request)
-    is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
+    is_authorized, attachment = validate_attachment_request(maybe_user_profile, path_id, realm)
 
     def serve_image_error(status: int, image_path: str) -> HttpResponseBase:
         # We cannot use X-Accel-Redirect to offload the serving of
         # this image to nginx, because it does not preserve the status
         # code of this response, nor the Vary: header.
-        return FileResponse(open(static_path(image_path), "rb"), status=status)  # noqa: SIM115
+        return FileResponse(open(static_path(image_path), "rb"), status=status)
 
-    if is_authorized is None:
+    if attachment is None:
         if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
             response = serve_image_error(404, "images/errors/image-not-exist.png")
         else:
@@ -303,14 +310,18 @@ def serve_file(
                 if not thumbnail_format.animated
             ]
         else:
-            potential_output_formats = THUMBNAIL_OUTPUT_FORMATS
+            potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
         if requested_format not in potential_output_formats:
             if rendered_formats == []:
                 # We haven't rendered anything, and they requested
                 # something we don't support.
                 return serve_image_error(404, "images/errors/image-not-exist.png")
             elif requested_format in rendered_formats:
-                # Not a _current_ format, but we did render it at the time, so fine to serve
+                # Not a _current_ format, but we did render it at the
+                # time, so fine to serve.  We also end up here for
+                # TRANSCODED_IMAGE_FORMAT requests, which are not in
+                # the default THUMBNAIL_OUTPUT_FORMATS, but may exist
+                # for some images types not in INLINE_MIME_TYPES.
                 pass
             else:
                 # Find something "close enough".  This will not be a
@@ -330,16 +341,27 @@ def serve_file(
             # currently processing the row.
             with transaction.atomic(savepoint=False):
                 ensure_thumbnails(
-                    ImageAttachment.objects.select_for_update().get(id=image_attachment.id)
+                    ImageAttachment.objects.select_for_update().get(id=image_attachment.id),
                 )
 
         # Update the path that we are fetching to be the thumbnail
         path_id = get_image_thumbnail_path(image_attachment, requested_format)
+        served_filename = str(requested_format)
+        mimetype: str | None = None  # Guess from filename
+    else:
+        served_filename = attachment.file_name
+        mimetype = attachment.content_type
 
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, force_download=force_download)
+        return serve_local(
+            request,
+            path_id,
+            filename=served_filename,
+            force_download=force_download,
+            mimetype=mimetype,
+        )
     else:
-        return serve_s3(request, path_id, force_download=force_download)
+        return serve_s3(request, path_id, served_filename, force_download=force_download)
 
 
 USER_UPLOADS_ACCESS_TOKEN_SALT = "user_uploads_"
@@ -374,11 +396,20 @@ def serve_file_unauthed_from_token(
         raise JsonableError(_("Invalid token"))
     if path_id.split("/")[-1] != filename:
         raise JsonableError(_("Invalid filename"))
+    try:
+        attachment = Attachment.objects.get(path_id=path_id)
+    except Attachment.DoesNotExist:
+        raise JsonableError(_("Invalid token"))
 
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id)
+        return serve_local(
+            request,
+            path_id,
+            filename=attachment.file_name,
+            mimetype=attachment.content_type,
+        )
     else:
-        return serve_s3(request, path_id)
+        return serve_s3(request, path_id, attachment.file_name)
 
 
 def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponseBase:
@@ -420,16 +451,28 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     assert isinstance(user_file, UploadedFile)
     file_size = user_file.size
     assert file_size is not None
-    if file_size > settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024:
-        raise JsonableError(
-            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
-                max_size=settings.MAX_FILE_UPLOAD_SIZE,
+    max_file_upload_size_mebibytes = user_profile.realm.get_max_file_upload_size_mebibytes()
+    if file_size > max_file_upload_size_mebibytes * 1024 * 1024:
+        if user_profile.realm.plan_type != Realm.PLAN_TYPE_SELF_HOSTED:
+            raise JsonableError(
+                _(
+                    "File is larger than the maximum upload size ({max_size} MiB) allowed by your organization's plan."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                )
             )
-        )
+        else:
+            raise JsonableError(
+                _(
+                    "File is larger than this server's configured maximum upload size ({max_size} MiB)."
+                ).format(
+                    max_size=max_file_upload_size_mebibytes,
+                )
+            )
     check_upload_within_quota(user_profile.realm, file_size)
 
-    url = upload_message_attachment_from_request(user_file, user_profile)
+    url, filename = upload_message_attachment_from_request(user_file, user_profile)
 
     # TODO/compatibility: uri is a deprecated alias for url that can
     # be removed once there are no longer clients relying on it.
-    return json_success(request, data={"uri": url, "url": url})
+    return json_success(request, data={"uri": url, "url": url, "filename": filename})

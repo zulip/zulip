@@ -3,19 +3,19 @@ import assert from "minimalistic-assert";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
 
-import type {Filter} from "./filter";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as inbox_util from "./inbox_util";
-import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
-import * as recent_view_util from "./recent_view_util";
-import * as rendered_markdown from "./rendered_markdown";
-import * as search from "./search";
-import {current_user} from "./state_data";
-import type {SettingsSubscription} from "./stream_settings_data";
-import type {StreamSubscription} from "./sub_store";
+import type {Filter} from "./filter.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as inbox_util from "./inbox_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as peer_data from "./peer_data.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as search from "./search.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 
 type MessageViewHeaderContext = {
     title: string;
@@ -99,22 +99,21 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         is_spectator: page_params.is_spectator,
     });
 
-    if (filter.has_operator("channel") && !filter._sub) {
-        return {
-            ...context,
-            sub_count: "0",
-            formatted_sub_count: "0",
-            rendered_narrow_description: $t({
-                defaultMessage: "This channel does not exist or is private.",
-            }),
-        };
-    }
-
-    if (filter._sub) {
+    if (filter.has_operator("channel")) {
+        const current_stream = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        if (!current_stream) {
+            return {
+                ...context,
+                sub_count: "0",
+                formatted_sub_count: "0",
+                rendered_narrow_description: $t({
+                    defaultMessage: "This channel does not exist or is private.",
+                }),
+            };
+        }
         // We can now be certain that the narrow
         // involves a stream which exists and
         // the current user can access.
-        const current_stream = filter._sub;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
         return {
             ...context,
@@ -130,12 +129,12 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
 }
 
 export function colorize_message_view_header(): void {
-    const filter = narrow_state.filter();
-    if (filter === undefined || !filter._sub) {
+    const current_sub = narrow_state.stream_sub();
+    if (!current_sub) {
         return;
     }
     // selecting i instead of .fa because web public streams have custom icon.
-    $("#message_view_header a.stream i").css("color", filter._sub.color);
+    $("#message_view_header a.stream i").css("color", current_sub.color);
 }
 
 function append_and_display_title_area(context: MessageViewHeaderContext): void {
@@ -166,6 +165,55 @@ function build_message_view_header(filter: Filter | undefined): void {
 
 export function initialize(): void {
     render_title_area();
+
+    const hide_stream_settings_button_width_threshold = 620;
+    $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
+        const $view_description_elt = $(this);
+        const window_width = $(window).width()!;
+        let hover_timeout;
+
+        if (event.type === "mouseenter") {
+            if (!$view_description_elt.hasClass("view-description-extended")) {
+                const current_width = $view_description_elt.outerWidth();
+                // Set fixed width for word-wrap to work
+                $view_description_elt.css("width", current_width + "px");
+            }
+            hover_timeout = setTimeout(() => {
+                $view_description_elt.addClass("view-description-extended");
+                $(".top-navbar-container").addClass(
+                    "top-navbar-container-allow-description-extension",
+                );
+
+                if (window_width <= hide_stream_settings_button_width_threshold) {
+                    $(".message-header-stream-settings-button").hide();
+                    // Let it expand naturally on smaller screens
+                    $view_description_elt.css("width", "");
+                }
+            }, 250);
+            $view_description_elt.data("hover_timeout", hover_timeout);
+        } else if (event.type === "mouseleave") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            hover_timeout = $view_description_elt.data("hover_timeout");
+            if (typeof hover_timeout === "number") {
+                // Clear any pending hover_timeout to prevent unexpected behavior
+                clearTimeout(hover_timeout);
+            }
+            $view_description_elt.addClass("leaving-extended-view-description");
+
+            // Wait for the reverse animation duration before cleaning up
+            setTimeout(() => {
+                $view_description_elt.removeClass("view-description-extended");
+                $view_description_elt.removeClass("leaving-extended-view-description");
+                if (window_width <= hide_stream_settings_button_width_threshold) {
+                    $(".message-header-stream-settings-button").show();
+                    $view_description_elt.css("width", "");
+                } else {
+                    // Reset to flexbox-determined width
+                    $view_description_elt.css("width", "");
+                }
+            }, 100);
+        }
+    });
 }
 
 export function render_title_area(): void {
@@ -175,10 +223,11 @@ export function render_title_area(): void {
 
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
-// narrowed (filter._sub) and rerenders if necessary
-export function maybe_rerender_title_area_for_stream(modified_sub: SettingsSubscription): void {
-    const filter = narrow_state.filter();
-    if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
+// narrowed and rerenders if necessary
+export function maybe_rerender_title_area_for_stream(modified_stream_id: number): void {
+    const current_stream_id = narrow_state.stream_id();
+
+    if (current_stream_id === modified_stream_id) {
         render_title_area();
     }
 }

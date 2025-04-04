@@ -16,6 +16,7 @@
         align-items: center;
         max-width: 100%;
         min-width: 0;
+        position: relative;
 
         height: var(--height-input-pill);
         /* Make sure the `height` property
@@ -54,7 +55,11 @@
             /* Allow label to collapse for ellipsis effect. */
             min-width: 0;
             align-items: center;
-            margin: 0 5px;
+            margin: 0 var(--input-pill-side-padding);
+
+            .zulip-icon-bot {
+                margin-left: 0.4em;
+            }
         }
 
         .pill-value {
@@ -62,10 +67,11 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.5;
         }
 
         .pill-close-button {
-            font-size: 10px;
+            font-size: 0.7142em; /* 10px at 14px em */
             text-decoration: none;
             /* Let the close button's box stretch,
                but no larger than the height of the
@@ -87,8 +93,8 @@
         }
 
         .exit {
-            width: 16px;
-            height: 16px;
+            width: var(--length-input-pill-exit);
+            height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
             margin-right: 2px;
@@ -103,8 +109,13 @@
             }
         }
 
+        .group-members-count {
+            opacity: 0.65;
+        }
+
         &.deactivated-pill {
             background-color: var(--color-background-deactivated-user-pill);
+            opacity: 0.7;
 
             &:focus {
                 border-color: var(--color-focus-outline-deactivated-user-pill);
@@ -120,7 +131,22 @@
                     --color-background-exit-hover-deactivated-user-pill
                 );
             }
+
+            > img {
+                opacity: 0.5;
+            }
         }
+    }
+
+    .slashed-circle-icon {
+        position: absolute;
+        background-color: var(--color-background-deactivated-user-pill);
+        padding: 0.2em;
+        font-size: 0.7em;
+        border-radius: 0.625em;
+        bottom: -0.0625em;
+        left: 1.1em;
+        opacity: 1;
     }
 
     &.not-editable {
@@ -153,7 +179,7 @@
         padding: 0 4px;
 
         min-width: 2px;
-        word-break: break-all;
+        overflow-wrap: anywhere;
 
         outline: none;
 
@@ -164,11 +190,31 @@
             perspective: 1000px;
         }
     }
+
+    &.not-editable-by-user {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+
+        .pill {
+            cursor: not-allowed;
+        }
+
+        .exit {
+            display: none;
+        }
+    }
+
+    &.invalid {
+        border-color: var(--color-invalid-input-border);
+        box-shadow: var(--color-invalid-input-box-shadow);
+    }
 }
 
 #compose-direct-recipient .pill-container {
-    border: 1px solid hsl(0deg 0% 0% / 20%);
-    background-color: hsl(0deg 0% 100%);
+    border: 1px solid var(--color-compose-recipient-box-border-color);
+    background-color: var(
+        --color-background-compose-direct-recipient-pill-container
+    );
 
     .input:first-child:empty::before {
         content: attr(data-no-recipients-text);
@@ -179,16 +225,24 @@
         content: attr(data-some-recipients-text);
         opacity: 0.5;
     }
+
+    &:has(.input:focus) {
+        border-color: var(--color-compose-recipient-box-has-focus);
+    }
 }
 
-#invitee_emails_container .pill-container {
+#invitee_emails_container .pill-container,
+#integration-url-filter-branches .pill-container {
     width: 100%;
     box-sizing: border-box;
-    background-color: var(--color-background-invitee-emails-pill-container);
+    background-color: var(
+        --color-background-pill-container-without-placeholder
+    );
 }
 
 .add_subscribers_container .pill-container,
 .add_streams_container .pill-container,
+.add-user-group-container .pill-container,
 .add_members_container .pill-container {
     width: 100%;
     background-color: hsl(0deg 0% 100%);
@@ -199,7 +253,8 @@
     }
 }
 
-.add_streams_container .input {
+.add_streams_container .input,
+.add-user-group-container .input {
     flex-grow: 1;
 }
 
@@ -211,7 +266,7 @@
 /* These pill are similar to .not-editable, but are meant to show
    profile cards when clicked. */
 .panel_user_list > .pill-container,
-.stream_creator_details > .display_only_pill {
+.creator_details > .display_only_pill {
     background-color: hsl(0deg 0% 0% / 7%);
     gap: 2px;
     flex-wrap: nowrap;
@@ -245,7 +300,7 @@
     }
 }
 
-.stream_creator_details > .display_only_pill.inline_with_text_pill {
+.creator_details > .display_only_pill.inline_with_text_pill {
     padding: 0;
 
     > .pill {
@@ -269,6 +324,10 @@
             }
         }
     }
+}
+
+.display_only_group_pill .zulip-icon-user-group {
+    font-size: 1.3571em; /* 19px at 14px / em */
 }
 
 @keyframes shake {

@@ -17,48 +17,38 @@
             <div class='body-bg__layer'></div>
         </div>
         <div class="screen-1">
-            <h1>Organized team&nbsp;chat</h1>
-            <div class='h1-subheader'>
-                For distributed teams of all sizes.
-            </div>
+            <h1>Organized chat for distributed&nbsp;teams</h1>
             <div class='appshot-1'>
                 <picture>
                     <!-- dark theme is only with webp images, since webp support was at the same time or earlier than prefers-color-scheme https://caniuse.com/?search=prefers-color-scheme https://caniuse.com/webp -->
                     <source class='appshot-1__img'
                       type="image/webp"
-                      srcset="{{ static('images/landing-page/hello/generated/screen-1-dark-1x.webp') }},
-                      {{ static('images/landing-page/hello/generated/screen-1-dark-2x.webp') }} 2x"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-dark-2x.webp') }}"
                       media="(min-width: 941px) and (prefers-color-scheme: dark)"/>
                     <source class='appshot-1__img'
                       type="image/webp"
-                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-dark-1x.webp') }},
-                      {{ static('images/landing-page/hello/generated/screen-1-mobile-dark-2x.webp') }} 2x"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-dark-2x.webp') }}"
                       media="(max-width: 940px) and (prefers-color-scheme: dark)"/>
                     <source width="1095" height="496" class='appshot-1__img'
                       type="image/webp"
-                      srcset="{{ static('images/landing-page/hello/generated/screen-1-1x.webp') }},
-                      {{ static('images/landing-page/hello/generated/screen-1-2x.webp') }} 2x"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-2x.webp') }}"
                       media="(min-width: 941px)"/>
                     <source class='appshot-1__img'
                       type="image/webp"
-                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-1x.webp') }},
-                      {{ static('images/landing-page/hello/generated/screen-1-mobile-2x.webp') }} 2x"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-2x.webp') }}"
                       media="(max-width: 940px)"/>
                     <source class='appshot-1__img'
-                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-1x.jpg') }},
-                      {{ static('images/landing-page/hello/generated/screen-1-mobile-2x.jpg') }} 2x"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-2x.jpg') }}"
                       media="(max-width: 940px)"/>
-                    <img alt="" width="1095" height="496" class='appshot-1__img' src="{{ static('images/landing-page/hello/generated/screen-1-1x.jpg') }}"
-                      srcset="{{ static('images/landing-page/hello/generated/screen-1-1x.jpg') }},
-                      {{ static('images/landing-page/hello/generated/screen-1-2x.jpg') }} 2x"/>
+                    <img alt="" width="1095" height="496" class='appshot-1__img' src="{{ static('images/landing-page/hello/generated/screen-1-2x.jpg') }}"/>
                 </picture>
                 <div class="cta-buttons">
-                    <a href="/try-zulip/">
+                    <a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">
                         See it in use
                         <div class="cta-desc">in an open organization</div>
                     </a>
                     <a href="/new/">
-                        Create organization
+                        Create an organization
                         <div class="cta-desc">in 1 minute for free</div>
                     </a>
                     <a href="/request-demo/">
@@ -68,7 +58,7 @@
                 </div>
             </div>
             <div class="client-logos">
-                <div class='client-logos-div client-logos__logo_akamai'></div>
+                <div class='client-logos-div client-logos__logo_pilot'></div>
                 <div class='client-logos-div client-logos__logo_tum'></div>
                 <div class='client-logos-div client-logos__logo_wikimedia'></div>
                 <div class='client-logos-div client-logos__logo_rust'></div>
@@ -78,43 +68,85 @@
         </div>
         <div class="screen-2">
             <div class="screen-2__container">
-                <div class="screen-2__content">
-                    <h2 class="screen-2__header">What makes Zulip different</h2>
-                    <div class="screen-2__desc">
-                        <p>
-                            People often tell us that traditional team chat tools (Slack, Microsoft Teams, etc.) feel chaotic and stressful.
-                        </p>
-                        <p>
-                            Zulip is designed around conversations that are labeled with topics, to make communication <a href="/why-zulip/">organized and efficient</a>. It’s easy to get an overview of what conversations are happening, and to read one conversation at a time.
-                        </p>
-                    </div>
-                    <a class="quote" href="/case-studies/idrift/">
-                        <div class="quote__text">
-                            Zulip&rsquo;s <strong>threading model</strong> makes it so&nbsp;much easier to <strong>manage my team</strong>… As a&nbsp;leader, <strong>in&nbsp;just a&nbsp;few minutes</strong> I can get an overview over what&rsquo;s going on and see where my&nbsp;attention is&nbsp;needed.
-                        </div>
-                        <div class="quote__source">
-                            Case study with <strong>Gaute Lund</strong>, <i>co-founder of iDrift AS</i>
-                        </div>
-                    </a>
+                <div>
+                    <h2 class="screen-2__header">Designed for async conversations.</h2>
+                    <div class="screen-2__subtitle">Here's what it looks like in action.</div>
                 </div>
-                <div class="appshot-2">
-                    <picture>
-                        <!-- dark theme is only with webp images, since webp support was at the same time or earlier than prefers-color-scheme https://caniuse.com/?search=prefers-color-scheme https://caniuse.com/webp -->
-                        <!-- we only have mobile images here -->
-                        <source class='appshot-2__img'
-                          type="image/webp"
-                          srcset="{{ static('images/landing-page/hello/generated/screen-2-mobile-dark-1x.webp') }},
-                          {{ static('images/landing-page/hello/generated/screen-2-mobile-dark-2x.webp') }} 2x"
-                          media="(prefers-color-scheme: dark)"/>
-                        <source class='appshot-2__img'
-                          type="image/webp"
-                          srcset="{{ static('images/landing-page/hello/generated/screen-2-mobile-1x.webp') }},
-                          {{ static('images/landing-page/hello/generated/screen-2-mobile-2x.webp') }} 2x"/>
-                        <img alt="" class='appshot-2__img'
-                          src="{{ static('images/landing-page/hello/generated/screen-2-mobile-1x.jpg') }}"
-                          srcset="{{ static('images/landing-page/hello/generated/screen-2-mobile-1x.jpg') }},
-                          {{ static('images/landing-page/hello/generated/screen-2-mobile-2x.jpg') }} 2x"/>
-                    </picture>
+                <div class="screen-2__tabs">
+                    <input type="radio" id="screen-2__tab1" name="screen-2__tabs-radio" class="screen-2__tab-input" checked />
+                    <input type="radio" id="screen-2__tab2" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <input type="radio" id="screen-2__tab3" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <input type="radio" id="screen-2__tab4" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <input type="radio" id="screen-2__tab5" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <ul>
+                        <li>
+                            <label for="screen-2__tab1">
+                                Get an overview of conversations with unread messages in your inbox.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab2">
+                                Focus on one conversation at a time, no matter how many others are happening.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab3">
+                                Reply to each conversation in context.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab4">
+                                Conversations continue seamlessly over time.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab5">
+                                Start a new conversation by giving it a brief topic.
+                            </label>
+                        </li>
+                    </ul>
+                    <div class="screen-2__tabs-content">
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/01-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/01-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/02-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/02-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/03-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/03-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/04-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/04-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/05-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/05-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

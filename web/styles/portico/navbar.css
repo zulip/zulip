@@ -50,7 +50,6 @@ details summary::-webkit-details-marker {
     margin-right: 16px;
 }
 
-.top-menu-item,
 .top-menu-mobile a {
     &,
     &:hover,
@@ -74,7 +73,11 @@ details summary::-webkit-details-marker {
     transition-property: background, color;
     transition-duration: 0.05s;
     transition-timing-function: ease-out;
-    color: hsl(0deg 0% 100% / 80%);
+
+    &,
+    &:visited {
+        color: hsl(0deg 0% 100% / 80%);
+    }
 }
 
 .top-menu-item:hover {
@@ -191,7 +194,9 @@ details summary::-webkit-details-marker {
     opacity: 0;
     height: 0;
     width: 100%;
-    transition: all 0.05s;
+    transition: 0.05s;
+    transition-property:
+        height, opacity; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
 
 .top-menu-tab-input-unselect:not(:checked) + .top-menu-submenu-backdrop {
@@ -235,7 +240,8 @@ details summary::-webkit-details-marker {
     gap: 16px;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s;
+    transition: 0.2s;
+    transition-property: opacity, visibility;
 }
 
 #case-studies-submenu {
@@ -379,7 +385,6 @@ details summary::-webkit-details-marker {
         "lnum" on;
     color: hsl(0deg 0% 100% / 80%);
 
-    transition: all 0.2;
     overscroll-behavior: contain;
 }
 
@@ -488,7 +493,6 @@ details summary::-webkit-details-marker {
 .top-menu-mobile-submenu-section {
     letter-spacing: 0.1em;
     color: hsl(0deg 0% 100% / 40%);
-    opacity: 0.8;
     text-transform: uppercase;
     margin-top: 8px;
     font-size: 17px;
@@ -502,7 +506,8 @@ details summary::-webkit-details-marker {
     position: sticky;
     top: 0;
     z-index: 1;
-    transition: all 0.3s;
+    transition: 0.3s;
+    transition-property: background, backdrop-filter;
     height: 60px;
     overflow: hidden;
     display: flex;
@@ -572,7 +577,7 @@ details summary::-webkit-details-marker {
     background-position: right;
     transition:
         background,
-        letter-spacing 0.2s;
+        letter-spacing 0.2s; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
 
 .top-menu-mobile-summary:active::after {

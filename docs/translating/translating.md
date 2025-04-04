@@ -1,6 +1,6 @@
 # Translation guidelines
 
-Zulip's has full support for Unicode (and partial support for RTL
+Zulip has full support for Unicode (and partial support for RTL
 languages), so you can use your preferred language everywhere in
 Zulip.
 
@@ -75,6 +75,9 @@ Some useful tips for your translating journey:
 - Don't translate variables or code (usually preceded by a `%`, inside
   HTML tags `<...>`, or enclosed in braces like `{variable}`); just
   keep them verbatim.
+
+- Be consistent with translations; so make sure you are using the same translation
+  for the same word/phrase across all files (unless the context is different).
 
 - When context is unclear, you may find [GitHub
   search](https://github.com/search?q=org%3Azulip+%22alert+word+already+exists%22&type=code)

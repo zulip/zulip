@@ -1,20 +1,20 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as alert_words from "./alert_words";
-import * as message_store from "./message_store";
-import type {Message, RawMessage} from "./message_store";
-import * as message_user_ids from "./message_user_ids";
-import * as people from "./people";
-import * as pm_conversations from "./pm_conversations";
-import * as reactions from "./reactions";
-import * as recent_senders from "./recent_senders";
-import * as stream_data from "./stream_data";
-import * as stream_topic_history from "./stream_topic_history";
-import * as user_status from "./user_status";
-import * as util from "./util";
+import * as alert_words from "./alert_words.ts";
+import * as message_store from "./message_store.ts";
+import type {Message, RawMessage} from "./message_store.ts";
+import * as message_user_ids from "./message_user_ids.ts";
+import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as reactions from "./reactions.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as user_status from "./user_status.ts";
+import * as util from "./util.ts";
 
-export function process_new_message(raw_message: RawMessage): Message {
+export function process_new_message(raw_message: RawMessage, deliver_locally = false): Message {
     // Call this function when processing a new message.  After
     // a message is processed and inserted into the message store
     // cache, most modules use message_store.get to look at
@@ -33,7 +33,7 @@ export function process_new_message(raw_message: RawMessage): Message {
         message_store.convert_raw_message_to_message_with_booleans(raw_message);
     people.extract_people_from_message(message_with_booleans);
 
-    const sent_by_me = people.is_current_user(message_with_booleans.sender_email);
+    const sent_by_me = people.is_my_user_id(message_with_booleans.sender_id);
     people.maybe_incr_recipient_count({...message_with_booleans, sent_by_me});
 
     let status_emoji_info;
@@ -61,11 +61,18 @@ export function process_new_message(raw_message: RawMessage): Message {
             topic = message_with_booleans.subject;
         }
         assert(topic !== undefined);
-        stream_topic_history.add_message({
-            stream_id: message_with_booleans.stream_id,
-            topic_name: topic,
-            message_id: message_with_booleans.id,
-        });
+
+        // We add fully delivered messages to stream_topic_history,
+        // being careful to not include locally echoed messages, which
+        // don't have permanent IDs and don't belong in that structure.
+        if (!deliver_locally) {
+            stream_topic_history.add_message({
+                stream_id: message_with_booleans.stream_id,
+                topic_name: topic,
+                message_id: message_with_booleans.id,
+            });
+        }
+
         recent_senders.process_stream_message({
             stream_id: message_with_booleans.stream_id,
             topic,

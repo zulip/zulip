@@ -52,6 +52,7 @@ from .configured_settings import (
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
     ROOT_SUBDOMAIN_ALIASES,
+    S3_REGION,
     SENTRY_DSN,
     SOCIAL_AUTH_APPLE_APP_ID,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
@@ -152,9 +153,9 @@ if services is not None and set(services).intersection(
     {"submit_usage_statistics", "security_alerts", "mobile_push"}
 ):
     # None of these make sense enabled without ZULIP_SERVICES_URL.
-    assert (
-        ZULIP_SERVICES_URL is not None
-    ), "ZULIP_SERVICES_URL is required when any services are enabled."
+    assert ZULIP_SERVICES_URL is not None, (
+        "ZULIP_SERVICES_URL is required when any services are enabled."
+    )
 
 ANALYTICS_DATA_UPLOAD_LEVEL = max(
     [service_name_to_required_upload_level[service] for service in (services or [])],
@@ -177,6 +178,8 @@ PUPPETEER_TESTS = False
 RUNNING_OPENAPI_CURL_TEST = False
 # This is overridden in test_settings.py for the test suites
 GENERATE_STRIPE_FIXTURES = False
+# This is overridden in test_settings.py for the test suites
+GENERATE_LITELLM_FIXTURES = False
 # This is overridden in test_settings.py for the test suites
 BAN_CONSOLE_OUTPUT = False
 # This is overridden in test_settings.py for the test suites
@@ -511,6 +514,10 @@ ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
+if S3_KEY is not None and S3_SECRET_KEY is not None and S3_REGION is None:
+    import boto3
+
+    S3_REGION = boto3.client("s3").meta.region_name
 
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
@@ -610,7 +617,7 @@ LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR 
 # ZulipStorage when not DEBUG.
 
 if not DEBUG:
-    STATICFILES_STORAGE = "zerver.lib.storage.ZulipStorage"
+    STORAGES = {"staticfiles": {"BACKEND": "zerver.lib.storage.ZulipStorage"}}
     if PRODUCTION:
         STATIC_ROOT = "/home/zulip/prod-static"
     else:
@@ -673,6 +680,10 @@ default_template_engine_settings.update(
         os.path.join(DEPLOY_ROOT, "templates"),
         # The webhook integration templates
         os.path.join(DEPLOY_ROOT, "zerver", "webhooks"),
+        # The python-zulip-api:integrations package templates
+        # Keep above the zulip_bots templates to override bots with the same names
+        # (e.g., the Jira plugin doc and the Jira bot both use "jira/doc.md").
+        os.path.join("static" if DEBUG else STATIC_ROOT, "generated", "integrations"),
         # The python-zulip-api:zulip_bots package templates
         os.path.join("static" if DEBUG else STATIC_ROOT, "generated", "bots"),
     ],
@@ -749,7 +760,6 @@ WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_anomal
 WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unsupported_events.log")
 SOFT_DEACTIVATION_LOG_PATH = zulip_path("/var/log/zulip/soft_deactivation.log")
 TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
-DELIVER_SCHEDULED_MESSAGES_LOG_PATH = zulip_path("/var/log/zulip/deliver_scheduled_messages.log")
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
@@ -1285,3 +1295,6 @@ SCIM_SERVICE_PROVIDER = {
         },
     ],
 }
+
+# Which API key to use will be determined based on TOPIC_SUMMARIZATION_MODEL.
+TOPIC_SUMMARIZATION_API_KEY = get_secret("topic_summarization_api_key", None)

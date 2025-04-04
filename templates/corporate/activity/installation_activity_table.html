@@ -2,11 +2,16 @@
 
 <p class="installation-activity-header">{{ utctime }}</p>
 
-<h4>Installation information:</h4>
+<h4>Other views:</h4>
 <ul>
     <li><a href="/stats/installation">Server total /stats style graphs</a></li>
     <li><a href="/activity/remote">Remote servers</a></li>
     <li><a href="/activity/integrations">Integrations by client</a></li>
+    {% if not export %}
+    <li><a href="/activity?export=true">Export installation chart</a></li>
+    {% else %}
+    <li><a href="/activity">Non-export installation chart</a></li>
+    {% endif %}
 </ul>
 
 <h4>Counts chart key:</h4>
@@ -33,7 +38,9 @@
 
     <thead class="activity-head">
         <tr>
+            {% if not export %}
             <th>Links</th>
+            {% endif %}
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
             {% if billing_enabled %}
@@ -47,23 +54,28 @@
             <th>WAU</th>
             <th>Total users</th>
             <th>Bots</th>
+            {% if not export %}
             <th></th>
+            {% endif %}
             <th colspan=8>Human messages sent, last 8 UTC days (today-so-far first)</th>
+            {% if export %}
+            <th>Admin emails</th>
+            {% endif %}
         </tr>
     </thead>
 
     <tbody>
         {% for row in rows %}
         <tr>
-
+            {% if not export %}
             <td>
                 {{ row.realm_url }}
                 {{ row.stats_link }}
-                {{ row.support_link }}
+                {{ row.activity_link }}
             </td>
-
+            {% endif %}
             <td>
-                {{ row.string_id }}
+                {{ row.support_link }}
             </td>
 
             <td {% if row.is_new %}
@@ -113,13 +125,19 @@
             <td class="number">
                 {{ row.bot_count }}
             </td>
-
+            {% if not export %}
             <td>&nbsp;</td>
-
+            {% endif %}
             {% if row.history %}
             {{ row.history|safe }}
             {% else %}
             <td colspan=8></td>
+            {% endif %}
+
+            {% if export %}
+            <td>
+                {{ row.admin_emails }}
+            </td>
             {% endif %}
         </tr>
         {% endfor %}

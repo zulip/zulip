@@ -281,7 +281,7 @@ _"Schränke auf ... ein." (Transifex) "Begrenze auf ... ." (Transifex)_
 
 - Filter - **Filtern**
 
-A direct translation is fine here. Watch out to to use the infinitive instead
+A direct translation is fine here. Watch out to use the infinitive instead
 of the imperative, e.g., "Nachrichten filtern" instead of "Filtere Nachrichten".
 
 _"Filtern" (Thunderbird, LinkedIn)_
@@ -302,7 +302,7 @@ _"Suchen" (YouTube, Google, Facebook, Transifex)_
 
 - Pin/Unpin - **Anpinnen/Loslösen**
 
-While "pinnen" is shorter than "anpinnen", "anpinnen" sweeps any amiguity out of
+While "pinnen" is shorter than "anpinnen", "anpinnen" sweeps any ambiguity out of
 the way. This term is not used too often on Zulip, so the length shouldn't be a
 problem.
 

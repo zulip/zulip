@@ -13,8 +13,8 @@ on how to use these views.
 
 You can configure which view is set as your home view, and whether
 the <kbd>Esc</kbd> key navigates to the home view. Also, you can
-always reach the home view by using the <kbd>Ctrl</kbd> + <kbd>[</kbd>
-shortcut.
+always reach the home view by using the
+<kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> shortcut.
 
 ## Change home view
 
@@ -44,7 +44,8 @@ organization settings:
 
 1. To see your changes in action, open a new Zulip tab, or use a keyboard
    shortcut twice to exit the settings and navigate to your home view
-   (<kbd>Ctrl</kbd> + <kbd>[</kbd> or <kbd>Esc</kbd> if enabled).
+   (<kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> or <kbd>Esc</kbd>
+   if enabled).
 
 !!! tip ""
 
@@ -62,8 +63,8 @@ designed to enhance the user experience in the app.
 By default, the <kbd>Esc</kbd> key shortcut will ultimately navigate to
 your home view. You can disable this key binding if you would prefer.
 This will not disable other <kbd>Esc</kbd> key shortcuts used in Zulip,
-and will not affect the behavior of the <kbd>Ctrl</kbd> + <kbd>[</kbd>
-shortcut.
+and will not affect the behavior of the
+<kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> shortcut.
 
 ### Toggle whether <kbd>Esc</kbd> navigates to the home view
 

@@ -11,16 +11,14 @@ from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.email_notifications import (
+    convert_html_to_markdown,
     enqueue_welcome_emails,
     get_onboarding_email_schedule,
     send_account_registered_email,
 )
-from zerver.lib.send_email import (
-    deliver_scheduled_emails,
-    send_custom_email,
-    send_custom_server_email,
-)
+from zerver.lib.send_email import send_custom_email, send_custom_server_email
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import Realm, ScheduledEmail, UserProfile
 from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
@@ -89,6 +87,12 @@ class TestCustomEmails(ZulipTestCase):
             "You are receiving this email to update you about important changes to Zulip",
             str(msg.alternatives[0][0]),
         )
+        self.assertIn("Unsubscribe", str(msg.alternatives[0][0]))
+        # Verify that the Text version contains the footer.
+        self.assertIn(
+            "You are receiving this email to update you about important changes to Zulip", msg.body
+        )
+        self.assertIn("Unsubscribe", msg.body)
 
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -106,7 +110,7 @@ class TestCustomEmails(ZulipTestCase):
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, "Test subject")
         self.assertFalse(msg.reply_to)
-        self.assertEqual("Test body", msg.body)
+        self.assertIn("Test body", msg.body)
 
     def test_send_custom_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -237,11 +241,10 @@ class TestCustomEmails(ZulipTestCase):
 class TestFollowupEmails(ZulipTestCase):
     def test_account_registered_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
-        send_account_registered_email(hamlet)
-        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
-            "scheduled_timestamp"
-        )
-        email_data = orjson.loads(scheduled_emails[0].data)
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(hamlet)
+        m.assert_called_once()
+        email_data = m.call_args[0][1]
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
         self.assertEqual(
@@ -253,14 +256,15 @@ class TestFollowupEmails(ZulipTestCase):
         ScheduledEmail.objects.all().delete()
 
         iago = self.example_user("iago")
-        send_account_registered_email(iago)
-        scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
-        email_data = orjson.loads(scheduled_emails[0].data)
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(iago)
+        m.assert_called_once()
+        email_data = m.call_args[0][1]
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
         self.assertEqual(
             email_data["context"]["getting_organization_started_link"],
-            "http://zulip.testserver/help/getting-your-organization-started-with-zulip",
+            "http://zulip.testserver/help/moving-to-zulip",
         )
         self.assertEqual(
             email_data["context"]["getting_user_started_link"],
@@ -284,18 +288,18 @@ class TestFollowupEmails(ZulipTestCase):
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
-        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+        with (
+            self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map),
+            mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
+        ):
             self.login_with_return(
                 "newuser_email_as_uid@zulip.com",
                 self.ldap_password("newuser_email_as_uid@zulip.com"),
             )
             user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user).order_by(
-                "scheduled_timestamp"
-            )
-
-            self.assert_length(scheduled_emails, 3)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
+            m.assert_called_once()
+            email_data = m.call_args[0][1]
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(
                 email_data["context"]["ldap_username"], "newuser_email_as_uid@zulip.com"
@@ -311,18 +315,18 @@ class TestFollowupEmails(ZulipTestCase):
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
-        with self.settings(
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        with (
+            self.settings(
+                LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+            ),
+            mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
         ):
             self.login_with_return("newuser@zulip.com", self.ldap_password("newuser"))
 
             user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user).order_by(
-                "scheduled_timestamp"
-            )
-            self.assert_length(scheduled_emails, 3)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
+            m.assert_called_once()
+            email_data = m.call_args[0][1]
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser")
 
@@ -336,17 +340,15 @@ class TestFollowupEmails(ZulipTestCase):
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
-        with self.settings(
-            LDAP_EMAIL_ATTR="mail",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        with (
+            self.settings(LDAP_EMAIL_ATTR="mail", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map),
+            mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
         ):
             self.login_with_return("newuser_with_email", self.ldap_password("newuser_with_email"))
             user = UserProfile.objects.get(delivery_email="newuser_email@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user).order_by(
-                "scheduled_timestamp"
-            )
-            self.assert_length(scheduled_emails, 3)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
+            m.assert_called_once()
+            email_data = m.call_args[0][1]
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser_with_email")
 
@@ -357,22 +359,22 @@ class TestFollowupEmails(ZulipTestCase):
         realm = get_realm("zulip")
 
         # Hamlet has account only in Zulip realm so all onboarding emails should be sent
-        send_account_registered_email(self.example_user("hamlet"))
-        enqueue_welcome_emails(self.example_user("hamlet"))
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("hamlet"))
+            enqueue_welcome_emails(self.example_user("hamlet"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
         )
-        self.assert_length(scheduled_emails, 3)
+        self.assert_length(scheduled_emails, 2)
         self.assertEqual(
             orjson.loads(scheduled_emails[0].data)["template_prefix"],
-            "zerver/emails/account_registered",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
             "zerver/emails/onboarding_zulip_topics",
         )
         self.assertEqual(
-            orjson.loads(scheduled_emails[2].data)["template_prefix"],
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
             "zerver/emails/onboarding_zulip_guide",
         )
 
@@ -384,38 +386,38 @@ class TestFollowupEmails(ZulipTestCase):
         realm.save()
 
         # Hamlet is not an admin so the `/for/communities/` zulip_guide should not be sent
-        send_account_registered_email(self.example_user("hamlet"))
-        enqueue_welcome_emails(self.example_user("hamlet"))
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("hamlet"))
+            enqueue_welcome_emails(self.example_user("hamlet"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
         )
-        self.assert_length(scheduled_emails, 2)
+        self.assert_length(scheduled_emails, 1)
         self.assertEqual(
             orjson.loads(scheduled_emails[0].data)["template_prefix"],
-            "zerver/emails/account_registered",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
             "zerver/emails/onboarding_zulip_topics",
         )
 
         ScheduledEmail.objects.all().delete()
 
         # Iago is an admin so the `/for/communities/` zulip_guide should be sent
-        send_account_registered_email(self.example_user("iago"))
-        enqueue_welcome_emails(self.example_user("iago"))
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("iago"))
+            enqueue_welcome_emails(self.example_user("iago"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
         scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
-        self.assert_length(scheduled_emails, 3)
+        self.assert_length(scheduled_emails, 2)
         self.assertEqual(
             orjson.loads(scheduled_emails[0].data)["template_prefix"],
-            "zerver/emails/account_registered",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
             "zerver/emails/onboarding_zulip_topics",
         )
         self.assertEqual(
-            orjson.loads(scheduled_emails[2].data)["template_prefix"],
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
             "zerver/emails/onboarding_zulip_guide",
         )
 
@@ -426,23 +428,19 @@ class TestFollowupEmails(ZulipTestCase):
         realm.save()
 
         # Cordelia has account in more than 1 realm so onboarding_zulip_topics email should not be sent
-        send_account_registered_email(self.example_user("cordelia"))
-        enqueue_welcome_emails(self.example_user("cordelia"))
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("cordelia"))
+            enqueue_welcome_emails(self.example_user("cordelia"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
             "scheduled_timestamp"
         )
-        self.assert_length(scheduled_emails, 2)
+        self.assert_length(scheduled_emails, 1)
         self.assertEqual(
             orjson.loads(scheduled_emails[0].data)["template_prefix"],
-            "zerver/emails/account_registered",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
             "zerver/emails/onboarding_zulip_guide",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["context"]["organization_type"],
-            "education",
         )
 
         ScheduledEmail.objects.all().delete()
@@ -452,38 +450,37 @@ class TestFollowupEmails(ZulipTestCase):
         realm.save()
 
         # In this case, Cordelia should only be sent the account_registered email
-        send_account_registered_email(self.example_user("cordelia"))
-        enqueue_welcome_emails(self.example_user("cordelia"))
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("cordelia"))
+            enqueue_welcome_emails(self.example_user("cordelia"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
-        self.assert_length(scheduled_emails, 1)
-        self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"],
-            "zerver/emails/account_registered",
-        )
+        self.assert_length(scheduled_emails, 0)
 
     def test_followup_emails_for_regular_realms(self) -> None:
         cordelia = self.example_user("cordelia")
-        send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
-        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
-        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
-            "scheduled_timestamp"
-        )
-        assert scheduled_emails is not None
-        self.assert_length(scheduled_emails, 3)
-        self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"],
-            "zerver/emails/account_registered",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
-            "zerver/emails/onboarding_zulip_guide",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[2].data)["template_prefix"],
-            "zerver/emails/onboarding_team_to_zulip",
-        )
+        with self.captureOnCommitCallbacks(execute=True) as callbacks:
+            send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
+            enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
 
-        deliver_scheduled_emails(scheduled_emails[0])
+            scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+                "scheduled_timestamp"
+            )
+            self.assert_length(scheduled_emails, 2)
+            self.assertEqual(
+                orjson.loads(scheduled_emails[0].data)["template_prefix"],
+                "zerver/emails/onboarding_zulip_guide",
+            )
+            self.assertEqual(
+                orjson.loads(scheduled_emails[1].data)["template_prefix"],
+                "zerver/emails/onboarding_team_to_zulip",
+            )
+
+        # The insert into the deferred_email_senders queue
+        self.assert_length(callbacks, 1)
+
+        # Exiting the block does the email-sending
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -498,27 +495,27 @@ class TestFollowupEmails(ZulipTestCase):
             days=30
         )
         cordelia.realm.save()
-        send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
-        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
-        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
-            "scheduled_timestamp"
-        )
-        assert scheduled_emails is not None
-        self.assert_length(scheduled_emails, 3)
-        self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"],
-            "zerver/emails/account_registered",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"],
-            "zerver/emails/onboarding_zulip_guide",
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[2].data)["template_prefix"],
-            "zerver/emails/onboarding_team_to_zulip",
-        )
+        with self.captureOnCommitCallbacks(execute=True) as callbacks:
+            send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
+            enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
 
-        deliver_scheduled_emails(scheduled_emails[0])
+            scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+                "scheduled_timestamp"
+            )
+            self.assert_length(scheduled_emails, 2)
+            self.assertEqual(
+                orjson.loads(scheduled_emails[0].data)["template_prefix"],
+                "zerver/emails/onboarding_zulip_guide",
+            )
+            self.assertEqual(
+                orjson.loads(scheduled_emails[1].data)["template_prefix"],
+                "zerver/emails/onboarding_team_to_zulip",
+            )
+
+        # The insert into the deferred_email_senders queue
+        self.assert_length(callbacks, 1)
+
+        # Exiting the block does the email-sending
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -665,3 +662,10 @@ class TestCustomWelcomeEmailSender(ZulipTestCase):
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["from_name"], name)
             self.assertEqual(email_data["from_address"], email)
+
+
+class TestHtmlToMarkdown(ZulipTestCase):
+    def test_html_to_markdown_unicode(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
+        )

@@ -48,12 +48,6 @@ pg_args["connect_timeout"] = "600"
 conn = psycopg2.connect(connection_factory=None, **pg_args)
 conn.autocommit = True
 
-pg_server_version = conn.server_version
-can_concurrently = pg_server_version >= 110000  # Version 11.0.0
-
-if options.concurrently and not can_concurrently:
-    raise RuntimeError("Only PostgreSQL 11 and above can REINDEX CONCURRENTLY.")
-
 cursor = conn.cursor()
 cursor.execute(
     """

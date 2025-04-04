@@ -1,21 +1,22 @@
-import * as internal_url from "../shared/src/internal_url";
+import * as internal_url from "../shared/src/internal_url.ts";
 
-import * as blueslip from "./blueslip";
-import type {Message} from "./message_store";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as settings_data from "./settings_data";
-import type {NarrowTerm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import type {Message} from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as settings_data from "./settings_data.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as util from "./util.ts";
 
 export function build_reload_url(): string {
     let hash = window.location.hash;
-    if (hash.length !== 0 && hash.startsWith("#")) {
+    if (hash.startsWith("#")) {
         hash = hash.slice(1);
     }
     return "+oldhash=" + encodeURIComponent(hash);
@@ -35,19 +36,20 @@ export function encode_operand(operator: string, operand: string): string {
         }
     }
 
-    if (operator === "stream") {
-        return encode_stream_name(operand);
+    if (util.canonicalize_channel_synonyms(operator) === "channel") {
+        const stream_id = Number.parseInt(operand, 10);
+        return encode_stream_id(stream_id);
     }
 
     return internal_url.encodeHashComponent(operand);
 }
 
-export function encode_stream_name(operand: string): string {
-    // stream_data prefixes the stream id, but it does not do the
+export function encode_stream_id(stream_id: number): string {
+    // stream_data postfixes the stream name, but it does not do the
     // URI encoding piece
-    operand = stream_data.name_to_slug(operand);
+    const slug = stream_data.id_to_slug(stream_id);
 
-    return internal_url.encodeHashComponent(operand);
+    return internal_url.encodeHashComponent(slug);
 }
 
 export function decode_operand(operator: string, operand: string): string {
@@ -66,8 +68,8 @@ export function decode_operand(operator: string, operand: string): string {
 
     operand = internal_url.decodeHashComponent(operand);
 
-    if (util.canonicalize_stream_synonyms(operator) === "stream") {
-        return stream_data.slug_to_name(operand);
+    if (util.canonicalize_channel_synonyms(operator) === "channel") {
+        return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
     }
 
     return operand;
@@ -83,6 +85,29 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 }
 
+// We use the topic permalinks if we have access to the last message
+// id of the topic in the cache, by encoding it at the end of the
+// traditional channel-topic url using a `with` operator. If client
+// cache doesn't have a message, we use the traditional link format.
+export function by_channel_topic_permalink(stream_id: number, topic: string): string {
+    // From an API perspective, any message ID in the topic is a valid
+    // choice. In the client code, we choose the latest message ID in
+    // the topic, since display in recent conversations, the left
+    // sidebar, and most other elements are placed in a way reflecting
+    // the recency of the latest message in the topic.
+    const target_message_id = stream_topic_history.get_latest_known_message_id_in_topic(
+        stream_id,
+        topic,
+    );
+
+    return internal_url.by_stream_topic_url(
+        stream_id,
+        topic,
+        sub_store.maybe_get_stream_name,
+        target_message_id,
+    );
+}
+
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
@@ -96,7 +121,7 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
 
         for (const term of terms) {
             // Support legacy tuples.
-            const operator = util.canonicalize_stream_synonyms(term.operator);
+            const operator = util.canonicalize_channel_synonyms(term.operator);
             const operand = term.operand;
 
             const sign = term.negated ? "-" : "";
@@ -157,6 +182,9 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
 }
 
 export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+    // There's a Python copy of this function in `zerver/lib/url_decoding.py`
+    // called `parse_narrow_url`, the two should be kept roughly in sync.
+
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
@@ -172,7 +200,7 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
 
         const raw_operand = hash[i + 1];
 
-        if (!raw_operand) {
+        if (raw_operand === undefined) {
             return undefined;
         }
 
@@ -180,6 +208,12 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
         if (operator.startsWith("-")) {
             negated = true;
             operator = operator.slice(1);
+        }
+
+        // We allow the empty string as a topic name.
+        // Any other operand being empty string is invalid.
+        if (operator !== "topic" && raw_operand === "") {
+            return undefined;
         }
 
         const operand = decode_operand(operator, raw_operand);
@@ -222,13 +256,12 @@ export function validate_channels_settings_hash(hash: string): string {
         const stream_id = Number.parseInt(section, 10);
         const sub = sub_store.get(stream_id);
         // There are a few situations where we can't display stream settings:
-        // 1. This is a stream that's been archived. (sub=undefined)
-        // 2. The stream ID is invalid. (sub=undefined)
-        // 3. The current user is a guest, and was unsubscribed from the stream
+        // 1. The stream ID is invalid. (sub=undefined)
+        // 2. The current user is a guest, and was unsubscribed from the stream
         //    stream in the current session. (In future sessions, the stream will
         //    not be in sub_store).
         //
-        // In all these cases we redirect the user to 'subscribed' tab.
+        // In both cases we redirect the user to 'subscribed' tab.
         if (sub === undefined || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
             return channels_settings_section_url();
         }
@@ -264,7 +297,7 @@ export function validate_group_settings_hash(hash: string): string {
 
         const group_name = hash_components[2];
         let right_side_tab = hash_components[3];
-        const valid_right_side_tab_values = new Set(["general", "members"]);
+        const valid_right_side_tab_values = new Set(["general", "members", "permissions"]);
         if (
             group.name === group_name &&
             right_side_tab !== undefined &&
@@ -288,7 +321,7 @@ export function validate_group_settings_hash(hash: string): string {
 
 export function decode_stream_topic_from_url(
     url_str: string,
-): {stream_name: string; topic_name?: string} | null {
+): {stream_id: number; topic_name?: string; message_id?: string} | null {
     try {
         const url = new URL(url_str);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
@@ -298,9 +331,8 @@ export function decode_stream_topic_from_url(
         if (terms === undefined) {
             return null;
         }
-        if (terms.length > 2) {
+        if (terms.length > 3) {
             // The link should only contain stream and topic,
-            // near/ links are not transformed.
             return null;
         }
         // This check is important as a malformed url
@@ -308,13 +340,28 @@ export function decode_stream_topic_from_url(
         if (terms[0]?.operator !== "stream" && terms[0]?.operator !== "channel") {
             return null;
         }
+        const stream_id = Number.parseInt(terms[0].operand, 10);
+        // This can happen if we don't recognize the stream operand as a valid id.
+        if (Number.isNaN(stream_id)) {
+            return null;
+        }
         if (terms.length === 1) {
-            return {stream_name: terms[0].operand};
+            return {stream_id};
         }
         if (terms[1]?.operator !== "topic") {
             return null;
         }
-        return {stream_name: terms[0].operand, topic_name: terms[1].operand};
+        if (terms.length === 2) {
+            return {stream_id, topic_name: terms[1].operand};
+        }
+        if (terms[2]?.operator === "with") {
+            // For with operators, we currently discard the message ID.
+            return {stream_id, topic_name: terms[1].operand};
+        }
+        if (terms[2]?.operator !== "near") {
+            return null;
+        }
+        return {stream_id, topic_name: terms[1].operand, message_id: terms[2].operand};
     } catch {
         return null;
     }

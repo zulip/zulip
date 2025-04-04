@@ -29,10 +29,24 @@ from zerver.lib.email_validation import (
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
+from zerver.lib.send_email import (
+    EMAIL_DATE_FORMAT,
+    FromAddress,
+    clear_scheduled_invitation_emails,
+    maybe_remove_from_suppression_list,
+    send_future_email,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
+from zerver.models import (
+    Message,
+    MultiuseInvite,
+    NamedUserGroup,
+    PreregistrationUser,
+    Realm,
+    Stream,
+    UserProfile,
+)
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 
 
@@ -41,6 +55,9 @@ def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days
     recent_invites = RealmCount.objects.filter(
         realm__in=realms,
         property="invites_sent::day",
+        # It's important to filter on this even though the count
+        # doesn't use subgroup, so that we use the index.
+        subgroup=None,
         end_time__gte=timezone_now() - timedelta(days=days),
     ).aggregate(Sum("value"))["value__sum"]
     if recent_invites is None:
@@ -170,12 +187,13 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
             )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
     streams: Collection[Stream],
     notify_referrer_on_join: bool = True,
+    user_groups: Collection[NamedUserGroup] = [],
     *,
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
@@ -271,6 +289,8 @@ def do_invite_users(
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
+        groups_ids = [user_group.id for user_group in user_groups]
+        prereg_user.groups.set(groups_ids)
 
         confirmation = create_confirmation_object(
             prereg_user, Confirmation.INVITATION, validity_in_minutes=invite_expires_in_minutes
@@ -359,13 +379,14 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
     return invites
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_create_multiuse_invite_link(
     referred_by: UserProfile,
     invited_as: int,
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     streams: Sequence[Stream] = [],
+    user_groups: Sequence[NamedUserGroup] = [],
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(
@@ -375,6 +396,8 @@ def do_create_multiuse_invite_link(
     )
     if streams:
         invite.streams.set(streams)
+    if user_groups:
+        invite.groups.set(user_groups)
     invite.invited_as = invited_as
     invite.save()
     notify_invites_changed(referred_by.realm, changed_invite_referrer=referred_by)
@@ -383,7 +406,7 @@ def do_create_multiuse_invite_link(
     )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
     realm = prereg_user.realm
@@ -400,7 +423,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     realm = multiuse_invite.referred_by.realm
 
@@ -411,7 +434,7 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def do_send_user_invite_email(
     prereg_user: PreregistrationUser,
     *,
@@ -432,6 +455,7 @@ def do_send_user_invite_email(
     if confirmation is None:
         confirmation = prereg_user.confirmation.get()
 
+    maybe_remove_from_suppression_list(prereg_user.email)
     event = {
         "template_prefix": "zerver/emails/invitation",
         "to_emails": [prereg_user.email],
@@ -445,6 +469,7 @@ def do_send_user_invite_email(
             "corporate_enabled": settings.CORPORATE_ENABLED,
         },
         "realm_id": realm.id,
+        "date": event_time.strftime(EMAIL_DATE_FORMAT),
     }
     queue_event_on_commit("email_senders", event)
 

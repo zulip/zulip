@@ -83,7 +83,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.types import Validator
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.users import get_all_api_keys, get_api_key, get_users_for_api
+from zerver.lib.users import get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -417,6 +417,11 @@ class AuthBackendTest(ZulipTestCase):
         result = self.client_get("/login/")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "http://zulip.testserver/")
+
+    def test_invalid_login_on_self_hosting_management_subdomain(self) -> None:
+        result = self.client_get("/login/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("No organization found", result)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipDummyBackend",))
     def test_no_backend_enabled(self) -> None:
@@ -1284,8 +1289,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(query_params["user_id"], [str(hamlet.id)])
 
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertEqual(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -1447,8 +1454,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
             self.assertEqual(query_params["email"], [email])
             encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-            user_api_keys = get_all_api_keys(get_user_by_delivery_email(email, realm))
-            self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), user_api_keys)
+            self.assertIn(
+                otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+                get_user_by_delivery_email(email, realm).api_key,
+            )
             return
         elif desktop_flow_otp:
             self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
@@ -3440,7 +3449,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
 
 class AppleAuthMixin:
-    BACKEND_CLASS = AppleAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_APPLE_KEY"
     AUTHORIZATION_URL = "https://appleid.apple.com/auth/authorize"
     ACCESS_TOKEN_URL = "https://appleid.apple.com/auth/token"
@@ -3477,6 +3485,7 @@ class AppleAuthMixin:
 
 
 class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
+    BACKEND_CLASS = AppleAuthBackend
     LOGIN_URL = "/accounts/login/social/apple"
     SIGNUP_URL = "/accounts/register/social/apple"
 
@@ -3610,6 +3619,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
 
 class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
+    BACKEND_CLASS = AppleAuthBackend
     SIGNUP_URL = "/complete/apple/"
     LOGIN_URL = "/complete/apple/"
 
@@ -4655,8 +4665,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(query_params["realm"], ["http://zulip-mobile.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertEqual(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
 
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
@@ -4700,8 +4712,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertIn(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -4747,9 +4761,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res["Location"], "http://zulip.testserver/user_uploads/path_to_image")
 
-        res = test_redirect_to_next_url("/#narrow/stream/7-test-here")
+        res = test_redirect_to_next_url("/#narrow/channel/7-test-here")
         self.assertEqual(res.status_code, 302)
-        self.assertEqual(res["Location"], "http://zulip.testserver/#narrow/stream/7-test-here")
+        self.assertEqual(res["Location"], "http://zulip.testserver/#narrow/channel/7-test-here")
 
     def test_log_into_subdomain_when_token_is_malformed(self) -> None:
         data: ExternalAuthDataDict = {
@@ -5029,6 +5043,22 @@ class FetchAPIKeyTest(ZulipTestCase):
             )
         self.assert_json_error(result, "Invalid subdomain", 404)
 
+    def test_login_wrong_subdomain(self) -> None:
+        user = self.mit_user("starnine")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=user.email, password=initial_password(user.email)),
+            subdomain="zulip",
+        )
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
+
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=user.email, password="wrongpass"),
+            subdomain="zulip",
+        )
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
+
     def test_password_auth_disabled(self) -> None:
         with mock.patch("zproject.backends.password_auth_enabled", return_value=False):
             result = self.client_post(
@@ -5223,8 +5253,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         data = self.assert_json_success(result)
         self.assertEqual(data["email"], self.email)
         self.assertEqual(data["user_id"], self.user_profile.id)
-        user_api_keys = get_all_api_keys(self.user_profile)
-        self.assertIn(data["api_key"], user_api_keys)
+        self.assertEqual(data["api_key"], self.user_profile.api_key)
 
     def test_invalid_email(self) -> None:
         email = "hamlet"
@@ -5600,7 +5629,7 @@ class TestDevAuthBackend(ZulipTestCase):
         # to the backend. Rather we depend upon the browser's behaviour of persisting
         # hash anchors in between redirect requests. See below stackoverflow conversation
         # https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects
-        res = do_local_login("/accounts/login/local/?next=#narrow/stream/7-test-here")
+        res = do_local_login("/accounts/login/local/?next=#narrow/channel/7-test-here")
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res["Location"], "http://zulip.testserver")
 
@@ -5915,8 +5944,10 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertIn(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -5969,8 +6000,10 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertIn(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -6333,11 +6366,11 @@ class TestLDAP(ZulipLDAPTestCase):
         regex = re.compile(
             r"(uid\=)+[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\,ou\=users\,dc\=zulip\,dc\=com)"
         )
-        common_attrs = ["cn", "userPassword", "phoneNumber", "birthDate"]
+        common_attrs = {"cn", "userPassword", "phoneNumber", "birthDate"}
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(
-                value.keys(), [*common_attrs, "uid", "thumbnailPhoto", "userAccountControl"]
+            self.assertEqual(
+                value.keys(), common_attrs | {"uid", "thumbnailPhoto", "userAccountControl"}
             )
 
         ldap_dir = generate_dev_ldap_dir("b", 9)
@@ -6345,14 +6378,14 @@ class TestLDAP(ZulipLDAPTestCase):
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(value.keys(), [*common_attrs, "uid", "jpegPhoto"])
+            self.assertEqual(value.keys(), common_attrs | {"uid", "jpegPhoto"})
 
         ldap_dir = generate_dev_ldap_dir("c", 8)
         self.assert_length(ldap_dir, 8)
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(value.keys(), [*common_attrs, "uid", "email"])
+            self.assertEqual(value.keys(), common_attrs | {"uid", "email"})
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_dev_ldap_fail_login(self) -> None:
@@ -6785,20 +6818,36 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         LDAP_DEACTIVATE_NON_MATCHING_USERS was True.
         Details: https://github.com/zulip/zulip/issues/13130
         """
-        with self.settings(
-            LDAP_DEACTIVATE_NON_MATCHING_USERS=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_BIND_PASSWORD="wrongpass",
+        with (
+            self.settings(
+                LDAP_DEACTIVATE_NON_MATCHING_USERS=True,
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_BIND_PASSWORD="wrongpass",
+            ),
+            self.assertLogs("django_auth_ldap", "WARN") as django_ldap_log,
+            self.assertRaisesRegex(PopulateUserLDAPError, r"^INVALID_CREDENTIALS$"),
         ):
-            with self.assertRaises(ldap.INVALID_CREDENTIALS):
-                sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
-            mock_deactivate.assert_not_called()
+            sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
+        mock_deactivate.assert_not_called()
+        self.assertEqual(
+            django_ldap_log.output,
+            [
+                "WARNING:django_auth_ldap:Caught LDAPError looking up user: INVALID_CREDENTIALS(':wrongpass')"
+            ],
+        )
 
         # Make sure other types of LDAPError won't cause deactivation either:
-        with mock.patch.object(_LDAPUser, "_get_or_create_user", side_effect=ldap.LDAPError):
-            with self.assertRaises(PopulateUserLDAPError):
-                sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
-            mock_deactivate.assert_not_called()
+        with (
+            mock.patch.object(_LDAPUser, "_get_or_create_user", side_effect=ldap.LDAPError),
+            self.assertLogs("django_auth_ldap", "WARN") as django_ldap_log,
+            self.assertRaises(PopulateUserLDAPError),
+        ):
+            sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
+        mock_deactivate.assert_not_called()
+        self.assertEqual(
+            django_ldap_log.output,
+            ["WARNING:django_auth_ldap:Caught LDAPError populating user info: LDAPError()"],
+        )
 
     @override_settings(LDAP_EMAIL_ATTR="mail")
     def test_populate_user_returns_none(self) -> None:
@@ -6850,12 +6899,12 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
         with (
             self.assertRaises(ZulipLDAPError),
-            self.assertLogs("django_auth_ldap", "WARNING") as warn_log,
+            self.assertLogs("django_auth_ldap", "DEBUG") as debug_log,
         ):
             self.perform_ldap_sync(self.example_user("hamlet"))
-        self.assertEqual(
-            warn_log.output,
-            ["WARNING:django_auth_ldap:Name too short! while authenticating hamlet"],
+        self.assertIn(
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name too short!",
+            debug_log.output,
         )
 
     def test_deactivate_user_with_useraccountcontrol_attr(self) -> None:
@@ -7124,46 +7173,44 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.assertEqual(field_value, test_case["expected_value"])
 
     def test_update_non_existent_profile_field(self) -> None:
-        with self.settings(
-            AUTH_LDAP_USER_ATTR_MAP={
-                "full_name": "cn",
-                "custom_profile_field__non_existent": "homePhone",
-            }
+        with (
+            self.settings(
+                AUTH_LDAP_USER_ATTR_MAP={
+                    "full_name": "cn",
+                    "custom_profile_field__non_existent": "homePhone",
+                }
+            ),
+            self.assertRaisesRegex(
+                PopulateUserLDAPError, r"^populate_user unexpectedly returned None$"
+            ),
+            self.assertLogs("django_auth_ldap", "DEBUG") as debug_log,
         ):
-            with (
-                self.assertRaisesRegex(
-                    ZulipLDAPError, "Custom profile field with name non_existent not found"
-                ),
-                self.assertLogs("django_auth_ldap", "WARNING") as warn_log,
-            ):
-                self.perform_ldap_sync(self.example_user("hamlet"))
-            self.assertEqual(
-                warn_log.output,
-                [
-                    "WARNING:django_auth_ldap:Custom profile field with name non_existent not found. while authenticating hamlet"
-                ],
-            )
+            self.perform_ldap_sync(self.example_user("hamlet"))
+        self.assertIn(
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Custom profile field with name non_existent not found.",
+            debug_log.output,
+        )
 
     def test_update_custom_profile_field_invalid_data(self) -> None:
         self.change_ldap_user_attr("hamlet", "birthDate", "9999")
 
-        with self.settings(
-            AUTH_LDAP_USER_ATTR_MAP={
-                "full_name": "cn",
-                "custom_profile_field__birthday": "birthDate",
-            }
+        with (
+            self.settings(
+                AUTH_LDAP_USER_ATTR_MAP={
+                    "full_name": "cn",
+                    "custom_profile_field__birthday": "birthDate",
+                }
+            ),
+            self.assertRaisesRegex(
+                PopulateUserLDAPError, r"^populate_user unexpectedly returned None$"
+            ),
+            self.assertLogs("django_auth_ldap", "DEBUG") as debug_log,
         ):
-            with (
-                self.assertRaisesRegex(ZulipLDAPError, "Invalid data for birthday field"),
-                self.assertLogs("django_auth_ldap", "WARNING") as warn_log,
-            ):
-                self.perform_ldap_sync(self.example_user("hamlet"))
-            self.assertEqual(
-                warn_log.output,
-                [
-                    "WARNING:django_auth_ldap:Invalid data for birthday field: Birthday is not a date while authenticating hamlet"
-                ],
-            )
+            self.perform_ldap_sync(self.example_user("hamlet"))
+        self.assertIn(
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Invalid data for birthday field: Birthday is not a date",
+            debug_log.output,
+        )
 
     def test_update_custom_profile_field_no_mapping(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -7610,7 +7657,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
         self.email = self.example_email("hamlet")
         self.realm = get_realm("zulip")
         self.user_profile = get_user_by_delivery_email(self.email, self.realm)
-        self.api_key = get_api_key(self.user_profile)
+        self.api_key = self.user_profile.api_key
         self.raw_user_data = get_users_for_api(
             self.user_profile.realm,
             self.user_profile,
@@ -7767,7 +7814,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
             web_token = jwt.encode(payload, key, algorithm)
             req_data = {"token": web_token}
             result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
-            self.assert_json_error_contains(result, "Invalid subdomain", 404)
+            self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
 
 
 class LDAPGroupSyncTest(ZulipTestCase):
@@ -7804,7 +7851,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
             )
 
             create_user_group_in_database(
-                "cool_test_group", [], realm, acting_user=None, description="Created by LDAP sync"
+                "cool_test_group", [], realm, acting_user=hamlet, description="Created by LDAP sync"
             )
 
             self.assertTrue(
@@ -7889,11 +7936,10 @@ class LDAPGroupSyncTest(ZulipTestCase):
                 },
                 LDAP_APPEND_DOMAIN="zulip.com",
             ),
-            self.assertLogs("django_auth_ldap", "WARN") as django_ldap_log,
+            self.assertLogs("django_auth_ldap", "DEBUG") as django_ldap_log,
             self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
-            self.assertRaisesRegex(
-                ZulipLDAPError,
-                "search_s.*",
+            self.assertRaises(
+                PopulateUserLDAPError, msg="populate_user unexpectedly returned None"
             ),
         ):
             sync_user_from_ldap(cordelia, mock.Mock())
@@ -7902,11 +7948,9 @@ class LDAPGroupSyncTest(ZulipTestCase):
             zulip_ldap_log.output,
             [f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}"],
         )
-        self.assertEqual(
+        self.assertIn(
+            'DEBUG:django_auth_ldap:Failed to populate user cordelia: search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0)',
             django_ldap_log.output,
-            [
-                'WARNING:django_auth_ldap:search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0) while authenticating cordelia',
-            ],
         )
 
 

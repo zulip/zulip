@@ -1,8 +1,8 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function trigger_edit_last_message(page: Page): Promise<void> {
     const msg = (await page.$$(".message-list .message_row")).at(-1);
@@ -38,7 +38,7 @@ async function test_stream_message_edit(page: Page): Promise<void> {
 
     await edit_stream_message(page, "test edited");
 
-    const message_list_id = await common.get_current_msg_list_id(page, true);
+    const message_list_id = await common.get_current_msg_list_id(page, false);
     await common.check_messages_sent(page, message_list_id, [["Verona > edits", ["test edited"]]]);
 }
 
@@ -47,11 +47,17 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
         "messagebox",
     )}])[last()]`;
 
-    await common.send_message(page, "stream", {
-        stream_name: "Verona",
-        topic: "edits",
-        content: "/me test editing a message with me",
-    });
+    await common.send_message(
+        page,
+        "stream",
+        {
+            stream_name: "Verona",
+            topic: "edits",
+            content: "/me test editing a message with me",
+        },
+        // We already narrow in test_stream_message_edit.
+        false,
+    );
     await page.waitForSelector(
         `xpath/${last_message_xpath}//*[${common.has_class_x(
             "status-message",
@@ -88,7 +94,7 @@ async function test_edit_private_message(page: Page): Promise<void> {
     await page.click(".message_edit_save");
     await common.wait_for_fully_processed_message(page, "test edited pm");
 
-    const message_list_id = await common.get_current_msg_list_id(page, true);
+    const message_list_id = await common.get_current_msg_list_id(page, false);
     await common.check_messages_sent(page, message_list_id, [
         ["You and Cordelia, Lear's daughter", ["test edited pm"]],
     ]);

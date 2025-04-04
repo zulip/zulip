@@ -36,10 +36,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
         "/help/add-custom-profile-fields",
         "/help/custom-profile-fields",
     ),
-    URLRedirect(
-        "/help/enable-enter-to-send",
-        "/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message",
-    ),
+    URLRedirect("/help/enable-enter-to-send", "/help/configure-send-message-keys"),
     URLRedirect(
         "/help/change-the-default-language-for-your-organization",
         "/help/configure-organization-language",
@@ -91,9 +88,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     URLRedirect("/help/browse-and-subscribe-to-streams", "/help/browse-and-subscribe-to-channels"),
     URLRedirect("/help/unsubscribe-from-a-stream", "/help/unsubscribe-from-a-channel"),
     URLRedirect("/help/view-stream-subscribers", "/help/view-channel-subscribers"),
-    URLRedirect(
-        "/help/add-or-remove-users-from-a-stream", "/help/add-or-remove-users-from-a-channel"
-    ),
+    URLRedirect("/help/add-or-remove-users-from-a-stream", "/help/subscribe-users-to-a-channel"),
     URLRedirect("/help/pin-a-stream", "/help/pin-a-channel"),
     URLRedirect("/help/change-the-color-of-a-stream", "/help/change-the-color-of-a-channel"),
     URLRedirect("/help/move-content-to-another-stream", "/help/move-content-to-another-channel"),
@@ -126,6 +121,13 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
         "/help/introduction-to-channels#browse-and-subscribe-to-channels",
     ),
     URLRedirect("/help/allow-image-link-previews", "/help/image-video-and-website-previews"),
+    URLRedirect("/help/getting-your-organization-started-with-zulip", "/help/moving-to-zulip"),
+    URLRedirect("/help/quote-and-reply", "/help/quote-or-forward-a-message"),
+    URLRedirect("/help/change-a-users-role", "/help/user-roles"),
+    URLRedirect("/help/roles-and-permissions", "/help/user-roles"),
+    URLRedirect("/help/add-or-remove-users-from-a-channel", "/help/subscribe-users-to-a-channel"),
+    URLRedirect("/help/disable-message-edit-history", "/help/restrict-message-edit-history-access"),
+    URLRedirect("/help/edit-a-bot", "/help/manage-a-bot"),
 ]
 
 LANDING_PAGE_REDIRECTS = [
@@ -134,6 +136,7 @@ LANDING_PAGE_REDIRECTS = [
     URLRedirect("/developer-community/", "/development-community"),
     URLRedirect("/for/companies/", "/for/business"),
     URLRedirect("/for/working-groups-and-communities/", "/for/communities"),
+    URLRedirect("/try-zulip/", "https://chat.zulip.org/?show_try_zulip_modal"),
 ]
 
 DOCUMENTATION_REDIRECTS = (

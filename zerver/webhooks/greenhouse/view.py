@@ -16,18 +16,17 @@ MESSAGE_TEMPLATE = """
 
 
 def dict_list_to_string(some_list: WildValue) -> str:
-    internal_template = ""
+    response_chunks = []
     for item in some_list:
         item_type = item.get("type", "").tame(check_string).title()
         item_value = item.get("value").tame(check_none_or(check_string))
         item_url = item.get("url").tame(check_none_or(check_url))
         if item_type and item_value:
-            internal_template += f"{item_value} ({item_type}), "
+            response_chunks.append(f"{item_value} ({item_type})")
         elif item_type and item_url:
-            internal_template += f"[{item_type}]({item_url}), "
+            response_chunks.append(f"[{item_type}]({item_url})")
 
-    internal_template = internal_template[:-2]
-    return internal_template
+    return ", ".join(response_chunks)
 
 
 @webhook_view("Greenhouse")

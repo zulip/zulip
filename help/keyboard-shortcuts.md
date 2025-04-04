@@ -32,9 +32,9 @@ in the Zulip app to add more to your repertoire as needed.
   <kbd>Ctrl</kbd> + <kbd>V</kbd>, and press <kbd>Ctrl</kbd> + <kbd>Z</kbd> to
   remove formatting.
 
-* **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
-  <kbd>[</kbd> — Close the compose box and save the unsent message as a
-  draft.
+* **Cancel compose and save draft**: <kbd>Esc</kbd> or
+  <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> — Close the compose box
+  and save the unsent message as a draft.
 
 * **View drafts**: <kbd>D</kbd> — Use the arrow keys and <kbd>Enter</kbd>
   to restore a draft. Press <kbd>D</kbd> again to close.
@@ -54,8 +54,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to your home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
-  <kbd>Esc</kbd>, [if enabled][disable-escape])
+* **Go to your home view**: <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd>
+  (or <kbd>Esc</kbd>, [if enabled][disable-escape])
   until you are in your [home view](/help/configure-home-view).
 
 [disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
@@ -65,23 +65,25 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Filter channels**: <kbd>Q</kbd>
 
-* **Search people**: <kbd>W</kbd>
+* **Filter users**: <kbd>W</kbd>
 
 ## Scrolling
 
-* **Last message**: <kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd> —
-  Also marks all messages in the current view as read.
+* **Last message**: <kbd>End</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">→</kbd>
+  or <kbd>Shift</kbd> + <kbd>G</kbd> — Also marks all messages in the current view
+  as read.
 
-* **First message**: <kbd>Home</kbd>
+* **First message**: <kbd>Home</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">←</kbd>
 
 * **Previous message**: <kbd class="arrow-key">↑</kbd> or <kbd>K</kbd>
 
 * **Next message**: <kbd class="arrow-key">↓</kbd> or <kbd>J</kbd>
 
-* **Scroll up**: <kbd>PgUp</kbd> or <kbd>Shift</kbd> + <kbd>K</kbd>
+* **Scroll up**: <kbd>PgUp</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↑</kbd>
+  or <kbd>Shift</kbd> + <kbd>K</kbd>
 
-* **Scroll down**: <kbd>PgDn</kbd>, <kbd>Shift</kbd> + <kbd>J</kbd>, or
-  <kbd>Spacebar</kbd>
+* **Scroll down**: <kbd>PgDn</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↓</kbd>
+  or <kbd>Shift</kbd> + <kbd>J</kbd> or <kbd>Spacebar</kbd>
 
 ## Navigation
 
@@ -92,6 +94,8 @@ in the Zulip app to add more to your repertoire as needed.
   <kbd class="arrow-key">→</kbd>
 
 * **Go to next unread topic**: <kbd>N</kbd>
+
+* **Go to next unread followed topic**: <kbd>Shift</kbd> + <kbd>N</kbd>
 
 * **Go to next unread direct message**: <kbd>P</kbd>
 
@@ -105,6 +109,10 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Cycle between channel views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
+
+* **Go to inbox**: <kbd>Shift</kbd> + <kbd>I</kbd> — Shows conversations with unread messages.
+
+* **Go to recent conversations**: <kbd>T</kbd>
 
 * **Go to combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
 
@@ -123,7 +131,9 @@ in the Zulip app to add more to your repertoire as needed.
   selected message (outlined in blue). Same behavior as clicking on the
   message.
 
-* **Quote and reply to message**: <kbd>></kbd>
+* **Quote message**: <kbd>&gt;</kbd>
+
+* **Forward message**: <kbd>&lt;</kbd>
 
 * **Reply directly to sender**: <kbd>Shift</kbd> + <kbd>R</kbd>
 
@@ -131,13 +141,15 @@ in the Zulip app to add more to your repertoire as needed.
 
 ### In the compose box
 
-* **Send message**: <kbd>Enter</kbd>, <kbd>Tab</kbd> then <kbd>Enter</kbd>,
-  and/or <kbd>Ctrl</kbd> + <kbd>Enter</kbd>, depending on your settings. See
-  [enable enter to send](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
+* **Send message**: <kbd>Tab</kbd> then <kbd>Enter</kbd>, or either
+  <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
+  [your settings][toggle-enter-to-send]
 
-* **Insert new line**: <kbd>Enter</kbd>, or <kbd>Shift</kbd> + <kbd>Enter</kbd>,
-  depending on your settings. See
-  [enable enter to send](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
+* **Insert new line**: <kbd>Shift</kbd> + <kbd>Enter</kbd>, or either
+  <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
+  [your settings][toggle-enter-to-send]
+
+[toggle-enter-to-send]: /help/configure-send-message-keys
 
 * **Insert italic text**: `*italic*` or <kbd>Ctrl</kbd> + <kbd>I</kbd>
 
@@ -146,15 +158,20 @@ in the Zulip app to add more to your repertoire as needed.
 * **Insert link**: `[Zulip website](https://zulip.org)` or <kbd>Ctrl</kbd> +
   <kbd>Shift</kbd> + <kbd>L</kbd>
 
+* **Insert or create a [saved snippet](/help/saved-snippets)**:
+  <kbd>Ctrl</kbd> + <kbd>'</kbd>
+
 * **Toggle preview mode**: <kbd>Alt</kbd> + <kbd>P</kbd>
 
-* **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
-  <kbd>[</kbd> — Close the compose box and save the unsent message as a draft.
+* **Cancel compose and save draft**: <kbd>Esc</kbd> or
+  <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> — Close the compose box
+  and save the unsent message as a draft.
 
 ## Message actions
 
-* **Edit last message**: <kbd class="arrow-key">←</kbd> — Open the last
-  editable message in the current view (if any).
+* **Edit your last message**: <kbd class="arrow-key">←</kbd> — Scroll to the
+  most recent message you are allowed to edit in the current view, and open it
+  for editing. If there are no messages you can edit, nothing happens.
 
 ### For a selected message (outlined in blue)
 
@@ -170,14 +187,12 @@ in the Zulip app to add more to your repertoire as needed.
 * **Move message and (optionally) other messages in the same topic**: <kbd>M</kbd>
 
 * **View message edit and move history**: <kbd>Shift</kbd> +
-  <kbd>H</kbd>. Message edit history [must be
-  enabled](/help/disable-message-edit-history).
+  <kbd>H</kbd>. Viewing message edit history [must be
+  allowed](/help/restrict-message-edit-history-access).
 
 * **Star message**: <kbd>Ctrl</kbd> + <kbd>S</kbd>
 
-* **React with <img alt=":thumbs_up:" class="emoji"
-  src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
-  title="thumbs up"/>**: <kbd>+</kbd>
+* **React with 👍**: <kbd>+</kbd>
 
 * **Toggle first emoji reaction**: <kbd>=</kbd>
 

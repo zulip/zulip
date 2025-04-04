@@ -3,6 +3,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.realm_logo import get_realm_logo_data
 from zerver.models import Realm, RealmAuditLog, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -22,7 +23,7 @@ def do_change_logo_source(
         realm.save(update_fields=["night_logo_source", "night_logo_version"])
 
     RealmAuditLog.objects.create(
-        event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+        event_type=AuditLogEventType.REALM_LOGO_CHANGED,
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,

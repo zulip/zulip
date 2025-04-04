@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 if [ "$#" -lt 4 ]; then
     echo "Usage:"
@@ -23,15 +23,29 @@ tmpdir="$(mktemp -d)"
 trap 'rm -r "$tmpdir"' EXIT
 cd "$tmpdir"
 
+# We support both .tar.gz and .zip files
+if [[ "$URL" == *.tar.gz ]] || [[ "$URL" == *.tgz ]]; then
+    extension="tar.gz"
+elif [[ "$URL" == *.zip ]]; then
+    extension="zip"
+else
+    echo "Can't determine archive type from URL: $URL"
+    exit 1
+fi
+
 # Fetch to a predictable name, not whatever curl guesses from the URL
-LOCALFILE="archive.tar.gz"
+LOCALFILE="archive.$extension"
 curl -fL --retry 3 -o "$LOCALFILE" "$URL"
 
 # Check the hash against what was passed in
 echo "$SHA256  $LOCALFILE" >"$LOCALFILE.sha256"
 sha256sum -c "$LOCALFILE.sha256"
 
-tar xzf "$LOCALFILE"
+if [[ "$extension" == "tar.gz" ]]; then
+    tar xzf "$LOCALFILE"
+else
+    unzip "$LOCALFILE"
+fi
 
 # Take the rest of the arguments two-at-a-time, as source and
 # destination to move out of the unpacked tarball.

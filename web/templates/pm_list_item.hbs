@@ -2,19 +2,28 @@
     <div class="dm-box dm-user-status" data-user-ids-string="{{user_ids_string}}" data-is-group="{{is_group}}">
 
         {{#if is_group}}
-        <span class="conversation-partners-icon zulip-icon zulip-icon-triple-users"></span>
-        {{else if is_bot}}
-        <span class="conversation-partners-icon zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+        <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
         {{else}}
-        <span class="conversation-partners-icon {{user_circle_class}} user_circle"></span>
+        <span class="conversation-partners-icon zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
         {{/if}}
 
         <a href="{{url}}" class="conversation-partners">
-            <span class="conversation-partners-list">{{recipients}}</span>
-            {{> status_emoji status_emoji_info}}
+            <span class="conversation-partners-list">{{recipients}} {{> status_emoji status_emoji_info}}
+                {{#if is_bot}}
+                    <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+                {{/if}}
+            </span>
+
         </a>
-        <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
-            {{unread}}
-        </span>
+        <div class="dm-markers-and-unreads">
+            {{#if has_unread_mention}}
+                <span class="unread_mention_info">
+                    @
+                </span>
+            {{/if}}
+            <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+                {{unread}}
+            </span>
+        </div>
     </div>
 </li>

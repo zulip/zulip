@@ -29,6 +29,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -328,7 +329,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             reactivate_user_if_soft_deactivated(long_term_idle_user)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(
-            last_realm_audit_log_entry(RealmAuditLog.USER_SOFT_ACTIVATED).modified_user,
+            last_realm_audit_log_entry(AuditLogEventType.USER_SOFT_ACTIVATED).modified_user,
             long_term_idle_user,
         )
         idle_user_msg_list = get_user_messages(long_term_idle_user)

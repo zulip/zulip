@@ -31,7 +31,7 @@
             Zulip is sponsoring a free <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan for this organization. 🎉
             {% else %}
             This organization has requested sponsorship for a
-            {% if sponsorship_plan_name == "Business" %}
+            {% if is_remotely_hosted and sponsorship_plan_name != "Community" %}
             discounted
             {% endif %}
             <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
@@ -49,25 +49,15 @@
         </div>
         <div class="white-box">
             <div id="sponsorship-status-page-details">
-                <div class="input-box sponsorship-form-field no-validation">
+                <div class="input-box sponsorship-form-field">
                     <label for="sponsored-org-current-plan" class="inline-block label-title">Your plan</label>
                     <div id="sponsored-org-current-plan" class="not-editable-realm-field">
                         {% if is_sponsored %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ sponsorship_plan_name }}
-                        </a>
-                        {% elif free_trial %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name -}}
-                        </a> <i>(free trial)</i>
-                        {% elif is_server_on_legacy_plan %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name.replace(" (legacy plan)", "") -}}
-                        </a> <i>(legacy plan)</i>
+                        <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a>
+                        {% elif complimentary_access %}
+                        <a href="{{ billing_base_url }}/plans/">Zulip Basic</a> <i>(complimentary access)</i>
                         {% else %}
-                        <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name }}
-                        </a>
+                        <a href="{{ billing_base_url }}/plans/">{{ plan_name }}</a>
                         {% endif %}
                     </div>
                 </div>
@@ -102,7 +92,7 @@
             <div id="sponsorship-input-section">
                 <form id="sponsorship-form" method="post" data-billing-base-url="{{ billing_base_url }}" data-is-remotely-hosted="{{ is_remotely_hosted }}">
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
-                    <div class="input-box sponsorship-form-field no-validation">
+                    <div class="input-box sponsorship-form-field">
                         <label for="org-name" class="inline-block label-title">Organization</label>
                         <div id="org-name" class="not-editable-realm-field">{{ org_name }}</div>
                     </div>
@@ -123,7 +113,7 @@
                         <label for="organization_type" class="inline-block label-title">
                             Organization type
                             {% if is_remotely_hosted %}
-                            <a href="https://zulip.com/help/self-hosted-billing#free-community-plan" target="_blank" rel="noopener noreferrer">
+                            <a href="/help/self-hosted-billing#free-community-plan" target="_blank" rel="noopener noreferrer">
                                 <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                             </a>
                             {% endif %}
@@ -148,7 +138,7 @@
                         <label for="organization-requested-plan" class="inline-block label-title">Requested plan</label>
                     </div>
                     {% endif %}
-                    <div class="input-box sponsorship-form-field no-validation">
+                    <div class="input-box sponsorship-form-field">
                         <label for="org-website" class="inline-block
                           label-title">Organization website (if any)</label>
                         <input id="org-website" name="website" type="text"/>
@@ -161,11 +151,17 @@
                         <div id="sponsorship-description-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
                     <div class="input-box sponsorship-form-field">
+                        <label for="plan-to-use-zulip" class="inline-block
+                          label-title">How do you plan to use Zulip?</label>
+                        <textarea id="plan-to-use-zulip" name="plan_to_use_zulip" cols="100" rows="2"></textarea>
+                        <div id="sponsorship-plan-to-use-zulip-error" class="alert alert-danger sponsorship-field-error"></div>
+                    </div>
+                    <div class="input-box sponsorship-form-field">
                         <label for="expected-total-users" class="inline-block label-title">Expected number of users (approximate range)</label>
                         <input id="expected-total-users" name="expected_total_users" type="text" />
                         <div id="sponsorship-expected-total-users-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
-                    <div class="input-box sponsorship-form-field no-validation">
+                    <div class="input-box sponsorship-form-field">
                         <label for="paid-users-count" class="inline-block label-title">How many paid staff does your organization have?</label>
                         <input id="paid-users-count" name="paid_users_count" type="text"/>
                         <div id="sponsorship-paid-users-count-error" class="alert alert-danger sponsorship-field-error"></div>

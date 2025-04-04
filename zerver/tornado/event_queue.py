@@ -27,9 +27,10 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
-from zerver.lib.queue import queue_json_publish, retry_event
+from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
+from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.middleware import async_request_timer_restart
-from zerver.models import CustomProfileField
+from zerver.models import CustomProfileField, Message
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
@@ -61,23 +62,28 @@ def create_heartbeat_event() -> dict[str, str]:
 class ClientDescriptor:
     def __init__(
         self,
+        *,
         user_profile_id: int,
+        user_recipient_id: int | None,
         realm_id: int,
         event_queue: "EventQueue",
         event_types: Sequence[str] | None,
         client_type_name: str,
-        apply_markdown: bool = True,
-        client_gravatar: bool = True,
-        slim_presence: bool = False,
-        all_public_streams: bool = False,
-        lifespan_secs: int = 0,
-        narrow: Collection[Sequence[str]] = [],
-        bulk_message_deletion: bool = False,
-        stream_typing_notifications: bool = False,
-        user_settings_object: bool = False,
-        pronouns_field_type_supported: bool = True,
-        linkifier_url_template: bool = False,
-        user_list_incomplete: bool = False,
+        apply_markdown: bool,
+        client_gravatar: bool,
+        slim_presence: bool,
+        all_public_streams: bool,
+        lifespan_secs: int,
+        narrow: Collection[Sequence[str]],
+        bulk_message_deletion: bool,
+        stream_typing_notifications: bool,
+        user_settings_object: bool,
+        pronouns_field_type_supported: bool,
+        linkifier_url_template: bool,
+        user_list_incomplete: bool,
+        include_deactivated_groups: bool,
+        archived_channels: bool,
+        empty_topic_name: bool,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -88,6 +94,7 @@ class ClientDescriptor:
         # added to load_event_queues() to update the restored objects.
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
+        self.user_recipient_id = user_recipient_id
         self.realm_id = realm_id
         self.current_handler_id: int | None = None
         self.current_client_name: str | None = None
@@ -108,6 +115,9 @@ class ClientDescriptor:
         self.pronouns_field_type_supported = pronouns_field_type_supported
         self.linkifier_url_template = linkifier_url_template
         self.user_list_incomplete = user_list_incomplete
+        self.include_deactivated_groups = include_deactivated_groups
+        self.archived_channels = archived_channels
+        self.empty_topic_name = empty_topic_name
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -138,6 +148,9 @@ class ClientDescriptor:
             pronouns_field_type_supported=self.pronouns_field_type_supported,
             linkifier_url_template=self.linkifier_url_template,
             user_list_incomplete=self.user_list_incomplete,
+            include_deactivated_groups=self.include_deactivated_groups,
+            archived_channels=self.archived_channels,
+            empty_topic_name=self.empty_topic_name,
         )
 
     @override
@@ -157,23 +170,27 @@ class ClientDescriptor:
             d["slim_presence"] = False
 
         ret = cls(
-            d["user_profile_id"],
-            d["realm_id"],
-            EventQueue.from_dict(d["event_queue"]),
-            d["event_types"],
-            d["client_type_name"],
-            d["apply_markdown"],
-            d["client_gravatar"],
-            d["slim_presence"],
-            d["all_public_streams"],
-            d["queue_timeout"],
-            d.get("narrow", []),
-            d.get("bulk_message_deletion", False),
-            d.get("stream_typing_notifications", False),
-            d.get("user_settings_object", False),
-            d.get("pronouns_field_type_supported", True),
-            d.get("linkifier_url_template", False),
-            d.get("user_list_incomplete", False),
+            user_profile_id=d["user_profile_id"],
+            user_recipient_id=d.get("user_recipient_id"),
+            realm_id=d["realm_id"],
+            event_queue=EventQueue.from_dict(d["event_queue"]),
+            event_types=d["event_types"],
+            client_type_name=d["client_type_name"],
+            apply_markdown=d["apply_markdown"],
+            client_gravatar=d["client_gravatar"],
+            slim_presence=d["slim_presence"],
+            all_public_streams=d["all_public_streams"],
+            lifespan_secs=d["queue_timeout"],
+            narrow=d.get("narrow", []),
+            bulk_message_deletion=d.get("bulk_message_deletion", False),
+            stream_typing_notifications=d.get("stream_typing_notifications", False),
+            user_settings_object=d.get("user_settings_object", False),
+            pronouns_field_type_supported=d.get("pronouns_field_type_supported", True),
+            linkifier_url_template=d.get("linkifier_url_template", False),
+            user_list_incomplete=d.get("user_list_incomplete", False),
+            include_deactivated_groups=d.get("include_deactivated_groups", False),
+            archived_channels=d.get("archived_channels", False),
+            empty_topic_name=d.get("empty_topic_name", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -231,6 +248,17 @@ class ClientDescriptor:
             # events are sent only if user_settings_object is False,
             # otherwise only 'user_settings' event is sent.
             return False
+        if event["type"] == "user_group":
+            if event["op"] == "remove":
+                # 'user_group/remove' events are only sent if the client
+                # cannot filter out deactivated groups by themselves.
+                return not self.include_deactivated_groups
+            if event["op"] == "update" and "deactivated" in event["data"]:
+                # 'update' events for group deactivation and reactivation
+                # are only sent to clients who can filter out deactivated
+                # groups by themselves. Other clients receive 'remove' and
+                # 'add' event.
+                return self.include_deactivated_groups
         return True
 
     # TODO: Refactor so we don't need this function
@@ -520,8 +548,7 @@ def do_gc_event_queues(
         filter_client_dict(realm_clients_all_streams, realm_id)
 
     for id in to_remove:
-        if id in web_reload_clients:
-            del web_reload_clients[id]
+        web_reload_clients.pop(id, None)
         for cb in gc_hooks:
             cb(
                 clients[id].user_profile_id,
@@ -687,6 +714,7 @@ async def setup_event_queue(
 
 
 def fetch_events(
+    *,
     queue_id: str | None,
     dont_block: bool,
     last_event_id: int | None,
@@ -946,9 +974,11 @@ def maybe_enqueue_notifications(
                 shard_id = (
                     user_notifications_data.user_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
                 )
-                queue_json_publish(f"missedmessage_mobile_notifications_shard{shard_id}", notice)
+                queue_json_publish_rollback_unsafe(
+                    f"missedmessage_mobile_notifications_shard{shard_id}", notice
+                )
             else:
-                queue_json_publish("missedmessage_mobile_notifications", notice)
+                queue_json_publish_rollback_unsafe("missedmessage_mobile_notifications", notice)
             notified["push_notified"] = True
 
     # Send missed_message emails if a direct message or a
@@ -962,7 +992,7 @@ def maybe_enqueue_notifications(
         )
         notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("email_notified"):
-            queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+            queue_json_publish_rollback_unsafe("missedmessage_emails", notice, lambda notice: None)
             notified["email_notified"] = True
 
     return notified
@@ -1080,7 +1110,9 @@ def process_message_event(
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
-    user_ids_without_access_to_sender = event_template.get("user_ids_without_access_to_sender", [])
+    user_ids_without_access_to_sender = set(
+        event_template.get("user_ids_without_access_to_sender", [])
+    )
     realm_host = event_template.get("realm_host", "")
 
     wide_dict: dict[str, Any] = event_template["message_dict"]
@@ -1101,14 +1133,21 @@ def process_message_event(
 
     @cache
     def get_client_payload(
-        apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
+        *,
+        apply_markdown: bool,
+        client_gravatar: bool,
+        allow_empty_topic_name: bool,
+        can_access_sender: bool,
+        is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             can_access_sender=can_access_sender,
             realm_host=realm_host,
+            is_incoming_1_to_1=is_incoming_1_to_1,
         )
 
     # Extra user-specific data to include
@@ -1186,7 +1225,11 @@ def process_message_event(
 
         can_access_sender = client.user_profile_id not in user_ids_without_access_to_sender
         message_dict = get_client_payload(
-            client.apply_markdown, client.client_gravatar, can_access_sender
+            apply_markdown=client.apply_markdown,
+            client_gravatar=client.client_gravatar,
+            allow_empty_topic_name=client.empty_topic_name,
+            can_access_sender=can_access_sender,
+            is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
@@ -1257,19 +1300,22 @@ def process_deletion_event(event: Mapping[str, Any], users: Iterable[int]) -> No
             if not client.accepts_event(event):
                 continue
 
+            deletion_event = event
+            if deletion_event.get("topic") == "" and not client.empty_topic_name:
+                deletion_event = dict(event)
+                deletion_event["topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
             # For clients which support message deletion in bulk, we
             # send a list of msgs_ids together, otherwise we send a
             # delete event for each message.  All clients will be
             # required to support bulk_message_deletion in the future;
             # this logic is intended for backwards-compatibility only.
             if client.bulk_message_deletion:
-                client.add_event(event)
+                client.add_event(deletion_event)
                 continue
 
-            for message_id in event["message_ids"]:
-                # We use the following rather than event.copy()
-                # because the read-only Mapping type doesn't support .copy().
-                compatibility_event = dict(event)
+            for message_id in deletion_event["message_ids"]:
+                compatibility_event = dict(deletion_event)
                 compatibility_event["message_id"] = message_id
                 del compatibility_event["message_ids"]
                 client.add_event(compatibility_event)
@@ -1336,31 +1382,10 @@ def process_message_update_event(
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
     disable_external_notifications = event_template.pop("disable_external_notifications", False)
-
-    # TODO/compatibility: Translation code for the rename of
-    # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
-    # when one can no longer directly upgrade from 4.x to main.
-    online_push_user_ids = set()
-    if "online_push_user_ids" in event_template:
-        online_push_user_ids = set(event_template.pop("online_push_user_ids"))
-    elif "push_notify_user_ids" in event_template:
-        online_push_user_ids = set(event_template.pop("push_notify_user_ids"))
-
+    online_push_user_ids = set(event_template.pop("online_push_user_ids", []))
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
-
-    # TODO/compatibility: Modern `update_message` events contain the
-    # rendering_only key, which indicates whether the update is a link
-    # preview rendering update (not a human action). However, because
-    # events may be in the notify_tornado queue at the time we
-    # upgrade, we need the below logic to compute rendering_only based
-    # on the `user_id` key not being present in legacy events that
-    # would have had rendering_only set. Remove this check when one
-    # can no longer directly update from 4.x to main.
-    if "rendering_only" in event_template:
-        rendering_only_update = event_template["rendering_only"]
-    else:
-        rendering_only_update = "user_id" not in event_template
+    rendering_only_update = event_template["rendering_only"]
 
     for user_data in users:
         user_profile_id = user_data["id"]
@@ -1412,10 +1437,18 @@ def process_message_update_event(
             )
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event(user_event):
+            user_event_copy = user_event.copy()
+            if not client.empty_topic_name:
+                if user_event_copy.get(ORIG_TOPIC) == "":
+                    user_event_copy[ORIG_TOPIC] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
+                if user_event_copy.get(TOPIC_NAME) == "":
+                    user_event_copy[TOPIC_NAME] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
+            if client.accepts_event(user_event_copy):
                 # We need to do another shallow copy, or we risk
                 # sending the same event to multiple clients.
-                client.add_event(user_event)
+                client.add_event(user_event_copy)
 
 
 def process_custom_profile_fields_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -1512,48 +1545,93 @@ def maybe_enqueue_notifications_for_message_update(
     )
 
 
-def reformat_legacy_send_message_event(
-    event: Mapping[str, Any], users: list[int] | list[Mapping[str, Any]]
-) -> tuple[MutableMapping[str, Any], Collection[MutableMapping[str, Any]]]:
-    # do_send_messages used to send events with users in dict format, with the
-    # dict containing the user_id and other data. We later trimmed down the user
-    # data to only contain the user_id and the usermessage flags, and put everything
-    # else in the event dict as lists.
-    # This block handles any old-format events still in the queue during upgrade.
+def process_user_group_creation_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    group_creation_event = dict(event)
+    # 'for_reactivation' field is no longer needed and can be popped, as we now
+    # know whether this event was sent for creating the group or reactivating
+    # the group and we can avoid sending the reactivation event to client with
+    # `include_deactivated_groups` client capability set to true.
+    event_for_reactivation = group_creation_event.pop("for_reactivation", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(group_creation_event):
+                if event_for_reactivation and client.include_deactivated_groups:
+                    continue
+                client.add_event(group_creation_event)
 
-    modern_event = cast(MutableMapping[str, Any], event)
-    user_dicts = cast(list[MutableMapping[str, Any]], users)
 
-    # Back-calculate the older all-booleans format data in the `users` dicts into the newer
-    # all-lists format, and attach the lists to the `event` object.
-    modern_event["online_push_user_ids"] = []
-    modern_event["stream_push_user_ids"] = []
-    modern_event["stream_email_user_ids"] = []
-    modern_event["stream_wildcard_mention_user_ids"] = []
-    modern_event["muted_sender_user_ids"] = []
+def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    user_group_event = dict(event)
+    # 'deactivated' field is no longer needed and can be popped, as we now
+    # know whether the group that was renamed is deactivated or not and can
+    # avoid sending the event to client with 'include_deactivated_groups'
+    # client capability set to false.
+    event_for_deactivated_group = user_group_event.pop("deactivated", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(user_group_event):
+                if event_for_deactivated_group and not client.include_deactivated_groups:
+                    continue
+                client.add_event(user_group_event)
 
-    for user in user_dicts:
-        user_id = user["id"]
 
-        if user.pop("stream_push_notify", False):
-            modern_event["stream_push_user_ids"].append(user_id)
-        if user.pop("stream_email_notify", False):
-            modern_event["stream_email_user_ids"].append(user_id)
-        if user.pop("wildcard_mention_notify", False):
-            modern_event["stream_wildcard_mention_user_ids"].append(user_id)
-        if user.pop("sender_is_muted", False):
-            modern_event["muted_sender_user_ids"].append(user_id)
+def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any]
+    if event.get("topic_name") == "":
+        empty_topic_name_fallback_event = dict(event)
+        empty_topic_name_fallback_event["topic_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+    else:
+        empty_topic_name_fallback_event = event
 
-        # TODO/compatibility: Another translation code block for the rename of
-        # `always_push_notify` to `online_push_enabled`.  Remove this
-        # when one can no longer directly upgrade from 4.x to 5.0-dev.
-        if user.pop("online_push_enabled", False) or user.pop("always_push_notify", False):
-            modern_event["online_push_user_ids"].append(user_id)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
 
-        # We can calculate `mentioned` from the usermessage flags, so just remove it
-        user.pop("mentioned", False)
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
 
-    return (modern_event, user_dicts)
+
+def process_stream_typing_notification_event(
+    event: Mapping[str, Any], users: Iterable[int]
+) -> None:
+    empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any]
+    if event.get("topic") == "":
+        empty_topic_name_fallback_event = dict(event)
+        empty_topic_name_fallback_event["topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+    else:
+        empty_topic_name_fallback_event = event
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
+
+
+def process_mark_message_unread_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    empty_topic_name_fallback_event = copy.deepcopy(dict(event))
+    for message_id, message_detail in empty_topic_name_fallback_event["message_details"].items():
+        if message_detail["type"] == "stream" and message_detail.get("topic") == "":
+            empty_topic_name_fallback_event["message_details"][message_id]["topic"] = (
+                Message.EMPTY_TOPIC_FALLBACK_NAME
+            )
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
 
 
 def process_notification(notice: Mapping[str, Any]) -> None:
@@ -1562,34 +1640,34 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     start_time = time.perf_counter()
 
     if event["type"] == "message":
-        if len(users) > 0 and isinstance(users[0], dict) and "stream_push_notify" in users[0]:
-            # TODO/compatibility: Remove this whole block once one can no
-            # longer directly upgrade directly from 4.x to 5.0-dev.
-            modern_event, user_dicts = reformat_legacy_send_message_event(event, users)
-            process_message_event(modern_event, user_dicts)
-        else:
-            process_message_event(event, cast(list[Mapping[str, Any]], users))
+        process_message_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "update_message":
         process_message_update_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":
-        if len(users) > 0 and isinstance(users[0], dict):
-            # do_delete_messages used to send events with users in
-            # dict format {"id": <int>} This block is here for
-            # compatibility with events in that format still in the
-            # queue at the time of upgrade.
-            #
-            # TODO/compatibility: Remove this block once you can no
-            # longer directly upgrade directly from 4.x to main.
-            user_ids: list[int] = [user["id"] for user in cast(list[Mapping[str, Any]], users)]
-        else:
-            user_ids = cast(list[int], users)
-        process_deletion_event(event, user_ids)
+        process_deletion_event(event, cast(list[int], users))
     elif event["type"] == "presence":
         process_presence_event(event, cast(list[int], users))
     elif event["type"] == "custom_profile_fields":
         process_custom_profile_fields_event(event, cast(list[int], users))
     elif event["type"] == "realm_user" and event["op"] == "add":
         process_realm_user_add_event(event, cast(list[int], users))
+    elif event["type"] == "user_group" and event["op"] == "update" and "name" in event["data"]:
+        # Only name can be changed for deactivated groups, so we handle the
+        # event sent for updating name separately for clients with different
+        # capabilities.
+        process_user_group_name_update_event(event, cast(list[int], users))
+    elif event["type"] == "user_group" and event["op"] == "add":
+        process_user_group_creation_event(event, cast(list[int], users))
+    elif event["type"] == "user_topic":
+        process_user_topic_event(event, cast(list[int], users))
+    elif event["type"] == "typing" and event["message_type"] == "stream":
+        process_stream_typing_notification_event(event, cast(list[int], users))
+    elif (
+        event["type"] == "update_message_flags"
+        and event["op"] == "remove"
+        and event["flag"] == "read"
+    ):
+        process_mark_message_unread_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

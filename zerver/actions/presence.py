@@ -15,7 +15,7 @@ from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import Client, UserPresence, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.users import active_user_ids
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_rollback_unsafe
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ def send_presence_changed(
         server_timestamp=time.time(),
         presence={presence_dict["client"]: presence_dict},
     )
-    send_event(user_profile.realm, event, user_ids)
+    send_event_rollback_unsafe(user_profile.realm, event, user_ids)
 
 
 def consolidate_client(client: Client) -> Client:
@@ -290,6 +290,7 @@ def update_user_presence(
         client,
         status,
     )
-    do_update_user_presence(user_profile, client, log_time, status)
+    if user_profile.presence_enabled:
+        do_update_user_presence(user_profile, client, log_time, status)
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)

@@ -5,7 +5,7 @@
             {{#if should_render_privacy_icon}}
                 {{#tr}}
                     Notifications are based on your configuration for <z-stream-name></z-stream-name>.
-                    {{#*inline "z-stream-name"}}<span class="tooltip-privacy-icon">{{> stream_privacy }}<span class="privacy-tooltip-stream-name">{{name}}</span></span>{{/inline}}
+                    {{#*inline "z-stream-name"}}<span class="tooltip-privacy-icon">{{> stream_privacy . }}<span class="privacy-tooltip-stream-name">{{name}}</span></span>{{/inline}}
                 {{/tr}}
             {{else}}
                 {{current_visibility_policy_str}}

@@ -17,32 +17,16 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 from pydantic import AfterValidator, Json, NonNegativeInt
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
-from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
-from corporate.lib.stripe import (
-    BILLING_SUPPORT_EMAIL,
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-    ServerDeactivateWithExistingPlanError,
-    SupportRequestError,
-    SupportType,
-    SupportViewRequest,
-    cents_to_dollar_string,
-    do_deactivate_remote_server,
-    do_reactivate_remote_server,
+from corporate.lib.activity import (
+    format_optional_datetime,
+    realm_support_link,
+    remote_installation_stats_link,
 )
-from corporate.lib.support import (
-    CloudSupportData,
-    RemoteSupportData,
-    get_data_for_cloud_support_view,
-    get_data_for_remote_support_view,
-    get_realm_support_url,
-)
+from corporate.lib.billing_types import BillingModality
 from corporate.models import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
@@ -56,7 +40,6 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.send_email import FromAddress, send_email
@@ -114,9 +97,18 @@ class DemoRequestForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea)
 
 
+class SalesRequestForm(forms.Form):
+    MAX_INPUT_LENGTH = 50
+    organization_website = forms.URLField(required=True, assume_scheme="https")
+    expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    message = forms.CharField(widget=forms.Textarea)
+
+
 @zulip_login_required
 @typed_endpoint_without_parameters
 def support_request(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import build_support_url
+
     user = request.user
     assert user.is_authenticated
 
@@ -136,7 +128,7 @@ def support_request(request: HttpRequest) -> HttpResponse:
                 "realm_string_id": user.realm.string_id,
                 "request_subject": form.cleaned_data["request_subject"],
                 "request_message": form.cleaned_data["request_message"],
-                "support_url": get_realm_support_url(user.realm),
+                "support_url": build_support_url("support", user.realm.string_id),
                 "user_role": user.get_role_name(),
             }
             # Sent to the server's support team, so this email is not user-facing.
@@ -160,6 +152,8 @@ def support_request(request: HttpRequest) -> HttpResponse:
 
 @typed_endpoint_without_parameters
 def demo_request(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
+
     context = {
         "MAX_INPUT_LENGTH": DemoRequestForm.MAX_INPUT_LENGTH,
         "SORTED_ORG_TYPE_NAMES": DemoRequestForm.SORTED_ORG_TYPE_NAMES,
@@ -198,6 +192,59 @@ def demo_request(request: HttpRequest) -> HttpResponse:
             return response
 
     response = render(request, "corporate/support/demo_request.html", context=context)
+    return response
+
+
+@zulip_login_required
+@typed_endpoint_without_parameters
+def sales_support_request(request: HttpRequest) -> HttpResponse:
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
+
+    assert request.user.is_authenticated
+
+    if not request.user.is_realm_admin:
+        return render(request, "404.html", status=404)
+
+    context = {
+        "MAX_INPUT_LENGTH": SalesRequestForm.MAX_INPUT_LENGTH,
+        "user_email": request.user.delivery_email,
+        "user_full_name": request.user.full_name,
+    }
+
+    if request.POST:
+        post_data = request.POST.copy()
+        form = SalesRequestForm(post_data)
+
+        if form.is_valid():
+            rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+
+            email_context = {
+                "full_name": request.user.full_name,
+                "email": request.user.delivery_email,
+                "role": UserProfile.ROLE_ID_TO_API_NAME[request.user.role],
+                "organization_name": request.user.realm.name,
+                "organization_type": get_org_type_display_name(request.user.realm.org_type),
+                "organization_website": form.cleaned_data["organization_website"],
+                "expected_user_count": form.cleaned_data["expected_user_count"],
+                "message": form.cleaned_data["message"],
+                "support_link": realm_support_link(request.user.realm.string_id),
+            }
+
+            send_email(
+                "zerver/emails/sales_support_request",
+                to_emails=[BILLING_SUPPORT_EMAIL],
+                from_name="Sales support request",
+                from_address=FromAddress.tokenized_no_reply_address(),
+                reply_to_email=email_context["email"],
+                context=email_context,
+            )
+
+            response = render(
+                request, "corporate/support/support_request_thanks.html", context=context
+            )
+            return response
+
+    response = render(request, "corporate/support/sales_support_request.html", context=context)
     return response
 
 
@@ -330,25 +377,24 @@ def check_update_max_invites(realm: Realm, new_max: int, default_max: int) -> bo
     return new_max > default_max
 
 
-VALID_MODIFY_PLAN_METHODS = Literal[
+ModifyPlan = Literal[
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
     "upgrade_plan_tier",
 ]
 
-VALID_STATUS_VALUES = Literal["active", "deactivated"]
+RemoteServerStatus = Literal["active", "deactivated"]
 
-VALID_BILLING_MODALITY_VALUES = Literal[
-    "send_invoice",
-    "charge_automatically",
-]
 
-SHARED_SUPPORT_CONTEXT = {
-    "get_org_type_display_name": get_org_type_display_name,
-    "get_plan_type_name": get_plan_type_string,
-    "dollar_amount": cents_to_dollar_string,
-}
+def shared_support_context() -> dict[str, object]:
+    from corporate.lib.stripe import cents_to_dollar_string
+
+    return {
+        "get_org_type_display_name": get_org_type_display_name,
+        "get_plan_type_name": get_plan_type_string,
+        "dollar_amount": cents_to_dollar_string,
+    }
 
 
 @require_server_admin
@@ -363,18 +409,31 @@ def support(
     minimum_licenses: Json[NonNegativeInt] | None = None,
     required_plan_tier: Json[NonNegativeInt] | None = None,
     new_subdomain: str | None = None,
-    status: VALID_STATUS_VALUES | None = None,
-    billing_modality: VALID_BILLING_MODALITY_VALUES | None = None,
+    status: RemoteServerStatus | None = None,
+    billing_modality: BillingModality | None = None,
     sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
-    modify_plan: VALID_MODIFY_PLAN_METHODS | None = None,
+    modify_plan: ModifyPlan | None = None,
     scrub_realm: Json[bool] = False,
     delete_user_by_id: Json[NonNegativeInt] | None = None,
     query: Annotated[str | None, ApiParamConfig("q")] = None,
     org_type: Json[NonNegativeInt] | None = None,
     max_invites: Json[NonNegativeInt] | None = None,
+    plan_end_date: Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
+    | None = None,
+    fixed_price: Json[NonNegativeInt] | None = None,
+    sent_invoice_id: str | None = None,
+    delete_fixed_price_next_plan: Json[bool] = False,
 ) -> HttpResponse:
-    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
+    from corporate.lib.stripe import (
+        RealmBillingSession,
+        SupportRequestError,
+        SupportType,
+        SupportViewRequest,
+    )
+    from corporate.lib.support import CloudSupportData, get_data_for_cloud_support_view
+
+    context = shared_support_context()
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -387,12 +446,6 @@ def support(
         # realm_id and a field to change.
         keys = set(request.POST.keys())
         keys.discard("csrfmiddlewaretoken")
-        REQUIRED_KEYS = 2
-        if monthly_discounted_price is not None or annual_discounted_price is not None:
-            REQUIRED_KEYS = 3
-
-        if len(keys) != REQUIRED_KEYS:
-            raise JsonableError(_("Invalid parameters"))
 
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
@@ -434,6 +487,24 @@ def support(
             )
             if modify_plan == "upgrade_plan_tier":
                 support_view_request["new_plan_tier"] = CustomerPlan.TIER_CLOUD_PLUS
+        elif plan_end_date is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_plan_end_date,
+                plan_end_date=plan_end_date,
+            )
+        elif fixed_price is not None:
+            # Treat empty string for send_invoice_id as None.
+            if sent_invoice_id is not None and sent_invoice_id.strip() == "":
+                sent_invoice_id = None
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.configure_fixed_price_plan,
+                fixed_price=fixed_price,
+                sent_invoice_id=sent_invoice_id,
+            )
+        elif delete_fixed_price_next_plan:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.delete_fixed_price_next_plan,
+            )
         elif plan_type is not None:
             current_plan_type = realm.plan_type
             do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
@@ -615,6 +686,7 @@ def support(
     context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
+    context["remote_support_view"] = False
 
     return render(request, "corporate/support/support.html", context=context)
 
@@ -685,18 +757,30 @@ def remote_servers_support(
     sent_invoice_id: str | None = None,
     sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
-    billing_modality: VALID_BILLING_MODALITY_VALUES | None = None,
+    billing_modality: BillingModality | None = None,
     plan_end_date: Annotated[str, AfterValidator(lambda x: check_date("plan_end_date", x))]
     | None = None,
-    modify_plan: VALID_MODIFY_PLAN_METHODS | None = None,
+    modify_plan: ModifyPlan | None = None,
     delete_fixed_price_next_plan: Json[bool] = False,
-    remote_server_status: VALID_STATUS_VALUES | None = None,
-    temporary_courtesy_plan: Annotated[
-        str, AfterValidator(lambda x: check_date("temporary_courtesy_plan", x))
+    remote_server_status: RemoteServerStatus | None = None,
+    complimentary_access_plan: Annotated[
+        str, AfterValidator(lambda x: check_date("complimentary_access_plan", x))
     ]
     | None = None,
 ) -> HttpResponse:
-    context: dict[str, Any] = {**SHARED_SUPPORT_CONTEXT}
+    from corporate.lib.stripe import (
+        RemoteRealmBillingSession,
+        RemoteServerBillingSession,
+        ServerDeactivateWithExistingPlanError,
+        SupportRequestError,
+        SupportType,
+        SupportViewRequest,
+        do_deactivate_remote_server,
+        do_reactivate_remote_server,
+    )
+    from corporate.lib.support import RemoteSupportData, get_data_for_remote_support_view
+
+    context = shared_support_context()
 
     if "success_message" in request.session:
         context["success_message"] = request.session["success_message"]
@@ -750,10 +834,10 @@ def remote_servers_support(
                 fixed_price=fixed_price,
                 sent_invoice_id=sent_invoice_id,
             )
-        elif temporary_courtesy_plan is not None:
+        elif complimentary_access_plan is not None:
             support_view_request = SupportViewRequest(
-                support_type=SupportType.configure_temporary_courtesy_plan,
-                plan_end_date=temporary_courtesy_plan,
+                support_type=SupportType.configure_complimentary_access_plan,
+                plan_end_date=complimentary_access_plan,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(
@@ -889,6 +973,7 @@ def remote_servers_support(
     )
     context["get_remote_realm_billing_user_emails"] = get_remote_realm_billing_user_emails_as_string
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
+    context["remote_support_view"] = True
 
     return render(
         request,

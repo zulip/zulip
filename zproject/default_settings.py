@@ -119,6 +119,7 @@ SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
 SSO_APPEND_DOMAIN: str | None = None
 CUSTOM_HOME_NOT_LOGGED_IN: str | None = None
 
+VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
 
@@ -151,6 +152,7 @@ DEFAULT_AVATAR_URI: str | None = None
 DEFAULT_LOGO_URI: str | None = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
+S3_EXPORT_BUCKET = ""
 S3_REGION: str | None = None
 S3_ENDPOINT_URL: str | None = None
 S3_ADDRESSING_STYLE: Literal["auto", "virtual", "path"] = "auto"
@@ -167,7 +169,7 @@ S3_AVATAR_PUBLIC_URL_PREFIX: str | None = None
 LOCAL_UPLOADS_DIR: str | None = None
 LOCAL_AVATARS_DIR: str | None = None
 LOCAL_FILES_DIR: str | None = None
-MAX_FILE_UPLOAD_SIZE = 25
+MAX_FILE_UPLOAD_SIZE = 100
 # How many GB an organization on a paid plan can upload per user,
 # on zulipchat.com.
 UPLOAD_QUOTA_PER_USER_GB = 5
@@ -214,12 +216,18 @@ POLICIES_DIRECTORY: str = "zerver/policies_absent"
 # Security
 ENABLE_FILE_LINKS = False
 ENABLE_GRAVATAR = True
+## Overrides the above setting for individual realms, by integer ID.
+GRAVATAR_REALM_OVERRIDE: dict[int, bool] = {}
 INLINE_IMAGE_PREVIEW = True
 INLINE_URL_EMBED_PREVIEW = True
 NAME_CHANGES_DISABLED = False
 AVATAR_CHANGES_DISABLED = False
 PASSWORD_MIN_LENGTH = 6
+PASSWORD_MAX_LENGTH = 100
 PASSWORD_MIN_GUESSES = 10000
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 ZULIP_SERVICES_URL = "https://push.zulipchat.com"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
@@ -331,6 +339,18 @@ DEFAULT_RATE_LIMITING_RULES = {
 # entries in this object, which is merged with
 # DEFAULT_RATE_LIMITING_RULES.
 RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {}
+
+# Rate limits for endpoints which have absolute limits on how much
+# they can be used in a given time period.
+# These will be extremely rare, and most likely for zilencer endpoints
+# only, so we don't need a nice overriding system for them like we do
+# for RATE_LIMITING_RULES.
+ABSOLUTE_USAGE_LIMITS_BY_ENDPOINT = {
+    "verify_registration_transfer_challenge_ack_endpoint": [
+        # 30 requests per day
+        (86400, 30),
+    ],
+}
 
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
@@ -472,8 +492,6 @@ INVITES_NEW_REALM_DAYS = 7
 
 # Controls for which links are published in portico footers/headers/etc.
 REGISTER_LINK_DISABLED: bool | None = None
-LOGIN_LINK_DISABLED = False
-FIND_TEAM_LINK_DISABLED = True
 
 # What domains to treat like the root domain
 ROOT_SUBDOMAIN_ALIASES = ["www"]
@@ -574,6 +592,11 @@ PRESENCE_UPDATE_MIN_FREQ_SECONDS = 55
 # we will specify ACTIVE status  as long as the timedelta is within this limit and IDLE otherwise.
 PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS = 70
 
+# The web app doesn't pass params to / when initially loading, so it can't directly
+# pick its history_limit_days value. Instead, the server chooses the value and
+# passes it to the web app in page_params.
+PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP = 365
+
 # How many days deleted messages data should be kept before being
 # permanently deleted.
 ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 30
@@ -661,13 +684,33 @@ SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
 
 CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Callable[..., Any] | None = None
 
-# Whether we allow settings to be set to a collection of users and
-# groups as described in api_docs/group-setting-values.md. Set to
-# False in production, as we can only handle named user groups in the
-# web app settings UI.
-ALLOW_GROUP_VALUED_SETTINGS = False
-
 # Grace period during which we don't send a resolve/unresolve
 # notification to a stream and also delete the previous counter
 # notification.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
+
+# For realm imports during registration, maximum size of file
+# that can be uploaded.
+MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
+
+# Minimum and maximum permitted number of days before full data
+# deletion when deactivating an organization. A nonzero minimum helps
+# protect against a compromised administrator account being used to
+# delete an active organization.
+MIN_DEACTIVATED_REALM_DELETION_DAYS: int | None = 14
+MAX_DEACTIVATED_REALM_DELETION_DAYS: int | None = None
+
+
+TOPIC_SUMMARIZATION_MODEL: str | None = None
+TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}
+# Price per token for input and output tokens, and maximum cost. Units
+# are arbitrarily, but typically will be USD.
+INPUT_COST_PER_GIGATOKEN: int = 0
+OUTPUT_COST_PER_GIGATOKEN: int = 0
+MAX_PER_USER_MONTHLY_AI_COST: float | None = 0.5
+
+# URL of the navigation tour video displayed to new users.
+# Set it to None to disable it.
+NAVIGATION_TOUR_VIDEO_URL: str | None = (
+    "https://static.zulipchat.com/static/navigation-tour-video/zulip-10.mp4"
+)

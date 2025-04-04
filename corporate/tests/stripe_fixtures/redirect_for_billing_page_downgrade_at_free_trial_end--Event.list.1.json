@@ -2,52 +2,56 @@
   "data": [
     {
       "api_version": "2020-08-27",
-      "created": 1010000003,
+      "created": 1000000000,
       "data": {
         "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P41lzDEQaroqDjsYpj8PEQF_secret_PtpQ0L2h6bRQkG16ihwyYoVNPAur8h7",
-          "created": 1010000003,
-          "customer": "cus_NORMALIZED0002",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P41lzDEQaroqDjsYpj8PEQF",
-          "last_setup_error": null,
-          "latest_attempt": null,
-          "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": null,
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "redirect_for_billing_page_downgrade_at_free_trial_end--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_NORMALIZED",
+            "footer": null,
+            "rendering_options": null
           },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "requires_payment_method",
-          "usage": "off_session"
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": null
+          }
         }
       },
-      "id": "evt_1P41lzDEQaroqDjsjgCUQsMJ",
+      "id": "redirect_for_billing_page_downgrade_at_free_trial_end--Event.list.1.json",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0001",
-        "idempotency_key": "2c5ccef9-b4f7-4d0f-afbd-27d1066e96e0"
+        "id": "redirect_for_billing_page_downgrade_at_free_trial_end--Event.list.1.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "setup_intent.created"
+      "type": "customer.updated"
     }
   ],
   "has_more": true,

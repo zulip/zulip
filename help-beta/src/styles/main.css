@@ -1,0 +1,39 @@
+.non-clickable-sidebar-heading {
+    font-size: 1.15rem;
+    pointer-events: none;
+    cursor: default;
+}
+
+.sl-markdown-content {
+    img {
+        vertical-align: top;
+        box-shadow: 0 0 4px hsl(0deg 0% 0% / 5%);
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        margin-top: 0;
+
+        &.emoji-small {
+            display: inline-block;
+            width: 1.25em;
+            box-shadow: none;
+            border: none;
+            vertical-align: text-top;
+        }
+
+        &.emoji-big {
+            display: inline-block;
+            width: 1.5em;
+            box-shadow: none;
+            border: none;
+            vertical-align: text-top;
+        }
+
+        &.help-center-icon {
+            display: inline-block;
+            width: 1.25em;
+            box-shadow: none;
+            border: none;
+            vertical-align: text-top;
+        }
+    }
+}

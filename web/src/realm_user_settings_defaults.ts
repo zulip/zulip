@@ -1,8 +1,9 @@
 import {z} from "zod";
 
-import type {StateData} from "./state_data";
+import type {StateData} from "./state_data.ts";
 
 export const realm_default_settings_schema = z.object({
+    allow_private_data_export: z.boolean(),
     automatically_follow_topics_policy: z.number(),
     automatically_follow_topics_where_mentioned: z.boolean(),
     automatically_unmute_topics_in_muted_streams_policy: z.number(),
@@ -10,7 +11,6 @@ export const realm_default_settings_schema = z.object({
     color_scheme: z.number(),
     default_language: z.string(),
     demote_inactive_streams: z.number(),
-    dense_mode: z.boolean(),
     desktop_icon_count_display: z.number(),
     display_emoji_reaction_users: z.boolean(),
     email_address_visibility: z.number(),
@@ -37,6 +37,7 @@ export const realm_default_settings_schema = z.object({
     enable_stream_push_notifications: z.boolean(),
     enter_sends: z.boolean(),
     fluid_layout_width: z.boolean(),
+    hide_ai_features: z.boolean(),
     high_contrast_mode: z.boolean(),
     left_side_userlist: z.boolean(),
     message_content_in_email_notifications: z.boolean(),

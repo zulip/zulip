@@ -1,4 +1,4 @@
-<form class="admin-profile-field-form new-style" id="add-new-custom-profile-field-form">
+<form class="admin-profile-field-form" id="add-new-custom-profile-field-form">
     <div class="new-profile-field-form wrapper">
         <div class="input-group">
             <label for="profile_field_type" class="modal-field-label">{{t "Type" }}</label>
@@ -39,16 +39,22 @@
         <div class="input-group">
             <label class="checkbox profile_field_display_label" for="profile_field_display_in_profile_summary">
                 <input type="checkbox" id="profile_field_display_in_profile_summary" name="display_in_profile_summary"/>
-                <span></span>
+                <span class="rendered-checkbox"></span>
                 {{t 'Display on user card' }}
             </label>
         </div>
         <div class="input-group">
             <label class="checkbox" for="profile-field-required">
                 <input type="checkbox" id="profile-field-required" name="required"/>
-                <span></span>
+                <span class="rendered-checkbox"></span>
                 {{t 'Required field' }}
             </label>
         </div>
+        {{> settings_checkbox
+          prefix="profile_field_"
+          setting_name="editable_by_user"
+          is_checked=true
+          label=(t "Users can edit this field for their own account")
+          }}
     </div>
 </form>

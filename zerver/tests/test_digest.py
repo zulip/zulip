@@ -26,6 +26,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -266,7 +267,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         for digest_user in digest_users:
             log_rows = RealmAuditLog.objects.filter(
                 modified_user_id=digest_user.id,
-                event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
+                event_type=AuditLogEventType.USER_DIGEST_EMAIL_CREATED,
             )
             (log,) = log_rows
             self.assertEqual(log.event_last_message_id, last_message_id)
@@ -508,7 +509,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             realm, recently_created_streams, can_access_public=True
         )
         self.assertEqual(stream_count, 1)
-        expected_html = f"<a href='http://zulip.testserver/#narrow/stream/{stream.id}-New-stream'>New stream</a>"
+        expected_html = f"<a href='http://zulip.testserver/#narrow/channel/{stream.id}-New-stream'>New stream</a>"
         self.assertEqual(stream_info["html"][0], expected_html)
 
         # guests don't see our stream

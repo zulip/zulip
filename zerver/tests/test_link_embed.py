@@ -14,7 +14,7 @@ from typing_extensions import override
 from zerver.actions.message_delete import do_delete_messages
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
@@ -348,7 +348,7 @@ class PreviewTestCase(ZulipTestCase):
         url = "http://test.org/"
         self.create_mock_response(url)
 
-        with mock_queue_publish("zerver.actions.message_edit.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
@@ -434,7 +434,7 @@ class PreviewTestCase(ZulipTestCase):
             self.assertEqual(queue, "embed_links")
             event = patched.call_args[0][1]
 
-        def wrapped_queue_json_publish(*args: Any, **kwargs: Any) -> None:
+        def wrapped_queue_event_on_commit(*args: Any, **kwargs: Any) -> None:
             self.create_mock_response(original_url)
             self.create_mock_response(edited_url)
 
@@ -457,9 +457,9 @@ class PreviewTestCase(ZulipTestCase):
             self.assertTrue(responses.assert_call_count(edited_url, 0))
 
             with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO") as info_logs:
-                # Now proceed with the original queue_json_publish and call the
-                # up-to-date event for edited_url.
-                queue_json_publish(*args, **kwargs)
+                # Now proceed with the original queue_json_publish_rollback_unsafe
+                # and call the up-to-date event for edited_url.
+                queue_json_publish_rollback_unsafe(*args, **kwargs)
                 msg = Message.objects.select_related("sender").get(id=msg_id)
                 assert msg.rendered_content is not None
                 self.assertIn(
@@ -472,7 +472,7 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         with mock_queue_publish(
-            "zerver.actions.message_edit.queue_json_publish", wraps=wrapped_queue_json_publish
+            "zerver.actions.message_edit.queue_event_on_commit", wraps=wrapped_queue_event_on_commit
         ):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
@@ -994,7 +994,7 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         msg.refresh_from_db()
-        expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg")}"></a></div>"""
+        expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/mqdefault.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)
 
     @responses.activate
@@ -1034,5 +1034,5 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         msg.refresh_from_db()
-        expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg")}"></a></div>"""
+        expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/mqdefault.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)

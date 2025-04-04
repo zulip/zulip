@@ -2,70 +2,14 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as compose_fade_helper from "./compose_fade_helper";
-import * as compose_state from "./compose_state";
-import * as message_lists from "./message_lists";
-import type {Message} from "./message_store";
-import * as message_viewport from "./message_viewport";
-import * as people from "./people";
-import * as rows from "./rows";
-import type {TopicLink} from "./types";
-import type {AllVisibilityPolicies} from "./user_topics";
-import * as util from "./util";
-
-// TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
-type MessageContainer = {
-    background_color: string;
-    date_divider_html?: string;
-    edited_alongside_sender: boolean;
-    edited_in_left_col: boolean;
-    edited_status_msg: boolean;
-    include_recipient: boolean;
-    include_sender: boolean;
-    is_hidden: boolean;
-    mention_classname: string | null;
-    message_edit_notices_in_left_col: boolean;
-    msg: Message;
-    sender_is_bot: boolean;
-    sender_is_guest: boolean;
-    should_add_guest_indicator_for_sender: boolean;
-    small_avatar_url: string;
-    status_message: boolean;
-    stream_url?: string;
-    subscribed?: boolean;
-    timestr: string;
-    topic_url?: string;
-    unsubscribed?: boolean;
-    want_date_divider: boolean;
-};
-
-// TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
-type MessageGroup = {
-    all_visibility_policies: AllVisibilityPolicies;
-    always_visible_topic_edit: boolean;
-    date: string;
-    date_unchanged: boolean;
-    display_recipient: string;
-    invite_only: boolean;
-    is_private?: boolean;
-    is_stream: boolean;
-    is_subscribed: boolean;
-    is_web_public: boolean;
-    match_topic?: string;
-    message_containers: MessageContainer[];
-    message_group_id: string;
-    on_hover_topic_edit: boolean;
-    recipient_bar_color: string;
-    stream_id: number;
-    stream_privacy_icon_color: string;
-    stream_url: string;
-    topic: string;
-    topic_is_resolved: boolean;
-    topic_links: TopicLink[];
-    topic_url: string;
-    user_can_resolve_topic: boolean;
-    visibility_policy: number;
-};
+import * as compose_fade_helper from "./compose_fade_helper.ts";
+import * as compose_state from "./compose_state.ts";
+import type {MessageGroup} from "./message_list_view.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as people from "./people.ts";
+import * as rows from "./rows.ts";
+import * as util from "./util.ts";
 
 let normal_display = false;
 
@@ -161,7 +105,7 @@ function fade_messages(): void {
     );
 }
 
-function do_update_all(): void {
+export function do_update_all(): void {
     if (compose_fade_helper.want_normal_display()) {
         if (!normal_display) {
             display_messages_normally();

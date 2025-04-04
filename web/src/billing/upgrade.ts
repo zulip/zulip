@@ -1,12 +1,12 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import {localstorage} from "../localstorage";
-import * as portico_modals from "../portico/portico_modals";
+import {localstorage} from "../localstorage.ts";
+import * as portico_modals from "../portico/portico_modals.ts";
 
-import * as helpers from "./helpers";
-import type {Prices} from "./helpers";
-import {page_params} from "./page_params";
+import * as helpers from "./helpers.ts";
+import type {Prices} from "./helpers.ts";
+import {page_params} from "./page_params.ts";
 
 const prices: Prices = {
     annual: page_params.annual_price,
@@ -128,7 +128,7 @@ function update_license_count(license_count: number): void {
 function restore_manual_license_count(): void {
     const $manual_license_count_input = $("#manual_license_count");
     // Only present on the manual license management page.
-    if ($manual_license_count_input.length) {
+    if ($manual_license_count_input.length > 0) {
         const ls_manual_license_count = ls.get("manual_license_count");
         if (typeof ls_manual_license_count === "number") {
             $manual_license_count_input.val(ls_manual_license_count);

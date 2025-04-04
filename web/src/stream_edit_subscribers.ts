@@ -8,26 +8,27 @@ import render_stream_member_list_entry from "../templates/stream_settings/stream
 import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
-import * as add_subscribers_pill from "./add_subscribers_pill";
-import * as blueslip from "./blueslip";
-import * as confirm_dialog from "./confirm_dialog";
-import * as hash_parser from "./hash_parser";
-import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import type {User} from "./people";
-import * as scroll_util from "./scroll_util";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_settings_containers from "./stream_settings_containers";
-import type {SettingsSubscription} from "./stream_settings_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as subscriber_api from "./subscriber_api";
-import type {CombinedPillContainer} from "./typeahead_helper";
-import * as user_sort from "./user_sort";
+import * as add_subscribers_pill from "./add_subscribers_pill.ts";
+import * as blueslip from "./blueslip.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as hash_parser from "./hash_parser.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
+import type {SettingsSubscription} from "./stream_settings_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as subscriber_api from "./subscriber_api.ts";
+import type {CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_groups from "./user_groups.ts";
+import * as user_sort from "./user_sort.ts";
 
 const remove_user_id_api_response_schema = z.object({
     removed: z.array(z.string()),
@@ -52,6 +53,7 @@ function format_member_list_elem(person: User, user_can_remove_subscribers: bool
         can_remove_subscribers: user_can_remove_subscribers,
         for_user_group_members: false,
         img_src: people.small_avatar_url_for_person(person),
+        is_bot: person.is_bot,
     });
 }
 
@@ -118,6 +120,7 @@ export function enable_subscriber_management({
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
+        get_user_groups: user_groups.get_all_realm_user_groups,
     });
 
     $pill_container.find(".input").on("input", () => {
@@ -226,11 +229,11 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     function invite_success(raw_data: unknown): void {
         const data = add_user_ids_api_response_schema.parse(raw_data);
         pill_widget.clear();
-        const subscribed_users = Object.keys(data.subscribed).map(
-            (email) => people.get_by_email(email)!,
+        const subscribed_users = Object.keys(data.subscribed).map((user_id) =>
+            people.get_by_user_id(Number(user_id)),
         );
-        const already_subscribed_users = Object.keys(data.already_subscribed).map(
-            (email) => people.get_by_email(email)!,
+        const already_subscribed_users = Object.keys(data.already_subscribed).map((user_id) =>
+            people.get_by_user_id(Number(user_id)),
         );
 
         show_stream_subscription_request_result({
@@ -384,7 +387,7 @@ function remove_subscriber({
     );
 }
 
-export function update_subscribers_list(sub: SettingsSubscription): void {
+export function update_subscribers_list(sub: StreamSubscription): void {
     // This is for the "Subscribers" tab of the right panel.
     // Render subscriptions only if stream settings is open
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
@@ -463,8 +466,8 @@ export function initialize(): void {
     });
 
     $("#channels_overlay_container").on(
-        "submit",
-        ".edit_subscribers_for_stream .subscriber_list_remove form",
+        "click",
+        ".edit_subscribers_for_stream .remove-subscriber-button",
         function (this: HTMLElement, e): void {
             e.preventDefault();
 

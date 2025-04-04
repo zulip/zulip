@@ -28,6 +28,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.streams import create_stream_if_needed
 from zerver.models import Realm, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zilencer.models import (
     RemoteRealm,
@@ -449,7 +450,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> dict[str, str]:
     )
 
     RemoteZulipServerAuditLog.objects.create(
-        event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+        event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
         server=remote_server,
         event_time=remote_server.last_updated,
     )
@@ -468,7 +469,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> dict[str, str]:
         end_date = datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
             tzinfo=timezone.utc
         )
-        billing_session.migrate_customer_to_legacy_plan(renewal_date, end_date)
+        billing_session.create_complimentary_access_plan(renewal_date, end_date)
 
         if not communicate_with_stripe:
             # We need to communicate with stripe to upgrade here.
@@ -566,7 +567,7 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> dict[str, str]:
         end_date = datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
             tzinfo=timezone.utc
         )
-        billing_session.migrate_customer_to_legacy_plan(renewal_date, end_date)
+        billing_session.create_complimentary_access_plan(renewal_date, end_date)
     elif customer_profile.tier is not None:
         billing_session.do_change_plan_type(
             tier=customer_profile.tier, is_sponsored=customer_profile.is_sponsored

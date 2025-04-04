@@ -8,7 +8,7 @@
 ; variables can be expanded using this syntax: "%(ENV_HOME)s".
 
 [program:zulip-django]
-command=nice -n5 /home/zulip/deployments/current/zulip-current-venv/bin/uwsgi --ini /etc/zulip/uwsgi.ini
+command=nice -n5 uv run --no-sync uwsgi --ini /etc/zulip/uwsgi.ini
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=100                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
@@ -20,6 +20,23 @@ redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/django.log        ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stopasgroup=true              ; Without this, we leak processes every restart
+killasgroup=true              ; Without this, we leak processes every restart
+directory=/home/zulip/deployments/current/
+
+[program:zulip-tus]
+command=nice -n5 /home/zulip/deployments/current/manage.py runtusd <%= @tusd_server_listen %>:9900
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=100                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=INT                 ; signal used to kill process (default TERM)
+stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/tusd.log        ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=0     ; Rotated by logrotate
+stdout_logfile_backups=0
 stopasgroup=true              ; Without this, we leak processes every restart
 killasgroup=true              ; Without this, we leak processes every restart
 directory=/home/zulip/deployments/current/
@@ -37,8 +54,8 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/tornado-98%(process_num)02d.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stdout_logfile_maxbytes=0     ; Rotated by logrotate
+stdout_logfile_backups=0
 directory=/home/zulip/deployments/current/
 numprocs=<%= @tornado_ports.length %>
 <% else -%>
@@ -53,25 +70,28 @@ stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/tornado.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stdout_logfile_maxbytes=0     ; Rotated by logrotate
+stdout_logfile_backups=0
 directory=/home/zulip/deployments/current/
 <% end -%>
 
 <% if @queues_multiprocess %>
 <% @queues.each do |queue| -%>
 [program:zulip_events_<%= queue %>]
-<% if queue == "missedmessage_mobile_notifications" and @mobile_notification_shards > 1 -%>
-process_name=zulip_events_<%= queue %>_shard%(process_num)s
+<%-
+  numprocs = 1
+  term = "worker"
+  if queue == "missedmessage_mobile_notifications"
+    numprocs = @mobile_notification_shards
+    term = "shard"
+  elsif @worker_counts.has_key?(queue)
+    numprocs = @worker_counts[queue]
+  end -%>
+<%- if numprocs > 1 -%>
+process_name=zulip_events_<%= queue %>_<%= term %>%(process_num)s
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks --worker_num %(process_num)s
-stdout_logfile=/var/log/zulip/events_<%= queue %>_shard%(process_num)s.log         ; stdout log path, NONE for none; default AUTO
-numprocs=<%= @mobile_notification_shards %>
-numprocs_start=1
-<% elsif queue == "thumbnail" and @thumbnail_workers > 1 -%>
-process_name=zulip_events_<%= queue %>_worker%(process_num)s
-command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks --worker_num %(process_num)s
-stdout_logfile=/var/log/zulip/events_<%= queue %>_worker%(process_num)s.log         ; stdout log path, NONE for none; default AUTO
-numprocs=<%= @thumbnail_workers %>
+stdout_logfile=/var/log/zulip/events_<%= queue %>_<%= term %>%(process_num)s.log         ; stdout log path, NONE for none; default AUTO
+numprocs=<%= numprocs %>
 numprocs_start=1
 <% else -%>
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks

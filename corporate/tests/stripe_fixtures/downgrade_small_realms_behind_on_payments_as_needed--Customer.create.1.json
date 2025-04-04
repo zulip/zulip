@@ -9,8 +9,8 @@
   "description": "test-realm-2 (test-realm-2)",
   "discount": null,
   "email": "user-0-test-realm-2@zulip.com",
-  "id": "cus_NORMALIZED0001",
-  "invoice_prefix": "NORMA01",
+  "id": "downgrade_small_realms_behind_on_payments_as_needed--Customer.create.1.json",
+  "invoice_prefix": "NORMALIZED",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": null,

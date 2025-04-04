@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.migrations.recorder import MigrationRecorder
 from django.http import HttpRequest, HttpResponse
 from django.utils.crypto import get_random_string
@@ -58,7 +59,8 @@ def check_memcached() -> None:
 
 def health(request: HttpRequest) -> HttpResponse:
     check_database()
-    check_rabbitmq()
+    if settings.USING_RABBITMQ:  # nocoverage
+        check_rabbitmq()
     check_redis()
     check_memcached()
 

@@ -1,19 +1,20 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as echo from "./echo";
-import * as loading from "./loading";
-import * as message_events from "./message_events";
-import {page_params} from "./page_params";
-import * as reload from "./reload";
-import * as reload_state from "./reload_state";
-import * as sent_messages from "./sent_messages";
-import * as server_events_dispatch from "./server_events_dispatch";
-import {server_message_schema} from "./server_message";
-import * as ui_report from "./ui_report";
-import * as watchdog from "./watchdog";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as echo from "./echo.ts";
+import * as loading from "./loading.ts";
+import * as message_events from "./message_events.ts";
+import {page_params} from "./page_params.ts";
+import * as popup_banners from "./popup_banners.ts";
+import * as reload from "./reload.ts";
+import * as reload_state from "./reload_state.ts";
+import * as sent_messages from "./sent_messages.ts";
+import * as server_events_dispatch from "./server_events_dispatch.js";
+import {server_message_schema} from "./server_message.ts";
+import * as util from "./util.ts";
+import * as watchdog from "./watchdog.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
@@ -99,7 +100,7 @@ function get_events_success(events) {
         }
     }
 
-    if (messages.length !== 0) {
+    if (messages.length > 0) {
         // Sort by ID, so that if we get multiple messages back from
         // the server out-of-order, we'll still end up with our
         // message lists in order.
@@ -129,7 +130,7 @@ function get_events_success(events) {
         }
     }
 
-    if (update_message_events.length !== 0) {
+    if (update_message_events.length > 0) {
         try {
             message_events.update_messages(update_message_events);
         } catch (error) {
@@ -143,16 +144,6 @@ function get_events_success(events) {
     for (const event of post_message_events) {
         server_events_dispatch.dispatch_normal_event(event);
     }
-}
-
-function show_ui_connection_error() {
-    ui_report.show_error($("#connection-error"));
-    $("#connection-error").addClass("get-events-error");
-}
-
-function hide_ui_connection_error() {
-    ui_report.hide_error($("#connection-error"));
-    $("#connection-error").removeClass("get-events-error");
 }
 
 function get_events({dont_block = false} = {}) {
@@ -201,7 +192,7 @@ function get_events({dont_block = false} = {}) {
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
-                hide_ui_connection_error();
+                popup_banners.close_connection_error_popup_banner("server_events");
 
                 get_events_success(data.events);
             } catch (error) {
@@ -210,6 +201,7 @@ function get_events({dont_block = false} = {}) {
             get_events_timeout = setTimeout(get_events, 0);
         },
         error(xhr, error_type) {
+            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
@@ -229,38 +221,24 @@ function get_events({dont_block = false} = {}) {
                 } else if (error_type === "timeout") {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
-                    hide_ui_connection_error();
+                    popup_banners.close_connection_error_popup_banner("server_events");
                 } else {
                     get_events_failures += 1;
                 }
 
                 if (get_events_failures >= 8) {
-                    show_ui_connection_error();
-                } else {
-                    hide_ui_connection_error();
+                    popup_banners.open_connection_error_popup_banner({
+                        caller: "server_events",
+                        retry_delay_secs,
+                        on_retry_callback() {
+                            restart_get_events({dont_block: true});
+                        },
+                    });
                 }
             } catch (error) {
                 blueslip.error("Failed to handle get_events error", undefined, error);
             }
 
-            // We need to respect the server's rate-limiting headers, but beyond
-            // that, we also want to avoid contributing to a thundering herd if
-            // the server is giving us 500s/502s.
-            //
-            // So we do the maximum of the retry-after header and an exponential
-            // backoff with ratio sqrt(2) and half jitter. Starts at 1-2s and ends at
-            // 45-90s after enough failures.
-            const backoff_scale = Math.min(2 ** ((get_events_failures + 1) / 2), 90);
-            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
-            let rate_limit_delay_secs = 0;
-            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
-                // Add a bit of jitter to the required delay suggested
-                // by the server, because we may be racing with other
-                // copies of the web app.
-                rate_limit_delay_secs = xhr.responseJSON["retry-after"] + Math.random() * 0.5;
-            }
-
-            const retry_delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
             get_events_timeout = setTimeout(get_events, retry_delay_secs * 1000);
         },
     });
@@ -303,6 +281,7 @@ export function initialize(params) {
         get_events_failures = 0;
         restart_get_events({dont_block: true});
     });
+
     get_events();
 }
 

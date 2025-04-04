@@ -214,7 +214,8 @@ first add it to the appropriate place under `static/`.
   `web/src/portico`.
 - Custom SVG graphics living under `web/images/icons` are compiled into
   custom icon webfonts by webfont-loader according to the
-  `web/images/icons/template.hbs` template.
+  `web/images/icons/template.hbs` template. See
+  [icons](../subsystems/icons.md) for more details on adding icons.
 
 For your asset to be included in a development/production bundle, it
 needs to be accessible from one of the entry points defined either in

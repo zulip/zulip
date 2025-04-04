@@ -4,12 +4,16 @@ from dataclasses import dataclass, field
 from typing import Any, TypeAlias
 
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls import URLResolver, path
+from django.http import HttpRequest, HttpResponseBase
+from django.urls import URLPattern, path
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
+from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
+from zerver.lib.validator import check_bool, check_string
+from zerver.lib.webhooks.common import WebhookConfigOption
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -32,7 +36,7 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-OptionValidator: TypeAlias = Callable[[str, str], str | None]
+OptionValidator: TypeAlias = Callable[[str, str], str | bool | None]
 
 META_CATEGORY: dict[str, StrPromise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
@@ -61,22 +65,23 @@ class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = "images/integrations/logos/{name}.png"
     DEFAULT_LOGO_STATIC_PATH_SVG = "images/integrations/logos/{name}.svg"
     DEFAULT_BOT_AVATAR_PATH = "images/integrations/bot_avatars/{name}.png"
+    DEFAULT_DOC_PATH = "zerver/integrations/{name}.md"
 
     def __init__(
         self,
         name: str,
-        client_name: str,
         categories: list[str],
+        client_name: str | None = None,
         logo: str | None = None,
         secondary_line_text: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
         stream_name: str | None = None,
         legacy: bool = False,
-        config_options: Sequence[tuple[str, str, OptionValidator]] = [],
+        config_options: Sequence[WebhookConfigOption] = [],
     ) -> None:
         self.name = name
-        self.client_name = client_name
+        self.client_name = client_name if client_name is not None else name
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
         self.doc = doc
@@ -104,6 +109,10 @@ class Integration:
         if display_name is None:
             display_name = name.title()
         self.display_name = display_name
+
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(name=self.name)
+        self.doc = doc
 
         if stream_name is None:
             stream_name = self.name
@@ -134,6 +143,9 @@ class Integration:
             return staticfiles_storage.url(self.logo_path)
 
         return None
+
+    def get_translated_categories(self) -> list[str]:
+        return [str(category) for category in self.categories]
 
 
 class BotIntegration(Integration):
@@ -177,11 +189,49 @@ class BotIntegration(Integration):
         self.doc = doc
 
 
+class PythonAPIIntegration(Integration):
+    DEFAULT_DOC_PATH = "{directory_name}/doc.md"
+
+    def __init__(
+        self,
+        name: str,
+        categories: list[str],
+        client_name: str | None = None,
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        display_name: str | None = None,
+        directory_name: str | None = None,
+        doc: str | None = None,
+        stream_name: str | None = None,
+        legacy: bool = False,
+    ) -> None:
+        if directory_name is None:
+            directory_name = name
+        self.directory_name = directory_name
+
+        # Assign before super(), to use self.directory_name instead of self.name
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(directory_name=self.directory_name)
+        self.doc = doc
+
+        super().__init__(
+            name,
+            categories,
+            client_name=client_name,
+            logo=logo,
+            secondary_line_text=secondary_line_text,
+            display_name=display_name,
+            doc=doc,
+            stream_name=stream_name,
+            legacy=legacy,
+        )
+
+
 class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = "zerver.webhooks.{name}.view.api_{name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
     DEFAULT_CLIENT_NAME = "Zulip{name}Webhook"
-    DEFAULT_DOC_PATH = "{name}/doc.{ext}"
+    DEFAULT_DOC_PATH = "{name}/doc.md"
 
     def __init__(
         self,
@@ -196,15 +246,15 @@ class WebhookIntegration(Integration):
         doc: str | None = None,
         stream_name: str | None = None,
         legacy: bool = False,
-        config_options: Sequence[tuple[str, str, OptionValidator]] = [],
+        config_options: Sequence[WebhookConfigOption] = [],
         dir_name: str | None = None,
     ) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
             name,
-            client_name,
             categories,
+            client_name=client_name,
             logo=logo,
             secondary_line_text=secondary_line_text,
             display_name=display_name,
@@ -215,31 +265,33 @@ class WebhookIntegration(Integration):
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
-
-        if isinstance(function, str):
-            # We rename the imported function as view_function here to appease
-            # mypy, since it does not allow redefinition of variables with
-            # different types.
-            view_function = import_string(function)
-
-        self.function = view_function
+        self.function_name = function
 
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
         self.url = url
 
         if doc is None:
-            doc = self.DEFAULT_DOC_PATH.format(name=name, ext="md")
+            doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
 
         if dir_name is None:
             dir_name = self.name
         self.dir_name = dir_name
 
+    def get_function(self) -> Callable[[HttpRequest], HttpResponseBase]:
+        return import_string(self.function_name)
+
+    @csrf_exempt
+    def view(self, request: HttpRequest) -> HttpResponseBase:
+        # Lazily load the real view function to improve startup performance.
+        function = self.get_function()
+        assert function.csrf_exempt  # type: ignore[attr-defined] # ensure the above @csrf_exempt is justified
+        return function(request)
+
     @property
-    def url_object(self) -> URLResolver:
-        assert self.function is not None
-        return path(self.url, self.function)
+    def url_object(self) -> URLPattern:
+        return path(self.url, self.view)
 
 
 def split_fixture_path(path: str) -> tuple[str, str]:
@@ -281,7 +333,9 @@ def get_fixture_and_image_paths(
 
 
 class HubotIntegration(Integration):
-    GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
+    GIT_URL_TEMPLATE = "https://github.com/hubot-archive/hubot-{}"
+    SECONDARY_LINE_TEXT = "(Hubot script)"
+    DOC_PATH = "zerver/integrations/hubot_common.md"
 
     def __init__(
         self,
@@ -289,25 +343,20 @@ class HubotIntegration(Integration):
         categories: list[str],
         display_name: str | None = None,
         logo: str | None = None,
-        logo_alt: str | None = None,
         git_url: str | None = None,
         legacy: bool = False,
     ) -> None:
-        if logo_alt is None:
-            logo_alt = f"{name.title()} logo"
-        self.logo_alt = logo_alt
-
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.hubot_docs_url = git_url
 
         super().__init__(
             name,
-            name,
             categories,
             logo=logo,
+            secondary_line_text=self.SECONDARY_LINE_TEXT,
             display_name=display_name,
-            doc="zerver/integrations/hubot_common.md",
+            doc=self.DOC_PATH,
             legacy=legacy,
         )
 
@@ -322,8 +371,8 @@ class EmbeddedBotIntegration(Integration):
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         assert kwargs.get("client_name") is None
-        client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super().__init__(name, client_name, *args, **kwargs)
+        kwargs["client_name"] = self.DEFAULT_CLIENT_NAME.format(name=name.title())
+        super().__init__(name, *args, **kwargs)
 
 
 EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
@@ -337,6 +386,7 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
 
 WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("airbrake", ["monitoring"]),
+    WebhookIntegration("airbyte", ["monitoring"]),
     WebhookIntegration(
         "alertmanager",
         ["monitoring"],
@@ -346,7 +396,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("ansibletower", ["deployment"], display_name="Ansible Tower"),
     WebhookIntegration("appfollow", ["customer-support"], display_name="AppFollow"),
     WebhookIntegration("appveyor", ["continuous-integration"], display_name="AppVeyor"),
-    WebhookIntegration("azuredevops", ["version-control"], display_name="AzureDevOps"),
+    WebhookIntegration(
+        "azuredevops",
+        ["version-control"],
+        display_name="AzureDevOps",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
     WebhookIntegration("basecamp", ["project-management"]),
     WebhookIntegration("beeminder", ["misc"], display_name="Beeminder"),
@@ -356,6 +413,9 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket Server",
         stream_name="bitbucket",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
     ),
     WebhookIntegration(
         "bitbucket2",
@@ -363,6 +423,9 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket",
         stream_name="bitbucket",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
     ),
     WebhookIntegration(
         "bitbucket",
@@ -372,38 +435,43 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         stream_name="commits",
         legacy=True,
     ),
-    WebhookIntegration("buildbot", ["continuous-integration"], display_name="Buildbot"),
+    WebhookIntegration("buildbot", ["continuous-integration"]),
     WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytokens"),
     WebhookIntegration("circleci", ["continuous-integration"], display_name="CircleCI"),
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
     WebhookIntegration("crashlytics", ["monitoring"]),
-    WebhookIntegration("dialogflow", ["customer-support"], display_name="Dialogflow"),
-    WebhookIntegration("delighted", ["customer-support", "marketing"], display_name="Delighted"),
-    WebhookIntegration(
-        "deskdotcom",
-        ["customer-support"],
-        logo="images/integrations/logos/deskcom.png",
-        display_name="Desk.com",
-        stream_name="desk",
-    ),
-    WebhookIntegration("dropbox", ["productivity"], display_name="Dropbox"),
-    WebhookIntegration("errbit", ["monitoring"], display_name="Errbit"),
-    WebhookIntegration("flock", ["customer-support"], display_name="Flock"),
+    WebhookIntegration("dialogflow", ["customer-support"]),
+    WebhookIntegration("delighted", ["customer-support", "marketing"]),
+    WebhookIntegration("dropbox", ["productivity"]),
+    WebhookIntegration("errbit", ["monitoring"]),
+    WebhookIntegration("flock", ["customer-support"]),
     WebhookIntegration("freshdesk", ["customer-support"]),
-    WebhookIntegration("freshping", ["monitoring"], display_name="Freshping"),
+    WebhookIntegration("freshping", ["monitoring"]),
+    WebhookIntegration("freshstatus", ["monitoring", "customer-support"]),
+    WebhookIntegration("front", ["customer-support"]),
     WebhookIntegration(
-        "freshstatus", ["monitoring", "customer-support"], display_name="Freshstatus"
+        "gitea",
+        ["version-control"],
+        stream_name="commits",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
     ),
-    WebhookIntegration("front", ["customer-support"], display_name="Front"),
-    WebhookIntegration("gitea", ["version-control"], stream_name="commits"),
     WebhookIntegration(
         "github",
         ["version-control"],
         display_name="GitHub",
-        logo="images/integrations/logos/github.svg",
         function="zerver.webhooks.github.view.api_github_webhook",
         stream_name="github",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string),
+            WebhookConfigOption(
+                name="ignore_private_repositories",
+                description="Exclude notifications from private repositories",
+                validator=check_bool,
+            ),
+        ],
     ),
     WebhookIntegration(
         "githubsponsors",
@@ -415,17 +483,31 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         doc="github/githubsponsors.md",
         stream_name="github",
     ),
-    WebhookIntegration("gitlab", ["version-control"], display_name="GitLab"),
+    WebhookIntegration(
+        "gitlab",
+        ["version-control"],
+        display_name="GitLab",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("gocd", ["continuous-integration"], display_name="GoCD"),
-    WebhookIntegration("gogs", ["version-control"], stream_name="commits"),
+    WebhookIntegration(
+        "gogs",
+        ["version-control"],
+        stream_name="commits",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("gosquared", ["marketing"], display_name="GoSquared"),
-    WebhookIntegration("grafana", ["monitoring"], display_name="Grafana"),
-    WebhookIntegration("greenhouse", ["hr"], display_name="Greenhouse"),
-    WebhookIntegration("groove", ["customer-support"], display_name="Groove"),
-    WebhookIntegration("harbor", ["deployment", "productivity"], display_name="Harbor"),
+    WebhookIntegration("grafana", ["monitoring"]),
+    WebhookIntegration("greenhouse", ["hr"]),
+    WebhookIntegration("groove", ["customer-support"]),
+    WebhookIntegration("harbor", ["deployment", "productivity"]),
     WebhookIntegration("hellosign", ["productivity", "hr"], display_name="HelloSign"),
     WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
-    WebhookIntegration("heroku", ["deployment"], display_name="Heroku"),
+    WebhookIntegration("heroku", ["deployment"]),
     WebhookIntegration("homeassistant", ["misc"], display_name="Home Assistant"),
     WebhookIntegration(
         "ifttt",
@@ -433,29 +515,37 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         function="zerver.webhooks.ifttt.view.api_iftt_app_webhook",
         display_name="IFTTT",
     ),
-    WebhookIntegration("insping", ["monitoring"], display_name="Insping"),
-    WebhookIntegration("intercom", ["customer-support"], display_name="Intercom"),
-    WebhookIntegration("jira", ["project-management"], display_name="Jira"),
-    WebhookIntegration("jotform", ["misc"], display_name="Jotform"),
+    WebhookIntegration("insping", ["monitoring"]),
+    WebhookIntegration("intercom", ["customer-support"]),
+    # Avoid collision with jira-plugin's doc "jira/doc.md".
+    WebhookIntegration("jira", ["project-management"], doc="jira/jira-doc.md"),
+    WebhookIntegration("jotform", ["misc"]),
     WebhookIntegration("json", ["misc"], display_name="JSON formatter"),
     WebhookIntegration("librato", ["monitoring"]),
     WebhookIntegration("lidarr", ["entertainment"]),
-    WebhookIntegration("linear", ["project-management"], display_name="Linear"),
-    WebhookIntegration("mention", ["marketing"], display_name="Mention"),
-    WebhookIntegration("netlify", ["continuous-integration", "deployment"], display_name="Netlify"),
+    WebhookIntegration("linear", ["project-management"]),
+    WebhookIntegration("mention", ["marketing"]),
+    WebhookIntegration("netlify", ["continuous-integration", "deployment"]),
     WebhookIntegration("newrelic", ["monitoring"], display_name="New Relic"),
     WebhookIntegration("opencollective", ["financial"], display_name="Open Collective"),
     WebhookIntegration("opsgenie", ["meta-integration", "monitoring"]),
     WebhookIntegration("pagerduty", ["monitoring"], display_name="PagerDuty"),
     WebhookIntegration("papertrail", ["monitoring"]),
-    WebhookIntegration("patreon", ["financial"], display_name="Patreon"),
+    WebhookIntegration("patreon", ["financial"]),
     WebhookIntegration("pingdom", ["monitoring"]),
     WebhookIntegration("pivotal", ["project-management"], display_name="Pivotal Tracker"),
-    WebhookIntegration("radarr", ["entertainment"], display_name="Radarr"),
-    WebhookIntegration("raygun", ["monitoring"], display_name="Raygun"),
+    WebhookIntegration("radarr", ["entertainment"]),
+    WebhookIntegration("raygun", ["monitoring"]),
     WebhookIntegration("reviewboard", ["version-control"], display_name="Review Board"),
-    WebhookIntegration("rhodecode", ["version-control"], display_name="RhodeCode"),
-    WebhookIntegration("rundeck", ["deployment"], display_name="Rundeck"),
+    WebhookIntegration(
+        "rhodecode",
+        ["version-control"],
+        display_name="RhodeCode",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
+    WebhookIntegration("rundeck", ["deployment"]),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
     WebhookIntegration("sentry", ["monitoring"]),
     WebhookIntegration(
@@ -466,10 +556,10 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration("slack", ["communication"]),
     WebhookIntegration("sonarqube", ["continuous-integration"], display_name="SonarQube"),
-    WebhookIntegration("sonarr", ["entertainment"], display_name="Sonarr"),
-    WebhookIntegration("splunk", ["monitoring"], display_name="Splunk"),
-    WebhookIntegration("statuspage", ["customer-support"], display_name="Statuspage"),
-    WebhookIntegration("stripe", ["financial"], display_name="Stripe"),
+    WebhookIntegration("sonarr", ["entertainment"]),
+    WebhookIntegration("splunk", ["monitoring"]),
+    WebhookIntegration("statuspage", ["customer-support"]),
+    WebhookIntegration("stripe", ["financial"]),
     WebhookIntegration("taiga", ["project-management"]),
     WebhookIntegration("teamcity", ["continuous-integration"]),
     WebhookIntegration("thinkst", ["monitoring"]),
@@ -478,161 +568,80 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("trello", ["project-management"]),
     WebhookIntegration("updown", ["monitoring"]),
     WebhookIntegration("uptimerobot", ["monitoring"], display_name="UptimeRobot"),
-    WebhookIntegration("wekan", ["productivity"], display_name="Wekan"),
+    WebhookIntegration("wekan", ["productivity"]),
     WebhookIntegration("wordpress", ["marketing"], display_name="WordPress"),
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
-    WebhookIntegration("zabbix", ["monitoring"], display_name="Zabbix"),
+    WebhookIntegration("zabbix", ["monitoring"]),
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
-    "asana": Integration(
-        "asana", "asana", ["project-management"], doc="zerver/integrations/asana.md"
-    ),
+    "asana": Integration("asana", ["project-management"]),
     "big-blue-button": Integration(
-        "big-blue-button",
-        "big-blue-button",
-        ["communication"],
-        logo="images/integrations/logos/bigbluebutton.svg",
-        display_name="BigBlueButton",
-        doc="zerver/integrations/big-blue-button.md",
+        "big-blue-button", ["communication"], display_name="BigBlueButton"
     ),
-    "capistrano": Integration(
-        "capistrano",
-        "capistrano",
-        ["deployment"],
-        display_name="Capistrano",
-        doc="zerver/integrations/capistrano.md",
-    ),
-    "codebase": Integration(
-        "codebase", "codebase", ["version-control"], doc="zerver/integrations/codebase.md"
-    ),
-    "discourse": Integration(
-        "discourse", "discourse", ["communication"], doc="zerver/integrations/discourse.md"
-    ),
-    "email": Integration("email", "email", ["communication"], doc="zerver/integrations/email.md"),
-    "errbot": Integration(
-        "errbot", "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
-    ),
-    "giphy": Integration(
-        "giphy",
-        "giphy",
-        display_name="GIPHY",
-        categories=["misc"],
-        doc="zerver/integrations/giphy.md",
-        logo="images/integrations/giphy/GIPHY_big_logo.png",
-    ),
-    "git": Integration(
-        "git", "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
-    ),
+    "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
+    "discourse": Integration("discourse", ["communication"]),
+    "email": Integration("email", ["communication"]),
+    "errbot": Integration("errbot", ["meta-integration", "bots"]),
+    "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions",
-        "github-actions",
-        ["continuous-integration"],
-        display_name="GitHub Actions",
-        doc="zerver/integrations/github-actions.md",
+        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
     ),
-    "google-calendar": Integration(
-        "google-calendar",
-        "google-calendar",
-        ["productivity"],
-        display_name="Google Calendar",
-        doc="zerver/integrations/google-calendar.md",
+    "hubot": Integration("hubot", ["meta-integration", "bots"]),
+    "jenkins": Integration("jenkins", ["continuous-integration"]),
+    "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
+    "mastodon": Integration("mastodon", ["communication"]),
+    "notion": Integration("notion", ["productivity"]),
+    "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
+    "phabricator": Integration("phabricator", ["version-control"]),
+    "puppet": Integration("puppet", ["deployment"]),
+    "redmine": Integration("redmine", ["project-management"]),
+    "zoom": Integration("zoom", ["communication"]),
+}
+
+PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
+    PythonAPIIntegration("codebase", ["version-control"]),
+    PythonAPIIntegration("git", ["version-control"], stream_name="commits"),
+    PythonAPIIntegration(
+        "google-calendar", ["productivity"], display_name="Google Calendar", directory_name="google"
     ),
-    "hubot": Integration(
-        "hubot", "hubot", ["meta-integration", "bots"], doc="zerver/integrations/hubot.md"
+    PythonAPIIntegration(
+        "irc", ["communication"], display_name="IRC", directory_name="bridge_with_irc"
     ),
-    "irc": Integration(
-        "irc", "irc", ["communication"], display_name="IRC", doc="zerver/integrations/irc.md"
-    ),
-    "jenkins": Integration(
-        "jenkins",
-        "jenkins",
-        ["continuous-integration"],
-        secondary_line_text="(or Hudson)",
-        doc="zerver/integrations/jenkins.md",
-    ),
-    "jira-plugin": Integration(
-        "jira-plugin",
+    PythonAPIIntegration(
         "jira-plugin",
         ["project-management"],
         logo="images/integrations/logos/jira.svg",
         secondary_line_text="(locally installed)",
         display_name="Jira",
-        doc="zerver/integrations/jira-plugin.md",
+        directory_name="jira",
         stream_name="jira",
         legacy=True,
     ),
-    "jitsi": Integration(
-        "jitsi",
-        "jitsi",
-        ["communication"],
-        logo="images/integrations/logos/jitsi.svg",
-        display_name="Jitsi Meet",
-        doc="zerver/integrations/jitsi.md",
-    ),
-    "mastodon": Integration(
-        "mastodon",
-        "mastodon",
-        ["communication"],
-        display_name="Mastodon",
-        doc="zerver/integrations/mastodon.md",
-    ),
-    "matrix": Integration(
-        "matrix", "matrix", ["communication"], doc="zerver/integrations/matrix.md"
-    ),
-    "mercurial": Integration(
-        "mercurial",
+    PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
+    PythonAPIIntegration(
         "mercurial",
         ["version-control"],
         display_name="Mercurial (hg)",
-        doc="zerver/integrations/mercurial.md",
         stream_name="commits",
+        directory_name="hg",
     ),
-    "nagios": Integration("nagios", "nagios", ["monitoring"], doc="zerver/integrations/nagios.md"),
-    "notion": Integration(
-        "notion", "notion", ["productivity"], doc="zerver/integrations/notion.md"
+    PythonAPIIntegration("nagios", ["monitoring"]),
+    PythonAPIIntegration(
+        "openshift", ["deployment"], display_name="OpenShift", stream_name="deployments"
     ),
-    "openshift": Integration(
-        "openshift",
-        "openshift",
-        ["deployment"],
-        display_name="OpenShift",
-        doc="zerver/integrations/openshift.md",
-        stream_name="deployments",
-    ),
-    "perforce": Integration(
-        "perforce", "perforce", ["version-control"], doc="zerver/integrations/perforce.md"
-    ),
-    "phabricator": Integration(
-        "phabricator", "phabricator", ["version-control"], doc="zerver/integrations/phabricator.md"
-    ),
-    "puppet": Integration("puppet", "puppet", ["deployment"], doc="zerver/integrations/puppet.md"),
-    "redmine": Integration(
-        "redmine", "redmine", ["project-management"], doc="zerver/integrations/redmine.md"
-    ),
-    "rss": Integration(
-        "rss", "rss", ["communication"], display_name="RSS", doc="zerver/integrations/rss.md"
-    ),
-    "svn": Integration("svn", "svn", ["version-control"], doc="zerver/integrations/svn.md"),
-    "trac": Integration("trac", "trac", ["project-management"], doc="zerver/integrations/trac.md"),
-    "twitter": Integration(
-        "twitter",
+    PythonAPIIntegration("perforce", ["version-control"]),
+    PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
+    PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
+    PythonAPIIntegration("trac", ["project-management"]),
+    PythonAPIIntegration(
         "twitter",
         ["customer-support", "marketing"],
         # _ needed to get around adblock plus
         logo="images/integrations/logos/twitte_r.svg",
-        doc="zerver/integrations/twitter.md",
     ),
-    "zoom": Integration(
-        "zoom",
-        "zoom",
-        ["communication"],
-        logo="images/integrations/logos/zoom.svg",
-        display_name="Zoom",
-        doc="zerver/integrations/zoom.md",
-    ),
-}
+]
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
@@ -642,29 +651,18 @@ BOT_INTEGRATIONS: list[BotIntegration] = [
 ]
 
 HUBOT_INTEGRATIONS: list[HubotIntegration] = [
-    HubotIntegration(
-        "assembla",
-        ["version-control", "project-management"],
-        display_name="Assembla",
-        logo_alt="Assembla",
-    ),
+    HubotIntegration("assembla", ["version-control", "project-management"]),
     HubotIntegration("bonusly", ["hr"]),
-    HubotIntegration("chartbeat", ["marketing"], display_name="Chartbeat"),
-    HubotIntegration("darksky", ["misc"], display_name="Dark Sky", logo_alt="Dark Sky logo"),
+    HubotIntegration("chartbeat", ["marketing"]),
+    HubotIntegration("darksky", ["misc"], display_name="Dark Sky"),
     HubotIntegration(
         "instagram",
         ["misc"],
-        display_name="Instagram",
         # _ needed to get around adblock plus
         logo="images/integrations/logos/instagra_m.svg",
     ),
-    HubotIntegration("mailchimp", ["communication", "marketing"], display_name="Mailchimp"),
-    HubotIntegration(
-        "google-translate",
-        ["misc"],
-        display_name="Google Translate",
-        logo_alt="Google Translate logo",
-    ),
+    HubotIntegration("mailchimp", ["communication", "marketing"]),
+    HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "youtube",
         ["misc"],
@@ -673,6 +671,9 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
         logo="images/integrations/logos/youtub_e.svg",
     ),
 ]
+
+for python_api_integration in PYTHON_API_INTEGRATIONS:
+    INTEGRATIONS[python_api_integration.name] = python_api_integration
 
 for hubot_integration in HUBOT_INTEGRATIONS:
     INTEGRATIONS[hubot_integration.name] = hubot_integration
@@ -694,6 +695,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 
 DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
+    "airbyte": [ScreenshotConfig("airbyte_job_payload_success.json")],
     "alertmanager": [
         ScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
     ],
@@ -722,15 +724,11 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     ],
     "buildbot": [ScreenshotConfig("started.json")],
     "canarytoken": [ScreenshotConfig("canarytoken_real.json")],
-    "circleci": [
-        ScreenshotConfig("bitbucket_job_completed.json", image_name="001.png"),
-        ScreenshotConfig("github_job_completed.json", image_name="002.png"),
-    ],
+    "circleci": [ScreenshotConfig("github_job_completed.json")],
     "clubhouse": [ScreenshotConfig("story_create.json")],
     "codeship": [ScreenshotConfig("error_build.json")],
     "crashlytics": [ScreenshotConfig("issue_message.json")],
     "delighted": [ScreenshotConfig("survey_response_updated_promoter.json")],
-    "deskdotcom": [ScreenshotConfig("static_text.txt", "009.png", "desk", use_basic_auth=True)],
     "dialogflow": [ScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
     "dropbox": [ScreenshotConfig("file_updated.json")],
     "errbit": [ScreenshotConfig("error_message.json")],
@@ -745,11 +743,11 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "github": [ScreenshotConfig("push__1_commit.json")],
     "githubsponsors": [ScreenshotConfig("created.json")],
     "gitlab": [ScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
-    "gocd": [ScreenshotConfig("pipeline.json")],
+    "gocd": [ScreenshotConfig("pipeline_with_mixed_job_result.json")],
     "gogs": [ScreenshotConfig("pull_request__opened.json")],
-    "gosquared": [ScreenshotConfig("traffic_spike.json", image_name="000.png")],
+    "gosquared": [ScreenshotConfig("traffic_spike.json")],
     "grafana": [ScreenshotConfig("alert_values_v11.json")],
-    "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
+    "greenhouse": [ScreenshotConfig("candidate_stage_change.json")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],
     "hellosign": [
@@ -761,11 +759,11 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     ],
     "helloworld": [ScreenshotConfig("hello.json")],
     "heroku": [ScreenshotConfig("deploy.txt")],
-    "homeassistant": [ScreenshotConfig("reqwithtitle.json", image_name="003.png")],
+    "homeassistant": [ScreenshotConfig("reqwithtitle.json")],
     "insping": [ScreenshotConfig("website_state_available.json")],
     "intercom": [ScreenshotConfig("conversation_admin_replied.json")],
     "jira": [ScreenshotConfig("created_v1.json")],
-    "jotform": [ScreenshotConfig("response.json")],
+    "jotform": [ScreenshotConfig("response.multipart")],
     "json": [ScreenshotConfig("json_github_push__1_commit.json")],
     "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
     "lidarr": [ScreenshotConfig("lidarr_album_grabbed.json")],
@@ -773,17 +771,13 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "mention": [ScreenshotConfig("webfeeds.json")],
     "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
-    "newrelic": [
-        ScreenshotConfig("incident_active_new.json", "001.png"),
-        ScreenshotConfig("incident_acknowledged_new.json", "002.png"),
-        ScreenshotConfig("incident_closed_new.json", "003.png"),
-    ],
+    "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
-    "opsgenie": [ScreenshotConfig("addrecipient.json", image_name="000.png")],
+    "opsgenie": [ScreenshotConfig("addrecipient.json")],
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
     "papertrail": [ScreenshotConfig("short_post.json", payload_as_query_param=True)],
     "patreon": [ScreenshotConfig("members_pledge_create.json")],
-    "pingdom": [ScreenshotConfig("http_up_to_down.json", image_name="001.png")],
+    "pingdom": [ScreenshotConfig("http_up_to_down.json")],
     "pivotal": [ScreenshotConfig("v5_type_changed.json")],
     "radarr": [ScreenshotConfig("radarr_movie_grabbed.json")],
     "raygun": [ScreenshotConfig("new_error.json")],
@@ -791,18 +785,15 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "rhodecode": [ScreenshotConfig("push.json")],
     "rundeck": [ScreenshotConfig("start.json")],
     "semaphore": [ScreenshotConfig("pull_request.json")],
-    "sentry": [
-        ScreenshotConfig("event_for_exception_python.json"),
-        ScreenshotConfig("issue_assigned_to_team.json", "002.png"),
-    ],
-    "slack": [ScreenshotConfig("message_info.txt")],
+    "sentry": [ScreenshotConfig("event_for_exception_python.json")],
+    "slack": [ScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [ScreenshotConfig("error.json")],
     "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
     "splunk": [ScreenshotConfig("search_one_result.json")],
     "statuspage": [ScreenshotConfig("incident_created.json")],
     "stripe": [ScreenshotConfig("charge_succeeded__card.json")],
     "taiga": [ScreenshotConfig("userstory_changed_status.json")],
-    "teamcity": [ScreenshotConfig("success.json"), ScreenshotConfig("personal.json", "002.png")],
+    "teamcity": [ScreenshotConfig("success.json")],
     "thinkst": [ScreenshotConfig("canary_consolidated_port_scan.json")],
     "transifex": [
         ScreenshotConfig(
@@ -825,12 +816,11 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "zendesk": [
         ScreenshotConfig(
             "",
-            "007.png",
             use_basic_auth=True,
             extra_params={
-                "ticket_title": "Test ticket",
-                "ticket_id": "4",
-                "message": "Test message",
+                "ticket_title": "Hardware Ecosystem Compatibility Inquiry",
+                "ticket_id": "4837",
+                "message": "Hi, I am planning to purchase the X5000 smartphone and want to ensure compatibility with my existing devices - WDX10 wireless earbuds and Z600 smartwatch. Are there any known issues?",
             },
         )
     ],
@@ -842,6 +832,7 @@ def get_all_event_types_for_integration(integration: Integration) -> list[str] |
     if isinstance(integration, WebhookIntegration):
         if integration.name == "githubsponsors":
             return import_string("zerver.webhooks.github.view.SPONSORS_EVENT_TYPES")
-        if hasattr(integration.function, "_all_event_types"):
-            return integration.function._all_event_types
+        function = integration.get_function()
+        if hasattr(function, "_all_event_types"):
+            return function._all_event_types
     return None

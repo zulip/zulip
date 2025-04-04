@@ -120,11 +120,11 @@ def move_rows(
             return []
 
 
-def run_archiving_in_chunks(
+def run_archiving(
     query: SQL,
     type: int,
     realm: Realm | None = None,
-    chunk_size: int = MESSAGE_BATCH_SIZE,
+    chunk_size: int | None = MESSAGE_BATCH_SIZE,
     **kwargs: Composable,
 ) -> int:
     # This function is carefully designed to achieve our
@@ -132,19 +132,21 @@ def run_archiving_in_chunks(
     # archived-and-deleted or not transactionally.
     #
     # We implement this design by executing queries that archive messages and their related objects
-    # (such as UserMessage, Reaction, and Attachment) inside the same transaction.atomic() block.
+    # (such as UserMessage, Reaction, and Attachment) inside the same transaction.atomic block.
     assert type in (ArchiveTransaction.MANUAL, ArchiveTransaction.RETENTION_POLICY_BASED)
+
+    if chunk_size is not None:
+        kwargs["chunk_size"] = Literal(chunk_size)
 
     message_count = 0
     while True:
         start_time = time.time()
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             archive_transaction = ArchiveTransaction.objects.create(type=type, realm=realm)
             new_chunk = move_rows(
                 Message,
                 query,
                 src_db_table=None,
-                chunk_size=Literal(chunk_size),
                 returning_id=True,
                 archive_transaction_id=Literal(archive_transaction.id),
                 **kwargs,
@@ -169,8 +171,9 @@ def run_archiving_in_chunks(
             )
 
         # We run the loop, until the query returns fewer results than chunk_size,
-        # which means we are done:
-        if len(new_chunk) < chunk_size:
+        # which means we are done; or if we're not chunking, we're done
+        # after one iteration.
+        if chunk_size is None or len(new_chunk) < chunk_size:
             break
 
     return message_count
@@ -206,7 +209,7 @@ def move_expired_messages_to_archive_by_recipient(
     )
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
-    return run_archiving_in_chunks(
+    return run_archiving(
         query,
         type=ArchiveTransaction.RETENTION_POLICY_BASED,
         realm=realm,
@@ -244,7 +247,7 @@ def move_expired_direct_messages_to_archive(
     """
     )
 
-    message_count = run_archiving_in_chunks(
+    message_count = run_archiving(
         query,
         type=ArchiveTransaction.RETENTION_POLICY_BASED,
         realm=realm,
@@ -393,6 +396,7 @@ def archive_stream_messages(
     logger.info("Done. Archived %s messages.", message_count)
 
 
+@transaction.atomic(durable=True)
 def archive_messages(chunk_size: int = MESSAGE_BATCH_SIZE) -> None:
     logger.info("Starting the archiving process with chunk_size %s", chunk_size)
 
@@ -458,35 +462,48 @@ def get_realms_and_streams_for_archiving() -> list[tuple[Realm, list[Stream]]]:
 def move_messages_to_archive(
     message_ids: list[int], realm: Realm | None = None, chunk_size: int = MESSAGE_BATCH_SIZE
 ) -> None:
-    # Uses index: zerver_message_pkey
-    query = SQL(
-        """
-    INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
-        SELECT {src_fields}, {archive_transaction_id}
-        FROM zerver_message
-        WHERE zerver_message.id IN {message_ids}
-        LIMIT {chunk_size}
-    ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
-    RETURNING id
     """
-    )
-    count = run_archiving_in_chunks(
-        query,
-        type=ArchiveTransaction.MANUAL,
-        message_ids=Literal(tuple(message_ids)),
-        realm=realm,
-        chunk_size=chunk_size,
-    )
+    Callers using this to archive a large amount of messages should ideally make sure the message_ids are
+    ordered, as that'll allow better performance here by keeping the batches that'll be sent to the database
+    ordered rather than randomly scattered.
+    """
+    count = 0
+    # In order to avoid sending a massive list of message ids to the database,
+    # we'll handle chunking the list of ids directly here.
+    message_ids_head = message_ids
+    while message_ids_head:
+        message_ids_chunk = message_ids_head[0:chunk_size]
+        message_ids_head = message_ids_head[chunk_size:]
+
+        # Uses index: zerver_message_pkey
+        query = SQL(
+            """
+        INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
+            SELECT {src_fields}, {archive_transaction_id}
+            FROM zerver_message
+            WHERE zerver_message.id IN {message_ids}
+        ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
+        RETURNING id
+        """
+        )
+
+        count += run_archiving(
+            query,
+            type=ArchiveTransaction.MANUAL,
+            message_ids=Literal(tuple(message_ids_chunk)),
+            realm=realm,
+            chunk_size=None,
+        )
+        # Clean up attachments:
+        archived_attachments = ArchivedAttachment.objects.filter(
+            messages__id__in=message_ids_chunk
+        ).distinct()
+        Attachment.objects.filter(
+            messages__isnull=True, scheduled_messages__isnull=True, id__in=archived_attachments
+        ).delete()
 
     if count == 0:
         raise Message.DoesNotExist
-    # Clean up attachments:
-    archived_attachments = ArchivedAttachment.objects.filter(
-        messages__id__in=message_ids
-    ).distinct()
-    Attachment.objects.filter(
-        messages__isnull=True, scheduled_messages__isnull=True, id__in=archived_attachments
-    ).delete()
 
 
 def restore_messages_from_archive(archive_transaction_id: int) -> list[int]:
@@ -579,7 +596,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
     # so that when we log "Finished", the process has indeed finished - and that happens only after
     # leaving the atomic block - Django does work committing the changes to the database when
     # the block ends.
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         msg_ids = restore_messages_from_archive(archive_transaction.id)
         restore_models_with_message_key_from_archive(archive_transaction.id)
         restore_attachments_from_archive(archive_transaction.id)
@@ -663,12 +680,20 @@ def clean_archived_data() -> None:
     # Associated archived objects will get deleted through the on_delete=CASCADE property:
     count = 0
     transaction_ids = list(
-        ArchiveTransaction.objects.filter(timestamp__lt=check_date).values_list("id", flat=True)
+        ArchiveTransaction.objects.filter(
+            timestamp__lt=check_date, protect_from_deletion=False
+        ).values_list("id", flat=True)
     )
     while len(transaction_ids) > 0:
         transaction_block = transaction_ids[0:TRANSACTION_DELETION_BATCH_SIZE]
         transaction_ids = transaction_ids[TRANSACTION_DELETION_BATCH_SIZE:]
-        ArchiveTransaction.objects.filter(id__in=transaction_block).delete()
+
+        ArchiveTransaction.objects.filter(
+            # The protect_from_deletion=False condition is redundant at this point, but can act
+            # as an extra safeguard against future bugs.
+            id__in=transaction_block,
+            protect_from_deletion=False,
+        ).delete()
         count += len(transaction_block)
 
     logger.info("Deleted %s old ArchiveTransactions.", count)

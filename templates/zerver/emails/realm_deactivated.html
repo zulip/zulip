@@ -1,5 +1,8 @@
 {% extends "zerver/emails/email_base_default.html" %}
 {% set localized_date = event_date|localize %}
+{% if scheduled_deletion_date %}
+{% set deletion_date = scheduled_deletion_date|localize %}
+{% endif %}
 
 {% block illustration %}
 <img src="{{ email_images_base_url }}/email_logo.png" alt=""/>
@@ -13,6 +16,11 @@
         {% trans %}Your Zulip organization, {{ realm_name }}, was deactivated by {{ deactivating_owner }} on {{ localized_date }}.{% endtrans %}
     {% else %}
         {% trans %}Your Zulip organization, {{ realm_name }}, was deactivated on {{ localized_date }}.{% endtrans %}
+    {% endif %}
+    {% if data_already_deleted %}
+        {% trans %}All data associated with this organization has been permanently deleted.{% endtrans %}
+    {% elif scheduled_deletion_date %}
+        {% trans %}All data associated with this organization will be permanently deleted on {{ deletion_date }}.{% endtrans %}
     {% endif %}
 </p>
 <p>

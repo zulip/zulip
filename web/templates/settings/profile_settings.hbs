@@ -6,7 +6,7 @@
                 <div class="full-name-change-container">
                     <div class="input-group inline-block grid user-name-parent">
                         <div class="user-name-section inline-block">
-                            <label for="full_name" class="settings-field-label inline-block">{{t "Name" }}</label>
+                            <label for="full_name" class="settings-field-label inline-block {{#unless user_can_change_name}}cursor-text{{/unless}}">{{t "Name" }}</label>
                             <div class="alert-notification full-name-status"></div>
                             <div class="settings-profile-user-field-hint">{{t "How your account is displayed in Zulip." }}</div>
                             <div id="full_name_input_container" {{#unless user_can_change_name}}class="disabled_setting_tooltip"{{/unless}}>
@@ -18,7 +18,7 @@
 
                 <form class="timezone-setting-form">
                     <div class="input-group grid">
-                        <label for="timezone" class="settings-field-label inline-block">{{t "Time zone" }}</label>
+                        <label for="user_timezone" class="settings-field-label inline-block">{{t "Time zone" }}</label>
                         <div class="alert-notification timezone-setting-status"></div>
                         <div class="timezone-input">
                             <select name="timezone" id="user_timezone" class="bootstrap-focus-style settings_select">
@@ -27,10 +27,18 @@
                                 {{/unless}}
 
                                 {{#each timezones}}
-                                    <option value="{{ this }}">{{ this }}</option>
+                                    <option value="{{ this.name }}">{{ this.name }} ({{ this.utc_offset }})</option>
+
                                 {{/each}}
                             </select>
                         </div>
+                    </div>
+                    <div id="automatically_offer_update_time_zone_container">
+                        {{> settings_checkbox
+                          setting_name="automatically_offer_update_time_zone"
+                          is_checked=settings_object.web_suggest_update_timezone
+                          label=settings_label.web_suggest_update_timezone
+                          }}
                     </div>
                 </form>
 
@@ -62,10 +70,14 @@
                     <span class="user-details-desc">{{date_joined_text}}</span>
                 </div>
             </div>
-            <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">
-                {{t 'Preview profile' }}
-                <i class="fa fa-external-link" aria-hidden="true"></i>
-            </button>
+            {{> ../components/action_button
+              label=(t "Preview profile")
+              attention="quiet"
+              intent="brand"
+              id="show_my_user_profile_modal"
+              icon="external-link"
+              aria-hidden="true"
+              }}
         </div>
     </div>
 </div>

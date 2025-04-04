@@ -112,7 +112,7 @@ keep in mind about the import process:
   want to [customize their account settings](/help/getting-started-with-zulip).
 
 - Rocket.Chat user roles are mapped to Zulip's [user
-  roles](/help/roles-and-permissions) in the following way:
+  roles](/help/user-roles) in the following way:
 
 | Rocket.Chat role | Zulip role |
 |------------------|------------|
@@ -162,5 +162,5 @@ any problems using this tool.
 ## Related articles
 
 * [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Getting started with Zulip](/help/getting-started-with-zulip)

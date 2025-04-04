@@ -1,4 +1,2 @@
-[Generate the URL][generate-url] for your {{ integration_display_name }}
-integration.
-
-[generate-url]: /help/generate-integration-url
+Decide where to send {{ integration_display_name }} notifications, and
+[generate the integration URL](/help/generate-integration-url).

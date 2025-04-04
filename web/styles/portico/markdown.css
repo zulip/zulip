@@ -1,4 +1,39 @@
 .markdown {
+    /* Copied from app_variables.css to be used in portico pages. */
+    --color-copy-button: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-button-hover: hsl(229deg 9% 36%);
+    --color-copy-button-active: color-mix(
+        in oklch,
+        hsla(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-button-success: hsl(146deg 90% 27%);
+    /* User circles */
+    /* stylelint-disable color-no-hex */
+    --color-user-circle-active: light-dark(#43a35e, #4cdc75);
+    --color-user-circle-idle: light-dark(#f5b266, #ae640a);
+    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    --gradient-user-circle-idle: linear-gradient(
+        to right,
+        var(--color-user-circle-idle) 5%,
+        light-dark(
+                color-mix(
+                    in srgb,
+                    var(--color-user-circle-idle) 78.9%,
+                    transparent
+                ),
+                var(--color-user-circle-idle)
+            )
+            25%,
+        transparent 100%
+    );
+    /* stylelint-enable color-no-hex */
+
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
@@ -197,11 +232,6 @@
             }
         }
 
-        & i.zulip-icon {
-            margin: 0 2px 2px;
-            vertical-align: middle;
-        }
-
         & i.icon-collapsed-state {
             transform: rotate(270deg);
         }
@@ -209,6 +239,11 @@
         @media (width <= 500px) {
             padding: 10px;
         }
+    }
+
+    & i.zulip-icon {
+        margin: 0 2px 2px;
+        vertical-align: middle;
     }
 
     & a {
@@ -295,48 +330,35 @@
         font-weight: 600;
     }
 
-    .indicator {
-        position: relative;
+    .user-circle {
+        /* We make the circles slightly larger than in the
+           sidebar UI, so they look good next to the copy. */
+        font-size: 0.7em;
         display: inline-block;
-        top: 1px;
-        padding: 5px;
-        border-radius: 6px;
+        /* 1.5px at 11.2px/1em */
+        vertical-align: 0.1339em;
+    }
 
-        &.grey {
-            border: 1px solid hsl(0deg 0% 80%);
-        }
+    .user-circle-active {
+        color: var(--color-user-circle-active);
+    }
 
-        &.grey-line {
-            border: 1px solid hsl(0deg 0% 80%);
-            top: 2px;
+    .user-circle-idle {
+        background: var(--gradient-user-circle-idle);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
-            &::after {
-                content: "";
-                background: hsl(0deg 0% 80%);
-                height: 1.5px;
-                width: 6px;
-                display: block;
-                margin: 0.5px -2px;
-            }
-        }
+    .with_avatar .user-circle-idle {
+        background: var(--gradient-user-circle-idle-avatar);
+    }
 
-        &.orange {
-            border: 1px solid hsl(29deg 84% 51%);
-            background: linear-gradient(
-                to bottom,
-                hsl(0deg 0% 100% / 0%) 50%,
-                hsl(29deg 84% 51%) 50%
-            );
-        }
+    .user-circle-offline {
+        color: var(--color-user-circle-offline);
+    }
 
-        &.green {
-            border: 1px solid hsl(106deg 74% 44%);
-            background-color: hsl(106deg 74% 44% / 30%);
-        }
-
-        &.green.solid {
-            background-color: hsl(106deg 74% 44%);
-        }
+    .user-circle-deactivated {
+        color: var(--color-user-circle-deactivated);
     }
 
     & kbd {
@@ -412,9 +434,27 @@
             outline-offset: -1px;
             outline-color: hsl(176deg 46% 41%);
         }
+    }
 
-        &:hover svg path {
-            fill: hsl(200deg 100% 40%);
+    .copy-button {
+        display: flex;
+        border-radius: 4px;
+        color: var(--color-copy-button);
+        /* 2px at 16px/1em */
+        padding: 0.125em;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color-copy-button-hover);
+        }
+
+        &:active {
+            color: var(--color-copy-button-active);
+        }
+
+        &.copy-button-success {
+            color: var(--color-copy-button-success);
         }
     }
 

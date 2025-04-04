@@ -11,7 +11,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
 
 
+from scripts.lib.zulip_tools import get_config, get_config_file
 from version import ZULIP_VERSION
+
+webpack_command = [
+    "node",
+    "--experimental-strip-types",
+    "--no-warnings=ExperimentalWarning",
+    "../node_modules/webpack-cli/bin/cli.js",
+]
 
 
 def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> NoReturn:
@@ -21,7 +29,8 @@ def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> 
         if int(next(meminfo).split()[1]) < 3 * 1024 * 1024:
             os.environ["NODE_OPTIONS"] = "--max-old-space-size=1536"
     webpack_args = [
-        "../node_modules/.bin/webpack-cli",
+        *webpack_command,
+        "build",
         "--mode=production",
         f"--env=ZULIP_VERSION={ZULIP_VERSION}",
     ]
@@ -29,6 +38,12 @@ def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> 
         webpack_args += ["--stats=errors-only"]
     if config_name is not None:
         webpack_args += [f"--config-name={config_name}"]
+    if "PUPPETEER_TESTS" in os.environ:
+        webpack_args.append("--env=puppeteer_tests")
+    else:
+        custom_5xx_file = get_config(get_config_file(), "application_server", "5xx_file")
+        if custom_5xx_file is not None:
+            webpack_args.append(f"--env=custom_5xx_file={custom_5xx_file}")
 
     # Silence warnings from "browserslist" about using old data; those
     # warnings are only useful for development
@@ -43,8 +58,9 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # This is our most dynamic configuration, which we use for our
     # dev server.  The key piece here is that we identify changes to
     # files as devs make edits and serve new assets on the fly.
-    webpack_args = ["../node_modules/.bin/webpack-cli", "serve"]
-    webpack_args += [
+    webpack_args = [
+        *webpack_command,
+        "serve",
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex part anyway.
         "--config-name=frontend",

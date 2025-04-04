@@ -132,6 +132,9 @@ with Zulip notifications on your Android phone, we recommend Signal's excellent
 [troubleshooting guide](https://support.signal.org/hc/en-us/articles/360007318711-Troubleshooting-Notifications#android_notifications_troubleshooting),
 which explains the notification settings for many popular Android vendors.
 
+Android users using microG: we have heard reports of notifications working
+if microG's "Cloud Messaging" setting is enabled.
+
 ### Enabling push notifications for self-hosted servers
 
 !!! warn ""
@@ -147,7 +150,7 @@ To enable push notifications for your organization:
    Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
 
 1. For organizations with more than 10 users, an
-   [owner](/help/roles-and-permissions) or billing administrator needs to sign
+   [owner](/help/user-roles) or billing administrator needs to sign
    up for a [plan](https://zulip.com/plans/#self-hosted) for your organization.
 
 {end_tabs}

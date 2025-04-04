@@ -17,7 +17,7 @@ from zerver.context_processors import common_context
 from zerver.lib.email_notifications import build_message_list
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import get_last_message_id
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.url_encoding import stream_narrow_url
 from zerver.models import (
@@ -30,6 +30,7 @@ from zerver.models import (
     UserActivityInterval,
     UserProfile,
 )
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import get_active_streams
 
 logger = logging.getLogger(__name__)
@@ -91,7 +92,7 @@ class DigestTopic:
 def queue_digest_user_ids(user_ids: list[int], cutoff: datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
-    queue_json_publish("digest_emails", event)
+    queue_json_publish_rollback_unsafe("digest_emails", event)
 
 
 def enqueue_emails(cutoff: datetime) -> None:
@@ -127,7 +128,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
             sent_recent_digest=Exists(
                 RealmAuditLog.objects.filter(
                     realm_id=realm.id,
-                    event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
+                    event_type=AuditLogEventType.USER_DIGEST_EMAIL_CREATED,
                     event_time__gt=twelve_hours_ago,
                     modified_user_id=OuterRef("id"),
                 )
@@ -285,9 +286,9 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
     bugs for any of those classes of users.
     """
     events = [
-        RealmAuditLog.SUBSCRIPTION_CREATED,
-        RealmAuditLog.SUBSCRIPTION_ACTIVATED,
-        RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+        AuditLogEventType.SUBSCRIPTION_CREATED,
+        AuditLogEventType.SUBSCRIPTION_ACTIVATED,
+        AuditLogEventType.SUBSCRIPTION_DEACTIVATED,
     ]
     # This uses the zerver_realmauditlog_user_subscriptions_idx
     # partial index on RealmAuditLog which is specifically for those
@@ -386,7 +387,7 @@ def get_digest_context(user: UserProfile, cutoff: float) -> dict[str, Any]:
     raise AssertionError("Unreachable")
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def bulk_handle_digest_email(user_ids: list[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.
@@ -403,7 +404,7 @@ def bulk_handle_digest_email(user_ids: list[int], cutoff: float) -> None:
             continue
 
         digest_users.append(user)
-        logger.info("Sending digest email for user %s", user.id)
+        logger.info("Enqueuing digest email for user %s", user.id)
 
         # Send now, as a ScheduledEmail
         send_future_email(
@@ -434,7 +435,7 @@ def bulk_write_realm_audit_logs(users: list[UserProfile]) -> None:
             modified_user_id=user.id,
             event_last_message_id=last_message_id,
             event_time=now,
-            event_type=RealmAuditLog.USER_DIGEST_EMAIL_CREATED,
+            event_type=AuditLogEventType.USER_DIGEST_EMAIL_CREATED,
         )
         for user in users
     ]

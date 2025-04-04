@@ -3,14 +3,14 @@ import $ from "jquery";
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
-import * as dialog_widget from "./dialog_widget";
-import * as emoji from "./emoji";
-import type {EmojiRenderingDetails} from "./emoji";
-import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as people from "./people";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as emoji from "./emoji.ts";
+import type {EmojiRenderingDetails} from "./emoji.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as people from "./people.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
 
 let selected_emoji_info: Partial<UserStatusEmojiInfo> = {};
 let default_status_messages_and_emoji_info: {status_text: string; emoji: EmojiRenderingDetails}[];
@@ -40,6 +40,7 @@ export function open_user_status_modal(): void {
         html_body: rendered_set_status_overlay,
         html_submit_button: $t_html({defaultMessage: "Save"}),
         id: "set-user-status-modal",
+        loading_spinner: true,
         on_click: submit_new_status,
         post_render: user_status_post_render,
         on_shown() {
@@ -107,7 +108,7 @@ export function clear_message(): void {
 }
 
 export function user_status_picker_open(): boolean {
-    return $("#set-user-status-modal").length !== 0;
+    return $("#set-user-status-modal").length > 0;
 }
 
 function emoji_status_fields_changed(
@@ -130,7 +131,7 @@ function emoji_status_fields_changed(
 
 function rebuild_status_emoji_selector_ui(selected_emoji_info: Partial<UserStatusEmojiInfo>): void {
     let selected_emoji = null;
-    if (selected_emoji_info && Object.keys(selected_emoji_info).length) {
+    if (selected_emoji_info && Object.keys(selected_emoji_info).length > 0) {
         selected_emoji = selected_emoji_info;
     }
     const rendered_status_emoji_selector = render_status_emoji_selector({selected_emoji});

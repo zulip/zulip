@@ -17,7 +17,7 @@ from zerver.actions.presence import do_update_user_presence
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
-from zerver.lib.events import fetch_initial_state_data
+from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
@@ -27,10 +27,10 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
-from zerver.lib.users import get_api_key, get_users_for_api
+from zerver.lib.users import get_users_for_api
 from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
-from zerver.models.realms import get_realm, get_realm_with_settings
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
@@ -163,7 +163,7 @@ class EventsEndpointTest(ZulipTestCase):
     def test_events_register_spectators(self) -> None:
         # Verify that POST /register works for spectators, but not for
         # normal users.
-        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False), self.assert_database_query_count(2):
             result = self.client_post("/json/register")
             self.assert_json_error(
                 result,
@@ -171,11 +171,12 @@ class EventsEndpointTest(ZulipTestCase):
                 status_code=401,
             )
 
-        result = self.client_post("/json/register")
-        result_dict = self.assert_json_success(result)
-        self.assertEqual(result_dict["queue_id"], None)
-        self.assertEqual(result_dict["realm_url"], "http://zulip.testserver")
-        self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
+        with self.assert_database_query_count(15):
+            result = self.client_post("/json/register")
+            result_dict = self.assert_json_success(result)
+            self.assertEqual(result_dict["queue_id"], None)
+            self.assertEqual(result_dict["realm_url"], "http://zulip.testserver")
+            self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
 
         result = self.client_post("/json/register")
         self.assertEqual(result.status_code, 200)
@@ -374,6 +375,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["local_message_id"], local_id)
         self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
 
         last_event_id = events[0]["id"]
         local_id = "10.02"
@@ -406,6 +408,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
@@ -425,9 +428,12 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(recipient_events[0]["type"], "message")
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[0])
+        # Incoming DMs show the recipient_id that outgoing DMs would.
+        self.assertEqual(recipient_events[0]["message"]["recipient_id"], user_profile.recipient_id)
         self.assertEqual(recipient_events[1]["type"], "message")
         self.assertEqual(recipient_events[1]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[1])
+        self.assertEqual(recipient_events[1]["message"]["recipient_id"], user_profile.recipient_id)
 
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -621,7 +627,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result["realm_bots"], 0)
 
         # additionally the API key for a random bot is not present in the data
-        api_key = get_api_key(self.notification_bot(user_profile.realm))
+        api_key = self.notification_bot(user_profile.realm).api_key
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field
@@ -828,6 +834,22 @@ class FetchInitialStateDataTest(ZulipTestCase):
         [pronouns_field] = (field for field in custom_profile_fields if field["name"] == "Pronouns")
         self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
 
+    def test_unreads_case_insensitive_topics(self) -> None:
+        sender = self.example_user("hamlet")
+        self.login_user(sender)
+        self.send_stream_message(sender, "Denmark", "**hello**", topic_name="case DOES not MATTER")
+        self.send_stream_message(sender, "Denmark", "**bye**", topic_name="CASE does NOT matter")
+
+        reader = self.example_user("othello")
+        result = fetch_initial_state_data(
+            user_profile=reader,
+            realm=reader.realm,
+        )
+        post_process_state(reader, result, False, True)
+        self.assert_length(result["unread_msgs"]["streams"], 1)
+        self.assertEqual(result["unread_msgs"]["streams"][0]["topic"], "case DOES not MATTER")
+        self.assert_length(result["unread_msgs"]["streams"][0]["unread_message_ids"], 2)
+
 
 class ClientDescriptorsTest(ZulipTestCase):
     def test_get_client_info_for_all_public_streams(self) -> None:
@@ -844,6 +866,7 @@ class ClientDescriptorsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
         )
 
         client = allocate_client_descriptor(queue_data)
@@ -898,6 +921,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 queue_timeout=0,
                 realm_id=realm.id,
                 user_profile_id=hamlet.id,
+                user_recipient_id=hamlet.recipient_id,
             )
 
             client = allocate_client_descriptor(queue_data)
@@ -942,13 +966,20 @@ class ClientDescriptorsTest(ZulipTestCase):
 
         class MockClient:
             def __init__(
-                self, user_profile_id: int, apply_markdown: bool, client_gravatar: bool
+                self,
+                *,
+                user_profile_id: int,
+                user_recipient_id: int | None,
+                apply_markdown: bool,
+                client_gravatar: bool,
             ) -> None:
                 self.user_profile_id = user_profile_id
+                self.user_recipient_id = user_recipient_id
                 self.apply_markdown = apply_markdown
                 self.client_gravatar = client_gravatar
                 self.client_type_name = "whatever"
                 self.events: list[dict[str, Any]] = []
+                self.empty_topic_name = True
 
             def accepts_messages(self) -> bool:
                 return True
@@ -962,24 +993,28 @@ class ClientDescriptorsTest(ZulipTestCase):
 
         client1 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=False,
         )
 
         client2 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=False,
         )
 
         client3 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=True,
         )
 
         client4 = MockClient(
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=True,
         )
@@ -1011,11 +1046,13 @@ class ClientDescriptorsTest(ZulipTestCase):
                 content="**hello**",
                 rendered_content="<b>hello</b>",
                 sender_id=sender.id,
+                recipient_id=1111,
                 type="stream",
                 client="website",
                 # NOTE: Some of these fields are clutter, but some
                 #       will be useful when we let clients specify
                 #       that they can compute their own gravatar URLs.
+                sender_recipient_id=sender.recipient_id,
                 sender_email=sender.email,
                 sender_delivery_email=sender.delivery_email,
                 sender_realm_id=sender.realm_id,
@@ -1056,6 +1093,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_id=sender.id,
                         sender_email=sender.email,
                         id=999,
+                        recipient_id=1111,
                         content="<b>hello</b>",
                         content_type="text/html",
                         client="website",
@@ -1075,6 +1113,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_id=sender.id,
                         sender_email=sender.email,
                         id=999,
+                        recipient_id=1111,
                         content="**hello**",
                         content_type="text/x-markdown",
                         client="website",
@@ -1095,6 +1134,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_email=sender.email,
                         avatar_url=None,
                         id=999,
+                        recipient_id=1111,
                         content="<b>hello</b>",
                         content_type="text/html",
                         client="website",
@@ -1115,6 +1155,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                         sender_email=sender.email,
                         avatar_url=None,
                         id=999,
+                        recipient_id=1111,
                         content="**hello**",
                         content_type="text/x-markdown",
                         client="website",
@@ -1142,6 +1183,7 @@ class ReloadWebClientsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
+            user_recipient_id=hamlet.recipient_id,
         )
         client = allocate_client_descriptor(queue_data)
 
@@ -1170,16 +1212,11 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        # Fetch realm like it is done when calling fetch_initial_state_data
-        # in production to match the query counts with the actual query
-        # count in production.
-        realm = get_realm_with_settings(realm_id=user.realm_id)
-
         with (
-            self.assert_database_query_count(39),
+            self.assert_database_query_count(44),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
-            fetch_initial_state_data(user, realm=realm)
+            fetch_initial_state_data(user, realm=user.realm)
 
         expected_counts = dict(
             alert_words=1,
@@ -1192,7 +1229,12 @@ class FetchQueriesTest(ZulipTestCase):
             muted_users=1,
             onboarding_steps=1,
             presence=1,
-            realm=1,
+            # 2 of the 3 queries here are a single query that is used
+            # for all the 'realm', 'stream', 'subscription'
+            # and 'realm_user_groups' event types.
+            realm=3,
+            # Similarly, this query is shared with the realm_user total.
+            realm_billing=1,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
@@ -1202,17 +1244,22 @@ class FetchQueriesTest(ZulipTestCase):
             realm_linkifiers=0,
             realm_playgrounds=1,
             realm_user=4,
-            realm_user_groups=3,
+            realm_user_groups=2,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
+            saved_snippets=1,
             scheduled_messages=1,
             starred_messages=1,
-            stream=3,
+            # 3 of the 5 queries here are shared with other event types
+            # as mentioned above.
+            stream=5,
             stop_words=0,
-            subscription=4,
+            # 3 of the 9 queries here are shared with other event types
+            # as mentioned above.
+            subscription=9,
             update_display_settings=0,
             update_global_notifications=0,
-            update_message_flags=5,
+            update_message_flags=7,
             user_settings=0,
             user_status=1,
             user_topic=1,
@@ -1224,11 +1271,6 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.assertEqual(wanted_event_types, set(expected_counts))
 
-        # Fetch realm again here so that the cached foreign key fields
-        # while testing the above case does not reduce the query count
-        # and we test the actual query count for each event type.
-        realm = get_realm_with_settings(realm_id=user.realm_id)
-
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
             with self.assert_database_query_count(count):
@@ -1237,7 +1279,7 @@ class FetchQueriesTest(ZulipTestCase):
                 else:
                     event_types = [event_type]
 
-                fetch_initial_state_data(user, realm=realm, event_types=event_types)
+                fetch_initial_state_data(user, realm=user.realm, event_types=event_types)
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):

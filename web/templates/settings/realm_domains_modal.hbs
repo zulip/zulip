@@ -1,4 +1,4 @@
-<table class="table table-stripped new-style" id="realm_domains_table">
+<table class="table table-stripped" id="realm_domains_table">
     <thead>
         <th>{{t "Domain" }}</th>
         <th>{{t "Allow subdomains"}}</th>
@@ -12,10 +12,17 @@
             <td>
                 <label class="checkbox">
                     <input type="checkbox" class="new-realm-domain-allow-subdomains" />
-                    <span></span>
+                    <span class="rendered-checkbox"></span>
                 </label>
             </td>
-            <td><button type="button" class="button sea-green small rounded" id="submit-add-realm-domain">{{t "Add" }}</button></td>
+            <td>
+                {{> ../components/action_button
+                  label=(t "Add")
+                  id="submit-add-realm-domain"
+                  attention="quiet"
+                  intent="brand"
+                  }}
+            </td>
         </tr>
     </tfoot>
 </table>

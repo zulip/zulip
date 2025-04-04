@@ -40,7 +40,11 @@ def get_presence_backend(
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 
-    if target.is_bot:
+    # Check bot_type here, rather than is_bot, because that matches
+    # authenticated_json_view's check of .is_incoming_webhook; the
+    # narrow user cache can hence be optimized to only have the
+    # nullable bot_type, as long as this check matches.
+    if target.bot_type is not None:
         raise JsonableError(_("Presence is not supported for bot users."))
 
     if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE and not check_can_access_user(
@@ -154,6 +158,7 @@ def update_active_status_backend(
     new_user_input: Json[bool] = False,
     slim_presence: Json[bool] = False,
     last_update_id: Json[int] | None = None,
+    history_limit_days: Json[int] | None = None,
 ) -> HttpResponse:
     if last_update_id is not None:
         # This param being submitted by the client, means they want to use
@@ -163,16 +168,19 @@ def update_active_status_backend(
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: {status}").format(status=status))
-    elif user_profile.presence_enabled:
-        client = RequestNotes.get_notes(request).client
-        assert client is not None
-        update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
+
+    client = RequestNotes.get_notes(request).client
+    assert client is not None
+    update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 
     if ping_only:
         ret: dict[str, Any] = {}
     else:
         ret = get_presence_response(
-            user_profile, slim_presence, last_update_id_fetched_by_client=last_update_id
+            user_profile,
+            slim_presence,
+            last_update_id_fetched_by_client=last_update_id,
+            history_limit_days=history_limit_days,
         )
 
     if user_profile.realm.is_zephyr_mirror_realm:

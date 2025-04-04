@@ -1,4 +1,4 @@
-import {realm} from "./state_data";
+import {realm} from "./state_data.ts";
 
 export function is_giphy_enabled(): boolean {
     return (

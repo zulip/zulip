@@ -3,6 +3,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.models import Realm, RealmAuditLog, RealmDomain, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import RealmDomainDict, get_realm_domains
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
@@ -20,7 +21,7 @@ def do_add_realm_domain(
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
+        event_type=AuditLogEventType.REALM_DOMAIN_ADDED,
         event_time=timezone_now(),
         extra_data={
             "realm_domains": get_realm_domains(realm),
@@ -54,7 +55,7 @@ def do_change_realm_domain(
     RealmAuditLog.objects.create(
         realm=realm_domain.realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
+        event_type=AuditLogEventType.REALM_DOMAIN_CHANGED,
         event_time=timezone_now(),
         extra_data={
             "realm_domains": get_realm_domains(realm_domain.realm),
@@ -85,7 +86,7 @@ def do_remove_realm_domain(realm_domain: RealmDomain, *, acting_user: UserProfil
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_DOMAIN_REMOVED,
+        event_type=AuditLogEventType.REALM_DOMAIN_REMOVED,
         event_time=timezone_now(),
         extra_data={
             "realm_domains": get_realm_domains(realm),

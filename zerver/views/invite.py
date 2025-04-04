@@ -2,6 +2,7 @@ import re
 from typing import Annotated
 
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -19,10 +20,11 @@ from zerver.actions.invites import (
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
-from zerver.lib.streams import access_stream_by_id
+from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
-from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
+from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
+from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
 # Because mypy fails to correctly infer the type of the validator, we want this constant
@@ -44,6 +46,81 @@ def check_role_based_permissions(
         raise JsonableError(_("Must be an organization administrator"))
 
 
+def access_invite_by_id(user_profile: UserProfile, invite_id: int) -> PreregistrationUser:
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=invite_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("No such invitation"))
+
+    # Structurally, any invitation the user can actually access should
+    # have a referred_by set for the user who created it.
+    if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
+        raise JsonableError(_("No such invitation"))
+
+    if prereg_user.referred_by_id != user_profile.id:
+        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
+    return prereg_user
+
+
+def access_multiuse_invite_by_id(user_profile: UserProfile, invite_id: int) -> MultiuseInvite:
+    try:
+        invite = MultiuseInvite.objects.get(id=invite_id)
+    except MultiuseInvite.DoesNotExist:
+        raise JsonableError(_("No such invitation"))
+
+    if invite.realm != user_profile.realm:
+        raise JsonableError(_("No such invitation"))
+
+    if invite.referred_by_id != user_profile.id:
+        check_role_based_permissions(invite.invited_as, user_profile, require_admin=True)
+
+    if invite.status == confirmation_settings.STATUS_REVOKED:
+        raise JsonableError(_("Invitation has already been revoked"))
+    return invite
+
+
+def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) -> list[Stream]:
+    streams: list[Stream] = []
+
+    for stream_id in stream_ids:
+        try:
+            (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        except JsonableError:
+            raise JsonableError(
+                _("Invalid channel ID {channel_id}. No invites were sent.").format(
+                    channel_id=stream_id
+                )
+            )
+        streams.append(stream)
+
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    streams_to_which_user_cannot_add_subscribers = get_streams_to_which_user_cannot_add_subscribers(
+        streams,
+        user_profile,
+        allow_default_streams=True,
+        user_group_membership_details=user_group_membership_details,
+    )
+    if len(streams_to_which_user_cannot_add_subscribers) > 0:
+        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
+
+    return streams
+
+
+def access_user_groups_for_invite(
+    group_ids: list[int] | None, user_profile: UserProfile
+) -> list[NamedUserGroup]:
+    user_groups: list[NamedUserGroup] = []
+    if group_ids:
+        with transaction.atomic(durable=True):
+            for group_id in group_ids:
+                user_group = access_user_group_for_update(
+                    group_id, user_profile, permission_setting="can_add_members_group"
+                )
+                user_groups.append(user_group)
+
+    return user_groups
+
+
 @require_member_or_admin
 @typed_endpoint
 def invite_users_backend(
@@ -58,6 +135,7 @@ def invite_users_backend(
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
     notify_referrer_on_join: Json[bool] = True,
     stream_ids: Json[list[int]],
+    group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
@@ -79,26 +157,15 @@ def invite_users_backend(
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    streams: list[Stream] = []
-    for stream_id in stream_ids:
-        try:
-            (stream, sub) = access_stream_by_id(user_profile, stream_id)
-        except JsonableError:
-            raise JsonableError(
-                _("Invalid channel ID {channel_id}. No invites were sent.").format(
-                    channel_id=stream_id
-                )
-            )
-        streams.append(stream)
-
-    if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
+    streams = access_streams_for_invite(stream_ids, user_profile)
+    user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
     skipped = do_invite_users(
         user_profile,
         invitee_emails,
         streams,
         notify_referrer_on_join,
+        user_groups,
         invite_expires_in_minutes=invite_expires_in_minutes,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
@@ -140,17 +207,7 @@ def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("No such invitation"))
-
-    if prereg_user.realm != user_profile.realm:
-        raise JsonableError(_("No such invitation"))
-
-    if prereg_user.referred_by_id != user_profile.id:
-        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
-
+    prereg_user = access_invite_by_id(user_profile, invite_id)
     do_revoke_user_invite(prereg_user)
     return json_success(request)
 
@@ -160,20 +217,7 @@ def revoke_user_invite(
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
-    try:
-        invite = MultiuseInvite.objects.get(id=invite_id)
-    except MultiuseInvite.DoesNotExist:
-        raise JsonableError(_("No such invitation"))
-
-    if invite.realm != user_profile.realm:
-        raise JsonableError(_("No such invitation"))
-
-    if invite.referred_by_id != user_profile.id:
-        check_role_based_permissions(invite.invited_as, user_profile, require_admin=True)
-
-    if invite.status == confirmation_settings.STATUS_REVOKED:
-        raise JsonableError(_("Invitation has already been revoked"))
-
+    invite = access_multiuse_invite_by_id(user_profile, invite_id)
     do_revoke_multi_use_invite(invite)
     return json_success(request)
 
@@ -183,19 +227,7 @@ def revoke_multiuse_invite(
 def resend_user_invite_email(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("No such invitation"))
-
-    # Structurally, any invitation the user can actually access should
-    # have a referred_by set for the user who created it.
-    if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
-        raise JsonableError(_("No such invitation"))
-
-    if prereg_user.referred_by_id != user_profile.id:
-        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
-
+    prereg_user = access_invite_by_id(user_profile, invite_id)
     do_send_user_invite_email(prereg_user, event_time=timezone_now())
     return json_success(request)
 
@@ -212,6 +244,7 @@ def generate_multiuse_invite_backend(
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
     stream_ids: Json[list[int]] | None = None,
+    group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
     if stream_ids is None:
@@ -230,20 +263,8 @@ def generate_multiuse_invite_backend(
     ]
     check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
 
-    streams = []
-    for stream_id in stream_ids:
-        try:
-            (stream, sub) = access_stream_by_id(user_profile, stream_id)
-        except JsonableError:
-            raise JsonableError(
-                _("Invalid channel ID {channel_id}. No invites were sent.").format(
-                    channel_id=stream_id
-                )
-            )
-        streams.append(stream)
-
-    if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
+    streams = access_streams_for_invite(stream_ids, user_profile)
+    user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
     invite_link = do_create_multiuse_invite_link(
         user_profile,
@@ -251,5 +272,6 @@ def generate_multiuse_invite_backend(
         invite_expires_in_minutes,
         include_realm_default_subscriptions,
         streams,
+        user_groups,
     )
     return json_success(request, data={"invite_link": invite_link})

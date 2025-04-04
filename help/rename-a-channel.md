@@ -1,6 +1,7 @@
 # Rename a channel
 
-{!admin-only.md!}
+A channel's name can be in any language, and can include spaces, punctuation,
+and Unicode emoji.
 
 {start_tabs}
 
@@ -36,3 +37,9 @@
 {end_tabs}
 
 {!automated-notice-channel-event.md!}
+
+## Related articles
+
+* [View channel information](/help/view-channel-information)
+* [Change a channel's description](/help/change-the-channel-description)
+* [Channel permissions](/help/channel-permissions)

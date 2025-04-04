@@ -3,19 +3,26 @@ import os
 import secrets
 from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO, Literal
+from typing import IO, TYPE_CHECKING, Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-import boto3
 import botocore
+import pyvips
 from botocore.client import Config
+from botocore.response import StreamingBody
 from django.conf import settings
-from mypy_boto3_s3.service_resource import Bucket
+from django.utils.http import content_disposition_header
 from typing_extensions import override
 
-from zerver.lib.thumbnail import resize_avatar, resize_logo
-from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
+from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.partial import partial
+from zerver.lib.thumbnail import resize_logo, resize_realm_icon
+from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
 from zerver.models import Realm, RealmEmoji, UserProfile
+
+if TYPE_CHECKING:
+    from mypy_boto3_s3.client import S3Client
+    from mypy_boto3_s3.service_resource import Bucket, Object
 
 # Duration that the signed upload URLs that we redirect to when
 # accessing uploaded files are available for clients to fetch before
@@ -46,7 +53,9 @@ if settings.S3_SKIP_PROXY is True:  # nocoverage
     botocore.utils.should_bypass_proxies = lambda url: True
 
 
-def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
+def get_bucket(bucket_name: str, authed: bool = True) -> "Bucket":
+    import boto3
+
     return boto3.resource(
         "s3",
         aws_access_key_id=settings.S3_KEY if authed else None,
@@ -60,9 +69,9 @@ def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
     ).Bucket(bucket_name)
 
 
-def upload_image_to_s3(
-    bucket: Bucket,
-    file_name: str,
+def upload_content_to_s3(
+    bucket: "Bucket",
+    path: str,
     content_type: str | None,
     user_profile: UserProfile | None,
     contents: bytes,
@@ -77,8 +86,13 @@ def upload_image_to_s3(
     ] = "STANDARD",
     cache_control: str | None = None,
     extra_metadata: dict[str, str] | None = None,
+    filename: str | None = None,
 ) -> None:
-    key = bucket.Object(file_name)
+    # Note that these steps are also replicated in
+    # handle_upload_pre_finish_hook in zerver.views.tus, to update
+    # properties for files uploaded via TUS.
+
+    key = bucket.Object(path)
     metadata: dict[str, str] = {}
     if user_profile:
         metadata["user_profile_id"] = str(user_profile.id)
@@ -89,7 +103,10 @@ def upload_image_to_s3(
     extras = {}
     if content_type is None:  # nocoverage
         content_type = ""
-    if content_type not in INLINE_MIME_TYPES:
+    is_attachment = content_type not in INLINE_MIME_TYPES
+    if filename is not None:
+        extras["ContentDisposition"] = content_disposition_header(is_attachment, filename)
+    elif is_attachment:
         extras["ContentDisposition"] = "attachment"
     if cache_control is not None:
         extras["CacheControl"] = cache_control
@@ -103,16 +120,30 @@ def upload_image_to_s3(
     )
 
 
-def get_signed_upload_url(path: str, force_download: bool = False) -> str:
-    client = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET).meta.client
+BOTO_CLIENT: "S3Client | None" = None
+
+
+def get_boto_client() -> "S3Client":
+    """
+    Creating the client takes a long time so we need to cache it.
+    """
+    global BOTO_CLIENT
+    if BOTO_CLIENT is None:
+        BOTO_CLIENT = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET).meta.client
+    return BOTO_CLIENT
+
+
+def get_signed_upload_url(path: str, filename: str, force_download: bool = False) -> str:
     params = {
         "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
         "Key": path,
     }
     if force_download:
-        params["ResponseContentDisposition"] = "attachment"
+        params["ResponseContentDisposition"] = (
+            content_disposition_header(True, filename) or "attachment"
+        )
 
-    return client.generate_presigned_url(
+    return get_boto_client().generate_presigned_url(
         ClientMethod="get_object",
         Params=params,
         ExpiresIn=SIGNED_UPLOAD_URL_DURATION,
@@ -122,11 +153,17 @@ def get_signed_upload_url(path: str, force_download: bool = False) -> str:
 
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
+        from mypy_boto3_s3.service_resource import Bucket
+
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET)
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        self.export_bucket: Bucket | None = None
+        if settings.S3_EXPORT_BUCKET:
+            self.export_bucket = get_bucket(settings.S3_EXPORT_BUCKET)
+
         self.public_upload_url_base = self.construct_public_upload_url_base()
 
-    def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
+    def delete_file_from_s3(self, path_id: str, bucket: "Bucket") -> bool:
         key = bucket.Object(path_id)
 
         try:
@@ -183,7 +220,7 @@ class S3UploadBackend(ZulipUploadBackend):
         assert split_url.path.endswith(f"/{DUMMY_KEY}")
 
         return urlunsplit(
-            (split_url.scheme, split_url.netloc, split_url.path[: -len(DUMMY_KEY)], "", "")
+            (split_url.scheme, split_url.netloc, split_url.path.removesuffix(DUMMY_KEY), "", "")
         )
 
     @override
@@ -211,23 +248,36 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_message_attachment(
         self,
         path_id: str,
+        filename: str,
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
     ) -> None:
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.uploads_bucket,
             path_id,
             content_type,
             user_profile,
             file_data,
             storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
+            filename=filename,
         )
 
     @override
-    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
+    def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
         for chunk in self.uploads_bucket.Object(path_id).get()["Body"]:
             filehandle.write(chunk)
+
+    @override
+    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+        metadata = self.uploads_bucket.Object(path_id).get()
+
+        def s3_read(streamingbody: StreamingBody, size: int) -> bytes:
+            return streamingbody.read(amt=size)
+
+        source: pyvips.Source = pyvips.SourceCustom()
+        source.on_read(partial(s3_read, metadata["Body"]))
+        return StreamingSourceWithSize(size=metadata["ContentLength"], source=source)
 
     @override
     def delete_message_attachment(self, path_id: str) -> bool:
@@ -241,11 +291,13 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def all_message_attachments(
-        self, include_thumbnails: bool = False
+        self,
+        include_thumbnails: bool = False,
+        prefix: str = "",
     ) -> Iterator[tuple[str, datetime]]:
         client = self.uploads_bucket.meta.client
         paginator = client.get_paginator("list_objects_v2")
-        page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name)
+        page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name, Prefix=prefix)
 
         for page in page_iterator:
             if page["KeyCount"] > 0:
@@ -279,7 +331,7 @@ class S3UploadBackend(ZulipUploadBackend):
         future: bool = True,
     ) -> None:
         extra_metadata = {"avatar_version": str(user_profile.avatar_version + (1 if future else 0))}
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             file_path,
             content_type,
@@ -307,7 +359,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
 
         image_data = icon_file.read()
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".original",
             content_type,
@@ -315,8 +367,8 @@ class S3UploadBackend(ZulipUploadBackend):
             image_data,
         )
 
-        resized_data = resize_avatar(image_data)
-        upload_image_to_s3(
+        resized_data = resize_realm_icon(image_data)
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".png",
             "image/png",
@@ -346,7 +398,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), basename)
 
         image_data = logo_file.read()
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".original",
             content_type,
@@ -355,7 +407,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
         resized_data = resize_logo(image_data)
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             s3_file_name + ".png",
             "image/png",
@@ -383,7 +435,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_single_emoji_image(
         self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
-        upload_image_to_s3(
+        upload_content_to_s3(
             self.avatar_bucket,
             path,
             content_type,
@@ -394,33 +446,67 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
-        # export_path has a leading /
-        return self.get_public_upload_url(export_path[1:])
+        export_path = export_path.removeprefix("/")
+        if self.export_bucket:
+            # Fix old data if the row was created when an export bucket was not in use.
+            export_path = export_path.removeprefix("exports/")
+            client = self.export_bucket.meta.client
+            return client.generate_presigned_url(
+                ClientMethod="get_object",
+                Params={
+                    "Bucket": self.export_bucket.name,
+                    "Key": export_path,
+                },
+                # Expires in one week, the longest allowed by AWS
+                ExpiresIn=60 * 60 * 24 * 7,
+            )
+        else:
+            if not export_path.startswith("exports/"):
+                export_path = "exports/" + export_path
+            client = self.avatar_bucket.meta.client
+            signed_url = client.generate_presigned_url(
+                ClientMethod="get_object",
+                Params={
+                    "Bucket": self.avatar_bucket.name,
+                    "Key": export_path,
+                },
+                ExpiresIn=0,
+            )
+            # Strip off the signing query parameters, since this URL is public
+            return urlsplit(signed_url)._replace(query="").geturl()
+
+    def export_object(self, tarball_path: str) -> "Object":
+        if self.export_bucket:
+            return self.export_bucket.Object(
+                os.path.join(secrets.token_hex(16), os.path.basename(tarball_path))
+            )
+        else:
+            # We fall back to the avatar bucket, because it's world-readable.
+            return self.avatar_bucket.Object(
+                os.path.join("exports", secrets.token_hex(16), os.path.basename(tarball_path))
+            )
 
     @override
     def upload_export_tarball(
         self,
-        realm: Realm | None,
+        realm: Realm,
         tarball_path: str,
         percent_callback: Callable[[Any], None] | None = None,
     ) -> str:
-        # We use the avatar bucket, because it's world-readable.
-        key = self.avatar_bucket.Object(
-            os.path.join("exports", secrets.token_hex(16), os.path.basename(tarball_path))
-        )
+        key = self.export_object(tarball_path)
 
         if percent_callback is None:
             key.upload_file(Filename=tarball_path)
         else:
             key.upload_file(Filename=tarball_path, Callback=percent_callback)
 
-        public_url = self.get_public_upload_url(key.key)
-        return public_url
+        return self.get_export_tarball_url(realm, key.key)
 
     @override
     def delete_export_tarball(self, export_path: str) -> str | None:
         assert export_path.startswith("/")
-        path_id = export_path[1:]
-        if self.delete_file_from_s3(path_id, self.avatar_bucket):
+        path_id = export_path.removeprefix("/")
+        bucket = self.export_bucket or self.avatar_bucket
+        if self.delete_file_from_s3(path_id, bucket):
             return export_path
         return None

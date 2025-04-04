@@ -4,11 +4,17 @@
 
 ## Browse and subscribe to channels
 
+Everyone other than [guests](/help/guest-users) can subscribe to any
+[public](/help/channel-permissions#public-channels) or
+[web-public](/help/channel-permissions#web-public-channels) channel. Channel
+administrators can [configure](/help/configure-who-can-subscribe) who can
+subscribe to [private](/help/channel-permissions#private-channels) channels.
+
 {start_tabs}
 
 {tab|desktop-web}
 
-{relative|channel|all}
+{relative|channel|not-subscribed}
 
 1. Scroll through the list of channels. You can use the **search box** near the
    top of the menu to filter the list by channel name or description.
@@ -46,3 +52,4 @@
 * [Introduction to topics](/help/introduction-to-topics)
 * [Create channels](/help/create-channels)
 * [Channel permissions](/help/channel-permissions)
+* [View channel information](/help/view-channel-information)

@@ -51,11 +51,11 @@ def send_initial_direct_message(user: UserProfile) -> int:
     with override_language(user.default_language):
         if education_organization:
             getting_started_string = _("""
-To learn more, check out our [Using Zulip for a class guide]({getting_started_url})!
+To learn more, check out our [using Zulip for a class guide]({getting_started_url})!
 """).format(getting_started_url="/help/using-zulip-for-a-class")
         else:
             getting_started_string = _("""
-To learn more, check out our [Getting started guide]({getting_started_url})!
+To learn more, check out our [getting started guide]({getting_started_url})!
 """).format(getting_started_url="/help/getting-started-with-zulip")
 
         organization_setup_string = ""
@@ -63,12 +63,12 @@ To learn more, check out our [Getting started guide]({getting_started_url})!
         if user.is_realm_admin:
             if education_organization:
                 organization_setup_string = _("""
-We also have a guide for [Setting up Zulip for a class]({organization_setup_url}).
+We also have a guide for [setting up Zulip for a class]({organization_setup_url}).
 """).format(organization_setup_url="/help/setting-up-zulip-for-a-class")
             else:
                 organization_setup_string = _("""
-We also have a guide for [Setting up your organization]({organization_setup_url}).
-""").format(organization_setup_url="/help/getting-your-organization-started-with-zulip")
+We also have a guide for [moving your organization to Zulip]({organization_setup_url}).
+""").format(organization_setup_url="/help/moving-to-zulip")
 
         demo_organization_warning_string = ""
         # Add extra content about automatic deletion for demo organization owners.
@@ -85,10 +85,16 @@ I've kicked off some conversations to help you get started. You can find
 them in your [Inbox](/#inbox).
 """)
 
+        navigation_tour_video_string = _("""
+You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.
+""").format(navigation_tour_video_url=settings.NAVIGATION_TOUR_VIDEO_URL)
+
         content = _("""
 Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
 {getting_started_text} {organization_setup_text}
+
+{navigation_tour_video_text}
 
 {demo_organization_text}
 
@@ -96,6 +102,7 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
             inform_about_tracked_onboarding_messages_text=inform_about_tracked_onboarding_messages_text,
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
+            navigation_tour_video_text=navigation_tour_video_string,
             demo_organization_text=demo_organization_warning_string,
         )
 
@@ -229,7 +236,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     )
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def send_initial_realm_messages(realm: Realm) -> None:
     # Sends the initial messages for a new organization.
     #
@@ -282,12 +289,13 @@ conversations with unread messages.
 """)
 
     content1_of_start_conversation_topic_name = _("""
-To kick off a new conversation, click **Start new conversation** below.
-The new conversation thread will be labeled with its own topic.
+To kick off a new conversation, pick a channel in the left sidebar, and click
+the `+` button next to its name.
 """)
 
     content2_of_start_conversation_topic_name = _("""
-For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”
+Label your conversation with a topic. Think about finishing the sentence: “Hey,
+can we chat about…?”
 """)
 
     content3_of_start_conversation_topic_name = _("""

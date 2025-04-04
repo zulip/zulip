@@ -30,7 +30,7 @@ authentication providers:
 - Google accounts, with `GoogleAuthBackend`
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
-- Microsoft Azure Active Directory, with `AzureADAuthBackend`
+- Microsoft Entra ID (AzureAD), with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
@@ -1195,7 +1195,7 @@ Facebook, Twitter, etc.) is easy to do if you're willing to write a
 bit of code, and pull requests to add new backends are welcome.
 
 For example, the
-[Azure Active Directory integration](https://github.com/zulip/zulip/commit/49dbd85a8985b12666087f9ea36acb6f7da0aa4f)
+[Microsoft Entra ID integration](https://github.com/zulip/zulip/commit/49dbd85a8985b12666087f9ea36acb6f7da0aa4f)
 was about 30 lines of code, plus some documentation and an
 [automatically generated migration][schema-migrations]. We also have
 helpful developer documentation on

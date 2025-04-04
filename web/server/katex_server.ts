@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import bodyParser from "@koa/bodyparser";
+import {bodyParser} from "@koa/bodyparser";
 import katex from "katex";
 import Koa from "koa";
 import Prometheus from "prom-client";

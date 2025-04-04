@@ -25,10 +25,6 @@ Options:
   --self-signed-cert
       Generate a self-signed SSL certificate for the server. This isn’t suitable for
       production use, but may be convenient for testing.  Conflicts with --certbot.
-  --cacert=/path/to/ca.pem
-      Set the CA which used to establish TLS to all public internet sites during the
-      install process; used when this command is run once in a highly-controlled
-      environment to produce an image which is used elsewhere.  Uncommon.
 
   --postgresql-database-name=zulip
       Sets the PostgreSQL database name.
@@ -52,6 +48,32 @@ Options:
   --no-dist-upgrade
       Skip the initial `apt-get dist-upgrade`.
 
+  --push-notifications
+      With this option, the Zulip installer registers your server for the Mobile
+      Push Notification Service, and sets up the initial default configuration.
+      You will be immediately prompted to agree to the Terms of Service, and your
+      server will be registered at the end of the installation process.
+  --no-push-notifications
+      Disable push notifications registration (the default if neither
+      flag is provided).
+
+  --no-submit-usage-statistics
+      If you enable push notifications, by default your server
+      will submit basic metadata (required for billing and for
+      determining free plan eligibility), as well as aggregate usage
+      statistics. You can disable submitting usage statistics by passing
+      this flag.
+      If push notifications are not enabled, data won't be submitted, so
+      this flag is redundant.
+
+  --agree-to-terms-of-service
+      If you enable push notifications, you can pass this flag to indicate
+      that you have read and agree to the Zulip Terms of Service:
+      <https://zulip.com/policies/terms>.
+      This skips the Terms of Service prompt, allowing for running the installer
+      with --push-notifications in scripts without requiring user input.
+
+
 EOF
 }
 
@@ -69,7 +91,8 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics,agree-to-terms-of-service -n "$0" -- "$@")"
+
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -91,11 +114,6 @@ while true; do
 
         --certbot)
             USE_CERTBOT=1
-            shift
-            ;;
-        --cacert)
-            export CUSTOM_CA_CERTIFICATES="$2"
-            shift
             shift
             ;;
         --self-signed-cert)
@@ -138,6 +156,30 @@ while true; do
             ;;
         --no-dist-upgrade)
             NO_DIST_UPGRADE=1
+            shift
+            ;;
+        --push-notifications)
+            if [ -n "$NO_PUSH_NOTIFICATIONS" ]; then
+                echo "error: --push-notifications and --no-push-notifications are incompatible." >&2
+                exit 1
+            fi
+            PUSH_NOTIFICATIONS=1
+            shift
+            ;;
+        --no-push-notifications)
+            if [ -n "$PUSH_NOTIFICATIONS" ]; then
+                echo "error: --push-notifications and --no-push-notifications are incompatible." >&2
+                exit 1
+            fi
+            NO_PUSH_NOTIFICATIONS=1
+            shift
+            ;;
+        --no-submit-usage-statistics)
+            NO_SUBMIT_USAGE_STATISTICS=1
+            shift
+            ;;
+        --agree-to-terms-of-service)
+            AGREE_TO_TERMS_OF_SERVICE_FLAG=1
             shift
             ;;
         --)
@@ -199,11 +241,83 @@ if [ "$EXTERNAL_HOST" = zulip.example.com ] \
 fi
 
 case "$POSTGRESQL_VERSION" in
-    [0-9] | [0-9].* | 1[01] | 1[01].*)
-        echo "error: PostgreSQL 12 or newer is required." >&2
+    [0-9] | [0-9].* | 1[0-2] | 1[0-2].*)
+        echo "error: PostgreSQL 13 or newer is required." >&2
         exit 1
         ;;
 esac
+
+if [ -z "$PUSH_NOTIFICATIONS" ] && [ -z "$NO_PUSH_NOTIFICATIONS" ]; then
+    # Unless specified, we default to --no-push-notifications
+    NO_PUSH_NOTIFICATIONS=1
+fi
+
+# We set these to Python-style True/False string values, for easy
+# insertion into the settings.py file.
+if [ -n "$PUSH_NOTIFICATIONS" ]; then
+    SERVICE_MOBILE_PUSH="True"
+
+    # --push-notifications also enables SUBMIT_USAGE_STATISTICS, unless the user
+    # explicitly opted out by passing --no-submit-usage-statistics.
+    if [ -n "$NO_SUBMIT_USAGE_STATISTICS" ]; then
+        SERVICE_SUBMIT_USAGE_STATISTICS="False"
+    else
+        SERVICE_SUBMIT_USAGE_STATISTICS="True"
+    fi
+else
+    SERVICE_MOBILE_PUSH="False"
+    # SUBMIT_USAGE_STATISTICS without PUSH_NOTIFICATIONS is an unusual
+    # configuration that we don't need to offer in the installer.
+    SERVICE_SUBMIT_USAGE_STATISTICS="False"
+fi
+
+# ToS acceptance needs to be ensured if --push-notifications is passed.
+if [ -n "$PUSH_NOTIFICATIONS" ]; then
+    # If the user provided the --agree-to-terms-of-service flag, we can just proceed.
+    if [ -n "$AGREE_TO_TERMS_OF_SERVICE_FLAG" ]; then
+        PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED=1
+        echo "Push notifications will be enabled, as you agreed to the Zulip Terms of Service"
+        echo "by passing the --agree-to-terms-of-service flag."
+        sleep 2
+    else
+        # If user asked for push notifications, prompt for ToS acceptance.
+        echo
+        echo "You chose to register your server for the Mobile Push Notifications Service."
+        echo "Doing so will share basic metadata with the service's maintainers, including:"
+        echo
+        echo "* The server's configured hostname: $EXTERNAL_HOST"
+        echo "* The server's configured contact email address: $ZULIP_ADMINISTRATOR"
+        echo "* Basic metadata about each organization hosted by the server; see:"
+        echo "    <https://zulip.com/doc-permalinks/basic-metadata>"
+        if [ -z "$NO_SUBMIT_USAGE_STATISTICS" ]; then
+            echo "* The server's usage statistics; see:"
+            echo "    <https://zulip.com/doc-permalinks/usage-statistics>"
+        fi
+        echo
+        echo "For details on why a centralized push notification service is necessary, see:"
+        echo "    <https://zulip.com/doc-permalinks/why-service>"
+        echo
+        echo "Use of this service is governed by the Zulip Terms of Service:"
+        echo "    <https://zulip.com/policies/terms>"
+        echo
+        read -r -p "Do you want to agree to the Zulip Terms of Service and proceed? [Y/n] " tos_prompt
+        echo
+
+        # Normalize the user’s response to lowercase.
+        case "${tos_prompt,,}" in
+            "" | y | yes)
+                echo "Great! Push notifications will be enabled; continuing with installation..."
+                PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED=1
+                sleep 2
+                ;;
+            *)
+                echo "In order to enable push notifications, you must agree to the Terms of Service."
+                echo "If you do not want to enable push notifications, run the command without the --push-notifications flag."
+                exit 1
+                ;;
+        esac
+    fi
+fi
 
 # Do set -x after option parsing is complete
 set -x
@@ -327,6 +441,19 @@ if [ "$mem_kb" -lt 1860000 ]; then
     exit 1
 fi
 
+# Anything under 5GB, we recommended allocating 2GB of swap.  Error
+# out if there's no swap.
+swap_kb=$(grep SwapTotal /proc/meminfo | awk '{print $2}')
+if [ "$mem_kb" -lt 5000000 ] && [ "$swap_kb" -eq 0 ]; then
+    set +x
+    echo -e '\033[0;31m' >&2
+    echo "No swap allocated; when running with < 5GB of RAM, we recommend at least 2GB of swap." >&2
+    echo "https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-22-04" >&2
+    echo >&2
+    echo -e '\033[0m' >&2
+    exit 1
+fi
+
 # Do package update, e.g. do `apt-get update` on Debian
 if [ "$package_system" = apt ]; then
     # setup-apt-repo does an `apt-get update`
@@ -441,9 +568,11 @@ EOF
         --write-catalog-summary \
         --classfile=/var/lib/puppet/classes.txt
 
-    # We only need the PostgreSQL version setting on database hosts; but
-    # we don't know if this is a database host until we have the catalog summary.
-    if ! has_class "zulip::postgresql_common" || [ "$package_system" != apt ]; then
+    # We only need the PostgreSQL version setting on database hosts,
+    # or hosts which talk directly to the database (e.g. application
+    # hosts); but we don't know if this is a database host until we
+    # have the catalog summary.
+    if (! has_class "zulip::postgresql_common" && ! has_class "zulip::postgresql_client") || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
     fi
 
@@ -457,25 +586,48 @@ EOF
 fi
 
 if has_class "zulip::app_frontend_base"; then
-    # Create and activate a virtualenv
-    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
+    # Frontend deploys use /home/zulip/deployments; without this, the
+    # install directory is also only readable by root.
+    mkdir -p /home/zulip/deployments
+    deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
+    mv "$ZULIP_PATH" "$deploy_path"
+    ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
+    ln -nsf "$deploy_path" /home/zulip/deployments/next
 
-    "$ZULIP_PATH"/scripts/lib/install-node
+    # Create and activate a virtualenv
+    "$deploy_path"/scripts/lib/create-production-venv "$deploy_path"
+
+    "$deploy_path"/scripts/lib/install-node
 
     if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
-        cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+        cp -a "$deploy_path"/zproject/prod_settings_template.py /etc/zulip/settings.py
         if [ -n "$EXTERNAL_HOST" ]; then
             sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
         fi
         if [ -n "$ZULIP_ADMINISTRATOR" ]; then
             sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
         fi
+
+        # Set SERVICE settings based on what the user provided.
+        if grep -q -E "^#?\s*ZULIP_SERVICE_PUSH_NOTIFICATIONS = " /etc/zulip/settings.py; then
+            sed -i -E "s/^#?\s*ZULIP_SERVICE_PUSH_NOTIFICATIONS = .*/ZULIP_SERVICE_PUSH_NOTIFICATIONS = $SERVICE_MOBILE_PUSH/" /etc/zulip/settings.py
+        else
+            echo "ZULIP_SERVICE_PUSH_NOTIFICATIONS = $SERVICE_MOBILE_PUSH" >>/etc/zulip/settings.py
+        fi
+
+        if grep -q -E "^#?\s*ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = " /etc/zulip/settings.py; then
+            sed -i -E "s/^#?\s*ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = .*/ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = $SERVICE_SUBMIT_USAGE_STATISTICS/" /etc/zulip/settings.py
+        else
+            echo "ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = $SERVICE_SUBMIT_USAGE_STATISTICS" >>/etc/zulip/settings.py
+        fi
     fi
-    ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
-    "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
+    ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
+    "$deploy_path"/scripts/setup/generate_secrets.py --production
+else
+    deploy_path="$ZULIP_PATH"
 fi
 
-"$ZULIP_PATH"/scripts/zulip-puppet-apply -f
+"$deploy_path"/scripts/zulip-puppet-apply -f
 
 if [ "$package_system" = apt ]; then
     apt-get -y --with-new-pkgs upgrade
@@ -485,7 +637,7 @@ elif [ "$package_system" = yum ]; then
 fi
 
 if [ -n "$USE_CERTBOT" ]; then
-    "$ZULIP_PATH"/scripts/setup/setup-certbot \
+    "$deploy_path"/scripts/setup/setup-certbot \
         "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 fi
 
@@ -547,12 +699,6 @@ EOF
     exit 0
 fi
 
-# Frontend deploys use /home/zulip/deployments; without this, the
-# install directory is also only readable by root.
-deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
-mv "$ZULIP_PATH" "$deploy_path"
-ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
-ln -nsf "$deploy_path" /home/zulip/deployments/next
 ln -nsf "$deploy_path" /home/zulip/deployments/current
 ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
 mkdir -p "$deploy_path"/prod-static/serve
@@ -586,9 +732,48 @@ database user, and then run:
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 EOF
+
+    if [ -n "$PUSH_NOTIFICATIONS" ]; then
+        echo
+        echo "Since you specified you want to enable the push notification service, you'll also need to "
+        echo "manually register your server by running:"
+        echo
+        echo "   su zulip -c '/home/zulip/deployments/current/manage.py register_server'"
+        echo
+    fi
     exit 0
 else
     /home/zulip/deployments/current/scripts/setup/create-database
     su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
+
+    if [ -n "$PUSH_NOTIFICATIONS" ]; then
+        if [ -z "$PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED" ]; then
+            # This should be impossible as the installation should have aborted early if the user
+            # passed --push-notifications without accepting the ToS. But we include this as a precaution
+            # to not allow future bugs to cause ToS acceptance to be skipped.
+            SKIP_TOS_AGREEMENT_OPTION=""
+        else
+            SKIP_TOS_AGREEMENT_OPTION="--agree-to-terms-of-service"
+        fi
+        set +x
+        echo "Services enabled, attempting to register server..."
+        set -x
+
+        # Without PYTHONUNBUFFERED=1, stdout/stderr might end up displayed not in chronological order, resulting
+        # in confusing output to the user.
+        su zulip -c "PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py register_server ${SKIP_TOS_AGREEMENT_OPTION}" \
+            || {
+                set +x
+                echo
+                echo "WARNING: Server registration for push notifications failed."
+                echo "This does not affect the rest of your Zulip installation."
+                echo
+                echo "To enable push notifications after resolving the issue, run:"
+                echo "  su zulip -c '/home/zulip/deployments/current/manage.py register_server'"
+                echo
+                set -x
+            }
+    fi
+
     su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 fi

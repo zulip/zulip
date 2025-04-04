@@ -1,11 +1,12 @@
 import assert from "minimalistic-assert";
 
-import {all_messages_data} from "./all_messages_data";
-import {FoldDict} from "./fold_dict";
-import * as message_util from "./message_util";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as unread from "./unread";
+import {all_messages_data} from "./all_messages_data.ts";
+import * as echo_state from "./echo_state.ts";
+import {FoldDict} from "./fold_dict.ts";
+import * as message_util from "./message_util.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as unread from "./unread.ts";
 
 // stream_id -> PerStreamHistory object
 const stream_dict = new Map<number, PerStreamHistory>();
@@ -123,7 +124,7 @@ export class PerStreamHistory {
     }
 
     has_topics(): boolean {
-        return this.topics.size !== 0;
+        return this.topics.size > 0;
     }
 
     update_stream_with_message_id(message_id: number): void {
@@ -229,26 +230,45 @@ export class PerStreamHistory {
     }
 
     get_recent_topic_names(): string[] {
+        // Combines several data sources to produce a complete picture
+        // of topics the client knows about.
+        //
+        // This data source is this module's own data structures.
         const my_recents = [...this.topics.values()];
-
-        /* Add any older topics with unreads that may not be present
-         * in our local cache. */
+        // This data source is older topics that we know exist because
+        // we have unread messages in the topic, even if we don't have
+        // any messages from the topic in our local cache.
         const missing_topics = unread.get_missing_topics({
             stream_id: this.stream_id,
             topic_dict: this.topics,
         });
 
-        const recents = [...my_recents, ...missing_topics];
+        // This data source is locally echoed messages, which should
+        // are treated as newer than all delivered messages.
+        const local_echo_topics = [
+            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).entries(),
+        ].map(([topic, local_id]) => ({pretty_name: topic, message_id: local_id}));
+        const local_echo_set = new Set<string>(
+            local_echo_topics.map((message_topic) => message_topic.pretty_name.toLowerCase()),
+        );
 
-        recents.sort((a, b) => b.message_id - a.message_id);
-
-        const names = recents.map((obj) => obj.pretty_name);
-
-        return names;
+        // We first sort the topics without locally echoed messages,
+        // and then prepend topics with locally echoed messages.
+        const server_topics = [...my_recents, ...missing_topics].filter(
+            (message_topic) => !local_echo_set.has(message_topic.pretty_name.toLowerCase()),
+        );
+        server_topics.sort((a, b) => b.message_id - a.message_id);
+        return [...local_echo_topics, ...server_topics].map((obj) => obj.pretty_name);
     }
 
     get_max_message_id(): number {
-        return this.max_message_id;
+        // TODO: We probably want to migrate towards this function
+        // ignoring locally echoed messages, and thus returning an integer.
+        const unacked_message_ids_in_stream = [
+            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).values(),
+        ];
+        const max_message_id = Math.max(...unacked_message_ids_in_stream, this.max_message_id);
+        return max_message_id;
     }
 }
 
@@ -336,16 +356,28 @@ export function has_history_for(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
 
-export function get_recent_topic_names(stream_id: number): string[] {
+export let get_recent_topic_names = (stream_id: number): string[] => {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
+};
+
+export function rewire_get_recent_topic_names(value: typeof get_recent_topic_names): void {
+    get_recent_topic_names = value;
 }
 
 export function get_max_message_id(stream_id: number): number {
     const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
+}
+
+export function get_latest_known_message_id_in_topic(
+    stream_id: number,
+    topic_name: string,
+): number | undefined {
+    const history = stream_dict.get(stream_id);
+    return history?.topics.get(topic_name)?.message_id;
 }
 
 export function reset(): void {

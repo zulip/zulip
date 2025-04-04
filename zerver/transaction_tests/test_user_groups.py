@@ -11,7 +11,7 @@ from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_us
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTransactionTestCase
 from zerver.lib.test_helpers import HostRequestMock
-from zerver.lib.user_groups import access_user_group_by_id
+from zerver.lib.user_groups import access_user_group_for_update
 from zerver.models import NamedUserGroup, Realm, UserGroup, UserProfile
 from zerver.models.realms import get_realm
 from zerver.views.user_groups import update_subgroups_of_user_group
@@ -28,15 +28,14 @@ def dev_update_subgroups(
     assert BARRIER is not None
     try:
         with (
-            transaction.atomic(),
-            mock.patch("zerver.lib.user_groups.access_user_group_by_id") as m,
+            mock.patch("zerver.lib.user_groups.access_user_group_for_update") as m,
         ):
 
             def wait_after_recursive_query(*args: Any, **kwargs: Any) -> UserGroup:
                 # When updating the subgroups, we access the supergroup group
                 # only after finishing the recursive query.
                 BARRIER.wait()
-                return access_user_group_by_id(*args, **kwargs)
+                return access_user_group_for_update(*args, **kwargs)
 
             m.side_effect = wait_after_recursive_query
 
@@ -64,16 +63,24 @@ def dev_update_subgroups(
 
 
 class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
-    created_user_groups: list[UserGroup] = []
+    created_user_groups: list[NamedUserGroup] = []
     counter = 0
     CHAIN_LENGTH = 3
 
     @override
     def tearDown(self) -> None:
         # Clean up the user groups created to minimize leakage
-        with transaction.atomic():
+        with transaction.atomic(durable=True):
             for group in self.created_user_groups:
+                # can_manage_group can be deleted as long as it's the
+                # default group_creator. If we start using non-default
+                # can_manage_group in this test, deleting that group
+                # should be reconsidered.
+                can_manage_group = group.can_manage_group
+                can_add_members_group = group.can_add_members_group
                 group.delete()
+                can_manage_group.delete()
+                can_add_members_group.delete()
             transaction.on_commit(self.created_user_groups.clear)
 
         super().tearDown()
@@ -82,15 +89,16 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
         """Build a user groups forming a chain through group-group memberships
         returning a list where each group is the supergroup of its subsequent group.
         """
+        iago = self.example_user("iago")
         groups = [
-            check_add_user_group(realm, f"chain #{self.counter + i}", [], acting_user=None)
+            check_add_user_group(realm, f"chain #{self.counter + i}", [], acting_user=iago)
             for i in range(self.CHAIN_LENGTH)
         ]
         self.counter += self.CHAIN_LENGTH
         self.created_user_groups.extend(groups)
         prev_group = groups[0]
         for group in groups[1:]:
-            add_subgroups_to_user_group(prev_group, [group], acting_user=None)
+            add_subgroups_to_user_group(prev_group, [group], acting_user=iago)
             prev_group = group
         return groups
 

@@ -1,0 +1,11 @@
+<tr data-subgroup-id="{{group_id}}">
+    <td class="subgroup-name panel_user_list">
+        {{> ../user_group_display_only_pill .}}
+    </td>
+    <td class="empty-email-col-for-user-group"></td>
+    {{#if can_remove_members}}
+    <td class="remove">
+        {{> ../components/action_button custom_classes="remove-subgroup-button" label=(t "Remove") attention="quiet" intent="danger" aria-label=(t "Remove") }}
+    </td>
+    {{/if}}
+</tr>

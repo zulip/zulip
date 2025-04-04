@@ -1,5 +1,4 @@
-User groups allow you to [mention](/help/mention-a-user-or-group) multiple users
-at once. When you mention a user group, everyone in the group is
-[notified](/help/dm-mention-alert-notifications) as if they were personally
-mentioned. For example, you may choose to create user groups for teams in your
-organization.
+User groups offer a flexible way to manage permissions in your organization.
+Most permissions in Zulip can be granted to any combination of
+[roles](/help/user-roles), [groups](/help/user-groups), and
+individual [users](/help/introduction-to-users).

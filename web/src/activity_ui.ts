@@ -4,23 +4,24 @@ import assert from "minimalistic-assert";
 
 import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
 
-import * as activity from "./activity";
-import * as blueslip from "./blueslip";
-import * as buddy_data from "./buddy_data";
-import {buddy_list} from "./buddy_list";
-import * as keydown_util from "./keydown_util";
-import {ListCursor} from "./list_cursor";
-import * as people from "./people";
-import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
-import * as presence from "./presence";
-import type {PresenceInfoFromEvent} from "./presence";
-import * as sidebar_ui from "./sidebar_ui";
-import {realm} from "./state_data";
-import * as ui_util from "./ui_util";
-import type {FullUnreadCountsData} from "./unread";
-import {UserSearch} from "./user_search";
-import * as util from "./util";
+import * as activity from "./activity.ts";
+import * as blueslip from "./blueslip.ts";
+import * as buddy_data from "./buddy_data.ts";
+import {buddy_list} from "./buddy_list.ts";
+import * as keydown_util from "./keydown_util.ts";
+import {ListCursor} from "./list_cursor.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import * as pm_list from "./pm_list.ts";
+import * as popovers from "./popovers.ts";
+import * as presence from "./presence.ts";
+import type {PresenceInfoFromEvent} from "./presence.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import {realm} from "./state_data.ts";
+import * as ui_util from "./ui_util.ts";
+import type {FullUnreadCountsData} from "./unread.ts";
+import {UserSearch} from "./user_search.ts";
+import * as util from "./util.ts";
 
 export let user_cursor: ListCursor<number> | undefined;
 export let user_filter: UserSearch | undefined;
@@ -59,15 +60,27 @@ export function clear_for_testing(): void {
     user_filter = undefined;
 }
 
-export function update_presence_indicators(): void {
+export let update_presence_indicators = (): void => {
     $("[data-presence-indicator-user-id]").each(function () {
         const user_id = Number.parseInt($(this).attr("data-presence-indicator-user-id") ?? "", 10);
+        const is_deactivated = !people.is_active_user_for_popover(user_id || 0);
         assert(!Number.isNaN(user_id));
-        const user_circle_class = buddy_data.get_user_circle_class(user_id);
+        const user_circle_class = buddy_data.get_user_circle_class(user_id, is_deactivated);
+        const user_circle_class_with_icon = `${user_circle_class} zulip-icon-${user_circle_class}`;
         $(this)
-            .removeClass("user_circle_empty user_circle_green user_circle_idle")
-            .addClass(user_circle_class);
+            .removeClass(
+                `
+                user-circle-active zulip-icon-user-circle-active
+                user-circle-idle zulip-icon-user-circle-idle
+                user-circle-offline zulip-icon-user-circle-offline
+            `,
+            )
+            .addClass(user_circle_class_with_icon);
     });
+};
+
+export function rewire_update_presence_indicators(value: typeof update_presence_indicators): void {
+    update_presence_indicators = value;
 }
 
 export function redraw_user(user_id: number): void {
@@ -81,13 +94,16 @@ export function redraw_user(user_id: number): void {
         return;
     }
 
-    const info = buddy_data.get_item(user_id);
-
-    buddy_list.insert_or_move({
-        user_id,
-        item: info,
-    });
+    buddy_list.insert_or_move([user_id]);
     update_presence_indicators();
+}
+
+export function rerender_user_sidebar_participants(): void {
+    if (!narrow_state.stream_id() || narrow_state.topic() === undefined) {
+        return;
+    }
+
+    buddy_list.rerender_participants();
 }
 
 export function check_should_redraw_new_user(user_id: number): boolean {
@@ -107,7 +123,7 @@ export function searching(): boolean {
 export function render_empty_user_list_message_if_needed($container: JQuery): void {
     const empty_list_message = $container.attr("data-search-results-empty");
 
-    if (!empty_list_message || $container.children().length) {
+    if (!empty_list_message || $container.children().length > 0) {
         return;
     }
 
@@ -115,7 +131,7 @@ export function render_empty_user_list_message_if_needed($container: JQuery): vo
     $container.append($(empty_list_widget_html));
 }
 
-export function build_user_sidebar(): number[] | undefined {
+export let build_user_sidebar = (): number[] | undefined => {
     if (realm.realm_presence_disabled) {
         return undefined;
     }
@@ -127,10 +143,14 @@ export function build_user_sidebar(): number[] | undefined {
 
     buddy_list.populate({all_user_ids});
 
-    render_empty_user_list_message_if_needed(buddy_list.$users_matching_view_container);
-    render_empty_user_list_message_if_needed(buddy_list.$other_users_container);
+    render_empty_user_list_message_if_needed(buddy_list.$users_matching_view_list);
+    render_empty_user_list_message_if_needed(buddy_list.$other_users_list);
 
     return all_user_ids; // for testing
+};
+
+export function rewire_build_user_sidebar(value: typeof build_user_sidebar): void {
+    build_user_sidebar = value;
 }
 
 function do_update_users_for_search(): void {
@@ -212,7 +232,7 @@ export function narrow_for_user_id(opts: {user_id: number}): void {
     assert(narrow_by_email);
     narrow_by_email(email);
     assert(user_filter !== undefined);
-    user_filter.clear_and_hide_search();
+    user_filter.clear_search();
 }
 
 function keydown_enter_key(): void {
@@ -274,9 +294,9 @@ export function initiate_search(): void {
     }
 }
 
-export function escape_search(): void {
+export function clear_search(): void {
     if (user_filter) {
-        user_filter.clear_and_hide_search();
+        user_filter.clear_search();
     }
 }
 

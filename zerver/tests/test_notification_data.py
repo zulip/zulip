@@ -1,4 +1,5 @@
 from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.test_classes import ZulipTestCase
@@ -373,9 +374,9 @@ class TestNotificationData(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         realm = hamlet.realm
 
-        hamlet_only = check_add_user_group(realm, "hamlet_only", [hamlet], acting_user=None)
+        hamlet_only = check_add_user_group(realm, "hamlet_only", [hamlet], acting_user=hamlet)
         hamlet_and_cordelia = check_add_user_group(
-            realm, "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
+            realm, "hamlet_and_cordelia", [hamlet, cordelia], acting_user=hamlet
         )
 
         mention_backend = MentionBackend(realm.id)
@@ -446,6 +447,22 @@ class TestNotificationData(ZulipTestCase):
         # group mention for Hamlet in this case.
         result = get_user_group_mentions_data(
             mentioned_user_ids={hamlet.id},
+            mentioned_user_group_ids=[hamlet_and_cordelia.id],
+            mention_data=MentionData(
+                mention_backend, "hey @*hamlet_and_cordelia*!", message_sender=None
+            ),
+        )
+        self.assertDictEqual(
+            result,
+            {
+                cordelia.id: hamlet_and_cordelia.id,
+            },
+        )
+
+        # Deactivated users are excluded.
+        do_deactivate_user(hamlet, acting_user=None)
+        result = get_user_group_mentions_data(
+            mentioned_user_ids=set(),
             mentioned_user_group_ids=[hamlet_and_cordelia.id],
             mention_data=MentionData(
                 mention_backend, "hey @*hamlet_and_cordelia*!", message_sender=None

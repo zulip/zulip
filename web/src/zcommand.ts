@@ -1,13 +1,13 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import * as compose_banner from "./compose_banner";
-import * as feedback_widget from "./feedback_widget";
-import {$t} from "./i18n";
-import * as markdown from "./markdown";
-import * as settings_config from "./settings_config";
-import * as theme from "./theme";
+import * as channel from "./channel.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
+import * as settings_config from "./settings_config.ts";
+import * as theme from "./theme.ts";
 
 /*
 

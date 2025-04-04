@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import * as browser_history from "./browser_history";
-import * as components from "./components";
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
-import * as sub_store from "./sub_store";
+import * as browser_history from "./browser_history.ts";
+import * as components from "./components.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as sub_store from "./sub_store.ts";
 
 export let toggler: components.Toggle;
 export let select_tab = "personal";

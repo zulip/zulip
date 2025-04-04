@@ -24,7 +24,7 @@ For more details, see [Communities directory](/help/communities-directory).
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Customize organization settings](/help/customize-organization-settings)
 * [Create channels](/help/create-channels)
 * [Communities directory](/help/communities-directory)

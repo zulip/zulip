@@ -1,26 +1,30 @@
 <div class="copy-email-modal">
-    <div class="new-style">
-        <p class="question-which-parts">
-            {{t "Which parts of the email should be included in the Zulip message sent to this channel?"}}
-        </p>
-        {{#each tags}}
-            {{#if (eq this.name "prefer-html") }}
-            <hr />
-            {{/if}}
-            <div class="input-group" id="{{this.name}}-input-group">
-                <label class="checkbox">
-                    <input class="tag-checkbox" id="{{ this.name }}" type="checkbox"/>
-                    <span></span>
-                </label>
-                <label class="inline" for="{{this.name}}">{{{this.description}}}</label>
-            </div>
-        {{/each}}
+    {{> ../dropdown_widget_with_label
+      widget_name="sender_channel_email_address"
+      label=(t 'Who should be the sender of the Zulip messages for this email address?')}}
+    <p class="question-which-parts">
+        {{t "Which parts of the emails should be included in the Zulip messages?"}}
+    </p>
+    {{#each tags}}
+        {{#if (eq this.name "prefer-html") }}
         <hr />
-        <p class="stream-email-header">
-            {{t "Channel email address:"}}
-        </p>
-        <div class="stream-email">
-            <div class="email-address">{{email_address}}</div>
+        {{/if}}
+        <div class="input-group" id="{{this.name}}-input-group">
+            <label class="checkbox">
+                <input class="tag-checkbox" id="{{ this.name }}" type="checkbox"/>
+                <span class="rendered-checkbox"></span>
+            </label>
+            <label class="inline" for="{{this.name}}">{{{this.description}}}</label>
         </div>
+    {{/each}}
+    <hr />
+    <p class="stream-email-header">
+        {{t "Channel email address:"}}
+    </p>
+    <div class="stream-email">
+        <div class="email-address">{{email_address}}</div>
+        <span class="copy-button tippy-zulip-tooltip copy-email-address" data-tippy-content="{{t 'Copy email address' }}" data-clipboard-text="{{email_address}}">
+            <i class="zulip-icon zulip-icon-copy"></i>
+        </span>
     </div>
 </div>

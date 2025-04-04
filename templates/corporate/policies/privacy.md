@@ -195,7 +195,7 @@ parties listed in this section. We do not sell Personal Data.
       otherwise provide data to Zulip, it may be shared with some or all other
       users in that Zulip Organization. Please note that some Zulip channels [may
       be accessible to the general
-      public](/help/channel-permissions), in addition to the
+      public](/help/channel-permissions#web-public-channels), in addition to the
       channel’s current subscribers. For more information, please review our
       [Terms of Service](/policies/terms).
     - Zulip Organization Administrators may export all Zulip data for a Zulip

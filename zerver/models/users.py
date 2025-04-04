@@ -5,7 +5,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.db import models
-from django.db.models import CASCADE, Q, QuerySet
+from django.db.models import CASCADE, F, Q, QuerySet
 from django.db.models.functions import Upper
 from django.db.models.signals import post_save
 from django.utils.timezone import now as timezone_now
@@ -23,8 +23,9 @@ from zerver.lib.cache import (
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
     user_profile_by_api_key_cache_key,
+    user_profile_by_email_realm_cache_key,
     user_profile_by_id_cache_key,
-    user_profile_cache_key,
+    user_profile_narrow_by_id_cache_key,
 )
 from zerver.lib.types import ProfileData, RawUserDict
 from zerver.lib.utils import generate_api_key
@@ -68,6 +69,7 @@ class UserBaseSettings(models.Model):
     display_emoji_reaction_users = models.BooleanField(default=True)
     twenty_four_hour_time = models.BooleanField(default=False)
     starred_message_counts = models.BooleanField(default=True)
+    web_suggest_update_timezone = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_DARK = 2
     COLOR_SCHEME_LIGHT = 3
@@ -80,7 +82,6 @@ class UserBaseSettings(models.Model):
     WEB_FONT_SIZE_PX_DEFAULT = 16
     WEB_LINE_HEIGHT_PERCENT_COMPACT = 122
     WEB_LINE_HEIGHT_PERCENT_DEFAULT = 140
-    dense_mode = models.BooleanField(default=False)
     web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_DEFAULT)
     web_line_height_percent = models.PositiveSmallIntegerField(
         default=WEB_LINE_HEIGHT_PERCENT_DEFAULT
@@ -157,7 +158,7 @@ class UserBaseSettings(models.Model):
         USER_LIST_STYLE_WITH_STATUS,
         USER_LIST_STYLE_WITH_AVATAR,
     ]
-    user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_STATUS)
+    user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_AVATAR)
 
     # Show unread counts for
     WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_ALL_STREAMS = 1
@@ -267,6 +268,7 @@ class UserBaseSettings(models.Model):
     send_stream_typing_notifications = models.BooleanField(default=True)
     send_private_typing_notifications = models.BooleanField(default=True)
     send_read_receipts = models.BooleanField(default=True)
+    allow_private_data_export = models.BooleanField(default=False)
 
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
@@ -294,6 +296,9 @@ class UserBaseSettings(models.Model):
 
     EMAIL_ADDRESS_VISIBILITY_TYPES = list(EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.keys())
 
+    # Whether user wants to see AI features in the UI.
+    hide_ai_features = models.BooleanField(default=False)
+
     display_settings_legacy = dict(
         # Don't add anything new to this legacy dict.
         # Instead, see `modern_settings` below.
@@ -301,7 +306,6 @@ class UserBaseSettings(models.Model):
         default_language=str,
         web_home_view=str,
         demote_inactive_streams=int,
-        dense_mode=bool,
         emojiset=str,
         enable_drafts_synchronization=bool,
         enter_sends=bool,
@@ -347,6 +351,7 @@ class UserBaseSettings(models.Model):
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
+        allow_private_data_export=bool,
         web_mark_read_on_scroll_policy=int,
         web_channel_default_view=int,
         user_list_style=int,
@@ -355,9 +360,11 @@ class UserBaseSettings(models.Model):
         web_font_size_px=int,
         web_line_height_percent=int,
         web_navigate_to_sent_message=bool,
+        web_suggest_update_timezone=bool,
+        hide_ai_features=bool,
     )
 
-    modern_notification_settings: dict[str, Any] = dict(
+    modern_notification_settings = dict(
         # Add new notification settings here.
         enable_followed_topic_desktop_notifications=bool,
         enable_followed_topic_email_notifications=bool,
@@ -495,8 +502,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)
 
-    is_billing_admin = models.BooleanField(default=False, db_index=True)
-
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
     bot_owner = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)
@@ -521,6 +526,35 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         ROLE_GUEST,
     ]
 
+    # Maps: user_profile.role -> which email_address_visibility values
+    # allow user_profile to see their email address.
+    ROLE_TO_ACCESSIBLE_EMAIL_ADDRESS_VISIBILITY_IDS = {
+        ROLE_REALM_OWNER: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_REALM_ADMINISTRATOR: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_MODERATOR: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_MEMBER: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+        ROLE_GUEST: [
+            UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        ],
+    }
+
     # Whether the user has been "soft-deactivated" due to weeks of inactivity.
     # For these users we avoid doing UserMessage table work, as an optimization
     # for large Zulip organizations with lots of single-visit users.
@@ -540,6 +574,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     can_forge_sender = models.BooleanField(default=False, db_index=True)
     # Users with this flag set can create other users via API.
     can_create_users = models.BooleanField(default=False, db_index=True)
+    # Users with this flag can change email addresses of users in the realm via the API.
+    can_change_user_emails = models.BooleanField(default=False, db_index=True)
 
     # Used for rate-limiting certain automated messages generated by bots
     last_reminder = models.DateTimeField(default=None, null=True)
@@ -615,6 +651,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     ROLE_API_NAME_TO_ID = {v: k for k, v in ROLE_ID_TO_API_NAME.items()}
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                "realm",
+                Upper(F("email")),
+                name="zerver_userprofile_realm_id_email_uniq",
+            ),
+            models.UniqueConstraint(
+                "realm",
+                Upper(F("delivery_email")),
+                name="zerver_userprofile_realm_id_delivery_email_uniq",
+            ),
+        ]
         indexes = [
             models.Index(Upper("email"), name="upper_userprofile_email_idx"),
         ]
@@ -698,7 +746,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def has_billing_access(self) -> bool:
-        return self.is_realm_owner or self.is_billing_admin
+        return self.has_permission("can_manage_billing_group")
 
     @property
     def is_realm_owner(self) -> bool:
@@ -745,20 +793,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def allowed_bot_types(self) -> list[int]:
-        from zerver.models.realms import BotCreationPolicyEnum
-
         allowed_bot_types = []
-        if (
-            self.is_realm_admin
-            or self.realm.bot_creation_policy != BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        ):
-            allowed_bot_types.append(UserProfile.DEFAULT_BOT)
-        allowed_bot_types += [
-            UserProfile.INCOMING_WEBHOOK_BOT,
-            UserProfile.OUTGOING_WEBHOOK_BOT,
-        ]
-        if settings.EMBEDDED_BOTS_ENABLED:
-            allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        if self.has_permission("can_create_bots_group"):
+            allowed_bot_types.extend(
+                [
+                    UserProfile.DEFAULT_BOT,
+                    UserProfile.INCOMING_WEBHOOK_BOT,
+                    UserProfile.OUTGOING_WEBHOOK_BOT,
+                ]
+            )
+            if settings.EMBEDDED_BOTS_ENABLED:
+                allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        elif self.has_permission("can_create_write_only_bots_group"):
+            allowed_bot_types.append(UserProfile.INCOMING_WEBHOOK_BOT)
         return allowed_bot_types
 
     def email_address_is_realm_public(self) -> bool:
@@ -768,69 +815,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return False
 
     def has_permission(self, policy_name: str, realm: Optional["Realm"] = None) -> bool:
-        from zerver.lib.user_groups import is_user_in_group
+        from zerver.lib.user_groups import user_has_permission_for_group_setting
         from zerver.models import Realm
 
-        if policy_name not in [
-            "add_custom_emoji_policy",
-            "can_create_private_channel_group",
-            "can_create_public_channel_group",
-            "can_create_web_public_channel_group",
-            "can_delete_any_message_group",
-            "create_multiuse_invite_group",
-            "delete_own_message_policy",
-            "direct_message_initiator_group",
-            "direct_message_permission_group",
-            "edit_topic_policy",
-            "invite_to_stream_policy",
-            "invite_to_realm_policy",
-            "move_messages_between_streams_policy",
-            "user_group_edit_policy",
-        ]:
+        if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             raise AssertionError("Invalid policy")
 
-        if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-            if realm is None:
-                # realm is passed by the caller only when we optimize
-                # the number of database queries by fetching the group
-                # setting fields using select_related.
-                realm = self.realm
-            allowed_user_group = getattr(realm, policy_name)
-            return is_user_in_group(allowed_user_group, self)
-
-        policy_value = getattr(self.realm, policy_name)
-        if policy_value == Realm.POLICY_NOBODY:
-            return False
-
-        if policy_value == Realm.POLICY_EVERYONE:
-            return True
-
-        if self.is_realm_owner:
-            return True
-
-        if policy_value == Realm.POLICY_OWNERS_ONLY:
-            return False
-
-        if self.is_realm_admin:
-            return True
-
-        if policy_value == Realm.POLICY_ADMINS_ONLY:
-            return False
-
-        if self.is_moderator:
-            return True
-
-        if policy_value == Realm.POLICY_MODERATORS_ONLY:
-            return False
-
-        if self.is_guest:
-            return False
-
-        if policy_value == Realm.POLICY_MEMBERS_ONLY:
-            return True
-
-        assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
-        return not self.is_provisional_member
+        if realm is None:
+            # realm is passed by the caller only when we optimize
+            # the number of database queries by fetching the group
+            # setting fields using select_related.
+            realm = self.realm
+        allowed_user_group = getattr(realm, policy_name)
+        setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
+        return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
 
     def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_create_public_channel_group", realm)
@@ -843,35 +841,44 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             return False
         return self.has_permission("can_create_web_public_channel_group")
 
-    def can_subscribe_other_users(self) -> bool:
-        return self.has_permission("invite_to_stream_policy")
+    def can_manage_default_streams(self) -> bool:
+        return self.is_realm_admin
 
-    def can_invite_users_by_email(self) -> bool:
-        return self.has_permission("invite_to_realm_policy")
+    def can_subscribe_others_to_all_accessible_streams(self) -> bool:
+        return self.has_permission("can_add_subscribers_group")
+
+    def can_invite_users_by_email(self, realm: Optional["Realm"] = None) -> bool:
+        return self.has_permission("can_invite_users_group", realm)
 
     def can_create_multiuse_invite_to_realm(self) -> bool:
         return self.has_permission("create_multiuse_invite_group")
 
     def can_move_messages_between_streams(self) -> bool:
-        return self.has_permission("move_messages_between_streams_policy")
+        return self.has_permission("can_move_messages_between_channels_group")
 
     def can_create_user_groups(self) -> bool:
-        return self.has_permission("user_group_edit_policy")
+        return self.has_permission("can_create_groups")
 
-    def can_edit_all_user_groups(self) -> bool:
-        return self.has_permission("user_group_edit_policy")
+    def can_manage_all_groups(self) -> bool:
+        return self.has_permission("can_manage_all_groups")
 
     def can_move_messages_to_another_topic(self) -> bool:
-        return self.has_permission("edit_topic_policy")
+        return self.has_permission("can_move_messages_between_topics_group")
+
+    def can_resolve_topic(self) -> bool:
+        return self.has_permission("can_resolve_topics_group")
 
     def can_add_custom_emoji(self) -> bool:
-        return self.has_permission("add_custom_emoji_policy")
+        return self.has_permission("can_add_custom_emoji_group")
 
     def can_delete_any_message(self) -> bool:
         return self.has_permission("can_delete_any_message_group")
 
     def can_delete_own_message(self) -> bool:
-        return self.has_permission("delete_own_message_policy")
+        return self.has_permission("can_delete_own_message_group")
+
+    def can_summarize_topics(self) -> bool:
+        return self.has_permission("can_summarize_topics_group")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
@@ -914,8 +921,23 @@ def remote_user_to_email(remote_user: str) -> str:
 post_save.connect(flush_user_profile, sender=UserProfile)
 
 
-@cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
-def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
+def base_bulk_get_user_queryset() -> QuerySet[UserProfile]:
+    """Base select_related options for UserProfile for general user;
+    prefetches can_access_all_users_group, which is often necessary
+    for calculations of where events should be sent.
+    """
+    return UserProfile.objects.select_related(
+        "realm",
+        "realm__can_access_all_users_group",
+        "realm__can_access_all_users_group__named_user_group",
+    )
+
+
+def base_get_user_queryset() -> QuerySet[UserProfile]:
+    """Base select_related options for fetching a single user object.
+    In contrast with base_bulk_get_user_queryset, additionally fetches
+    fields that are relevant for this user sending a message.
+    """
     return UserProfile.objects.select_related(
         "realm",
         "realm__can_access_all_users_group",
@@ -925,7 +947,31 @@ def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
         "realm__direct_message_permission_group",
         "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
-    ).get(id=user_profile_id)
+    )
+
+
+@cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
+def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
+    return base_get_user_queryset().get(id=user_profile_id)
+
+
+def base_get_user_narrow_queryset() -> QuerySet[UserProfile]:
+    return UserProfile.objects.select_related("realm").only(
+        "id",
+        "bot_type",
+        "is_active",
+        "presence_enabled",
+        "rate_limits",
+        "role",
+        "recipient_id",
+        "realm__string_id",
+        "realm__deactivated",
+    )
+
+
+@cache_with_key(user_profile_narrow_by_id_cache_key, timeout=3600 * 24 * 7)
+def get_user_profile_narrow_by_id(user_profile_id: int) -> UserProfile:
+    return base_get_user_narrow_queryset().get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -941,12 +987,7 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
     try:
-        return UserProfile.objects.select_related(
-            "realm",
-            "realm__can_access_all_users_group",
-            "realm__can_access_all_users_group__named_user_group",
-            "bot_owner",
-        ).get(api_key=api_key)
+        return base_get_user_queryset().get(api_key=api_key)
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
         # use case here is that broken API clients may
@@ -970,16 +1011,7 @@ def get_user_by_delivery_email(email: str, realm: "Realm") -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS security model.  Use get_user in
     those code paths.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
-        "bot_owner",
-    ).get(delivery_email__iexact=email.strip(), realm=realm)
+    return base_get_user_queryset().get(delivery_email__iexact=email.strip(), realm=realm)
 
 
 def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[UserProfile]:
@@ -1005,7 +1037,7 @@ def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[Us
     return UserProfile.objects.filter(realm=realm).filter(email_filter)
 
 
-@cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(user_profile_by_email_realm_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: "Realm") -> UserProfile:
     """Fetches the user by its visible-to-other users username (in the
     `email` field).  For use in API contexts; do not use in
@@ -1014,16 +1046,7 @@ def get_user(email: str, realm: "Realm") -> UserProfile:
     EMAIL_ADDRESS_VISIBILITY_ADMINS.  In those code paths, use
     get_user_by_delivery_email.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
-        "bot_owner",
-    ).get(email__iexact=email.strip(), realm=realm)
+    return base_get_user_queryset().get(email__iexact=email.strip(), realm=realm)
 
 
 def get_active_user(email: str, realm: "Realm") -> UserProfile:
@@ -1036,12 +1059,7 @@ def get_active_user(email: str, realm: "Realm") -> UserProfile:
 
 
 def get_user_profile_by_id_in_realm(uid: int, realm: "Realm") -> UserProfile:
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "bot_owner",
-    ).get(id=uid, realm=realm)
+    return base_bulk_get_user_queryset().get(id=uid, realm=realm)
 
 
 def get_active_user_profile_by_id_in_realm(uid: int, realm: "Realm") -> UserProfile:
@@ -1128,12 +1146,14 @@ def bot_owner_user_ids(user_profile: UserProfile) -> set[int]:
         user_profile.default_events_register_stream
         and user_profile.default_events_register_stream.invite_only
     )
-    assert user_profile.bot_owner_id is not None
     if is_private_bot:
-        return {user_profile.bot_owner_id}
+        if user_profile.bot_owner_id is not None:
+            return {user_profile.bot_owner_id}
+        return set()
     else:
         users = {user.id for user in user_profile.realm.get_human_admin_users()}
-        users.add(user_profile.bot_owner_id)
+        if user_profile.bot_owner_id is not None:
+            users.add(user_profile.bot_owner_id)
         return users
 
 

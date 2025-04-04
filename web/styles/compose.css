@@ -9,27 +9,39 @@
        reply button and the new-message button. */
     align-items: stretch;
 
-    .new_message_button {
-        .button {
-            /* Keep the new message button sized to match
-               adjacent buttons. */
-            font-size: inherit;
-            min-width: inherit;
-            line-height: var(--line-height-compose-buttons);
-            padding: 3px 10px;
+    .compose_mobile_button {
+        /* Keep the new message button sized to match
+           adjacent buttons. */
+        min-width: inherit;
+        padding: 3px 10px;
+        border-radius: 4px;
+        outline: none;
+        /* This is ugly, but necessary to use the
+           text + for the compose button. An icon
+           would likely be a better choice here.
+           1.2em is 16.8px at 14px em. */
+        font-size: 1.2em;
+        /* 1.2em is 16.8px at 14px em; this
+           maintains the 20px em-equivalent compose
+           line height, but at a 16.8px em. */
+        line-height: 1.19em;
+        font-weight: 400;
+        color: var(--color-text-default);
+        background-color: var(--color-background-compose-new-message-button);
+        border: 1px solid var(--color-border-compose-new-message-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-compose-new-message-button-hover
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
         }
 
-        .compose_mobile_button {
-            /* This is ugly, but necessary to use the
-               text + for the compose button. An icon
-               would likely be a better choice here.
-               1.2em is 16.8px at 14px em. */
-            font-size: 1.2em !important;
-            /* 1.2em is 16.8px at 14px em; this
-               maintains the 20px em-equivalent compose
-               line height, but at a 16.8px em. */
-            line-height: 1.19em !important;
-            font-weight: 400;
+        &:active {
+            background-color: var(
+                --color-background-compose-new-message-button-active
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
         }
     }
 
@@ -60,8 +72,14 @@
 
         #left_bar_compose_reply_button_big,
         #new_conversation_button {
-            /* Remove the border inherited from `.button` styles. */
+            /* Keep the new message button sized to match
+               adjacent buttons. */
+            font-size: inherit;
+            min-width: inherit;
+            padding: 3px 10px;
+            outline: none;
             border: none;
+            color: var(--color-text-default);
             background: var(--color-compose-embedded-button-background);
             border-radius: 3px;
             line-height: var(--line-height-compose-buttons);
@@ -69,6 +87,7 @@
 
         .compose-reply-button-wrapper {
             flex-grow: 1;
+            display: flex;
             overflow: hidden;
         }
 
@@ -83,10 +102,10 @@
         #new_conversation_button {
             /* Remove the  `padding` to prevent margin from affecting parent height. */
             padding: 0 10px;
-            /* Removing the `min-width` inherited from the `.button` styles. */
             min-width: inherit;
             margin: 1px;
             flex-shrink: 0;
+            align-self: stretch;
 
             color: var(--color-compose-embedded-button-text-color);
 
@@ -113,6 +132,39 @@
         @media (width < $sm_min) {
             /* Override inline style injected by jQuery hide() */
             display: none !important;
+        }
+    }
+
+    .new_direct_message_button_container {
+        display: flex;
+    }
+
+    #new_direct_message_button {
+        /* Keep the new message button sized to match
+           adjacent buttons. */
+        align-self: stretch;
+        font-size: inherit;
+        min-width: inherit;
+        line-height: var(--line-height-compose-buttons);
+        padding: 3px 10px;
+        border-radius: 4px;
+        outline: none;
+        color: var(--color-text-default);
+        background-color: var(--color-background-compose-new-message-button);
+        border: 1px solid var(--color-border-compose-new-message-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-compose-new-message-button-hover
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
+        }
+
+        &:active {
+            background-color: var(
+                --color-background-compose-new-message-button-active
+            );
+            border-color: var(--color-border-compose-new-message-button-hover);
         }
     }
 }
@@ -168,8 +220,22 @@
 
     #compose-recipient {
         &.compose-recipient-direct-selected {
+            #compose_select_recipient_widget_wrapper {
+                /* As the DM-pill area expands, we want to
+                   hold the DM picker to the first line. */
+                align-self: flex-start;
+            }
+
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
+                height: var(--compose-recipient-box-min-height);
+            }
+
+            .topic-marker-container {
+                /* As the DM-pill area expands, we likewise
+                   want to keep the topic marker aligned with
+                   the DM picker. */
+                align-self: flex-start;
             }
         }
 
@@ -177,6 +243,7 @@
             /* Ensure the marker ( < ) stays centered vertically
               with the dropdown, even when adjacent stacking pills
               in, e.g., a group DM. */
+            align-self: center;
             display: flex;
             align-items: center;
             /* Ensure horizontal centering, too. */
@@ -187,15 +254,18 @@
             height: var(--compose-recipient-box-min-height);
 
             .conversation-arrow {
-                font-size: 16px;
-                line-height: 16px;
+                font-size: 1.1429em; /* 16px / 14px em */
+                /* Fix the line-height to the font size
+                   to maintain a circle that scales. */
+                line-height: 1;
                 border-radius: 50%;
                 padding: 2px;
                 margin: 0 3px;
                 color: var(--color-compose-chevron-arrow);
                 text-decoration: none;
                 cursor: default;
-                transition: all 0.2s ease-in-out;
+                transition: 0.2s ease-in-out;
+                transition-property: background, color;
 
                 &.narrow_to_compose_recipients {
                     background: var(
@@ -275,26 +345,43 @@
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border 0.2s ease;
+    transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
         border-color: var(--color-message-content-container-border-focus);
     }
 
-    &:has(.new_message_textarea.over_limit),
-    &:has(.new_message_textarea.over_limit:focus) {
-        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
-    }
-
-    &:has(.new_message_textarea.over_limit.flash) {
-        animation: message-limit-flash 0.5s ease-in-out 3;
-    }
-
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
-        border-color: hsl(3deg 57% 33%);
-        box-shadow: 0 0 2px hsl(3deg 57% 33%);
+        border-color: var(--color-invalid-input-border);
+        box-shadow: var(--color-invalid-input-box-shadow);
     }
+}
+
+#message-content-container:has(.new_message_textarea.textarea-over-limit),
+.edit-content-container:has(.message_edit_content.textarea-over-limit) {
+    box-shadow: 0 0 0 1pt
+        var(--color-message-content-container-border-over-limit);
+}
+
+#message-content-container:has(
+        .new_message_textarea.textarea-approaching-limit
+    ),
+.edit-content-container:has(.message_edit_content.textarea-approaching-limit) {
+    box-shadow: 0 0 0 1pt
+        var(--color-message-content-container-border-approaching-limit);
+}
+
+#message-content-container:has(.new_message_textarea.textarea-over-limit.flash),
+#message-content-container:has(
+        .new_message_textarea.textarea-approaching-limit.flash
+    ),
+.edit-content-container:has(.message_edit_content.textarea-over-limit.flash),
+.edit-content-container:has(
+        .message_edit_content.textarea-approaching-limit.flash
+    ) {
+    /* This should align with the timing in compose_validate.validate_message_length. */
+    animation: message-limit-flash 0.5s ease-in-out 1;
 }
 
 #message-content-container .composebox-buttons {
@@ -354,6 +441,18 @@
     padding-right: var(--composebox-buttons-width);
     background-color: var(--color-compose-message-content-background);
     color: var(--color-text-default);
+
+    &.textarea-over-limit {
+        background-color: var(
+            --color-compose-message-content-background-over-limit
+        );
+    }
+
+    &.textarea-approaching-limit {
+        background-color: var(
+            --color-compose-message-content-background-approaching-limit
+        );
+    }
 }
 
 .surround-formatting-buttons-row {
@@ -412,8 +511,111 @@
     margin: 0 1px;
 }
 
-#compose-limit-indicator:not(:empty) {
-    font-size: 12px;
+.compose-scrolling-buttons-container {
+    display: grid;
+    /* The scroller buttons are set to a 48px width that does not scale;
+       the idea being that that's a generous target area, and that it
+       would be better not to consume more space at larger font sizes
+       under narrower screen sizes. */
+    grid-template-columns:
+        [scroller-backward-start buttons-start] 48px [scroller-backward-end] minmax(
+            0,
+            1fr
+        )
+        [scroller-forward-start] 48px [scroller-forward-end buttons-end];
+    grid-template-rows: auto;
+}
+
+.compose-scrollable-buttons {
+    grid-area: buttons;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+}
+
+.formatting-control-scroller-button {
+    z-index: 5;
+    display: flex;
+    align-items: center;
+
+    border-radius: 0;
+    border: 0;
+
+    color: var(--color-compose-scroll-icon);
+    background: transparent;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+
+    &:focus {
+        outline: 0;
+    }
+}
+
+.formatting-scroller-backward {
+    grid-area: scroller-backward;
+    justify-content: flex-start;
+    border-radius: 0 0 0 3px;
+    background: var(--gradient-compose-scroll-backward);
+
+    &:hover {
+        background: var(--gradient-compose-scroll-backward-hover);
+    }
+
+    &:active {
+        background: var(--gradient-compose-scroll-backward-active);
+
+        .scroller-backward-icon {
+            /* Subtly shift arrow in scroll direction. */
+            margin-left: -2px;
+        }
+    }
+}
+
+.formatting-scroller-forward {
+    grid-area: scroller-forward;
+    justify-content: flex-end;
+    border-radius: 0 0 3px;
+    background: var(--gradient-compose-scroll-forward);
+
+    &:hover {
+        background: var(--gradient-compose-scroll-forward-hover);
+    }
+
+    &:active {
+        background: var(--gradient-compose-scroll-forward-active);
+
+        .scroller-forward-icon {
+            /* Subtly shift arrow in scroll direction. */
+            margin-right: -2px;
+        }
+    }
+}
+
+.can-scroll-backward .formatting-scroller-backward,
+.can-scroll-forward .formatting-scroller-forward {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Hide the scroller buttons when someone has reached
+   the formatting bar via Tab. Scroller-button state
+   silently updates despite their being hidden, and
+   scroller buttons reappear once focus has moved out
+   of the formatting bar. */
+.compose-scrolling-buttons-container:has(
+        .compose-scrollable-buttons:focus-within
+    ) {
+    .formatting-scroller-backward,
+    .formatting-scroller-forward {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+.message-limit-indicator:not(:empty) {
+    font-size: 0.8571em; /* 12px at 14px/em */
     color: var(--color-limit-indicator);
     width: max-content;
 
@@ -426,7 +628,7 @@
     margin-top: auto;
     padding: 3px 3px 3px 0;
 
-    &.over_limit {
+    &.textarea-over-limit {
         color: var(--color-limit-indicator-over-limit);
         font-weight: bold;
     }
@@ -463,12 +665,15 @@
     right: 0;
     color: var(--color-compose-send-control-button);
     background: transparent;
-    font-size: 12.5px;
+    /* 12.5px at 14px em */
+    font-size: 0.8928em;
     font-weight: normal;
-    line-height: 20px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    line-height: 1.6em;
     opacity: 0.7;
     border: 0;
-    padding: 3px 7px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    padding: 0.24em 0.56em;
     border-radius: 8px;
     vertical-align: unset;
     text-shadow: none;
@@ -500,11 +705,7 @@
     border: 1px solid;
     display: flex;
     align-items: center;
-    /* Banners should carry at least a minimum
-       legacy font-size of 15px, and a line-height
-       of 18px. 1.2em is 18px at 15px/1em. */
-    font-size: max(15px, var(--base-font-size-px));
-    line-height: max(18px, 1.2em);
+    line-height: 1.2em; /* 18px at 15px/1em. */
 
     .main-view-banner-elements-wrapper {
         display: flex;
@@ -632,13 +833,6 @@
            ::before content where the icon sits. */
         display: flex;
         align-items: center;
-
-        /* Set the font-size for the close button
-           on the ::before element, so that it doesn't
-           impact the em units above. */
-        &::before {
-            font-size: 16px;
-        }
     }
 
     .banner_content + .main-view-banner-close-button {
@@ -794,7 +988,7 @@
         width: 0;
         /* The progress updates seem to come every second or so,
         so this is the smoothest it can probably get. */
-        transition: width 1s ease-in-out;
+        transition: width 1s ease-in-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         background: hsl(204deg 63% 85%);
         top: 0;
         bottom: 0;
@@ -821,7 +1015,8 @@
     }
 
     100% {
-        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
+        box-shadow: 0 0 0 1pt
+            var(--color-message-content-container-border-over-limit);
     }
 }
 
@@ -844,7 +1039,6 @@ textarea.new_message_textarea {
 
     &:read-only,
     &:disabled {
-        cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
     }
 }
@@ -856,19 +1050,27 @@ textarea.new_message_textarea {
 
 #compose_recipient_box {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* When displaying #topic-not-mandatory-placeholder,
+       we let it occupy the entire topic box. Otherwise,
+       we set and preserve named areas for the ordinary
+       topic text and the clear-topic button. */
+    grid-template-columns:
+        [topic-box-start topic-start] minmax(0, 1fr)
+        [topic-end topic-clear-button-start] auto [topic-clear-button-end topic-box-end];
+    grid-template-rows: [topic-box-start topic-start topic-clear-button-start] auto [topic-clear-button-end topic-end topic-box-end];
+    align-content: center;
     align-items: stretch;
     flex: 1 1 0;
-    border: 1px solid hsl(0deg 0% 0% / 20%);
-    border-radius: 3px;
-    transition: border 0.2s ease;
-    background: hsl(0deg 0% 100%);
+    border: 1px solid var(--color-compose-recipient-box-border-color);
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+    background: var(--color-compose-recipient-box-background-color);
 
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
     &:focus-within {
-        border: 1px solid hsl(0deg 0% 67%);
+        border-color: var(--color-compose-recipient-box-has-focus);
     }
 
     #stream_message_recipient_topic,
@@ -879,6 +1081,8 @@ textarea.new_message_textarea {
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
+        grid-area: topic;
+        color: var(--color-compose-recipient-box-text-color);
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
@@ -889,10 +1093,30 @@ textarea.new_message_textarea {
         padding: 4px 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+
+        &.empty-topic-display::placeholder {
+            color: var(--color-compose-recipient-box-text-color);
+        }
+    }
+
+    #topic-not-mandatory-placeholder {
+        grid-area: topic-box;
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        padding: 5px 6px;
+        display: none;
+        visibility: hidden;
+        pointer-events: none;
+
+        &.visible {
+            visibility: visible;
+        }
     }
 
     /* Styles for new conversation button in the recipient_box */
     #recipient_box_clear_topic_button {
+        grid-area: topic-clear-button;
         /* Set the border radius smaller, relative to the parent */
         border-radius: 2px;
         padding: 6px;
@@ -915,6 +1139,10 @@ textarea.new_message_textarea {
         }
     }
 
+    #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
+        ~ #recipient_box_clear_topic_button {
+        visibility: hidden;
+    }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
     & input {
         margin-bottom: 0;
@@ -922,12 +1150,26 @@ textarea.new_message_textarea {
 }
 
 #compose_select_recipient_widget {
-    width: auto;
+    /* We set width to 100% to get the ellipsis when
+       needed, but the flex and max-width properties
+       on the widget wrapper ultimately determine
+       how much space the channel picker occupies. */
+    width: 100%;
     outline: none;
+    /* We override the component-level colors to
+       ensure concord with the topic box. */
+    color: var(--color-compose-recipient-box-text-color);
+    background-color: var(--color-compose-recipient-box-background-color);
+    border-color: var(--color-compose-recipient-box-border-color);
 
     &.dropdown-widget-button {
         padding: 0 6px;
         border-radius: 4px;
+    }
+
+    .dropdown_widget_value {
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 }
 
@@ -943,7 +1185,7 @@ textarea.new_message_textarea {
     background-color: var(--color-compose-send-button-background);
 
     &:active {
-        transition: all 80ms;
+        transition: transform 80ms;
         transform: scale(0.96);
     }
 
@@ -954,9 +1196,8 @@ textarea.new_message_textarea {
     &:focus-visible {
         border: 1px solid var(--color-compose-send-button-focus-border);
         box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
-        background-color: var(
-            --color-compose-send-button-background-interactive
-        );
+        /* Override default browser ring. */
+        outline: 0;
     }
 
     &:hover {
@@ -993,8 +1234,8 @@ textarea.new_message_textarea {
 
     .zulip-icon-send {
         display: block;
-        font-size: 17px;
-        line-height: 16px;
+        font-size: 1.2143em; /* 17px at 14px/em */
+        line-height: 0.9412; /* 16px at 17px/em */
     }
 
     .loader {
@@ -1008,10 +1249,14 @@ textarea.new_message_textarea {
     color: var(--color-text-popover-menu);
 
     .enter_sends_choice {
-        display: flex;
-        gap: 8px;
         padding: 4px 10px;
-        align-items: flex-start;
+        gap: 0 8px;
+        display: grid;
+        /* 1em and 1.5em were chosen from playing around with different values
+           and picking some that looked reasonable. */
+        grid-template:
+            "radio-button instructions" 1.5em
+            ".            instructions" auto / 1em auto;
 
         &:hover {
             background: var(--color-background-hover-popover-menu);
@@ -1022,11 +1267,22 @@ textarea.new_message_textarea {
             background: var(--color-background-active-popover-menu);
         }
 
+        &:focus-visible {
+            background: var(--color-background-hover-popover-menu);
+            border-radius: 4px;
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
+        }
+
         & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
-            margin: 4px 0 0;
+            /* Radio buttons scale with height, and here we're just
+               matching that to the active font-size. */
+            height: 1em;
             accent-color: hsl(217deg 100% 60%);
+            grid-area: radio-button;
+            align-self: center;
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
@@ -1049,6 +1305,7 @@ textarea.new_message_textarea {
         flex-shrink: 0;
         gap: 3px;
         white-space: nowrap;
+        grid-area: instructions;
     }
 
     .enter_sends_choice_text {
@@ -1063,18 +1320,22 @@ textarea.new_message_textarea {
 
         .popover-menu-hotkey-hint {
             padding: 2px 5px;
+            display: flex;
         }
     }
 
     .enter_sends_major {
-        font-size: 15px;
+        /* 15px at 14px/1em */
+        font-size: 1.0714em;
     }
 
     .enter_sends_minor {
-        font-size: 12px;
+        /* 12px at 14px/1em */
+        font-size: 0.8571em;
 
         .popover-menu-hotkey-hint {
-            font-size: 12px;
+            /* 12px at 14px/1em */
+            font-size: 0.8571em;
             padding: 1px 4px;
         }
     }
@@ -1090,13 +1351,14 @@ textarea.new_message_textarea {
 
     .unread_count {
         margin: 1px 0 0 6px;
-        border: 0.5px solid var(--color-border-unread-counter);
-        background-color: unset;
-        color: inherit;
     }
 }
 
 #compose-recipient {
+    /* Enforce a shared, 'normal' line-height on
+       the recipient elements for baseline alignment,
+       and better use of the recipient-row space. */
+    line-height: normal;
     display: flex;
     flex: 1 1 0;
     /* Use this containing flex element to
@@ -1121,12 +1383,18 @@ textarea.new_message_textarea {
     .compose_control_button {
         /* 22px at 14px/1em */
         font-size: 1.5714em;
+        /* Constrain icon fonts to a perfect
+           box (22px at 14px/1em) */
+        line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
         /* 28px at 22px/1em */
         height: 1.2727em;
         /* 30px at 22px/1em */
         width: 1.3636em;
+        /* Adhere to the width of formatting buttons,
+           despite flexbox context. */
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1152,7 +1420,6 @@ textarea.new_message_textarea {
 
     .compose_control_button_container.disabled-on-hover:hover {
         opacity: 0.3;
-        cursor: not-allowed;
 
         .compose_control_button {
             pointer-events: none;
@@ -1164,166 +1431,21 @@ textarea.new_message_textarea {
         top: -0.7px;
     }
 
-    .compose_control_menu {
-        padding: 0 1px;
-        /* 18px at 14px/1em */
-        font-size: 1.2957em;
-        /* Coordinate with the value of
-           --compose-formatting-buttons-row-height */
-        /* 28px at 18px/1em */
-        height: 1.5556em;
-    }
-
-    .compose_control_menu_wrapper {
-        /* Since `compose_control_menu_wrapper` is the reference for the tippy popover, it is
-           important to set it's display correctly so that tippy knows when to hide / show popover
-           on window resize. */
-        display: none;
-        opacity: 0.7;
-        padding: 0;
-        margin: 0;
-
-        &:hover {
-            opacity: 1;
-        }
-
-        .compose_control_menu {
-            opacity: 1;
-            display: none;
-        }
-    }
-
     .divider {
-        color: hsl(0deg 0% 75%);
-        /* 20px at 14px/1em */
-        font-size: 1.4286em;
-        margin: 0 3px;
+        margin: 0 5px;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
-        /* 28px at 20px/1em */
-        height: 1.4em;
+        /* 16px at 14px/1em */
+        height: 1.1429em;
+        width: 1.5px;
+        /* Prevent dividers from growing or shrinking. */
+        flex: 0 0 auto;
+        background-color: var(--color-compose-formatting-button-divider);
 
         @media (width < 400px) {
             /* Remove at mobile widths to make more space
                for compose buttons */
             display: none;
-        }
-    }
-
-    .compose_draft_button {
-        font-size: 15px;
-        font-weight: 600;
-        font-family: "Source Sans 3 VF", sans-serif;
-        padding: 0 5px;
-        position: relative;
-        top: 0.7px;
-    }
-
-    .compose_help_button {
-        font-size: 20px;
-        line-height: 17px;
-    }
-
-    .show_popover_buttons {
-        display: flex;
-        align-items: center;
-        padding: 0;
-        margin: 0;
-    }
-
-    .show_popover_buttons_2 {
-        display: flex;
-        align-items: center;
-        padding: 0;
-        margin: 0;
-    }
-
-    &.show_in_popover {
-        display: none;
-    }
-}
-
-.less-dense-mode {
-    .compose-control-buttons-container {
-        .compose_control_menu_wrapper {
-            /* The media query below handles the hiding and showing of the
-            vdot menu icon, so that it is hidden when all compose buttons fit
-            in the main row below the compose box. So, this is the same as
-            the media query for .show_popover_buttons. */
-            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
-                display: block;
-
-                .compose_control_menu {
-                    display: flex;
-                }
-            }
-        }
-
-        .show_popover_buttons {
-            /* We use this class for the div containing those compose buttons, which
-            we hide and show in a popover instead when they no longer fit in a
-            single row. The media query below handles the hiding and showing of the
-            buttons from the main row of compose buttons below the compose box. */
-            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
-                display: none;
-            }
-        }
-
-        .show_popover_buttons_2 {
-            /* This is similar to show_popover_buttons, but it's only for those
-            compose buttons that we hide, and show in the popover only when the
-            screen gets extremely narrow. */
-            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
-                display: none;
-            }
-        }
-
-        &.show_in_popover {
-            /* This is to show the popover 2 buttons in the popover, only when
-            they are hidden in the main row below the compose box. */
-            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
-                display: flex;
-            }
-        }
-
-        .compose_control_button {
-            /* Slightly reduce width so that buttons don't overflow the available
-            space at mobile widths */
-            @media (width < 400px) {
-                width: 1.28em;
-            }
-        }
-    }
-}
-
-.more-dense-mode {
-    .compose-control-buttons-container {
-        .compose_control_menu_wrapper {
-            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-                display: block;
-
-                .compose_control_menu {
-                    display: flex;
-                }
-            }
-        }
-
-        .show_popover_buttons {
-            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-                display: none;
-            }
-        }
-
-        .show_popover_buttons_2 {
-            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-                display: none;
-            }
-        }
-
-        &.show_in_popover {
-            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-                display: flex;
-            }
         }
     }
 }
@@ -1339,14 +1461,14 @@ textarea.new_message_textarea {
         flex-direction: column-reverse;
     }
 
-    &.disabled-message-send-controls {
-        cursor: not-allowed;
-
-        & button {
-            pointer-events: none;
-            opacity: 0.5;
-        }
+    .compose-button-disabled {
+        pointer-events: none;
     }
+}
+
+#compose-send-button.disabled-message-send-controls {
+    cursor: default;
+    opacity: 0.5;
 }
 
 .drag {
@@ -1363,7 +1485,6 @@ textarea.new_message_textarea {
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
-    cursor: not-allowed;
 }
 
 .markdown_preview_spinner {
@@ -1372,8 +1493,27 @@ textarea.new_message_textarea {
 
 #compose_select_recipient_widget_wrapper {
     display: flex;
-    justify-content: flex-start;
-    height: var(--compose-recipient-box-min-height);
+    /* Allow the contents wrapped here to
+       expand the available space... */
+    white-space: nowrap;
+    /* And follow the fitted content on the
+       flexbox. */
+    flex: 0 0 fit-content;
+    /* But force an ellipsis here, rather than
+       just on an inner element. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Finally, hold this to a maximum width of
+       40% of the recipient row. */
+    max-width: 40%;
+
+    &:focus-visible {
+        outline: 0;
+
+        #compose_select_recipient_widget {
+            border-color: var(--color-compose-recipient-box-has-focus);
+        }
+    }
 
     .dropdown_widget_value {
         flex-grow: 1;
@@ -1382,11 +1522,11 @@ textarea.new_message_textarea {
         color: var(--color-text-default);
 
         .stream-privacy-type-icon {
-            font-size: 13px;
-            width: 13px;
-            height: 13px;
+            font-size: 0.9286em; /* 13px at 14px em */
+            width: 1em;
+            height: 1em;
             position: relative;
-            top: 2px;
+            top: 0.1538em; /* 2px at 13px/em */
         }
     }
 
@@ -1410,7 +1550,7 @@ textarea.new_message_textarea {
     font-weight: 450;
 
     &:active {
-        transition: all 80ms;
+        transition: transform 80ms;
         transform: scale(0.96);
     }
 
@@ -1539,6 +1679,54 @@ textarea.new_message_textarea {
     }
 }
 
+.saved_snippets-dropdown-list-container {
+    width: 17.8571em; /* 250px at 14px/em */
+
+    .dropdown-list .dropdown-list-item-common-styles {
+        padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
+        display: flex;
+        flex-direction: column;
+        /* Make content appear more distinct from
+           the snippet name. */
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
+
+        .dropdown-list-item-name {
+            line-height: 1.2em;
+        }
+
+        .dropdown-list-item-description {
+            font-weight: 400;
+            font-size: 0.9283em; /* 13px at 14px/em */
+            opacity: 0.8;
+            padding: 0;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .dropdown-list-bold-selected {
+            font-weight: 500;
+            max-width: 210px;
+            display: inline-block;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+}
+
+#add-new-saved-snippet-modal,
+#edit-saved-snippet-modal {
+    & .saved-snippet-title {
+        width: 97%;
+        margin-bottom: 20px;
+    }
+
+    & .saved-snippet-content {
+        width: 97%;
+        resize: vertical;
+    }
+}
+
 #compose.compose-fullscreen,
 #compose.compose-intermediate {
     z-index: 99;
@@ -1617,11 +1805,21 @@ textarea.new_message_textarea {
     }
 
     .preview_mode_disabled {
-        cursor: not-allowed;
         opacity: 0.3;
 
         .compose_control_button {
             pointer-events: none;
         }
+    }
+
+    .message-edit-textbox {
+        /* In preview mode, we hide the message edit
+           textbox to prevent it from appearing behind
+           the preview container. We cannot set its
+           display to none or visibility to hidden, as
+           that would prevent us from modifying the
+           textarea's value. */
+        height: 0;
+        overflow: hidden;
     }
 }

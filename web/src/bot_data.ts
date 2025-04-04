@@ -1,8 +1,9 @@
 import type {z} from "zod";
 
-import {server_add_bot_schema, server_update_bot_schema, services_schema} from "./bot_types";
-import * as people from "./people";
-import type {StateData} from "./state_data";
+import type {services_schema} from "./bot_types.ts";
+import {server_add_bot_schema, server_update_bot_schema} from "./bot_types.ts";
+import * as people from "./people.ts";
+import type {StateData} from "./state_data.ts";
 
 export type ServerUpdateBotData = z.infer<typeof server_update_bot_schema>;
 export type ServerAddBotData = z.infer<typeof server_add_bot_schema>;
@@ -35,16 +36,15 @@ export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
     const bot = bots.get(bot_id)!;
     // TODO/typescript: Move validation to the caller when
     // server_events_dispatch.js is converted to TypeScript.
-    Object.assign(bot, server_update_bot_schema.deepPartial().parse(bot_update));
+    const {services: services_update, ...bot_update_rest} =
+        server_update_bot_schema.parse(bot_update);
+
+    Object.assign(bot, bot_update_rest);
 
     // We currently only support one service per bot.
     const service = services.get(bot_id)![0];
-    if (
-        service !== undefined &&
-        bot_update.services !== undefined &&
-        bot_update.services.length > 0
-    ) {
-        Object.assign(service, services_schema.parse(bot_update.services)[0]);
+    if (service !== undefined && services_update !== undefined && services_update.length > 0) {
+        Object.assign(service, services_update[0]);
     }
 }
 
@@ -52,16 +52,6 @@ export function get_all_bots_for_current_user(): Bot[] {
     const ret = [];
     for (const bot of bots.values()) {
         if (bot.owner_id !== null && people.is_my_user_id(bot.owner_id)) {
-            ret.push(bot);
-        }
-    }
-    return ret;
-}
-
-export function get_editable(): Bot[] {
-    const ret = [];
-    for (const bot of bots.values()) {
-        if (bot.is_active && bot.owner_id !== null && people.is_my_user_id(bot.owner_id)) {
             ret.push(bot);
         }
     }

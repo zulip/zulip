@@ -13,14 +13,12 @@ setup is complete.
 2. Create a Zulip channel that will receive mailing list traffic, or
    use an existing one.
 
-3. [Find the email address](/help/message-a-channel-by-email#message-a-channel-by-email_1)
-   for the channel you created. You can customize the details of how emails
-   are formatted in Zulip using the
-   [Configuration options][configuration-options].
-
-[configuration-options]: /help/message-a-channel-by-email#configuration-options
+3. [Generate an email
+   address](/help/message-a-channel-by-email#message-a-channel-by-email_1) for
+   the channel you created.
 
 4. Add the email address for the channel to the mailing list.
+
 {end_tabs}
 
 New emails sent to the email list will now be mirrored to the channel.

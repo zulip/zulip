@@ -30,20 +30,15 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
     do_start_email_change_process,
 )
+from zerver.actions.users import generate_password_reset_url
 from zerver.decorator import human_users_only
-from zerver.forms import generate_password_reset_url
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
-from zerver.lib.exceptions import (
-    IncompatibleParameterValuesError,
-    JsonableError,
-    RateLimitedError,
-    UserDeactivatedError,
-)
+from zerver.lib.exceptions import JsonableError, RateLimitedError, UserDeactivatedError
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.response import json_success
@@ -56,7 +51,7 @@ from zerver.lib.typed_endpoint_validators import (
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
-from zerver.models import EmailChangeStatus, RealmUserDefault, UserBaseSettings, UserProfile
+from zerver.models import EmailChangeStatus, UserProfile
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
@@ -100,7 +95,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     assert isinstance(email_change_object, EmailChangeStatus)
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         user_profile = UserProfile.objects.select_for_update().get(
             id=email_change_object.user_profile_id
         )
@@ -117,7 +112,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
             return redirect_to_deactivation_notice()
 
         validate_email_change_request(user_profile, new_email)
-        do_change_user_delivery_email(user_profile, new_email)
+        do_change_user_delivery_email(user_profile, new_email, acting_user=user_profile)
 
     user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)
     context = {"realm_name": user_profile.realm.name, "new_email": new_email}
@@ -168,7 +163,7 @@ def check_settings_values(
     email_notifications_batching_period_seconds: int | None,
     default_language: str | None = None,
 ) -> None:
-    # We can't use REQ for this widget because
+    # We can't use typed_endpoint for this widget because
     # get_available_language_codes requires provisioning to be
     # complete.
     if default_language is not None and default_language not in get_available_language_codes():
@@ -197,30 +192,6 @@ def check_settings_values(
         )
 
 
-def check_information_density_setting_values(
-    setting_object: UserProfile | RealmUserDefault,
-    dense_mode: bool | None,
-    web_font_size_px: int | None,
-    web_line_height_percent: int | None,
-) -> None:
-    dense_mode = dense_mode if dense_mode is not None else setting_object.dense_mode
-    web_font_size_px = (
-        web_font_size_px if web_font_size_px is not None else setting_object.web_font_size_px
-    )
-    web_line_height_percent = (
-        web_line_height_percent
-        if web_line_height_percent is not None
-        else setting_object.web_line_height_percent
-    )
-
-    if dense_mode:
-        if web_font_size_px != UserBaseSettings.WEB_FONT_SIZE_PX_COMPACT:
-            raise IncompatibleParameterValuesError("dense_mode", "web_font_size_px")
-
-        if web_line_height_percent != UserBaseSettings.WEB_LINE_HEIGHT_PERCENT_COMPACT:
-            raise IncompatibleParameterValuesError("dense_mode", "web_line_height_percent")
-
-
 @human_users_only
 @typed_endpoint
 def json_change_settings(
@@ -232,7 +203,6 @@ def json_change_settings(
     old_password: str | None = None,
     new_password: str | None = None,
     twenty_four_hour_time: Json[bool] | None = None,
-    dense_mode: Json[bool] | None = None,
     web_mark_read_on_scroll_policy: Annotated[
         Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
     ]
@@ -314,6 +284,7 @@ def json_change_settings(
     send_private_typing_notifications: Json[bool] | None = None,
     send_stream_typing_notifications: Json[bool] | None = None,
     send_read_receipts: Json[bool] | None = None,
+    allow_private_data_export: Json[bool] | None = None,
     user_list_style: Annotated[
         Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
     ]
@@ -327,6 +298,8 @@ def json_change_settings(
     ]
     | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
+    web_suggest_update_timezone: Json[bool] | None = None,
+    hide_ai_features: Json[bool] | None = None,
 ) -> HttpResponse:
     # UserProfile object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a
@@ -410,15 +383,6 @@ def json_change_settings(
         else:
             # Note that check_change_full_name strips the passed name automatically
             check_change_full_name(user_profile, full_name, user_profile)
-
-    if (
-        dense_mode is not None
-        or web_font_size_px is not None
-        or web_line_height_percent is not None
-    ):
-        check_information_density_setting_values(
-            user_profile, dense_mode, web_font_size_px, web_line_height_percent
-        )
 
     # Loop over user_profile.property_types
     request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}

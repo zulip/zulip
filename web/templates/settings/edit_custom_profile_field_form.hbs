@@ -1,11 +1,11 @@
 {{#with profile_field_info}}
-<form class="name-setting profile-field-form new-style" id="edit-custom-profile-field-form-{{id}}" data-profile-field-id="{{id}}">
+<form class="name-setting profile-field-form" id="edit-custom-profile-field-form-{{id}}" data-profile-field-id="{{id}}">
     <div class="input-group">
-        <label for="name" class="modal-field-label">{{t "Label" }}</label>
+        <label for="id-custom-profile-field-name" class="modal-field-label">{{t "Label" }}</label>
         <input type="text" name="name" id="id-custom-profile-field-name" class="modal_text_input prop-element" value="{{ name }}" maxlength="40" data-setting-widget-type="string" />
     </div>
     <div class="input-group hint_change_container">
-        <label for="hint" class="modal-field-label">{{t "Hint" }}</label>
+        <label for="id-custom-profile-field-hint" class="modal-field-label">{{t "Hint" }}</label>
         <input type="text" name="hint" id="id-custom-profile-field-hint" class="modal_text_input prop-element" value="{{ hint }}" maxlength="80" data-setting-widget-type="string" />
     </div>
     {{#if is_select_field }}
@@ -14,7 +14,7 @@
         <div class="profile-field-choices" name="profile_field_choices_edit">
             <div class="edit_profile_field_choices_container">
                 {{#each choices}}
-                    {{> profile_field_choice }}
+                    {{> profile_field_choice . }}
                 {{/each}}
             </div>
         </div>
@@ -40,7 +40,7 @@
         <div class="input-group">
             <label class="checkbox edit_profile_field_display_label" for="id-custom-profile-field-display-in-profile-summary">
                 <input class="edit_display_in_profile_summary prop-element" data-setting-widget-type="boolean" type="checkbox" id="id-custom-profile-field-display-in-profile-summary" name="display_in_profile_summary" data-setting-widget-type="boolean" {{#if display_in_profile_summary}} checked="checked" {{/if}}/>
-                <span></span>
+                <span class="rendered-checkbox"></span>
                 {{t 'Display on user card' }}
             </label>
         </div>
@@ -48,9 +48,15 @@
     <div class="input-group">
         <label class="checkbox" for="id-custom-profile-field-required">
             <input class="edit-required prop-element" type="checkbox" id="id-custom-profile-field-required" name="required" data-setting-widget-type="boolean" {{#if required}} checked="checked" {{/if}}/>
-            <span></span>
+            <span class="rendered-checkbox"></span>
             {{t 'Required field' }}
         </label>
     </div>
+    {{> settings_checkbox
+      prefix="id-custom-profile-field-"
+      setting_name="editable-by-user"
+      is_checked= editable_by_user
+      label=(t "Users can edit this field for their own account")
+      }}
 </form>
 {{/with}}

@@ -74,9 +74,7 @@ export type Contributor = {
     email?: string | undefined;
     github_username?: string | undefined;
     name?: string | undefined;
-} & {
-    [K in RepositoryName]?: number;
-};
+} & Partial<Record<RepositoryName, number>>;
 type ContributorData = {
     avatar: string;
     email?: string | undefined;

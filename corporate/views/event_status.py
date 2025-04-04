@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -8,16 +9,13 @@ from corporate.lib.decorator import (
     authenticated_remote_server_management_endpoint,
     self_hosting_management_endpoint,
 )
-from corporate.lib.stripe import (
-    EventStatusRequest,
-    RealmBillingSession,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-)
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
+
+if TYPE_CHECKING:
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -31,6 +29,8 @@ def event_status(
     stripe_session_id: str | None = None,
     stripe_invoice_id: str | None = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import EventStatusRequest, RealmBillingSession
+
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
     )
@@ -39,15 +39,17 @@ def event_status(
     return json_success(request, data)
 
 
-@authenticated_remote_realm_management_endpoint
 @typed_endpoint
+@authenticated_remote_realm_management_endpoint
 def remote_realm_event_status(
     request: HttpRequest,
-    billing_session: RemoteRealmBillingSession,
+    billing_session: "RemoteRealmBillingSession",
     *,
     stripe_session_id: str | None = None,
     stripe_invoice_id: str | None = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import EventStatusRequest
+
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
     )
@@ -55,15 +57,17 @@ def remote_realm_event_status(
     return json_success(request, data)
 
 
-@authenticated_remote_server_management_endpoint
 @typed_endpoint
+@authenticated_remote_server_management_endpoint
 def remote_server_event_status(
     request: HttpRequest,
-    billing_session: RemoteServerBillingSession,
+    billing_session: "RemoteServerBillingSession",
     *,
     stripe_session_id: str | None = None,
     stripe_invoice_id: str | None = None,
 ) -> HttpResponse:  # nocoverage
+    from corporate.lib.stripe import EventStatusRequest
+
     event_status_request = EventStatusRequest(
         stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
     )

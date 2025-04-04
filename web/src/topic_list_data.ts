@@ -1,14 +1,14 @@
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic";
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
 
-import * as hash_util from "./hash_util";
-import * as narrow_state from "./narrow_state";
-import * as stream_topic_history from "./stream_topic_history";
-import * as sub_store from "./sub_store";
-import * as unread from "./unread";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
+import * as hash_util from "./hash_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as sub_store from "./sub_store.ts";
+import * as unread from "./unread.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 const max_topics = 8;
 const max_topics_with_unread = 12;
@@ -18,6 +18,7 @@ export type TopicInfo = {
     topic_name: string;
     topic_resolved_prefix: string;
     topic_display_name: string;
+    is_empty_string_topic: boolean;
     unread: number;
     is_zero: boolean;
     is_muted: boolean;
@@ -54,8 +55,7 @@ function choose_topics(
             stream_id,
             topic_name,
         );
-        const [topic_resolved_prefix, topic_display_name] =
-            resolved_topic.display_parts(topic_name);
+        const [topic_resolved_prefix, topic_bare_name] = resolved_topic.display_parts(topic_name);
         // Important: Topics are lower-case in this set.
         const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
             topic_name.toLowerCase(),
@@ -127,14 +127,15 @@ function choose_topics(
             stream_id,
             topic_name,
             topic_resolved_prefix,
-            topic_display_name,
+            topic_display_name: util.get_final_topic_display_name(topic_bare_name),
+            is_empty_string_topic: topic_bare_name === "",
             unread: num_unread,
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
             is_followed: is_topic_followed,
             is_unmuted_or_followed: is_topic_unmuted_or_followed,
             is_active_topic,
-            url: hash_util.by_stream_topic_url(stream_id, topic_name),
+            url: hash_util.by_channel_topic_permalink(stream_id, topic_name),
             contains_unread_mention,
         };
 
@@ -180,14 +181,21 @@ export function get_list_info(
 
     if (
         stream_id === narrow_state.stream_id() &&
-        narrowed_topic &&
+        narrowed_topic !== undefined &&
         !contains_topic(topic_names, narrowed_topic)
     ) {
         topic_names.unshift(narrowed_topic);
     }
 
     if (zoomed) {
-        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+        const word_separator_regex = /[\s/:_-]/; // Use -, _, :, / as word separators in addition to spaces.
+        const empty_string_topic_display_name = util.get_final_topic_display_name("");
+        topic_names = util.filter_by_word_prefix_match(
+            topic_names,
+            search_term,
+            (topic) => (topic === "" ? empty_string_topic_display_name : topic),
+            word_separator_regex,
+        );
     }
 
     if (stream_muted && !zoomed) {

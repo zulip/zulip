@@ -20,8 +20,12 @@
             </button>
         </div>
         <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
-        {{#if is_realm_admin}}
-        <button class="button small rounded btn-danger deactivate tippy-zulip-delayed-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive channel'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        {{#if can_archive_stream}}
+        <button class="button small rounded button-danger deactivate tippy-zulip-delayed-tooltip" type="button" data-tippy-content="{{t 'Archive channel'}}">
+            <span class="icon-container">
+                <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
+            </span>
+        </button>
         {{/if}}
     </div>
     {{/with}}
@@ -32,18 +36,19 @@
         <div class="stream_section" data-stream-section="general">
             {{#with sub}}
             <div class="stream-settings-tip-container">
-                {{> stream_settings_tip}}
+                {{> stream_settings_tip .}}
             </div>
             <div class="stream-header">
                 {{> stream_privacy_icon
                   invite_only=invite_only
-                  is_web_public=is_web_public }}
+                  is_web_public=is_web_public
+                  is_archived=is_archived }}
                 <div class="stream-name">
                     <span class="sub-stream-name" data-tippy-content="{{name}}">{{name}}</span>
                 </div>
                 <div class="stream_change_property_info alert-notification"></div>
                 <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
-                    <button id="open_stream_info_modal" class="button rounded small btn-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edit channel name and description' }}">
+                    <button id="open_stream_info_modal" class="button rounded small button-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edit channel name and description' }}">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -53,17 +58,18 @@
                   rendered_description=rendered_description
                   }}
             </div>
-            {{> stream_types
-              stream_post_policy_values=../stream_post_policy_values
+            {{> stream_types .
               stream_privacy_policy_values=../stream_privacy_policy_values
               stream_privacy_policy=../stream_privacy_policy
               check_default_stream=../check_default_stream
               zulip_plan_is_not_limited=../zulip_plan_is_not_limited
               upgrade_text_for_wide_organization_logo=../upgrade_text_for_wide_organization_logo
               is_business_type_org=../is_business_type_org
+              has_billing_access=../has_billing_access
               org_level_message_retention_setting=../org_level_message_retention_setting
               is_stream_edit=true
-              can_remove_subscribers_setting_widget_name="can_remove_subscribers_group"
+              prefix="id_"
+              group_setting_labels=../group_setting_labels
               }}
             {{/with}}
             <div class="stream_details_box">
@@ -74,45 +80,26 @@
                     <div class="stream_email_address_error alert-notification"></div>
                 </div>
                 {{#with sub}}
-                <div class="stream_creator_details stream_details_subsection">
-                    {{#if creator}}
-                    {{#tr}}
-                        Created by <z-user></z-user> on <z-stream-date-created></z-stream-date-created>.
-                        {{#*inline "z-user"}}
-                            {{> ../user_display_only_pill
-                              is_inline=true
-                              user_id=creator.user_id
-                              img_src=creator.avatar_url
-                              display_value=creator.full_name
-                              is_current_user=is_creator
-                              is_active=creator.is_active }}
-                        {{/inline}}
-                        {{#*inline "z-stream-date-created"}}{{date_created_string}}{{/inline}}
-                    {{/tr}}
-                    {{else}}
-                    {{#tr}}
-                        Created on <z-stream-date-created></z-stream-date-created>.
-                        {{#*inline "z-stream-date-created"}}{{date_created_string}}{{/inline}}
-                    {{/tr}}
-                    {{/if}}
+                <div class="creator_details stream_details_subsection">
+                    {{> ../creator_details .}}
                 </div>
                 <div class="stream_details_subsection">
                     {{t "Channel ID"}}<br/>
                     {{stream_id}}
                 </div>
                 {{/with}}
-                {{#if can_access_stream_email}}
                 <div class="input-group stream-email-box">
                     <label for="copy_stream_email_button" class="title inline-block">Email address</label>
                     <p class="field-hint">
                         {{t "You can use email to send messages to Zulip channels."}}
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
                     </p>
-                    <button class="button small rounded copy_email_button" id="copy_stream_email_button" type="button">
-                        <span class="copy_button">{{t "Generate email address" }}</span>
-                    </button>
+                    <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
+                        <button class="button small rounded copy_email_button" {{#unless can_access_stream_email}}disabled="disabled"{{/unless}} id="copy_stream_email_button" type="button">
+                            <span class="copy_button">{{t "Generate email address" }}</span>
+                        </button>
+                    </span>
                 </div>
-                {{/if}}
             </div>
         </div>
 
@@ -136,18 +123,19 @@
                     </div>
                 {{/each}}
                 <div class="input-group">
-                    <label for="streamcolor" class="settings-field-label">{{t "Channel color" }}</label>
-                    <span class="sub_setting_control">
-                        <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
-                    </span>
+                    <label class="settings-field-label channel-color-label">{{t "Channel color" }}</label>
+                    <button class="button small rounded stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
+                        <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
+                        <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>
+                    </button>
                 </div>
             </div>
             <div class="subsection-parent">
                 <div class="subsection-header">
                     <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
                     <div class="stream_change_property_status alert-notification"></div>
-                    <p>{{t "In muted channels, channel notification settings apply only to unmuted topics." }}</p>
                 </div>
+                <p>{{t "In muted channels, channel notification settings apply only to unmuted topics." }}</p>
                 <div class="input-group">
                     <button class="button small rounded reset-stream-notifications-button" type="button">{{t "Reset to default notifications" }}</button>
                 </div>
@@ -169,7 +157,7 @@
         <div class="stream_section" data-stream-section="subscribers">
             {{#with sub}}
             <div class="edit_subscribers_for_stream">
-                {{> stream_members}}
+                {{> stream_members .}}
             </div>
             {{/with}}
         </div>

@@ -1,30 +1,18 @@
 import os
 from collections.abc import Callable, Iterator
+from dataclasses import dataclass
 from datetime import datetime
-from typing import IO, Any, BinaryIO
+from typing import IO, Any
+
+import pyvips
 
 from zerver.models import Realm, UserProfile
 
-INLINE_MIME_TYPES = [
-    "application/pdf",
-    "audio/aac",
-    "audio/flac",
-    "audio/mp4",
-    "audio/mpeg",
-    "audio/wav",
-    "audio/webm",
-    "image/apng",
-    "image/avif",
-    "image/gif",
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "video/mp4",
-    "video/webm",
-    # To avoid cross-site scripting attacks, DO NOT add types such
-    # as application/xhtml+xml, application/x-shockwave-flash,
-    # image/svg+xml, text/html, or text/xml.
-]
+
+@dataclass
+class StreamingSourceWithSize:
+    size: int
+    source: pyvips.Source
 
 
 class ZulipUploadBackend:
@@ -38,13 +26,17 @@ class ZulipUploadBackend:
     def upload_message_attachment(
         self,
         path_id: str,
+        filename: str,
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
     ) -> None:
         raise NotImplementedError
 
-    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
+    def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
+        raise NotImplementedError
+
+    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
     def delete_message_attachment(self, path_id: str) -> bool:
@@ -55,7 +47,9 @@ class ZulipUploadBackend:
             self.delete_message_attachment(path_id)
 
     def all_message_attachments(
-        self, include_thumbnails: bool = False
+        self,
+        include_thumbnails: bool = False,
+        prefix: str = "",
     ) -> Iterator[tuple[str, datetime]]:
         raise NotImplementedError
 

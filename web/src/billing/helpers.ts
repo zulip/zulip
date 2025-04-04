@@ -1,8 +1,8 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import * as loading from "../loading";
-import * as util from "../util";
+import * as loading from "../loading.ts";
+import * as util from "../util.ts";
 
 export type FormDataObject = Record<string, string>;
 

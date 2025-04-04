@@ -11,10 +11,12 @@ from typing_extensions import override
 from zerver.actions.message_edit import do_update_embedded_data
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import (
+    IMAGE_MAX_ANIMATED_PIXELS,
     MarkdownImageMetadata,
     StoredThumbnailFormat,
     get_default_thumbnail_url,
     get_image_thumbnail_path,
+    get_transcoded_format,
     missing_thumbnails,
     rewrite_thumbnailed_images,
 )
@@ -37,7 +39,7 @@ class ThumbnailWorker(QueueProcessingWorker):
                 # directly to a thumbnail URL we have not made yet.
                 # This may mean that we may generate 0 thumbnail
                 # images once we get the lock.
-                row = ImageAttachment.objects.select_for_update().get(id=event["id"])
+                row = ImageAttachment.objects.select_for_update(of=("self",)).get(id=event["id"])
             except ImageAttachment.DoesNotExist:  # nocoverage
                 logger.info("ImageAttachment row %d missing", event["id"])
                 return
@@ -81,7 +83,16 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
                 # one of them if we're outputting to a static format,
                 # otherwise we load them all.
                 if thumbnail_format.animated:
-                    load_opts = "n=-1"
+                    # We compute how many frames to thumbnail based on
+                    # how many frames it will take us to get to
+                    # IMAGE_MAX_ANIMATED_PIXELS
+                    pixels_per_frame = (
+                        image_attachment.original_width_px * image_attachment.original_height_px
+                    )
+                    if pixels_per_frame * image_attachment.frames < IMAGE_MAX_ANIMATED_PIXELS:
+                        load_opts = "n=-1"
+                    else:
+                        load_opts = f"n={IMAGE_MAX_ANIMATED_PIXELS // pixels_per_frame}"
                 else:
                     load_opts = "n=1"
             resized = pyvips.Image.thumbnail_buffer(
@@ -100,6 +111,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
             logger.info("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
             upload_backend.upload_message_attachment(
                 thumbnail_path,
+                str(thumbnail_format),
                 content_type,
                 thumbnailed_bytes,
                 None,
@@ -149,6 +161,8 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
             is_animated=is_animated,
             original_width_px=image_attachment.original_width_px,
             original_height_px=image_attachment.original_height_px,
+            original_content_type=image_attachment.content_type,
+            transcoded_image=get_transcoded_format(image_attachment),
         ),
     )
     return written_images
@@ -157,15 +171,14 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
 def update_message_rendered_content(
     realm_id: int, path_id: str, image_data: MarkdownImageMetadata | None
 ) -> None:
-    for message_class in [Message, ArchivedMessage]:
+    for message_class in (Message, ArchivedMessage):
         messages_with_image = (
-            message_class.objects.filter(  # type: ignore[attr-defined]  # TODO: ?
-                realm_id=realm_id, attachment__path_id=path_id
-            )
-            .select_for_update()
+            message_class.objects.filter(realm_id=realm_id, attachment__path_id=path_id)
+            .select_for_update(of=("self",))
             .order_by("id")
         )
         for message in messages_with_image:
+            assert message.rendered_content is not None
             rendered_content = rewrite_thumbnailed_images(
                 message.rendered_content,
                 {} if image_data is None else {path_id: image_data},

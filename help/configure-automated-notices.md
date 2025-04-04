@@ -14,7 +14,7 @@ language](/help/change-your-language).
 
 Notices about channel settings changes, such as [name](/help/rename-a-channel),
 [description](/help/change-the-channel-description),
-[permission](/help/channel-permissions) and
+[privacy](/help/change-the-privacy-of-a-channel) and
 [policy](/help/channel-posting-policy) updates are sent to the
 “channel events” topic in the channel that was modified.
 
@@ -22,13 +22,14 @@ Notices about channel settings changes, such as [name](/help/rename-a-channel),
 
 {!admin-only.md!}
 
-When creating a new [public channel](/help/channel-permissions), the
-channel creator can choose to advertise the new channel via an automated
-notice. You can configure what channel Zulip uses for these notices, or
-disable these notices entirely. The topic for these messages is “new
-channels”.
+When creating a new [public](/help/channel-permissions#public-channels) or
+[web-public](/help/channel-permissions#web-public-channels) channel, the channel
+creator can choose to advertise the new channel via an automated notice. You can
+configure what channel Zulip uses for these notices, or disable these notices
+entirely. The topic for these messages is “new channels”.
 
-New [private](/help/channel-permissions) channels are never announced.
+New [private](/help/channel-permissions#private-channels) channels are never
+announced.
 
 {start_tabs}
 
@@ -55,8 +56,8 @@ automated notices to help others understand how content was moved.
 ## Notices about users
 
 You will be notified if someone [subscribes you to a
-channel](/help/add-or-remove-users-from-a-channel#add-users-to-a-channel), or
-changes your [group](/help/user-groups) membership.
+channel](/help/subscribe-users-to-a-channel), or changes your
+[group](/help/user-groups) membership.
 
 ### New user announcements
 

@@ -13,14 +13,14 @@
     <td>
         {{#if author}}
         {{#with author}}
-        <span class="emoji_author panel_user_list">{{> ../user_display_only_pill display_value=full_name img_src=avatar_url}}</span>
+        <span class="emoji_author panel_user_list">{{> ../user_display_only_pill . display_value=full_name img_src=avatar_url}}</span>
         {{/with}}
         {{else}}
         <span class="emoji_author">{{t "Unknown author" }}</span>
         {{/if}}
     </td>
     <td>
-        <button class="button rounded small delete btn-danger tippy-zulip-delayed-tooltip" {{#unless can_delete_emoji}}disabled="disabled"{{/unless}} data-tippy-content="{{t 'Delete' }}" data-emoji-name="{{name}}">
+        <button class="button rounded small delete button-danger tippy-zulip-delayed-tooltip" {{#unless can_delete_emoji}}disabled="disabled"{{/unless}} data-tippy-content="{{t 'Delete' }}" data-emoji-name="{{name}}">
             <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </td>

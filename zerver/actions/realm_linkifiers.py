@@ -7,6 +7,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import LinkifierDict
 from zerver.models import Realm, RealmAuditLog, RealmFilter, UserProfile
 from zerver.models.linkifiers import flush_linkifiers, linkifiers_for_realm
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -46,7 +47,7 @@ def do_add_linkifier(
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_LINKIFIER_ADDED,
+        event_type=AuditLogEventType.REALM_LINKIFIER_ADDED,
         event_time=timezone_now(),
         extra_data={
             "realm_linkifiers": realm_linkifiers,
@@ -84,7 +85,7 @@ def do_remove_linkifier(
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_LINKIFIER_REMOVED,
+        event_type=AuditLogEventType.REALM_LINKIFIER_REMOVED,
         event_time=timezone_now(),
         extra_data={
             "realm_linkifiers": realm_linkifiers,
@@ -118,7 +119,7 @@ def do_update_linkifier(
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_LINKIFIER_CHANGED,
+        event_type=AuditLogEventType.REALM_LINKIFIER_CHANGED,
         event_time=timezone_now(),
         extra_data={
             "realm_linkifiers": realm_linkifiers,
@@ -173,7 +174,7 @@ def check_reorder_linkifiers(
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
-        event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED,
+        event_type=AuditLogEventType.REALM_LINKIFIERS_REORDERED,
         event_time=timezone_now(),
         extra_data={
             "realm_linkifiers": realm_linkifiers,

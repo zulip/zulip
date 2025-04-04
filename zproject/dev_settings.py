@@ -115,6 +115,7 @@ elif os.path.isfile(_candidate_apns_cert_file):
 
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
+PASSWORD_MAX_LENGTH = 100
 PASSWORD_MIN_GUESSES = 0
 
 # Two factor authentication: Use the fake backend for development.
@@ -211,9 +212,17 @@ ZULIP_SERVICES_URL = f"http://push.{EXTERNAL_HOST}"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = True
 
-# Breaks the UI if used, but enabled for development environment testing.
-ALLOW_GROUP_VALUED_SETTINGS = True
-
 # This value needs to be lower in development than usual to allow
 # for quicker testing of the feature.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5
+
+# In a dev environment, 'zulipdev.com:9991' is used to access the landing page.
+# See: https://zulip.readthedocs.io/en/latest/subsystems/realms.html#working-with-subdomains-in-development-environment
+ROOT_DOMAIN_LANDING_PAGE = True
+
+TOPIC_SUMMARIZATION_MODEL = "groq/llama-3.3-70b-versatile"
+# Defaults based on groq's pricing for Llama 3.3 70B Versatile 128k.
+# https://groq.com/pricing/
+OUTPUT_COST_PER_GIGATOKEN = 590
+INPUT_COST_PER_GIGATOKEN = 790
+MAX_PER_USER_MONTHLY_AI_COST = 1

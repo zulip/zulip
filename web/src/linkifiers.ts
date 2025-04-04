@@ -1,6 +1,8 @@
-import url_template_lib from "url-template";
+import * as url_template_lib from "url-template";
+import type {z} from "zod";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
+import type {realm_linkifier_schema} from "./state_data.ts";
 
 type LinkifierMap = Map<
     RegExp,
@@ -8,17 +10,13 @@ type LinkifierMap = Map<
 >;
 const linkifier_map: LinkifierMap = new Map();
 
-type Linkifier = {
-    pattern: string;
-    url_template: string;
-    id: number;
-};
+type Linkifier = z.output<typeof realm_linkifier_schema>;
 
 export function get_linkifier_map(): LinkifierMap {
     return linkifier_map;
 }
 
-function python_to_js_linkifier(
+export function python_to_js_linkifier(
     pattern: string,
     url: string,
 ): [RegExp | null, url_template_lib.Template, Record<number, string>] {
@@ -83,7 +81,7 @@ function python_to_js_linkifier(
             throw error;
         }
     }
-    const url_template = url_template_lib.parse(url);
+    const url_template = url_template_lib.parseTemplate(url);
     return [final_regex, url_template, group_number_to_name];
 }
 

@@ -4,11 +4,9 @@ Receive GitLab notifications in Zulip!
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-webhook-url-basic.md!}
+1. {!generate-webhook-url-with-branch-filtering.md!}
 
 1. Go to your repository on GitLab and click **Settings** on the left
    sidebar.  Click on **Integrations**.
@@ -40,8 +38,6 @@ Receive GitLab notifications in Zulip!
   of the GitLab merge request. You can change the topic format to just
   contain the merge request ID by adding `&use_merge_request_title=false`
   to the generated URL.
-
-{!git-branches-additional-feature.md!}
 
 ### Related documentation
 

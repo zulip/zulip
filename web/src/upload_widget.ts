@@ -10,6 +10,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import {any_active} from "./modals";
 import * as settings_data from "./settings_data";
+import * as util from "./util";
 
 const default_max_file_size = 5;
 

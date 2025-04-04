@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserActivityInterval, UserProfile
 
@@ -31,4 +31,4 @@ def do_update_user_activity_interval(user_profile: UserProfile, log_time: dateti
 
 def update_user_activity_interval(user_profile: UserProfile, log_time: datetime) -> None:
     event = {"user_profile_id": user_profile.id, "time": datetime_to_timestamp(log_time)}
-    queue_json_publish("user_activity_interval", event)
+    queue_json_publish_rollback_unsafe("user_activity_interval", event)

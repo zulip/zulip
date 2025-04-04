@@ -1,69 +1,69 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as activity from "./activity";
-import * as activity_ui from "./activity_ui";
-import * as browser_history from "./browser_history";
-import * as common from "./common";
-import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
-import * as compose_banner from "./compose_banner";
-import * as compose_recipient from "./compose_recipient";
-import * as compose_reply from "./compose_reply";
-import * as compose_send_menu_popover from "./compose_send_menu_popover";
-import * as compose_state from "./compose_state";
-import * as compose_textarea from "./compose_textarea";
-import * as condense from "./condense";
-import * as copy_and_paste from "./copy_and_paste";
-import * as deprecated_feature_notice from "./deprecated_feature_notice";
-import * as drafts_overlay_ui from "./drafts_overlay_ui";
-import * as emoji from "./emoji";
-import * as emoji_picker from "./emoji_picker";
-import * as feedback_widget from "./feedback_widget";
-import * as gear_menu from "./gear_menu";
-import * as giphy from "./giphy";
-import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
-import * as inbox_ui from "./inbox_ui";
-import * as lightbox from "./lightbox";
-import * as list_util from "./list_util";
-import * as message_actions_popover from "./message_actions_popover";
-import * as message_edit from "./message_edit";
-import * as message_edit_history from "./message_edit_history";
-import * as message_lists from "./message_lists";
-import * as message_scroll_state from "./message_scroll_state";
-import * as message_view from "./message_view";
-import * as modals from "./modals";
-import * as narrow_state from "./narrow_state";
-import * as navbar_menus from "./navbar_menus";
-import * as navigate from "./navigate";
-import * as overlays from "./overlays";
-import {page_params} from "./page_params";
-import * as playground_links_popover from "./playground_links_popover";
-import * as pm_list from "./pm_list";
-import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import * as reactions from "./reactions";
-import * as read_receipts from "./read_receipts";
-import * as recent_view_ui from "./recent_view_ui";
-import * as recent_view_util from "./recent_view_util";
-import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as search from "./search";
-import * as settings_data from "./settings_data";
-import * as sidebar_ui from "./sidebar_ui";
-import * as spectators from "./spectators";
-import * as starred_messages_ui from "./starred_messages_ui";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
-import * as stream_popover from "./stream_popover";
-import * as stream_settings_ui from "./stream_settings_ui";
-import * as topic_list from "./topic_list";
-import * as unread_ops from "./unread_ops";
-import * as user_card_popover from "./user_card_popover";
-import * as user_group_popover from "./user_group_popover";
-import {user_settings} from "./user_settings";
-import * as user_topics_ui from "./user_topics_ui";
+import * as activity from "./activity.ts";
+import * as activity_ui from "./activity_ui.ts";
+import * as browser_history from "./browser_history.ts";
+import * as color_picker_popover from "./color_picker_popover.ts";
+import * as common from "./common.ts";
+import * as compose from "./compose.js";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_reply from "./compose_reply.ts";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
+import * as compose_state from "./compose_state.ts";
+import * as compose_textarea from "./compose_textarea.ts";
+import * as condense from "./condense.ts";
+import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
+import * as emoji from "./emoji.ts";
+import * as emoji_picker from "./emoji_picker.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import * as gear_menu from "./gear_menu.ts";
+import * as giphy from "./giphy.ts";
+import * as hash_util from "./hash_util.ts";
+import * as hashchange from "./hashchange.ts";
+import * as inbox_ui from "./inbox_ui.ts";
+import * as lightbox from "./lightbox.ts";
+import * as list_util from "./list_util.ts";
+import * as message_actions_popover from "./message_actions_popover.ts";
+import * as message_edit from "./message_edit.ts";
+import * as message_edit_history from "./message_edit_history.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_scroll_state from "./message_scroll_state.ts";
+import * as message_view from "./message_view.ts";
+import * as modals from "./modals.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as navbar_menus from "./navbar_menus.ts";
+import * as navigate from "./navigate.ts";
+import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
+import * as playground_links_popover from "./playground_links_popover.ts";
+import * as pm_list from "./pm_list.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
+import * as reactions from "./reactions.ts";
+import * as read_receipts from "./read_receipts.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
+import * as search from "./search.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as spectators from "./spectators.ts";
+import * as starred_messages_ui from "./starred_messages_ui.ts";
+import {realm} from "./state_data.ts";
+import * as stream_list from "./stream_list.ts";
+import * as stream_popover from "./stream_popover.ts";
+import * as stream_settings_ui from "./stream_settings_ui.ts";
+import * as topic_list from "./topic_list.ts";
+import * as unread_ops from "./unread_ops.ts";
+import * as user_card_popover from "./user_card_popover.ts";
+import * as user_group_popover from "./user_group_popover.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_topics_ui from "./user_topics_ui.ts";
 
 function do_narrow_action(action) {
     if (message_lists.current === undefined) {
@@ -76,6 +76,18 @@ function do_narrow_action(action) {
 
 // For message actions and user profile menu.
 const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"]);
+
+const color_picker_hotkeys = new Set([
+    "down_arrow",
+    "up_arrow",
+    "left_arrow",
+    "right_arrow",
+    "vim_up",
+    "vim_down",
+    "vim_left",
+    "vim_right",
+    "enter",
+]);
 
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
@@ -118,14 +130,15 @@ const keydown_unshift_mappings = {
 
 const keydown_ctrl_mappings = {
     219: {name: "escape", message_view_only: false}, // '['
-    13: {name: "ctrl_enter", message_view_only: true}, // enter
 };
 
 const keydown_cmd_or_ctrl_mappings = {
+    13: {name: "action_with_enter", message_view_only: true}, // 'Enter'
     67: {name: "copy_with_c", message_view_only: false}, // 'C'
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
+    222: {name: "open_saved_snippet_dropdown", message_view_only: true}, // '''
 };
 
 const keydown_alt_mappings = {
@@ -156,7 +169,8 @@ const keypress_mappings = {
     45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
     47: {name: "search", message_view_only: false}, // '/'
     58: {name: "toggle_reactions_popover", message_view_only: true}, // ':'
-    62: {name: "compose_quote_reply", message_view_only: true}, // '>'
+    60: {name: "compose_forward_message", message_view_only: true}, // '<'
+    62: {name: "compose_quote_message", message_view_only: true}, // '>'
     63: {name: "show_shortcuts", message_view_only: false}, // '?'
     64: {name: "compose_reply_with_mention", message_view_only: true}, // '@'
     65: {name: "stream_cycle_backward", message_view_only: true}, // 'A'
@@ -251,16 +265,20 @@ export function get_keypress_hotkey(e) {
     return keypress_mappings[e.which];
 }
 
-export function processing_text() {
+export let processing_text = () => {
     const $focused_elt = $(":focus");
     return (
         $focused_elt.is("input") ||
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
-        $focused_elt.parents(".pill-container").length >= 1 ||
+        $focused_elt.parents(".pill-container").length > 0 ||
         $focused_elt.attr("id") === "compose-send-button" ||
-        $focused_elt.parents(".dropdown-list-container").length >= 1
+        $focused_elt.parents(".dropdown-list-container").length > 0
     );
+};
+
+export function rewire_processing_text(value) {
+    processing_text = value;
 }
 
 export function in_content_editable_widget(e) {
@@ -305,9 +323,14 @@ export function process_escape_key(e) {
         return true;
     }
 
+    if (navbar_menus.any_focused()) {
+        navbar_menus.blur_focused();
+        return true;
+    }
+
     if (processing_text()) {
         if (activity_ui.searching()) {
-            activity_ui.escape_search();
+            activity_ui.clear_search();
             return true;
         }
 
@@ -351,7 +374,7 @@ export function process_escape_key(e) {
             }
 
             // Check for errors in compose box; close errors if they exist
-            if ($("main-view-banner").length) {
+            if ($("main-view-banner").length > 0) {
                 compose_banner.clear_all();
                 return true;
             }
@@ -396,6 +419,11 @@ export function process_escape_key(e) {
 function handle_popover_events(event_name) {
     const popover_menu_visible_instance = popover_menus.get_visible_instance();
 
+    if (popover_menus.is_stream_actions_popover_displayed()) {
+        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
     if (popover_menu_visible_instance) {
         popover_menus.sidebar_menu_instance_handle_keyboard(
             popover_menu_visible_instance,
@@ -416,11 +444,6 @@ function handle_popover_events(event_name) {
 
     if (user_card_popover.user_sidebar.is_open()) {
         user_card_popover.user_sidebar.handle_keyboard(event_name);
-        return true;
-    }
-
-    if (stream_popover.is_open()) {
-        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
         return true;
     }
 
@@ -476,6 +499,11 @@ export function process_enter_key(e) {
             return true;
         }
 
+        // Don't send the message if topic box is focused.
+        if (compose.is_topic_input_focused()) {
+            return true;
+        }
+
         return false;
     }
 
@@ -523,7 +551,7 @@ export function process_enter_key(e) {
     }
 
     if ($("#preview_message_area").is(":visible")) {
-        compose.enter_with_preview_open();
+        compose.handle_enter_key_with_preview_open();
         return true;
     }
 
@@ -571,10 +599,10 @@ export function process_enter_key(e) {
     return true;
 }
 
-export function process_ctrl_enter_key() {
+export function process_cmd_or_ctrl_enter_key() {
     if ($("#preview_message_area").is(":visible")) {
-        const ctrl_pressed = true;
-        compose.enter_with_preview_open(ctrl_pressed);
+        const cmd_or_ctrl_pressed = true;
+        compose.handle_enter_key_with_preview_open(cmd_or_ctrl_pressed);
         return true;
     }
 
@@ -644,7 +672,7 @@ export function process_shift_tab_key() {
     }
 
     if ($("input#stream_message_recipient_topic").is(":focus")) {
-        compose_recipient.open_compose_recipient_dropdown();
+        compose_recipient.toggle_compose_recipient_dropdown();
         return true;
     }
 
@@ -701,8 +729,8 @@ export function process_hotkey(e, hotkey) {
             return process_escape_key(e);
         case "enter":
             return process_enter_key(e);
-        case "ctrl_enter":
-            return process_ctrl_enter_key(e);
+        case "action_with_enter":
+            return process_cmd_or_ctrl_enter_key(e);
         case "tab":
             return process_tab_key();
         case "shift_tab":
@@ -717,7 +745,7 @@ export function process_hotkey(e, hotkey) {
 
     // modals.any_active() and modals.active_modal() both query the dom to
     // find and retrieve any active modal. Thus, we limit the number of calls
-    // to the DOM by storing these values as constansts to be reused.
+    // to the DOM by storing these values as constants to be reused.
     const is_any_modal_active = modals.any_active();
     const active_modal = is_any_modal_active ? modals.active_modal() : null;
 
@@ -784,6 +812,13 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
+    // We don't treat the color picker like our menu popovers, since it
+    // supports sideways navigation (left and right arrow).
+    if (color_picker_hotkeys.has(event_name) && popover_menus.is_color_picker_popover_displayed()) {
+        color_picker_popover.handle_keyboard(event_name);
+        return true;
+    }
+
     if ((event_name === "up_arrow" || event_name === "down_arrow") && overlays.streams_open()) {
         return stream_settings_ui.switch_rows(event_name);
     }
@@ -804,7 +839,7 @@ export function process_hotkey(e, hotkey) {
         );
 
         if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
-            if ($last_focused_compose_type_input.closest(".preview_mode").length) {
+            if ($last_focused_compose_type_input.closest(".preview_mode").length > 0) {
                 message_edit.clear_preview_area($last_focused_compose_type_input);
                 $last_focused_compose_type_input.trigger("focus");
             } else {
@@ -823,13 +858,15 @@ export function process_hotkey(e, hotkey) {
         }
     }
 
+    // Handle our normal popovers that are basically vertical lists of menu items.
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
         return true;
     }
 
-    // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    // Handle the left arrow and right arrow keys to make it easy to
+    // get into fancy sideways navigation on the navbar (top right corner).
     if (
-        navbar_menus.is_navbar_menus_displayed() &&
+        (navbar_menus.is_navbar_menus_displayed() || navbar_menus.any_focused()) &&
         navbar_menus.handle_keyboard_events(event_name)
     ) {
         return true;
@@ -852,6 +889,13 @@ export function process_hotkey(e, hotkey) {
     if (processing_text()) {
         // Note that there is special handling for Enter/Esc too, but
         // we handle this in other functions.
+
+        if (event_name === "open_saved_snippet_dropdown") {
+            const $messagebox = $(":focus").parents(".messagebox");
+            if ($messagebox.length === 1) {
+                $messagebox.find(".saved_snippets_widget")[0].click();
+            }
+        }
 
         if (event_name === "left_arrow" && compose_state.focus_in_empty_compose()) {
             message_edit.edit_last_sent_message();
@@ -911,6 +955,9 @@ export function process_hotkey(e, hotkey) {
         } else if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
+        } else if (compose_state.focus_in_formatting_buttons()) {
+            // Allow left arrow to scroll the formatting buttons backward
+            return false;
         }
 
         message_edit.edit_last_sent_message();
@@ -960,9 +1007,18 @@ export function process_hotkey(e, hotkey) {
             );
             return true;
         case "query_streams":
-            stream_list.initiate_search();
+            if (pm_list.is_zoomed_in()) {
+                pm_list.focus_pm_search_filter();
+            } else if (stream_list.is_zoomed_in()) {
+                topic_list.focus_topic_search_filter();
+            } else {
+                stream_list.initiate_search();
+            }
             return true;
         case "query_users":
+            if (page_params.is_spectator) {
+                return false;
+            }
             activity_ui.initiate_search();
             return true;
         case "search":
@@ -1089,9 +1145,6 @@ export function process_hotkey(e, hotkey) {
             message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.page_down();
             return true;
-        case "copy_with_c":
-            copy_and_paste.copy_handler();
-            return true;
     }
 
     if (
@@ -1175,7 +1228,10 @@ export function process_hotkey(e, hotkey) {
                 return true;
             }
 
-            reactions.toggle_emoji_reaction(msg, first_reaction.emoji_name);
+            const canonical_name = emoji.get_emoji_name(first_reaction.emoji_code);
+            // `canonical_name` will be `undefined` for custom emoji, so we can default
+            // to the `emoji_name`.
+            reactions.toggle_emoji_reaction(msg, canonical_name ?? first_reaction.emoji_name);
             return true;
         }
         case "toggle_topic_visibility_policy":
@@ -1187,8 +1243,11 @@ export function process_hotkey(e, hotkey) {
         case "mark_unread":
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
-        case "compose_quote_reply": // > : respond to selected message with quote
-            compose_reply.quote_and_reply({trigger: "hotkey"});
+        case "compose_quote_message": // > : respond to selected message with quote
+            compose_reply.quote_message({trigger: "hotkey"});
+            return true;
+        case "compose_forward_message": // < : forward selected message
+            compose_reply.quote_message({trigger: "hotkey", forward_message: true});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);
@@ -1196,7 +1255,10 @@ export function process_hotkey(e, hotkey) {
             return true;
         }
         case "view_edit_history": {
-            if (realm.realm_allow_edit_history) {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
                 message_edit_history.fetch_and_render_message_history(msg);
                 $("#message-history-overlay .exit-sign").trigger("focus");
                 return true;
@@ -1234,7 +1296,7 @@ export function process_hotkey(e, hotkey) {
                         [
                             {
                                 operator: "channel",
-                                operand: stream_data.get_stream_name_from_id(msg.stream_id),
+                                operand: msg.stream_id.toString(),
                             },
                             {operator: "topic", operand: msg.topic},
                             {operator: "near", operand: msg.id},

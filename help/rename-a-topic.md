@@ -5,13 +5,15 @@ organized, even if some users are still learning how to use topics effectively.
 You can also [move content to another
 topic](/help/move-content-to-another-topic).
 
-When a topic is renamed, Zulip's [permanent links to messages in
-context](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
+When a topic is renamed, links [to the
+topic](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-topic)
+and [to messages in that
+topic](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
 will automatically redirect to the new location of the message. [Muted
 topics](/help/mute-a-topic) are automatically migrated when a topic is renamed.
 
-Organizations can [configure](/help/restrict-moving-messages) which
-[roles](/help/roles-and-permissions) have permission to rename topics.
+Organization administrators can [configure](/help/restrict-moving-messages) who
+is allowed to rename topics.
 
 ## Rename a topic
 

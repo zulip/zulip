@@ -5,9 +5,15 @@ Zulip development environment on Windows, macOS, and Linux.
 
 The recommended method for installing the Zulip development environment is
 to use WSL 2 on Windows, and Vagrant with Docker on macOS and Linux.
-This method uses the Windows Subsystem for Linux or creates a Linux container
-(for macOS and Linux) inside which the Zulip server and all related
-services will run.
+
+All of these recommended methods work by creating a container or VM
+for the Zulip server and related services, with the Git repository
+containing your source code mounted inside it. This strategy allows
+the environment to be as reliable and portable as possible. The
+specific technologies (Vagrant/Docker and WSL 2) were chosen based on
+what technologies have been most reliable through our experience
+supporting the thousands of people who've set up the Zulip development
+environment.
 
 Contents:
 
@@ -81,11 +87,17 @@ the internet.)
 - tested for Fedora 36
   :::
 
-::::
+:::{tab-item} Other Linux
+:sync: os-other-linux
 
-Other Linux distributions work great too, but we don't maintain
-documentation for installing Vagrant and Docker on those systems, so
-you'll need to find a separate guide and crib from these docs.
+- Any Linux distribution should work, if it supports Git, Vagrant and
+  Docker. We don't maintain documentation for installing Vagrant,
+  Docker, and other dependencies on those systems, so you'll want to
+  roughly follow the Ubuntu/Debian instructions, using upstream
+  documentation for installing dependencies.
+  :::
+
+::::
 
 ### Step 0: Set up Git & GitHub
 
@@ -114,7 +126,13 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    depends on your specific hardware and brand, but here are [some
    basic instructions.][windows-bios-virtualization]
 
-1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
+1. [Install WSL
+   2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment),
+   which includes installing an Ubuntu WSL distribution. Using an
+   existing distribution will probably work, but [a fresh
+   distribution](#rebuilding-the-development-environment) is
+   recommended if you previously installed other software in your WSL
+   environment that might conflict with the Zulip environment.
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
@@ -183,8 +201,18 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 ##### 1. Install Vagrant, Docker, and Git
 
+Install vagrant:
+
 ```console
-$ sudo apt install vagrant docker.io git
+$ wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+$ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+$ sudo apt update && sudo apt install vagrant
+```
+
+Install Docker and Git:
+
+```console
+$ sudo apt install docker.io git
 ```
 
 ```{include} setup/install-docker.md
@@ -265,7 +293,7 @@ simply click **Allow access**.)
 $ # Install/update the Zulip development environment
 $ ./tools/provision
 $ # Enter the Zulip Python environment
-$ source /srv/zulip-py3-venv/bin/activate
+$ source .venv/bin/activate
 $ # Start the development server
 $ ./tools/run-dev
 ```
@@ -544,7 +572,7 @@ help.
 :::{tab-item} Windows (WSL)
 :sync: os-windows
 
-```{include} setup/vagrant-rebuild.md
+```{include} setup/wsl-rebuild.md
 
 ```
 
@@ -597,6 +625,13 @@ help.
 
 On Windows with WSL 2, you do not need to shut down the environment. Simply
 close your terminal window(s).
+
+Alternatively, you can use a command to terminate/shutdown your WSL2 environment with PowerShell using:
+
+```console
+> wsl --terminate <environment_name>
+```
+
 :::
 
 :::{tab-item} Windows (VM)
@@ -646,9 +681,13 @@ close your terminal window(s).
 
 On Windows with WSL 2, to resume developing you just need to open a new Git
 BASH window. Then change into your `zulip` folder and verify the Python
-environment was properly activated (you will see `(zulip-py3-venv)`). If the
-`(zulip-py3-venv)` part is missing, run
-`source /srv/zulip-py3-venv/bin/activate`.
+environment was properly activated (you should see `(zulip-server)`). If the
+`(zulip-server)` part is missing, run:
+
+```console
+$ source .venv/bin/activate
+```
+
 :::
 
 :::{tab-item} Windows (VM)
@@ -726,7 +765,7 @@ When reporting your issue, please include the following information:
 The output of `tools/diagnose` run inside the Vagrant guest is also
 usually helpful.
 
-#### Vagrant guest doesn't show (zulip-py3-venv) at start of prompt
+#### Vagrant guest doesn't show (zulip-server) at start of prompt
 
 This is caused by provisioning failing to complete successfully. You
 can see the errors in `var/log/provision.log`; it should end with
@@ -970,13 +1009,13 @@ Once you've provisioned successfully, you'll get output like this:
 
 ```console
 Zulip development environment setup succeeded!
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$
+(zulip-server) vagrant@vagrant:/srv/zulip$
 ```
 
-If the `(zulip-py3-venv)` part is missing, this is because your
+If the `(zulip-server)` part is missing, this is because your
 installation failed the first time before the Zulip virtualenv was
 created. You can fix this by just closing the shell and running
-`vagrant ssh` again, or using `source /srv/zulip-py3-venv/bin/activate`.
+`vagrant ssh` again, or using `source .venv/bin/activate`.
 
 Finally, if you encounter any issues that weren't caused by your
 Internet connection, please report them! We try hard to keep Zulip
@@ -1183,7 +1222,6 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [install-advanced]: setup-advanced.md
 [remote-wsl]: https://code.visualstudio.com/docs/remote/wsl-tutorial
-[remote-ssh]: https://code.visualstudio.com/docs/remote/ssh-tutorial
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md

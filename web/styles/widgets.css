@@ -49,18 +49,27 @@
         display: flex; /* Arrange that a multi-line description line wraps properly. */
         /* Keep checkboxes vertically aligned, including with multi-line tasks. */
         align-items: baseline;
-        /* Reset things from .new-style */
+        /* Reset default label.checkbox styles. */
         gap: 5px;
         position: static;
         min-height: 0;
 
         & input[type="checkbox"] {
             ~ .custom-checkbox {
+                display: inline-block;
+                vertical-align: middle;
                 position: static;
-                margin-right: 0;
 
-                height: 12px;
-                width: 12px;
+                padding: 2px;
+                margin: 0;
+
+                font-size: 1.3em; /* 18.2px / 14px em */
+                height: 0.6593em; /* 12px at 18.2px / em */
+                width: 0.6593em; /* 12px at 18.2px / em */
+
+                font-weight: 300;
+                line-height: 0.8;
+                text-align: center;
                 border: 2px solid hsl(156deg 28% 70%);
 
                 border-radius: 4px;
@@ -96,8 +105,9 @@
 
 .todo-widget,
 .poll-widget {
-    & h4 {
-        font-size: 18px;
+    .poll-question-header,
+    .todo-task-list-title-header {
+        font-size: 1.1em;
         font-weight: 600;
     }
 
@@ -117,12 +127,8 @@
     & input[type="text"] {
         /* Reset from zulip.css */
         height: unset;
-
         border: 1px solid hsl(0deg 0% 80%);
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition:
-            border linear 0.2s,
-            box-shadow linear 0.2s;
         border-radius: 4px;
         color: hsl(0deg 0% 33%);
 
@@ -131,6 +137,9 @@
             outline: 0;
             box-shadow: none;
             background-color: var(--color-background-widget-input);
+            transition:
+                border-color linear 0.2s,
+                box-shadow linear 0.2s;
         }
     }
 }
@@ -160,10 +169,10 @@
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
-        min-width: 25px;
-        height: 25px;
-        font-size: 13px;
-        background-color: hsl(0deg 0% 100%);
+        min-width: 1.7857em; /* 25px at 14px / em */
+        height: 1.7857em; /* 25px at 14px / em */
+        font-size: 0.9285em; /* 13px at 14px / em */
+        background-color: var(--color-background-widget-button);
 
         &:hover {
             border-color: hsl(156deg 30% 50%);
@@ -205,22 +214,22 @@ button {
         width: max-content;
         flex: 0 0 auto;
         border-radius: 3px;
-        background-color: hsl(0deg 0% 100%);
+        background-color: var(--color-background-widget-button);
         padding: 4px;
         padding-left: 14px;
         padding-right: 14px;
-        transition: all 0.2s ease;
 
         &:hover,
         &:focus {
             outline: 0;
             border-color: hsl(156deg 30% 50%);
+            transition: 0.2s ease;
+            transition-property: background-color, border-color, color;
         }
 
         &:active {
-            border-color: hsl(156deg 30% 40%);
-            color: hsl(156deg 44% 43%);
-            background-color: hsl(154deg 33% 96%);
+            transition: 0.2s ease;
+            transition-property: background-color, border-color, color;
         }
     }
 }
@@ -238,7 +247,9 @@ input {
 
 .widget-error {
     color: hsl(1deg 45% 50%);
-    font-size: 12px;
+    font-size: 0.8571em; /* 12px at 14px/em */
+    display: flex;
+    align-items: center;
 }
 
 .poll-question-check,
@@ -251,20 +262,22 @@ input {
     flex: 0 0 30.5px;
     min-height: 30.5px;
     border-radius: 3px;
-    border: 1px solid hsl(0deg 0% 80%);
-    background-color: hsl(0deg 0% 100%);
+    border: 1px solid var(--color-border-zulip-button);
+    background-color: var(--color-background-zulip-button);
 
     &:hover {
-        border-color: hsl(0deg 0% 60%);
+        border-color: var(--color-border-zulip-button-interactive);
+        background-color: var(--color-background-zulip-button-hover);
     }
 }
 
 .poll-edit-question,
 .todo-edit-task-list-title {
-    opacity: 0.4;
+    color: var(--color-message-action-visible);
 
-    &:hover {
-        opacity: 1;
+    &:hover,
+    &:focus-visible {
+        color: var(--color-message-action-interactive);
     }
 }
 
@@ -274,6 +287,8 @@ input {
     /* Ensure controls remain visible on narrower screens. */
     flex-flow: row wrap;
     gap: 5px;
+    /* Reserve space for the focus outline to prevent it from being cut off */
+    margin-right: 2px;
     margin-bottom: var(--markdown-interelement-space-px);
 }
 

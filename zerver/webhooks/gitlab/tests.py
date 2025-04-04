@@ -631,3 +631,28 @@ A trivial change that should probably be ignored.
         self.check_webhook(
             "merge_request_hook__merge_request_unapproved", expected_topic_name, expected_message
         )
+
+    def test_release_created_event_message(self) -> None:
+        expected_topic_name = "release-webhook-example"
+        expected_message = "Release [v1.1](https://example.com/gitlab-org/release-webhook-example/-/releases/v1.1) for tag v1.1 was created.\n~~~ quote\n## v1.1 (2024-09-06)\n\n- Feature added\n~~~"
+
+        self.check_webhook("release_hook__create", expected_topic_name, expected_message)
+
+    def test_release_created_event_message_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url("topic=Specific%20topic")
+        expected_topic_name = "Specific topic"
+        expected_message = "[[release-webhook-example](https://example.com/gitlab-org/release-webhook-example)] Release [v1.1](https://example.com/gitlab-org/release-webhook-example/-/releases/v1.1) for tag v1.1 was created.\n~~~ quote\n## v1.1 (2024-09-06)\n\n- Feature added\n~~~"
+
+        self.check_webhook("release_hook__create", expected_topic_name, expected_message)
+
+    def test_release_update_event_message(self) -> None:
+        expected_topic_name = "release-webhook-example"
+        expected_message = "Release [v1.1](https://example.com/gitlab-org/release-webhook-example/-/releases/v1.1) for tag v1.1 was updated.\n~~~ quote\n## v1.1 (2024-09-06)\n\n- Feature added\n~~~"
+
+        self.check_webhook("release_hook__update", expected_topic_name, expected_message)
+
+    def test_release_delete_event_message(self) -> None:
+        expected_topic_name = "release-webhook-example"
+        expected_message = "Release v1.1 for tag v1.1 was deleted."
+
+        self.check_webhook("release_hook__delete", expected_topic_name, expected_message)

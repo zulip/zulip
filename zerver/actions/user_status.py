@@ -7,7 +7,7 @@ from zerver.models import UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
-@transaction.atomic(savepoint=False)
+@transaction.atomic(durable=True)
 def do_update_user_status(
     user_profile: UserProfile,
     away: bool | None,

@@ -1,4 +1,4 @@
-{% trans %}If you've already decided to use Zulip for your organization, welcome! You can use our guide for setting up your organization to get started.{% endtrans %} [ {{ get_organization_started }} ]
+{% trans %}If you've already decided to use Zulip for your organization, welcome! You can use our guide for moving to Zulip to get started.{% endtrans %} [ {{ get_organization_started }} ]
 
 {% trans %}Otherwise, here is some advice we often hear from customers for evaluating any team chat product:{% endtrans %}
 

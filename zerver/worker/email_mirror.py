@@ -1,6 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import base64
-import email
+import email.parser
 import email.policy
 import logging
 from collections.abc import Mapping
@@ -16,21 +16,22 @@ from zerver.lib.email_mirror import (
 )
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.exceptions import RateLimitedError
-from zerver.worker.base import QueueProcessingWorker, assign_queue
+from zerver.worker.base import QueueProcessingWorker, WorkerTimeoutError, assign_queue
 
 logger = logging.getLogger(__name__)
 
 
 @assign_queue("email_mirror")
 class MirrorWorker(QueueProcessingWorker):
+    MAX_CONSUME_SECONDS = 5
+
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
         rcpt_to = event["rcpt_to"]
-        msg = email.message_from_bytes(
-            base64.b64decode(event["msg_base64"]),
-            policy=email.policy.default,
+        content = base64.b64decode(event["msg_base64"])
+        msg = email.parser.BytesParser(_class=EmailMessage, policy=email.policy.default).parsebytes(
+            content
         )
-        assert isinstance(msg, EmailMessage)  # https://github.com/python/typeshed/issues/2417
         if not is_missed_message_address(rcpt_to):
             # Missed message addresses are one-time use, so we don't need
             # to worry about emails to them resulting in message spam.
@@ -45,4 +46,13 @@ class MirrorWorker(QueueProcessingWorker):
                 )
                 return
 
-        mirror_email(msg, rcpt_to=rcpt_to)
+        try:
+            mirror_email(msg, rcpt_to=rcpt_to)
+        except WorkerTimeoutError:  # nocoverage
+            logging.error(
+                "Timed out ingesting message-id %s to %s (%d bytes) -- dropping!",
+                msg["Message-ID"] or "<?>",
+                rcpt_to,
+                len(content),
+            )
+            return

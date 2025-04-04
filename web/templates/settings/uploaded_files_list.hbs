@@ -1,5 +1,5 @@
 {{#with attachment}}
-<tr class="uploaded_file_row" id="{{name}}" data-attachment-id="{{id}}">
+<tr class="uploaded_file_row" data-attachment-name="{{name}}" data-attachment-id="{{id}}">
     <td>
         <a type="submit" class="tippy-zulip-delayed-tooltip" href="/user_uploads/{{path_id}}" target="_blank" rel="noopener noreferrer" data-tippy-content="{{t 'View file' }}">
             {{ name }}
@@ -20,13 +20,13 @@
     <td class="upload-size" >{{ size_str }}</td>
     <td class="actions">
         <span class="edit-attachment-buttons">
-            <a type="submit" href="/user_uploads/{{path_id}}" class="button rounded small sea-green tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download' }}" id="download_attachment" download>
+            <a type="submit" href="/user_uploads/{{path_id}}" class="button rounded small sea-green tippy-zulip-delayed-tooltip download-attachment" data-tippy-content="{{t 'Download' }}" download>
                 <i class="fa fa-download sea-green" aria-hidden="true"></i>
             </a>
         </span>
         <span class="edit-attachment-buttons">
             <button type="submit"
-              class="button rounded small delete btn-danger remove-attachment tippy-zulip-delayed-tooltip"
+              class="button rounded small delete button-danger remove-attachment tippy-zulip-delayed-tooltip"
               data-tippy-content="{{t 'Delete' }}" data-attachment="{{id}}">
                 <i class="fa fa-trash-o" aria-hidden="true"></i>
             </button>

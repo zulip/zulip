@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import unicodedata
@@ -137,9 +136,13 @@ class Command(compilemessages.Command):
             info["percent_translated"] = percentage
             data["languages"].append(info)
 
-        with open(output_path, "w") as writer:
-            json.dump(data, writer, indent=2, sort_keys=True)
-            writer.write("\n")
+        with open(output_path, "wb") as writer:
+            writer.write(
+                orjson.dumps(
+                    data,
+                    option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+                )
+            )
 
     def get_translation_percentage(self, locale_path: str, locale: str) -> int:
         # backend stats

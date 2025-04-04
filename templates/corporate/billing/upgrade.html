@@ -42,7 +42,7 @@
                         {% if is_free_trial_invoice_expired_notice %}
                         Your free trial of {{ free_trial_invoice_expired_notice_page_plan_name }} has expired.
                         <a href="{{ pay_by_invoice_payments_page }}" target="_blank" rel="noopener noreferrer">An invoice</a>
-                        for ${{ scheduled_upgrade_invoice_amount_due }} has been sent to <b>{{email}}</b>.
+                        for ${{ scheduled_upgrade_invoice_amount_due }} has been sent to <b>{{ stripe_email }}</b>.
                         To reactivate your {{ free_trial_invoice_expired_notice_page_plan_name }} plan, please pay the amount due.
                         Once the invoice has been paid, reload this page to see billing details.
                         {% else %}
@@ -53,7 +53,7 @@
                         {% if scheduled_upgrade_invoice_amount_due %}
                         for ${{ scheduled_upgrade_invoice_amount_due }}
                         {% endif %}
-                        has been sent to <b>{{email}}</b>.
+                        has been sent to <b>{{ stripe_email }}</b>.
                         To complete the plan upgrade process, please pay the amount due. Once the invoice has been paid, reload this page to see billing details.
                         {% endif %}
                     </div>
@@ -75,7 +75,7 @@
                         {% if page_params.free_trial_days %}
                         <div class="not-editable-realm-field">
                             {% if page_params.setup_payment_by_invoice %}
-                            An invoice will immediately be sent to <b>{{email}}</b>. To ensure continuous access to Zulip Basic,
+                            An invoice will immediately be sent to <b>{{ stripe_email }}</b>. To ensure continuous access to Zulip Basic,
                             please pay your invoice before your free trial ends on {{ free_trial_end_date }}.
                             {% else %}
                             Add a credit card to start your <b>{{ page_params.free_trial_days }}-day free trial</b> of
@@ -99,7 +99,7 @@
                     {% if page_params.free_trial_days and not page_params.setup_payment_by_invoice %}
                     <input type="hidden" name="schedule" value="monthly" />
                     {% else %}
-                    <div class="input-box upgrade-page-field no-validation">
+                    <div class="input-box upgrade-page-field">
                         <select name="schedule" id="payment-schedule-select">
                             {% if fixed_price_plan %}
                             <option value="monthly">Pay monthly</option>
@@ -113,10 +113,10 @@
                     </div>
                     {% endif %}
 
-                    {% if remote_server_legacy_plan_end_date %}
-                    <div class="input-box upgrade-page-field no-validation">
+                    {% if complimentary_access_plan_end_date %}
+                    <div class="input-box upgrade-page-field">
                         <select name="remote_server_plan_start_date" id="remote-server-plan-start-date-select">
-                            <option value="billing_cycle_end_date">{{ remote_server_legacy_plan_end_date }}</option>
+                            <option value="billing_cycle_end_date">{{ complimentary_access_plan_end_date }}</option>
                             <option value="today">Today</option>
                         </select>
                         <label for="remote-server-plan-start-date-select">Plan start date</label>
@@ -134,8 +134,8 @@
                     <input type="hidden" name="license_management" value="automatic" />
                     {% endif %}
 
-                    {% if remote_server_legacy_plan_end_date %}
-                        <div class="input-box upgrade-page-field no-validation" id="due-today-for-future-update-wrapper">
+                    {% if complimentary_access_plan_end_date %}
+                        <div class="input-box upgrade-page-field" id="due-today-for-future-update-wrapper">
                             <label for="due-today-for-future-update" class="inline-block label-title">
                                 Due today
                             </label>
@@ -145,11 +145,11 @@
                         </div>
                     {% endif %}
 
-                    <div class="input-box upgrade-page-field no-validation">
+                    <div class="input-box upgrade-page-field">
                         <label for="due-today" class="inline-block label-title">
-                            {% if remote_server_legacy_plan_end_date %}
+                            {% if complimentary_access_plan_end_date %}
                             <span id="due-today-remote-server-title">
-                                Due {{ remote_server_legacy_plan_end_date }}
+                                Due {{ complimentary_access_plan_end_date }}
                             </span>
                             {% endif %}
                             <span id="due-today-title">
@@ -208,7 +208,7 @@
                             Your subscription will renew automatically. Your bill will vary based on the number of active users in your organization.
                             You can also <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}">purchase a fixed number of licenses</a> instead.
                             {% if is_self_hosting_management_page %}
-                                See <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                See <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                             {% else %}
                                 See <a href="/help/zulip-cloud-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                             {% endif %}
@@ -220,13 +220,13 @@
                             {% if not page_params.setup_payment_by_invoice %}
                                 You can also <a href="{{ page_params.billing_base_url }}/upgrade/?tier={{ page_params.tier }}">choose automatic license management</a> instead.
                                 {% if is_self_hosting_management_page %}
-                                    See <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                    See <a href="/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% else %}
                                     See <a href="/help/zulip-cloud-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% endif %}
                             {% else %}
                                 {% if is_self_hosting_management_page %}
-                                    See <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
+                                    See <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% else %}
                                     See <a href="/help/zulip-cloud-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">here</a> for details.
                                 {% endif %}
@@ -240,7 +240,7 @@
                     <div {% if page_params.setup_payment_by_invoice %} id="update-invoice-billing-info" {% elif payment_method %} id="upgrade-payment-info"{% endif %}>
                         {% if page_params.setup_payment_by_invoice %}
                         {% elif payment_method %}
-                        <div class="input-box upgrade-page-field no-validation" id="upgrade-payment-menthod-wrapper">
+                        <div class="input-box upgrade-page-field" id="upgrade-payment-menthod-wrapper">
                             <label for="customer-payment-method-for-upgrade" class="inline-block label-title">Payment method</label>
                             <div id="customer-payment-method-for-upgrade" class="not-editable-realm-field">
                                 {{ payment_method }}
@@ -260,6 +260,7 @@
                                 </span>
                                 <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
+                            {% if not fixed_price_plan %}
                             <span class="not-editable-realm-field" id="upgrade-payment-by-invoice-container">
                                 {% if page_params.setup_payment_by_invoice %}
                                 or <a href="{{ page_params.billing_base_url }}/upgrade/?tier={{ page_params.tier }}">pay by card</a>
@@ -267,6 +268,7 @@
                                 or <a href="{{ page_params.billing_base_url }}/upgrade/?manual_license_management=true&tier={{ page_params.tier }}&setup_payment_by_invoice=true" id="upgrade-payment-by-invoice-link" data-tippy-content="Requires purchasing a fixed number of licenses" data-tippy-placement="right">pay by invoice</a>
                                 {% endif %}
                             </span>
+                            {% endif %}
                         </div>
                         {% if not page_params.free_trial_days and payment_method %}
                         <div class="stripe-billing-information not-editable-realm-field">
@@ -284,7 +286,7 @@
                     <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
                         <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not page_params.setup_payment_by_invoice and not payment_method %}disabled{% endif %}>
                             <span id="org-upgrade-button-text">
-                                {% if remote_server_legacy_plan_end_date %}
+                                {% if complimentary_access_plan_end_date %}
                                     <span id="org-future-upgrade-button-text-remote-server">
                                         Schedule upgrade to {{ plan }}
                                     </span>
@@ -346,16 +348,16 @@
                     <br />
                     {% if page_params.free_trial_days %}
                     <br />
-                    Starting free trial will immediately send an invoice to <b>{{email}}</b>.
+                    Starting free trial will immediately send an invoice to <b>{{ stripe_email }}</b>.
                     This is your last chance to update the billing information on your invoice.
                     {% else %}
-                    Your invoice will be sent to <b>{{email}}</b>.
+                    Your invoice will be sent to <b>{{ stripe_email }}</b>.
                     {% endif %}
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
-                <button class="modal__btn dialog_submit_button">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__button dialog_submit_button">
                     <span>
                         {% if page_params.free_trial_days %}
                         {{ _('Send invoice and start free trial') }}

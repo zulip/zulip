@@ -41,9 +41,7 @@ Some details to keep in mind:
 - Zulip search ignores very common words like `a`, `the`, and about 100 others.
 - [Emoji](/help/emoji-and-emoticons) in messages (but not [emoji
   reactions](/help/emoji-reactions)) are included in searches, so if you search
-  for `octopus`, your results will include messages with the `:octopus:` emoji (
-  <img src="/static/generated/emoji/images-google-64/1f419.png" alt="octopus"
-  class="emoji-small"/>).
+  for `thumbs_up`, your results will include messages with the `:thumbs_up:` emoji (👍).
 
 ## Search filters
 
@@ -119,6 +117,9 @@ Zulip offers the following filters based on the location of the message.
 * `is:resolved`: Search messages in [resolved topics](/help/resolve-a-topic).
 * `-is:resolved`: Search messages in [unresolved topics](/help/resolve-a-topic).
 * `is:unread`: Search your unread messages.
+* `is:muted`: Search [muted](/help/mute-a-topic) messages.
+* `-is:muted`: Search only [unmuted](/help/mute-a-topic) messages. By default,
+  both muted and unmuted messages are included in keyword search results.
 * `has:reaction`: Search messages with [emoji reactions](/help/emoji-reactions).
 
 ### Search by message ID
@@ -184,6 +185,6 @@ A summary of the search filters above is available in the Zulip app.
 ## Related articles
 
 * [Configure multi-language search](/help/configure-multi-language-search)
-* [Search people](/help/user-list#search-people)
+* [Filter users](/help/user-list#filter-users)
 * [Link to a message or
   conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)

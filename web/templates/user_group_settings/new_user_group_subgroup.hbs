@@ -1,0 +1,13 @@
+<tr class="user-group-subgroup-row" data-group-id="{{group_id}}">
+    <td class="panel_user_list">
+        {{> ../user_group_display_only_pill . strikethrough=soft_removed}}
+    </td>
+    <td class="empty-email-col-for-user-group"></td>
+    <td>
+        {{#if soft_removed}}
+            {{> ../components/action_button custom_classes="undo_soft_removed_potential_subgroup" label=(t "Add") attention="quiet" intent="neutral" aria-label=(t "Add") }}
+        {{else}}
+            {{> ../components/action_button custom_classes="remove_potential_subgroup" label=(t "Remove") attention="quiet" intent="neutral" aria-label=(t "Remove") }}
+        {{/if}}
+    </td>
+</tr>

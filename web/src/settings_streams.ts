@@ -5,19 +5,19 @@ import render_add_default_streams from "../templates/settings/add_default_stream
 import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.hbs";
 import render_default_stream_choice from "../templates/settings/default_stream_choice.hbs";
 
-import * as channel from "./channel";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import * as hash_parser from "./hash_parser";
-import {$t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
-import * as loading from "./loading";
-import * as scroll_util from "./scroll_util";
-import * as settings_profile_fields from "./settings_profile_fields";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as ui_report from "./ui_report";
+import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import * as hash_parser from "./hash_parser.ts";
+import {$t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_profile_fields from "./settings_profile_fields.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as ui_report from "./ui_report.ts";
 
 function add_choice_row($widget: JQuery): void {
     if ($widget.closest(".choice-row").next().hasClass("choice-row")) {

@@ -4,8 +4,6 @@ Get Zulip notifications for your Opsgenie events!
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
@@ -21,7 +19,7 @@ Get Zulip notifications for your Opsgenie events!
 
 {!congrats.md!}
 
-![](/static/images/integrations/opsgenie/000.png)
+![](/static/images/integrations/opsgenie/001.png)
 
 {!event-filtering-additional-feature.md!}
 

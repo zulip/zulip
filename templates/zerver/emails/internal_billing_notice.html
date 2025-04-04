@@ -11,6 +11,10 @@
 <b>Last data upload</b>: {{ last_audit_log_update }}
 {% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
 <p>Investigate why remote realm is marked as locally deleted when it's on a paid plan.</p>
+{% elif notice_reason == "license_discrepancy" %}
+<p>Discrepancy in licenses when upgraded to current plan.</p>
+<b>Licenses paid for</b>: {{ paid_licenses }}.
+<b>Reported licenses in use</b>: {{ current_licenses }}.
 {% endif %}
 
 <br /><br />

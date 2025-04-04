@@ -5,15 +5,25 @@
         <div class="subscription_block selectable_sidebar_block {{#if hide_unread_count}}hide_unread_counts{{/if}}">
 
             <span class="stream-privacy-original-color-{{id}} stream-privacy filter-icon" style="color: {{color}}">
-                {{> stream_privacy }}
+                {{> stream_privacy . }}
             </span>
 
-            <span title="{{name}}" class="stream-name">{{name}}</span>
+            <a href="{{url}}" class="stream-name">{{name}}</a>
 
-            <div class="stream-markers-and-controls">
+            <div class="left-sidebar-controls">
+                {{#if can_post_messages}}
+                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{t 'New topic'}}" data-stream-id="{{id}}">
+                    <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
+                </div>
+                {{/if}}
+            </div>
+
+            <div class="stream-markers-and-unreads">
                 <span class="unread_mention_info"></span>
-                <span class="unread_count"></span>
-                <span class="masked_unread_count"></span>
+                <span class="unread_count normal-count"></span>
+                <span class="masked_unread_count">
+                    <i class="zulip-icon zulip-icon-masked-unread"></i>
+                </span>
             </div>
 
             <span class="sidebar-menu-icon stream-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>

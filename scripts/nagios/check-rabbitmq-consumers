@@ -54,7 +54,7 @@ for line in output.split("\n"):
 
 now = int(time.time())
 
-for queue_name in consumers:
+for queue_name, count in consumers.items():
     target_count = 1
     if queue_name == "notify_tornado":
         target_count = TORNADO_PROCESSES
@@ -62,11 +62,13 @@ for queue_name in consumers:
         target_count = int(
             get_config(config_file, "application_server", "mobile_notification_shards", "1")
         )
-    elif queue_name == "thumbnail":
-        target_count = int(get_config(config_file, "application_server", "thumbnail_workers", "1"))
+    else:
+        target_count = int(
+            get_config(config_file, "application_server", f"{queue_name}_workers", "1")
+        )
 
     atomic_nagios_write(
         "check-rabbitmq-consumers-" + queue_name,
-        "critical" if consumers[queue_name] < target_count else "ok",
-        f"queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}",
+        "critical" if count < target_count else "ok",
+        f"queue {queue_name} has {count} consumers, needs {target_count}",
     )

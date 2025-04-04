@@ -12,6 +12,8 @@ from unittest import mock
 from unittest.mock import patch
 
 import boto3.session
+import dns.rdtypes.ANY.TXT
+import dns.resolver
 import fakeldap
 import ldap
 import orjson
@@ -264,7 +266,7 @@ def reset_email_visibility_to_everyone_in_zulip_realm() -> None:
 
 def get_test_image_file(filename: str) -> IO[bytes]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
-    return open(os.path.join(test_avatar_dir, filename), "rb")  # noqa: SIM115
+    return open(os.path.join(test_avatar_dir, filename), "rb")
 
 
 def read_test_image_file(filename: str) -> bytes:
@@ -489,14 +491,10 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 find_pattern(pattern, prefixes)
 
         def cleanup_url(url: str) -> str:
-            if url.startswith("/"):
-                url = url[1:]
-            if url.startswith("http://testserver/"):
-                url = url[len("http://testserver/") :]
-            if url.startswith("http://zulip.testserver/"):
-                url = url[len("http://zulip.testserver/") :]
-            if url.startswith("http://testserver:9080/"):
-                url = url[len("http://testserver:9080/") :]
+            url = url.removeprefix("/")
+            url = url.removeprefix("http://testserver/")
+            url = url.removeprefix("http://zulip.testserver/")
+            url = url.removeprefix("http://testserver:9080/")
             return url
 
         def find_pattern(pattern: Any, prefixes: list[str]) -> None:
@@ -516,7 +514,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
                 for prefix in prefixes:
                     if url.startswith(prefix):
-                        match_url = url[len(prefix) :]
+                        match_url = url.removeprefix(prefix)
                         if pattern.resolve(match_url):
                             if call["status_code"] in [200, 204, 301, 302]:
                                 cnt += 1
@@ -544,7 +542,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "docs/",
             "docs/(?P<path>.+)",
             "casper/(?P<path>.+)",
-            "static/(?P<path>.+)",
+            "static/(?P<path>.*)",
             "flush_caches",
             "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
             # Such endpoints are only used in certain test cases that can be skipped
@@ -607,8 +605,9 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
         backend = S3UploadBackend()
         with (
-            mock.patch("zerver.lib.upload.upload_backend", backend),
             mock.patch("zerver.worker.thumbnail.upload_backend", backend),
+            mock.patch("zerver.lib.upload.upload_backend", backend),
+            mock.patch("zerver.views.tusd.upload_backend", backend),
         ):
             return method(*args, **kwargs)
 
@@ -796,3 +795,16 @@ def ratelimit_rule(
 def consume_response(response: HttpResponseBase) -> None:
     assert response.streaming
     collections.deque(response, maxlen=0)
+
+
+def dns_txt_answer(name_str: str, txt: str) -> dns.resolver.Answer:
+    name = dns.name.from_text(name_str)
+    rdclass = dns.rdataclass.IN
+    rdtype = dns.rdatatype.TXT
+    response = dns.message.make_query(
+        name, rdtype, rdclass, flags=dns.flags.QR | dns.flags.RA | dns.flags.RD
+    )
+    response.find_rrset(dns.message.ANSWER, name, rdclass, rdtype, create=True).add(
+        dns.rdtypes.ANY.TXT.TXT(rdclass, rdtype, txt)
+    )
+    return dns.resolver.Answer(name, rdtype, rdclass, response)

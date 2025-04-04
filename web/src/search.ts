@@ -3,19 +3,25 @@ import assert from "minimalistic-assert";
 
 import render_search_list_item from "../templates/search_list_item.hbs";
 
-import {Typeahead} from "./bootstrap_typeahead";
-import type {TypeaheadInputElement} from "./bootstrap_typeahead";
-import {Filter} from "./filter";
-import * as keydown_util from "./keydown_util";
-import * as narrow_state from "./narrow_state";
-import * as popovers from "./popovers";
-import * as search_pill from "./search_pill";
-import type {SearchPillWidget} from "./search_pill";
-import * as search_suggestion from "./search_suggestion";
-import type {NarrowTerm} from "./state_data";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import {Filter} from "./filter.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as popovers from "./popovers.ts";
+import * as search_pill from "./search_pill.ts";
+import type {SearchPillWidget} from "./search_pill.ts";
+import * as search_suggestion from "./search_suggestion.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as util from "./util.ts";
 
 // Exported for unit testing
 export let is_using_input_method = false;
+
+export function rewire_is_using_input_method(value: typeof is_using_input_method): void {
+    is_using_input_method = value;
+}
+
 export let search_pill_widget: SearchPillWidget | null = null;
 let search_input_has_changed = false;
 
@@ -24,8 +30,12 @@ let on_narrow_search: OnNarrowSearch;
 
 function set_search_bar_text(text: string): void {
     $("#search_query").text(text);
-    // After setting the text, move the cursor to the end of the line.
-    window.getSelection()!.modify("move", "forward", "line");
+    const current_selection = window.getSelection()!;
+    if (current_selection.anchorNode?.isSameNode(util.the($("#search_query")))) {
+        // After setting the text, move the cursor to the end of the line if
+        // the cursor is in the search bar.
+        current_selection.modify("move", "forward", "line");
+    }
 }
 
 function get_search_bar_text(): string {
@@ -43,7 +53,7 @@ function full_search_query_in_terms(): NarrowTerm[] {
     assert(search_pill_widget !== null);
     return [
         ...search_pill.get_current_search_pill_terms(search_pill_widget),
-        ...Filter.parse(get_search_bar_text()),
+        ...Filter.parse(get_search_bar_text(), true),
     ];
 }
 
@@ -222,17 +232,16 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         sorter(items: string[]): string[] {
             return items;
         },
-        // Turns off `stopPropagation` in the typeahead code for
-        // backspace, arrow left, arrow right, and enter so that
+        // Turns off `stopPropagation` in the typeahead code so that
         // we can manage those events for search pills.
-        advanceKeyCodes: [8, 13, 37, 39],
+        advanceKeys: ["Backspace", "Enter", "ArrowLeft", "ArrowRight"],
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
         on_escape() {
             exit_search({keep_search_narrow_open: false});
         },
-        tabIsEnter: false,
+        tabIsEnter: true,
         openInputFieldOnKeyUp(): void {
             if ($(".navbar-search.expanded").length === 0) {
                 open_search_bar_and_close_narrow_description();
@@ -385,7 +394,8 @@ function reset_searchbox(clear = false): void {
     }
 }
 
-function exit_search(opts: {keep_search_narrow_open: boolean}): void {
+// Exported for tests
+export let exit_search = (opts: {keep_search_narrow_open: boolean}): void => {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
@@ -399,13 +409,23 @@ function exit_search(opts: {keep_search_narrow_open: boolean}): void {
     }
     $("#search_query").trigger("blur");
     $(".app").trigger("focus");
+};
+
+export function rewire_exit_search(value: typeof exit_search): void {
+    exit_search = value;
 }
 
-export function open_search_bar_and_close_narrow_description(clear = false): void {
+export let open_search_bar_and_close_narrow_description = (clear = false): void => {
     reset_searchbox(clear);
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
+};
+
+export function rewire_open_search_bar_and_close_narrow_description(
+    value: typeof open_search_bar_and_close_narrow_description,
+): void {
+    open_search_bar_and_close_narrow_description = value;
 }
 
 export function close_search_bar_and_open_narrow_description(): void {

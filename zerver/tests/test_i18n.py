@@ -51,7 +51,7 @@ class EmailTranslationTestCase(ZulipTestCase):
             {"email": "hamlets-new@zulip.com"},
         )
         check_translation(
-            "Incrível!",
+            "Excelente!",
             "post",
             "/accounts/home/",
             {"email": "new-email@zulip.com"},

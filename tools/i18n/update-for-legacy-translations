@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import json
 import os
 import re
 from subprocess import check_output
+
+import orjson
 
 LEGACY_STRINGS_MAP = {
     "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>": "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
@@ -96,7 +97,7 @@ LEGACY_STRINGS_MAP = {
     "Only subscribers to this channel can edit channel permissions.": "Only subscribers to this stream can edit stream permissions.",
     "Pin channel to top": "Pin stream to top",
     "Pin channel to top of left sidebar": "Pin stream to top of left sidebar",
-    "Please specify a channel.": "Please specify a stream.",
+    "Please select a channel.": "Please specify a stream.",
     "Private channels cannot be default channels for new users.": "Private streams cannot be default streams for new users.",
     "Receives new channel announcements": "Receives new stream announcements",
     "Require topics in channel messages": "Require topics in stream messages",
@@ -151,14 +152,14 @@ LEGACY_STRINGS_MAP = {
     "View channels": "View streams",
     # "Warning: <strong>#{channel_name}</strong> is a private channel.": "Warning: <strong>#{stream_name}</strong> is a private stream.",
     "Which parts of the email should be included in the Zulip message sent to this channel?": "Which parts of the email should be included in the Zulip message sent to this stream?",
-    "Who can access the channel?": "Who can access the stream?",
+    "Who can access this channel": "Who can access this stream",
     "Who can add users to channels": "Who can add users to streams",
     "Who can create private channels": "Who can create private streams",
     "Who can create public channels": "Who can create public streams",
     "Who can create web-public channels": "Who can create web-public streams",
     "Who can move messages to another channel": "Who can move messages to another stream",
-    "Who can post to the channel?": "Who can post to the stream?",
-    "Who can unsubscribe others from this channel?": "Who can unsubscribe others from this stream?",
+    "Who can post to this channel": "Who can post to this stream",
+    "Who can unsubscribe others from this channel": "Who can unsubscribe others from this stream",
     "You are not currently subscribed to this channel.": "You are not currently subscribed to this stream.",
     "You are not subscribed to any channels.": "You are not subscribed to any streams.",
     "You are not subscribed to channel <z-stream-name></z-stream-name>.": "You are not subscribed to stream <z-stream-name></z-stream-name>.",
@@ -200,8 +201,8 @@ def get_locales() -> list[str]:
 
 
 def get_translations(path: str) -> dict[str, str]:
-    with open(path) as raw_resource_file:
-        translations = json.load(raw_resource_file)
+    with open(path, "rb") as raw_resource_file:
+        translations = orjson.loads(raw_resource_file.read())
 
     return translations
 
@@ -211,24 +212,28 @@ def update_for_legacy_stream_translations(
 ) -> None:
     number_of_updates = 0
     updated_translations: dict[str, str] = {}
-    for line in current:
+    for line, translation in current.items():
         # If the string has a legacy string mapped and see if it's
         # not currently translated (e.g. an empty string), then use
         # the legacy translated string (which might be an empty string).
-        if line in LEGACY_STRINGS_MAP and current[line] == "":
+        if line in LEGACY_STRINGS_MAP and translation == "":
             legacy_string = LEGACY_STRINGS_MAP[line]
             if legacy_string in legacy:
                 updated_translations[line] = legacy[legacy_string]
                 number_of_updates += 1
         else:
-            updated_translations[line] = current[line]
+            updated_translations[line] = translation
 
     # Only replace file content if we've made any updates for legacy
     # translated strings.
     if number_of_updates > 0:
-        with open(path, "w") as f:
-            json.dump(updated_translations, f, ensure_ascii=False, indent=2, sort_keys=True)
-            f.write("\n")
+        with open(path, "wb") as f:
+            f.write(
+                orjson.dumps(
+                    updated_translations,
+                    option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+                )
+            )
         print(f"Updated {number_of_updates} strings in: {path}")
 
 

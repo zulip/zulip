@@ -62,7 +62,7 @@ tasks you need to go back to or documents you reference often.
 
 {tab|desktop-web}
 
-1. Hover over <i class="zulip-icon zulip-icon-star-filled"></i> **Starred messages**
+1. Hover over <i class="zulip-icon zulip-icon-star"></i> **Starred messages**
    in the **views** section of the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).

@@ -1,8 +1,10 @@
-$light-blue-border: hsl(208deg 46% 93%);
-$border-green: hsl(170deg 47% 53%);
-$hover-green: hsl(170deg 65% 85%);
-$text-green: hsl(170deg 72% 32%);
-$category-text: hsl(219deg 23% 33%);
+:root {
+    --color-integrations-light-blue-border: hsl(208deg 46% 93%);
+    --color-integrations-border-green: hsl(170deg 47% 53%);
+    --color-integrations-hover-green: hsl(170deg 65% 85%);
+    --color-integrations-text-green: hsl(170deg 72% 32%);
+    --color-integrations-category-text: hsl(219deg 23% 33%);
+}
 
 .portico-landing.integrations {
     color: hsl(0deg 0% 27%);
@@ -118,16 +120,15 @@ $category-text: hsl(219deg 23% 33%);
                     height: 45px;
                     padding: 0 20px 0 50px;
                     border-radius: 40px;
-                    border: 1px solid $light-blue-border;
+                    border: 1px solid
+                        var(--color-integrations-light-blue-border);
                     display: block;
                     color: hsl(0deg 0% 33%);
                     margin-bottom: 10px;
-                    transition:
-                        border linear 0.2s,
-                        box-shadow linear 0.2s;
+                    transition: border-color linear 0.2s;
 
                     &:focus {
-                        border: 1px solid $border-green;
+                        border-color: var(--color-integrations-border-green);
                         outline: 0;
                     }
 
@@ -146,7 +147,7 @@ $category-text: hsl(219deg 23% 33%);
                     left: 20px;
                     top: 13px;
                     font-size: 19px;
-                    color: $border-green;
+                    color: var(--color-integrations-border-green);
                 }
 
                 @media (width <= 768px) {
@@ -191,13 +192,14 @@ $category-text: hsl(219deg 23% 33%);
                 padding: 6px 10px 3px;
                 margin: 3px 0;
                 border-radius: 5px;
-                transition: all 0.3s ease;
-                color: $category-text;
+                transition: 0.3s ease;
+                transition-property: background-color, color;
+                color: var(--color-integrations-category-text);
 
                 &.selected,
                 &:hover {
-                    background-color: $hover-green;
-                    color: $text-green;
+                    background-color: var(--color-integrations-hover-green);
+                    color: var(--color-integrations-text-green);
                     cursor: pointer;
                 }
             }
@@ -236,7 +238,7 @@ $category-text: hsl(219deg 23% 33%);
                 justify-content: space-between;
                 margin-left: 25px;
                 margin-right: 25px;
-                border: 1px solid $light-blue-border;
+                border: 1px solid var(--color-integrations-light-blue-border);
             }
 
             & i {
@@ -258,16 +260,20 @@ $category-text: hsl(219deg 23% 33%);
             }
 
             & h4 {
-                border-left: 1px solid $light-blue-border;
-                border-right: 1px solid $light-blue-border;
-                border-bottom: 1px solid $light-blue-border;
-                transition: all 0.3s ease;
+                border-left: 1px solid
+                    var(--color-integrations-light-blue-border);
+                border-right: 1px solid
+                    var(--color-integrations-light-blue-border);
+                border-bottom: 1px solid
+                    var(--color-integrations-light-blue-border);
+                transition: 0.3s ease;
+                transition-property: background-color, color;
                 font-size: 0.9em;
 
                 &.selected,
                 &:hover {
-                    background-color: $hover-green;
-                    color: $text-green;
+                    background-color: var(--color-integrations-hover-green);
+                    color: var(--color-integrations-text-green);
                 }
             }
         }
@@ -314,13 +320,14 @@ $category-text: hsl(219deg 23% 33%);
         padding: 0 4px;
         margin: 7px 5px;
         border-radius: 5px;
-        border: 1px solid $light-blue-border;
-        color: $category-text;
+        border: 1px solid var(--color-integrations-light-blue-border);
+        color: var(--color-integrations-category-text);
         text-align: center;
-        transition: all 0.3s ease;
+        transition: 0.3s ease;
+        transition-property: border-color;
 
         &:hover {
-            border: 1px solid $border-green;
+            border-color: var(--color-integrations-border-green);
         }
 
         &.legacy {
@@ -507,13 +514,16 @@ $category-text: hsl(219deg 23% 33%);
                     width: 165px;
                     text-align: center;
                     border-radius: 5px;
-                    transition: all 0.3s ease;
-                    background-color: $light-blue-border;
-                    color: $category-text;
+                    transition: 0.3s ease;
+                    transition-property: background-color, color;
+                    background-color: var(
+                        --color-integrations-light-blue-border
+                    );
+                    color: var(--color-integrations-category-text);
 
                     &:hover {
-                        background-color: $hover-green;
-                        color: $text-green;
+                        background-color: var(--color-integrations-hover-green);
+                        color: var(--color-integrations-text-green);
                     }
                 }
             }
@@ -546,7 +556,8 @@ $category-text: hsl(219deg 23% 33%);
                 align-items: center;
                 margin-bottom: 20px;
                 padding-bottom: 20px;
-                border-bottom: 1px solid $light-blue-border;
+                border-bottom: 1px solid
+                    var(--color-integrations-light-blue-border);
             }
 
             @media (width <= 768px) {

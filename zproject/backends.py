@@ -490,7 +490,10 @@ def check_password_strength(password: str) -> bool:
         # we need a special case for the empty string password here.
         return False
 
-    if int(zxcvbn(password)["guesses"]) < settings.PASSWORD_MIN_GUESSES:
+    if (
+        int(zxcvbn(password, max_length=settings.PASSWORD_MAX_LENGTH)["guesses"])
+        < settings.PASSWORD_MIN_GUESSES
+    ):
         return False
 
     return True
@@ -850,9 +853,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         true_values = ["TRUE", "YES"]
         false_values = ["FALSE", "NO"]
         attr_value_upper = attr_value.upper()
-        assert (
-            attr_value_upper in true_values or attr_value_upper in false_values
-        ), f"Invalid value '{attr_value}' in the LDAP attribute mapped to deactivated"
+        assert attr_value_upper in true_values or attr_value_upper in false_values, (
+            f"Invalid value '{attr_value}' in the LDAP attribute mapped to deactivated"
+        )
         return attr_value_upper in true_values
 
     def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
@@ -1268,10 +1271,9 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
     we essentially convert the signal to a normal exception that will properly
     propagate out of django_auth_ldap internals.
     """
-    if kwargs["context"] == "populate_user":
-        # The exception message can contain the password (if it was invalid),
-        # so it seems better not to log that, and only use the original exception's name here.
-        raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
+    # The exception message can contain the password (if it was invalid),
+    # so it seems better not to log that, and only use the original exception's name here.
+    raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
 
 
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
@@ -1445,9 +1447,9 @@ class ExternalAuthResult:
             data_dict = {}
 
         if login_token is not None:
-            assert (not data_dict) and (
-                user_profile is None
-            ), "Passing in data_dict or user_profile with login_token is disallowed."
+            assert (not data_dict) and (user_profile is None), (
+                "Passing in data_dict or user_profile with login_token is disallowed."
+            )
             assert request is not None, "Passing in request with login_token is required."
             self.instantiate_with_token(request, login_token, delete_stored_data)
         else:
@@ -1716,7 +1718,7 @@ def social_auth_sync_user_attributes(
 
 
 def social_associate_user_helper(
-    backend: BaseAuth, return_data: dict[str, Any], *args: Any, **kwargs: Any
+    backend: "SocialAuthMixin", return_data: dict[str, Any], *args: Any, **kwargs: Any
 ) -> HttpResponse | UserProfile | None:
     """Responsible for doing the Zulip account lookup and validation parts
     of the Zulip social auth pipeline (similar to the authenticate()
@@ -1876,6 +1878,7 @@ def social_auth_associate_user(
     later stages of settings.SOCIAL_AUTH_PIPELINE, such as
     social_auth_finish, as kwargs.
     """
+    assert isinstance(backend, SocialAuthMixin)
     partial_token = backend.strategy.request_data().get("partial_token")
     return_data: dict[str, Any] = {}
     user_profile = social_associate_user_helper(backend, return_data, *args, **kwargs)
@@ -2084,6 +2087,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
 
     standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, "next"]
 
+    @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
         """This is a small wrapper around the core `auth_complete` method of
         python-social-auth, designed primarily to prevent 500s for
@@ -2198,6 +2202,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             )
         ]
 
+    @override
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> dict[str, str]:
         """This patched user_data function lets us combine together the 3
         social auth backends into a single Zulip backend for GitHub OAuth2"""
@@ -2212,15 +2217,15 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 **kwargs,
             )
         elif team_id is not None:
-            backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
+            team_backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
             try:
-                return backend.user_data(access_token, *args, **kwargs)
+                return team_backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required team")
         elif org_name is not None:
-            backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
+            organization_backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
             try:
-                return backend.user_data(access_token, *args, **kwargs)
+                return organization_backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
@@ -2331,6 +2336,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
     # This method replaces a method from python-social-auth; it is adapted to store
     # the state_token data in Redis.
+    @override
     def get_or_create_state(self) -> str:
         """Creates the Oauth2 state parameter in first step of the flow,
         before redirecting the user to the IdP (aka Apple).
@@ -2366,6 +2372,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         )
         return state
 
+    @override
     def validate_state(self) -> str | None:
         """
         This method replaces a method from python-social-auth; it is
@@ -2391,6 +2398,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
                 self.strategy.session_set(param, value)
         return request_state
 
+    @override
     def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
         """
         Overridden to correctly grab the user's name from the request params,
@@ -2466,6 +2474,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
 
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
+    @override
     def get_user_details(self, attributes: dict[str, Any]) -> dict[str, Any]:
         """
         Overridden to support plumbing of additional Attributes
@@ -2670,12 +2679,14 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
 
+    @override
     def get_idp(self, idp_name: str) -> ZulipSAMLIdentityProvider:
         """Given the name of an IdP, get a SAMLIdentityProvider instance.
         Forked to use our subclass of SAMLIdentityProvider for more flexibility."""
         idp_config = self.setting("ENABLED_IDPS")[idp_name]
         return ZulipSAMLIdentityProvider(idp_name, **idp_config)
 
+    @override
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
         authenticate the user. Overriding the original SAMLAuth.auth_url.
@@ -2765,6 +2776,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         else:
             return request_subdomain
 
+    @override
     def _check_entitlements(
         self, idp: SAMLIdentityProvider, attributes: dict[str, list[str]]
     ) -> None:
@@ -2805,9 +2817,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         )
         raise AuthFailed(self, error_msg)
 
-    def process_logout(self, subdomain: str, idp_name: str) -> HttpResponse | None:
+    def process_logout_request(self, subdomain: str, idp_name: str) -> HttpResponse | None:
         """
-        We override process_logout, because we need to customize
+        We don't use process_logout, because we need to customize
         the way of revoking sessions and introduce NameID validation.
 
         The python-social-auth and python3-saml implementations expect a simple
@@ -2937,7 +2949,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         # in the python3-saml library, ensuring it received the correct kind of XML document
         # and finishes processing it.
         # (1) We received a SAMLRequest - the only SAMLRequest we accept is a LogoutRequest,
-        #     so we call process_logout().
+        #     so we call process_logout_request().
         # (2) We received a SAMLResponse and it looks like a LogoutResponse - we call
         #     process_logout_response()
         # (3) We received a SAMLResponse that's not a LogoutResponse. We proceed to treat it
@@ -2948,7 +2960,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         # If for any reason, an XML document that doesn't match the expected type is passed
         # to these *_process() functions, it will be rejected.
         if isinstance(saml_document, SAMLRequest):
-            return self.process_logout(subdomain, idp_name)
+            return self.process_logout_request(subdomain, idp_name)
         elif isinstance(saml_document, SAMLResponse) and saml_document.is_logout_response():
             return SAMLSPInitiatedLogout.process_logout_response(saml_document, idp_name)
 
@@ -3108,6 +3120,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     # configuration from.
     OIDC_ENDPOINT = settings_dict.get("oidc_url")
 
+    @override
     def get_key_and_secret(self) -> tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
         assert isinstance(client_id, str)

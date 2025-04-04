@@ -1,7 +1,9 @@
-import {$t} from "./i18n";
-import * as thumbnail from "./thumbnail";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import assert from "minimalistic-assert";
+
+import {$t} from "./i18n.ts";
+import * as thumbnail from "./thumbnail.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 
@@ -52,6 +54,18 @@ export function postprocess_content(html: string): string {
             elt.removeAttribute("target");
         }
 
+        // Update older, smaller default.jpg YouTube preview images
+        // with higher-quality preview images (320px wide)
+        if (elt.parentElement?.classList.contains("youtube-video")) {
+            const img = elt.querySelector("img");
+            assert(img instanceof HTMLImageElement);
+            const img_src = img.src;
+            if (img_src.endsWith("/default.jpg")) {
+                const mq_src = img_src.replace(/\/default.jpg$/, "/mqdefault.jpg");
+                img.src = mq_src;
+            }
+        }
+
         if (elt.parentElement?.classList.contains("message_inline_image")) {
             // For inline images we want to handle the tooltips explicitly, and disable
             // the browser's built in handling of the title attribute.
@@ -75,7 +89,11 @@ export function postprocess_content(html: string): string {
                 // not display the URL like it does in the web app.
                 title = legacy_title = $t(
                     {defaultMessage: "Download {filename}"},
-                    {filename: url.pathname.slice(url.pathname.lastIndexOf("/") + 1)},
+                    {
+                        filename: decodeURIComponent(
+                            url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
+                        ),
+                    },
                 );
             } else {
                 title = url.toString();
@@ -88,11 +106,41 @@ export function postprocess_content(html: string): string {
         }
     }
 
+    for (const ol of template.content.querySelectorAll("ol")) {
+        const list_start = Number(ol.getAttribute("start") ?? 1);
+        // We don't count the first item in the list, as it
+        // will be identical to the start value
+        const list_length = ol.children.length - 1;
+        const max_list_counter = list_start + list_length;
+        // We count the characters in the longest list counter,
+        // and use that to offset the list accordingly in CSS
+        const max_list_counter_string_length = max_list_counter.toString().length;
+        ol.classList.add(`counter-length-${max_list_counter_string_length}`);
+    }
+
     for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
         "div.message_inline_image > a > img",
     )) {
         inline_img.setAttribute("loading", "lazy");
-        if (inline_img.src.startsWith("/user_uploads/thumbnail/")) {
+        // We can't just check whether `inline_image.src` starts with
+        // `/user_uploads/thumbnail`, even though that's what the
+        // server writes in the markup, because Firefox will have
+        // already prepended the origin to the source of an image.
+        let image_url;
+        try {
+            image_url = new URL(inline_img.src, window.location.origin);
+        } catch {
+            // If the image source URL can't be parsed, likely due to
+            // some historical bug in the Markdown processor, just
+            // drop the invalid image element.
+            inline_img.closest("div.message_inline_image")!.remove();
+            continue;
+        }
+
+        if (
+            image_url.origin === window.location.origin &&
+            image_url.pathname.startsWith("/user_uploads/thumbnail/")
+        ) {
             let thumbnail_name = thumbnail.preferred_format.name;
             if (inline_img.dataset.animated === "true") {
                 if (

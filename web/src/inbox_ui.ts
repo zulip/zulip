@@ -10,32 +10,32 @@ import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
-import * as buddy_data from "./buddy_data";
-import * as compose_closed_ui from "./compose_closed_ui";
-import * as compose_state from "./compose_state";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import * as hash_util from "./hash_util";
-import {$t_html} from "./i18n";
-import {is_visible, set_visible} from "./inbox_util";
-import * as keydown_util from "./keydown_util";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
-import {localstorage} from "./localstorage";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as onboarding_steps from "./onboarding_steps";
-import * as people from "./people";
-import * as stream_color from "./stream_color";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
-import {user_settings} from "./user_settings";
-import * as user_status from "./user_status";
-import * as user_topics from "./user_topics";
-import * as user_topics_ui from "./user_topics_ui";
-import * as util from "./util";
-import * as views_util from "./views_util";
+import * as buddy_data from "./buddy_data.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
+import * as compose_state from "./compose_state.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t_html} from "./i18n.ts";
+import {is_visible, set_visible} from "./inbox_util.ts";
+import * as keydown_util from "./keydown_util.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import {localstorage} from "./localstorage.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as people from "./people.ts";
+import * as stream_color from "./stream_color.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as unread from "./unread.ts";
+import * as unread_ops from "./unread_ops.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
+import * as user_topics from "./user_topics.ts";
+import * as user_topics_ui from "./user_topics_ui.ts";
+import * as util from "./util.ts";
+import * as views_util from "./views_util.ts";
 
 type DirectMessageContext = {
     conversation_key: string;
@@ -51,6 +51,7 @@ type DirectMessageContext = {
     is_collapsed: boolean;
     latest_msg_id: number;
     column_indexes: typeof COLUMNS;
+    has_unread_mention: boolean;
 };
 
 const direct_message_context_properties: (keyof DirectMessageContext)[] = [
@@ -71,10 +72,11 @@ const direct_message_context_properties: (keyof DirectMessageContext)[] = [
 
 type StreamContext = {
     is_stream: boolean;
+    is_archived: boolean;
     invite_only: boolean;
     is_web_public: boolean;
     stream_name: string;
-    pin_to_top: boolean | undefined;
+    pin_to_top: boolean;
     is_muted: boolean;
     stream_color: string;
     stream_header_color: string;
@@ -108,7 +110,10 @@ const stream_context_properties: (keyof StreamContext)[] = [
 type TopicContext = {
     is_topic: boolean;
     stream_id: number;
+    stream_archived: boolean;
     topic_name: string;
+    topic_display_name: string;
+    is_empty_string_topic: boolean;
     unread_count: number;
     conversation_key: string;
     topic_url: string;
@@ -124,7 +129,10 @@ type TopicContext = {
 const topic_context_properties: (keyof TopicContext)[] = [
     "is_topic",
     "stream_id",
+    "stream_archived",
     "topic_name",
+    "topic_display_name",
+    "is_empty_string_topic",
     "unread_count",
     "conversation_key",
     "topic_url",
@@ -274,7 +282,7 @@ function format_dm(
     latest_msg_id: number,
 ): DirectMessageContext {
     const recipient_ids = people.user_ids_string_to_ids_array(user_ids_string);
-    if (!recipient_ids.length) {
+    if (recipient_ids.length === 0) {
         // Self DM
         recipient_ids.push(people.my_current_user_id());
     }
@@ -292,14 +300,19 @@ function format_dm(
     let user_circle_class: string | false | undefined;
     let is_bot = false;
     if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
-        is_bot = people.get_by_user_id(recipient_ids[0]).is_bot;
-        user_circle_class = is_bot ? false : buddy_data.get_user_circle_class(recipient_ids[0]);
+        const user_id = recipient_ids[0];
+        const is_deactivated = !people.is_active_user_for_popover(user_id);
+        is_bot = people.get_by_user_id(user_id).is_bot;
+        user_circle_class = is_bot
+            ? false
+            : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
     }
+    const has_unread_mention = unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with: util.format_array_as_list(rendered_dm_with, "long", "conjunction"),
+        rendered_dm_with: util.format_array_as_list_with_conjuction(rendered_dm_with, "long"),
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
@@ -310,6 +323,7 @@ function format_dm(
         is_collapsed: collapsed_containers.has("inbox-dm-header"),
         latest_msg_id,
         column_indexes: COLUMNS,
+        has_unread_mention,
     };
 
     return context;
@@ -372,6 +386,7 @@ function format_stream(stream_id: number): StreamContext {
 
     return {
         is_stream: true,
+        is_archived: stream_info.is_archived,
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
         stream_name: stream_info.name,
@@ -396,11 +411,18 @@ function update_stream_data(
 ): void {
     const stream_topics_data = new Map<string, TopicContext>();
     const stream_data = format_stream(stream_id);
+    const stream_archived = stream_data.is_archived;
     let stream_post_filter_unread_count = 0;
     for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
         const topic_key = get_topic_key(stream_id, topic);
         if (topic_count) {
-            const topic_data = format_topic(stream_id, topic, topic_count, latest_msg_id);
+            const topic_data = format_topic(
+                stream_id,
+                stream_archived,
+                topic,
+                topic_count,
+                latest_msg_id,
+            );
             stream_topics_data.set(topic_key, topic_data);
             if (!topic_data.is_hidden) {
                 stream_post_filter_unread_count += topic_data.unread_count;
@@ -428,6 +450,7 @@ function rerender_stream_inbox_header_if_needed(
 
 function format_topic(
     stream_id: number,
+    stream_archived: boolean,
     topic: string,
     topic_unread_count: number,
     latest_msg_id: number,
@@ -435,10 +458,13 @@ function format_topic(
     const context = {
         is_topic: true,
         stream_id,
+        stream_archived,
         topic_name: topic,
+        topic_display_name: util.get_final_topic_display_name(topic),
+        is_empty_string_topic: topic === "",
         unread_count: topic_unread_count,
         conversation_key: get_topic_key(stream_id, topic),
-        topic_url: hash_util.by_stream_topic_url(stream_id, topic),
+        topic_url: hash_util.by_channel_topic_permalink(stream_id, topic),
         is_hidden: filter_should_hide_stream_row({stream_id, topic}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
@@ -580,6 +606,7 @@ function reset_data(): {
     is_dms_collapsed: boolean;
     has_dms_post_filter: boolean;
     has_visible_unreads: boolean;
+    has_unread_mention: boolean;
 } {
     dms_dict = new Map();
     topics_dict = new Map();
@@ -588,6 +615,7 @@ function reset_data(): {
     const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
+    const has_unread_mention = unread.num_unread_mentions_in_dms() > 0;
 
     const unread_stream_message = unread.get_unread_topics();
     const unread_stream_msg_count = unread_stream_message.stream_unread_messages;
@@ -629,6 +657,7 @@ function reset_data(): {
     const is_dms_collapsed = collapsed_containers.has("inbox-dm-header");
 
     return {
+        has_unread_mention,
         unread_dms_count,
         is_dms_collapsed,
         has_dms_post_filter,
@@ -728,7 +757,7 @@ function row_in_search_results(keyword: string, text: string): boolean {
 
 function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
     const recipients_string = people.get_recipients(dm_key);
-    const text = recipients_string.toLowerCase();
+    const text = recipients_string.join(",").toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;
@@ -764,7 +793,8 @@ function filter_should_hide_stream_row({
         return true;
     }
 
-    const text = (sub.name + " " + topic).toLowerCase();
+    const topic_display_name = util.get_final_topic_display_name(topic);
+    const text = (sub.name + " " + topic_display_name).toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;
@@ -845,30 +875,25 @@ export function revive_current_focus(): void {
 }
 
 function update_closed_compose_text($row: JQuery, is_header_row: boolean): void {
-    // TODO: This fake "message" object is designed to allow using the
-    // get_recipient_label helper inside compose_closed_ui. Surely
-    // there's a more readable way to write this code.
-    // Similar code is present in recent view.
-
     if (is_header_row) {
         compose_closed_ui.set_standard_text_for_reply_button();
         return;
     }
 
-    let message;
+    let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     const is_dm = $row.parent("#inbox-direct-messages-container").length > 0;
     if (is_dm) {
-        message = {
+        reply_recipient_information = {
             display_reply_to: $row.find(".recipients_name").text(),
         };
     } else {
         const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
-        message = {
+        reply_recipient_information = {
             stream_id: Number($stream.attr("data-stream-id")),
             topic: $row.find(".inbox-topic-name a").text(),
         };
     }
-    compose_closed_ui.update_reply_recipient_label(message);
+    compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
 }
 
 export function get_focused_row_message(): {message?: Message | undefined} & (
@@ -882,7 +907,11 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
 
     const $all_rows = get_all_rows();
     const focused_row = $all_rows.get(row_focus);
-    assert(focused_row !== undefined);
+    if (!focused_row) {
+        // Likely `row_focus` or `current_focus_id` wasn't updated correctly.
+        // TODO: Debug this further.
+        return {message: undefined};
+    }
     const $focused_row = $(focused_row);
     if (is_row_a_header($focused_row)) {
         const is_dm_header = $focused_row.attr("id") === "inbox-dm-header";
@@ -1227,6 +1256,7 @@ export function update(): void {
     const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
+    const has_unread_mention = unread.num_unread_mentions_in_dms() > 0;
 
     const unread_stream_message = unread.get_unread_topics();
     const unread_streams_dict = unread_stream_message.topic_counts;
@@ -1260,6 +1290,7 @@ export function update(): void {
     } else {
         $inbox_dm_header.removeClass("hidden_by_filters");
         $inbox_dm_header.find(".unread_count").text(unread_dms_count);
+        $inbox_dm_header.find(".unread_mention_info").toggleClass("hidden", !has_unread_mention);
     }
 
     let has_topics_post_filter = false;
@@ -1282,12 +1313,14 @@ export function update(): void {
 
             const topic_keys_to_insert: string[] = [];
             const new_stream_data = format_stream(stream_id);
+            const stream_archived = new_stream_data.is_archived;
             for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
                 const topic_key = get_topic_key(stream_id, topic);
                 if (topic_count) {
                     const old_topic_data = stream_topics_data.get(topic_key);
                     const new_topic_data = format_topic(
                         stream_id,
+                        stream_archived,
                         topic,
                         topic_count,
                         latest_msg_id,
@@ -1457,7 +1490,7 @@ function move_focus_to_visible_area(): void {
     const $element_in_row = $(element_in_row);
 
     let $inbox_row = $element_in_row.closest(".inbox-row");
-    if (!$inbox_row.length) {
+    if ($inbox_row.length === 0) {
         $inbox_row = $element_in_row.closest(".inbox-header");
     }
 
@@ -1581,7 +1614,7 @@ export function initialize(): void {
         }
         const stream_id = Number($elt.attr("data-stream-id"));
         const topic = $elt.attr("data-topic-name");
-        if (topic) {
+        if (topic !== undefined) {
             unread_ops.mark_topic_as_read(stream_id, topic);
         } else {
             unread_ops.mark_stream_as_read(stream_id);

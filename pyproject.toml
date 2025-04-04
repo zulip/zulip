@@ -1,3 +1,326 @@
+[project]
+name = "zulip-server"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+[dependency-groups]
+prod = [
+  # Django itself
+  "django[argon2]==5.1.*",
+  "asgiref", # https://github.com/django/asgiref/pull/494
+
+  # needed for NotRequired, ParamSpec
+  "typing-extensions",
+
+  # Needed for rendering backend templates
+  "jinja2",
+
+  # Needed for Markdown processing
+  "markdown",
+  "pygments",
+  "jsx-lexer",
+  "uri-template",
+  "regex",
+
+  # Needed for manage.py
+  "ipython",
+
+  # Needed for image processing and thumbnailing
+  "pyvips",
+
+  # Needed for building complex DB queries
+  "sqlalchemy==1.4.*",
+  "greenlet",
+
+  # Needed for S3 file uploads and other AWS tools
+  "boto3",
+
+  # The runtime-relevant part of boto3-stubs (see mypy.in)
+  "mypy-boto3-s3",
+  "mypy-boto3-ses",
+  "mypy-boto3-sns",
+  "mypy-boto3-sqs",
+
+  # Needed for integrations
+  "defusedxml",
+
+  # Needed for LDAP support
+  "python-ldap",
+  "django-auth-ldap",
+
+  # Django extension providing bitfield support
+  "django-bitfield",
+
+  # Needed for Android push notifications
+  "firebase-admin",
+
+  # Needed for the email mirror
+  "html2text",
+  "talon-core",
+
+  # Needed for inlining the CSS in emails
+  "css-inline",
+
+  # Needed for JWT-based auth
+  "pyjwt",
+
+  # Needed to access RabbitMQ
+  "pika",
+
+  # Needed to access our database
+  "psycopg2",
+
+  # Needed for memcached usage
+  "python-binary-memcached",
+
+  # Needed for compression support in memcached via python-binary-memcached
+  "django-bmemcached",
+
+  # Needed for zerver/tests/test_timestamp.py
+  "python-dateutil",
+
+  # Needed for Redis
+  "redis",
+
+  # Tornado used for server->client push system
+  "tornado",
+
+  # Fast JSON parser
+  "orjson",
+
+  # Needed for iOS push notifications
+  "aioapns",
+
+  "python-twitter",
+
+  # To parse po files
+  "polib",
+
+  # Needed for cloning virtual environments
+  "virtualenv-clone",
+
+  # Needed for link preview
+  "beautifulsoup4",
+  "pyoembed",
+  "python-magic",
+
+  # The Zulip API bindings, from its own repository.
+  "zulip",
+  "zulip-bots",
+
+  # Used for Hesiod lookups, etc.
+  "dnspython",
+
+  # Install Python Social Auth
+  "social-auth-app-django",
+  "social-auth-core[azuread]", # https://github.com/python-social-auth/social-core/pull/1025
+  "python3-saml",
+
+  # For encrypting a login token to the desktop app
+  "cryptography",
+
+  # Needed for messages' rendered content parsing in push notifications.
+  "lxml",
+
+  # Needed for 2-factor authentication
+  "django-two-factor-auth[call,phonenumberslite,sms]",
+
+  # Needed for processing payments (in corporate)
+  "stripe",
+
+  # For checking whether email of the user is from a disposable email provider.
+  "disposable-email-domains",
+
+  # Needed for parsing YAML with JSON references from the REST API spec files
+  "jsonref",
+
+  # Needed for string matching in AlertWordProcessor
+  "pyahocorasick",
+
+  # Needed for function decorators that don't break introspection.
+  # Used for rate limiting authentication.
+  "decorator",
+
+  # For server-side enforcement of password strength
+  "zxcvbn",
+
+  # Needed for sending HTTP requests
+  "requests[security]",
+  "requests-oauthlib",
+
+  # For OpenAPI schema validation.
+  "openapi-core",
+  "werkzeug<3.1.2", # https://github.com/python-openapi/openapi-core/issues/938
+
+  # For reporting errors to sentry.io
+  "sentry-sdk",
+
+  # For detecting URLs to link
+  "tlds",
+
+  # Unicode Collation Algorithm for sorting multilingual strings
+  "pyuca",
+
+  # Handle connection retries with exponential backoff
+  "backoff",
+
+  # Needed for reading bson files in rocketchat import tool
+  "pymongo",
+
+  # Non-backtracking regular expressions
+  "google-re2",
+
+  # For querying recursive group membership
+  "django-cte",
+
+  # SCIM integration
+  "django-scim2",
+
+  # Circuit-breaking for outgoing services
+  "circuitbreaker",
+
+  # Runtime monkeypatching of django-stubs generics
+  "django-stubs-ext",
+
+  # Structured data representation with parsing.
+  "pydantic",
+  "annotated-types",
+
+  # For requesting LLM API endpoints.
+  "litellm",
+
+  # Used for running the Zulip production Django server
+  "uwsgi",
+
+  # Used for monitoring memcached
+  "prometheus-client",
+]
+docs = [
+  # Needed to build RTD docs
+  "sphinx",
+  "sphinx-rtd-theme",
+  "sphinx-design",
+
+  # Needed to build Markdown docs
+  "myst-parser",
+]
+dev = [
+  { include-group = "prod" },
+  { include-group = "docs" },
+
+  # moto s3 mock
+  "moto[s3]",
+
+  # For tools/run-dev
+  "aiohttp",
+
+  # Needed for documentation links test
+  "scrapy",
+
+  # Needed to compute test coverage
+  "coverage",
+
+  # fake for LDAP testing
+  "fakeldap",
+
+  # For testing mock http requests
+  "responses",
+
+  # For doing highly usable Python profiling
+  "line-profiler",
+
+  # Python reformatter
+  "black",
+
+  # Python linter
+  "ruff",
+
+  # Needed for watching file changes
+  "pyinotify",
+  "pyasyncore", # https://github.com/seb-m/pyinotify/issues/204
+
+  # Needed to run tests in parallel
+  "tblib",
+
+  # For linting Git commit messages
+  "gitlint-core",
+
+  # Needed for visualising cProfile reports
+  "snakeviz",
+
+  # Needed for creating DigitalOcean droplets
+  "python-digitalocean",
+
+  # zulip's linting framework - zulint
+  "zulint",
+
+  # For type checking
+  "mypy[faster-cache]",
+
+  "boto3-stubs[s3,ses,sns,sqs]",
+  "django-stubs",
+  "lxml-stubs",
+  "SQLAlchemy[mypy]",
+  "types-beautifulsoup4",
+  "types-boto",
+  "types-chardet",
+  "types-decorator",
+  "types-defusedxml",
+  "types-jsonschema",
+  "types-Markdown",
+  "types-oauthlib",
+  "types-polib",
+  "types-pika",
+  "types-psycopg2",
+  "types-Pygments",
+  "types-pyOpenSSL",
+  "types-python-dateutil",
+  "types-PyYAML",
+  "types-redis",
+  "types-regex",
+  "types-requests",
+  "types-zxcvbn",
+
+  # Needed for tools/check-thirdparty
+  "python-debian",
+
+  # Pattern-based lint tool
+  "semgrep<1.80.0", # https://github.com/semgrep/semgrep/issues/10408
+
+  # For sorting versions when uploading releases
+  "natsort",
+
+  # For spell check linter
+  "codespell",
+
+  # For mocking time
+  "time-machine",
+]
+
+[tool.uv]
+no-binary-package = ["lxml", "xmlsec"]
+
+[tool.uv.sources]
+# https://github.com/django/asgiref/pull/494
+asgiref = { url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" }
+
+# Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
+# and chardet, cchardet: https://github.com/mailgun/talon/pull/239
+# and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
+talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip", subdirectory = "talon-core" }
+
+# We integrate with these tightly, including fetching content not included in
+# the official PyPI release tarballs, such as logos, assets and documentation
+# files that we render on our /integrations/ page. Therefore, we need to pin the
+# version from Git rather than a PyPI release. Keeping everything in one
+# repository simplifies the process of implementing and documenting new bots for
+# new contributors.
+zulip = { url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976b9c3da6c11b6365b4939656f7c3.zip", subdirectory = "zulip" }
+zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip_bots" }
+
+# zulip's linting framework - zulint
+zulint = { url = "https://github.com/zulip/zulint/archive/9be0a32bf75a9d8738b005f0b880567fff64e943.zip" }
+
 [tool.black]
 line-length = 100
 target-version = ["py310"]
@@ -56,17 +379,16 @@ module = [
     "bitfield.*",
     "bmemcached.*",
     "circuitbreaker.*",
-    "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",
     "django_cte.*",
     "django_otp.*",
     "django_scim.*",
-    "DNS.*",
     "fakeldap.*",
     "firebase_admin.*",
     "gitlint.*",
+    "integrations.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
     "onelogin.*",
@@ -77,13 +399,12 @@ module = [
     "re2.*",
     "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
     "scim2_filter_parser.attr_paths",
-    "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
-    "social_core.*",
     "social_django.*",
     "talon_core.*",
     "tlds.*",
     "twitter.*",
     "two_factor.*",
+    "uwsgi",
 ]
 ignore_missing_imports = true
 
@@ -133,18 +454,15 @@ select = [
     "SLOT", # __slots__
     "SIM", # simplify
     "T10", # debugger
-    "TCH", # type-checking
+    "TC", # type-checking
     "TID", # tidy imports
     "UP", # upgrade
     "W", # style warnings
     "YTT", # sys.version
 ]
 ignore = [
-    "ANN101", # Missing type annotation for `self` in method
-    "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "B007", # Loop control variable not used within the loop body
-    "B008", # Do not perform function calls in argument defaults
     "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
     "C408", # Unnecessary `dict` call (rewrite as a literal)
     "COM812", # Trailing comma missing
@@ -153,7 +471,7 @@ ignore = [
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
-    "ISC001", # Implicitly concatenated string literals on one line
+    "LOG015", # `error()` call on root logger
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
@@ -187,10 +505,14 @@ ignore = [
     "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
     "SIM114", # Combine `if` branches using logical `or` operator
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
-    "TCH001", # Move application import into a type-checking block
-    "TCH002", # Move third-party import into a type-checking block
-    "TCH003", # Move standard library import into a type-checking block
+    "TC001", # Move application import into a type-checking block
+    "TC002", # Move third-party import into a type-checking block
+    "TC003", # Move standard library import into a type-checking block
+    "TC006", # Add quotes to type expression in `typing.cast()`
 ]
+
+[tool.ruff.lint.flake8-bandit]
+allowed-markup-calls = ["lxml.html.tostring"]
 
 [tool.ruff.lint.flake8-gettext]
 extend-function-names = ["gettext_lazy"]

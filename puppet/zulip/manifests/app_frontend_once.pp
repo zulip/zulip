@@ -60,4 +60,12 @@ class zulip::app_frontend_once {
     minute => '22',
   }
 
+  # Weekly
+  zulip::cron { 'update-channel-recently-active-status':
+    hour   => '5',
+    minute => '0',
+    dow    => '0',
+    manage => 'update_channel_recently_active_status',
+  }
+
 }

@@ -1,15 +1,13 @@
-<form id="create_bot_form" class="new-style">
+<form id="create_bot_form">
     <div class="new-bot-form">
         <div class="input-group">
-            <label for="bot_type" class="modal-field-label hideable">
+            <label for="create_bot_type" class="modal-field-label hideable">
                 {{t "Bot type" }}
                 {{> ../help_link_widget link="/help/bots-overview#bot-type" }}
             </label>
             <select name="bot_type" id="create_bot_type" class="modal_select bootstrap-focus-style hideable">
                 {{#each bot_types}}
-                    {{#if this.allowed}}
                     <option value="{{this.type_id}}">{{this.name}}</option>
-                    {{/if}}
                 {{/each}}
             </select>
         </div>
@@ -28,9 +26,10 @@
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
         </div>
         <div class="input-group">
-            <label for="bot_short_name" class="modal-field-label hideable">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
-            <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part modal_text_input hideable"
-              placeholder="{{t 'cookie' }}" value="" /> <span id="bot-domain" class="hideable">-bot@{{ realm_bot_domain }}</span>
+            <label for="create_bot_short_name" class="modal-field-label">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
+            <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part modal_text_input"
+              placeholder="{{t 'cookie' }}" value="" />
+            -bot@{{ realm_bot_domain }}
             <div>
                 <label for="create_bot_short_name" generated="true" class="text-error"></label>
             </div>
@@ -66,14 +65,14 @@
                 <img id="add_bot_preview_image" />
             </div>
             <div id="image_editor">
-                <button class="modal__btn image_clear" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+                <button type="button" class="modal__btn image_clear" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
                 <div>
-                    <button class="modal__btn image_save" id="bot_avatar_scale_to_fit_button">{{t "Scale to fit" }}</button>
-                    <button class="modal__btn image_save" id="bot_avatar_reset_button">{{t "Reset scale" }}</button>
-                    <button class="modal__btn image_save" id="bot_avatar_save_button">{{t "Save changes" }}</button>
+                    <button type="button" class="modal__btn image_save" id="bot_avatar_scale_to_fit_button">{{t "Scale to fit" }}</button>
+                    <button type="button" class="modal__btn image_save" id="bot_avatar_reset_button">{{t "Reset scale" }}</button>
+                    <button type="button" class="modal__btn image_save" id="bot_avatar_save_button">{{t "Save changes" }}</button>
                 </div>
             </div>
-            <button class="button white rounded hideable" id="bot_avatar_upload_button">{{t "Choose avatar" }}</button> <span id="optional_text" class="hideable">({{t "Optional" }})</span>
+            <button type="button" class="button white rounded hideable" id="bot_avatar_upload_button">{{t "Choose avatar" }}</button> <span id="optional_text" class="hideable">({{t "Optional" }})</span>
         </div>
         <p>
             <div id="bot_avatar_file_input_error" class="text-error"></div>

@@ -4,48 +4,49 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
 
-import * as typeahead from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
-import * as blueslip from "./blueslip";
-import * as buddy_data from "./buddy_data";
-import * as compose_closed_ui from "./compose_closed_ui";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget} from "./dropdown_widget";
-import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
-import * as list_widget from "./list_widget";
-import type {ListWidget} from "./list_widget";
-import * as loading from "./loading";
-import {localstorage} from "./localstorage";
-import type {MessageListData} from "./message_list_data";
-import * as message_store from "./message_store";
-import type {DisplayRecipientUser, Message} from "./message_store";
-import * as message_util from "./message_util";
-import * as muted_users from "./muted_users";
-import * as onboarding_steps from "./onboarding_steps";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as recent_senders from "./recent_senders";
-import * as recent_view_data from "./recent_view_data";
-import type {ConversationData} from "./recent_view_data";
-import * as recent_view_util from "./recent_view_util";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import * as timerender from "./timerender";
-import * as ui_util from "./ui_util";
-import * as unread from "./unread";
-import {user_settings} from "./user_settings";
-import * as user_status from "./user_status";
-import * as user_topics from "./user_topics";
-import * as util from "./util";
-import * as views_util from "./views_util";
+import * as activity from "./activity.ts";
+import * as blueslip from "./blueslip.ts";
+import * as buddy_data from "./buddy_data.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as list_widget from "./list_widget.ts";
+import type {ListWidget} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import {localstorage} from "./localstorage.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_store from "./message_store.ts";
+import type {DisplayRecipientUser, Message} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as muted_users from "./muted_users.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as recent_view_data from "./recent_view_data.ts";
+import type {ConversationData} from "./recent_view_data.ts";
+import * as recent_view_util from "./recent_view_util.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
+import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
+import * as user_status from "./user_status.ts";
+import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
+import * as views_util from "./views_util.ts";
 
 type Row = {
     last_msg_id: number;
@@ -57,7 +58,7 @@ let filters_dropdown_widget: dropdown_widget.DropdownWidget;
 export let is_backfill_in_progress = false;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
-const MAX_AVATAR = 4;
+let max_avatars = 4;
 const MAX_EXTRA_SENDERS = 10;
 
 // Use this to set the focused element.
@@ -76,7 +77,7 @@ export let $current_focus_elem: JQuery | "table" = "table";
 // If user clicks a topic in Recent Conversations, then
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
-let last_visited_topic = "";
+let last_visited_topic: string | undefined;
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -196,7 +197,7 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     // We might be loading messages in another narrow before the recent view
     // is shown, so we keep the state updated and update the banner only
     // once it's actually rendered.
-    if ($("#recent-view-content-tbody tr").length) {
+    if ($("#recent-view-content-tbody tr").length > 0) {
         update_load_more_banner();
     }
 }
@@ -339,24 +340,20 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         }
     }
 
-    // TODO: This fake "message" object is designed to allow using the
-    // get_recipient_label helper inside compose_closed_ui. Surely
-    // there's a more readable way to write this code.
-    // Similar code is present in Inbox.
-    let message;
+    let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     if (type === "private") {
-        message = {
+        reply_recipient_information = {
             display_reply_to: $topic_row.find(".recent_topic_name a").text(),
         };
     } else {
         const stream_name = $topic_row.find(".recent_topic_stream a").text();
         const stream = stream_data.get_sub_by_name(stream_name);
-        message = {
+        reply_recipient_information = {
             stream_id: stream?.stream_id,
             topic: $topic_row.find(".recent_topic_name a").text(),
         };
     }
-    compose_closed_ui.update_reply_recipient_label(message);
+    compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
     return true;
 }
 
@@ -369,6 +366,12 @@ export function get_focused_row_message(): Message | undefined {
 
         const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row_focus);
+        if ($topic_row.length === 0) {
+            // There are less items in the table than `row_focus`.
+            // We don't reset `row_focus` here since that is not the
+            // purpose of this function.
+            return undefined;
+        }
         const topic_id = $topic_row.attr("id");
         assert(topic_id !== undefined);
         const conversation_id = topic_id.slice(recent_conversation_key_prefix.length);
@@ -404,7 +407,7 @@ export function revive_current_focus(): boolean {
 
     if (is_table_focused()) {
         assert(topics_widget !== undefined);
-        if (last_visited_topic) {
+        if (last_visited_topic !== undefined) {
             // If the only message in the topic was deleted,
             // then the topic will not be in Recent Conversations data.
             if (recent_view_data.conversations.get(last_visited_topic) !== undefined) {
@@ -415,11 +418,11 @@ export function revive_current_focus(): boolean {
                 const last_visited_topic_index = current_list.findIndex(
                     (topic) => topic.last_msg_id === topic_last_msg_id,
                 );
-                if (last_visited_topic_index >= 0) {
+                if (last_visited_topic_index !== -1) {
                     row_focus = last_visited_topic_index;
                 }
             }
-            last_visited_topic = "";
+            last_visited_topic = undefined;
         }
         set_table_focus(row_focus, col_focus);
         return true;
@@ -443,10 +446,12 @@ export function revive_current_focus(): boolean {
 }
 
 export function show_loading_indicator(): void {
+    $("#recent-view-content-table").hide();
     loading.make_indicator($("#recent_view_loading_messages_indicator"));
 }
 
 export function hide_loading_indicator(): void {
+    $("#recent-view-content-table").show();
     $("#recent_view_bottom_whitespace").hide();
     loading.destroy_indicator($("#recent_view_loading_messages_indicator"));
 }
@@ -494,11 +499,7 @@ function message_to_conversation_unread_count(msg: Message): number {
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
 }
 
-export function get_pm_tooltip_data(user_ids_string: string): {
-    first_line: string;
-    second_line: string;
-    third_line?: string;
-} {
+export function get_pm_tooltip_data(user_ids_string: string): buddy_data.TitleData {
     const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
 
@@ -514,6 +515,7 @@ export function get_pm_tooltip_data(user_ids_string: string): {
             return {
                 first_line: person.full_name,
                 second_line: bot_owner_name,
+                third_line: "",
             };
         }
 
@@ -532,6 +534,52 @@ export function get_pm_tooltip_data(user_ids_string: string): {
         first_line: last_seen,
         second_line: "",
         third_line: "",
+    };
+}
+
+type AvatarsContext = {
+    senders: people.SenderInfo[];
+    other_sender_names_html: string;
+    other_senders_count: number;
+};
+
+function get_avatars_context(all_senders: number[]): AvatarsContext {
+    // Show the all avatars rather than `max_avatars` + 1.
+    const max_space_for_avatars = max_avatars + 1;
+    if (all_senders.length <= max_space_for_avatars) {
+        return {
+            senders: people.sender_info_for_recent_view_row(all_senders),
+            other_sender_names_html: "",
+            other_senders_count: 0,
+        };
+    }
+    const senders = all_senders.slice(-max_avatars);
+    const extra_sender_ids = all_senders.slice(0, -max_avatars);
+    const displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
+    const other_senders_count = Math.max(0, all_senders.length - max_avatars);
+    // Collect extra sender fullname for tooltip
+    const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
+    if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
+        // We display only 10 extra senders in tooltips,
+        // and just display remaining number of senders.
+        const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
+        // Pluralization syntax from:
+        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
+        displayed_other_names.push(
+            $t(
+                {
+                    defaultMessage:
+                        "and {remaining_senders, plural, one {1 other} other {# others}}.",
+                },
+                {remaining_senders},
+            ),
+        );
+    }
+
+    return {
+        senders: people.sender_info_for_recent_view_row(senders),
+        other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
+        other_senders_count,
     };
 }
 
@@ -555,6 +603,7 @@ type ConversationContext = {
           is_group: boolean;
           is_bot: boolean;
           user_circle_class: string | undefined;
+          has_unread_mention: boolean;
       }
     | {
           is_private: false;
@@ -564,7 +613,10 @@ type ConversationContext = {
           stream_url: string;
           invite_only: boolean;
           is_web_public: boolean;
+          is_archived: boolean;
           topic: string;
+          topic_display_name: string;
+          is_empty_string_topic: boolean;
           topic_url: string;
           mention_in_unread: boolean;
           visibility_policy: number | false;
@@ -588,9 +640,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     const last_msg_time = timerender.relative_time_string_from_date(time);
     const is_private = last_msg.type === "private";
     let all_senders;
-    let senders;
-    let displayed_other_senders;
-    let extra_sender_ids;
 
     let stream_context;
     let dm_context;
@@ -604,9 +653,12 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const stream_url = hash_util.by_stream_url(stream_id);
         const invite_only = stream_info.invite_only;
         const is_web_public = stream_info.is_web_public;
+        const is_archived = stream_info.is_archived;
         // Topic info
         const topic = last_msg.topic;
-        const topic_url = hash_util.by_stream_topic_url(stream_id, topic);
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        const is_empty_string_topic = topic === "";
+        const topic_url = hash_util.by_channel_topic_permalink(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
         // We only supply the data to the topic rows and let jquery
@@ -623,11 +675,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // we provide our handlebars with senders in opposite order.
         // Display in most recent sender first order.
         all_senders = recent_senders.get_topic_recent_senders(stream_id, topic).reverse();
-        senders = all_senders.slice(-MAX_AVATAR);
-
-        // Collect extra sender fullname for tooltip
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
 
         stream_context = {
             stream_id,
@@ -636,7 +683,10 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             stream_url,
             invite_only,
             is_web_public,
+            is_archived,
             topic,
+            topic_display_name,
+            is_empty_string_topic,
             topic_url,
             mention_in_unread,
             visibility_policy,
@@ -657,22 +707,24 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                     status_emoji_info: user_status.get_status_emoji(user.id),
                 }),
             )
-            .sort()
-            .join(", ");
+            .sort();
         const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
+        const has_unread_mention =
+            unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
         let is_bot = false;
         let user_circle_class;
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
+            const is_deactivated = !people.is_active_user_for_popover(user_id);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
-                user_circle_class = buddy_data.get_user_circle_class(user_id);
+                user_circle_class = buddy_data.get_user_circle_class(user_id, is_deactivated);
             }
         }
 
@@ -685,40 +737,17 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // styling, but it's important to not destroy the information of "who's actually
         // talked".
         all_senders = recent_senders.get_pm_recent_senders(user_ids_string).participants.reverse();
-        senders = all_senders.slice(-MAX_AVATAR);
-        // Collect extra senders fullname for tooltip.
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with,
+            rendered_pm_with: util.format_array_as_list(rendered_pm_with, "long", "conjunction"),
             recipient_id,
             pm_url,
             is_group,
             is_bot,
             user_circle_class,
+            has_unread_mention,
         };
-    }
-
-    extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-    const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
-
-    if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
-        // We display only 10 extra senders in tooltips,
-        // and just display remaining number of senders.
-        const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
-        // Pluralization syntax from:
-        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
-        displayed_other_names.push(
-            $t(
-                {
-                    defaultMessage:
-                        "and {remaining_senders, plural, one {1 other} other {# others}}.",
-                },
-                {remaining_senders},
-            ),
-        );
     }
 
     const shared_context = {
@@ -726,12 +755,10 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         conversation_key,
         unread_count,
         last_msg_time,
-        senders: people.sender_info_for_recent_view_row(senders),
-        other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
-        other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
         last_msg_url: hash_util.by_conversation_and_time_url(last_msg),
         is_spectator: page_params.is_spectator,
         column_indexes: COLUMNS,
+        ...get_avatars_context(all_senders),
     };
     if (is_private) {
         assert(dm_context !== undefined);
@@ -782,7 +809,8 @@ export function topic_in_search_results(
     if (keyword === "") {
         return true;
     }
-    const text = (stream_name + " " + topic).toLowerCase();
+    const topic_display_name = util.get_final_topic_display_name(topic);
+    const text = (stream_name + " " + topic_display_name).toLowerCase();
     return typeahead.query_matches_string_in_any_order(keyword, text, " ");
 }
 
@@ -923,14 +951,20 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // we ensure the list remains sorted after insertion.
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
-    for (const key of row_keys) {
-        inplace_rerender(key, true);
+    // Iterate in the order of which the rows should be present so that
+    // we are not inserting rows without any rows being present around them.
+    for (const topic_data of topics_widget.get_rendered_list()) {
+        const msg = message_store.get(topic_data.last_msg_id);
+        assert(msg !== undefined);
+        const topic_key = recent_view_util.get_key_from_message(msg);
+        if (row_keys.includes(topic_key)) {
+            inplace_rerender(topic_key, true);
+        }
     }
-
     setTimeout(revive_current_focus, 0);
 }
 
-export function inplace_rerender(topic_key: string, is_bulk_rerender?: boolean): boolean {
+export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
     if (!recent_view_util.is_visible()) {
         return false;
     }
@@ -990,6 +1024,10 @@ export function inplace_rerender(topic_key: string, is_bulk_rerender?: boolean):
         setTimeout(revive_current_focus, 0);
     }
     return true;
+};
+
+export function rewire_inplace_rerender(value: typeof inplace_rerender): void {
+    inplace_rerender = value;
 }
 
 export function update_topic_visibility_policy(stream_id: number, topic: string): boolean {
@@ -1012,7 +1050,7 @@ export function update_topic_unread_count(message: Message): void {
 export function set_filter(filter: string): void {
     // This function updates the `filters` variable
     // after user clicks on one of the filter buttons
-    // based on `btn-recent-selected` class and current
+    // based on `button-recent-selected` class and current
     // set `filters`.
 
     // Get the button which was clicked.
@@ -1020,7 +1058,7 @@ export function set_filter(filter: string): void {
         `[data-filter="${CSS.escape(filter)}"]`,
     );
 
-    if ($filter_elem.hasClass("btn-recent-selected")) {
+    if ($filter_elem.hasClass("button-recent-selected")) {
         filters.delete(filter);
         // If the button was not selected, we add the filter.
     } else {
@@ -1031,12 +1069,12 @@ export function set_filter(filter: string): void {
 }
 
 function show_selected_filters(): void {
-    // Add `btn-selected-filter` to the buttons to show
+    // Add `button-recent-selected` to the buttons to show
     // which filters are applied.
     for (const filter of filters) {
         $("#recent_view_filter_buttons")
             .find(`[data-filter="${CSS.escape(filter)}"]`)
-            .addClass("btn-recent-selected")
+            .addClass("button-recent-selected")
             .attr("aria-checked", "true");
     }
 }
@@ -1278,6 +1316,10 @@ export function complete_rerender(): void {
         return;
     }
 
+    if (!page_params.is_node_test) {
+        max_avatars = Number.parseInt($("html").css("--recent-view-max-avatars"), 10);
+    }
+
     // Show topics list
     const mapped_topic_values = get_list_data_for_widget();
 
@@ -1336,6 +1378,30 @@ export function complete_rerender(): void {
         get_min_load_count,
     });
     setup_dropdown_filters_widget();
+}
+
+export function update_recent_view_rendered_time(): void {
+    if (activity.client_is_active || !recent_view_util.is_visible() || !topics_widget) {
+        return;
+    }
+
+    // Since we render relative time in recent view, it needs to be
+    // updated otherwise it will show stale time. But, we don't want
+    // to update it every minute due to performance reasons. So, we
+    // only update it when the user comes back from idle which has
+    // maximum chance of user seeing incorrect rendered time.
+    for (const conversation_data of topics_widget.get_rendered_list()) {
+        const last_msg = message_store.get(conversation_data.last_msg_id);
+        assert(last_msg !== undefined);
+        const time = new Date(last_msg.timestamp * 1000);
+        const updated_time = timerender.relative_time_string_from_date(time);
+        const $row = get_topic_row(conversation_data);
+        const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
+        if (updated_time === rendered_time) {
+            continue;
+        }
+        $row.find(".recent_topic_timestamp a").text(updated_time);
+    }
 }
 
 export function show(): void {
@@ -1430,7 +1496,7 @@ export function focus_clicked_element(
     row_focus = topic_row_index;
 
     if (col === COLUMNS.topic) {
-        last_visited_topic = topic_key ?? "";
+        last_visited_topic = topic_key ?? undefined;
     }
     // Set compose_closed_ui reply button text.  The rest of the table
     // focus logic should be a noop.
@@ -1561,13 +1627,13 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
 
             if (
                 post_tab_focus_elem.id === "recent_view_search" ||
-                post_tab_focus_elem.classList.contains("btn-recent-filters") ||
+                post_tab_focus_elem.classList.contains("button-recent-filters") ||
                 post_tab_focus_elem.classList.contains("dropdown-widget-button")
             ) {
                 $current_focus_elem = $(post_tab_focus_elem);
             }
 
-            if ($(post_tab_focus_elem).parents("#recent-view-content-table").length) {
+            if ($(post_tab_focus_elem).parents("#recent-view-content-table").length > 0) {
                 $current_focus_elem = "table";
                 const topic_row_index = $(post_tab_focus_elem).closest("tr").index();
                 const col_index = $(post_tab_focus_elem)
@@ -1638,7 +1704,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("btn-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
+    } else if ($elt.hasClass("button-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -1737,7 +1803,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     }
     if ($current_focus_elem !== "table" && input_key !== "escape") {
         $current_focus_elem.trigger("focus");
-        if ($current_focus_elem.hasClass("btn-recent-filters")) {
+        if ($current_focus_elem.hasClass("button-recent-filters")) {
             compose_closed_ui.set_standard_text_for_reply_button();
         }
         return true;
@@ -1828,7 +1894,7 @@ export function initialize({
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
-    $("body").on("click", ".btn-recent-filters", (e) => {
+    $("body").on("click", ".button-recent-filters", (e) => {
         e.stopPropagation();
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.
@@ -1917,4 +1983,5 @@ export function initialize({
             revive_current_focus();
         }
     });
+    $(window).on("focus", update_recent_view_rendered_time);
 }

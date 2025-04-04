@@ -3,11 +3,12 @@ import assert from "minimalistic-assert";
 
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
-import * as ListWidget from "./list_widget";
-import * as scroll_util from "./scroll_util";
-import * as settings_config from "./settings_config";
-import * as user_topics from "./user_topics";
-import type {UserTopic} from "./user_topics";
+import * as ListWidget from "./list_widget.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_config from "./settings_config.ts";
+import * as user_topics from "./user_topics.ts";
+import type {UserTopic} from "./user_topics.ts";
+import * as util from "./util.ts";
 
 export let loaded = false;
 
@@ -31,6 +32,8 @@ export function populate_list(): void {
         modifier_html(user_topic) {
             const context = {
                 user_topic,
+                topic_display_name: util.get_final_topic_display_name(user_topic.topic),
+                is_empty_string_topic: user_topic.topic === "",
                 user_topic_visibility_policy_values:
                     settings_config.user_topic_visibility_policy_values,
             };
@@ -39,7 +42,8 @@ export function populate_list(): void {
         filter: {
             $element: $search_input,
             predicate(item, value) {
-                return item.topic.toLocaleLowerCase().includes(value);
+                const topic_display_name = util.get_final_topic_display_name(item.topic);
+                return topic_display_name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
                 scroll_util.reset_scrollbar(

@@ -1,7 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import type {Message} from "./message_store";
+import {electron_bridge} from "./electron_bridge.ts";
+import type {Message} from "./message_store.ts";
 
 type NoticeMemory = Map<
     string,
@@ -21,7 +22,7 @@ export function set_notification_api(n: typeof NotificationAPI): void {
     NotificationAPI = n;
 }
 
-class ElectronBridgeNotification extends EventTarget {
+export class ElectronBridgeNotification extends EventTarget {
     title: string;
     dir: NotificationDirection;
     lang: string;
@@ -33,8 +34,8 @@ class ElectronBridgeNotification extends EventTarget {
 
     constructor(title: string, options: NotificationOptions) {
         super();
-        assert(window.electron_bridge?.new_notification !== undefined);
-        const notification_data = window.electron_bridge.new_notification(
+        assert(electron_bridge?.new_notification !== undefined);
+        const notification_data = electron_bridge.new_notification(
             title,
             options,
             (type, eventInit) => this.dispatchEvent(new Event(type, eventInit)),
@@ -63,7 +64,7 @@ class ElectronBridgeNotification extends EventTarget {
     }
 }
 
-if (window.electron_bridge?.new_notification) {
+if (electron_bridge?.new_notification) {
     NotificationAPI = ElectronBridgeNotification;
 } else if (window.Notification) {
     NotificationAPI = window.Notification;
@@ -104,8 +105,11 @@ export function granted_desktop_notifications_permission(): boolean {
     return NotificationAPI?.permission === "granted";
 }
 
-export function request_desktop_notifications_permission(): void {
+export async function request_desktop_notifications_permission(): Promise<NotificationPermission> {
     if (NotificationAPI) {
-        void NotificationAPI.requestPermission();
+        return await NotificationAPI.requestPermission();
     }
+    // Act like notifications are blocked if they do not have access to
+    // the notification API.
+    return "denied";
 }

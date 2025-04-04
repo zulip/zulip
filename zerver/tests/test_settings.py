@@ -10,7 +10,6 @@ from django.test import override_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
-from zerver.lib.users import get_all_api_keys
 from zerver.models import Draft, ScheduledMessageNotificationEmail, UserProfile
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_api_key
@@ -125,6 +124,14 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login("hamlet")
 
+        # Make sure unicode works
+        json_result = self.client_patch("/json/settings", dict(full_name="BLÅHAJ"))
+        self.assert_json_success(json_result)
+
+        # Make sure zero-width-joiners work
+        json_result = self.client_patch("/json/settings", dict(full_name="BLÅHAJ 🏳️‍⚧️"))
+        self.assert_json_success(json_result)
+
         # Now try a name with invalid characters
         json_result = self.client_patch("/json/settings", dict(full_name="Opheli*"))
         self.assert_json_error(json_result, "Invalid characters in name!")
@@ -218,12 +225,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_toggling_boolean_user_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
         boolean_settings = (
-            s
-            for s in UserProfile.property_types
-            if UserProfile.property_types[s] is bool
-            # Dense mode can't be toggled without changing other settings too.
-            # This setting is tested in test_changing_information_density_settings.
-            and s not in ["dense_mode"]
+            s for s in UserProfile.property_types if UserProfile.property_types[s] is bool
         )
         for user_setting in boolean_settings:
             self.check_for_toggle_param_patch("/json/settings", user_setting)
@@ -488,6 +490,14 @@ class ChangeSettingsTest(ZulipTestCase):
                 getattr(hamlet, invalid_value["setting_name"]), invalid_value["value"]
             )
 
+    def test_change_timezone_montreal(self) -> None:
+        self.login("hamlet")
+        data = {"timezone": "America/Montreal"}
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.timezone, "America/Toronto")
+
     def do_change_emojiset(self, emojiset: str) -> "TestHttpResponse":
         self.login("hamlet")
         data = {"emojiset": emojiset}
@@ -559,97 +569,38 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_changing_information_density_settings(self) -> None:
         hamlet = self.example_user("hamlet")
-        hamlet.dense_mode = True
         hamlet.web_font_size_px = 14
         hamlet.web_line_height_percent = 122
         hamlet.save()
         self.login("hamlet")
 
-        data: dict[str, str | int] = {"web_font_size_px": 16}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
-        )
-
-        data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
+        data = {
+            "web_font_size_px": 16,
+        }
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_font_size_px, 16)
-        self.assertEqual(hamlet.dense_mode, False)
 
         data = {"web_font_size_px": 20}
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_font_size_px, 20)
-        self.assertEqual(hamlet.dense_mode, False)
-
-        # Check dense_mode is still false when both the
-        # settings are set to legacy values.
-        data = {"web_font_size_px": 14}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_success(result)
-        hamlet = self.example_user("hamlet")
-        self.assertEqual(hamlet.web_font_size_px, 14)
-        self.assertEqual(hamlet.web_line_height_percent, 122)
-        self.assertEqual(hamlet.dense_mode, False)
-
-        data = {"dense_mode": orjson.dumps(True).decode()}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_success(result)
-        hamlet = self.example_user("hamlet")
-        self.assertEqual(hamlet.web_font_size_px, 14)
-        self.assertEqual(hamlet.dense_mode, True)
 
         data = {"web_line_height_percent": 140}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
-        )
-
-        data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_line_height_percent, 140)
-        self.assertEqual(hamlet.dense_mode, False)
 
         data = {"web_line_height_percent": 130}
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_line_height_percent, 130)
-        self.assertEqual(hamlet.dense_mode, False)
-
-        # Check dense_mode is still false when both the
-        # settings are set to legacy values.
-        data = {"web_line_height_percent": 122}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_success(result)
-        hamlet = self.example_user("hamlet")
-        self.assertEqual(hamlet.web_font_size_px, 14)
-        self.assertEqual(hamlet.web_line_height_percent, 122)
-        self.assertEqual(hamlet.dense_mode, False)
-
-        data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
-        )
-
-        data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
-        )
 
         data = {
-            "dense_mode": orjson.dumps(True).decode(),
             "web_font_size_px": 14,
             "web_line_height_percent": 122,
         }
@@ -658,7 +609,6 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_font_size_px, 14)
         self.assertEqual(hamlet.web_line_height_percent, 122)
-        self.assertEqual(hamlet.dense_mode, True)
 
 
 class UserChangesTest(ZulipTestCase):
@@ -667,11 +617,9 @@ class UserChangesTest(ZulipTestCase):
         email = user.email
 
         self.login_user(user)
-        old_api_keys = get_all_api_keys(user)
-        # Ensure the old API keys are in the authentication cache, so
+        # Ensure the old API key is in the authentication cache, so
         # that the below logic can test whether we have a cache-flushing bug.
-        for api_key in old_api_keys:
-            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
+        self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
 
         # First verify this endpoint is not registered in the /json/... path
         # to prevent access with only a session.
@@ -683,19 +631,17 @@ class UserChangesTest(ZulipTestCase):
         result = self.client_post("/api/v1/users/me/api_key/regenerate")
         self.assertEqual(result.status_code, 401)
 
+        old_api_key = user.api_key
         result = self.api_post(user, "/api/v1/users/me/api_key/regenerate")
         new_api_key = self.assert_json_success(result)["api_key"]
-        self.assertNotIn(new_api_key, old_api_keys)
+        self.assertNotEqual(new_api_key, old_api_key)
         user = self.example_user("hamlet")
-        current_api_keys = get_all_api_keys(user)
-        self.assertIn(new_api_key, current_api_keys)
+        self.assertEqual(new_api_key, user.api_key)
 
-        for api_key in old_api_keys:
-            with self.assertRaises(UserProfile.DoesNotExist):
-                get_user_profile_by_api_key(api_key)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_profile_by_api_key(old_api_key)
 
-        for api_key in current_api_keys:
-            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
+        self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
 
 
 class UserDraftSettingsTests(ZulipTestCase):

@@ -12,6 +12,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
     "zerver/lib/topic_sqlalchemy.py",
+    # This is tied to legacy events.
+    "zerver/lib/event_types.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
@@ -35,6 +37,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This has lots of query data embedded, so it's hard
     # to fix everything until we migrate the DB to "topic".
     "zerver/tests/test_message_fetch.py",
+    "zerver/tests/test_message_topics.py",
 }
 
 shebang_rules: list["Rule"] = [
@@ -111,13 +114,13 @@ markdown_whitespace_rules: list["Rule"] = [
 
 
 js_rules = RuleList(
-    langs=["js", "ts"],
+    langs=["cjs", "js", "ts"],
     rules=[
         {
             "pattern": "subject|SUBJECT",
             "exclude": {
                 "web/src/message_store.ts",
-                "web/src/types.ts",
+                "web/src/server_event_types.ts",
                 "web/src/util.ts",
                 "web/src/message_events_util.ts",
                 "web/src/message_helper.ts",
@@ -160,12 +163,6 @@ js_rules = RuleList(
             "exclude": {
                 "web/tests/",
                 "web/src/billing/",
-            },
-            "exclude_line": {
-                (
-                    "web/src/common.ts",
-                    '$(this).before($("<kbd>").text("Fn"), $("<span>").text(" + ").contents());',
-                ),
             },
         },
         {
@@ -213,7 +210,7 @@ js_rules = RuleList(
             "exclude_pattern": r"(const |\S)style ?=",
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
-                "web/tests/copy_and_paste.test.js",
+                "web/tests/compose_paste.test.cjs",
             },
             "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
@@ -228,6 +225,11 @@ js_rules = RuleList(
         {
             "pattern": r"allowHTML|(?i:data-tippy-allowHTML)",
             "description": "Never use Tippy.js allowHTML; for an HTML tooltip, get a DocumentFragment with ui_util.parse_html.",
+        },
+        {
+            "pattern": r"\.rewire_",
+            "description": "Never call rewire_* functions directly. Use override_rewire.",
+            "include_only": {"web/tests/"},
         },
         *whitespace_rules,
     ],
@@ -245,6 +247,12 @@ python_rules = RuleList(
             "exclude": FILES_WITH_LEGACY_SUBJECT,
             "exclude_line": {
                 ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+                ("zerver/views/streams.py", "message__subject__iexact=topic_name,"),
+                ("zerver/lib/message_cache.py", 'and obj["subject"] == ""'),
+                (
+                    "zerver/lib/message_cache.py",
+                    'obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME',
+                ),
             },
             "include_only": {
                 "zerver/data_import/",
@@ -355,10 +363,6 @@ python_rules = RuleList(
             "description": "Argument to JsonableError should be a literal string enclosed by _()",
         },
         {
-            "pattern": r"""([a-zA-Z0-9_]+)=REQ\(['"]\1['"]""",
-            "description": "REQ's first argument already defaults to parameter name",
-        },
-        {
             "pattern": r"self\.client\.(get|post|patch|put|delete)",
             "description": """Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
@@ -382,11 +386,6 @@ python_rules = RuleList(
         {
             "pattern": "get_stream[(]",
             "include_only": {"zerver/views/", "zerver/actions/"},
-            "exclude_line": {
-                # This one in check_message is kinda terrible, since it's
-                # how most instances are written, but better to exclude something than nothing
-                ("zerver/actions/message_send.py", "stream = get_stream(stream_name, realm)"),
-            },
             "description": "Please use access_stream_by_*() to fetch Stream objects",
         },
         {
@@ -472,8 +471,23 @@ python_rules = RuleList(
             "description": 'A mock function is missing a leading "assert_"',
         },
         {
-            "pattern": "@transaction.atomic\\(\\)",
-            "description": "Use @transaction.atomic as function decorator for consistency.",
+            "pattern": r"transaction\.atomic$|transaction\.atomic\(\)|savepoint=True",
+            "description": "Use 'durable=True' or 'savepoint=False' argument explicitly to avoid the possibility of creating savepoints.",
+            "exclude": {"confirmation/migrations/", "zerver/migrations/", "zilencer/migrations/"},
+            "exclude_line": {
+                (
+                    "zerver/actions/create_user.py",
+                    "with suppress(IntegrityError), transaction.atomic(savepoint=True):",
+                ),
+                (
+                    "zerver/lib/test_classes.py",
+                    "with transaction.atomic(savepoint=True):",
+                ),
+                (
+                    "zerver/tests/test_subs.py",
+                    "with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):",
+                ),
+            },
         },
         *whitespace_rules,
         *shebang_rules,

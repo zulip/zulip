@@ -32,6 +32,10 @@
 * [Create drafts](/api/create-drafts)
 * [Edit a draft](/api/edit-draft)
 * [Delete a draft](/api/delete-draft)
+* [Get all saved snippets](/api/get-saved-snippets)
+* [Create a saved snippet](/api/create-saved-snippet)
+* [Edit a saved snippet](/api/edit-saved-snippet)
+* [Delete a saved snippet](/api/delete-saved-snippet)
 
 #### Channels
 
@@ -63,12 +67,14 @@
 * [Get all users](/api/get-users)
 * [Create a user](/api/create-user)
 * [Update a user](/api/update-user)
+* [Update a user by email](/api/update-user-by-email)
 * [Deactivate a user](/api/deactivate-user)
 * [Deactivate own user](/api/deactivate-own-user)
 * [Reactivate a user](/api/reactivate-user)
 * [Get a user's status](/api/get-user-status)
 * [Update your status](/api/update-status)
 * [Set "typing" status](/api/set-typing-status)
+* [Set "typing" status for message editing](/api/set-typing-status-for-message-edit)
 * [Get a user's presence](/api/get-user-presence)
 * [Get presence of all users](/api/get-presence)
 * [Update your presence](/api/update-presence)
@@ -78,7 +84,7 @@
 * [Get user groups](/api/get-user-groups)
 * [Create a user group](/api/create-user-group)
 * [Update a user group](/api/update-user-group)
-* [Delete a user group](/api/remove-user-group)
+* [Deactivate a user group](/api/deactivate-user-group)
 * [Update user group members](/api/update-user-group-members)
 * [Update subgroups of a user group](/api/update-user-group-subgroups)
 * [Get user group membership status](/api/get-is-user-group-member)
@@ -116,8 +122,9 @@
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
-* [Get all public data exports](/api/get-realm-exports)
-* [Create a public data export](/api/export-realm)
+* [Get all data exports](/api/get-realm-exports)
+* [Create a data export](/api/export-realm)
+* [Get data export consent state](/api/get-realm-export-consents)
 
 #### Real-time events
 

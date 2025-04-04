@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-Zulip allows you to separately control [permissions](/help/roles-and-permissions)
+Zulip allows you to separately control [permissions](/help/manage-permissions)
 for creating [web-public](/help/public-access-option), public and private
 channels.
 
@@ -48,5 +48,7 @@ unadvertised web-public channel in a legitimate organization.
 
 ## Related articles
 
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
 * [Create a channel](/help/create-a-channel)
-* [Roles and permissions](/help/roles-and-permissions)
+* [Introduction to channels](/help/introduction-to-channels)

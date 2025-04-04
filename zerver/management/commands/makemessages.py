@@ -34,13 +34,13 @@ https://stackoverflow.com/questions/2090717
 
 import glob
 import itertools
-import json
 import os
 import re
 import subprocess
 from collections.abc import Collection, Iterator, Mapping
 from typing import Any
 
+import orjson
 from django.core.management.base import CommandParser
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
@@ -215,7 +215,7 @@ class Command(makemessages.Command):
                 "web/src/**/*.ts",
             ]
         )
-        translation_strings.extend(json.loads(extracted).values())
+        translation_strings.extend(orjson.loads(extracted).values())
 
         return list(set(translation_strings))
 
@@ -276,11 +276,18 @@ class Command(makemessages.Command):
         for locale, output_path in zip(self.get_locales(), self.get_output_paths(), strict=False):
             self.stdout.write(f"[frontend] processing locale {locale}")
             try:
-                with open(output_path) as reader:
-                    old_strings = json.load(reader)
+                with open(output_path, "rb") as reader:
+                    old_strings = orjson.loads(reader.read())
             except (OSError, ValueError):
                 old_strings = {}
 
             new_strings = self.get_new_strings(old_strings, translation_strings, locale)
-            with open(output_path, "w") as writer:
-                json.dump(new_strings, writer, indent=2, sort_keys=True)
+            with open(output_path, "wb") as writer:
+                writer.write(
+                    orjson.dumps(
+                        new_strings,
+                        option=orjson.OPT_APPEND_NEWLINE
+                        | orjson.OPT_INDENT_2
+                        | orjson.OPT_SORT_KEYS,
+                    )
+                )

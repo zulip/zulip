@@ -5,8 +5,6 @@
     box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
     overflow: hidden;
 
-    transition: all 0.3s ease;
-
     .image-block {
         background-size: contain;
         height: 100%;
@@ -141,9 +139,12 @@
 }
 
 .user-avatar-section,
-.realm-logo-section,
 .realm-icon-section {
     margin: 20px 0;
+}
+
+.realm-logo-section {
+    margin: 0 0 20px;
 }
 
 /* CSS related to settings page user avatar upload widget only */
@@ -186,25 +187,26 @@
 }
 
 #realm-day-logo-upload-widget {
-    background-color: hsl(0deg 100% 100%);
+    /* Match to light-theme --color-background-navbar. */
+    background-color: hsl(0deg 0% 97%);
+    padding: 5px;
 }
 
 #realm-night-logo-upload-widget {
-    background-color: hsl(212deg 28% 18%);
-}
-
-.realm-logo-block {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 0 20px;
+    /* Match to dark-theme --color-background-navbar. */
+    background-color: hsl(0deg 0% 13%);
+    padding: 5px;
 }
 
 .realm-logo-group {
     display: flex;
-    justify-content: space-around;
     flex-wrap: wrap;
+    gap: 20px;
+
+    .image_upload_button {
+        top: 0;
+        left: 0;
+    }
 }
 
 /* CSS  related to upload widget's preview image */

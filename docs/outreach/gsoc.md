@@ -31,7 +31,7 @@ amazed at what you can accomplish.
 
 ## Focus areas
 
-For 2024, we are particularly interested in GSoC contributors who have
+For 2025, we are particularly interested in GSoC contributors who have
 strong skills at full-stack feature development, Typescript, visual design,
 HTML/CSS, Flutter, or performance optimization. So if you're an applicant with
 those skills and are looking for an organization to join, we'd love to
@@ -81,22 +81,18 @@ Django, TypeScript/JavaScript, and CSS.
   significant existing work to start from and polish, rather than
   projects that have not been seriously attempted previously.
 
-  Recent sweeps through the Zulip server and web app tracker have
-  identified about 100 open pull requests where a previous contributor
+  We maintain a [completion candidate label][completion-candidate]
+  for pull requests where a previous contributor
   (sometimes via GSoC!) did significant work towards something
   valuable, and there's significant feedback from maintainers, but the
   project was never finished, and requires significant further effort
-  from a new contributor in order to progress. These are tracked via
-  the [completion candidate label][completion-candidate]. One of our
+  from a new contributor in order to progress. One of our
   goals for this summer's GSoC is to complete many of these
   issues. Start by picking something that's interesting to you, and
   you feel you have the skills required to complete. Read the code and
-  the feedback, and then create your own PR for the issue. Remember to
-  carefully test your work (there may be problems that the reviewers
-  missed, or that were introduced by rebasing across other changes!),
-  and credit the original contributor [as documented in our commit
-  guidelines](../contributing/commit-discipline.md). We expect to have
-  a more detailed guide on this process available this Spring.
+  the feedback, and then create your own PR for the issue. See the [guide on
+  continuing unfinished work][continuing-work] for details.
+  175 or 350 hours; difficulty will vary.
   **Skills required**: Varies with project; a common skill will be
   good reading comprehension and organization/communication skills, to
   walk maintainers through how you resolved problems, addressed any
@@ -108,90 +104,14 @@ Django, TypeScript/JavaScript, and CSS.
   Experts: Tim Abbott and various others depending on project area
 
 [completion-candidate]: https://github.com/zulip/zulip/pulls?q=is%3Aopen+is%3Apr+label%3A%22completion+candidate%22
-
-- Help **migrate our JavaScript codebase to Typescript**. Zulip is in
-  the process of porting the main web app JavaScript codebase to
-  TypeScript; at present, about 40% of the project is written in
-  TypeScript. We've resolved most of the roadblocks to completing this
-  migration, so it's mostly a matter of carefully translating modules,
-  putting in the effort with preparatory commits to make it any
-  refactoring easy to verify. Our goal is to leave the resulting code
-  more readable than it was before, always test the module works after
-  the migration, and avoid introducing logic bugs during this large
-  refactor. [This topic in the Zulip development
-  community][typescript-migration] is a good place to coordinate work
-  on this project. Multiple students are possible; 175 or 350 hours;
-  difficult. **Skills required**: TypeScript and refactoring
-  expertise; we're specifically interested in students who are a type
-  theory nerd and are invested in writing types precisely (Often using
-  [Zod](https://zod.dev/) to parse and verify data received from the
-  server) and checking their work carefully.
-
-  Experts: Zixuan James Li, Evy Kassirer, Anders Kaseorg
-
-[typescript-migration]: https://chat.zulip.org/#narrow/channel/6-frontend/topic/typescript.20migration
-
-- Migrate server's Python codebase from the legacy
-  `@has_request_variables` decorator to the new `@typed_endpoint`
-  decorator, and update our contributor documentation to recommend the
-  new system. The `@typed_endpoint` framework uses [Pydantic
-  V2](https://docs.pydantic.dev/latest/) in order to better express
-  how we want to parse API requests and turn them into fully typed
-  Python objects. **Skills required**: A good understanding of the
-  Python 3 / mypy type system and Pydantic 2, and the ability to
-  efficiently read Python code and write clear, structured commits. No
-  prior Pydantic experience required, but please take the time to go
-  through the Pydantic upstream tutorials and skim all the existing
-  endpoints using `typed_endpoint` before doing your first Zulip
-  changes. A good first PR is to migrate a smaller views file to the new
-  framework; one commit per smaller file is likely to be a good
-  structure. See the last commits from [the new framework's main
-  PR](https://github.com/zulip/zulip/pull/26365) for examples of
-  well-written migration commits.
-
-  Expert: Zixuan James Li, Anders Kaseorg
-
-- Contribute to Zulip's [**migration to user groups for
-  permissions**][user-group-permissions]. This migration is intended to replace
-  every setting in Zulip that currently allows organizations to assign
-  permissions based on role (admin, moderator, etc.) with a setting based on
-  arbitrary "user groups", making it much more customizable. This is very
-  important for large organizations using Zulip, including businesses and
-  open-source projects. Much of the basic design, API structure, and scaffolding
-  is complete, but there is a lot of work that remains to complete this vision.
-  The project can likely support a couple students; there is considerable work
-  to be done on the settings UI, both for user groups and for channel and
-  organization-level settings, dozens of existing settings to migrate, and [many
-  new settings][organization-settings-label] that users have long requested that
-  we've delayed adding in order to avoid having to migrate them. 175 or 350
-  hours; moderate difficulty. **Skills required**: Python, JavaScript, and CSS.
-  Attention to detail around code reuse/duplication, thoughtful testing, and
-  splitting large migrations into reviewable chunks.
-
-  Experts: Sahil Batra
-
-- Improve the framework and UI in **Zulip's overlays for managing
-  channels and groups**. These two components have very parallel design
-  patterns and implementations (the groups one is quite new!). Coupled
-  with the user groups permissions migration, the goal of this project
-  is to make these important settings panels ergonomic for the large
-  number of new settings that we expect to migrate or add via the
-  groups migration. See the [user groups
-  settings][group-settings-issues] and [channel
-  settings][channel-settings-issues] area labels for starter projects.
-
-  Experts: Purushottam Tiwari, Sahil Batra
-
-[group-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A+settings+%28user+groups%29%22
-[channel-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+stream+settings%22
-[user-group-permissions]: https://github.com/zulip/zulip/issues/19525
-[organization-settings-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22
+[continuing-work]: ../contributing/continuing-unfinished-work.md
 
 - Migrate Zulip's **[direct message recipient data
   structures](https://github.com/zulip/zulip/issues/25713)** to a new
   model that enables personal settings associated with a direct
   message conversation, and add several settings (see the linked
-  issues) enabled by that infrastructure work. **Skills required**:
+  issues) enabled by that infrastructure work. 175 or 350
+  hours; fairly difficult. **Skills required**:
   This project will be deep Python 3/PostgreSQL work. Concretely,
   challenging parts of this project include thinking about races and
   database transactions, writing database migrations intended to be
@@ -199,6 +119,22 @@ Django, TypeScript/JavaScript, and CSS.
   verifying the indexes used by migrated database queries.
 
   Experts: Tim Abbott, Mateusz Mandera, Prakhar Pratyush
+
+- **Implement [channel
+  groups](https://github.com/zulip/zulip/issues/31972)** that simplify
+  administration of collections of related channels in
+  Zulip. Contributors interested in working on this should start with
+  studying Zulip's existing channel and group-based permissions
+  system, both UX and implementation, and doing some starter issues in
+  the settings area. 175 or 350 hours; medium difficulty.
+  **Skills required**: Ability to read and
+  understand a lot of code, as well web frontend work in
+  TypeScript/HTML/CSS, with a bit of Python server programming. We'll
+  be particularly interested in the ability to explain and reason
+  about complex logic and follow the existing UI patterns for group
+  settings and channel settings.
+
+  Experts: Sahil Batra, Shubham Padia
 
 - Add the core infrastructure for **topic-based permissions and settings**
   like [pinned topics](https://github.com/zulip/zulip/issues/19483)
@@ -209,7 +145,7 @@ Django, TypeScript/JavaScript, and CSS.
   intended to be run live at scale, and complex logic to handle moving
   messages correctly in the context of these settings, including
   significant changes to the Zulip API and API documentation.
-
+  175 or 350 hours; fairly difficult.
   **Skills required**: A high level of fluency with writing readable
   Python 3 and thinking about corner cases.
 
@@ -256,11 +192,49 @@ Django, TypeScript/JavaScript, and CSS.
 
 [redesign-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3Aredesign
 
-- **Optimize performance and scalability**, either for the web frontend or
-  the server. Zulip is already one of the faster web apps out there,
-  but we have a number of ideas for how to make it substantially
-  faster yet. This is likely a particularly challenging project to do
-  well, since there are a lot of subtle interactions to
+- **Improve type safety of node tests**. Rework Zulip's [automated
+  node tests](../testing/testing-with-node.md) to use objects that
+  consistently have the correct type. Currently, many tests use fake
+  message, user, or channel objects with only a handful of fields
+  relevant to the test. We've been working towards
+  `web/tests/lib/example_*`. A good starter project would be to try to
+  convert a small test module that currently does not use the
+  `make_user` type functions to do so. The [main TypeScript migration
+  thread](https://chat.zulip.org/#narrow/channel/6-frontend/topic/typescript.20migration/with/2085240)
+  is useful background reading, and
+  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend)
+  channel is a good place to start new topics while working on this
+  project. 175 or 350 hours; medium difficulty. **Skills required**:
+  TypeScript fluency, and the discipline
+  to write easily reviewed pull requests that often will include a
+  series of changes to clean up an individual test while you're
+  working on it.
+
+  Experts: Afeefuddin, Lalit
+
+- **Replace hundreds of `dict[str, Any]` types with modern
+  dataclasses**. While functionally efficient, `dataclasses` are more
+  readable, safe against typos, and have nice support for optimizing
+  them further using `__slots__`. A lot of Zulip server code was
+  written before dataclasses existed, and while a lot has been
+  converted naturally as part of other projects, we'd like to make a
+  focused push to replace the remaining ones. This project will
+  involve making dozens of small commits and PRs, each a clean
+  refactor converting a single type. Use [this
+  conversation](https://chat.zulip.org/#narrow/channel/3-backend/topic/migrating.20to.20dataclasses/near/2085283)
+  for discussion and coordination. **Skills required**. Solid
+  understanding of statically typed Python, and the discipline to
+  learn to write refactoring commits that are easy to integrate,
+  following our standard guidelines, because they convincingly don't
+  change any product behavior while improving type-safety.
+
+  Experts: Tim Abbott, Anders Kaseorg
+
+- **Optimize performance and scalability**, either for the web
+  frontend or the server. Zulip is already one of the faster web apps
+  out there, but we have a number of ideas for how to make it
+  substantially faster yet. This is likely a particularly challenging
+  project to do well, since there are a lot of subtle interactions to
   understand. 175 or 350 hours; difficult. **Skill recommended**:
   Strong debugging, communication, and code reading skills are most
   important here. JavaScript experience; some Python/Django
@@ -288,7 +262,7 @@ Django, TypeScript/JavaScript, and CSS.
   do careful manual testing of third-party products. Fluent English, usability
   sense and/or technical writing skills are all pluses.
 
-  Experts: Zixuan James Li, Lauryn Menard
+  Experts: Niloth, Lauryn Menard
 
 - **Make Zulip integrations easier for nontechnical users to set up**.
   This includes adding a backend permissions system for managing bot
@@ -310,7 +284,7 @@ Django, TypeScript/JavaScript, and CSS.
   has a bunch of good starter issues to demonstrate your skills if
   you're interested in this area.
 
-  Experts: Zixuan James Li, Lauryn Menard
+  Experts: Niloth, Lauryn Menard
 
   [all-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22%2C%22area%3A+settings+%28user%29%22%2C%22area%3A+stream+settings%22%2C%22area%3A+settings+UI%22
 
@@ -338,21 +312,35 @@ Django, TypeScript/JavaScript, and CSS.
 
 ### Terminal app
 
-Code: [Zulip Terminal](https://github.com/zulip/zulip-terminal)
+Code: [The official multi-platform terminal app, written in
+Python](https://github.com/zulip/zulip-terminal).
 
 Experts: Neil Pilgrim, Aman Agrawal
 
-- Work on Zulip Terminal, the official terminal client for Zulip. zulip-terminal
-  is out in beta, but there's still a lot to do for it to approach parity with
-  the web app. We would be happy to accept multiple strong students to work on
-  this project. 175 or 350 hours; medium difficulty. **Skills required**: Python
-  3 development skills, good communication and project management skills, good
-  at reading code and testing.
+- **Contribute to Zulip Terminal, our terminal user interface (TUI) client**.
+  Zulip Terminal is out in beta, but there's still a lot to do for it to
+  approach parity with the web app - and Zulip keeps coming out with new features too!
+
+  Previous contributors have themed their projects according to a **cluster of
+  features** or **completing unfinished projects**, or some combination, much
+  like the first two bullets in the Full-stack project list.
+  Project complexity and potential scope can vary substantially, since the
+  required changes can involve touching different parts of the application
+  stack. For example, these may be purely improving multiple elements of the UI,
+  platform/terminal, or client-side model of the data available to a user - or
+  multiple of these in a full-stack style.
+
+  We would be happy to accept multiple strong students to work on this project.
+  175 or 350 hours; medium difficulty.
+  **Skills required**: Python 3 development skills, good communication and
+  project management skills. Reading and understanding complex code and tests,
+  and taking the initiative to propose clean refactoring and other solutions,
+  will be highly valuable.
 
 ### Desktop app
 
 Code:
-[Our cross-platform desktop app written in JavaScript on
+[Our cross-platform desktop app, written in JavaScript on
 Electron](https://github.com/zulip/zulip-desktop).
 
 Expert: Anders Kaseorg
@@ -386,23 +374,23 @@ Code:
 written with Flutter](https://github.com/zulip/zulip-flutter)
 (now in beta)
 
-Experts: Greg Price, Chris Bobbe
+Experts: Greg Price, Chris Bobbe, Zixuan James Li
 
 - Work on the **upcoming Flutter-based Zulip client**.
-  We're in the midst of [rewriting Zulip's mobile app][flutter-why]
-  from scratch using Flutter, to replace the legacy React Native-based
-  app. The Flutter app [reached beta][flutter-beta] in
-  December 2023, we're working now toward a wider beta, and during the
-  GSoC 2024 period we expect to be working toward turning the beta
-  into a version we can roll out for all Zulip's mobile users.
+  Zulip has a freshly-written [new mobile app built on
+  Flutter][flutter-beta-post], which we're nearing the point of
+  rolling out to replace the legacy React Native-based app.
+  We'll be using this foundation to build much-anticipated features
+  that the Zulip mobile apps have never had before, as well as some
+  that the legacy app had but were skipped for the initial rollout.
 
   This project will involve building features for the Flutter app,
   including code for UI, data structures, and interacting with the
   Zulip server and the Android and/or iOS platforms.
   For a sense of the features we're working on, see our
   [project board][flutter-board] for the new app;
-  the ["Launch" milestone][flutter-milestone-launch]
-  corresponds roughly to what we expect to be working on during GSoC.
+  the tasks we'll be working on during GSoC will come mostly from
+  the ["M6: Post-launch" milestone][flutter-milestone-post-launch].
   For some features, we [may find][flutter-upstream-summary]
   ourselves [contributing changes][flutter-upstream-autocomplete]
   upstream to the Flutter project itself. 175 or 350 hours; difficult.
@@ -415,9 +403,8 @@ Experts: Greg Price, Chris Bobbe
   experience with Android or iOS may also be helpful but is not
   necessary.
 
-[flutter-why]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1582367
-[flutter-beta]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1708728
+[flutter-beta-post]: https://blog.zulip.com/2024/12/12/new-flutter-mobile-app-beta/
 [flutter-board]: https://github.com/orgs/zulip/projects/5/views/4
-[flutter-milestone-launch]: https://github.com/zulip/zulip-flutter/milestone/3
+[flutter-milestone-launch]: https://github.com/zulip/zulip-flutter/milestone/4
 [flutter-upstream-summary]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1524757
 [flutter-upstream-autocomplete]: https://github.com/flutter/flutter/pull/129802

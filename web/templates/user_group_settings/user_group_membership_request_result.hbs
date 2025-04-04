@@ -18,4 +18,22 @@
         {{/if}}
         <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
     {{/each}}
+    <br />
+{{/if}}
+{{#if already_added_subgroups}}
+    {{#each already_added_subgroups}}
+        {{#if @first}}
+        {{t "Already subgroups:" }}
+        {{/if}}
+        <a data-user-group-id="{{id}}" class="view_user_group">{{name}}</a>{{#unless @last}},{{else}}.{{/unless}}
+    {{/each}}
+    <br />
+{{/if}}
+{{#if ignored_deactivated_groups}}
+    {{#each ignored_deactivated_groups}}
+        {{#if @first}}
+        {{t "Ignored deactivated groups:" }}
+        {{/if}}
+        <a data-user-group-id="{{id}}" class="view_user_group">{{name}}</a>{{#unless @last}},{{else}}.{{/unless}}
+    {{/each}}
 {{/if}}

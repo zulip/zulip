@@ -3,7 +3,6 @@ import time
 from datetime import timedelta
 from io import StringIO
 from typing import TYPE_CHECKING, Any
-from unittest import mock
 
 import orjson
 import time_machine
@@ -61,7 +60,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Scheduling a message to a stream you are subscribed is successful.
         result = self.do_schedule_message(
-            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         scheduled_message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -76,7 +75,7 @@ class ScheduledMessageTest(ZulipTestCase):
         # Scheduling a direct message with user IDs is successful.
         othello = self.example_user("othello")
         result = self.do_schedule_message(
-            "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
+            "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
         )
         scheduled_message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -89,7 +88,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Cannot schedule a direct message with user emails.
         result = self.do_schedule_message(
-            "direct", [othello.email], content + " 4", scheduled_delivery_timestamp
+            "direct", [othello.email], f"{content} 4", scheduled_delivery_timestamp
         )
         self.assert_json_error(result, 'to["int"] is not an integer')
 
@@ -99,14 +98,13 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         verona_stream_id = self.get_stream_id("Verona")
         result = self.do_schedule_message(
-            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         self.assert_json_success(result)
 
     def test_successful_deliver_stream_scheduled_message(self) -> None:
-        logger = mock.Mock()
         # No scheduled message
-        result = try_deliver_one_scheduled_message(logger)
+        result = try_deliver_one_scheduled_message()
         self.assertFalse(result)
 
         self.create_scheduled_message()
@@ -117,14 +115,17 @@ class ScheduledMessageTest(ZulipTestCase):
             minutes=1
         )
 
-        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
-            result = try_deliver_one_scheduled_message(logger)
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            result = try_deliver_one_scheduled_message()
             self.assertTrue(result)
-            logger.info.assert_called_once_with(
-                "Sending scheduled message %s with date %s (sender: %s)",
-                scheduled_message.id,
-                scheduled_message.scheduled_timestamp,
-                scheduled_message.sender_id,
+            self.assertEqual(
+                logs.output,
+                [
+                    f"INFO:root:Sending scheduled message {scheduled_message.id} with date {scheduled_message.scheduled_timestamp} (sender: {scheduled_message.sender_id})"
+                ],
             )
             scheduled_message.refresh_from_db()
             assert isinstance(scheduled_message.delivered_message_id, int)
@@ -137,9 +138,8 @@ class ScheduledMessageTest(ZulipTestCase):
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
     def test_successful_deliver_direct_scheduled_message(self) -> None:
-        logger = mock.Mock()
         # No scheduled message
-        self.assertFalse(try_deliver_one_scheduled_message(logger))
+        self.assertFalse(try_deliver_one_scheduled_message())
 
         content = "Test message"
         scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
@@ -147,7 +147,7 @@ class ScheduledMessageTest(ZulipTestCase):
         sender = self.example_user("hamlet")
         othello = self.example_user("othello")
         response = self.do_schedule_message(
-            "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
+            "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
         )
         self.assert_json_success(response)
         scheduled_message = self.last_scheduled_message()
@@ -155,14 +155,17 @@ class ScheduledMessageTest(ZulipTestCase):
         # mock current time to be greater than the scheduled time.
         more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + timedelta(minutes=1)
 
-        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
-            result = try_deliver_one_scheduled_message(logger)
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            result = try_deliver_one_scheduled_message()
             self.assertTrue(result)
-            logger.info.assert_called_once_with(
-                "Sending scheduled message %s with date %s (sender: %s)",
-                scheduled_message.id,
-                scheduled_message.scheduled_timestamp,
-                scheduled_message.sender_id,
+            self.assertEqual(
+                logs.output,
+                [
+                    f"INFO:root:Sending scheduled message {scheduled_message.id} with date {scheduled_message.scheduled_timestamp} (sender: {scheduled_message.sender_id})"
+                ],
             )
             scheduled_message.refresh_from_db()
             assert isinstance(scheduled_message.delivered_message_id, int)
@@ -192,9 +195,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_error(updated_response, "Scheduled message was already sent")
 
     def test_successful_deliver_direct_scheduled_message_to_self(self) -> None:
-        logger = mock.Mock()
         # No scheduled message
-        self.assertFalse(try_deliver_one_scheduled_message(logger))
+        self.assertFalse(try_deliver_one_scheduled_message())
 
         content = "Test message to self"
         scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
@@ -209,14 +211,17 @@ class ScheduledMessageTest(ZulipTestCase):
         # mock current time to be greater than the scheduled time.
         more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + timedelta(minutes=1)
 
-        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
-            result = try_deliver_one_scheduled_message(logger)
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            result = try_deliver_one_scheduled_message()
             self.assertTrue(result)
-            logger.info.assert_called_once_with(
-                "Sending scheduled message %s with date %s (sender: %s)",
-                scheduled_message.id,
-                scheduled_message.scheduled_timestamp,
-                scheduled_message.sender_id,
+            self.assertEqual(
+                logs.output,
+                [
+                    f"INFO:root:Sending scheduled message {scheduled_message.id} with date {scheduled_message.scheduled_timestamp} (sender: {scheduled_message.sender_id})"
+                ],
             )
             scheduled_message.refresh_from_db()
             assert isinstance(scheduled_message.delivered_message_id, int)
@@ -232,28 +237,24 @@ class ScheduledMessageTest(ZulipTestCase):
             self.assertFalse(sender_user_message.flags.read)
 
     def verify_deliver_scheduled_message_failure(
-        self, scheduled_message: ScheduledMessage, logger: mock.Mock, expected_failure_message: str
+        self, scheduled_message: ScheduledMessage, expected_failure_message: str
     ) -> None:
-        result = try_deliver_one_scheduled_message(logger)
+        with self.assertLogs(level="INFO") as logs:
+            result = try_deliver_one_scheduled_message()
         self.assertTrue(result)
         scheduled_message.refresh_from_db()
         self.assertEqual(scheduled_message.failure_message, expected_failure_message)
-        calls = [
-            mock.call(
-                "Sending scheduled message %s with date %s (sender: %s)",
-                scheduled_message.id,
-                scheduled_message.scheduled_timestamp,
-                scheduled_message.sender_id,
-            ),
-            mock.call("Failed with message: %s", scheduled_message.failure_message),
-        ]
-        logger.info.assert_has_calls(calls)
-        self.assertEqual(logger.info.call_count, 2)
+        self.assertEqual(
+            logs.output,
+            [
+                f"INFO:root:Sending scheduled message {scheduled_message.id} with date {scheduled_message.scheduled_timestamp} (sender: {scheduled_message.sender_id})",
+                f"INFO:root:Failed with message: {scheduled_message.failure_message}",
+            ],
+        )
         self.assertTrue(scheduled_message.failed)
 
     def test_too_late_to_deliver_scheduled_message(self) -> None:
         expected_failure_message = "Message could not be sent at the scheduled time."
-        logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -263,7 +264,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         with time_machine.travel(too_late_to_send_message_datetime, tick=False):
             self.verify_deliver_scheduled_message_failure(
-                scheduled_message, logger, expected_failure_message
+                scheduled_message, expected_failure_message
             )
 
         # Verify that the user was sent a message informing them about
@@ -276,7 +277,6 @@ class ScheduledMessageTest(ZulipTestCase):
 
     def test_realm_deactivated_failed_to_deliver_scheduled_message(self) -> None:
         expected_failure_message = "This organization has been deactivated"
-        logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -294,7 +294,7 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message.realm.deactivated = True
             scheduled_message.realm.save()
             self.verify_deliver_scheduled_message_failure(
-                scheduled_message, logger, expected_failure_message
+                scheduled_message, expected_failure_message
             )
 
         # Verify that no failed scheduled message notification was sent.
@@ -305,7 +305,6 @@ class ScheduledMessageTest(ZulipTestCase):
 
     def test_sender_deactivated_failed_to_deliver_scheduled_message(self) -> None:
         expected_failure_message = "Account is deactivated"
-        logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -322,7 +321,7 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message = self.last_scheduled_message()
             change_user_is_active(scheduled_message.sender, False)
             self.verify_deliver_scheduled_message_failure(
-                scheduled_message, logger, expected_failure_message
+                scheduled_message, expected_failure_message
             )
 
         # Verify that no failed scheduled message notification was sent.
@@ -334,7 +333,6 @@ class ScheduledMessageTest(ZulipTestCase):
     def test_delivery_type_reminder_failed_to_deliver_scheduled_message_unknown_exception(
         self,
     ) -> None:
-        logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -346,20 +344,19 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message = self.last_scheduled_message()
             scheduled_message.delivery_type = ScheduledMessage.REMIND
             scheduled_message.save()
-            result = try_deliver_one_scheduled_message(logger)
+            with self.assertLogs(level="INFO") as logs:
+                result = try_deliver_one_scheduled_message()
             self.assertTrue(result)
             scheduled_message.refresh_from_db()
-            logger.info.assert_called_once_with(
-                "Sending scheduled message %s with date %s (sender: %s)",
-                scheduled_message.id,
-                scheduled_message.scheduled_timestamp,
-                scheduled_message.sender_id,
+            self.assert_length(logs.output, 2)
+            self.assertEqual(
+                logs.output[0],
+                f"INFO:root:Sending scheduled message {scheduled_message.id} with date {scheduled_message.scheduled_timestamp} (sender: {scheduled_message.sender_id})",
             )
-            logger.exception.assert_called_once_with(
-                "Unexpected error sending scheduled message %s (sent: %s)",
-                scheduled_message.id,
-                scheduled_message.delivered,
-                stack_info=True,
+            self.assertTrue(
+                logs.output[1].startswith(
+                    f"ERROR:root:Unexpected error sending scheduled message {scheduled_message.id} (sent: {scheduled_message.delivered})\nTraceback (most recent call last)"
+                )
             )
             self.assertTrue(scheduled_message.failed)
 
@@ -373,7 +370,6 @@ class ScheduledMessageTest(ZulipTestCase):
 
     def test_editing_failed_send_scheduled_message(self) -> None:
         expected_failure_message = "Message could not be sent at the scheduled time."
-        logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -383,7 +379,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         with time_machine.travel(too_late_to_send_message_datetime, tick=False):
             self.verify_deliver_scheduled_message_failure(
-                scheduled_message, logger, expected_failure_message
+                scheduled_message, expected_failure_message
             )
 
             # After verifying the scheduled message failed to be sent:
@@ -420,7 +416,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_timestamp = int(time.time() - 86400)
 
         result = self.do_schedule_message(
-            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
@@ -609,7 +605,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         othello = self.example_user("othello")
         result = self.do_schedule_message(
-            "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
+            "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
         )
 
         # Multiple scheduled messages

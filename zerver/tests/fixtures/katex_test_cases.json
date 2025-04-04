@@ -1,0 +1,69 @@
+{
+    "math_block_tests": [
+        {
+            "original_markup":"intro text\n\n```math\na + b = 33\n\n\n\n\n\n\n\nd+x = 44\n``` \n\nend",
+            "description": "Math block containing expressions with absurd number of newlines between each other. Notice how eight newlines are replaced with nine newlines",
+            "input": "<p>intro text</p>\n<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>a</mi><mo>+</mo><mi>b</mi><mo>=</mo><mn>33</mn></mrow><annotation encoding=\"application/x-tex\">a + b = 33</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">b</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">33</span></span></span></span></span></span>\n\n<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow></mrow><annotation encoding=\"application/x-tex\"></annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"></span></span></span>\n\n<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow></mrow><annotation encoding=\"application/x-tex\"></annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"></span></span></span>\n\n<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow></mrow><annotation encoding=\"application/x-tex\"></annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"></span></span></span>\n\n<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>d</mi><mo>+</mo><mi>x</mi><mo>=</mo><mn>44</mn></mrow><annotation encoding=\"application/x-tex\">d+x = 44</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.7778em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">d</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">44</span></span></span></span></span>\n<p>end</p>",
+            "expected_output": "intro text\n\n```math\na + b = 33\n\n\n\n\n\n\n\n\nd+x = 44\n``` \n\nend"
+        },
+        {
+            "original_markup":"hello world\n\n```math\nc + x = 6\n\nc + a = 00\n```\n\nhi there\n\n```math\nc + xy = 55\n```",
+            "input": "<p>hello world</p><p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>c</mi><mo>+</mo><mi>x</mi><mo>=</mo><mn>6</mn></mrow><annotation encoding=\"application/x-tex\">c + x = 6</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">6</span></span></span></span></span></span><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>c</mi><mo>+</mo><mi>a</mi><mo>=</mo><mn>00</mn></mrow><annotation encoding=\"application/x-tex\">c + a = 00</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">00</span></span></span></span></span></p><p>hi there</p><p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>c</mi><mo>+</mo><mi>x</mi><mi>y</mi><mo>=</mo><mn>55</mn></mrow><annotation encoding=\"application/x-tex\">c + xy = 55</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.625em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">y</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">55</span></span></span></span></span></p>",
+            "description": "Normal math block.",
+            "expected_output": "hello world\n\n```math\nc + x = 6\n\nc + a = 00\n```\n\nhi there\n\n```math\nc + xy = 55\n```"
+        },
+        {
+            "original_markup":"```math\nc+d=55\n\n\nx + y = 99\n```",
+            "description": "Selecting only math expression in math block.",
+            "input": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"mord mathnormal\">c</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">d</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">55</span></span></span></span></span>\n\n<span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi>x</mi><mo>+</mo><mi>y</mi><mo>=</mo><mn>99</mn></mrow><annotation encoding=\"application/x-tex\">x + y = 99</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6667em;vertical-align:-0.0833em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.625em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">y</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">99</span></span></span></span></span></p>",
+            "expected_output": "```math\nc+d=55\n\nx + y = 99\n```"
+        }
+    ],
+    "inline_math_expression_tests": [
+        {
+            "original_markup":"intro text\n$$p+q =4$$",
+            "description": "Inline Expression 1.",
+            "expected_output": "intro text\n$$p+q =4$$"
+        },
+        {
+            "original_markup":"intro text\n$$p+q =4$$\n$$x+y=z$$\nhello world",
+            "description": "Inline Expression 2 (multiline).",
+            "expected_output": "intro text\n$$p+q =4$$\n$$x+y=z$$\nhello world"
+        },
+        {
+            "original_markup":"hey there\n$$a+b$$ some text $$c+d$$\nhow",
+            "description": "Inline expression with intermediate text node between two inline expressions.",
+            "expected_output": "hey there\n$$a+b$$ some text $$c+d$$\nhow"
+        },
+        {
+            "original_markup":"I *think* $$e^{i\\pi} = -1$$ is the **coolest** thing I've seen since $$x^2 + y^2 = z^2$$ blew my mind.",
+            "description": "Inline expression with bold and emphasized text.",
+            "expected_output":"I *think* $$e^{i\\pi} = -1$$ is the **coolest** thing I've seen since $$x^2 + y^2 = z^2$$ blew my mind."
+
+        },
+        {
+            "original_markup":"there $$a+b$$ `some code` some text _hello_ `more code` $$y+z=4444$$ ~~don't read this~~ some text `code` $$p+q=44$$ text haha wooo",
+            "expected_output":"there $$a+b$$ `some code` some text _hello_ `more code` $$y+z=4444$$ ~~don't read this~~ some text `code` $$p+q=44$$ text haha wooo",
+            "description": "Inline expression with inline elements."
+        },
+        {
+            "description":"Nested inline katex siblings",
+            "expected_output":"like ~~*this* is not $$x^2$$, it's $$xx/2$$, **see?**~~` good",
+            "original_markup":"like ~~*this* is not $$x^2$$, it's $$xx/2$$, **see?**~~` good"
+        },{
+            "description":"Another katex inline expression containing nested tags",
+            "expected_output":"world ~~it works **out $$a+b=c$$** so `well` if you try *this*** not $$p+q=r$$ that~~ good good",
+            "original_markup":"world ~~it works **out $$a+b=c$$** so `well` if you try *this*** not $$p+q=r$$ that~~ good good"
+        },{
+            "original_markup":"$$a^{b^{c}}$$",
+            "expected_output":"$$a^{b^{c}}$$"
+        }
+    ],
+    "text_node_to_span_conversion_tests":[
+        {
+        "original_markup":"A paragraph with some `code` and a [link](https://example.com/).",
+        "description":"Check conversion of intermediate text nodes and ensure it doesn't distubt pasting/quoting",
+        "expected_output":"A paragraph with some `code` and a [link](https://example.com/)."
+        }
+    ]
+}

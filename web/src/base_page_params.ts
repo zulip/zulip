@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import {narrow_term_schema, state_data_schema} from "./state_data";
+import {narrow_term_schema, state_data_schema} from "./state_data.ts";
 
 const t1 = performance.now();
 
@@ -19,14 +19,8 @@ const home_params_schema = default_params_schema
     .extend({
         page_type: z.literal("home"),
         apps_page_url: z.string(),
-        bot_types: z.array(
-            z.object({
-                type_id: z.number(),
-                name: z.string(),
-                allowed: z.boolean(),
-            }),
-        ),
         corporate_enabled: z.boolean(),
+        embedded_bots_enabled: z.boolean(),
         furthest_read_time: z.nullable(z.number()),
         is_spectator: z.boolean(),
         // `language_cookie_name` is only sent for spectators.
@@ -43,16 +37,14 @@ const home_params_schema = default_params_schema
         narrow: z.optional(z.array(narrow_term_schema)),
         narrow_stream: z.optional(z.string()),
         narrow_topic: z.optional(z.string()),
+        presence_history_limit_days_for_web_app: z.number(),
         promote_sponsoring_zulip: z.boolean(),
         // `realm_rendered_description` is only sent for spectators, because
         // it isn't displayed for logged-in users and requires markdown
         // processor time to compute.
         realm_rendered_description: z.optional(z.string()),
-        show_billing: z.boolean(),
-        show_remote_billing: z.boolean(),
-        show_plans: z.boolean(),
+        show_try_zulip_modal: z.boolean(),
         show_webathena: z.boolean(),
-        sponsorship_pending: z.boolean(),
         state_data: state_data_schema.nullable(),
         translation_data: z.record(z.string()),
     })

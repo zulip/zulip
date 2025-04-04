@@ -1,35 +1,49 @@
-Zulip supports using BigBlueButton as its video call video call
-provider. This is currently only possible on self-hosted Zulip
-installations.
+# Use BigBlueButton as your call provider in Zulip
 
-To use the [BigBlueButton](https://bigbluebutton.org/) video call
-integration, you'll need to have a BigBlueButton server and
-configure your zulip server to use that BigBlueButton server.
+You can configure BigBlueButton as the call provider for your organization.
+Users will be able to start a BigBlueButton call and invite others using the
+**add video call** (<i class="zulip-icon zulip-icon-video-call"></i>) or
+**add voice call** (<i class="zulip-icon zulip-icon-voice-call"></i>) button
+[in the compose box](/help/start-a-call).
 
-### Configure BigBlueButton server
+!!! warn ""
 
-1. Get the Shared Secret using the `bbb-conf --secret` command on your
-   BigBlueButton Server. See also
-   [BigBlueButton documentation](https://docs.bigbluebutton.org/admin/customize.html#extract-the-shared-secret).
+    **Note:** This is currently only possible on self-hosted Zulip
+    installations, and you'll need a BigBlueButton server.
 
-1. Get the URL to your BigBlueButton API. The URL has the form of
-   `https://bigbluebutton.example.com/bigbluebutton/` and can also be
-   found using the `bbb-conf --secret` command.
+## Configure BigBlueButton as your call provider
 
-### Configure zulip server
+By default, Zulip integrates with
+[Jitsi Meet](https://jitsi.org/jitsi-meet/), a fully-encrypted, 100% open
+source video conferencing solution. You can configure Zulip to use BigBlueButton
+as your call provider instead.
 
-1. In `/etc/zulip/zulip-secrets.conf`, set `big_blue_button_secret`
-   as your BigBlueButton Server's shared secret.
+{start_tabs}
 
-1. In `/etc/zulip/settings.py`, set `BIG_BLUE_BUTTON_URL`
-   as your BigBlueButton Server's API URL.
+1. Run `bbb-conf --secret` on your BigBlueButton server to get
+   the hostname and shared secret for your BigBlueButton server.
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `big_blue_button_secret` to your
+   BigBlueButton server's shared secret.
+
+1. In `/etc/zulip/settings.py`, set `BIG_BLUE_BUTTON_URL` to your
+   BigBlueButton server's hostname.
 
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 
-### Using BigBlueButton
+{settings_tab|organization-settings}
 
-1. Select BigBlueButton as the organization's [video call provider](/help/start-a-call#changing-your-organizations-video-call-provider).
+1. Under **Compose settings**, select BigBlueButton from the **Call provider**
+   dropdown.
 
-1. Zulip's [call button](/help/start-a-call) will now create meetings
-   using BigBlueButton.
+1. Click **Save changes**.
+
+{end_tabs}
+
+### Related documentation
+
+- [How to start a call](/help/start-a-call)
+- [Jitsi Meet integration](/integrations/doc/jitsi)
+- [Zoom integration](/integrations/doc/zoom)
+* [BigBlueButton server configuration](https://docs.bigbluebutton.org/administration/customize/#other-configuration-changes)

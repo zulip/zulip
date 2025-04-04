@@ -2,7 +2,7 @@ from typing import Annotated
 
 import orjson
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
@@ -177,6 +177,7 @@ def create_realm_custom_profile_field(
     field_type: Json[int],
     display_in_profile_summary: Json[bool] = False,
     required: Json[bool] = False,
+    editable_by_user: Json[bool] = True,
 ) -> HttpResponse:
     if field_data is None:
         field_data = {}
@@ -195,6 +196,7 @@ def create_realm_custom_profile_field(
                 field_subtype=field_subtype,
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
+                editable_by_user=editable_by_user,
             )
             return json_success(request, data={"id": field.id})
         else:
@@ -206,6 +208,7 @@ def create_realm_custom_profile_field(
                 hint=hint,
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
+                editable_by_user=editable_by_user,
             )
             return json_success(request, data={"id": field.id})
     except IntegrityError:
@@ -217,7 +220,7 @@ def delete_realm_custom_profile_field(
     request: HttpRequest, user_profile: UserProfile, field_id: int
 ) -> HttpResponse:
     try:
-        field = CustomProfileField.objects.get(id=field_id)
+        field = CustomProfileField.objects.get(realm_id=user_profile.realm_id, id=field_id)
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
@@ -237,6 +240,7 @@ def update_realm_custom_profile_field(
     field_data: Json[ProfileFieldData] | None = None,
     required: Json[bool] | None = None,
     display_in_profile_summary: Json[bool] | None = None,
+    editable_by_user: Json[bool] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -276,6 +280,7 @@ def update_realm_custom_profile_field(
             field_data=field_data,
             display_in_profile_summary=display_in_profile_summary,
             required=required,
+            editable_by_user=editable_by_user,
         )
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))
@@ -302,8 +307,11 @@ def remove_user_custom_profile_data(
     *,
     data: Json[list[int]],
 ) -> HttpResponse:
-    for field_id in data:
-        check_remove_custom_profile_field_value(user_profile, field_id)
+    with transaction.atomic(durable=True):
+        for field_id in data:
+            check_remove_custom_profile_field_value(
+                user_profile, field_id, acting_user=user_profile
+            )
     return json_success(request)
 
 
@@ -315,7 +323,8 @@ def update_user_custom_profile_data(
     *,
     data: Json[list[ProfileDataElementUpdateDict]],
 ) -> HttpResponse:
-    validate_user_custom_profile_data(user_profile.realm.id, data)
-    do_update_user_custom_profile_data_if_changed(user_profile, data)
+    validate_user_custom_profile_data(user_profile.realm.id, data, acting_user=user_profile)
+    with transaction.atomic(durable=True):
+        do_update_user_custom_profile_data_if_changed(user_profile, data)
     # We need to call this explicitly otherwise constraints are not check
     return json_success(request)

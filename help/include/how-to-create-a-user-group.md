@@ -10,7 +10,10 @@
 1. Fill out the requested information, and click **Continue to add
    members**.
 
-1. Add users who will be members of the group, and click **Create**.
+1. Under **Add members**, enter groups and users you want to add. You can enter
+   a `#channel` to add all subscribers to the group. Click **Add**.
+
+1. Click **Create** to create the group.
 
 !!! warn ""
 

@@ -1,13 +1,15 @@
 import os
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 import botocore.exceptions
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import RealmCount
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -16,7 +18,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
     use_s3_backend,
 )
-from zerver.models import Realm, RealmAuditLog
+from zerver.models import Realm, RealmExport, UserProfile
 from zerver.views.realm_export import export_realm
 
 
@@ -40,11 +42,13 @@ class RealmExportTest(ZulipTestCase):
     def test_endpoint_s3(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)
-        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        bucket = create_s3_buckets(settings.S3_EXPORT_BUCKET)[0]
         tarball_path = create_dummy_file("test-export.tar.gz")
 
         # Test the export logic.
-        with patch("zerver.lib.export.do_export_realm", return_value=tarball_path) as mock_export:
+        with patch(
+            "zerver.lib.export.do_export_realm", return_value=(tarball_path, dict())
+        ) as mock_export:
             with (
                 self.settings(LOCAL_UPLOADS_DIR=None),
                 stdout_suppressed(),
@@ -57,21 +61,21 @@ class RealmExportTest(ZulipTestCase):
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
-        self.assertEqual(args["public_only"], True)
+        self.assertEqual(args["export_type"], RealmExport.EXPORT_PUBLIC)
         self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.
-        audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED
-        ).first()
-        assert audit_log_entry is not None
-        self.assertEqual(audit_log_entry.acting_user_id, admin.id)
+        export_row = RealmExport.objects.first()
+        assert export_row is not None
+        self.assertEqual(export_row.acting_user_id, admin.id)
+        self.assertEqual(export_row.status, RealmExport.SUCCEEDED)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = audit_log_entry.extra_data["export_path"]
+        export_path = export_row.export_path
+        assert export_path is not None
         assert export_path.startswith("/")
-        path_id = export_path[1:]
+        path_id = export_path.removeprefix("/")
         self.assertEqual(bucket.Object(path_id).get()["Body"].read(), b"zulip!")
 
         result = self.client_get("/json/export/realm")
@@ -79,30 +83,29 @@ class RealmExportTest(ZulipTestCase):
 
         # Test that the export we have is the export we created.
         export_dict = response_dict["exports"]
-        self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
+        self.assertEqual(export_dict[0]["id"], export_row.id)
+        parsed_url = urlsplit(export_dict[0]["export_url"])
         self.assertEqual(
-            export_dict[0]["export_url"],
-            "https://test-avatar-bucket.s3.amazonaws.com" + export_path,
+            parsed_url._replace(query="").geturl(),
+            "https://test-export-bucket.s3.amazonaws.com" + export_path,
         )
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
         self.assert_length(
             export_dict,
-            RealmAuditLog.objects.filter(
-                realm=admin.realm, event_type=RealmAuditLog.REALM_EXPORTED
-            ).count(),
+            RealmExport.objects.filter(realm=admin.realm).count(),
         )
 
         # Finally, delete the file.
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_success(result)
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object(path_id).load()
 
-        # Try to delete an export with a `deleted_timestamp` key.
-        audit_log_entry.refresh_from_db()
-        export_data = audit_log_entry.extra_data
-        self.assertIn("deleted_timestamp", export_data)
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        # Try to delete an export with a `DELETED` status.
+        export_row.refresh_from_db()
+        self.assertEqual(export_row.status, RealmExport.DELETED)
+        self.assertIsNotNone(export_row.date_deleted)
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_error(result, "Export already deleted")
 
         # Now try to delete a non-existent export.
@@ -119,13 +122,12 @@ class RealmExportTest(ZulipTestCase):
             realm: Realm,
             output_dir: str,
             threads: int,
+            export_type: int,
             exportable_user_ids: set[int] | None = None,
-            public_only: bool = False,
-            consent_message_id: int | None = None,
             export_as_active: bool | None = None,
-        ) -> str:
+        ) -> tuple[str, dict[str, int | dict[str, int]]]:
             self.assertEqual(realm, admin.realm)
-            self.assertEqual(public_only, True)
+            self.assertEqual(export_type, RealmExport.EXPORT_PUBLIC)
             self.assertTrue(os.path.basename(output_dir).startswith("zulip-export-"))
             self.assertEqual(threads, 6)
 
@@ -145,7 +147,7 @@ class RealmExportTest(ZulipTestCase):
             result = self.client_delete(f"/json/export/realm/{id}")
             self.assert_json_error(result, "Export still in progress")
 
-            return tarball_path
+            return tarball_path, dict()
 
         with patch(
             "zerver.lib.export.do_export_realm", side_effect=fake_export_realm
@@ -162,15 +164,15 @@ class RealmExportTest(ZulipTestCase):
         self.assertFalse(os.path.exists(tarball_path))
 
         # Get the entry and test that iago initiated it.
-        audit_log_entry = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_EXPORTED
-        ).first()
-        assert audit_log_entry is not None
-        self.assertEqual(audit_log_entry.id, data["id"])
-        self.assertEqual(audit_log_entry.acting_user_id, admin.id)
+        export_row = RealmExport.objects.first()
+        assert export_row is not None
+        self.assertEqual(export_row.id, data["id"])
+        self.assertEqual(export_row.acting_user_id, admin.id)
+        self.assertEqual(export_row.status, RealmExport.SUCCEEDED)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = audit_log_entry.extra_data.get("export_path")
+        export_path = export_row.export_path
+        assert export_path is not None
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.getvalue(), b"zulip!")
@@ -180,27 +182,22 @@ class RealmExportTest(ZulipTestCase):
 
         # Test that the export we have is the export we created.
         export_dict = response_dict["exports"]
-        self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
+        self.assertEqual(export_dict[0]["id"], export_row.id)
         self.assertEqual(export_dict[0]["export_url"], admin.realm.url + export_path)
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
-        self.assert_length(
-            export_dict,
-            RealmAuditLog.objects.filter(
-                realm=admin.realm, event_type=RealmAuditLog.REALM_EXPORTED
-            ).count(),
-        )
+        self.assert_length(export_dict, RealmExport.objects.filter(realm=admin.realm).count())
 
         # Finally, delete the file.
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_success(result)
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 404)
 
-        # Try to delete an export with a `deleted_timestamp` key.
-        audit_log_entry.refresh_from_db()
-        export_data = audit_log_entry.extra_data
-        self.assertIn("deleted_timestamp", export_data)
-        result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+        # Try to delete an export with a `DELETED` status.
+        export_row.refresh_from_db()
+        self.assertEqual(export_row.status, RealmExport.DELETED)
+        self.assertIsNotNone(export_row.date_deleted)
+        result = self.client_delete(f"/json/export/realm/{export_row.id}")
         self.assert_json_error(result, "Export already deleted")
 
         # Now try to delete a non-existent export.
@@ -210,6 +207,41 @@ class RealmExportTest(ZulipTestCase):
     def test_export_failure(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)
+
+        owner = self.example_user("desdemona")
+        do_change_user_setting(
+            owner,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+
+        result = self.client_post("/json/export/realm")
+        self.assert_json_error_contains(
+            result,
+            "Make sure at least one Organization Owner allows "
+            "other Administrators to see their email address",
+        )
+        do_change_user_setting(
+            owner,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
+        )
+
+        do_change_user_setting(
+            owner,
+            "allow_private_data_export",
+            False,
+            acting_user=None,
+        )
+        result = self.client_post(
+            "/json/export/realm",
+            info={"export_type": RealmExport.EXPORT_FULL_WITH_CONSENT},
+        )
+        self.assert_json_error_contains(
+            result, "Make sure at least one Organization Owner is consenting"
+        )
 
         with (
             patch(
@@ -240,6 +272,9 @@ class RealmExportTest(ZulipTestCase):
         self.assertIsNotNone(export_dict[0]["failed_timestamp"])
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
 
+        export_row = RealmExport.objects.get(id=export_id)
+        self.assertEqual(export_row.status, RealmExport.FAILED)
+
         # Check that we can't delete it
         result = self.client_delete(f"/json/export/realm/{export_id}")
         self.assert_json_error(result, "Export failed, nothing to delete")
@@ -250,14 +285,12 @@ class RealmExportTest(ZulipTestCase):
             patch("zerver.lib.export.do_export_realm") as mock_export,
             self.assertLogs(level="INFO") as info_logs,
         ):
-            queue_json_publish(
+            queue_json_publish_rollback_unsafe(
                 "deferred_work",
                 {
                     "type": "realm_export",
-                    "time": 42,
-                    "realm_id": admin.realm.id,
                     "user_profile_id": admin.id,
-                    "id": export_id,
+                    "realm_export_id": export_id,
                 },
             )
         mock_export.assert_not_called()
@@ -275,18 +308,19 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(admin)
 
-        current_log = RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_EXPORTED)
-        self.assert_length(current_log, 0)
+        export_rows = RealmExport.objects.all()
+        self.assert_length(export_rows, 0)
 
         exports = [
-            RealmAuditLog(
+            RealmExport(
                 realm=admin.realm,
-                event_type=RealmAuditLog.REALM_EXPORTED,
-                event_time=timezone_now(),
+                type=RealmExport.EXPORT_PUBLIC,
+                date_requested=timezone_now(),
+                acting_user=admin,
             )
             for i in range(5)
         ]
-        RealmAuditLog.objects.bulk_create(exports)
+        RealmExport.objects.bulk_create(exports)
 
         with self.assertRaises(JsonableError) as error:
             export_realm(HostRequestMock(), admin)
@@ -303,10 +337,10 @@ class RealmExportTest(ZulipTestCase):
             subgroup="public_stream",
         )
 
-        # Space limit is set as 10 GiB
+        # Space limit is set as 20 GiB
         with patch(
             "zerver.models.Realm.currently_used_upload_space_bytes",
-            return_value=11 * 1024 * 1024 * 1024,
+            return_value=21 * 1024 * 1024 * 1024,
         ):
             result = self.client_post("/json/export/realm")
         self.assert_json_error(
@@ -322,3 +356,30 @@ class RealmExportTest(ZulipTestCase):
             result,
             f"Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.",
         )
+
+    def test_get_users_export_consents(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        # By default, export consent is set to False.
+        self.assertFalse(
+            UserProfile.objects.filter(
+                realm=admin.realm, is_active=True, is_bot=False, allow_private_data_export=True
+            ).exists()
+        )
+
+        # Hamlet and Aaron consented to export their private data.
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        for user in [hamlet, aaron]:
+            do_change_user_setting(user, "allow_private_data_export", True, acting_user=None)
+
+        # Verify export consents of users.
+        result = self.client_get("/json/export/realm/consents")
+        response_dict = self.assert_json_success(result)
+        export_consents = response_dict["export_consents"]
+        for export_consent in export_consents:
+            if export_consent["user_id"] in [hamlet.id, aaron.id]:
+                self.assertTrue(export_consent["consented"])
+                continue
+            self.assertFalse(export_consent["consented"])

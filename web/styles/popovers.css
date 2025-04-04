@@ -8,11 +8,6 @@
     /* Basic Tippy popovers scale with the base font-size. */
     font-size: var(--base-font-size-px);
 
-    .sp-input {
-        /* Override incorrect color for text in dark theme. */
-        color: var(--color-text-default) !important;
-    }
-
     .tippy-content {
         /* We set the font-size here to override the
            default value in the upstream tippy.css */
@@ -85,9 +80,7 @@
     border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
     box-shadow: var(--box-shadow-popover-menu);
-    /* Popover menus should scale no smaller than 15px,
-       but scale up with the base font-size. */
-    font-size: max(15px, var(--base-font-size-px));
+    font-size: 1.0714em; /* 15px at 14px em */
 
     > .tippy-content {
         padding: 0;
@@ -182,7 +175,6 @@
         color: var(--color-text-item);
 
         &:hover {
-            color: var(--color-text-link);
             text-decoration: none;
         }
 
@@ -207,6 +199,7 @@
 
 .custom-user-url-field {
     display: flex;
+    align-items: center;
     /* Maintain space between URL and copy icon. */
     gap: 3px;
     overflow: hidden;
@@ -218,35 +211,12 @@
     }
 
     .copy-custom-field-url {
-        /* Don't flex; preserve 20px space for icon. */
-        flex: 0 0 20px;
-        /* Make button a flex item to center icon. */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: transparent;
-        border: 0;
-        padding: 0;
-
-        #clipboard_image {
-            margin: 0;
-
-            &:hover path {
-                fill: hsl(204deg 100% 40%);
-            }
-        }
-
-        &:focus {
-            outline: none;
-        }
+        height: 1em;
     }
 }
 
-.sp-container {
-    z-index: 106;
-}
-
-#stream-actions-menu-popover {
+#stream-actions-menu-popover,
+#stream-card-popover {
     .popover-stream-name {
         font-weight: 600;
         color: var(--color-text-popover-menu);
@@ -265,46 +235,8 @@
         margin: 0 !important;
     }
 
-    .colorpicker-container {
-        display: none;
-        margin-right: 10px;
-
-        .sp-container {
-            /* The base-font size for the color container is 12px,
-               inherited from the upstream spectrum.css file. */
-            background-color: hsl(0deg 0% 100%);
-            cursor: pointer;
-            border: none;
-
-            .sp-palette-container {
-                border-right: none;
-            }
-
-            & input {
-                box-sizing: inherit; /* IE */
-                box-sizing: initial;
-
-                width: calc(100% - 13px);
-            }
-
-            & button {
-                background-color: hsl(0deg 0% 100%);
-                background-image: none;
-                border: 1px solid hsl(0deg 0% 80%);
-                border-radius: 4px;
-                color: hsl(0deg 0% 25%);
-                /* 12px at 12px/1em */
-                font-size: 1em;
-                padding: 6px;
-                text-transform: capitalize;
-                text-align: center;
-                text-shadow: none;
-            }
-
-            .sp-picker-container {
-                border-left: solid 1px hsl(0deg 0% 88%);
-            }
-        }
+    .popover-stream-info-menu-description {
+        color: var(--color-text-popover-menu);
     }
 }
 
@@ -322,7 +254,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding: 3px 10px;
+    padding: 3px var(--user-group-popover-horizontal-padding);
 }
 
 .popover-group-menu-name-container {
@@ -335,7 +267,7 @@
     /* 20px at 18px/1em */
     line-height: 1.1111em;
     color: var(--color-text-full-name);
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .popover-group-menu-description {
@@ -351,15 +283,40 @@ ul.popover-group-menu-member-list {
     flex-direction: column;
 
     .simplebar-content {
+        display: grid;
+        grid-template-areas: "group-member-icon gap group-member-name";
+        grid-template-columns:
+            max-content var(--user-group-popover-icon-text-gap)
+            minmax(0, 1fr);
         width: unset;
+    }
+
+    .popover-group-menu-member {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+        align-items: center;
+        padding: 0 var(--user-group-popover-horizontal-padding);
+    }
+
+    .popover-group-member-icon {
+        justify-self: center;
+        grid-area: group-member-icon;
+    }
+
+    .popover-group-menu-member-name {
+        grid-area: group-member-name;
     }
 }
 
-.popover-group-menu-member,
 .popover-group-menu-placeholder {
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
+    padding: 0 var(--user-group-popover-horizontal-padding);
+}
+
+.popover-group-menu-member {
+    .zulip-icon-user-group {
+        color: var(--color-icon-purple);
+    }
 }
 
 .popover-group-menu-member-name {
@@ -374,16 +331,13 @@ ul.popover-group-menu-member-list {
     color: var(--color-text-popover-menu);
 }
 
-.user_profile_presence,
-.popover_user_presence {
-    width: var(--length-user-status-circle);
-    height: var(--length-user-status-circle);
-    margin: 0 5px;
-    display: inline-block;
-    float: initial;
-    position: relative;
-    top: 0;
-    flex-shrink: 0;
+.user-status-icon-wrapper {
+    display: flex;
+}
+
+.popover-group-menu-user-presence {
+    /* 11px at 16px/1em */
+    font-size: 0.6875em;
 }
 
 .user_profile_presence {
@@ -392,16 +346,8 @@ ul.popover-group-menu-member-list {
        here maintains the legacy design of keeping
        the user-circle smaller, despite the larger
        surrounding text and icons. */
-    font-size: var(--base-font-size-px);
-}
-
-.bot-owner-name {
-    text-decoration: underline;
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(200deg 100% 40%);
-    }
+    font-size: calc(var(--base-font-size-px) * 0.6666);
+    line-height: 1;
 }
 
 .popover-avatar {
@@ -440,12 +386,7 @@ ul.popover-group-menu-member-list {
     }
 
     .modal__header {
-        justify-content: center;
-    }
-
-    .user_profile_presence {
-        margin: 5px;
-        vertical-align: middle;
+        justify-items: center;
     }
 
     .modal__close {
@@ -509,31 +450,14 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .user-profile-manage-own-edit-button,
-    .user-profile-manage-others-edit-button {
-        text-decoration: none;
-        /* 15px at 22px/1em */
-        font-size: 0.6818em;
-    }
-
-    .user-profile-manage-own-copy-link-button {
-        /* 19px at 22px/1em */
-        font-size: 0.8638em;
-        text-decoration: none;
-    }
-
-    .zulip-icon-link,
-    .zulip-icon-edit {
-        vertical-align: middle;
+    .user-profile-header-actions {
+        display: flex;
+        gap: 5px;
     }
 
     .deactivated-user-icon {
-        margin: -1px;
         vertical-align: middle;
-    }
-
-    .zulip-icon.zulip-icon-bot {
-        padding: unset;
+        font-size: 0.7em;
     }
 
     #default-section {
@@ -584,6 +508,7 @@ ul.popover-group-menu-member-list {
         margin-bottom: 20px;
     }
 
+    .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
         display: inline-block;
@@ -597,8 +522,13 @@ ul.popover-group-menu-member-list {
             margin-bottom: 8px;
         }
 
+        .user-profile-group-list-alert {
+            margin-bottom: 8px;
+        }
+
         .stream-privacy {
-            display: inline-block;
+            display: flex;
+            align-items: center;
         }
 
         .filter-icon i {
@@ -611,43 +541,58 @@ ul.popover-group-menu-member-list {
             align-items: baseline;
             padding-top: 2px;
         }
+
+        .dropdown_widget_value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 
+    .group-list-top-section,
     .stream-list-top-section {
         display: flex;
         margin-top: 12px;
+        align-items: center;
+        margin-bottom: 5px;
 
-        .stream-search {
+        .group-search-container,
+        .stream-search-container {
             margin-left: auto;
-            align-self: center;
-            padding-right: 20px;
+            display: grid;
+            grid-template:
+                "search-input clear-search" auto / minmax(0, 1fr)
+                30px;
+        }
+
+        .group-search,
+        .stream-search {
+            grid-column: search-input-start / clear-search-end;
+            grid-row: search-input;
+            padding-right: 28px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
+            margin-bottom: 0;
+            /* Override default modal input width, since that overflows.
+               This is 185px (the default "width: unset" width) at 14px/em */
+            width: 13.2142em;
         }
 
-        #clear_stream_search {
-            display: none;
-            padding: 5px 8px 5px 4px;
-            position: relative;
-            right: 0;
+        .group-search:placeholder-shown + #clear_groups_search,
+        .stream-search:placeholder-shown + #clear_stream_search {
+            visibility: hidden;
         }
     }
 
     .subscription-group-list,
     .subscription-stream-list {
-        position: relative;
         border: 1px solid hsl(0deg 0% 83%);
         border-radius: 4px;
         overflow: auto;
         text-align: left;
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
-
-        .remove-subscription-button {
-            padding-top: 2px;
-            padding-bottom: 2px;
-        }
 
         .user-stream-list,
         .user-group-list {
@@ -669,16 +614,21 @@ ul.popover-group-menu-member-list {
                 & td {
                     padding: 4px 0;
 
-                    &:first-of-type {
-                        padding-left: 10px;
-                    }
-
-                    &:last-of-type {
+                    &.remove_subscription,
+                    &.remove_member {
+                        float: right;
                         padding-right: 10px;
                     }
 
-                    &.remove_subscription {
-                        text-align: right;
+                    &.user-profile-channel-row,
+                    &.user-profile-group-row {
+                        text-align: left;
+                        padding-left: 10px;
+
+                        & .user-profile-channel-container {
+                            display: flex;
+                            gap: 3px;
+                        }
                     }
                 }
             }
@@ -716,40 +666,6 @@ ul.popover-group-menu-member-list {
 }
 
 @media (width < $md_min) {
-    .colorpicker-popover {
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-
-        /* these are to override JS embedded inline styles. */
-        top: 0 !important;
-        left: 0 !important;
-        margin: 0 !important;
-        width: 100%;
-        height: 100%;
-
-        background-color: hsl(0deg 0% 0% / 70%);
-        border-radius: 0;
-        border: none;
-
-        pointer-events: none;
-
-        .popover-inner {
-            background-color: hsl(0deg 0% 100%);
-            pointer-events: all;
-        }
-
-        @media (width < $sm_min) {
-            .popover-inner {
-                width: 70%;
-            }
-
-            .sp-picker-container {
-                border-left: none !important;
-            }
-        }
-    }
-
     .popover-flex {
         position: absolute;
         top: 0 !important;
@@ -771,7 +687,7 @@ ul.popover-group-menu-member-list {
         opacity: 0;
         pointer-events: none;
 
-        transition: all 0.3s ease;
+        transition: opacity 0.3s ease;
 
         &.fade.in {
             opacity: 1;
@@ -785,6 +701,7 @@ ul.popover-group-menu-member-list {
     }
 
     #user-profile-modal {
+        .group-list-top-section,
         .stream-list-top-section {
             display: block;
 
@@ -792,10 +709,12 @@ ul.popover-group-menu-member-list {
                 width: 100%;
             }
 
+            .group-search,
             .stream-search {
                 margin-bottom: 8px;
             }
 
+            #clear_groups_search,
             #clear_stream_search {
                 padding-top: 1px;
             }
@@ -889,16 +808,31 @@ ul.popover-group-menu-member-list {
         margin: 0;
     }
 
+    .modal_select {
+        width: auto;
+        max-width: 100%;
+    }
+
+    .modal__title {
+        /* Grid defined in modal.css */
+        grid-area: heading;
+
+        .stream-privacy-type-icon {
+            padding-left: 3px;
+            padding-right: 5px;
+        }
+    }
+
     #move_topic_to_stream_widget_wrapper {
         display: flex;
-        margin-bottom: 10px;
+        /* 230px at 16px/1em */
+        max-width: 14.375em;
 
         .dropdown-widget-button {
             outline: none;
             /* 24px at 16px/1em */
             line-height: 1.5em;
-            width: auto;
-            max-width: 206px;
+            width: 100%;
         }
 
         .dropdown_widget_value {
@@ -926,14 +860,47 @@ ul.popover-group-menu-member-list {
     }
 
     .move_messages_edit_topic {
-        margin-bottom: 10px;
+        margin-bottom: unset;
+        box-sizing: border-box;
+        width: 100%;
+        height: auto;
+
+        &.empty-topic-display::placeholder {
+            color: inherit;
+        }
+    }
+
+    #move-topic-new-topic-input-wrapper {
+        position: relative;
+    }
+
+    .move-topic-new-topic-placeholder {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        pointer-events: none;
+        visibility: hidden;
+    }
+
+    .move-topic-new-topic-placeholder-visible {
+        visibility: visible;
+    }
+
+    #message_move_select_options {
+        width: 100%;
+    }
+
+    #move_messages_count {
+        /* Disabled pending fixes to the logic. */
+        display: none;
     }
 
     .topic_stream_edit_header {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-
         #select_stream_id {
             border-left: 0;
             padding-left: 0;
@@ -946,6 +913,31 @@ ul.popover-group-menu-member-list {
             position: fixed;
             top: 125px;
             left: 40px;
+        }
+    }
+
+    .topic_move_breadcrumb_messages {
+        margin: 0 5px 5px 0;
+        align-self: center;
+        width: 100%;
+
+        & label.checkbox {
+            /* Place the checkboxes on their own lines. */
+            display: block;
+
+            & input {
+                margin: 0;
+                vertical-align: baseline;
+            }
+
+            & + label.checkbox {
+                margin-top: 10px;
+            }
+        }
+
+        & label {
+            display: inline-block;
+            margin-right: 10px;
         }
     }
 }
@@ -1005,13 +997,13 @@ ul.popover-group-menu-member-list {
     .popover-menu-user-avatar-container {
         position: relative;
         flex-shrink: 0;
-        width: 64px;
-        height: 64px;
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
     }
 
     .popover-menu-user-avatar {
-        width: 64px;
-        height: 64px;
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
         border-radius: 4px;
         background-size: cover;
         background-position: center;
@@ -1019,12 +1011,21 @@ ul.popover-group-menu-member-list {
 
     .popover-menu-user-presence {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: var(--length-user-status-circle-popover-menu);
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
+        background-color: var(--color-background-popover-menu);
+        border: solid 1px var(--color-background-popover-menu);
         border-radius: 50%;
+
+        &.deactivated-user-icon {
+            font-size: 0.8em;
+            background-color: var(--color-background-popover-menu);
+            padding: 1px;
+        }
     }
 
     .popover-menu-user-info {
@@ -1040,7 +1041,11 @@ ul.popover-group-menu-member-list {
         /* 20px at 18px/1em */
         line-height: 1.1111em;
         color: var(--color-text-full-name);
-        word-break: break-word;
+        overflow-wrap: anywhere;
+
+        .zulip-icon.zulip-icon-bot {
+            vertical-align: middle;
+        }
     }
 
     .popover-menu-user-type {
@@ -1052,11 +1057,6 @@ ul.popover-group-menu-member-list {
         color: var(--color-text-item);
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .user_circle_empty {
-        background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
     }
 }
 
@@ -1071,31 +1071,14 @@ ul.popover-group-menu-member-list {
 #popover-menu-copy-email,
 .copy-custom-profile-field-link {
     display: flex;
-    padding: 3px 2px 1px;
-    border-radius: 4px;
-    color: var(--color-text-item);
-    text-decoration: none !important;
     margin-left: auto;
 
     &.hide_copy_icon {
         display: none;
     }
 
-    &:hover {
-        color: var(--color-copy-btn-hover) !important;
-        background-color: var(--color-copy-btn-bg-hover);
-    }
-
-    &:active {
-        color: var(--color-copy-btn-active) !important;
-        background-color: var(--color-copy-btn-bg-active);
-    }
-
     &:focus-visible {
         outline: 1px solid var(--color-outline-focus) !important;
-        outline-offset: 0;
-        color: var(--color-copy-btn-hover) !important;
-        background-color: var(--color-copy-btn-bg-hover);
     }
 }
 
@@ -1122,19 +1105,15 @@ ul.popover-group-menu-member-list {
 
     .status-circle {
         position: absolute;
-        width: var(--length-user-status-circle);
-        height: var(--length-user-status-circle);
         top: unset;
         left: unset;
+        font-size: var(--length-user-status-circle);
+        line-height: 1;
         right: -1px;
         bottom: -1px;
-        border: solid 1px var(--color-background);
-        border-radius: 50%;
-    }
-
-    .user_circle_empty {
         background-color: var(--color-background-popover-menu);
-        border-color: hsl(0deg 0% 50%);
+        border: solid 1px var(--color-background-popover-menu);
+        border-radius: 50%;
     }
 
     .text-area {
@@ -1154,7 +1133,7 @@ ul.popover-group-menu-member-list {
         line-height: 1.1111em;
         color: var(--color-text-full-name) !important;
         max-width: 150px;
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     .user-type {
@@ -1208,12 +1187,16 @@ ul.popover-group-menu-member-list {
         flex-flow: row nowrap;
         align-items: flex-start;
         gap: 5px;
+        /* 3px at 15px/1em, 10px at 15px/1em */
         padding: 0.2em 0.6666em;
         /* 15px at 15px/1em */
         font-size: 1em;
         /* 16px at 15px/1em */
         line-height: 1.0667em;
-        min-height: 26px;
+        /* 26px at 16px/1em - this height was carried forward
+           despite the information density change in 15px > 16px,
+           so we calculate its height to the 16px em in use. */
+        min-height: 1.625em;
 
         .popover-menu-icon {
             /* 16px at 15px/1em */
@@ -1291,9 +1274,20 @@ ul.popover-group-menu-member-list {
         height: 1.0667em;
     }
 
-    .zulip-icon {
+    .popover-menu-icon {
         position: relative;
         top: -1px;
+    }
+
+    .info-density-controls {
+        display: flex;
+        padding: 0.125em 0.625em;
+        gap: 0.5em;
+
+        .zulip-icon {
+            width: 0.933em;
+            height: 0.933em;
+        }
     }
 }
 
@@ -1334,6 +1328,19 @@ ul.popover-group-menu-member-list {
     .simplebar-content {
         min-width: var(--user-group-info-popover-min-width);
     }
+}
+
+#stream-card-popover {
+    .simplebar-content {
+        min-width: var(--stream-card-popover-min-width);
+    }
+}
+
+.color-picker-popover {
+    --popover-menu-max-width: calc(
+        var(--padding-color-swatch-list) * 2 + var(--size-color-swatch) * 6 +
+            var(--grid-gap-color-swatch) * 5
+    );
 }
 
 .personal-menu-clear-status {
@@ -1452,6 +1459,21 @@ ul.popover-group-menu-member-list {
             color: var(--color-gear-menu-blue-text);
         }
     }
+
+    .theme-switcher {
+        /* Left and right margins are set to match the alignment with
+        other items in the menu. Other elements have space of 0.6666em
+        on both sides, but they have font size set to 1em and theme
+        switcher has font size set to 1.0666em. So, we need space of
+        0.6666/1.0666 em on each side. */
+        margin: 0 0.625em;
+    }
+
+    .info-density-controls {
+        /* Left and right paddings are set to match the alignment with
+        other items in the menu. */
+        padding: 0.4em 0.6666em 0.25em;
+    }
 }
 
 ul.popover-menu-list {
@@ -1487,4 +1509,48 @@ ul.popover-menu-list {
         border-radius: 3px;
         border: 1px solid var(--color-border-popover-hotkey-hint);
     }
+}
+
+.condensed-views-popover-menu {
+    .popover-menu-link:has(.label-and-unread-wrapper) {
+        align-items: center;
+
+        .popover-menu-icon {
+            margin-top: 1px;
+        }
+
+        .label-and-unread-wrapper {
+            /* Occupy the maximum width of the
+               parent flex container. */
+            flex: 1 0 max-content;
+            display: flex;
+            gap: 5px;
+            align-items: baseline;
+        }
+
+        .popover-menu-label {
+            margin-top: 0;
+        }
+
+        .unread_count {
+            margin: 0 0 0 6px;
+            border-color: var(--color-border-unread-counter-popover-menu);
+            width: max-content;
+            height: auto;
+            line-height: 1.2445em;
+            align-self: baseline;
+        }
+    }
+}
+
+#groups-to-add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#user-group-to-add {
+    flex: 1;
+    min-width: 0;
 }

@@ -10,9 +10,9 @@
 
 {!start-composing.md!}
 
-2. Type `@` followed by a few letters from a name or email address.
+1. Type `@` followed by a few letters from a name or email address.
 
-3. Pick the appropriate user or user group from the autocomplete.
+1. Pick the appropriate user or user group from the autocomplete.
 
 {end_tabs}
 
@@ -95,5 +95,5 @@ channels](/help/channel-notifications).
 
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Quote and reply](/help/quote-and-reply)
+* [Quote message](/help/quote-or-forward-a-message)
 * [View your mentions](/help/view-your-mentions)

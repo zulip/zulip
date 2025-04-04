@@ -3,14 +3,17 @@ import logging
 import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from difflib import unified_diff
 from typing import Any
 
 import bmemcached
 import orjson
+import pyvips
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
+from django.core.management.base import CommandError
 from django.core.validators import validate_email
 from django.db import connection, transaction
 from django.db.backends.utils import CursorWrapper
@@ -19,6 +22,7 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
+from version import ZULIP_VERSION
 from zerver.actions.create_realm import set_default_for_realm_permission_group_settings
 from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.user_settings import do_change_avatar_fields
@@ -28,13 +32,23 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.mime_types import guess_type
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
-from zerver.lib.streams import render_stream_description
-from zerver.lib.thumbnail import BadImageError
+from zerver.lib.streams import (
+    get_stream_permission_default_group,
+    render_stream_description,
+    update_stream_active_status_for_realm,
+)
+from zerver.lib.thumbnail import (
+    THUMBNAIL_ACCEPT_IMAGE_TYPES,
+    BadImageError,
+    get_user_upload_previews,
+    maybe_thumbnail,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
@@ -69,6 +83,7 @@ from zerver.models import (
     RealmPlayground,
     RealmUserDefault,
     Recipient,
+    SavedSnippet,
     ScheduledMessage,
     Service,
     Stream,
@@ -85,6 +100,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.users import get_system_bot, get_user_profile_by_id
@@ -152,6 +168,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "realmuserdefault": {},
     "scheduledmessage": {},
     "onboardingusermessage": {},
+    "savedsnippet": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -159,7 +176,16 @@ id_map_to_list: dict[str, dict[int, list[int]]] = {
 }
 
 path_maps: dict[str, dict[str, str]] = {
-    "attachment_path": {},
+    # Maps original attachment path pre-import to the final, post-import
+    # attachment path.
+    "old_attachment_path_to_new_path": {},
+    # Inverse of old_attachment_path_to_new_path.
+    "new_attachment_path_to_old_path": {},
+    # Maps the new (post-import) attachment path to the absolute path to the file
+    # in the on-disk export data that we're importing.
+    # Allows code running after this is filled to access file contents
+    # without needing to go through S3 to get it.
+    "new_attachment_path_to_local_data_path": {},
 }
 
 message_id_to_attachments: dict[str, dict[int, list[str]]] = {
@@ -210,23 +236,43 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
     for message in data[message_table]:
         if message["has_attachment"] is True:
             for attachment_path in message_id_to_attachments[message_table][message["id"]]:
-                message["content"] = message["content"].replace(
-                    attachment_path, path_maps["attachment_path"][attachment_path]
-                )
+                old_path = path_maps["new_attachment_path_to_old_path"][attachment_path]
+                message["content"] = message["content"].replace(old_path, attachment_path)
 
                 if message["rendered_content"]:
                     message["rendered_content"] = message["rendered_content"].replace(
-                        attachment_path, path_maps["attachment_path"][attachment_path]
+                        old_path, attachment_path
                     )
 
 
-def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
+def fix_stream_permission_group_settings(
+    data: TableData, system_groups_name_dict: dict[str, NamedUserGroup]
+) -> None:
     table = get_db_table(Stream)
-    admins_group = NamedUserGroup.objects.get(
-        name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
-    )
     for stream in data[table]:
-        stream["can_remove_subscribers_group"] = admins_group
+        for setting_name in Stream.stream_permission_group_settings:
+            if setting_name == "can_send_message_group" and "stream_post_policy" in stream:
+                # This block is needed when importing data for Rocket.Chat.
+                # While converting the data into Zulip supported format,
+                # stream_post_policy for read-only Rocket.Chat channel is
+                # set to STREAM_POST_POLICY_MODERATORS and so we need to
+                # set the can_send_message_group setting accordingly.
+                if stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_MODERATORS:
+                    stream[setting_name] = system_groups_name_dict[SystemGroups.MODERATORS]
+                else:
+                    stream[setting_name] = get_stream_permission_default_group(
+                        setting_name, system_groups_name_dict
+                    )
+
+                # Delete the stream_post_policy once can_send_message_group
+                # field is set correctly.
+                del stream["stream_post_policy"]
+
+                continue
+
+            stream[setting_name] = get_stream_permission_default_group(
+                setting_name, system_groups_name_dict
+            )
 
 
 def create_subscription_events(data: TableData, realm_id: int) -> None:
@@ -266,7 +312,7 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
                 modified_stream_id=stream_id,
                 event_last_message_id=event_last_message_id,
                 event_time=event_time,
-                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
             )
         )
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
@@ -344,6 +390,11 @@ def fix_message_rendered_content(
     This function sets the rendered_content of the messages we're importing.
     """
     for message in messages:
+        if content_key not in message:
+            # Message-edit entries include topic moves, which don't
+            # have any content changes to process.
+            continue
+
         if message[rendered_content_key] is not None:
             # For Zulip->Zulip imports, we use the original rendered
             # Markdown; this avoids issues where e.g. a mention can no
@@ -355,7 +406,7 @@ def fix_message_rendered_content(
             # similar syntax in the rendered HTML.
             soup = BeautifulSoup(message[rendered_content_key], "html.parser")
 
-            user_mentions = soup.findAll("span", {"class": "user-mention"})
+            user_mentions = soup.find_all("span", {"class": "user-mention"})
             if len(user_mentions) != 0:
                 user_id_map = ID_MAP["user_profile"]
                 for mention in user_mentions:
@@ -372,7 +423,7 @@ def fix_message_rendered_content(
                         mention["data-user-id"] = str(user_id_map[old_user_id])
                 message[rendered_content_key] = str(soup)
 
-            stream_mentions = soup.findAll("a", {"class": "stream"})
+            stream_mentions = soup.find_all("a", {"class": "stream"})
             if len(stream_mentions) != 0:
                 stream_id_map = ID_MAP["stream"]
                 for mention in stream_mentions:
@@ -381,7 +432,7 @@ def fix_message_rendered_content(
                         mention["data-stream-id"] = str(stream_id_map[old_stream_id])
                 message[rendered_content_key] = str(soup)
 
-            user_group_mentions = soup.findAll("span", {"class": "user-group-mention"})
+            user_group_mentions = soup.find_all("span", {"class": "user-group-mention"})
             if len(user_group_mentions) != 0:
                 user_group_id_map = ID_MAP["usergroup"]
                 for mention in user_group_mentions:
@@ -389,6 +440,18 @@ def fix_message_rendered_content(
                     if old_user_group_id in user_group_id_map:
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
                 message[rendered_content_key] = str(soup)
+
+            # Enqueue thumbnailing of all thumbnails in the message.
+            # We do this without taking a lock on the ImageAttachment
+            # rows, because the race here is that the images
+            # referenced by this message were encountered previously,
+            # and are currently being thumbnailed -- which will
+            # worst-case result in the images being enqueued a second
+            # time, and a no-op when those are processed.  The return
+            # value will also be out of date -- but that is irrelevant
+            # in this use case.
+            get_user_upload_previews(realm.id, message[content_key])
+
             continue
 
         try:
@@ -404,6 +467,7 @@ def fix_message_rendered_content(
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
 
+            # This also enqueues thumbnailing for images that are referenced
             rendered_content = markdown_convert(
                 content=content,
                 realm_alert_words_automaton=realm_alert_words_automaton,
@@ -750,15 +814,21 @@ def bulk_import_named_user_groups(data: TableData) -> None:
             group["name"],
             group["description"],
             group["is_system_group"],
+            group["can_add_members_group_id"],
+            group["can_join_group_id"],
+            group["can_leave_group_id"],
             group["can_manage_group_id"],
             group["can_mention_group_id"],
+            group["can_remove_members_group_id"],
+            group["deactivated"],
+            group["date_created"],
         )
         for group in data["zerver_namedusergroup"]
     ]
 
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_manage_group_id, can_mention_group_id)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_add_members_group_id, can_join_group_id,  can_leave_group_id, can_manage_group_id, can_mention_group_id, can_remove_members_group_id, deactivated, date_created)
         VALUES %s
         """
     )
@@ -868,7 +938,7 @@ def process_emojis(
         # while 3rd party exports don't use the deactivated field, so this shouldn't
         # particularly matter.
         RealmEmoji.objects.filter(
-            name=record["name"], realm_id=user_profile.realm_id, deactivated=False
+            file_name=record["file_name"], realm_id=user_profile.realm_id, deactivated=False
         ).update(is_animated=True)
 
 
@@ -964,7 +1034,11 @@ def import_uploads(
             relative_path = upload_backend.generate_message_upload_path(
                 str(record["realm_id"]), sanitize_name(os.path.basename(record["path"]))
             )
-            path_maps["attachment_path"][record["s3_path"]] = relative_path
+            path_maps["old_attachment_path_to_new_path"][record["s3_path"]] = relative_path
+            path_maps["new_attachment_path_to_old_path"][relative_path] = record["s3_path"]
+            path_maps["new_attachment_path_to_local_data_path"][relative_path] = os.path.join(
+                import_dir, record["path"]
+            )
 
         if s3_uploads:
             key = bucket.Object(relative_path)
@@ -1099,6 +1173,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
 
+    migration_status_filename = os.path.join(import_dir, "migration_status.json")
+    if not os.path.exists(migration_status_filename):
+        raise Exception(
+            "Missing migration_status.json file! Make sure you're using the same Zulip version as the exported realm."
+        )
+    logging.info("Checking migration status of exported realm")
+    with open(migration_status_filename) as f:
+        migration_status: MigrationStatusJson = orjson.loads(f.read())
+    check_migration_status(migration_status)
+
     realm_data_filename = os.path.join(import_dir, "realm.json")
     if not os.path.exists(realm_data_filename):
         raise Exception("Missing realm.json file!")
@@ -1149,6 +1233,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(PresenceSequence, data, "presencesequence")
 
     # Now we prepare to import the Realm table
+    re_map_foreign_keys(data, "zerver_realm", "moderation_request_channel", related_table="stream")
     re_map_foreign_keys(
         data, "zerver_realm", "new_stream_announcements_stream", related_table="stream"
     )
@@ -1178,8 +1263,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         if "zerver_usergroup" not in data:
             # For now a dummy value of -1 is given to groups fields which
             # is changed later before the transaction is committed.
-            for permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
-                setattr(realm, permission_configuration.id_field_name, -1)
+            for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+                setattr(realm, setting_name + "_id", -1)
 
         realm.save()
 
@@ -1190,17 +1275,25 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             # We need to enforce the invariant that every realm must have a PresenceSequence.
             PresenceSequence.objects.create(realm=realm, last_update_id=0)
 
+        named_user_group_id_to_creator_id = {}
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
             bulk_import_model(data, UserGroup)
 
             if "zerver_namedusergroup" in data:
                 re_map_foreign_keys(
+                    data, "zerver_namedusergroup", "creator", related_table="user_profile"
+                )
+                fix_datetime_fields(data, "zerver_namedusergroup")
+                re_map_foreign_keys(
                     data, "zerver_namedusergroup", "usergroup_ptr", related_table="usergroup"
                 )
                 re_map_foreign_keys(
                     data, "zerver_namedusergroup", "realm_for_sharding", related_table="realm"
                 )
+                for group in data["zerver_namedusergroup"]:
+                    creator_id = group.pop("creator_id", None)
+                    named_user_group_id_to_creator_id[group["id"]] = creator_id
                 for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
                     re_map_foreign_keys(
                         data,
@@ -1212,9 +1305,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         # We expect Zulip server exports to contain these system groups,
         # this logic here is needed to handle the imports from other services.
-        role_system_groups_dict: dict[int, NamedUserGroup] | None = None
+        system_groups_name_dict: dict[str, NamedUserGroup] | None = None
         if "zerver_usergroup" not in data:
-            role_system_groups_dict = create_system_user_groups_for_realm(realm)
+            system_groups_name_dict = create_system_user_groups_for_realm(realm)
 
         # Email tokens will automatically be randomly generated when the
         # Stream objects are created by Django.
@@ -1232,15 +1325,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             creator_id = stream.pop("creator_id", None)
             stream_id_to_creator_id[stream["id"]] = creator_id
 
-        if role_system_groups_dict is not None:
+        if system_groups_name_dict is not None:
             # Because the system user groups are missing, we manually set up
-            # the defaults for can_remove_subscribers_group for all the
+            # the defaults for stream permission settings for all the
             # streams.
-            fix_streams_can_remove_subscribers_group_column(data, realm)
+            fix_stream_permission_group_settings(data, system_groups_name_dict)
         else:
-            re_map_foreign_keys(
-                data, "zerver_stream", "can_remove_subscribers_group", related_table="usergroup"
-            )
+            for setting_name in Stream.stream_permission_group_settings:
+                re_map_foreign_keys(data, "zerver_stream", setting_name, related_table="usergroup")
         # Handle rendering of stream descriptions for import from non-Zulip
         for stream in data["zerver_stream"]:
             stream["rendered_description"] = render_stream_description(stream["description"], realm)
@@ -1292,6 +1384,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     for stream in streams:
         stream.creator_id = stream_id_to_creator_id[stream.id]
     Stream.objects.bulk_update(streams, ["creator_id"])
+
+    if "zerver_namedusergroup" in data:
+        # UserProfiles have been loaded, so now we're ready to set .creator_id
+        # for groups based on the mapping we saved earlier.
+        named_user_groups = NamedUserGroup.objects.filter(
+            id__in=named_user_group_id_to_creator_id.keys()
+        )
+        for group in named_user_groups:
+            group.creator_id = named_user_group_id_to_creator_id[group.id]
+        NamedUserGroup.objects.bulk_update(named_user_groups, ["creator_id"])
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
@@ -1389,11 +1491,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # log event, even if the export was generated by an export tool
     # that does not create RealmAuditLog events.
     if not RealmAuditLog.objects.filter(
-        realm=realm, event_type=RealmAuditLog.REALM_CREATED
+        realm=realm, event_type=AuditLogEventType.REALM_CREATED
     ).exists():
         RealmAuditLog.objects.create(
             realm=realm,
-            event_type=RealmAuditLog.REALM_CREATED,
+            event_type=AuditLogEventType.REALM_CREATED,
             event_time=realm.date_created,
             # Mark these as backfilled, since they weren't created
             # when the realm was actually created, and thus do not
@@ -1416,6 +1518,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_alertword", "realm", related_table="realm")
         update_model_ids(AlertWord, data, "alertword")
         bulk_import_model(data, AlertWord)
+
+    if "zerver_savedsnippet" in data:
+        fix_datetime_fields(data, "zerver_savedsnippet")
+        re_map_foreign_keys(
+            data, "zerver_savedsnippet", "user_profile", related_table="user_profile"
+        )
+        re_map_foreign_keys(data, "zerver_savedsnippet", "realm", related_table="realm")
+        update_model_ids(SavedSnippet, data, "savedsnippet")
+        bulk_import_model(data, SavedSnippet)
 
     if "zerver_onboardingstep" in data:
         fix_datetime_fields(data, "zerver_onboardingstep")
@@ -1466,8 +1577,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # We expect Zulip server exports to contain UserGroupMembership objects
     # for system groups, this logic here is needed to handle the imports from
     # other services.
-    if role_system_groups_dict is not None:
-        add_users_to_system_user_groups(realm, user_profiles, role_system_groups_dict)
+    if system_groups_name_dict is not None:
+        add_users_to_system_user_groups(realm, user_profiles, system_groups_name_dict)
 
     if "zerver_botstoragedata" in data:
         re_map_foreign_keys(
@@ -1574,6 +1685,24 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     with open(attachments_file, "rb") as f:
         attachment_data = orjson.loads(f.read())
 
+    # We need to import ImageAttachments before messages, as the message rendering logic
+    # checks for existence of ImageAttachment records to determine if HTML content for image
+    # preview needs to be added to a message.
+    # In order for ImageAttachments to be correctly created, we need to know the new path_ids
+    # and content_types of the attachments.
+    #
+    # Begin by fixing up the Attachment data.
+    fix_attachments_data(attachment_data)
+    # Now we're ready create ImageAttachment rows; thumbnailing is
+    # enqueued when the messages are rendered, to prevent races if the
+    # thumbnailing can run _during_ rendering.  This order ensures
+    # that during message import, rendered_content will be generated
+    # with placeholders for all image previews, which are updated into
+    # their thumbnails as thumbnailing comes along after.  The
+    # important detail here is that **only** ImageAttachment rows (not
+    # Attachment rows) are ready (or needed) at the time of message
+    # import.
+    create_image_attachments(realm, attachment_data)
     map_messages_to_attachments(attachment_data)
 
     # Import zerver_message and zerver_usermessage
@@ -1664,11 +1793,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm.deactivated = data["zerver_realm"][0]["deactivated"]
     realm.save()
 
+    # If realm is active, update the stream active status.
+    if not realm.deactivated:
+        number_of_days = Stream.LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE
+        date_days_ago = timezone_now() - timedelta(days=number_of_days)
+        update_stream_active_status_for_realm(realm, date_days_ago)
+
     # This helps to have an accurate user count data for the billing
     # system if someone tries to signup just after doing import.
     RealmAuditLog.objects.create(
         realm=realm,
-        event_type=RealmAuditLog.REALM_IMPORTED,
+        event_type=AuditLogEventType.REALM_IMPORTED,
         event_time=timezone_now(),
         extra_data={
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
@@ -1684,7 +1819,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # 'zulip_update_announcements_level' is set to None by default.
     # Set it to the latest level to avoid receiving older update messages.
     is_realm_imported_from_other_zulip_server = RealmAuditLog.objects.filter(
-        realm=realm, event_type=RealmAuditLog.REALM_EXPORTED, acting_user=None
+        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED
     ).exists()
     if not is_realm_imported_from_other_zulip_server:
         send_zulip_update_announcements_to_realm(
@@ -1892,10 +2027,6 @@ def import_attachments(data: TableData) -> None:
         "scheduledmessage_id",
     )
 
-    # Update 'path_id' for the attachments
-    for attachment in data[parent_db_table_name]:
-        attachment["path_id"] = path_maps["attachment_path"][attachment["path_id"]]
-
     # Next, load the parent rows.
     bulk_import_model(data, parent_model)
 
@@ -1920,6 +2051,35 @@ def import_attachments(data: TableData) -> None:
             execute_values(cursor.cursor, sql_template, tups)
 
             logging.info("Successfully imported M2M table %s", m2m_table_name)
+
+
+def fix_attachments_data(attachment_data: TableData) -> None:
+    for attachment in attachment_data["zerver_attachment"]:
+        attachment["path_id"] = path_maps["old_attachment_path_to_new_path"][attachment["path_id"]]
+
+        # In the case of images, content_type needs to be set for thumbnailing.
+        # Zulip exports set this, but third-party exports may not.
+        if attachment.get("content_type") is None:
+            guessed_content_type = guess_type(attachment["path_id"])[0]
+            if guessed_content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+                attachment["content_type"] = guessed_content_type
+
+
+def create_image_attachments(realm: Realm, attachment_data: TableData) -> None:
+    for attachment in attachment_data["zerver_attachment"]:
+        if attachment["content_type"] not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+            continue
+
+        path_id = attachment["path_id"]
+        content_type = attachment["content_type"]
+
+        # Since we have it, use the on-disk version of the file to
+        # examine the header and determine if it needs thumbnailing;
+        # the actual thumbnail worker will still need to re-fetch the
+        # image from S3.
+        local_filename = path_maps["new_attachment_path_to_local_data_path"][path_id]
+        pyvips_source = pyvips.Source.new_from_file(local_filename)
+        maybe_thumbnail(pyvips_source, content_type, path_id, realm.id, skip_events=True)
 
 
 def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:
@@ -1956,13 +2116,18 @@ def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: s
 def add_users_to_system_user_groups(
     realm: Realm,
     user_profiles: list[UserProfile],
-    role_system_groups_dict: dict[int, NamedUserGroup],
+    system_groups_name_dict: dict[str, NamedUserGroup],
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,
         realm=realm,
         is_system_group=True,
     )
+
+    role_system_groups_dict: dict[int, NamedUserGroup] = dict()
+    for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
+        group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
+        role_system_groups_dict[role] = system_groups_name_dict[group_name]
 
     usergroup_memberships = []
     for user_profile in user_profiles:
@@ -1981,9 +2146,96 @@ def add_users_to_system_user_groups(
             realm=realm,
             modified_user=membership.user_profile,
             modified_user_group=membership.user_group.named_user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=None,
         )
         for membership in usergroup_memberships
     )
+
+
+ZULIP_CLOUD_ONLY_APP_NAMES = ["zilencer", "corporate"]
+
+
+def check_migration_status(exported_migration_status: MigrationStatusJson) -> None:
+    """
+    This function checks the compatibility of an exported realm with the local
+    server's migration status. It asserts that the two realms have identical
+    migration statuses for both applied and on-disk migrations.
+
+    However, it does not explicitly check the exact details of individual
+    migrations, such as their dependencies, replacements (if any), or whether
+    custom migrations are identical.
+    """
+    mismatched_migrations_log: dict[str, str] = {}
+    local_migration_status = MigrationStatusJson(
+        migrations_by_app=parse_migration_status(), zulip_version=ZULIP_VERSION
+    )
+
+    # Different major versions are the most common form of mismatch
+    # and should get a nice error message focused on that, not
+    # migrations.
+    #
+    # We could split on `-`, to get the maintenance release version,
+    # but unless migrations are different, it should generally be safe
+    # to import across minor release differences.
+    exported_primary_version = exported_migration_status["zulip_version"].split(".")[0]
+    local_primary_version = local_migration_status["zulip_version"].split(".")[0]
+    if exported_primary_version != local_primary_version:
+        raise CommandError(
+            "Error: Export was generated on a different Zulip major version.\n"
+            f"Export version: {exported_migration_status['zulip_version']}\n"
+            f"Server version: {local_migration_status['zulip_version']}"
+        )
+    exported_migrations_by_app = exported_migration_status["migrations_by_app"]
+    local_migrations_by_app = local_migration_status["migrations_by_app"]
+    all_apps = set(exported_migrations_by_app.keys()).union(set(local_migrations_by_app.keys()))
+
+    for app in all_apps:
+        exported_app_migrations = exported_migrations_by_app.get(app)
+        local_app_migrations = local_migrations_by_app.get(app)
+
+        if app in ZULIP_CLOUD_ONLY_APP_NAMES and (
+            local_app_migrations is None or exported_app_migrations is None
+        ):
+            # This applications are expected to be present only on
+            # Zulip Cloud, so don't warn about them.
+            continue
+
+        if not exported_app_migrations:
+            logging.warning("This server has '%s' app installed, but exported realm does not.", app)
+        elif not local_app_migrations:
+            logging.warning("Exported realm has '%s' app installed, but this server does not.", app)
+        elif set(local_app_migrations) != set(exported_app_migrations):
+            # We sort the list of migrations to ensure the same sets of
+            # migrations don't somehow ordered differently. This has been
+            # reported to happen when importing Zulip Cloud to self-host.
+            #
+            # The order of migrations listed in `migration_status.json`
+            # don't actually matter, migrations specify which other
+            # migrations they depend on.
+            diff = list(
+                unified_diff(
+                    sorted(exported_app_migrations), sorted(local_app_migrations), lineterm="", n=1
+                )
+            )
+            mismatched_migrations_log[f"\n'{app}' app:\n"] = "\n".join(diff[3:])
+
+    if mismatched_migrations_log:
+        # The order of the list output by the diff is nondeterministic, so the
+        # error logs needs to be sorted first.
+        sorted_error_log: list[str] = [
+            f"{key}{value}" for key, value in sorted(mismatched_migrations_log.items())
+        ]
+
+        error_message = (
+            "Error: Export was generated on a different Zulip version.\n"
+            f"Export version: {exported_migration_status['zulip_version']}\n"
+            f"Server version: {local_migration_status['zulip_version']}\n"
+            "\n"
+            "Database formats differ between the exported realm and this server.\n"
+            "Printing migrations that differ between the versions:\n"
+            "--- exported realm\n"
+            "+++ this server"
+        ) + "\n".join(sorted_error_log)
+        raise CommandError(error_message)

@@ -82,6 +82,8 @@ the job. Once GitHub Actions fetches the image from Docker Hub, it will spin
 up a docker container. See [images](#images) section to know more about
 the images we use in GitHub Actions for testing.
 
+[docker-hub]: https://hub.docker.com/r/zulip/ci
+
 After booting the container from the configured image, GitHub Actions will
 create the directory mentioned in `working_directory` and all the
 steps will be run from here.
@@ -122,6 +124,6 @@ would have used had the cache not existed. In practice, bugs are
 always possible, so be mindful of this possibility.
 
 A consequence of this caching is that test jobs for branches which
-modify `package.json`, `requirements/`, and other key dependencies
+modify `package.json`, `pyproject.toml`, and other key dependencies
 will be significantly slower than normal, because they won't get to
 benefit from the cache.

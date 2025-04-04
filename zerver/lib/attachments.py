@@ -50,9 +50,7 @@ def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None
     attachment.delete()
 
 
-def validate_attachment_request_for_spectator_access(
-    realm: Realm, attachment: Attachment
-) -> bool | None:
+def validate_attachment_request_for_spectator_access(realm: Realm, attachment: Attachment) -> bool:
     if attachment.realm != realm:
         return False
 
@@ -92,15 +90,15 @@ def validate_attachment_request(
     maybe_user_profile: UserProfile | AnonymousUser,
     path_id: str,
     realm: Realm | None = None,
-) -> bool | None:
+) -> tuple[bool, Attachment | None]:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
     except Attachment.DoesNotExist:
-        return None
+        return False, None
 
     if isinstance(maybe_user_profile, AnonymousUser):
         assert realm is not None
-        return validate_attachment_request_for_spectator_access(realm, attachment)
+        return validate_attachment_request_for_spectator_access(realm, attachment), attachment
 
     user_profile = maybe_user_profile
     assert isinstance(user_profile, UserProfile)
@@ -124,39 +122,54 @@ def validate_attachment_request(
 
     if user_profile == attachment.owner:
         # If you own the file, you can access it.
-        return True
+        return True, attachment
     if (
         attachment.is_realm_public
         and attachment.realm == user_profile.realm
         and user_profile.can_access_public_streams()
     ):
         # Any user in the realm can access realm-public files
-        return True
+        return True, attachment
 
     messages = attachment.messages.all()
-    if UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
-        # If it was sent in a direct message or private stream
-        # message, then anyone who received that message can access it.
-        return True
 
-    # The user didn't receive any of the messages that included this
-    # attachment.  But they might still have access to it, if it was
-    # sent to a stream they are on where history is public to
-    # subscribers.
+    usermessages_channel_ids = set()
+    usermessage_rows = UserMessage.objects.filter(
+        user_profile=user_profile, message__in=messages
+    ).select_related("message", "message__recipient")
+    for um in usermessage_rows:
+        if not um.message.is_stream_message():
+            # If the attachment was sent in a direct message or group direct
+            # message then anyone who received that message can access it.
+            return True, attachment
+        else:
+            usermessages_channel_ids.add(um.message.recipient.type_id)
 
-    # These are subscriptions to a stream one of the messages was sent to
-    relevant_stream_ids = Subscription.objects.filter(
+    # These are subscriptions to a channel one of the messages was sent to
+    relevant_channel_ids = Subscription.objects.filter(
         user_profile=user_profile,
         active=True,
         recipient__type=Recipient.STREAM,
         recipient__in=[m.recipient_id for m in messages],
     ).values_list("recipient__type_id", flat=True)
-    if len(relevant_stream_ids) == 0:
-        return False
+
+    if usermessages_channel_ids & set(relevant_channel_ids):
+        # If the attachment was sent in a channel with public
+        # or protected history and the user is still subscribed
+        # to the channel then anyone who received that message
+        # can access it.
+        return True, attachment
+
+    # The user didn't receive any of the messages that included this
+    # attachment. But they might still have access to it, if it was
+    # sent to a stream they are on where history is public to
+    # subscribers.
+    if len(relevant_channel_ids) == 0:
+        return False, attachment
 
     return Stream.objects.filter(
-        id__in=relevant_stream_ids, history_public_to_subscribers=True
-    ).exists()
+        id__in=relevant_channel_ids, history_public_to_subscribers=True
+    ).exists(), attachment
 
 
 def get_old_unclaimed_attachments(

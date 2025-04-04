@@ -107,7 +107,7 @@
                                   class="integration-lozenge integration-{{ integration.name }} legacy"{% else %}
                                   class="integration-lozenge integration-{{ integration.name }}"
                                   {% endif %}
-                                  data-categories="{{ integration.categories }}"
+                                  data-categories='{{ integration.get_translated_categories()|tojson }}'
                                   data-name="{{ integration.name }}">
                                     <img class="integration-logo" src="{{ integration.logo_url }}"
                                       alt="{{ integration.display_name }} logo"/>

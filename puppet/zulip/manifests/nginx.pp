@@ -56,6 +56,7 @@ class zulip::nginx {
   }
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
+  $lb_rejects_http_requests = zulipconf('loadbalancer', 'rejects_http_requests', false)
   file { '/etc/nginx/zulip-include/trusted-proto':
     ensure  => file,
     require => Package[$zulip::common::nginx],

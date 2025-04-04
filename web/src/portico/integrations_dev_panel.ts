@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as channel from "../channel";
-import * as util from "../util";
+import * as channel from "../channel.ts";
+import * as util from "../util.ts";
 // Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 
@@ -248,7 +248,7 @@ function handle_unsuccessful_response(response: JQuery.jqXHR): void {
         // Django returning an HTML response containing a stack trace
         // with useful debugging information regarding the backend
         // code.
-        document.write(response.responseText);
+        set_results_notice(response.responseText, "warning");
     }
     return;
 }

@@ -2,7 +2,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as helpers from "./helpers";
+import {the} from "../util.ts";
+
+import * as helpers from "./helpers.ts";
 
 const is_remotely_hosted = $("#sponsorship-form").attr("data-is-remotely-hosted") === "True";
 
@@ -38,6 +40,15 @@ function validate_data(data: helpers.FormDataObject): boolean {
     if (data.expected_total_users.trim() === "") {
         $("#sponsorship-expected-total-users-error").text(
             "Expected number of users cannot be blank.",
+        );
+        hide_submit_loading_indicator();
+        found_error = true;
+    }
+
+    assert(data.plan_to_use_zulip !== undefined);
+    if (data.plan_to_use_zulip.trim() === "") {
+        $("#sponsorship-plan-to-use-zulip-error").text(
+            "Description of how you plan to use Zulip cannot be blank.",
         );
         hide_submit_loading_indicator();
         found_error = true;
@@ -83,6 +94,11 @@ function create_ajax_request(): void {
 }
 
 export function initialize(): void {
+    if ($(".sponsorship-status-page").length > 0) {
+        // Sponsorship form is not present on sponsorship status page.
+        return;
+    }
+
     $("#sponsorship-button").on("click", (e) => {
         if (!helpers.is_valid_input($("#sponsorship-form"))) {
             return;
@@ -93,9 +109,8 @@ export function initialize(): void {
 
     function update_discount_details(): void {
         const selected_org_type =
-            $<HTMLSelectElement>("select#organization-type")
-                .find(":selected")
-                .attr("data-string-value") ?? "";
+            the($<HTMLSelectElement>("select#organization-type")).selectedOptions[0]?.dataset
+                .stringValue ?? "";
         helpers.update_discount_details(selected_org_type, is_remotely_hosted);
     }
 

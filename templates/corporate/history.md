@@ -129,6 +129,12 @@ badge](https://www.capterra.com/p/197945/Zulip/).
 
 ## Press highlights
 
+- September 2024: An in-depth interview with Zulip’s head of product [on The
+  Changelog podcast](https://changelog.com/podcast/607): *“We talk about Zulip’s
+  origins, how it’s open source, the way it’s led, no VC funding, what makes it
+  different/better, how you can self-host it or use their cloud, moving to
+  Zulip, contributing and being a part of the community… all the things.”*
+
 - June 2024: An in-depth [review of
   Zulip](https://www.hostingadvice.com/blog/emerging-open-source-team-chat-app-set-to-rival-slack/)
   is published on [HostingAdvice.com](https://www.hostingadvice.com/).
@@ -196,6 +202,17 @@ badge](https://www.capterra.com/p/197945/Zulip/).
   [Podcast.__init__](https://www.pythonpodcast.com/about/).
 
 ## Major server releases and product announcements
+
+- March 2025: [Zulip Server 10.0
+  released](https://blog.zulip.com/2025/03/20/zulip-10-0-released/), with over
+  5200 new commits. 121 people contributed commits to Zulip since the 9.0
+  release.
+
+- March 2025: Zulip
+  [announces](https://blog.zulip.com/2025/03/20/flexible-permissions-management/)
+  a new flexible system for permissions management. Zulip users can now grant
+  permissions across the app to any combination of roles, groups, and individual
+  users.
 
 - July 2024: [Zulip Server 9.0
   released](https://blog.zulip.com/2024/07/25/zulip-9-0-released/), with over

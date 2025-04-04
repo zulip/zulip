@@ -6,25 +6,25 @@ import $ from "jquery";
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 
-import * as channel from "./channel";
-import * as compose_banner from "./compose_banner";
-import * as compose_notifications from "./compose_notifications";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as echo from "./echo";
-import * as message_events from "./message_events";
-import * as onboarding_steps from "./onboarding_steps";
-import * as people from "./people";
-import * as scheduled_messages from "./scheduled_messages";
-import * as sent_messages from "./sent_messages";
-import * as server_events from "./server_events";
-import {current_user} from "./state_data";
-import * as transmit from "./transmit";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
-import * as zcommand from "./zcommand";
+import * as channel from "./channel.ts";
+import * as compose_banner from "./compose_banner.ts";
+import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as echo from "./echo.ts";
+import * as message_events from "./message_events.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as people from "./people.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import * as sent_messages from "./sent_messages.ts";
+import * as server_events from "./server_events.js";
+import {current_user} from "./state_data.ts";
+import * as transmit from "./transmit.js";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
+import * as zcommand from "./zcommand.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
@@ -58,34 +58,29 @@ export function show_preview_area() {
     $("#compose").addClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-    const $compose_textarea = $("textarea#compose-textarea");
-    const content = $compose_textarea.val();
-    const edit_height = $compose_textarea.height();
-
     $("#compose .markdown_preview").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .undo_markdown_preview").trigger("focus");
 
-    const $preview_message_area = $("#compose .preview_message_area");
-    // Set the preview area to the edit height to keep from
-    // having the preview jog the size of the compose box.
-    $preview_message_area.css({height: edit_height + "px"});
-    $preview_message_area.show();
+    render_preview_area();
+}
 
+export function render_preview_area() {
+    const $compose_textarea = $("textarea#compose-textarea");
+    const content = $compose_textarea.val();
+    const $preview_message_area = $("#compose .preview_message_area");
     compose_ui.render_and_show_preview(
+        $("#compose"),
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,
     );
+    const edit_height = $compose_textarea.height();
+    $preview_message_area.css({"min-height": edit_height + "px"});
+    $preview_message_area.show();
 }
 
 export function create_message_object(message_content = compose_state.message_content()) {
-    // Topics are optional, and we provide a placeholder if one isn't given.
-    let topic = compose_state.topic();
-    if (topic === "") {
-        topic = compose_state.empty_topic_placeholder();
-    }
-
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
@@ -113,7 +108,8 @@ export function create_message_object(message_content = compose_state.message_co
             message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
     } else {
-        message.topic = topic;
+        const topic = compose_state.topic();
+        message.topic = util.is_topic_name_considered_empty(topic) ? "" : topic;
         const stream_id = compose_state.stream_id();
         message.stream_id = stream_id;
         message.to = stream_id;
@@ -132,7 +128,7 @@ export function clear_compose_box() {
     }
     $("textarea#compose-textarea").val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
-    compose_validate.check_overflow_text();
+    compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
@@ -141,7 +137,9 @@ export function clear_compose_box() {
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
-    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
+    $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
+        "disabled-on-hover",
+    );
 }
 
 export function send_message_success(request, data) {
@@ -170,7 +168,7 @@ export function send_message_success(request, data) {
     }
 }
 
-export function send_message(request = create_message_object()) {
+export let send_message = (request = create_message_object()) => {
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
@@ -269,12 +267,16 @@ export function send_message(request = create_message_object()) {
         // taking a longtime to send.
         setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
     }
+};
+
+export function rewire_send_message(value) {
+    send_message = value;
 }
 
-export function enter_with_preview_open(ctrl_pressed = false) {
+export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false) {
     if (
-        (user_settings.enter_sends && !ctrl_pressed) ||
-        (!user_settings.enter_sends && ctrl_pressed)
+        (user_settings.enter_sends && !cmd_or_ctrl_pressed) ||
+        (!user_settings.enter_sends && cmd_or_ctrl_pressed)
     ) {
         // If this enter should send, we attempt to send the message.
         finish();
@@ -287,7 +289,7 @@ export function enter_with_preview_open(ctrl_pressed = false) {
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export function finish(scheduling_message = false) {
+export let finish = (scheduling_message = false) => {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -295,7 +297,6 @@ export function finish(scheduling_message = false) {
         return undefined;
     }
 
-    clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
     compose_banner.clear_message_sent_banners();
@@ -326,6 +327,10 @@ export function finish(scheduling_message = false) {
     }
     do_post_send_tasks();
     return true;
+};
+
+export function rewire_finish(value) {
+    finish = value;
 }
 
 export function do_post_send_tasks() {
@@ -370,7 +375,11 @@ function schedule_message_to_custom_date() {
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
+            minimum_scheduled_message_delay_minutes:
+                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
             deliver_at,
+            minimum_scheduled_message_delay_minutes_note:
+                scheduled_messages.show_minimum_scheduled_message_delay_minutes_note,
         });
         compose_banner.clear_message_sent_banners();
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
@@ -396,4 +405,8 @@ function schedule_message_to_custom_date() {
         success,
         error,
     });
+}
+
+export function is_topic_input_focused() {
+    return $("#stream_message_recipient_topic").is(":focus");
 }

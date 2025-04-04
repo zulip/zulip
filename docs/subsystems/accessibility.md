@@ -60,7 +60,7 @@ Problems with Zulip's accessibility should be reported as
 label. This label can be added by entering the following text in a separate
 comment on the issue:
 
-> @zulipbot add "area: accessibility"
+> @zulipbot add "accessibility"
 
 If you want to help make Zulip more accessible, here is a list of the
 [currently open accessibility issues][accessibility-issues].
@@ -81,4 +81,4 @@ possible, the following resources may be useful.
 
 [chrome-webstore]: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb
 [openedx-guidelines]: https://docs.openedx.org/en/latest/developers/concepts/accessibility.html
-[accessibility-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A%20accessibility%22
+[accessibility-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3Aaccessibility

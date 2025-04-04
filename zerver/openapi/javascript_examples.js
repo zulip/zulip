@@ -1,5 +1,3 @@
-"use strict";
-
 /*
   Zulip's OpenAPI-based API documentation system is documented at
   https://zulip.readthedocs.io/en/latest/documentation/api.html
@@ -8,6 +6,8 @@
   designed to be run as part of Zulip's test-api test suite to verify
   that the documented examples are all correct, runnable code.
 */
+
+import zulipInit from "zulip-js";
 
 const examples_handler = function () {
     const config = {
@@ -41,7 +41,6 @@ const examples_handler = function () {
     };
 
     const main = async () => {
-        const zulipInit = require("zulip-js");
         const client = await zulipInit(config);
 
         await generate_validation_data(client, examples.send_message);

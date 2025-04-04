@@ -92,5 +92,5 @@ for each question, it's easy to have several discussions at once.
 ## Related articles
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Message formatting](/help/format-your-message-using-markdown)

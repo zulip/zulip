@@ -1,6 +1,10 @@
 # Manage user groups
 
+{!cloud-paid-plans-only.md!}
+
 {!user-groups-intro.md!}
+
+{!user-groups-applications.md!}
 
 ## Create a user group
 
@@ -30,7 +34,17 @@
 
 {end_tabs}
 
-## Configure who can mention a user group
+## Configure group permissions
+
+!!! warn ""
+
+    Guests can never administer user groups, add anyone else to a group, or remove
+    anyone else from a group, even if they belong to a group that has permissions
+    to do so.
+
+!!! tip ""
+
+    Users who can add members to a group can always join the group.
 
 {start_tabs}
 
@@ -42,13 +56,21 @@
 
 1. Select the **General** tab on the right.
 
-1. Under **Group permissions**, configure **Who can mention this group**.
+1. Under **Group permissions**, configure **Who can administer this group**, **Who
+   can mention this group**, **Who can add members to this group**, **Who can remove
+   members from this group**, **Who can join this group**, and **Who can leave this group**.
 
 {!save-changes.md!}
 
 {end_tabs}
 
-## Add users to a user group
+## Add users to a group
+
+{!add-users-to-a-group.md!}
+
+## Add user groups to a group
+
+{!user-subgroups-intro.md!}
 
 {start_tabs}
 
@@ -60,23 +82,17 @@
 
 1. Select the **Members** tab on the right.
 
-1. Under **Add members**, enter a name or email address. The typeahead
-   will only include users who aren't already members of the group.
+1. Under **Add members**, enter groups you want to add.
 
-1. Click **Add**. Zulip will notify everyone who is added to the group.
-
-!!! tip ""
-
-    To add users in bulk, you can copy members from an
-    existing channel or user group.
+1. Click **Add**.
 
 {end_tabs}
 
-## Remove users from a user group
+## Remove user or group from a group
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-group-settings}
 
 {relative|group|all}
 
@@ -84,19 +100,27 @@
 
 1. Select the **Members** tab on the right.
 
-1. Under **Members**, find the user you would like to remove.
+1. Under **Members**, find the user or group you would like to remove.
 
 1. Click the **Remove** button in that row. Zulip will notify everyone who is
    removed from the group.
 
-!!! warn ""
+{tab|via-user-profile}
 
-    **Note**: If you remove yourself from a user group, you
-    may no longer have permission to modify the user group.
+{!right-sidebar-view-profile.md!}
+
+1. Select the **User groups** tab.
+
+1. Find the group you would like to remove the user from.
+
+1. Click the **Remove** button in that row.
 
 {end_tabs}
 
-## Delete a user group
+## Review and remove permissions assigned to a group
+
+You can review which permissions are assigned to a group, and remove permissions
+as needed.
 
 {start_tabs}
 
@@ -106,29 +130,21 @@
 
 1. Select a user group.
 
-1. Click the **trash** <i class="fa fa-trash-o"></i> icon near the top right
-   corner of the user group settings panel.
+1. Select the **Permissions** tab on the right.
 
-1. Approve by clicking **Confirm**.
+1. Toggle the checkboxes next to any permissions you'd like to remove.
 
-!!! warn ""
-
-    **Note**: Deleting a user group cannot be undone by anyone.
+1. Click **Save changes**.
 
 {end_tabs}
 
-## Configure who can create and manage user groups
+## Configure who can create user groups
 
 {!admin-only.md!}
 
-By default, [all members](/help/roles-and-permissions) in a Zulip
-organization can create user groups and manage user groups that they
-are a member of. However, you can restrict that ability to specific
-[roles](/help/roles-and-permissions).
-
-Note that administrators and moderators can modify any user group,
-while other organization members can only modify user groups to which
-they belong. Guests cannot modify or create user groups.
+You can configure who can create groups in your organization. Guests can never
+create user groups, even if they belong to a group that has permissions to do
+so.
 
 {start_tabs}
 
@@ -136,7 +152,31 @@ they belong. Guests cannot modify or create user groups.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can create and manage user groups**.
+1. Under **Other permissions**, configure **Who can create user groups**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Configure who can administer all user groups
+
+{!admin-only.md!}
+
+You can configure who can administer all user groups in your
+organization. Guests can never administer user groups, even if they
+belong to a group that has permissions to do so.
+
+In addition, you can [give users
+permission](#configure-group-permissions) to administer a specific
+group.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|organization-permissions}
+
+1. Under **Other permissions**, configure **Who can administer all user groups**.
 
 {!save-changes.md!}
 
@@ -145,7 +185,9 @@ they belong. Guests cannot modify or create user groups.
 ## Related articles
 
 * [User groups](/help/user-groups)
+* [View group members](/help/view-group-members)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
-* [Roles and permissions](/help/roles-and-permissions)
+* [Deactivate a user group](/help/deactivate-a-user-group)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [User roles](/help/user-roles)

@@ -1,9 +1,20 @@
 <tr data-group-id="{{group_id}}">
-    <td class="group_list_item">
+    <td class="user-profile-group-row">
         {{#if is_guest}}
             {{name}}
         {{else}}
             <a class="group_list_item_link" href="{{group_edit_url}}">{{name}}</a>
         {{/if}}
     </td>
+    {{#if can_remove_members }}
+    <td class="remove_member">
+        {{#if is_direct_member}}
+            {{> components/action_button label=(t "Remove") custom_classes="remove-member-button" attention="quiet" intent="danger" aria-label=(t "Remove") }}
+        {{else}}
+            <span class="tippy-zulip-tooltip" data-tippy-content="{{#if is_me}}{{t 'You are a member of {name} because you are a member of a subgroup ({subgroups_name}).'}} {{else}}{{t 'This user is a member of {name} because they are a member of a subgroup ({subgroups_name}).'}}{{/if}}">
+                {{> components/action_button label=(t "Remove") custom_classes="remove-member-button" attention="quiet" intent="danger" aria-label=(t "Remove") disabled="disabled" }}
+            </span>
+        {{/if}}
+    </td>
+    {{/if}}
 </tr>

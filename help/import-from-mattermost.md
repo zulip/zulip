@@ -263,7 +263,7 @@ keep in mind about the import process:
   and [how users can join your organization](/help/restrict-account-creation).
 
 - Mattermost's user roles are mapped to Zulip's [user
-  roles](/help/roles-and-permissions) in the following way:
+  roles](/help/user-roles) in the following way:
 
 | Mattermost role         | Zulip role    |
 |-------------------------|---------------|
@@ -291,5 +291,5 @@ keep in mind about the import process:
 ## Related articles
 
 * [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Getting started with Zulip](/help/getting-started-with-zulip)

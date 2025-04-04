@@ -1,6 +1,4 @@
-/// <reference types="spectrum" />
-
-import type * as zulip_test_module from "./zulip_test";
+import type * as zulip_test_module from "./zulip_test.ts";
 
 type JQueryCaretRange = {
     start: number;

@@ -3,12 +3,12 @@ import $ from "jquery";
 import render_settings_admin_realm_domains_list from "../templates/settings/admin_realm_domains_list.hbs";
 import render_realm_domains_modal from "../templates/settings/realm_domains_modal.hbs";
 
-import * as channel from "./channel";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import {realm} from "./state_data";
-import * as ui_report from "./ui_report";
-import * as util from "./util";
+import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import {realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 type RealmDomain = {
     domain: string;

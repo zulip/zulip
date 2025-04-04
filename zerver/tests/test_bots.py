@@ -1,6 +1,6 @@
 import filecmp
 import os
-from typing import Any
+from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -8,20 +8,27 @@ from django.core import mail
 from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.actions.bots import do_change_bot_owner
-from zerver.actions.realm_settings import do_set_realm_user_default_setting
+from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_user_default_setting,
+)
 from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
+from zerver.lib.utils import assert_is_not_none
+from zerver.lib.webhooks.common import WebhookConfigOption
 from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
 from zerver.models.bots import get_bot_services
-from zerver.models.realms import BotCreationPolicyEnum, get_realm
+from zerver.models.groups import NamedUserGroup, SystemGroups
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
-from zerver.models.users import get_user, is_cross_realm_bot_email
+from zerver.models.users import bot_owner_user_ids, get_user, is_cross_realm_bot_email
 
 
 # A test validator
@@ -36,7 +43,11 @@ stripe_sample_config_options = [
         "stripe",
         ["financial"],
         display_name="Stripe",
-        config_options=[("Stripe API key", "stripe_api_key", _check_string)],
+        config_options=[
+            WebhookConfigOption(
+                name="stripe_api_key", description="Stripe API key", validator=_check_string
+            )
+        ],
     ),
 ]
 
@@ -240,7 +251,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             short_name="hambot",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Username already in use")
+        self.assert_json_error(result, "Email is already in use.")
 
         dup_full_name = "The Bot of Hamlet"
 
@@ -249,7 +260,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             short_name="whatever",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Name is already in use!")
+        self.assert_json_error(result, "Name is already in use.")
 
     def test_add_bot_with_user_avatar(self) -> None:
         email = "hambot-bot@zulip.testserver"
@@ -377,7 +388,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["' + iago.email + '"]',
         }
         with self.capture_send_event_calls(expected_num_events=3) as events:
-            result = self.common_subscribe_to_streams(hamlet, ["Rome"], request_data)
+            result = self.subscribe_via_post(hamlet, ["Rome"], request_data)
             self.assert_json_success(result)
 
         msg_event = [e for e in events if e["event"]["type"] == "message"]
@@ -393,7 +404,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["hambot-bot@zulip.testserver"]',
         }
         with self.capture_send_event_calls(expected_num_events=2) as events_bot:
-            result = self.common_subscribe_to_streams(hamlet, ["Rome"], bot_request_data)
+            result = self.subscribe_via_post(hamlet, ["Rome"], bot_request_data)
             self.assert_json_success(result)
 
         # No notification message event or invitation email is sent because of bot.
@@ -580,16 +591,41 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.deactivate_bot()
         self.assert_num_bots_equal(0)
 
-    def test_deactivate_bogus_bot(self) -> None:
-        """Deleting a bogus bot will succeed silently."""
+    def test_deactivate_bot_invalid_id(self) -> None:
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
-        invalid_user_id = 1000
-        result = self.client_delete(f"/json/bots/{invalid_user_id}")
+        invalid_bot_id = 1000
+        result = self.client_delete(f"/json/bots/{invalid_bot_id}")
         self.assert_json_error(result, "No such bot")
         self.assert_num_bots_equal(1)
+
+    def test_deactivate_bot_with_no_owners(self) -> None:
+        iago = self.example_user("iago")
+        self.login("iago")
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        # Set up the bot to be a private bot, as otherwise realm admins
+        # are used as default owners in the absence of .bot_owner_id.
+        stream = get_stream("Denmark", get_realm("zulip"))
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=iago,
+        )
+
+        new_bot = assert_is_not_none(UserProfile.objects.last())
+        do_change_default_sending_stream(new_bot, stream, acting_user=iago)
+        new_bot.bot_owner_id = None
+        new_bot.save()
+
+        result = self.client_delete(f"/json/bots/{new_bot.id}")
+        self.assert_json_success(result)
+        self.assert_num_bots_equal(0)
 
     def test_deactivate_bot_with_owner_deactivation(self) -> None:
         user = self.example_user("hamlet")
@@ -777,101 +813,241 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(0)
         self.assert_json_error(result, "Invalid bot type")
 
-    def test_no_generic_bots_allowed_for_non_admins(self) -> None:
+    def check_user_can_create_bot(
+        self, user: str, bot_name: str, bot_type: int, error_msg: Optional["str"] = None
+    ) -> None:
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-            "bot_type": 1,
+            "full_name": bot_name,
+            "short_name": bot_name,
+            "bot_type": bot_type,
         }
-        bot_email = "hambot-bot@zulip.testserver"
+        bot_email = f"{bot_name}-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        bot_realm.save(update_fields=["bot_creation_policy"])
-
-        # A regular user cannot create a generic bot
-        self.login("hamlet")
-        self.assert_num_bots_equal(0)
+        self.login(user)
         result = self.client_post("/json/bots", bot_info)
-        self.assert_num_bots_equal(0)
-        self.assert_json_error(result, "Must be an organization administrator")
+        if error_msg is not None:
+            self.assert_json_error(result, error_msg)
+        else:
+            self.assert_json_success(result)
+            profile = get_user(bot_email, bot_realm)
+            self.assertEqual(profile.bot_type, bot_type)
+            self.assertEqual(profile.bot_owner, self.example_user(user))
 
-        # But can create an incoming webhook
-        self.assert_num_bots_equal(0)
-        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
-        self.assert_num_bots_equal(1)
-        profile = get_user(bot_email, bot_realm)
-        self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
+    def test_can_create_write_only_bots_group(self) -> None:
+        """
+        The `can_create_write_only_bots_group` realm setting works properly.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
 
-    def test_no_generic_bot_reactivation_allowed_for_non_admins(self) -> None:
-        self.login("hamlet")
-        self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
 
-        bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        bot_realm.save(update_fields=["bot_creation_policy"])
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_bots_group",
+            administrators_system_group,
+            acting_user=None,
+        )
 
-        bot_email = "hambot-bot@zulip.testserver"
-        bot_user = get_user(bot_email, bot_realm)
-        do_deactivate_user(bot_user, acting_user=None)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_write_only_bots_group",
+            members_system_group,
+            acting_user=None,
+        )
 
-        # A regular user cannot reactivate a generic bot
-        self.assert_num_bots_equal(0)
-        result = self.client_post(f"/json/users/{bot_user.id}/reactivate")
-        self.assert_json_error(result, "Must be an organization administrator")
-        self.assert_num_bots_equal(0)
+        self.check_user_can_create_bot("hamlet", "testbot-1", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "polonius", "testbot-2", UserProfile.INCOMING_WEBHOOK_BOT, "Not allowed for guest users"
+        )
 
-    def test_no_generic_bots_allowed_for_admins(self) -> None:
-        bot_email = "hambot-bot@zulip.testserver"
-        bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        bot_realm.save(update_fields=["bot_creation_policy"])
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_write_only_bots_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+        self.check_user_can_create_bot("shiva", "testbot-3", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot("iago", "testbot-4", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "hamlet", "testbot-5", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+        )
 
-        # An administrator can create any type of bot
-        self.login("iago")
-        self.assert_num_bots_equal(0)
-        self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
-        self.assert_num_bots_equal(1)
-        profile = get_user(bot_email, bot_realm)
-        self.assertEqual(profile.bot_type, UserProfile.DEFAULT_BOT)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_write_only_bots_group",
+            administrators_system_group,
+            acting_user=None,
+        )
+        self.check_user_can_create_bot("iago", "testbot-5", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "shiva", "testbot-6", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+        )
 
-    def test_no_bots_allowed_for_non_admins(self) -> None:
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-            "bot_type": 1,
-        }
-        bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = BotCreationPolicyEnum.ADMINS_ONLY
-        bot_realm.save(update_fields=["bot_creation_policy"])
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_create_write_only_bots_group", user_group, acting_user=None
+        )
 
-        # A regular user cannot create a generic bot
-        self.login("hamlet")
-        self.assert_num_bots_equal(0)
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_num_bots_equal(0)
-        self.assert_json_error(result, "Must be an organization administrator")
+        # Hamlet and Cordelia are in the allowed user group, so can create bots.
+        self.check_user_can_create_bot("hamlet", "testbot-6", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot("cordelia", "testbot-7", UserProfile.INCOMING_WEBHOOK_BOT)
 
-        # Also, a regular user cannot create a incoming bot
-        bot_info["bot_type"] = 2
-        self.login("hamlet")
-        self.assert_num_bots_equal(0)
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_num_bots_equal(0)
-        self.assert_json_error(result, "Must be an organization administrator")
+        # Shiva is not in the allowed user group, so cannot create bots.
+        self.check_user_can_create_bot(
+            "shiva", "testbot-8", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+        )
+        # Iago is not in `can_create_write_only_bots_group` but is in `can_create_bots_group`,
+        # so can create any bot.
+        self.check_user_can_create_bot("iago", "testbot-8", UserProfile.INCOMING_WEBHOOK_BOT)
 
-    def test_no_bots_allowed_for_admins(self) -> None:
-        bot_email = "hambot-bot@zulip.testserver"
-        bot_realm = get_realm("zulip")
-        bot_realm.bot_creation_policy = BotCreationPolicyEnum.ADMINS_ONLY
-        bot_realm.save(update_fields=["bot_creation_policy"])
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_write_only_bots_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
 
-        # An administrator can create any type of bot
-        self.login("iago")
-        self.assert_num_bots_equal(0)
-        self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
-        self.assert_num_bots_equal(1)
-        profile = get_user(bot_email, bot_realm)
-        self.assertEqual(profile.bot_type, UserProfile.DEFAULT_BOT)
+        # Hamlet is the direct member of the anonymous user group, so can create bots.
+        self.check_user_can_create_bot("hamlet", "testbot-9", UserProfile.INCOMING_WEBHOOK_BOT)
+        # Iago is in the `administrators_system_group` subgroup, so can create bots.
+        self.check_user_can_create_bot("iago", "testbot-10", UserProfile.INCOMING_WEBHOOK_BOT)
+        # Shiva is not in the anonymous user group, so cannot create bots.
+        self.check_user_can_create_bot(
+            "shiva", "testbot-11", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_write_only_bots_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+
+        # Iago is in `can_create_bots_group`, so can create any bot.
+        self.check_user_can_create_bot("iago", "testbot-11", UserProfile.DEFAULT_BOT)
+        self.check_user_can_create_bot("iago", "testbot-12", UserProfile.INCOMING_WEBHOOK_BOT)
+        # Shiva is only in `can_create_write_only_bots_group`, so can only create
+        # "INCOMING_WEBHOOK_BOT".
+        self.check_user_can_create_bot(
+            "shiva", "testbot-13", UserProfile.DEFAULT_BOT, "Insufficient permission"
+        )
+        self.check_user_can_create_bot("shiva", "testbot-13", UserProfile.INCOMING_WEBHOOK_BOT)
+        # Hamlet is in neither of the group, so cannot create any bot.
+        self.check_user_can_create_bot(
+            "hamlet", "testbot-14", UserProfile.DEFAULT_BOT, "Insufficient permission"
+        )
+        self.check_user_can_create_bot(
+            "hamlet", "testbot-14", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+        )
+
+    def test_can_create_bots_group(self) -> None:
+        """
+        The `can_create_bots_group` realm setting works properly.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_bots_group",
+            members_system_group,
+            acting_user=None,
+        )
+
+        self.check_user_can_create_bot("hamlet", "testbot-1", UserProfile.DEFAULT_BOT)
+        self.check_user_can_create_bot(
+            "polonius", "testbot-2", UserProfile.DEFAULT_BOT, "Not allowed for guest users"
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_bots_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+        self.check_user_can_create_bot("shiva", "testbot-3", UserProfile.DEFAULT_BOT)
+        self.check_user_can_create_bot("iago", "testbot-4", UserProfile.DEFAULT_BOT)
+        self.check_user_can_create_bot(
+            "hamlet", "testbot-5", UserProfile.DEFAULT_BOT, "Insufficient permission"
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_bots_group",
+            administrators_system_group,
+            acting_user=None,
+        )
+        self.check_user_can_create_bot("iago", "testbot-5", UserProfile.DEFAULT_BOT)
+        self.check_user_can_create_bot(
+            "shiva", "testbot-6", UserProfile.DEFAULT_BOT, "Insufficient permission"
+        )
+
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_create_bots_group", user_group, acting_user=None
+        )
+
+        # Hamlet and Cordelia are in the allowed user group, so can create bots.
+        self.check_user_can_create_bot("hamlet", "testbot-6", UserProfile.DEFAULT_BOT)
+        self.check_user_can_create_bot("cordelia", "testbot-7", UserProfile.DEFAULT_BOT)
+
+        # Iago is not in the allowed user group, so cannot create bots.
+        self.check_user_can_create_bot(
+            "iago", "testbot-8", UserProfile.DEFAULT_BOT, "Insufficient permission"
+        )
+
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_bots_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
+
+        # Hamlet is the direct member of the anonymous user group, so can create bots.
+        self.check_user_can_create_bot("hamlet", "testbot-8", UserProfile.DEFAULT_BOT)
+        # Iago is in the `administrators_system_group` subgroup, so can create bots.
+        self.check_user_can_create_bot("iago", "testbot-9", UserProfile.DEFAULT_BOT)
+        # Shiva is not in the anonymous user group, so cannot create bots.
+        self.check_user_can_create_bot(
+            "shiva", "testbot-10", UserProfile.DEFAULT_BOT, "Insufficient permission"
+        )
 
     def test_reactivating_bot_with_deactivated_owner(self) -> None:
         self.login("hamlet")
@@ -907,7 +1083,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         assert test_bot.bot_owner is not None
         self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
 
-        self.assertFalse(
+        self.assertTrue(
             Subscription.objects.filter(
                 user_profile=test_bot, recipient__type_id=private_stream.id, active=True
             ).exists()
@@ -967,7 +1143,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "full_name": already_taken_name,
         }
         result = self.client_patch(url, bot_info)
-        self.assert_json_error(result, "Name is already in use!")
+        self.assert_json_error(result, "Name is already in use.")
 
         # We can use our own name (with extra whitespace), and the
         # server should silently do nothing.
@@ -1183,7 +1359,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(bot_user.bot_owner.id, hamlet.id)
 
         assert private_stream.recipient_id is not None
-        self.assertFalse(
+        self.assertTrue(
             Subscription.objects.filter(
                 user_profile=bot_user, recipient_id=private_stream.recipient_id, active=True
             ).exists()
@@ -1619,7 +1795,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
 
         # TODO: The "method" parameter is not currently tracked as a processed parameter
-        # by has_request_variables. Assert it is returned as an ignored parameter.
+        # by typed_endpoint. Assert it is returned as an ignored parameter.
         response_dict = self.assert_json_success(result, ignored_parameters=["method"])
 
         self.assertEqual("Fred", response_dict["full_name"])
@@ -1833,6 +2009,26 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.settings(CROSS_REALM_BOT_EMAILS={"random-bot@zulip.com"}):
             self.assertTrue(is_cross_realm_bot_email("random-bot@zulip.com"))
             self.assertFalse(is_cross_realm_bot_email("notification-bot@zulip.com"))
+
+    def test_private_bot_empty_bot_owner_user_ids(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        self.create_bot()
+        stream = get_stream("Denmark", get_realm("zulip"))
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=hamlet,
+        )
+
+        new_bot = assert_is_not_none(UserProfile.objects.last())
+        do_change_default_sending_stream(new_bot, stream, acting_user=hamlet)
+        new_bot.bot_owner_id = None
+        new_bot.save()
+
+        self.assertEqual(bot_owner_user_ids(new_bot), set())
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:

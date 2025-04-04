@@ -4,8 +4,6 @@ Get Zulip notifications for your TeamCity builds!
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
@@ -39,8 +37,6 @@ When a user runs a personal build in TeamCity, if Zulip can map their
 TeamCity username to a Zulip user (by matching it to a Zulip user's
 email address or full name), then that Zulip user will receive a direct
 message with the result of their personal build.
-
-![](/static/images/integrations/teamcity/002.png)
 
 ### Related documentation
 

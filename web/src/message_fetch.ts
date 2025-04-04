@@ -1,30 +1,35 @@
-import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import {all_messages_data} from "./all_messages_data";
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose_closed_ui from "./compose_closed_ui";
-import * as compose_recipient from "./compose_recipient";
-import * as direct_message_group_data from "./direct_message_group_data";
-import * as message_feed_loading from "./message_feed_loading";
-import * as message_feed_top_notices from "./message_feed_top_notices";
-import * as message_helper from "./message_helper";
-import type {MessageListData} from "./message_list_data";
-import * as message_lists from "./message_lists";
-import {raw_message_schema} from "./message_store";
-import * as message_util from "./message_util";
-import * as narrow_banner from "./narrow_banner";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as recent_view_ui from "./recent_view_ui";
-import {narrow_term_schema} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
-import * as ui_report from "./ui_report";
+import {all_messages_data} from "./all_messages_data.ts";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as direct_message_group_data from "./direct_message_group_data.ts";
+import {Filter} from "./filter.ts";
+import * as message_feed_loading from "./message_feed_loading.ts";
+import * as message_feed_top_notices from "./message_feed_top_notices.ts";
+import * as message_helper from "./message_helper.ts";
+import type {MessageList} from "./message_list.ts";
+import type {MessageListData} from "./message_list_data.ts";
+import * as message_list_data_cache from "./message_list_data_cache.ts";
+import * as message_lists from "./message_lists.ts";
+import {raw_message_schema} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as narrow_banner from "./narrow_banner.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as popup_banners from "./popup_banners.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import {narrow_term_schema} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_list from "./stream_list.ts";
+import * as util from "./util.ts";
 
-const response_schema = z.object({
+export const response_schema = z.object({
     anchor: z.number(),
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
@@ -44,11 +49,21 @@ type MessageFetchOptions = {
     cont: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
     fetch_again?: boolean;
     msg_list_data: MessageListData;
-    msg_list?: message_lists.MessageList | undefined;
+    msg_list?: MessageList | undefined;
     validate_filter_topic_post_fetch?: boolean | undefined;
 };
 
+type MessageFetchAPIParams = {
+    anchor: number | string;
+    num_before: number;
+    num_after: number;
+    client_gravatar: boolean;
+    narrow?: string;
+    allow_empty_topic_name: boolean;
+};
+
 let first_messages_fetch = true;
+let initial_backfill_for_all_messages_done = false;
 export let initial_narrow_pointer: number | undefined;
 export let initial_narrow_offset: number | undefined;
 
@@ -84,6 +99,7 @@ const consts = {
     // Parameters for asking for more history in the recent view.
     recent_view_fetch_more_batch_size: 2000,
     recent_view_minimum_load_more_fetch_size: 50000,
+    recent_view_load_more_increment_per_click: 25000,
 };
 
 export function load_messages_around_anchor(
@@ -100,6 +116,33 @@ export function load_messages_around_anchor(
     });
 }
 
+export function fetch_more_if_required_for_current_msg_list(
+    has_found_oldest: boolean,
+    has_found_newest: boolean,
+    looking_for_new_msgs: boolean,
+    looking_for_old_msgs: boolean,
+): void {
+    assert(message_lists.current !== undefined);
+    if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
+        // Even after loading more messages, we have
+        // no messages to display in this narrow.
+        narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
+        message_lists.current.update_trailing_bookend();
+        compose_closed_ui.update_buttons_for_private();
+        compose_recipient.check_posting_policy_for_compose_box();
+    }
+
+    if (looking_for_old_msgs && !has_found_oldest) {
+        maybe_load_older_messages({
+            msg_list: message_lists.current,
+            msg_list_data: message_lists.current.data,
+        });
+    }
+    if (looking_for_new_msgs && !has_found_newest) {
+        maybe_load_newer_messages({msg_list: message_lists.current});
+    }
+}
+
 function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): void {
     const raw_messages = data.messages;
 
@@ -113,49 +156,43 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
-    if (messages.length !== 0) {
+    const is_contiguous_history = true;
+    if (messages.length > 0) {
         if (opts.msg_list) {
             if (opts.validate_filter_topic_post_fetch) {
                 opts.msg_list.data.filter.try_adjusting_for_moved_with_target(messages[0]);
             }
             // Since this adds messages to the MessageList and renders MessageListView,
             // we don't need to call it if msg_list was not defined by the caller.
-            message_util.add_old_messages(messages, opts.msg_list);
+            opts.msg_list.add_messages(messages, {}, is_contiguous_history);
         } else {
-            opts.msg_list_data.add_messages(messages);
+            opts.msg_list_data.add_messages(messages, is_contiguous_history);
         }
     }
 
     direct_message_group_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
-    stream_list.maybe_scroll_narrow_into_view();
+    stream_list.maybe_scroll_narrow_into_view(!first_messages_fetch);
 
     if (
         message_lists.current !== undefined &&
         opts.msg_list === message_lists.current &&
-        !opts.msg_list.is_combined_feed_view &&
-        opts.msg_list.visibly_empty()
-    ) {
         // The view appears to be empty. However, because in stream
         // narrows, we fetch messages including those that might be
         // hidden by topic muting, it's possible that we received all
         // the messages we requested, and all of them are in muted
         // topics, but there are older messages for this stream that
         // we need to ask the server for.
-        if (has_found_oldest && has_found_newest) {
-            // Even after loading more messages, we have
-            // no messages to display in this narrow.
-            narrow_banner.show_empty_narrow_message();
-            compose_closed_ui.update_buttons_for_private();
-            compose_recipient.check_posting_policy_for_compose_box();
-        }
-
-        if (opts.num_before > 0 && !has_found_oldest) {
-            maybe_load_older_messages({msg_list: opts.msg_list, msg_list_data: opts.msg_list.data});
-        }
-        if (opts.num_after > 0 && !has_found_newest) {
-            maybe_load_newer_messages({msg_list: opts.msg_list});
-        }
+        (message_lists.current.visibly_empty() || !message_viewport.can_scroll())
+    ) {
+        const looking_for_new_msgs = opts.num_after > 0;
+        const looking_for_old_msgs = opts.num_before > 0;
+        fetch_more_if_required_for_current_msg_list(
+            has_found_oldest,
+            has_found_newest,
+            looking_for_new_msgs,
+            looking_for_old_msgs,
+        );
     }
 
     if (opts.cont !== undefined) {
@@ -193,12 +230,14 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
 
     if (
         opts.msg_list &&
-        !opts.msg_list.is_combined_feed_view &&
+        !opts.msg_list.should_preserve_current_rendered_state() &&
         opts.msg_list !== message_lists.current
     ) {
-        // We unnarrowed before receiving new messages so
-        // don't bother processing the newly arrived messages.
-        return;
+        // We changed narrow before receiving new messages but
+        // since the message list data is cached, we just
+        // update the cached data and don't update the msg list.
+        opts.msg_list_data = opts.msg_list.data;
+        opts.msg_list = undefined;
     }
     if (!data) {
         // The server occasionally returns no data during a
@@ -212,38 +251,17 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
     process_result(data, opts);
 }
 
-// This function modifies the data.narrow filters to use integer IDs
-// instead of strings if it is supported. We currently don't set or
-// convert user emails to user IDs directly in the Filter code
-// because doing so breaks the app in various modules that expect a
-// string of user emails.
-function handle_operators_supporting_id_based_api(data: {
-    anchor: string | number;
-    num_before: number;
-    num_after: number;
-    client_gravatar: boolean;
-    narrow?: string;
-}): {
-    anchor: string | number;
-    num_before: number;
-    num_after: number;
-    client_gravatar: boolean;
-    narrow?: string;
-} {
-    const operators_supporting_ids = new Set(["dm", "pm-with"]);
-    const operators_supporting_id = new Set([
-        "id",
-        "stream",
-        "sender",
-        "group-pm-with",
-        "dm-including",
-    ]);
-
-    if (data.narrow === undefined) {
-        return data;
-    }
-
-    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(data.narrow));
+// This function modifies the narrow data to use integer IDs instead of
+// strings if it is supported for that operator. We currently don't set
+// or convert user emails to IDs directly in the Filter code because
+// doing so breaks the app in various modules that expect a string of
+// user emails.
+function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
+    // We use the canonical operator when checking these sets, so legacy
+    // operators, such as "pm-with" and "stream", are not included here.
+    const operators_supporting_ids = new Set(["dm"]);
+    const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
+    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
 
     const narrow_terms: {
         operator: string;
@@ -257,31 +275,38 @@ function handle_operators_supporting_id_based_api(data: {
             negated?: boolean | undefined;
         } = raw_term;
 
-        if (operators_supporting_ids.has(raw_term.operator)) {
+        const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
+
+        if (operators_supporting_ids.has(canonical_operator)) {
             const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
             assert(user_ids_array !== undefined);
             narrow_term.operand = user_ids_array;
         }
 
-        if (operators_supporting_id.has(raw_term.operator)) {
-            if (raw_term.operator === "id") {
+        if (operators_supporting_id.has(canonical_operator)) {
+            if (canonical_operator === "id") {
                 // The message ID may not exist locally,
                 // so send the term to the server as is.
                 narrow_terms.push(narrow_term);
                 continue;
             }
 
-            if (raw_term.operator === "stream") {
-                const stream_id = stream_data.get_stream_id(raw_term.operand);
-                if (stream_id !== undefined) {
-                    narrow_term.operand = stream_id;
+            if (canonical_operator === "channel") {
+                // An unknown channel will have an empty string set for
+                // the operand. And the page_params.narrow may have a
+                // channel name as the operand. But all other cases
+                // should have the channel ID set as the string value
+                // for the operand.
+                const stream = stream_data.get_sub_by_id_string(raw_term.operand);
+                if (stream !== undefined) {
+                    narrow_term.operand = stream.stream_id;
                 }
-
                 narrow_terms.push(narrow_term);
                 continue;
             }
 
-            // The other operands supporting object IDs all work with user objects.
+            // The other operands supporting integer IDs all work with
+            // a single user object.
             const person = people.get_by_email(raw_term.operand);
             if (person !== undefined) {
                 narrow_term.operand = person.user_id;
@@ -290,11 +315,36 @@ function handle_operators_supporting_id_based_api(data: {
         narrow_terms.push(narrow_term);
     }
 
-    data.narrow = JSON.stringify(narrow_terms);
-    return data;
+    return JSON.stringify(narrow_terms);
 }
 
-export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+export function get_narrow_for_message_fetch(filter: Filter): string {
+    let narrow_data = filter.public_terms();
+    if (page_params.narrow !== undefined) {
+        narrow_data = [...narrow_data, ...page_params.narrow];
+    }
+    if (page_params.is_spectator) {
+        const web_public_narrow: NarrowTerm[] = [
+            {operator: "channels", operand: "web-public", negated: false},
+        ];
+        // This logic is not ideal in that, in theory, an existing `channels`
+        // operator could be present, but not in a useful way. We don't attempt
+        // to validate the narrow is compatible with spectators here; the server
+        // will return an error if appropriate.
+        narrow_data = [...narrow_data, ...web_public_narrow];
+    }
+
+    let narrow_param_string = "";
+    if (narrow_data.length > 0) {
+        narrow_param_string = JSON.stringify(narrow_data);
+        narrow_param_string = handle_operators_supporting_id_based_api(narrow_param_string);
+    }
+    return narrow_param_string;
+}
+
+export function get_parameters_for_message_fetch_api(
+    opts: MessageFetchOptions,
+): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -302,17 +352,12 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed(0);
     }
-    let data: {
-        anchor: number | string;
-        num_before: number;
-        num_after: number;
-        client_gravatar: boolean;
-        narrow?: string;
-    } = {
+    const data: MessageFetchAPIParams = {
         anchor: opts.anchor,
         num_before: opts.num_before,
         num_after: opts.num_after,
         client_gravatar: true,
+        allow_empty_topic_name: true,
     };
     const msg_list_data = opts.msg_list_data;
 
@@ -320,33 +365,24 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         blueslip.error("Message list data is undefined!");
     }
 
-    // This block is a hack; structurally, we want to set
-    //   data.narrow = opts.msg_list.data.filter.public_terms()
-    //
-    // But support for the all_messages_data sharing of data with
-    // the combined feed view and the (hacky) page_params.narrow feature
-    // requires a somewhat ugly bundle of conditionals.
-    if (msg_list_data.filter.is_in_home()) {
-        if (page_params.narrow_stream !== undefined) {
-            data.narrow = JSON.stringify(page_params.narrow);
-        }
-        // Otherwise, we don't pass narrow for the combined feed view; this is
-        // required to display messages if their muted status changes without a new
-        // network request, and so we need the server to send us message history from muted
-        // streams and topics even though the combined feed view's in:home
-        // operators will filter those.
-    } else {
-        let terms = msg_list_data.filter.public_terms();
-        if (page_params.narrow !== undefined) {
-            terms = [...terms, ...page_params.narrow];
-        }
-        data.narrow = JSON.stringify(terms);
+    const narrow = get_narrow_for_message_fetch(msg_list_data.filter);
+    if (narrow !== "") {
+        data.narrow = narrow;
     }
+    return data;
+}
 
+// We keep track of the load messages timeout at a module level
+// to prevent multiple load messages requests from the error codepath
+// from stacking up by cancelling the previous timeout.
+let load_messages_timeout: ReturnType<typeof setTimeout> | undefined;
+
+export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
+    const data = get_parameters_for_message_fetch_api(opts);
     let update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     if (opts.num_before > 0) {
-        msg_list_data.fetch_status.start_older_batch({
+        opts.msg_list_data.fetch_status.start_older_batch({
             update_loading_indicator,
         });
     }
@@ -354,58 +390,28 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     if (opts.num_after > 0) {
         // We hide the bottom loading indicator when we're fetching both top and bottom messages.
         update_loading_indicator = update_loading_indicator && opts.num_before === 0;
-        msg_list_data.fetch_status.start_newer_batch({
+        opts.msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });
     }
 
-    data = handle_operators_supporting_id_based_api(data);
-
-    if (page_params.is_spectator) {
-        // This is a bit of a hack; ideally we'd unify this logic in
-        // some way with the above logic, and not need to do JSON
-        // parsing/stringifying here.
-        const web_public_narrow = {negated: false, operator: "channels", operand: "web-public"};
-
-        if (!data.narrow) {
-            /* For the combined feed, this will be the only operator. */
-            data.narrow = JSON.stringify([web_public_narrow]);
-        } else {
-            // Otherwise, we append the operator.  This logic is not
-            // ideal in that in theory an existing `streams:` operator
-            // could be present, but not in a useful way.  We don't
-            // attempt to validate the narrow is compatible with
-            // spectators here; the server will return an error if
-            // appropriate.
-            const narrow_schema = z.array(
-                z.object({
-                    operator: z.string(),
-                    operand: z.union([z.string(), z.number(), z.array(z.number())]),
-                    negated: z.optional(z.boolean()),
-                }),
-            );
-            const parsed_narrow_data = narrow_schema.parse(JSON.parse(data.narrow));
-            parsed_narrow_data.push(web_public_narrow);
-            data.narrow = JSON.stringify(parsed_narrow_data);
-        }
+    if (load_messages_timeout !== undefined) {
+        clearTimeout(load_messages_timeout);
     }
 
     void channel.get({
         url: "/json/messages",
         data,
         success(raw_data) {
-            if (!$("#connection-error").hasClass("get-events-error")) {
-                ui_report.hide_error($("#connection-error"));
-            }
+            popup_banners.close_connection_error_popup_banner("message_fetch");
             const data = response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {
-            if (xhr.status === 400 && !$("#connection-error").hasClass("get-events-error")) {
-                // We successfully reached the server, so hide the
-                // connection error notice, even if the request failed
-                // for other reasons.
-                ui_report.hide_error($("#connection-error"));
+            if (xhr.status === 400) {
+                // Even though the request failed, we did reach the
+                // server, and can hide the connection error notice.
+                popup_banners.close_connection_error_popup_banner("message_fetch");
             }
 
             if (
@@ -435,7 +441,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                     !opts.msg_list.is_combined_feed_view &&
                     opts.msg_list.visibly_empty()
                 ) {
-                    narrow_banner.show_empty_narrow_message();
+                    narrow_banner.show_empty_narrow_message(opts.msg_list.data.filter);
                 }
 
                 // TODO: This should probably do something explicit with
@@ -445,31 +451,16 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 return;
             }
 
-            ui_report.show_error($("#connection-error"));
-
-            // We need to respect the server's rate-limiting headers, but beyond
-            // that, we also want to avoid contributing to a thundering herd if
-            // the server is giving us 500s/502s.
-            //
-            // So we do the maximum of the retry-after header and an exponential
-            // backoff with ratio 2 and half jitter. Starts at 1-2s and ends at
-            // 16-32s after 5 failures.
-            const backoff_scale = Math.min(2 ** attempt, 32);
-            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
-            let rate_limit_delay_secs = 0;
-            const rate_limited_error_schema = z.object({
-                "retry-after": z.number(),
-                code: z.literal("RATE_LIMIT_HIT"),
+            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
+            popup_banners.open_connection_error_popup_banner({
+                caller: "message_fetch",
+                retry_delay_secs: delay_secs,
+                on_retry_callback() {
+                    load_messages(opts, attempt + 1);
+                },
             });
-            const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-            if (xhr.status === 429 && parsed?.success && parsed?.data) {
-                // Add a bit of jitter to the required delay suggested by the
-                // server, because we may be racing with other copies of the web
-                // app.
-                rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
-            }
-            const delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
-            setTimeout(() => {
+
+            load_messages_timeout = setTimeout(() => {
                 load_messages(opts, attempt + 1);
             }, delay_secs * 1000);
         },
@@ -478,7 +469,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 
 export function load_messages_for_narrow(opts: {
     anchor: string | number;
-    msg_list: message_lists.MessageList;
+    msg_list: MessageList;
     cont: () => void;
     validate_filter_topic_post_fetch?: boolean | undefined;
 }): void {
@@ -502,7 +493,7 @@ export function get_backfill_anchor(msg_list_data: MessageListData): string | nu
     return "first_unread";
 }
 
-export function get_frontfill_anchor(msg_list: message_lists.MessageList): number | string {
+export function get_frontfill_anchor(msg_list: MessageList): number | string {
     const last_msg = msg_list.data.last_including_muted();
 
     if (last_msg) {
@@ -539,7 +530,7 @@ export function maybe_load_older_messages(opts: {
     recent_view?: boolean;
     first_unread_message_id?: number;
     cont?: () => void;
-    msg_list?: message_lists.MessageList | undefined;
+    msg_list?: MessageList | undefined;
     msg_list_data: MessageListData;
 }): void {
     // This function gets called when you scroll to the top
@@ -581,14 +572,19 @@ export function maybe_load_older_messages(opts: {
         }
 
         if (fetched_substantial_history && found_first_unread) {
-            recent_view_ui.set_backfill_in_progress(false);
-            return;
+            // Increase bar for `fetched_substantial_history` for next
+            // `Load more` click.
+            opts.cont = () => {
+                consts.recent_view_minimum_load_more_fetch_size +=
+                    consts.recent_view_load_more_increment_per_click;
+                recent_view_ui.set_backfill_in_progress(false);
+            };
+        } else {
+            opts.cont = () =>
+                setTimeout(() => {
+                    maybe_load_older_messages(opts);
+                }, consts.catch_up_backfill_delay);
         }
-
-        opts.cont = () =>
-            setTimeout(() => {
-                maybe_load_older_messages(opts);
-            }, consts.catch_up_backfill_delay);
     }
     do_backfill({
         msg_list: opts.msg_list,
@@ -608,7 +604,7 @@ export function do_backfill(opts: {
     num_before: number;
     cont?: () => void;
     msg_list_data: MessageListData;
-    msg_list?: message_lists.MessageList | undefined;
+    msg_list?: MessageList | undefined;
 }): void {
     const msg_list_data = opts.msg_list_data;
     const anchor = get_backfill_anchor(msg_list_data);
@@ -630,7 +626,7 @@ export function do_backfill(opts: {
     });
 }
 
-export function maybe_load_newer_messages(opts: {msg_list: message_lists.MessageList}): void {
+export function maybe_load_newer_messages(opts: {msg_list: MessageList}): void {
     // This function gets called when you scroll to the bottom
     // of your window, and you want to get messages newer
     // than what the browsers originally fetched.
@@ -689,6 +685,7 @@ export function initialize(finished_initial_fetch: () => void): void {
         }
 
         if (data.found_oldest) {
+            initial_backfill_for_all_messages_done = true;
             return;
         }
 
@@ -701,10 +698,12 @@ export function initialize(finished_initial_fetch: () => void): void {
             all_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
             latest_message.timestamp < fetch_target_day_timestamp
         ) {
+            initial_backfill_for_all_messages_done = true;
             return;
         }
 
         if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
+            initial_backfill_for_all_messages_done = true;
             return;
         }
 
@@ -735,6 +734,54 @@ export function initialize(finished_initial_fetch: () => void): void {
             recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
         } catch (error) {
             blueslip.error("Error in recent_view_ui.process_messages", undefined, error);
+        }
+
+        if (
+            !recent_view_ui.is_backfill_in_progress &&
+            !first_messages_fetch &&
+            initial_backfill_for_all_messages_done
+        ) {
+            // We only populate other cached data for major backfills.
+            return;
+        }
+
+        // Since we backfill a lot more messages here compared to rendered message list,
+        // we can try populating them if we can do so locally.
+        for (const msg_list_data of message_list_data_cache.all()) {
+            if (msg_list_data === all_messages_data) {
+                continue;
+            }
+
+            if (!msg_list_data.filter.can_apply_locally()) {
+                continue;
+            }
+
+            if (msg_list_data.visibly_empty()) {
+                // If the message list is visibly empty, we don't want to add
+                // message here to break the continuous message history.
+                // We will rely here on our backfill logic to render any visible
+                // messages if we can.
+                continue;
+            }
+
+            // This callback is only called when backfilling messages,
+            // so we need to check for the presence of any message from
+            // the message list in the all_messages_data to
+            // check for continuous message history for the message list.
+            const first_message = msg_list_data.first();
+            assert(first_message !== undefined);
+            if (all_messages_data.get(first_message.id) !== undefined) {
+                const messages_to_populate = all_messages_data.message_range(0, first_message.id);
+                if (msg_list_data.rendered_message_list_id) {
+                    const msg_list = message_lists.rendered_message_lists.get(
+                        msg_list_data.rendered_message_list_id,
+                    );
+                    assert(msg_list !== undefined);
+                    msg_list.add_messages(messages_to_populate, {});
+                } else {
+                    msg_list_data.add_messages(messages_to_populate);
+                }
+            }
         }
     });
 

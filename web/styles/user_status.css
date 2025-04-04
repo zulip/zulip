@@ -3,22 +3,37 @@
     width: 384px;
 
     .user-status-content-wrapper {
-        display: flex;
-        justify-content: center;
+        display: grid;
+        grid-template:
+            "status-icon search-input clear-search" auto / auto minmax(0, 1fr)
+            auto;
         align-items: center;
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
 
         & input.user-status {
-            width: 95%;
+            grid-area: search-input;
+            width: 100%;
             border: none;
+            outline: none;
+            box-shadow: none;
             background-color: transparent;
-            padding-right: 25px;
+            margin: 0;
 
-            @media (width < $ml_min) {
-                width: 92%;
+            &:focus {
+                box-shadow: none;
             }
+        }
+
+        .clear_search_button {
+            grid-area: clear-search;
+            width: 40px;
+            padding-left: 5px;
+        }
+
+        #user-status-input:placeholder-shown + .clear_search_button {
+            visibility: hidden;
         }
 
         .status-emoji-wrapper {
@@ -28,8 +43,8 @@
             cursor: pointer;
 
             .selected-emoji {
-                width: 20px;
-                height: 20px;
+                width: 1.25em; /* 20px at 16px/em */
+                height: 1.25em; /* 20px at 16px/em */
                 cursor: pointer;
             }
 
@@ -37,7 +52,7 @@
             & img.selected-emoji,
             .smiley-icon {
                 text-align: center;
-                min-width: 20px;
+                min-width: 1.25em; /* 20px at 16px/em */
             }
 
             .smiley-icon {
@@ -56,21 +71,21 @@
         & button.user-status-value:focus {
             /* Important is required for generic night them styling to not
                have precedence over this. */
-            color: hsl(200deg 100% 40%) !important;
+            color: var(--color-text-url) !important;
         }
 
         .user-status-value {
             display: flex;
             align-items: center;
             width: 100%;
-            margin-bottom: 7px;
+            padding: 3.5px 0;
             line-height: 1em;
 
             .status-emoji {
                 /* Size and align status emoji to match
                    the top line of the modal. */
-                height: 20px;
-                width: 20px;
+                height: 1.25em; /* 20px at 16px/em */
+                width: 1.25em; /* 20px at 16px/em */
                 margin: 0 7px;
             }
         }

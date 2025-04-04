@@ -27,6 +27,7 @@ from zerver.lib.webhooks.git import (
     get_push_tag_event_message,
     get_remove_branch_event_message,
     get_short_sha,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 
@@ -92,7 +93,7 @@ def api_bitbucket2_webhook(
         if not payload["push"]["changes"]:
             return json_success(request)
         branch = get_branch_name_for_push_event(payload)
-        if branch and branches and branches.find(branch) == -1:
+        if branch and not is_branch_name_notifiable(branch, branches):
             return json_success(request)
 
         topic_names = get_push_topics(payload)

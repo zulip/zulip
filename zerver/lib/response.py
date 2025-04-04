@@ -15,6 +15,7 @@ class MutableJsonResponse(HttpResponse):
         *,
         content_type: str,
         status: int,
+        exception: Exception | None = None,
     ) -> None:
         # Mirror the behavior of Django's TemplateResponse and pass an
         # empty string for the initial content value. Because that will
@@ -23,6 +24,7 @@ class MutableJsonResponse(HttpResponse):
         super().__init__("", content_type=content_type, status=status)
         self._data = data
         self._needs_serialization = True
+        self.exception = exception
 
     def get_data(self) -> dict[str, Any]:
         """Get data for this MutableJsonResponse. Calling this method
@@ -93,7 +95,11 @@ def json_method_not_allowed(methods: list[str]) -> HttpResponseNotAllowed:
 
 
 def json_response(
-    res_type: str = "success", msg: str = "", data: Mapping[str, Any] = {}, status: int = 200
+    res_type: str = "success",
+    msg: str = "",
+    data: Mapping[str, Any] = {},
+    status: int = 200,
+    exception: Exception | None = None,
 ) -> MutableJsonResponse:
     content = {"result": res_type, "msg": msg}
     content.update(data)
@@ -102,6 +108,7 @@ def json_response(
         data=content,
         content_type="application/json",
         status=status,
+        exception=exception,
     )
 
 
@@ -121,7 +128,11 @@ def json_response_from_error(exception: JsonableError) -> MutableJsonResponse:
     if 200 <= exception.http_status_code < 300:
         response_type = "success"
     response = json_response(
-        response_type, msg=exception.msg, data=exception.data, status=exception.http_status_code
+        response_type,
+        msg=exception.msg,
+        data=exception.data,
+        status=exception.http_status_code,
+        exception=exception,
     )
 
     for header, value in exception.extra_headers.items():

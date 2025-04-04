@@ -41,6 +41,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -108,7 +109,9 @@ def send_delivery_email_update_events(
 
 
 @transaction.atomic(savepoint=False)
-def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
+def do_change_user_delivery_email(
+    user_profile: UserProfile, new_email: str, *, acting_user: UserProfile | None
+) -> None:
     delete_user_profile_caches([user_profile], user_profile.realm_id)
 
     user_profile.delivery_email = new_email
@@ -139,9 +142,9 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        acting_user=user_profile,
+        acting_user=acting_user,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_EMAIL_CHANGED,
+        event_type=AuditLogEventType.USER_EMAIL_CHANGED,
         event_time=event_time,
     )
 
@@ -208,7 +211,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_PASSWORD_CHANGED,
+        event_type=AuditLogEventType.USER_PASSWORD_CHANGED,
         event_time=event_time,
     )
 
@@ -228,7 +231,7 @@ def do_change_full_name(
         realm=user_profile.realm,
         acting_user=acting_user,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
+        event_type=AuditLogEventType.USER_FULL_NAME_CHANGED,
         event_time=event_time,
         extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
     )
@@ -290,7 +293,7 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
+        event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
         event_time=event_time,
     )
 
@@ -312,7 +315,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
         realm=user_profile.realm,
         acting_user=acting_user,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_API_KEY_CHANGED,
+        event_type=AuditLogEventType.USER_API_KEY_CHANGED,
         event_time=event_time,
     )
 
@@ -391,7 +394,7 @@ def do_change_avatar_fields(
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
+        event_type=AuditLogEventType.USER_AVATAR_SOURCE_CHANGED,
         extra_data={"avatar_source": avatar_source},
         event_time=event_time,
         acting_user=acting_user,
@@ -447,7 +450,7 @@ def do_change_user_setting(
 
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_SETTING_CHANGED,
+        event_type=AuditLogEventType.USER_SETTING_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
         modified_user=user_profile,
@@ -509,6 +512,18 @@ def do_change_user_setting(
 
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
+    if setting_name == "allow_private_data_export":
+        event = {
+            "type": "realm_export_consent",
+            "user_id": user_profile.id,
+            "consented": setting_value,
+        }
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
+        )
+
     # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
         payload = dict(
@@ -561,24 +576,78 @@ def do_change_user_setting(
             status = UserPresence.LEGACY_STATUS_ACTIVE_INT
             presence_time = timezone_now()
         else:
-            # HACK: Remove existing presence data for the current user
-            # when disabling presence. This hack will go away when we
-            # replace our presence data structure with a simpler model
-            # that doesn't separate individual clients.
-            UserPresence.objects.filter(user_profile_id=user_profile.id).delete()
-
-            # We create a single presence entry for the user, old
-            # enough to be guaranteed to be treated as offline by
-            # correct clients, such that the user will, for as long as
-            # presence remains disabled, appear to have been last
-            # online a few minutes before they disabled presence.
+            # We want to ensure the user's presence data is such that
+            # they will be treated as offline by correct clients,
+            # There are two cases:
             #
-            # We add a small additional offset as a fudge factor in
-            # case of clock skew.
-            status = UserPresence.LEGACY_STATUS_IDLE_INT
-            presence_time = timezone_now() - timedelta(
-                seconds=settings.OFFLINE_THRESHOLD_SECS + 120
+            # (1) If the user's presence was current, we backdate it
+            #     so that the user will, for as long as presence
+            #     remains disabled, appear to have been last online a
+            #     few minutes before they disabled presence.
+            #
+            # (2) If the user only has a presence older than what our
+            #     backdate would be, we keep the original value - it
+            #     already guarantees that the user will appear to be
+            #     offline.
+            backdated_presence_time = timezone_now() - timedelta(
+                # We add a small additional offset as a fudge factor in
+                # case of clock skew.
+                seconds=settings.OFFLINE_THRESHOLD_SECS
+                + settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
+                + 10
             )
+            minimum_previous_presence_time = backdated_presence_time - timedelta(
+                seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 10
+            )
+
+            try:
+                presence: UserPresence | None = UserPresence.objects.get(user_profile=user_profile)
+                assert presence is not None
+                assert presence.last_connected_time is not None
+
+                original_last_active_time = presence.last_active_time
+                if presence.last_connected_time <= backdated_presence_time:
+                    # This is case (2), so we don't need to do
+                    # anything. presence is already as intended.
+                    # last_active_time <= last_connected_time always holds, so
+                    # last_active_time <= backdated_presence_time is also ensured here.
+                    return
+
+                # do_update_user_presence will only send an event if
+                # the presence event it receives is sufficiently newer
+                # than whatever it had before, so we backdate the
+                # existing presence data if necessary to ensure that
+                # our new update event will be seen as new by clients.
+                presence_time = backdated_presence_time
+                presence.last_connected_time = min(
+                    minimum_previous_presence_time, presence.last_connected_time
+                )
+                update_fields = ["last_connected_time"]
+
+                if (
+                    original_last_active_time is None
+                    or original_last_active_time < backdated_presence_time
+                ):
+                    # If the user's last_active_time was old enough (or nonexistent), we don't want to perturb
+                    # it, as it's already in a correct state. Thus we only do_update_user_presence with an
+                    # IDLE status - which will only update the last_connected_time.
+                    status = UserPresence.LEGACY_STATUS_IDLE_INT
+                else:
+                    assert presence.last_active_time is not None
+                    presence.last_active_time = min(
+                        minimum_previous_presence_time, presence.last_active_time
+                    )
+                    update_fields.append("last_active_time")
+                    status = UserPresence.LEGACY_STATUS_ACTIVE_INT
+                presence.save(update_fields=update_fields)
+
+            except UserPresence.DoesNotExist:
+                # If the user has no presence data at all, that should
+                # logically get consistent treatment with having very
+                # old presence data (case (2) above). We want to leave
+                # their presence state intact - so just return without
+                # doing anything.
+                return
 
         # do_update_user_presence doesn't allow being run inside another
         # transaction.atomic block, so we need to use on_commit here to ensure

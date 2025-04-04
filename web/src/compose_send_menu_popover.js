@@ -5,18 +5,18 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose from "./compose";
-import * as compose_state from "./compose_state";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as flatpickr from "./flatpickr";
-import * as modals from "./modals";
-import * as popover_menus from "./popover_menus";
-import * as scheduled_messages from "./scheduled_messages";
-import {parse_html} from "./ui_util";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose from "./compose.js";
+import * as compose_state from "./compose_state.ts";
+import * as compose_validate from "./compose_validate.ts";
+import * as drafts from "./drafts.ts";
+import * as flatpickr from "./flatpickr.ts";
+import * as modals from "./modals.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
+import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 const ENTER_SENDS_SELECTION_DELAY = 600;
@@ -74,9 +74,20 @@ export function open_send_later_menu() {
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
                         ),
-                        onClose() {
+                        onClose(selectedDates, _dateStr, instance) {
                             // Return to normal state.
                             $send_later_modal_content.css("pointer-events", "all");
+                            const selected_date = selectedDates[0];
+
+                            if (selected_date && selected_date < instance.config.minDate) {
+                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
+                                    true,
+                                );
+                            } else {
+                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
+                                    false,
+                                );
+                            }
                         },
                     },
                 );
@@ -186,8 +197,6 @@ export function initialize() {
                     .attr("value");
                 selected_behaviour = selected_behaviour === "true"; // Convert to bool
                 user_settings.enter_sends = selected_behaviour;
-                $(`.enter_sends_${!selected_behaviour}`).hide();
-                $(`.enter_sends_${selected_behaviour}`).show();
 
                 // Refocus in the content box so you can continue typing or
                 // press Enter to send.
@@ -218,6 +227,7 @@ export function initialize() {
                 // time.
                 compose_state.prevent_draft_restoring();
                 compose.clear_compose_box();
+                compose.clear_preview_area();
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },

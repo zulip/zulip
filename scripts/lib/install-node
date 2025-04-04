@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version=20.17.0
+version=22.14.0
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="node-v$version-linux-x64.tar.xz"
-        sha256=a24db3dcd151a52e75965dba04cf1b3cd579ff30d6e0af9da1aede4d0f17486b
+        sha256=69b09dba5c8dcb05c4e4273a4340db1005abeafe3927efda2bc5b249e80437ec
         ;;
 
     aarch64)
         tarball="node-v$version-linux-arm64.tar.xz"
-        sha256=7ebbb636c23f89dbf66648e227fbd0998ce33db4c588520256425102d97dd1a4
+        sha256=08bfbf538bad0e8cbb0269f0173cca28d705874a67a22f60b57d99dc99e30050
         ;;
 esac
 
@@ -26,11 +26,7 @@ if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
-    curl_opts=(-fLO --retry 3)
-    if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
-        curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
-    fi
-    curl "${curl_opts[@]}" "https://nodejs.org/dist/v$version/$tarball"
+    curl -fLO --retry 3 "https://nodejs.org/dist/v$version/$tarball"
     sha256sum -c <<<"$sha256 $tarball"
     rm -rf /srv/zulip-node
     mkdir -p /srv/zulip-node

@@ -69,7 +69,8 @@ channel or topic as read**.
 
 {tab|via-left-sidebar}
 
-1. Hover over a channel, topic, or **Combined feed** in the left sidebar.
+1. Hover over a channel, topic, or your [home view](/help/configure-home-view)
+   in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -85,11 +86,8 @@ channel or topic as read**.
 
 {!go-to-inbox.md!}
 
-1. Hover over a channel or topic in the left sidebar.
-
-1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
-
-1. Click **Mark all messages as read**.
+1. Click on an unread messages counter to mark all messages in that topic or
+   channel as read.
 
 {tab|via-recent-conversations}
 

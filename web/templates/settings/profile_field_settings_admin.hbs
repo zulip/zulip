@@ -3,7 +3,12 @@
         <h3>{{t "Custom profile fields"}}</h3>
         <div class="alert-notification" id="admin-profile-field-status"></div>
         {{#if is_admin}}
-        <button class="button rounded sea-green" id="add-custom-profile-field-btn">{{t "Add a new profile field" }}</button>
+            {{> ../components/action_button
+              id="add-custom-profile-field-button"
+              label=(t "Add a new profile field")
+              attention="quiet"
+              intent="brand"
+              }}
         {{/if}}
     </div>
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
@@ -20,7 +25,7 @@
                     {{/if}}
                 </tr>
             </thead>
-            <tbody id="admin_profile_fields_table" data-empty="{{t 'No custom profile field configured for this organization.' }}"></tbody>
+            <tbody id="admin_profile_fields_table" data-empty="{{t 'No custom profile fields configured.' }}"></tbody>
         </table>
     </div>
 </div>

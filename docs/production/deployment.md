@@ -38,12 +38,18 @@ our next major release has a reliable install experience.
 
 ## Zulip in Docker
 
-Zulip has an officially supported, experimental
-[docker image](https://github.com/zulip/docker-zulip). Please note
-that Zulip's [normal installer](install.md) has been
-extremely reliable for years, whereas the Docker image is new and has
-rough edges, so we recommend the normal installer unless you have a
-specific reason to prefer Docker.
+In addition to the [standard installer](./install.md), Zulip has an
+[official Docker image](https://github.com/zulip/docker-zulip).
+
+We recommend using the Docker image only if your organization has a
+preference for deploying services using Docker. Deploying with Docker
+moderately increases the effort required to install, maintain, and
+upgrade a Zulip installation.
+
+Zulip's [backup tool][backups] supports migrating between Docker and a
+standard installation, so you can change your mind later.
+
+[backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
 
 ## Zulip installer details
 
@@ -68,7 +74,7 @@ as well as those mentioned in the
 [install](install.md#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
-  installed. We currently support PostgreSQL 12, 13, 14, 15, and 16, with 16
+  installed. We currently support PostgreSQL 13, 14, 15, and 16, with 16
   being the default.
 
 - `--postgresql-database-name=exampledbname`: With this option, you

@@ -24,16 +24,22 @@
     background-color: var(--color-background-modal);
     max-width: calc(100% - 32px);
     max-height: 96%;
-    width: 32.5rem;
+    width: 37.1428em; /* 520px at 14px em */
     border-radius: 4px;
     box-sizing: border-box;
 }
 
 .modal__header {
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 16px 16px 16px 24px;
+    display: grid;
+    /* 1.8em is the shortest round value for heading at which none of
+       the letters of the english alphabet get cut by overflow:hidden
+       at em = 20px
+       29px at 16px/1em = 1.8125 */
+    grid-template:
+        "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
+        1.8125em;
+    grid-column-gap: 4px;
 }
 
 .modal__footer {
@@ -44,12 +50,23 @@
 }
 
 .modal__title {
+    grid-area: heading;
     margin: 0;
-    font-size: 1.375rem;
+    /* 16 / 14 * 1.375 = 1.5714, from original 1.375rem */
+    font-size: 1.5714em;
     font-weight: 600;
     line-height: 1.25;
     overflow: hidden;
     word-wrap: break-word;
+
+    .stream-privacy-type-icon {
+        /* This pushes back on suspect styles
+           in app_components.css. A fuller fix
+           will require tracking down other
+           instances of this class. */
+        width: auto;
+        padding-right: 0;
+    }
 
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
@@ -57,30 +74,31 @@
     }
 }
 
+.modal__title:has(.stream-or-topic-reference) {
+    /* Reduce the font weight of headings that
+       include stream or topic references (e.g.,
+       topic move/rename modals). */
+    font-weight: 450;
+
+    .stream-or-topic-reference {
+        /* Make the stream or topic references
+           more prominent. */
+        font-weight: 600;
+    }
+}
+
 .user-profile-name-heading {
-    padding-right: 1rem;
     max-width: 80%;
     display: flex;
     align-items: center;
     gap: 10px;
     /* This line-height is to increase the vertical clickable areas on the icons. */
-    line-height: 28px;
+    line-height: 1.2727em; /* 28px at 22px font-size at 14px em */
 
     .user-profile-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-
-    .user-profile-manage-own-edit-button,
-    .user-profile-manage-others-edit-button,
-    .user-profile-manage-own-copy-link-button {
-        color: hsl(200deg 100% 50%);
-        cursor: pointer;
-
-        &:hover {
-            color: hsl(200deg 100% 25%);
-        }
     }
 }
 
@@ -88,7 +106,6 @@
     &::before {
         content: "\2715";
     }
-    margin-right: -4px;
     background: transparent;
     border: 0;
 
@@ -102,16 +119,22 @@
     flex-direction: column;
     /* 16px at 14px/1em */
     font-size: 1.1429em;
-    overflow-y: auto;
     padding: 2px 24px;
     line-height: 1.5;
+    /* Prevent the appearance of a horizontal
+       native scrollbar at certain
+       info-density/zoom levels. */
+    overflow: hidden auto;
+    /* Set a max-width, less the 24px of left and right
+       padding specified above. */
+    max-width: calc(100% - 48px);
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 87%);
     }
 }
 
-.modal__btn {
+.modal__button {
     /* We need the backup value for billing related html files where
        this variable is not defined. */
     font-size: var(--base-font-size-px, 14px);
@@ -139,8 +162,8 @@
     }
 }
 
-.modal__btn:focus,
-.modal__btn:hover {
+.modal__button:focus,
+.modal__button:hover {
     transform: scale(1.05);
     /* The extremely subtle 1.05 scale can cause
        a gap to appear between the outline and
@@ -185,13 +208,9 @@
     margin-bottom: 10px;
 }
 
-#archive-stream-modal .notification_stream_archive_warning {
-    margin-bottom: 0;
-}
-
 #read_receipts_modal {
     .modal__container {
-        width: 360px;
+        width: 25.7142em; /* 360px at 14px em */
 
         .modal__content {
             /* When showing read receipts, we use simplebar
@@ -239,8 +258,8 @@
         & li {
             .read_receipts_user_avatar {
                 display: inline-block;
-                height: 20px;
-                width: 20px;
+                height: 1.25em; /* 20px at 16px font-size at 14px em */
+                width: 1.25em; /* 20px at 16px font-size at 14px em */
                 position: relative;
                 right: 8px;
                 border-radius: 4px;
@@ -253,7 +272,7 @@
             white-space: nowrap;
             text-overflow: ellipsis;
             cursor: pointer;
-            line-height: 26px;
+            line-height: 1.625em; /* 26px at 16px font-size at 14px em */
 
             &:hover {
                 background-color: hsl(0deg 0% 0% / 5%);
@@ -348,7 +367,17 @@
 
 .modal__spinner {
     display: flex;
+    align-items: center;
     justify-content: center;
+}
+
+.time-input-formatted-description {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+#sender_channel_email_address_widget {
+    width: 12.875em; /* 206px at 16px/em */
 }
 
 #copy_email_address_modal {
@@ -363,14 +392,13 @@
     }
 
     .stream-email-header {
-        font-size: 18px;
+        font-size: 1.125em; /* 18px at 16px/em */
     }
 }
 
 .modal_select {
-    height: 30px;
-    width: 220px;
-    padding: 0 25px 0 6px;
+    width: var(--modal-input-width);
+    padding: 4px 25px 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
@@ -391,10 +419,16 @@
 
 .modal-field-label {
     margin-bottom: var(--margin-bottom-field-description);
+    /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
 }
 
-.dropdown-widget-button {
-    width: 206px;
+.modal__body,
+.overlay-content {
+    .dropdown-widget-button,
+    .dropdown_widget_with_label_wrapper {
+        width: var(--modal-input-width);
+    }
 }
 
 .modal_password_input,
@@ -406,10 +440,11 @@
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
-        border linear 0.2s,
+        border-color linear 0.2s,
         box-shadow linear 0.2s;
     margin-bottom: 10px;
-    width: 206px;
+    /* subtract padding (6px each side) and border (1px each side) */
+    width: calc(var(--modal-input-width) - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -420,10 +455,23 @@
     }
 }
 
-#add-poll-modal {
+#add-realm-domain-widget {
+    .modal_text_input {
+        width: 14.7143em; /* 206px at 14px em */
+    }
+}
+
+#create_bot_short_name {
+    /* A shorter dropdown width (~200px at 14px em)
+       to ensure the email all fits on one line. */
+    width: 14em;
+}
+
+#add-poll-modal,
+#add-todo-modal {
     /* this height allows 3-4 option rows
     to fit in without need for scrolling */
-    height: 450px;
+    height: 32.1428em; /* 450px / 14px em */
     overflow: hidden;
 
     .modal__content {
@@ -435,27 +483,32 @@
         }
     }
 
-    #add-poll-form {
+    #add-poll-form,
+    #add-todo-form {
         display: flex;
         flex-direction: column;
         overflow: hidden;
         height: 100%;
 
-        .poll-label {
+        .poll-label,
+        .todo-label {
             font-weight: bold;
             margin: 5px 0;
         }
 
-        .poll-question-input-container {
+        .poll-question-input-container,
+        .todo-title-input-container {
             display: flex;
             margin-bottom: 10px;
 
-            #poll-question-input {
+            #poll-question-input,
+            #todo-title-input {
                 flex-grow: 1;
             }
         }
 
-        .poll-options-list {
+        .poll-options-list,
+        .todo-options-list {
             margin: 0;
             height: 0;
             overflow: auto;
@@ -475,7 +528,26 @@
                 }
 
                 .poll-option-input {
+                    /* Overwrite .modal_text_input margin to keep vertical centering. */
+                    margin-bottom: 0;
                     flex-grow: 1;
+                }
+
+                .todo-input {
+                    flex: 1 1 auto;
+                    margin-bottom: 0;
+                    max-width: 30%;
+                }
+
+                .todo-description-container {
+                    flex: 1 1 auto;
+                    display: flex;
+                    min-width: 0;
+
+                    .todo-description-input {
+                        flex-grow: 1;
+                        margin-bottom: 0;
+                    }
                 }
             }
 
@@ -495,6 +567,22 @@
                 }
             }
         }
+
+        @media (max-width: $sm_min) {
+            .option-row {
+                .todo-input {
+                    width: 100%;
+                    min-width: 90px;
+                }
+
+                .todo-description-container {
+                    .todo-description-input {
+                        width: 100%;
+                        min-width: 90px;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -505,9 +593,9 @@
 
     .keyboard-button {
         color: var(--color-hotkey-hint);
-        font-size: 12px;
+        font-size: 0.75em; /* 12px at 16px/em */
         font-weight: 500;
-        padding: 2px 4px;
+        padding: 0.125em 0.25em; /* 2px 4px at 16px/em */
         border-radius: 3px;
         border: 1px solid var(--color-hotkey-hint);
     }
@@ -550,6 +638,83 @@
             &:hover {
                 text-decoration: none;
                 background-color: hsl(0deg 0% 0% / 20%);
+            }
+        }
+    }
+}
+
+.dialog-widget-footer-minor-text {
+    font-size: smaller;
+    font-style: italic;
+    margin-right: auto;
+}
+
+#topic-summary-modal {
+    width: 45em;
+}
+
+#navigation-tour-video-modal {
+    width: 97vw;
+    max-width: 1024px;
+
+    .modal__content {
+        overflow: hidden;
+    }
+
+    #navigation-tour-video-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &::after {
+            content: "";
+            position: absolute;
+            background-image: url("../images/play_button.svg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            width: 20%;
+            height: 20%;
+            pointer-events: none;
+        }
+
+        &.hide-play-button::after {
+            content: none;
+            background-image: none;
+        }
+    }
+
+    #navigation-tour-video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        cursor: pointer;
+        border: 1px solid hsl(0deg 0% 50%);
+
+        &.dimmed-background {
+            opacity: 0.4;
+        }
+    }
+
+    #navigation-tour-video-ended-button-wrapper {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        visibility: hidden;
+
+        #navigation-tour-video-ended-button {
+            color: hsl(0deg 0% 100%) !important;
+            cursor: pointer;
+            font-size: 200%;
+            padding: 1% 5%;
+            border-radius: 8px;
+            border: 1px solid hsl(0deg 0% 100%);
+            transition: transform 0.25s ease-out;
+
+            &:hover {
+                transform: scale(1.05);
             }
         }
     }

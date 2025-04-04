@@ -1,15 +1,15 @@
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose_notifications from "./compose_notifications";
-import * as message_lists from "./message_lists";
-import type {MessageList, RenderInfo} from "./message_lists";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
-import * as narrow_state from "./narrow_state";
-import * as unread_ops from "./unread_ops";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose_notifications from "./compose_notifications.ts";
+import type {MessageList} from "./message_list.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as unread_ops from "./unread_ops.ts";
+import * as util from "./util.ts";
 
 const msg_match_narrow_api_response_schema = z.object({
     messages: z.record(
@@ -24,7 +24,7 @@ const msg_match_narrow_api_response_schema = z.object({
 export function maybe_add_narrowed_messages(
     messages: Message[],
     msg_list: MessageList,
-    callback: (messages: Message[], msg_list: MessageList) => RenderInfo | undefined,
+    messages_are_new = false,
     attempt = 1,
 ): void {
     const ids: number[] = [];
@@ -80,7 +80,10 @@ export function maybe_add_narrowed_messages(
                 return new_msg;
             });
 
-            callback(new_messages, msg_list);
+            // Remove the elsewhere_messages from the message list since
+            // they don't match the filter as per data from server.
+            msg_list.remove_and_rerender(elsewhere_messages.map((msg) => msg.id));
+            msg_list.add_messages(new_messages, {messages_are_new});
             unread_ops.process_visible();
             compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -109,7 +112,7 @@ export function maybe_add_narrowed_messages(
                 if (msg_list === message_lists.current) {
                     // Don't actually try again if we un-narrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, callback, attempt + 1);
+                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new, attempt + 1);
                 }
             }, delay);
         },

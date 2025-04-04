@@ -1,6 +1,7 @@
 The public access option lets administrators configure selected channels to be
-**web-public**. Web-public channels can be viewed by anyone on the Internet
-without creating an account in your organization.
+**web-public**. Web-public channels (indicated by a <i class="zulip-icon
+zulip-icon-globe"></i>) can be viewed by anyone on the Internet without creating
+an account in your organization.
 
 For example, you can [link to a Zulip
 topic](/help/link-to-a-message-or-conversation) in a web-public channel

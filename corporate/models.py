@@ -53,7 +53,7 @@ class Customer(models.Model):
         # Enforce that at least one of these is set.
         constraints = [
             models.CheckConstraint(
-                check=Q(realm__isnull=False)
+                condition=Q(realm__isnull=False)
                 | Q(remote_server__isnull=False)
                 | Q(remote_realm__isnull=False),
                 name="has_associated_model_object",
@@ -283,6 +283,8 @@ class CustomerPlanOffer(AbstractCustomerPlan):
     audit purpose with status=PROCESSED.
     """
 
+    TIER_CLOUD_STANDARD = 1
+    TIER_CLOUD_PLUS = 2
     TIER_SELF_HOSTED_BASIC = 103
     TIER_SELF_HOSTED_BUSINESS = 104
     tier = models.SmallIntegerField()
@@ -308,16 +310,16 @@ class CustomerPlanOffer(AbstractCustomerPlan):
         }[self.status]
 
     @staticmethod
-    def name_from_tier(tier: int) -> str:  # nocoverage
+    def name_from_tier(tier: int) -> str:
         return {
+            CustomerPlanOffer.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
+            CustomerPlanOffer.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlanOffer.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlanOffer.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
         }[tier]
 
     @property
-    def name(self) -> str:  # nocoverage
-        # TODO: This is used in `check_customer_not_on_paid_plan` as
-        # 'next_plan.name'. Related to sponsorship, add coverage.
+    def name(self) -> str:
         return self.name_from_tier(self.tier)
 
 
@@ -412,6 +414,8 @@ class CustomerPlan(AbstractCustomerPlan):
         TIER_SELF_HOSTED_ENTERPRISE,
     ]
 
+    COMPLIMENTARY_PLAN_TIERS = [TIER_SELF_HOSTED_LEGACY]
+
     ACTIVE = 1
     DOWNGRADE_AT_END_OF_CYCLE = 2
     FREE_TRIAL = 3
@@ -447,10 +451,12 @@ class CustomerPlan(AbstractCustomerPlan):
             CustomerPlan.TIER_CLOUD_STANDARD: "Zulip Cloud Standard",
             CustomerPlan.TIER_CLOUD_PLUS: "Zulip Cloud Plus",
             CustomerPlan.TIER_CLOUD_ENTERPRISE: "Zulip Enterprise",
-            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Free (legacy plan)",
             CustomerPlan.TIER_SELF_HOSTED_BASIC: "Zulip Basic",
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS: "Zulip Business",
             CustomerPlan.TIER_SELF_HOSTED_COMMUNITY: "Community",
+            # Complimentary access plans should never be billed through Stripe,
+            # so the tier name can exceed the 22 character limit noted above.
+            CustomerPlan.TIER_SELF_HOSTED_LEGACY: "Zulip Basic (complimentary)",
         }[tier]
 
     @property
@@ -487,6 +493,9 @@ class CustomerPlan(AbstractCustomerPlan):
 
     def is_free_trial(self) -> bool:
         return self.status == CustomerPlan.FREE_TRIAL
+
+    def is_complimentary_access_plan(self) -> bool:
+        return self.tier in self.COMPLIMENTARY_PLAN_TIERS
 
     def is_a_paid_plan(self) -> bool:
         return self.tier in self.PAID_PLAN_TIERS
@@ -538,6 +547,12 @@ class LicenseLedger(models.Model):
     # equal to the number of activated users in the organization.
     licenses_at_next_renewal = models.IntegerField(null=True)
 
+    @override
+    def __str__(self) -> str:
+        ledger_type = "renewal" if self.is_renewal else "update"
+        ledger_time = self.event_time.strftime("%Y-%m-%d %H:%M")
+        return f"License {ledger_type}, {self.licenses} purchased, {self.licenses_at_next_renewal} next cycle, {ledger_time} (id={self.id})"
+
 
 class SponsoredPlanTypes(Enum):
     # unspecified used for cloud sponsorship requests
@@ -561,6 +576,7 @@ class ZulipSponsorshipRequest(models.Model):
 
     org_description = models.TextField(default="")
     expected_total_users = models.TextField(default="")
+    plan_to_use_zulip = models.TextField(default="")
     paid_users_count = models.TextField(default="")
     paid_users_description = models.TextField(default="")
 

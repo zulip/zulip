@@ -32,12 +32,12 @@ def generate_landing_page_images() -> None:
     for image_file_path in glob.glob(f"{ORIGINAL_IMAGES_DIR}/*"):
         file_name = Path(image_file_path).stem
         image = pyvips.Image.new_from_file(image_file_path)
-        for size in (1, 2):
-            scaled_width = get_x_size(image.width, size)
-            scaled_height = get_x_size(image.height, size)
-            scaled = image.thumbnail_image(scaled_width, height=scaled_height)
-            for format in ("webp[Q=50]", "jpg[Q=70,optimize-coding=true]"):
-                scaled.write_to_file(f"{GENERATED_IMAGES_DIR}/{file_name}-{size}x.{format}")
+        size = 2
+        scaled_width = get_x_size(image.width, size)
+        scaled_height = get_x_size(image.height, size)
+        scaled = image.thumbnail_image(scaled_width, height=scaled_height)
+        for format in ("webp[Q=60]", "jpg[Q=80,optimize-coding=true]"):
+            scaled.write_to_file(f"{GENERATED_IMAGES_DIR}/{file_name}-{size}x.{format}")
 
 
 if __name__ == "__main__":

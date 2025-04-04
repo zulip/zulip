@@ -1,13 +1,15 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
 import * as tippy from "tippy.js";
 
-import copy_to_clipboard_svg from "../../templates/copy_to_clipboard_svg.hbs";
-import * as common from "../common";
-import * as util from "../util";
+import zulip_copy_icon from "../../templates/zulip_copy_icon.hbs";
+import * as common from "../common.ts";
+import {show_copied_confirmation} from "../copied_tooltip.ts";
+import * as util from "../util.ts";
 
-import {activate_correct_tab} from "./tabbed-instructions";
+import {activate_correct_tab} from "./tabbed-instructions.ts";
 
 function register_tabbed_section($tabbed_section: JQuery): void {
     const $li = $tabbed_section.find("ul.nav li");
@@ -33,8 +35,8 @@ function register_tabbed_section($tabbed_section: JQuery): void {
 // Display the copy-to-clipboard button inside the .codehilite element
 // within the API and Help Center docs using clipboard.js
 function add_copy_to_clipboard_element($codehilite: JQuery): void {
-    const $copy_button = $("<button>").addClass("copy-codeblock");
-    $copy_button.html(copy_to_clipboard_svg());
+    const $copy_button = $("<span>").addClass("copy-button copy-codeblock");
+    $copy_button.html(zulip_copy_icon());
 
     $($codehilite).append($copy_button);
 
@@ -47,28 +49,18 @@ function add_copy_to_clipboard_element($codehilite: JQuery): void {
     });
 
     // Show a tippy tooltip when the button is hovered
-    const tooltip_copy = tippy.default(util.the($copy_button), {
+    tippy.default(util.the($copy_button), {
         content: "Copy code",
         trigger: "mouseenter",
         placement: "top",
     });
 
-    // Show a tippy tooltip when the code is copied
-    const tooltip_copied = tippy.default(util.the($copy_button), {
-        content: "Copied!",
-        trigger: "manual",
-        placement: "top",
-    });
-
     // Show "Copied!" tooltip when code is successfully copied
-    clipboard.on("success", () => {
-        tooltip_copy.hide();
-        tooltip_copied.show();
-
-        // Hide the "Copied!" tooltip after 1 second
-        setTimeout(() => {
-            tooltip_copied.hide();
-        }, 1000);
+    clipboard.on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
     });
 }
 
@@ -110,7 +102,7 @@ $(".hamburger").on("click", () => {
 });
 
 $(".markdown").on("click", () => {
-    if ($(".sidebar.show").length) {
+    if ($(".sidebar.show").length > 0) {
         $(".sidebar.show").toggleClass("show");
     }
 });

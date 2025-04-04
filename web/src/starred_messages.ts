@@ -1,5 +1,5 @@
-import * as message_store from "./message_store";
-import type {StateData} from "./state_data";
+import * as message_store from "./message_store.ts";
+import type {StateData} from "./state_data.ts";
 
 export const starred_ids = new Set<number>();
 

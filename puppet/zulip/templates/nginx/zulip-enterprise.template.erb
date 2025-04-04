@@ -1,3 +1,18 @@
+# For local IPC -- tusd to Django, or Django to Tornado
+server {
+<% if @nginx_http_only -%>
+    listen 127.0.0.1:<%= @nginx_listen_port %>;
+<% else -%>
+    listen 127.0.0.1:80;
+<% end -%>
+    location /local-static {
+        alias /home/zulip/local-static;
+    }
+    include /etc/nginx/zulip-include/app;
+    include /etc/nginx/zulip-include/localhost.d/*.conf;
+}
+
+
 <% if @nginx_http_only -%>
 <% else -%>
 server {

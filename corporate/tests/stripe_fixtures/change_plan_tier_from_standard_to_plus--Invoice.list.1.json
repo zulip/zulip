@@ -4,9 +4,9 @@
       "account_country": "US",
       "account_name": "Kandra Labs, Inc.",
       "account_tax_ids": null,
-      "amount_due": 3600,
+      "amount_due": 4800,
       "amount_paid": 0,
-      "amount_remaining": 3600,
+      "amount_remaining": 4800,
       "amount_shipping": 0,
       "application": null,
       "application_fee_amount": null,
@@ -14,17 +14,19 @@
       "attempted": false,
       "auto_advance": true,
       "automatic_tax": {
+        "disabled_reason": null,
         "enabled": false,
         "liability": null,
         "status": null
       },
+      "automatically_finalizes_at": null,
       "billing_reason": "manual",
       "charge": null,
       "collection_method": "send_invoice",
       "created": 1000000000,
       "currency": "usd",
       "custom_fields": null,
-      "customer": "cus_NORMALIZED0001",
+      "customer": "cus_NORMALIZED",
       "customer_address": null,
       "customer_email": "king@lear.org",
       "customer_name": null,
@@ -43,9 +45,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qdnl1SmpnTWZ2Smc5QnhjdDJQTkY1SFpYZWt0RXU1LDEwMzc5NTI1Ng0200K50EuBcH?s=ap",
-      "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qdnl1SmpnTWZ2Smc5QnhjdDJQTkY1SFpYZWt0RXU1LDEwMzc5NTI1Ng0200K50EuBcH/pdf?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+      "id": "change_plan_tier_from_standard_to_plus--Invoice.create.1.json",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -54,16 +56,16 @@
       "lines": {
         "data": [
           {
-            "amount": 10800,
-            "amount_excluding_tax": 10800,
+            "amount": 12000,
+            "amount_excluding_tax": 12000,
             "currency": "usd",
             "description": "Zulip Cloud Plus - renewal",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
-            "id": "il_NORMALIZED00000000000001",
-            "invoice": "in_NORMALIZED00000000000001",
-            "invoice_item": "ii_NORMALIZED00000000000001",
+            "id": "change_plan_tier_from_standard_to_plus--Invoice.create.1.json",
+            "invoice": "change_plan_tier_from_standard_to_plus--Invoice.create.1.json",
+            "invoice_item": "ii_NORMALIZED",
             "livemode": false,
             "metadata": {},
             "object": "line_item",
@@ -72,19 +74,20 @@
               "start": 1000000000
             },
             "plan": null,
+            "pretax_credit_amounts": [],
             "price": {
               "active": false,
               "billing_scheme": "per_unit",
               "created": 1000000000,
               "currency": "usd",
               "custom_unit_amount": null,
-              "id": "price_NORMALIZED00000000000001",
+              "id": "change_plan_tier_from_standard_to_plus--Invoice.create.1.json",
               "livemode": false,
               "lookup_key": null,
               "metadata": {},
               "nickname": null,
               "object": "price",
-              "product": "prod_NORMALIZED0001",
+              "product": "prod_NORMALIZED",
               "recurring": null,
               "tax_behavior": "unspecified",
               "tiers_mode": null,
@@ -97,7 +100,7 @@
             "proration_details": {
               "credited_items": null
             },
-            "quantity": 9,
+            "quantity": 10,
             "subscription": null,
             "tax_amounts": [],
             "tax_rates": [],
@@ -108,17 +111,17 @@
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+        "url": "/v1/invoices/change_plan_tier_from_standard_to_plus--Invoice.create.1.json/lines"
       },
       "livemode": false,
       "metadata": {},
       "next_payment_attempt": null,
-      "number": "NORMALI-0001",
+      "number": "NORMALIZED",
       "object": "invoice",
       "on_behalf_of": null,
       "paid": false,
       "paid_out_of_band": false,
-      "payment_intent": "pi_NORMALIZED00000000000001",
+      "payment_intent": "pi_NORMALIZED",
       "payment_settings": {
         "default_mandate": null,
         "payment_method_options": null,
@@ -134,7 +137,9 @@
         "amount_tax_display": null,
         "pdf": {
           "page_size": "letter"
-        }
+        },
+        "template": null,
+        "template_version": null
       },
       "rendering_options": null,
       "shipping_cost": null,
@@ -152,13 +157,14 @@
       "subscription_details": {
         "metadata": null
       },
-      "subtotal": 10800,
-      "subtotal_excluding_tax": 10800,
+      "subtotal": 12000,
+      "subtotal_excluding_tax": 12000,
       "tax": null,
       "test_clock": null,
-      "total": 10800,
+      "total": 12000,
       "total_discount_amounts": [],
-      "total_excluding_tax": 10800,
+      "total_excluding_tax": 12000,
+      "total_pretax_credit_amounts": [],
       "total_tax_amounts": [],
       "transfer_data": null,
       "webhooks_delivered_at": null

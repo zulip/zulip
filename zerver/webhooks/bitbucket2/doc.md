@@ -10,11 +10,9 @@ Bitbucket Server click [here](./bitbucket3).
 
 {start_tabs}
 
-1. {!create-channel.md!}
-
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-webhook-url-basic.md!}
+1. {!generate-webhook-url-with-branch-filtering.md!}
 
 1. On your repository's web page, go to **Settings**. Select
    **Webhooks**, and then click **Add webhook**.
@@ -31,10 +29,6 @@ Bitbucket Server click [here](./bitbucket3).
 ![](/static/images/integrations/bitbucket/003.png)
 
 {!event-filtering-additional-feature.md!}
-
-### Configuration options
-
-{!git-branches-additional-feature.md!}
 
 ### Related documentation
 

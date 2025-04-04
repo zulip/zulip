@@ -8,7 +8,7 @@ export type PollDataConfig = {
     question: string;
     options: string[];
     comma_separated_names: (user_ids: number[]) => string;
-    report_error_function: (msg: string, more_info?: unknown) => void;
+    report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
 };
 
 export type PollOptionData = {

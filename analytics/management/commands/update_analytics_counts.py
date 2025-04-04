@@ -26,8 +26,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--time",
             "-t",
-            help="Update stat tables from current state to "
-            "--time. Defaults to the current time.",
+            help="Update stat tables from current state to --time. Defaults to the current time.",
             default=timezone_now().isoformat(),
         )
         parser.add_argument("--utc", action="store_true", help="Interpret --time in UTC.")
@@ -96,4 +95,4 @@ class Command(ZulipBaseCommand):
             logger.info("Sleeping %d seconds before reporting...", delay)
             time.sleep(delay)
 
-            send_server_data_to_push_bouncer(consider_usage_statistics=True)
+            send_server_data_to_push_bouncer(consider_usage_statistics=True, raise_on_error=True)

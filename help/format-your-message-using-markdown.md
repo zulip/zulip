@@ -28,6 +28,7 @@ below.
 * [/me action messages](#me-action-messages)
 * [Global times](#global-times)
 * [Tables](#tables)
+* [Polls](#polls)
 * [Collaborative to-do lists](#collaborative-to-do-lists)
 * [Paragraph and section formatting](#paragraph-and-section-formatting)
 
@@ -114,7 +115,7 @@ below.
 
 !!! tip ""
 
-    There is a handy option to [quote and reply](/help/quote-and-reply) to a
+    There is a handy option to [quote message](/help/quote-or-forward-a-message) to a
     message in Zulip.
     You can also use the **Quote** (<i class="zulip-icon zulip-icon-quote"></i>)
     button in the compose box to insert quote formatting.
@@ -168,11 +169,29 @@ below.
 
 {!tables-examples.md!}
 
+## Polls
+
+{!polls-intro.md!}
+
+{!polls-examples.md!}
+
+!!! tip ""
+
+    You can also use the **Add poll** (<i class="zulip-icon
+    zulip-icon-poll"></i>) button in the compose box to create a
+    poll. [Learn more](/help/create-a-poll).
+
 ## Collaborative to-do lists
 
 {!to-do-lists-intro.md!}
 
 {!to-do-lists-examples.md!}
+
+!!! tip ""
+
+    You can also use the **Add to-do list** (<i class="zulip-icon
+    zulip-icon-todo-list"></i>) button in the compose box to create a
+    shared to-do list. [Learn more](/help/collaborative-to-do-lists).
 
 ## Paragraph and section formatting
 

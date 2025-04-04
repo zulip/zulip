@@ -9,10 +9,10 @@ from contextlib import contextmanager
 from types import FrameType
 from typing import Any
 
+import sentry_sdk
 from django.conf import settings
 from django.core.management.base import CommandError
 from django.utils import autoreload
-from sentry_sdk import configure_scope
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
@@ -104,7 +104,7 @@ class Command(ZulipBaseCommand):
             logger.info("Worker %d connecting to queue %s", worker_num, queue_name)
             with log_and_exit_if_exception(logger, queue_name, threaded=False):
                 worker = get_worker(queue_name, worker_num=worker_num)
-                with configure_scope() as scope:
+                with sentry_sdk.isolation_scope() as scope:
                     scope.set_tag("queue_worker", queue_name)
                     scope.set_tag("worker_num", worker_num)
 
@@ -124,7 +124,7 @@ class ThreadedWorker(threading.Thread):
     @override
     def run(self) -> None:
         with (
-            configure_scope() as scope,
+            sentry_sdk.isolation_scope() as scope,
             log_and_exit_if_exception(self.logger, self.queue_name, threaded=True),
         ):
             scope.set_tag("queue_worker", self.queue_name)

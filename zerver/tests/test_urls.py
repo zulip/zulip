@@ -1,8 +1,6 @@
-import importlib
 import os
 from unittest import mock
 
-import django.urls.resolvers
 from django.test import Client
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -13,7 +11,6 @@ from zerver.lib.url_redirects import (
     POLICY_DOCUMENTATION_REDIRECTS,
 )
 from zerver.models import Stream
-from zproject import urls
 
 
 class PublicURLTest(ZulipTestCase):
@@ -58,6 +55,17 @@ class PublicURLTest(ZulipTestCase):
                 m.assert_called_once()
                 self.assertIn(expected_tag, response.content.decode())
                 self.assertEqual(response.status_code, 200)
+
+    def test_design_testing_pages(self) -> None:
+        urls = {
+            "/devtools/buttons/": "Button styles browser",
+            "/devtools/banners/": "Banner styles browser",
+        }
+
+        for url, expected_content in urls.items():
+            result = self.client_get(url)
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_success_response([expected_content], result)
 
     def test_public_urls(self) -> None:
         """
@@ -158,21 +166,6 @@ class PublicURLTest(ZulipTestCase):
                     )
 
 
-class URLResolutionTest(ZulipTestCase):
-    def check_function_exists(self, module_name: str, view: str) -> None:
-        module = importlib.import_module(module_name)
-        self.assertTrue(hasattr(module, view), f"View {module_name}.{view} does not exist")
-
-    # Tests function-based views declared in urls.urlpatterns for
-    # whether the function exists.  We at present do not test the
-    # class-based views.
-    def test_non_api_url_resolution(self) -> None:
-        for pattern in urls.urlpatterns:
-            if isinstance(pattern, django.urls.resolvers.URLPattern):
-                (module_name, base_view) = pattern.lookup_str.rsplit(".", 1)
-                self.check_function_exists(module_name, base_view)
-
-
 class ErrorPageTest(ZulipTestCase):
     def test_bogus_http_host(self) -> None:
         # This tests that we've successfully worked around a certain bug in
@@ -205,8 +198,9 @@ class RedirectURLTest(ZulipTestCase):
 
     def test_landing_page_redirects(self) -> None:
         for redirect in LANDING_PAGE_REDIRECTS:
-            result = self.client_get(redirect.old_url, follow=True)
-            self.assert_in_success_response(["Download"], result)
+            if redirect.old_url != "/try-zulip/":
+                result = self.client_get(redirect.old_url, follow=True)
+                self.assert_in_success_response(["Download"], result)
 
             result = self.client_get(redirect.old_url)
             self.assertEqual(result.status_code, 301)

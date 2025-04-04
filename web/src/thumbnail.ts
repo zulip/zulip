@@ -1,7 +1,7 @@
 import type {z} from "zod";
 
-import {realm} from "./state_data";
-import type {thumbnail_format_schema} from "./state_data";
+import {realm} from "./state_data.ts";
+import type {thumbnail_format_schema} from "./state_data.ts";
 
 type ThumbnailFormat = z.infer<typeof thumbnail_format_schema>;
 

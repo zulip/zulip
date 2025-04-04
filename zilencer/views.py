@@ -1,11 +1,13 @@
 import logging
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from typing import Annotated, Any, TypedDict, TypeVar
+from urllib.parse import urljoin, urlsplit
 from uuid import UUID
 
 import orjson
+import requests.exceptions
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -13,7 +15,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Model
 from django.db.models.constants import OnConflict
 from django.http import HttpRequest, HttpResponse
-from django.utils.crypto import constant_time_compare
+from django.utils.crypto import constant_time_compare, get_random_string
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
@@ -30,13 +32,6 @@ from analytics.lib.counts import (
     REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
-from corporate.lib.stripe import (
-    BILLING_SUPPORT_EMAIL,
-    RemoteRealmBillingSession,
-    RemoteServerBillingSession,
-    do_deactivate_remote_server,
-    get_push_status_for_remote_request,
-)
 from corporate.models import (
     CustomerPlan,
     get_current_plan_by_customer,
@@ -47,17 +42,21 @@ from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
+    RateLimitedError,
     RemoteRealmServerMismatchError,
     RemoteServerDeactivatedError,
 )
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.push_notifications import (
+    HostnameAlreadyInUseBouncerError,
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
     send_android_push_notification,
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.rate_limiter import rate_limit_endpoint_absolute
 from zerver.lib.remote_server import (
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
@@ -66,7 +65,7 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.send_email import FromAddress
+from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import (
     ApnsAppId,
@@ -77,9 +76,15 @@ from zerver.lib.typed_endpoint import (
 )
 from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import DisposableEmailError
 from zerver.views.push_notifications import validate_token
-from zilencer.auth import InvalidZulipServerKeyError
+from zilencer.auth import (
+    InvalidZulipServerKeyError,
+    generate_registration_transfer_verification_secret,
+    validate_registration_transfer_verification_secret,
+)
+from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,
@@ -119,9 +124,58 @@ def deactivate_remote_server(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
 ) -> HttpResponse:
+    from corporate.lib.stripe import RemoteServerBillingSession, do_deactivate_remote_server
+
     billing_session = RemoteServerBillingSession(remote_server)
     do_deactivate_remote_server(remote_server, billing_session)
     return json_success(request)
+
+
+def validate_hostname_or_raise_error(hostname: str) -> None:
+    """
+    Validate that the argument is a valid hostname to be registered
+    with the bouncer.
+
+    Note: The hostname is allowed to contain a port number, as some
+    registration do take this form and without the port we wouldn't
+    actually know how to make requests to the server.
+    """
+    try:
+        # We perform basic validation in two steps:
+        # 1. urlsplit doesn't do any proper validation, but parses the string
+        #    and ensures that there are no extra components (e.g., path, query, fragment).
+        # 2. Once we know that the string is a clean netloc, we pass that do Django's
+        #    URLValidator for validation.
+        parsed = urlsplit(f"http://{hostname}")
+
+        if parsed.path or parsed.query or parsed.fragment:
+            raise JsonableError(
+                _("{hostname} contains invalid components (e.g., path, query, fragment).").format(
+                    hostname=hostname
+                )
+            )
+        url_validator = URLValidator()
+        url_validator("http://" + hostname)
+    except ValidationError:
+        raise JsonableError(_("{hostname} is not a valid hostname").format(hostname=hostname))
+
+
+@csrf_exempt
+@require_post
+@typed_endpoint
+def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
+    validate_hostname_or_raise_error(hostname)
+
+    if not RemoteZulipServer.objects.filter(hostname=hostname).exists():
+        raise JsonableError(_("{hostname} not yet registered").format(hostname=hostname))
+
+    verification_secret = generate_registration_transfer_verification_secret(hostname)
+    return json_success(
+        request,
+        data={
+            "verification_secret": verification_secret,
+        },
+    )
 
 
 @csrf_exempt
@@ -150,12 +204,7 @@ def register_remote_server(
 ) -> HttpResponse:
     # StringConstraints validated the field lengths, but we still need to
     # validate the format of these fields.
-    try:
-        # TODO: Ideally we'd not abuse the URL validator this way
-        url_validator = URLValidator()
-        url_validator("http://" + hostname)
-    except ValidationError:
-        raise JsonableError(_("{hostname} is not a valid hostname").format(hostname=hostname))
+    validate_hostname_or_raise_error(hostname)
 
     try:
         validate_email(contact_email)
@@ -211,11 +260,9 @@ def register_remote_server(
             raise RemoteServerDeactivatedError
 
     if remote_server is None and RemoteZulipServer.objects.filter(hostname=hostname).exists():
-        raise JsonableError(
-            _("A server with hostname {hostname} already exists").format(hostname=hostname)
-        )
+        raise HostnameAlreadyInUseBouncerError(hostname)
 
-    with transaction.atomic():
+    with transaction.atomic(durable=True):
         if remote_server is None:
             created = True
             remote_server = RemoteZulipServer.objects.create(
@@ -226,7 +273,7 @@ def register_remote_server(
                 last_request_datetime=timezone_now(),
             )
             RemoteZulipServerAuditLog.objects.create(
-                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
                 server=remote_server,
                 event_time=remote_server.last_updated,
             )
@@ -241,6 +288,133 @@ def register_remote_server(
             remote_server.save()
 
     return json_success(request, data={"created": created})
+
+
+class RegistrationTransferVerificationSession(OutgoingSession):
+    def __init__(self) -> None:
+        # The generous timeout and retries here are likely to be unnecessary; a functional Zulip server should
+        # respond instantly.
+        super().__init__(role="verify_registration_transfer_challenge", timeout=5, max_retries=3)
+
+
+class EndpointUsageRateLimitError(JsonableError):
+    code = ErrorCode.RATE_LIMIT_HIT
+    http_status_code = 429
+
+
+@csrf_exempt
+@typed_endpoint
+def verify_registration_transfer_challenge_ack_endpoint(
+    request: HttpRequest,
+    *,
+    hostname: str,
+    access_token: str,
+) -> HttpResponse:
+    """
+    The host should POST to this endpoint to announce it is ready to serve the received
+    secret at {hostname}/zulip-services/verify/{access_token}.
+    The access_token is randomly generated by the host in order to prevent 3rd parties
+    from accessing the verification secret served at that URL.
+
+    If we successfully verify the secret, we will send the registration credentials
+    to the host, completing the whole flow.
+    """
+
+    try:
+        # This endpoint is at risk of being used to spam another server with our requests,
+        # or to freeze up our Django processes by making them wait for timeouts on the
+        # requests triggered here.
+        # Since this is an extremely low-traffic endpoint, we just put an absolute limit on
+        # how many times it can be called in a given time period. There's little value for an
+        # attacker to fill up the bucket here, and issues can be handled adequately by
+        # manual intervention.
+        if settings.RATE_LIMITING:
+            rate_limit_endpoint_absolute("verify_registration_transfer_challenge_ack_endpoint")
+    except RateLimitedError:
+        # This rate limit being hit means we've either set the limits too low for legitimate use,
+        # or the endpoint is being spammed. Ideally, we want this endpoint to always be operational
+        # so this deserves logging a warning.
+        logger.warning(
+            "Rate limit exceeded for verify_registration_transfer_challenge_ack_endpoint"
+        )
+        raise EndpointUsageRateLimitError(
+            _(
+                "The global limits on recent usage of this endpoint have been reached."
+                " Please try again later or reach out to {support_email} for assistance."
+            ).format(support_email=FromAddress.SUPPORT)
+        )
+
+    try:
+        remote_server = RemoteZulipServer.objects.get(hostname=hostname)
+    except RemoteZulipServer.DoesNotExist:
+        raise JsonableError(_("Registration not found for this hostname"))
+
+    session = RegistrationTransferVerificationSession()
+    url = urljoin(f"https://{hostname}", f"/api/v1/zulip-services/verify/{access_token}/")
+
+    exception_and_error_message: tuple[Exception, str] | None = None
+    try:
+        response = session.get(url)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        if check_transfer_challenge_response_secret_not_prepared(e.response):
+            logger.info("verify_registration_transfer:host:%s|secret_not_prepared", hostname)
+            raise JsonableError(_("The host reported it has no verification secret."))
+
+        error_message = _("Error response received from the host: {status_code}").format(
+            status_code=response.status_code
+        )
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.SSLError as e:
+        error_message = "SSL error occurred while communicating with the host."
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.ConnectionError as e:
+        error_message = "Connection error occurred while communicating with the host."
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.Timeout as e:
+        error_message = "The request timed out while communicating with the host."
+        exception_and_error_message = (e, error_message)
+    except requests.exceptions.RequestException as e:
+        error_message = "An error occurred while communicating with the host."
+        exception_and_error_message = (e, error_message)
+
+    if exception_and_error_message is not None:
+        exception, error_message = exception_and_error_message
+        logger.info("verify_registration_transfer:host:%s|exception:%s", hostname, exception)
+        raise JsonableError(error_message)
+
+    data = response.json()
+    verification_secret = data["verification_secret"]
+    validate_registration_transfer_verification_secret(verification_secret, hostname)
+
+    logger.info("verify_registration_transfer:host:%s|success", hostname)
+    new_secret_key = get_random_string(RemoteZulipServer.API_KEY_LENGTH)
+    with transaction.atomic(durable=True):
+        remote_server.api_key = new_secret_key
+        remote_server.save(update_fields=["api_key"])
+
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=AuditLogEventType.REMOTE_SERVER_REGISTRATION_TRANSFERRED,
+            server=remote_server,
+            event_time=timezone_now(),
+        )
+
+    return json_success(
+        request,
+        data={"zulip_org_id": str(remote_server.uuid), "zulip_org_key": new_secret_key},
+    )
+
+
+def check_transfer_challenge_response_secret_not_prepared(response: requests.Response) -> bool:
+    secret_not_prepared = False
+    try:
+        secret_not_prepared = (
+            response.status_code == 400
+            and response.json()["code"] == "REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED"
+        )
+    except Exception:  # nocoverage
+        return False
+    return secret_not_prepared
 
 
 @typed_endpoint
@@ -275,9 +449,9 @@ def register_remote_push_device(
 
     if realm_uuid is not None:
         # Servers 8.0+ also send the realm.uuid of the user.
-        assert isinstance(
-            user_uuid, str
-        ), "Servers new enough to send realm_uuid, should also have user_uuid"
+        assert isinstance(user_uuid, str), (
+            "Servers new enough to send realm_uuid, should also have user_uuid"
+        )
         remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
         if remote_realm is not None:
             # We want to associate the RemotePushDeviceToken with the RemoteRealm.
@@ -537,6 +711,8 @@ def remote_server_notify_push(
     *,
     payload: JsonBodyPayload[RemoteServerNotificationPayload],
 ) -> HttpResponse:
+    from corporate.lib.stripe import get_push_status_for_remote_request
+
     user_id = payload.user_id
     user_uuid = payload.user_uuid
     user_identity = UserPushIdentityCompat(user_id, user_uuid)
@@ -548,9 +724,9 @@ def remote_server_notify_push(
     realm_uuid = payload.realm_uuid
     remote_realm = None
     if realm_uuid is not None:
-        assert isinstance(
-            user_uuid, str
-        ), "Servers new enough to send realm_uuid, should also have user_uuid"
+        assert isinstance(user_uuid, str), (
+            "Servers new enough to send realm_uuid, should also have user_uuid"
+        )
         remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
 
     push_status = get_push_status_for_remote_request(server, remote_realm)
@@ -843,6 +1019,8 @@ def ensure_devices_set_remote_realm(
 def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: list[RealmDataForAnalytics]
 ) -> None:
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL, RemoteRealmBillingSession
+
     reported_uuids = [realm.uuid for realm in server_realms_info]
     all_registered_remote_realms_for_server = list(RemoteRealm.objects.filter(server=server))
     already_registered_remote_realms = [
@@ -882,7 +1060,12 @@ def update_remote_realm_data_for_server(
 
     try:
         RemoteRealm.objects.bulk_create(new_remote_realms)
-    except IntegrityError:
+    except IntegrityError as e:
+        logger.info(
+            "update_remote_realm_data_for_server:server:%s:IntegrityError creating RemoteRealm rows: %s",
+            server.id,
+            e,
+        )
         raise JsonableError(_("Duplicate registration detected."))
 
     uuid_to_realm_dict = {str(realm.uuid): realm for realm in server_realms_info}
@@ -916,7 +1099,7 @@ def update_remote_realm_data_for_server(
                     remote_id=None,
                     remote_realm=remote_realm,
                     realm_id=realm.id,
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_VALUE_UPDATED,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
                     event_time=now,
                     extra_data={
                         "attr_name": remote_realm_attr,
@@ -935,7 +1118,7 @@ def update_remote_realm_data_for_server(
                     remote_id=None,
                     remote_realm=remote_realm,
                     realm_id=uuid_to_realm_dict[str(remote_realm.uuid)].id,
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED_RESTORED,
+                    event_type=AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED_RESTORED,
                     event_time=now,
                 )
             )
@@ -976,14 +1159,22 @@ def update_remote_realm_data_for_server(
                     remote_id=None,
                     remote_realm=remote_realm,
                     realm_id=None,
-                    event_type=RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED,
+                    event_type=AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED,
                     event_time=now,
                 )
             )
             remote_realms_to_update.append(remote_realm)
 
             billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-            if billing_session.on_paid_plan():
+            if (
+                billing_session.on_paid_plan()
+                and not RemoteRealmAuditLog.objects.filter(
+                    server=server,
+                    remote_realm=remote_realm,
+                    event_type=AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED,
+                    event_time__gte=timezone_now() - timedelta(days=1),
+                ).exists()
+            ):
                 context = {
                     "billing_entity": billing_session.billing_entity_display_name,
                     "support_url": billing_session.support_url(),
@@ -1001,10 +1192,11 @@ def update_remote_realm_data_for_server(
         "template_prefix": "zerver/emails/internal_billing_notice",
         "to_emails": [BILLING_SUPPORT_EMAIL],
         "from_address": FromAddress.tokenized_no_reply_address(),
+        "date": timezone_now().strftime(EMAIL_DATE_FORMAT),
     }
     for context in new_locally_deleted_remote_realms_on_paid_plan_contexts:
         email_dict["context"] = context
-        queue_json_publish("email_senders", email_dict)
+        queue_event_on_commit("email_senders", email_dict)
 
 
 def get_human_user_realm_uuids(
@@ -1027,10 +1219,12 @@ def get_human_user_realm_uuids(
     return billable_realm_uuids
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def handle_customer_migration_from_server_to_realm(
     server: RemoteZulipServer,
 ) -> None:
+    from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
+
     server_billing_session = RemoteServerBillingSession(server)
     server_customer = server_billing_session.get_customer()
     if server_customer is None:
@@ -1040,7 +1234,7 @@ def handle_customer_migration_from_server_to_realm(
         # If we have a pending sponsorship request, defer moving any
         # data until the sponsorship request has been processed. This
         # avoids a race where a sponsorship request made at the server
-        # level gets approved after the legacy plan has already been
+        # level gets approved after the active plan has already been
         # moved to the sole human RemoteRealm, which would violate
         # invariants.
         return
@@ -1048,7 +1242,7 @@ def handle_customer_migration_from_server_to_realm(
     server_plan = get_current_plan_by_customer(server_customer)
     if server_plan is None:
         # If the server has no current plan, either because it never
-        # had one or because a previous legacy plan was migrated to
+        # had one or because a previous active plan was migrated to
         # the RemoteRealm object, there's nothing to potentially
         # migrate.
         return
@@ -1058,7 +1252,6 @@ def handle_customer_migration_from_server_to_realm(
         return
 
     event_time = timezone_now()
-    remote_realm_audit_logs = []
 
     if len(realm_uuids) != 1:
         return
@@ -1123,30 +1316,51 @@ def handle_customer_migration_from_server_to_realm(
                 ).format(support_email=FromAddress.SUPPORT)
             )
 
+    # We successfully moved the plan from the remote server to the remote realm.
+    # Update the license ledger for paid plans with automated license management.
+    remote_realm_customer = get_customer_by_remote_realm(remote_realm)
+    assert remote_realm_customer is not None
+    moved_customer_plan = get_current_plan_by_customer(remote_realm_customer)
+    assert moved_customer_plan is not None
+    if moved_customer_plan.is_a_paid_plan() and moved_customer_plan.automanage_licenses:
+        remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+        try:
+            remote_realm_billing_session.update_license_ledger_for_automanaged_plan(
+                moved_customer_plan, event_time
+            )
+        except MissingDataError:  # nocoverage
+            logger.warning(
+                "Failed to migrate customer from server (id: %s) to realm (id: %s): RemoteZulipServer has stale "
+                "audit log data and cannot update license ledger for plan with automated license management.",
+                server.id,
+                remote_realm.id,
+            )
+            raise JsonableError(
+                _(
+                    "Couldn't reconcile billing data between server and realm. Please contact {support_email}"
+                ).format(support_email=FromAddress.SUPPORT)
+            )
+
     # TODO: Might be better to call do_change_plan_type here.
     remote_realm.plan_type = server.plan_type
     remote_realm.save(update_fields=["plan_type"])
     server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
     server.save(update_fields=["plan_type"])
-    remote_realm_audit_logs.append(
-        RemoteRealmAuditLog(
-            server=server,
-            remote_realm=remote_realm,
-            event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
-            event_time=event_time,
-            extra_data={
-                "attr_name": "plan_type",
-                "old_value": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
-                "new_value": remote_realm.plan_type,
-            },
-        )
+    RemoteRealmAuditLog.objects.create(
+        server=server,
+        remote_realm=remote_realm,
+        event_type=AuditLogEventType.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
+        event_time=event_time,
+        extra_data={
+            "attr_name": "plan_type",
+            "old_value": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+            "new_value": remote_realm.plan_type,
+        },
     )
-
-    RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
 
 @typed_endpoint
-@transaction.atomic
+@transaction.atomic(durable=True)
 def remote_server_post_analytics(
     request: HttpRequest,
     server: RemoteZulipServer,
@@ -1159,6 +1373,12 @@ def remote_server_post_analytics(
     merge_base: Json[str] | None = None,
     api_feature_level: Json[int] | None = None,
 ) -> HttpResponse:
+    from corporate.lib.stripe import (
+        RemoteRealmBillingSession,
+        RemoteServerBillingSession,
+        get_push_status_for_remote_request,
+    )
+
     # Lock the server, preventing this from racing with other
     # duplicate submissions of the data
     server = RemoteZulipServer.objects.select_for_update().get(id=server.id)
@@ -1251,7 +1471,7 @@ def remote_server_post_analytics(
         # 'last_audit_log_update' needs to be an atomic operation.
         # This helps to rely on 'last_audit_log_update' to assume
         # RemoteRealmAuditLog and LicenseLedger are up-to-date.
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             # Important: Do not return early if we receive 0 rows; we must
             # updated last_audit_log_update even if there are no new rows,
             # to help identify server whose ability to connect to this

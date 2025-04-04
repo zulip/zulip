@@ -12,7 +12,7 @@
         {% if is_sponsorship_pending %}
         <div class="alert alert-success billing-page-success" id="billing-sponsorship-pending-message-top">
             This organization has requested sponsorship for a
-            {% if sponsorship_plan_name == "Business" %}
+            {% if is_self_hosted_billing and sponsorship_plan_name != "Community" %}
             discounted
             {% endif %}
             <a href="{{ billing_base_url }}/plans/">{{ sponsorship_plan_name }}</a> plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.
@@ -20,8 +20,8 @@
         {% endif %}
         {% if success_message %}
         <div class="alert alert-success billing-page-success" id="billing-success-message-top">
-            {% if legacy_remote_server_next_plan_name and "PLAN_NAME" in success_message %}
-            Your organization will be upgraded to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+            {% if complimentary_access_next_plan_name and "PLAN_NAME" in success_message %}
+            Your organization will be upgraded to {{ complimentary_access_next_plan_name }} on {{ complimentary_access_plan_end_date }}.
             {% else %}
             {{ success_message.replace("PLAN_NAME", plan_name) }}
             {% endif %}
@@ -41,18 +41,18 @@
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
         <div class="white-box">
             <div id="billing-page-details">
-                <div class="input-box billing-page-field no-validation">
-                    <label for="org-current-plan" class="inline-block label-title">Your plan</label>
-                    <div id="org-current-plan" class="not-editable-realm-field">
+                <div class="input-box billing-page-field">
+                    <h2 class="billing-section-title">Your plan</h2>
+                    <div class="billing-section-content">
                         {% if free_trial or downgrade_at_end_of_free_trial %}
                         <a href="{{ billing_base_url }}/plans/">
                             {{ plan_name }} <i>(free trial)</i>
                         </a>
-                        {% elif is_server_on_legacy_plan %}
+                        {% elif complimentary_access_plan %}
                         <a href="{{ billing_base_url }}/plans/">
-                        {{ plan_name.replace(" (legacy plan)", "") -}}
+                        {{ plan_name.replace(" (complimentary)", "") -}}
                         </a>
-                        <i>(legacy plan)</i>
+                        <i>(complimentary access)</i>
                         {% else %}
                         <a href="{{ billing_base_url }}/plans/">
                         {{ plan_name }}
@@ -60,26 +60,26 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if is_server_on_legacy_plan %}
-                <div class="input-box billing-page-field no-validation" id="legacy-server-push-notification-notice-wrapper">
-                    <div id="legacy-server-push-notification-notice" class="not-editable-realm-field">
-                        <i>This is a legacy plan that ends on {{ remote_server_legacy_plan_end_date }}.</i>
+                {% if complimentary_access_plan %}
+                <div class="input-box billing-page-field" id="complimentary-access-end-notice-wrapper">
+                    <div id="complimentary-access-end-notice" class="not-editable-realm-field">
+                        <i>Your complimentary access to Zulip Basic ends on {{ complimentary_access_plan_end_date }}.</i>
                     </div>
                 </div>
                 {% endif %}
-                <div class="input-box billing-page-field no-validation org-billing-frequency-wrapper"
+                <div class="input-box billing-page-field org-billing-frequency-wrapper"
                   data-current-billing-frequency="{{ billing_frequency }}"
                   {%if free_trial %}data-free-trial="true"{% endif %}
                   {%if downgrade_at_end_of_cycle %}data-downgrade-eoc="true"{% endif %}
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
-                    <label for="org-billing-frequency">Billing frequency</label>
-                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan or fixed_price_plan or (free_trial and not charge_automatically) %}
-                    <div class="not-editable-realm-field">
+                    <h2 class="billing-section-title">Billing frequency</h2>
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or complimentary_access_plan or fixed_price_plan or (free_trial and not charge_automatically) %}
+                    <div class="billing-section-content">
                         {{ billing_frequency }}
                     </div>
                     {% elif switch_to_annual_at_end_of_cycle %}
-                    <select name="schedule" id="org-billing-frequency-annual" class="billing-frequency-select">
+                    <select name="schedule" id="org-billing-frequency-annual" class="billing-frequency-select billing-section-content">
                         <option value="Monthly">Monthly</option>
                         <option value="Annual" selected>Annual</option>
                     </select>
@@ -87,7 +87,7 @@
                         Your plan will switch to annual billing on {{ renewal_date }}.
                     </div>
                     {%elif switch_to_monthly_at_end_of_cycle %}
-                    <select name="schedule" id="org-billing-frequency-monthly" class="billing-frequency-select">
+                    <select name="schedule" id="org-billing-frequency-monthly" class="billing-frequency-select billing-section-content">
                         <option value="Monthly" selected>Monthly</option>
                         <option value="Annual">Annual</option>
                     </select>
@@ -95,7 +95,7 @@
                         Your plan will switch to monthly billing on {{ renewal_date }}.
                     </div>
                     {% else %}
-                    <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select">
+                    <select name="schedule" id="org-billing-frequency-default" class="billing-frequency-select billing-section-content">
                         <option value="Monthly" {% if billing_frequency == "Monthly" %}selected{% endif %}>Monthly</option>
                         <option value="Annual" {% if billing_frequency == "Annual" %}selected{% endif %}>Annual</option>
                     </select>
@@ -106,13 +106,13 @@
                     </button>
                     <div id="org-billing-frequency-change-error" class="alert alert-danger billing-page-error"></div>
                 </div>
-                {% if is_server_on_legacy_plan or fixed_price_plan %}
+                {% if complimentary_access_plan or fixed_price_plan %}
                 {% elif automanage_licenses %}
-                <div class="input-box billing-page-field no-validation">
-                    <label for="automatic-license-count" class="inline-block label-title">
+                <div class="input-box billing-page-field">
+                    <h2 class="billing-section-title">
                         Number of licenses
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/self-hosted-billing#how-does-automatic-license-management-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
@@ -121,18 +121,24 @@
                         </a>
                         {% endif %}
 
-                    </label>
-                    <div id="automatic-license-count" class="not-editable-realm-field">
-                        {{ licenses }} (managed automatically)
+                    </h2>
+                    <div class="billing-section-content">
+                        {{ licenses }}
+                        <br />
+                        Licenses are managed
+                        <a href="/help/self-hosted-billing#how-does-automatic-license-management-work">automatically</a>.
+                        You can
+                        <a class="toggle-license-management" type="button">switch</a>
+                        to manual license management.
                     </div>
                 </div>
                 {% else %}
                 {% if not (free_trial or downgrade_at_end_of_free_trial) %}
-                <div class="input-box billing-page-field no-validation input-box-number">
-                    <label for="current-manual-license-count" class="inline-block label-title">
+                <div class="input-box billing-page-field input-box-number">
+                    <h2 class="billing-section-title">
                         Number of licenses for current billing period
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
@@ -140,10 +146,10 @@
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% endif %}
-                    </label>
+                    </h2>
                     <div class="number-input-with-label">
                         <form id="current-license-change-form">
-                            <input type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses }}" value="{{ licenses }}" required/>
+                            <input type="number" name="licenses" autocomplete="off" id="current-manual-license-count" class="short-width-number-input billing-section-content" data-original-value="{{ licenses }}" value="{{ licenses }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
                         <button id="current-manual-license-count-update-button" class="license-count-update-button hide">
@@ -152,14 +158,21 @@
                         </button>
                     </div>
                     <div id="current-license-change-error" class="alert alert-danger billing-page-error"></div>
+                    <div class="not-editable-realm-field billing-page-license-management-description">
+                        Licenses are managed
+                        <a href="/help/self-hosted-billing#how-does-manual-license-management-work">manually</a>.
+                        You can
+                        <a class="toggle-license-management" type="button">switch</a>
+                        to automatic license management.
+                    </div>
                 </div>
                 {% endif %}
                 {% if not (downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial) %}
-                <div class="input-box billing-page-field no-validation input-box-number">
-                    <label for="next-manual-license-count" class="inline-block label-title">
+                <div class="input-box billing-page-field input-box-number">
+                    <h2 class="billing-section-title">
                         Number of licenses for next billing period
                         {% if is_self_hosted_billing %}
-                        <a href="https://zulip.com/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
+                        <a href="/help/self-hosted-billing#how-does-manual-license-management-work" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% else %}
@@ -167,10 +180,10 @@
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>
                         </a>
                         {% endif %}
-                    </label>
+                    </h2>
                     <div class="number-input-with-label">
                         <form id="next-license-change-form">
-                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" required/>
+                            <input type="number" name="licenses_at_next_renewal" autocomplete="off" id="next-manual-license-count" class="short-width-number-input billing-section-content" data-original-value="{{ licenses_at_next_renewal }}" value="{{ licenses_at_next_renewal }}" {%if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} required/>
                         </form>
                         <span class="licence-count-in-use">licenses ({{ seat_count }} in use)</span>
                         <button id="next-manual-license-count-update-button" class="license-count-update-button hide">
@@ -182,20 +195,24 @@
                 </div>
                 {% endif %}
                 {% endif %}
-                <div class="input-box no-validation billing-page-field">
-                    <label for="billing-contact" class="inline-block label-title">Billing contact</label>
-                    <div id="billing-contact" class="not-editable-realm-field">
+                <form id="toggle-license-management-form">
+                    <input name="toggle_license_management" type="hidden" value="true" />
+                </form>
+                <div id="toggle-license-management-error" class="alert alert-danger"></div>
+                <div class="input-box billing-page-field">
+                    <h2 class="billing-section-title">Billing contact</h2>
+                    <div class="billing-section-content">
                         <a href="mailto:{{ stripe_email }}">{{ stripe_email }}</a>
                     </div>
                 </div>
                 <div id="cardchange-error" class="alert alert-danger"></div>
-                <div class="input-box billing-page-field no-validation">
-                    <label for="customer-payment-method" class="inline-block label-title">Payment method</label>
-                    <div id="customer-payment-method" class="not-editable-realm-field">
+                <div class="input-box billing-page-field">
+                    <h2 class="billing-section-title">Payment method</h2>
+                    <div class="billing-section-content">
                         {{ payment_method }}
                     </div>
                     {% if charge_automatically %}
-                    <div class="user-stripe-card-update input-box billing-page-field no-validation">
+                    <div class="user-stripe-card-update input-box billing-page-field">
                         <button class="user-stripe-card-update-button" id="update-card-button">
                             <span class="billing-button-text">Update card</span>
                             <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
@@ -207,7 +224,7 @@
                         <a href="{{ billing_base_url }}/customer_portal/?return_to_billing_page=true">View and update</a> billing information that will be displayed on your next invoice and receipt.
                     </div>
                 </div>
-                <div class="input-box billing-page-field no-validation">
+                <div class="input-box billing-page-field">
                     <div class="next-payment-info not-editable-realm-field">
                         {% if renewal_amount %}
                             {% if downgrade_at_end_of_cycle %}
@@ -241,8 +258,8 @@
                             This is a fixed-price plan.
                             {% endif %}
                             {% if charge_automatically %}
-                            {% if is_server_on_legacy_plan %}
-                            Your plan will automatically upgrade to {{ legacy_remote_server_next_plan_name }} on {{ remote_server_legacy_plan_end_date }}.
+                            {% if complimentary_access_plan %}
+                            Your plan will automatically upgrade to {{ complimentary_access_next_plan_name }} on {{ complimentary_access_plan_end_date }}.
                             {% else %}
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
@@ -262,9 +279,9 @@
                             {% if free_trial and not charge_automatically %}
                             {% else %}
                             <div class="input-box billing-page-field">
-                                <label for="expected-charge">Expected next charge</label>
+                                <h2 class="billing-section-title">Expected next charge</h2>
                                 {% if not fixed_price_plan %}
-                                <div class="not-editable-realm-field">
+                                <div class="billing-section-content">
                                     ${{ pre_discount_renewal_cents }} (${{ price_per_license }} x {{ licenses_at_next_renewal }} {{ 'user' if licenses_at_next_renewal == 1 else 'users' }} x
                                     {% if switch_to_annual_at_end_of_cycle %}
                                         12 months
@@ -299,9 +316,9 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="input-box billing-page-field no-validation">
-                    <label class="inline-block label-title">Invoices</label>
-                    <div class="not-editable-realm-field">
+                <div class="input-box billing-page-field">
+                    <h2 class="billing-section-title">Invoices</h2>
+                    <div class="billing-section-content">
                         <a href="{{ billing_base_url }}/invoices/">
                             View past invoices
                         </a>
@@ -316,14 +333,14 @@
                 <div id="planchange-error" class="alert alert-danger"></div>
                 <div id="planchange-input-section">
                     {% if free_trial and not downgrade_at_end_of_free_trial %}
-                        <div class="end-free-trial plan-toggle-action input-box billing-page-field no-validation" id="end-free-trial">
+                        <div class="end-free-trial plan-toggle-action input-box billing-page-field" id="end-free-trial">
                             <button class="end-free-trial-button plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
                     {% elif downgrade_at_end_of_cycle or downgrade_at_end_of_free_trial %}
-                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field no-validation" id="reactivate-subscription">
+                        <div class="reactivate-current-plan plan-toggle-action input-box billing-page-field" id="reactivate-subscription">
                             <button class="reactivate-current-plan-button plan-toggle-action-button">
                                 <span class="billing-button-text">
                                     {% if downgrade_at_end_of_free_trial %}
@@ -335,15 +352,15 @@
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
-                    {% elif is_server_on_legacy_plan %}
-                        <div class="plan-toggle-action input-box billing-page-field no-validation" id="cancel-legacy-server-upgrade">
-                            <button class="cancel-legacy-server-upgrade-button plan-toggle-action-button">
+                    {% elif complimentary_access_plan %}
+                        <div class="plan-toggle-action input-box billing-page-field" id="cancel-complimentary-access-upgrade">
+                            <button class="plan-toggle-action-button">
                                 <span class="billing-button-text">Cancel upgrade</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
                     {% else %}
-                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field no-validation" id="cancel-subscription">
+                        <div class="cancel-current-plan plan-toggle-action input-box billing-page-field" id="cancel-subscription">
                             <button class="plan-toggle-action-button {% if is_self_hosted_billing %}cancel-current-self-hosted-plan-button{% else %}cancel-current-cloud-plan-button{% endif %}">
                                 <span class="billing-button-text">Cancel plan</span>
                                 <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
@@ -356,7 +373,7 @@
                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL }}" />
                     {% elif downgrade_at_end_of_free_trial %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.FREE_TRIAL }}" />
-                    {% elif downgrade_at_end_of_cycle or is_server_on_legacy_plan %}
+                    {% elif downgrade_at_end_of_cycle or complimentary_access_plan %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.ACTIVE }}" />
                     {% else %}
                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
@@ -380,7 +397,7 @@
             </div>
             <div class="white-box">
                 <p>
-                    You must be an organization owner or a billing administrator to view this page.
+                    You do not have permission to view this page.
                 </p>
             </div>
         </div>
@@ -419,8 +436,8 @@
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
-                <button class="modal__btn dialog_submit_button">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__button dialog_submit_button">
                     <span>{{ _('Downgrade') }}</span>
                 </button>
             </footer>
@@ -452,8 +469,8 @@
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
-                <button class="modal__btn dialog_submit_button">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__button dialog_submit_button">
                     <span>{{ _('Confirm') }}</span>
                 </button>
             </footer>
@@ -481,8 +498,8 @@
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
-                <button class="modal__btn dialog_submit_button">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__button dialog_submit_button">
                     <span>{{ _('Confirm') }}</span>
                 </button>
             </footer>
@@ -507,8 +524,8 @@
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
-                <button class="modal__btn dialog_submit_button">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__button dialog_submit_button">
                     <span>{{ _('Downgrade') }}</span>
                 </button>
             </footer>
@@ -535,15 +552,15 @@
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
-                <button class="modal__btn dialog_submit_button">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__button dialog_submit_button">
                     <span>{{ _('Downgrade') }}</span>
                 </button>
             </footer>
         </div>
     </div>
 </div>
-<div id="confirm-cancel-legacy-server-upgrade-modal" class="micromodal" aria-hidden="true">
+<div id="confirm-cancel-complimentary-access-upgrade-modal" class="micromodal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
@@ -554,18 +571,55 @@
             </header>
             <main class="modal__content">
                 <p>
-                    Your organization will be not be upgraded to <strong>{{ legacy_remote_server_next_plan_name }}</strong>
-                    on {{ remote_server_legacy_plan_end_date }}. If your organization has more than
+                    Your organization will be not be upgraded to <strong>{{ complimentary_access_next_plan_name }}</strong>
+                    on {{ complimentary_access_plan_end_date }}. If your organization has more than
                     10 users at that time, you will lose access to the
                     <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Mobile Push Notification Service</a>.
                     You will also not receive the <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">other benefits</a>
-                    of the {{ legacy_remote_server_next_plan_name }} plan. Are you sure you want to continue?
+                    of the {{ complimentary_access_next_plan_name }} plan. Are you sure you want to continue?
                 </p>
             </main>
             <footer class="modal__footer">
-                <button class="modal__btn dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
-                <button class="modal__btn dialog_submit_button">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__button dialog_submit_button">
                     <span>{{ _('Cancel upgrade') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+<div id="confirm-toggle-license-management-modal" class="micromodal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    Confirm switching to
+                    {% if automanage_licenses %}
+                    manual
+                    {% else %}
+                    automatic
+                    {% endif %}
+                    license management
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    Are you sure you want to switch to
+                    <a href="/help/self-hosted-billing#how-does-automatic-license-management-work">
+                        {% if automanage_licenses %}
+                            manual
+                        {% else %}
+                            automatic
+                        {% endif %}
+                        license management
+                    </a>?
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
+                <button class="modal__button dialog_submit_button">
+                    <span>{{ _('Confirm') }}</span>
                 </button>
             </footer>
         </div>

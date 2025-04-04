@@ -4,7 +4,10 @@ from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.core import validators
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
@@ -25,6 +28,7 @@ from zerver.actions.user_settings import (
     check_change_bot_full_name,
     check_change_full_name,
     do_change_avatar_fields,
+    do_change_user_delivery_email,
     do_regenerate_api_key,
 )
 from zerver.actions.users import (
@@ -38,9 +42,10 @@ from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
-from zerver.lib.email_validation import email_allowed_for_realm
+from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
+    EmailAlreadyInUseError,
     JsonableError,
     MissingAuthenticationError,
     OrganizationAdministratorRequiredError,
@@ -67,15 +72,14 @@ from zerver.lib.users import (
     access_user_by_email,
     access_user_by_id,
     add_service,
-    check_bot_creation_policy,
     check_bot_name_available,
     check_can_access_user,
+    check_can_create_bot,
     check_full_name,
     check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
-    get_api_key,
     get_users_for_api,
     max_message_id_for_user,
     validate_user_custom_profile_data,
@@ -185,7 +189,7 @@ def reactivate_user_backend(
     )
     if target.is_bot:
         assert target.bot_type is not None
-        check_bot_creation_policy(user_profile, target.bot_type)
+        check_can_create_bot(user_profile, target.bot_type)
         check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success(request)
@@ -197,7 +201,8 @@ class ProfileDataElement(BaseModel):
 
 
 @typed_endpoint
-def update_user_backend(
+@transaction.atomic(durable=True)
+def update_user_by_id_api(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
@@ -205,10 +210,62 @@ def update_user_backend(
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
     profile_data: Json[list[ProfileDataElement]] | None = None,
+    new_email: str | None = None,
 ) -> HttpResponse:
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
     )
+    return update_user_backend(
+        request,
+        user_profile,
+        target,
+        full_name=full_name,
+        role=role,
+        profile_data=profile_data,
+        new_email=new_email,
+    )
+
+
+@typed_endpoint
+@transaction.atomic(durable=True)
+def update_user_by_email_api(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    email: PathOnly[str],
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    new_email: str | None = None,
+) -> HttpResponse:
+    target = access_user_by_email(
+        user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=True
+    )
+    return update_user_backend(
+        request,
+        user_profile,
+        target,
+        full_name=full_name,
+        role=role,
+        profile_data=profile_data,
+        new_email=new_email,
+    )
+
+
+def update_user_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    target: UserProfile,
+    *,
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    new_email: str | None = None,
+) -> HttpResponse:
+    if new_email is not None and (
+        not user_profile.can_change_user_emails or not user_profile.is_realm_admin
+    ):
+        raise JsonableError(_("User not authorized to change user emails"))
 
     if role is not None and target.role != role:
         # Require that the current user has permissions to
@@ -224,6 +281,14 @@ def update_user_backend(
             raise JsonableError(
                 _("The owner permission cannot be removed from the only organization owner.")
             )
+
+        if settings.BILLING_ENABLED and target.is_guest:
+            from corporate.lib.registration import (
+                check_spare_license_available_for_changing_guest_user_role,
+            )
+
+            check_spare_license_available_for_changing_guest_user_role(user_profile.realm)
+
         do_change_user_role(target, role, acting_user=user_profile)
 
     if full_name is not None and target.full_name != full_name and full_name.strip() != "":
@@ -238,7 +303,7 @@ def update_user_backend(
             assert not isinstance(entry.value, int)
             if entry.value is None or not entry.value:
                 field_id = entry.id
-                check_remove_custom_profile_field_value(target, field_id)
+                check_remove_custom_profile_field_value(target, field_id, acting_user=user_profile)
             else:
                 clean_profile_data.append(
                     {
@@ -246,24 +311,38 @@ def update_user_backend(
                         "value": entry.value,
                     }
                 )
-        validate_user_custom_profile_data(target.realm.id, clean_profile_data)
+        validate_user_custom_profile_data(
+            target.realm.id, clean_profile_data, acting_user=user_profile
+        )
         do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
+
+    if new_email is not None and target.delivery_email != new_email:
+        assert user_profile.can_change_user_emails and user_profile.is_realm_admin
+        try:
+            validators.validate_email(new_email)
+        except ValidationError:
+            raise JsonableError(_("Invalid new email address."))
+        try:
+            validate_email_not_already_in_realm(
+                user_profile.realm,
+                new_email,
+                verbose=False,
+            )
+        except ValidationError as e:
+            raise JsonableError(_("New email value error: {message}").format(message=e.message))
+
+        do_change_user_delivery_email(target, new_email, acting_user=user_profile)
 
     return json_success(request)
 
 
-def avatar(
+def avatar_by_id(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
-    email_or_id: str,
+    user_id: int,
     medium: bool = False,
 ) -> HttpResponse:
-    """Accepts an email address or user ID and returns the avatar"""
-    is_email = False
-    try:
-        int(email_or_id)
-    except ValueError:
-        is_email = True
+    """Accepts a user ID and returns the avatar"""
 
     if not maybe_user_profile.is_authenticated:
         # Allow anonymous access to avatars only if spectators are
@@ -272,27 +351,14 @@ def avatar(
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError
 
-        # We only allow the ID format for accessing a user's avatar
-        # for spectators. This is mainly for defense in depth, since
-        # email_address_visibility should mean spectators only
-        # interact with fake email addresses anyway.
-        if is_email:
-            raise MissingAuthenticationError
-
         if settings.RATE_LIMITING:
-            unique_avatar_key = f"{realm.id}/{email_or_id}/{medium}"
+            unique_avatar_key = f"{realm.id}/{user_id}/{medium}"
             rate_limit_spectator_attachment_access_by_file(unique_avatar_key)
     else:
         realm = maybe_user_profile.realm
 
     try:
-        if is_email:
-            avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
-        else:
-            avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(
-                int(email_or_id), realm
-            )
-
+        avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
         url: str | None = None
         if maybe_user_profile.is_authenticated and not check_can_access_user(
             avatar_user_profile, maybe_user_profile
@@ -303,10 +369,44 @@ def avatar(
             url = avatar_url(avatar_user_profile, medium=medium)
         assert url is not None
     except UserProfile.DoesNotExist:
+        url = get_avatar_for_inaccessible_user()
+
+    assert url is not None
+    if request.META["QUERY_STRING"]:
+        url = append_url_query_string(url, request.META["QUERY_STRING"])
+    return redirect(url)
+
+
+def avatar_by_email(
+    request: HttpRequest,
+    maybe_user_profile: UserProfile | AnonymousUser,
+    email: str,
+    medium: bool = False,
+) -> HttpResponse:
+    """Accepts an email address and returns the avatar"""
+
+    if not maybe_user_profile.is_authenticated:
+        # We only allow the ID format for accessing a user's avatar
+        # for spectators. This is mainly for defense in depth, since
+        # email_address_visibility should mean spectators only
+        # interact with fake email addresses anyway.
+        raise MissingAuthenticationError
+
+    realm = maybe_user_profile.realm
+
+    try:
+        avatar_user_profile = get_user_including_cross_realm(email, realm)
+        url: str | None = None
+        if not check_can_access_user(avatar_user_profile, maybe_user_profile):
+            url = get_avatar_for_inaccessible_user()
+        else:
+            # If there is a valid user account passed in, use its avatar
+            url = avatar_url(avatar_user_profile, medium=medium)
+        assert url is not None
+    except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
-        email = email_or_id
         avatar_version = 1
-        url = get_gravatar_url(email, avatar_version, medium)
+        url = get_gravatar_url(email, avatar_version, realm.id, medium)
 
     assert url is not None
     if request.META["QUERY_STRING"]:
@@ -315,9 +415,16 @@ def avatar(
 
 
 def avatar_medium(
-    request: HttpRequest, maybe_user_profile: UserProfile | AnonymousUser, email_or_id: str
+    request: HttpRequest,
+    maybe_user_profile: UserProfile | AnonymousUser,
+    email: str | None = None,
+    user_id: int | None = None,
 ) -> HttpResponse:
-    return avatar(request, maybe_user_profile, email_or_id, medium=True)
+    if email:
+        return avatar_by_email(request, maybe_user_profile, email, medium=True)
+    else:
+        assert user_id is not None
+        return avatar_by_id(request, maybe_user_profile, user_id, medium=True)
 
 
 def get_stream_name(stream: Stream | None) -> str | None:
@@ -497,7 +604,7 @@ def add_bot_backend(
         raise JsonableError(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Username already in use"))
+        raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
 
@@ -507,7 +614,7 @@ def add_bot_backend(
         is_activation=False,
     )
 
-    check_bot_creation_policy(user_profile, bot_type)
+    check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
@@ -571,7 +678,7 @@ def add_bot_backend(
 
     notify_created_bot(bot_profile)
 
-    api_key = get_api_key(bot_profile)
+    api_key = bot_profile.api_key
 
     json_result = dict(
         user_id=bot_profile.id,
@@ -599,7 +706,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         # Bots are supposed to have only one API key, at least for now.
         # Therefore we can safely assume that one and only valid API key will be
         # the first one.
-        api_key = get_api_key(bot_profile)
+        api_key = bot_profile.api_key
 
         return dict(
             username=bot_profile.email,
@@ -704,7 +811,7 @@ def create_user_backend(
 
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Email '{email}' already in use").format(email=email))
+        raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
 
@@ -752,7 +859,7 @@ def get_subscription_backend(
     stream_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 

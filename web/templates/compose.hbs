@@ -6,35 +6,35 @@
     <div id="scroll-to-bottom-button-container" aria-hidden="true">
         <div id="scroll-to-bottom-button-clickable-area" data-tooltip-template-id="scroll-to-bottom-button-tooltip-template">
             <div id="scroll-to-bottom-button">
-                <i class="fa fa-chevron-down"></i>
+                <i class="scroll-to-bottom-icon fa fa-chevron-down"></i>
             </div>
         </div>
     </div>
-    <div id="compose_controls" class="new-style">
+    <div id="compose_controls">
         <div id="compose_buttons">
-            <div class="new_message_button reply_button_container">
+            <div class="reply_button_container">
                 <div class="compose-reply-button-wrapper" data-reply-button-type="selected_message">
-                    <button type="button" class="button compose_reply_button"
+                    <button type="button" class="compose_reply_button"
                       id="left_bar_compose_reply_button_big">
                         {{t 'Compose message' }}
                     </button>
                 </div>
-                <button type="button" class="button compose_new_conversation_button"
+                <button type="button" class="compose_new_conversation_button"
                   id="new_conversation_button"
                   data-tooltip-template-id="new_stream_message_button_tooltip_template">
                     {{t 'Start new conversation' }}
                 </button>
             </div>
-            <span class="new_message_button mobile_button_container">
-                <button type="button" class="button rounded compose_mobile_button"
+            <span class="mobile_button_container">
+                <button type="button" class="compose_mobile_button"
                   id="left_bar_compose_mobile_button_big"
                   data-tooltip-template-id="left_bar_compose_mobile_button_tooltip_template">
                     +
                 </button>
             </span>
             {{#unless embedded }}
-            <span class="new_message_button new_direct_message_button_container">
-                <button type="button" class="button rounded compose_new_direct_message_button"
+            <span class="new_direct_message_button_container">
+                <button type="button" class="compose_new_direct_message_button"
                   id="new_direct_message_button"
                   data-tooltip-template-id="new_direct_message_button_tooltip_template">
                     {{t 'New direct message' }}
@@ -57,7 +57,10 @@
                             </div>
                             <div id="compose_recipient_box">
                                 <input type="text" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
-                                <button type="button" id="recipient_box_clear_topic_button" class="button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Clear topic' }}" tabindex="-1">
+                                <span id="topic-not-mandatory-placeholder" class="placeholder">
+                                    {{> topic_not_mandatory_placeholder_text empty_string_topic_display_name=empty_string_topic_display_name}}
+                                </span>
+                                <button type="button" id="recipient_box_clear_topic_button" class="tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Clear topic' }}" tabindex="-1">
                                     <i class="zulip-icon zulip-icon-close"></i>
                                 </button>
                             </div>
@@ -70,7 +73,7 @@
                     </div>
                     <div class="messagebox">
                         <div id="message-content-container" class="surround-formatting-buttons-row">
-                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
+                            <textarea class="new_message_textarea message-textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
                             <div id="preview-message-area-container">
                                 <div class="scrolling_list preview_message_area" data-simplebar data-simplebar-tab-index="-1" id="preview_message_area" style="display:none;">
                                     <div class="markdown_preview_spinner"></div>
@@ -89,7 +92,7 @@
                             <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts">
                                 <span class="compose-drafts-text">{{t 'Drafts' }}</span><span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span>
                             </a>
-                            <span id="compose-limit-indicator" class="tippy-zulip-tooltip" data-tippy-content="{{t 'Maximum message length: {max_message_length} characters' }}"></span>
+                            <span id="compose-limit-indicator" class="message-limit-indicator"></span>
                             <div class="message-send-controls">
                                 <button type="submit" id="compose-send-button" class="send_message compose-submit-button compose-send-or-save-button" aria-label="{{t 'Send' }}">
                                     <img class="loader" alt="" src="" />
@@ -101,8 +104,14 @@
                             </div>
                         </div>
 
-                        <div id="message-formatting-controls-container">
-                            {{> compose_control_buttons }}
+                        <div id="message-formatting-controls-container" class="compose-scrolling-buttons-container">
+                            {{> compose_control_buttons . }}
+                            <button type="button" class="formatting-control-scroller-button formatting-scroller-forward">
+                                <i class="scroller-forward-icon zulip-icon zulip-icon-compose-scroll-right"></i>
+                            </button>
+                            <button type="button" class="formatting-control-scroller-button formatting-scroller-backward">
+                                <i class="scroller-backward-icon zulip-icon zulip-icon-compose-scroll-left"></i>
+                            </button>
                         </div>
                     </div>
                 </div>

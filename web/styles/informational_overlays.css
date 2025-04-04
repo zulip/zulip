@@ -71,15 +71,6 @@
         font-weight: normal;
     }
 
-    .small_hotkey {
-        font-size: 0.9em !important;
-        line-height: 12px;
-
-        & kbd {
-            font-size: 0.9em;
-        }
-    }
-
     .arrow-key {
         font-size: 1.36em;
         line-height: 1;

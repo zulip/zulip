@@ -1,8 +1,6 @@
 # Polls
 
-Zulip makes it easy to create a poll. Polls in Zulip are collaborative, so
-anyone can add new options to a poll. However, only the creator of the poll can
-edit the question.
+{!polls-intro.md!}
 
 ## Create a poll
 
@@ -21,9 +19,8 @@ edit the question.
    formatting.
 
 1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
-   use a [keyboard
-   shortcut](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
-   to send your message.
+   use a [keyboard shortcut](/help/configure-send-message-keys) to send your
+   message.
 
 !!! tip ""
 
@@ -43,8 +40,8 @@ edit the question.
 3. _(optional)_ Type each option on a new line.
 
 4. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
-   use a [keyboard shortcut](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
-   to send your message.
+   use a [keyboard shortcut](/help/configure-send-message-keys) to send your
+   message.
 
 !!! tip ""
 
@@ -93,18 +90,7 @@ edit the question.
 
 ## Examples
 
-### What you type
-
-```
-/poll What did you drink this morning?
-Milk
-Tea
-Coffee
-```
-
-### What it looks like
-
-![Markdown polls](/static/images/help/markdown-polls.png)
+{!polls-examples.md!}
 
 ## Related articles
 

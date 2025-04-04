@@ -31,10 +31,13 @@ from zerver.data_import.import_util import (
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.export import do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
+
+bson_codec_options = bson.DEFAULT_CODEC_OPTIONS.with_options(tz_aware=True)
 
 
 def make_realm(
@@ -61,8 +64,7 @@ def process_users(
     realm_owners: list[int] = []
     bots: list[int] = []
 
-    for rc_user_id in user_id_to_user_map:
-        user_dict = user_id_to_user_map[rc_user_id]
+    for rc_user_id, user_dict in user_id_to_user_map.items():
         is_mirror_dummy = False
         is_bot = False
         is_active = True
@@ -128,6 +130,7 @@ def process_users(
         )
         user_handler.add_user(user)
 
+    user_handler.validate_user_emails()
     # Set the first realm_owner as the owner of
     # all the bots.
     if realm_owners:
@@ -145,7 +148,7 @@ def truncate_name(name: str, name_id: int, max_length: int = 60) -> str:
 
 def get_stream_name(rc_channel: dict[str, Any]) -> str:
     if rc_channel.get("teamMain"):
-        stream_name = f'[TEAM] {rc_channel["name"]}'
+        stream_name = f"[TEAM] {rc_channel['name']}"
     else:
         stream_name = rc_channel["name"]
 
@@ -162,9 +165,7 @@ def convert_channel_data(
 ) -> list[ZerverFieldsT]:
     streams = []
 
-    for rc_room_id in room_id_to_room_map:
-        channel_dict = room_id_to_room_map[rc_room_id]
-
+    for rc_room_id, channel_dict in room_id_to_room_map.items():
         date_created = float(channel_dict["ts"].timestamp())
         stream_id = stream_id_mapper.get(rc_room_id)
         invite_only = channel_dict["t"] == "p"
@@ -210,9 +211,7 @@ def convert_stream_subscription_data(
 ) -> None:
     stream_members_map: dict[int, set[int]] = {}
 
-    for rc_user_id in user_id_to_user_map:
-        user_dict = user_id_to_user_map[rc_user_id]
-
+    for rc_user_id, user_dict in user_id_to_user_map.items():
         if not user_dict.get("__rooms"):
             continue
 
@@ -245,11 +244,10 @@ def convert_direct_message_group_data(
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group: list[ZerverFieldsT] = []
 
-    for rc_direct_message_group_id in direct_message_group_id_to_direct_message_group_map:
-        direct_message_group_dict = direct_message_group_id_to_direct_message_group_map[
-            rc_direct_message_group_id
-        ]
-
+    for (
+        rc_direct_message_group_id,
+        direct_message_group_dict,
+    ) in direct_message_group_id_to_direct_message_group_map.items():
         direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
         direct_message_group = build_direct_message_group(
             direct_message_group_id, len(direct_message_group_dict["uids"])
@@ -281,14 +279,14 @@ def build_custom_emoji(
     # Map emoji file_id to emoji file data
     emoji_file_data = {}
     for emoji_file in custom_emoji_data["file"]:
-        emoji_file_data[emoji_file["_id"]] = {"filename": emoji_file["filename"], "chunks": []}
+        emoji_file_data[str(emoji_file["_id"])] = {"filename": emoji_file["filename"], "chunks": []}
     for emoji_chunk in custom_emoji_data["chunk"]:
         emoji_file_data[emoji_chunk["files_id"]]["chunks"].append(emoji_chunk["data"])
 
     # Build custom emoji
     for rc_emoji in custom_emoji_data["emoji"]:
         # Subject to change with changes in database
-        emoji_file_id = f'{rc_emoji["name"]}.{rc_emoji["extension"]}'
+        emoji_file_id = f"{rc_emoji['name']}.{rc_emoji['extension']}"
 
         emoji_file_info = emoji_file_data[emoji_file_id]
 
@@ -393,7 +391,7 @@ def process_message_attachment(
 
     upload_file_data = upload_id_to_upload_data_map[upload["_id"]]
     file_name = upload["name"]
-    file_ext = f'.{upload["type"].split("/")[-1]}'
+    file_ext = f".{upload['type'].split('/')[-1]}"
 
     has_image = False
     if file_ext.lower() in IMAGE_EXTENSIONS:
@@ -425,7 +423,7 @@ def process_message_attachment(
         upload_file.write(b"".join(upload_file_data["chunk"]))
 
     attachment_content = (
-        f'{upload_file_data.get("description", "")}\n\n[{file_name}](/user_uploads/{s3_path})'
+        f"{upload_file_data.get('description', '')}\n\n[{file_name}](/user_uploads/{s3_path})"
     )
 
     fileinfo = {
@@ -510,10 +508,6 @@ def process_raw_message_batch(
             rc_channel_mention_data=raw_message["rc_channel_mention_data"],
         )
 
-        if len(content) > 10000:  # nocoverage
-            logging.info("skipping too-long message of length %s", len(content))
-            continue
-
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]
         recipient_id = raw_message["recipient_id"]
@@ -523,6 +517,7 @@ def process_raw_message_batch(
         has_attachment = False
         has_image = False
         has_link = raw_message["has_link"]
+        is_channel_message = raw_message["is_channel_message"]
 
         if "file" in raw_message:
             has_attachment = True
@@ -553,9 +548,11 @@ def process_raw_message_batch(
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,
+            is_channel_message=is_channel_message,
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
+            is_direct_message_type=is_pm_data,
         )
         zerver_message.append(message)
         build_reactions(
@@ -682,6 +679,7 @@ def process_messages(
         if is_pm_data:
             # Message is in a 1:1 or group direct message.
             rc_channel_id = message["rid"]
+            message_dict["is_channel_message"] = False
             if rc_channel_id in direct_message_group_id_to_direct_message_group_map:
                 direct_message_group_id = direct_message_group_id_mapper.get(rc_channel_id)
                 message_dict["recipient_id"] = direct_message_group_id_to_recipient_id[
@@ -701,11 +699,13 @@ def process_messages(
                     message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
         elif message["rid"] in dsc_id_to_dsc_map:
             # Message is in a discussion
+            message_dict["is_channel_message"] = True
             dsc_channel = dsc_id_to_dsc_map[message["rid"]]
             parent_channel_id = dsc_channel["prid"]
             stream_id = stream_id_mapper.get(parent_channel_id)
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
         else:
+            message_dict["is_channel_message"] = True
             stream_id = stream_id_mapper.get(message["rid"])
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
 
@@ -974,90 +974,119 @@ def map_user_id_to_user(user_data_list: list[dict[str, Any]]) -> dict[str, dict[
     return user_id_to_user_map
 
 
-def rocketchat_data_to_dict(rocketchat_data_dir: str) -> dict[str, Any]:
-    codec_options = bson.DEFAULT_CODEC_OPTIONS.with_options(tz_aware=True)
+def rocketchat_data_to_dict(
+    rocketchat_data_dir: str, sections: list[str] | None = None
+) -> dict[str, Any]:
+    """Reads Rocket.Chat data from its BSON files for the requested sections of the
+    export. Defaults to fetching everything, which is convenient for tests, but
+    we prefer to fetch only those sections that are needed for a given stage to
+    provide a faster debug cycle for metadata data corruption issues.
 
+    TODO: Ideally, we'd read the big data sets, like messages and
+    uploads, with a streaming BSON parser, or pre-paginate the data.
+    """
     rocketchat_data: dict[str, Any] = {}
-    rocketchat_data["instance"] = []
-    rocketchat_data["user"] = []
-    rocketchat_data["avatar"] = {"avatar": [], "file": [], "chunk": []}
-    rocketchat_data["room"] = []
-    rocketchat_data["message"] = []
-    rocketchat_data["custom_emoji"] = {"emoji": [], "file": [], "chunk": []}
-    rocketchat_data["upload"] = {"upload": [], "file": [], "chunk": []}
 
-    # Get instance
-    with open(os.path.join(rocketchat_data_dir, "instances.bson"), "rb") as fcache:
-        rocketchat_data["instance"] = bson.decode_all(fcache.read(), codec_options)
+    if sections is None or "instance" in sections:
+        rocketchat_data["instance"] = []
+        with open(os.path.join(rocketchat_data_dir, "instances.bson"), "rb") as fcache:
+            rocketchat_data["instance"] = bson.decode_all(fcache.read(), bson_codec_options)
 
-    # Get user
-    with open(os.path.join(rocketchat_data_dir, "users.bson"), "rb") as fcache:
-        rocketchat_data["user"] = bson.decode_all(fcache.read(), codec_options)
+    if sections is None or "user" in sections:
+        rocketchat_data["user"] = []
+        with open(os.path.join(rocketchat_data_dir, "users.bson"), "rb") as fcache:
+            rocketchat_data["user"] = bson.decode_all(fcache.read(), bson_codec_options)
 
-    # Get avatar
-    with open(os.path.join(rocketchat_data_dir, "rocketchat_avatars.bson"), "rb") as fcache:
-        rocketchat_data["avatar"]["avatar"] = bson.decode_all(fcache.read(), codec_options)
+    if sections is None or "avatar" in sections:
+        rocketchat_data["avatar"] = {"avatar": [], "file": [], "chunk": []}
+        with open(os.path.join(rocketchat_data_dir, "rocketchat_avatars.bson"), "rb") as fcache:
+            rocketchat_data["avatar"]["avatar"] = bson.decode_all(fcache.read(), bson_codec_options)
 
-    if rocketchat_data["avatar"]["avatar"]:
+        if rocketchat_data["avatar"]["avatar"]:
+            with open(
+                os.path.join(rocketchat_data_dir, "rocketchat_avatars.files.bson"), "rb"
+            ) as fcache:
+                rocketchat_data["avatar"]["file"] = bson.decode_all(
+                    fcache.read(), bson_codec_options
+                )
+
+            with open(
+                os.path.join(rocketchat_data_dir, "rocketchat_avatars.chunks.bson"), "rb"
+            ) as fcache:
+                rocketchat_data["avatar"]["chunk"] = bson.decode_all(
+                    fcache.read(), bson_codec_options
+                )
+
+    if sections is None or "room" in sections:
+        rocketchat_data["room"] = []
+        with open(os.path.join(rocketchat_data_dir, "rocketchat_room.bson"), "rb") as fcache:
+            rocketchat_data["room"] = bson.decode_all(fcache.read(), bson_codec_options)
+
+    if sections is None or "message" in sections:
+        rocketchat_data["message"] = []
+        with open(os.path.join(rocketchat_data_dir, "rocketchat_message.bson"), "rb") as fcache:
+            rocketchat_data["message"] = bson.decode_all(fcache.read(), bson_codec_options)
+
+    if sections is None or "custom_emoji" in sections:
+        rocketchat_data["custom_emoji"] = {"emoji": [], "file": [], "chunk": []}
         with open(
-            os.path.join(rocketchat_data_dir, "rocketchat_avatars.files.bson"), "rb"
+            os.path.join(rocketchat_data_dir, "rocketchat_custom_emoji.bson"), "rb"
         ) as fcache:
-            rocketchat_data["avatar"]["file"] = bson.decode_all(fcache.read(), codec_options)
+            rocketchat_data["custom_emoji"]["emoji"] = bson.decode_all(
+                fcache.read(), bson_codec_options
+            )
 
-        with open(
-            os.path.join(rocketchat_data_dir, "rocketchat_avatars.chunks.bson"), "rb"
-        ) as fcache:
-            rocketchat_data["avatar"]["chunk"] = bson.decode_all(fcache.read(), codec_options)
+        if rocketchat_data["custom_emoji"]["emoji"]:
+            with open(os.path.join(rocketchat_data_dir, "custom_emoji.files.bson"), "rb") as fcache:
+                rocketchat_data["custom_emoji"]["file"] = bson.decode_all(
+                    fcache.read(), bson_codec_options
+                )
 
-    # Get room
-    with open(os.path.join(rocketchat_data_dir, "rocketchat_room.bson"), "rb") as fcache:
-        rocketchat_data["room"] = bson.decode_all(fcache.read(), codec_options)
+            with open(
+                os.path.join(rocketchat_data_dir, "custom_emoji.chunks.bson"), "rb"
+            ) as fcache:
+                rocketchat_data["custom_emoji"]["chunk"] = bson.decode_all(
+                    fcache.read(), bson_codec_options
+                )
 
-    # Get messages
-    with open(os.path.join(rocketchat_data_dir, "rocketchat_message.bson"), "rb") as fcache:
-        rocketchat_data["message"] = bson.decode_all(fcache.read(), codec_options)
+    if sections is None or "upload" in sections:
+        rocketchat_data["upload"] = {"upload": [], "file": [], "chunk": []}
+        with open(os.path.join(rocketchat_data_dir, "rocketchat_uploads.bson"), "rb") as fcache:
+            rocketchat_data["upload"]["upload"] = bson.decode_all(fcache.read(), bson_codec_options)
 
-    # Get custom emoji
-    with open(os.path.join(rocketchat_data_dir, "rocketchat_custom_emoji.bson"), "rb") as fcache:
-        rocketchat_data["custom_emoji"]["emoji"] = bson.decode_all(fcache.read(), codec_options)
+        if rocketchat_data["upload"]["upload"]:
+            with open(
+                os.path.join(rocketchat_data_dir, "rocketchat_uploads.files.bson"), "rb"
+            ) as fcache:
+                rocketchat_data["upload"]["file"] = bson.decode_all(
+                    fcache.read(), bson_codec_options
+                )
 
-    if rocketchat_data["custom_emoji"]["emoji"]:
-        with open(os.path.join(rocketchat_data_dir, "custom_emoji.files.bson"), "rb") as fcache:
-            rocketchat_data["custom_emoji"]["file"] = bson.decode_all(fcache.read(), codec_options)
-
-        with open(os.path.join(rocketchat_data_dir, "custom_emoji.chunks.bson"), "rb") as fcache:
-            rocketchat_data["custom_emoji"]["chunk"] = bson.decode_all(fcache.read(), codec_options)
-
-    # Get uploads
-    with open(os.path.join(rocketchat_data_dir, "rocketchat_uploads.bson"), "rb") as fcache:
-        rocketchat_data["upload"]["upload"] = bson.decode_all(fcache.read(), codec_options)
-
-    if rocketchat_data["upload"]["upload"]:
-        with open(
-            os.path.join(rocketchat_data_dir, "rocketchat_uploads.files.bson"), "rb"
-        ) as fcache:
-            rocketchat_data["upload"]["file"] = bson.decode_all(fcache.read(), codec_options)
-
-        with open(
-            os.path.join(rocketchat_data_dir, "rocketchat_uploads.chunks.bson"), "rb"
-        ) as fcache:
-            rocketchat_data["upload"]["chunk"] = bson.decode_all(fcache.read(), codec_options)
+            with open(
+                os.path.join(rocketchat_data_dir, "rocketchat_uploads.chunks.bson"), "rb"
+            ) as fcache:
+                rocketchat_data["upload"]["chunk"] = bson.decode_all(
+                    fcache.read(), bson_codec_options
+                )
 
     return rocketchat_data
 
 
 def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     # Get all required exported data in a dictionary
-    rocketchat_data = rocketchat_data_to_dict(rocketchat_data_dir)
 
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
     domain_name = settings.EXTERNAL_HOST
 
-    realm = make_realm(realm_id, realm_subdomain, domain_name, rocketchat_data["instance"][0])
+    rocketchat_instance_data = rocketchat_data_to_dict(rocketchat_data_dir, ["instance"])[
+        "instance"
+    ][0]
+    realm = make_realm(realm_id, realm_subdomain, domain_name, rocketchat_instance_data)
 
-    user_id_to_user_map: dict[str, dict[str, Any]] = map_user_id_to_user(rocketchat_data["user"])
+    rocketchat_user_data = rocketchat_data_to_dict(rocketchat_data_dir, ["user"])["user"]
+    user_id_to_user_map: dict[str, dict[str, Any]] = map_user_id_to_user(rocketchat_user_data)
     username_to_user_id_map: dict[str, str] = map_username_to_user_id(user_id_to_user_map)
 
     user_handler = UserHandler()
@@ -1075,6 +1104,16 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_mapper=user_id_mapper,
     )
 
+    rocketchat_emoji_data = rocketchat_data_to_dict(rocketchat_data_dir, ["custom_emoji"])[
+        "custom_emoji"
+    ]
+    zerver_realmemoji = build_custom_emoji(
+        realm_id=realm_id,
+        custom_emoji_data=rocketchat_emoji_data,
+        output_dir=output_dir,
+    )
+    realm["zerver_realmemoji"] = zerver_realmemoji
+
     room_id_to_room_map: dict[str, dict[str, Any]] = {}
     team_id_to_team_map: dict[str, dict[str, Any]] = {}
     dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
@@ -1082,8 +1121,9 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
     livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
 
+    rocketchat_room_data = rocketchat_data_to_dict(rocketchat_data_dir, ["room"])["room"]
     categorize_channels_and_map_with_id(
-        channel_data=rocketchat_data["room"],
+        channel_data=rocketchat_room_data,
         room_id_to_room_map=room_id_to_room_map,
         team_id_to_team_map=team_id_to_team_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
@@ -1148,13 +1188,6 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     )
     realm["zerver_subscription"] = zerver_subscription
 
-    zerver_realmemoji = build_custom_emoji(
-        realm_id=realm_id,
-        custom_emoji_data=rocketchat_data["custom_emoji"],
-        output_dir=output_dir,
-    )
-    realm["zerver_realmemoji"] = zerver_realmemoji
-
     subscriber_map = make_subscriber_map(
         zerver_subscription=zerver_subscription,
     )
@@ -1174,8 +1207,9 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     private_messages: list[dict[str, Any]] = []
     livechat_messages: list[dict[str, Any]] = []
 
+    rocketchat_message_data = rocketchat_data_to_dict(rocketchat_data_dir, ["message"])["message"]
     separate_channel_private_and_livechat_messages(
-        messages=rocketchat_data["message"],
+        messages=rocketchat_message_data,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
@@ -1184,12 +1218,15 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         private_messages=private_messages,
         livechat_messages=livechat_messages,
     )
+    # Hint we can free the memory, now that we're done processing this.
+    rocketchat_message_data = []
 
     total_reactions: list[ZerverFieldsT] = []
     uploads_list: list[ZerverFieldsT] = []
     zerver_attachment: list[ZerverFieldsT] = []
 
-    upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
+    rocketchat_upload_data = rocketchat_data_to_dict(rocketchat_data_dir, ["upload"])["upload"]
+    upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_upload_data)
 
     # Process channel messages
     process_messages(
@@ -1255,3 +1292,5 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     attachment: dict[str, list[Any]] = {"zerver_attachment": zerver_attachment}
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
+
+    do_common_export_processes(output_dir)

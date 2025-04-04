@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import {localstorage} from "./localstorage";
-import * as message_lists from "./message_lists";
-import * as realm_logo from "./realm_logo";
-import * as settings_config from "./settings_config";
-import {user_settings} from "./user_settings";
+import {localstorage} from "./localstorage.ts";
+import * as message_lists from "./message_lists.ts";
+import * as realm_logo from "./realm_logo.ts";
+import * as settings_config from "./settings_config.ts";
+import {user_settings} from "./user_settings.ts";
 
 const ls = localstorage();
 

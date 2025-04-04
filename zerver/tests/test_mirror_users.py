@@ -7,7 +7,10 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.message_send import create_mirror_user_if_needed
 from zerver.lib.create_user import create_user_profile
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
+from zerver.lib.test_helpers import (
+    dns_txt_answer,
+    reset_email_visibility_to_everyone_in_zulip_realm,
+)
 from zerver.models import UserProfile
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
@@ -49,8 +52,11 @@ class MirroredMessageUsersTest(ZulipTestCase):
                 )
 
     @mock.patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_zephyr_mirror_new_recipient(self, ignored: object) -> None:
         """Test mirror dummy user creation for direct message recipients"""
@@ -79,8 +85,11 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
     @mock.patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_zephyr_mirror_new_sender(self, ignored: object) -> None:
         """Test mirror dummy user creation for sender when sending to stream"""

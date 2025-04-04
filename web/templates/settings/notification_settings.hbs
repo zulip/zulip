@@ -29,7 +29,12 @@
             <tbody>
                 {{#each general_settings}}
                     <tr>
-                        <td>{{ this.label }}</td>
+                        <td>
+                            {{ this.label }}
+                            {{#if this.help_link}}
+                                {{> ../help_link_widget link=this.help_link }}
+                            {{/if}}
+                        </td>
                         {{#each this.notification_settings}}
                             {{> notification_settings_checkboxes
                               setting_name=this.setting_name
@@ -55,17 +60,17 @@
                 {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="topic-notifications-settings" show_only_indicator=(not for_realm_settings) }}
-            <p>
-                {{#tr}}
-                    You will automatically follow topics that you have configured to both <z-follow>follow</z-follow> and <z-unmute>unmute</z-unmute>.
-                    {{#*inline "z-follow"}}<a href="/help/follow-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                    {{#*inline "z-unmute"}}<a href="/help/mute-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                {{/tr}}
-            </p>
         </div>
+        <p>
+            {{#tr}}
+                You will automatically follow topics that you have configured to both <z-follow>follow</z-follow> and <z-unmute>unmute</z-unmute>.
+                {{#*inline "z-follow"}}<a href="/help/follow-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-unmute"}}<a href="/help/mute-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
 
         <div class="input-group">
-            <label for="automatically_follow_topics_policy" class="settings-field-label">
+            <label for="{{prefix}}automatically_follow_topics_policy" class="settings-field-label">
                 {{ settings_label.automatically_follow_topics_policy }}
                 {{> ../help_link_widget link="/help/follow-a-topic" }}
             </label>
@@ -75,8 +80,14 @@
             </select>
         </div>
 
+        {{> settings_checkbox
+          setting_name="automatically_follow_topics_where_mentioned"
+          is_checked=(lookup settings_object "automatically_follow_topics_where_mentioned")
+          label=(lookup settings_label "automatically_follow_topics_where_mentioned")
+          prefix=prefix}}
+
         <div class="input-group">
-            <label for="automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
+            <label for="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
                 {{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}
                 {{> ../help_link_widget link="/help/mute-a-topic" }}
             </label>
@@ -85,12 +96,6 @@
                 {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
             </select>
         </div>
-
-        {{> settings_checkbox
-          setting_name="automatically_follow_topics_where_mentioned"
-          is_checked=(lookup settings_object "automatically_follow_topics_where_mentioned")
-          label=(lookup settings_label "automatically_follow_topics_where_mentioned")
-          prefix=prefix}}
     </div>
 
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
@@ -129,12 +134,12 @@
                 {{/each}}
             </select>
             <span class="play_notification_sound">
-                <i class="fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
+                <i class="notification-sound-icon fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
             </span>
         </div>
 
         <div class="input-group">
-            <label for="desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
+            <label for="{{prefix}}desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>
@@ -162,7 +167,7 @@
             {{> settings_checkbox
               setting_name=this
               is_checked=(lookup ../settings_object this)
-              is_disabled=(lookup ../show_push_notifications_tooltip this)
+              is_disabled=(lookup ../disabled_notification_settings this)
               label=(lookup ../settings_label this)
               prefix=../prefix}}
         {{/each}}
@@ -179,7 +184,7 @@
 
         <div class="input-group time-limit-setting">
 
-            <label for="email_notifications_batching_period" class="settings-field-label">
+            <label for="{{prefix}}email_notifications_batching_period_seconds" class="settings-field-label">
                 {{t "Delay before sending message notification emails" }}
             </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
@@ -188,7 +193,7 @@
                 {{/each}}
             </select>
             <div class="dependent-settings-block">
-                <label for="email_notification_batching_period_edit_minutes" class="inline-block">
+                <label for="{{prefix}}email_notification_batching_period_edit_minutes" class="inline-block">
                     {{t 'Delay period (minutes)' }}:
                 </label>
                 <input type="text"
@@ -201,7 +206,7 @@
         </div>
 
         <div class="input-group">
-            <label for="realm_name_in_email_notifications_policy" class="settings-field-label">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
+            <label for="{{prefix}}realm_name_in_email_notifications_policy" class="settings-field-label">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
             <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
             </select>
@@ -212,6 +217,7 @@
               setting_name=this
               is_checked=(lookup ../settings_object this)
               label=(lookup ../settings_label this)
+              is_disabled=(lookup ../disabled_notification_settings this)
               prefix=../prefix}}
         {{/each}}
     </div>

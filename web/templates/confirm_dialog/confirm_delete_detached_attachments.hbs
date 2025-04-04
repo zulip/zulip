@@ -1,0 +1,22 @@
+<div>
+    {{#if realm_message_edit_history_is_visible}}
+        {{#tr}}
+            The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?
+            {{#*inline "z-link"}}<a class="uploaded_files_settings_link" href="/#settings/uploaded-files">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    {{else}}
+        {{#tr}}
+            The following <z-link>uploaded files</z-link> are no longer attached to any messages. Would you like to delete them entirely?
+            {{#*inline "z-link"}}<a class="uploaded_files_settings_link" href="/#settings/uploaded-files">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    {{/if}}
+</div>
+<p>
+    <ul>
+        {{#each attachments_list}}
+            <li>
+                <a href="/user_uploads/{{this.path_id}}" rel="noopener noreferrer" target="_blank">{{this.name}}</a>
+            </li>
+        {{/each}}
+    </ul>
+</p>

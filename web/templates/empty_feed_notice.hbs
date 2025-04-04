@@ -4,16 +4,20 @@
         {{#if search_data}}
             {{#if search_data.has_stop_word}}{{t "Some common words were excluded from your search." }} <br/>{{/if}}{{t "You searched for:" }}
             {{#if search_data.stream_query}}
-            <span>stream: {{search_data.stream_query}}</span>
+            <span>channel: {{search_data.stream_query}}</span>
             {{/if}}
             {{#if search_data.topic_query}}
+            {{#if search_data.is_empty_string_topic}}
+            <span>topic: <span class="empty-topic-display">{{search_data.topic_query}}</span></span>
+            {{else}}
             <span>topic: {{search_data.topic_query}}</span>
+            {{/if}}
             {{/if}}
             {{#each search_data.query_words}}
                 {{#if is_stop_word}}
                 <del>{{query_word}}</del>
                 {{else}}
-                <span>{{query_word}}</span>
+                <span class="search-query-word">{{query_word}}</span>
                 {{/if}}
             {{/each}}
         {{else}}

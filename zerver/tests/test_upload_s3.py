@@ -2,11 +2,15 @@ import os
 import re
 from io import BytesIO, StringIO
 from unittest.mock import patch
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
+import boto3
 import botocore.exceptions
 import pyvips
 from django.conf import settings
+from django.test import override_settings
+from moto.core.decorator import mock_aws
+from mypy_boto3_s3.type_defs import CopySourceTypeDef
 
 import zerver.lib.upload
 from zerver.actions.create_user import do_create_user
@@ -30,6 +34,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.upload import (
     all_message_attachments,
+    attachment_vips_source,
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
@@ -37,8 +42,9 @@ from zerver.lib.upload import (
     upload_export_tarball,
     upload_message_attachment,
 )
+from zerver.lib.upload.base import StreamingSourceWithSize
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import Attachment, RealmEmoji, UserProfile
+from zerver.models import Attachment, OnboardingStep, RealmEmoji, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
 
@@ -49,7 +55,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
@@ -68,12 +74,28 @@ class S3Test(ZulipTestCase):
     def test_save_attachment_contents(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
         save_attachment_contents(path_id, output)
         self.assertEqual(output.getvalue(), b"zulip!")
+
+    @use_s3_backend
+    def test_attachment_vips_source(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+        user_profile = self.example_user("hamlet")
+        url = upload_message_attachment(
+            "img.png", "image/png", read_test_image_file("img.png"), user_profile
+        )[0]
+        path_id = re.sub(r"/user_uploads/", "", url)
+
+        source = attachment_vips_source(path_id)
+        self.assertIsInstance(source, StreamingSourceWithSize)
+        self.assertEqual(source.size, len(read_test_image_file("img.png")))
+        image = pyvips.Image.new_from_source(source.source, "", access="sequential")
+        self.assertEqual(128, image.height)
+        self.assertEqual(128, image.width)
 
     @use_s3_backend
     def test_upload_message_attachment_s3_cross_realm_path(self) -> None:
@@ -90,7 +112,7 @@ class S3Test(ZulipTestCase):
 
         url = upload_message_attachment(
             "dummy.txt", "text/plain", b"zulip!", user_profile, zulip_realm
-        )
+        )[0]
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
@@ -99,7 +121,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
         path_id = re.sub(r"/user_uploads/", "", url)
         self.assertIsNotNone(bucket.Object(path_id).get())
@@ -114,7 +136,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
             path_id = re.sub(r"/user_uploads/", "", url)
             self.assertIsNotNone(bucket.Object(path_id).get())
             path_ids.append(path_id)
@@ -147,19 +169,28 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 5):
-            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)
+            url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
             path_ids.append(re.sub(r"/user_uploads/", "", url))
 
         # Put an image in, which gets thumbnailed
         with self.captureOnCommitCallbacks(execute=True):
             url = upload_message_attachment(
                 "img.png", "image/png", read_test_image_file("img.png"), user_profile
-            )
+            )[0]
             image_path_id = re.sub(r"/user_uploads/", "", url)
             path_ids.append(image_path_id)
 
         found_paths = [r[0] for r in all_message_attachments()]
         self.assertEqual(sorted(found_paths), sorted(path_ids))
+
+        found_paths = [r[0] for r in all_message_attachments(prefix=str(user_profile.realm_id))]
+        self.assertEqual(sorted(found_paths), sorted(path_ids))
+
+        found_paths = [r[0] for r in all_message_attachments(prefix=os.path.dirname(path_ids[0]))]
+        self.assertEqual(found_paths, [path_ids[0]])
+
+        found_paths = [r[0] for r in all_message_attachments(prefix="missing")]
+        self.assertEqual(found_paths, [])
 
         found_paths = [r[0] for r in all_message_attachments(include_thumbnails=True)]
         for thumbnail_format in THUMBNAIL_OUTPUT_FORMATS:
@@ -177,7 +208,7 @@ class S3Test(ZulipTestCase):
 
         self.login("hamlet")
         fp = StringIO("zulip!")
-        fp.name = "zulip.txt"
+        fp.name = "zulip with excitement!.txt"
 
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
@@ -193,7 +224,7 @@ class S3Test(ZulipTestCase):
         redirect_url = response["Location"]
         path = urlsplit(redirect_url).path
         assert path.startswith("/")
-        key = path[len("/") :]
+        key = path.removeprefix("/")
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         prefix = f"/internal/s3/{settings.S3_AUTH_UPLOADS_BUCKET}.s3.amazonaws.com/"
@@ -202,7 +233,7 @@ class S3Test(ZulipTestCase):
         redirect_url = response["X-Accel-Redirect"]
         path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
-        key = path[len(prefix) :]
+        key = path.removeprefix(prefix)
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Check the download endpoint
@@ -211,8 +242,12 @@ class S3Test(ZulipTestCase):
             response = self.client_get(download_url)
         redirect_url = response["X-Accel-Redirect"]
         path = urlsplit(redirect_url).path
+        content_disposition = parse_qs(urlsplit(redirect_url).query)["response-content-disposition"]
+        self.assertEqual(
+            content_disposition[0], 'attachment; filename="zulip with excitement!.txt"'
+        )
         assert path.startswith(prefix)
-        key = path[len(prefix) :]
+        key = path.removeprefix(prefix)
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Now try the endpoint that's supposed to return a temporary URL for access
@@ -223,7 +258,7 @@ class S3Test(ZulipTestCase):
 
         self.assertNotEqual(url_only_url, url)
         self.assertIn("user_uploads/temporary/", url_only_url)
-        self.assertTrue(url_only_url.endswith("zulip.txt"))
+        self.assertTrue(url_only_url.endswith("zulip-with-excitement.txt"))
         # The generated URL has a token authorizing the requester to access the file
         # without being logged in.
         self.logout()
@@ -232,7 +267,7 @@ class S3Test(ZulipTestCase):
         redirect_url = response["X-Accel-Redirect"]
         path = urlsplit(redirect_url).path
         assert path.startswith(prefix)
-        key = path[len(prefix) :]
+        key = path.removeprefix(prefix)
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # The original url shouldn't work when logged out:
@@ -279,7 +314,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(base, url[: len(base)])
 
         # Try hitting the equivalent `/user_avatars` endpoint
-        wrong_url = "/user_avatars/" + url[len(base) :]
+        wrong_url = "/user_avatars/" + url.removeprefix(base)
         result = self.client_get(wrong_url)
         self.assertEqual(result.status_code, 301)
         self.assertEqual(result["Location"], url)
@@ -325,6 +360,12 @@ class S3Test(ZulipTestCase):
         target_user_profile = do_create_user(
             "user@zulip.com", "password", get_realm("zulip"), "user", acting_user=None
         )
+
+        # 'visibility_policy_banner' is already marked as read for new users.
+        # Delete that row to avoid integrity error in copy_default_settings.
+        OnboardingStep.objects.filter(
+            user=target_user_profile, onboarding_step="visibility_policy_banner"
+        ).delete()
 
         copy_default_settings(source_user_profile, target_user_profile)
 
@@ -551,7 +592,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:
-        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        bucket = create_s3_buckets(settings.S3_EXPORT_BUCKET)[0]
 
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
@@ -572,11 +613,18 @@ class S3Test(ZulipTestCase):
         # Verify the percent_callback API works
         self.assertEqual(total_bytes_transferred, 5)
 
-        result = re.search(re.compile(r"([0-9a-fA-F]{32})"), url)
+        parsed_url = urlsplit(url)
+        result = re.search(re.compile(r"/([0-9a-fA-F]{32})/"), url)
         if result is not None:
             hex_value = result.group(1)
-        expected_url = f"https://{bucket.name}.s3.amazonaws.com/exports/{hex_value}/{os.path.basename(tarball_path)}"
-        self.assertEqual(url, expected_url)
+        expected_url = (
+            f"https://{bucket.name}.s3.amazonaws.com/{hex_value}/{os.path.basename(tarball_path)}"
+        )
+        self.assertEqual(parsed_url._replace(query="").geturl(), expected_url)
+        params = parse_qs(parsed_url.query)
+        self.assertEqual(params["AWSAccessKeyId"], ["test-key"])
+        self.assertIn("Signature", params)
+        self.assertIn("Expires", params)
 
         # Delete the tarball.
         with self.assertLogs(level="WARNING") as warn_log:
@@ -585,5 +633,132 @@ class S3Test(ZulipTestCase):
             warn_log.output,
             ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
         )
+        self.assertEqual(delete_export_tarball(parsed_url.path), parsed_url.path)
+
+    @override_settings(S3_EXPORT_BUCKET="")
+    @use_s3_backend
+    def test_tarball_upload_and_deletion_no_export_bucket(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("iago")
+        self.assertTrue(user_profile.is_realm_admin)
+
+        tarball_path = os.path.join(settings.TEST_WORKER_DIR, "tarball.tar.gz")
+        with open(tarball_path, "w") as f:
+            f.write("dummy")
+
+        url = upload_export_tarball(user_profile.realm, tarball_path)
+        result = re.search(re.compile(r"/([0-9a-fA-F]{32})/"), url)
+        if result is not None:
+            hex_value = result.group(1)
+        expected_url = f"https://{bucket.name}.s3.amazonaws.com/exports/{hex_value}/{os.path.basename(tarball_path)}"
+        self.assertEqual(url, expected_url)
+
+        # Delete the tarball.
         path_id = urlsplit(url).path
         self.assertEqual(delete_export_tarball(path_id), path_id)
+
+    @mock_aws
+    def test_tarball_upload_avatar_bucket_download_export_bucket(self) -> None:
+        """Test to verify that tarballs uploaded to avatar bucket can be later
+        accessed via export bucket when server is configured to use export bucket.
+        """
+        user_profile = self.example_user("iago")
+        self.assertTrue(user_profile.is_realm_admin)
+
+        tarball_path = os.path.join(settings.TEST_WORKER_DIR, "tarball.tar.gz")
+        with open(tarball_path, "w") as f:
+            f.write("dummy")
+
+        # Upload export tarball to the avatar bucket.
+        with override_settings(S3_EXPORT_BUCKET=""):
+            backend = S3UploadBackend()
+            avatar_bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+            with patch("zerver.lib.upload.upload_backend", backend):
+                public_url = upload_export_tarball(user_profile.realm, tarball_path)
+                avatar_object_key = urlsplit(public_url).path.removeprefix("/")
+
+        # Verify that old tarballs (uploaded to avatar bucket) can be accessed
+        # from export bucket, once server is configured to use a separate export bucket.
+        with override_settings(S3_EXPORT_BUCKET=settings.S3_EXPORT_BUCKET):
+            backend = S3UploadBackend()
+            export_bucket = create_s3_buckets(settings.S3_EXPORT_BUCKET)[0]
+
+            # Copy existing exports to the new bucket.
+            # This operation is performed as a part of configuring export bucket.
+            session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+            s3 = session.resource("s3")
+            copy_source: CopySourceTypeDef = {
+                "Bucket": avatar_bucket.name,
+                "Key": avatar_object_key,
+            }
+            export_object_key = avatar_object_key.removeprefix("exports/")
+            s3.meta.client.copy(copy_source, export_bucket.name, export_object_key)
+
+            # Verify copy operation.
+            object = s3.Object(export_bucket.name, export_object_key)
+            content = object.get()["Body"].read()
+            self.assertEqual(content, b"dummy")
+
+            # Verify that tarball can be accessed using old 'avatar_object_key'.
+            url = backend.get_export_tarball_url(user_profile.realm, avatar_object_key)
+            parsed_url = urlsplit(url)
+            result = re.search(re.compile(r"/([0-9a-fA-F]{32})/"), url)
+            if result is not None:
+                hex_value = result.group(1)
+            expected_url = f"https://{export_bucket.name}.s3.amazonaws.com/{hex_value}/{os.path.basename(tarball_path)}"
+            self.assertEqual(parsed_url._replace(query="").geturl(), expected_url)
+            params = parse_qs(parsed_url.query)
+            self.assertEqual(params["AWSAccessKeyId"], ["test-key"])
+            self.assertIn("Signature", params)
+            self.assertIn("Expires", params)
+
+    @mock_aws
+    def test_tarball_upload_export_bucket_download_avatar_bucket(self) -> None:
+        """Test to verify that tarballs uploaded to export bucket can be later
+        accessed via avatar bucket when server is configured to use ONLY avatar bucket.
+        """
+        user_profile = self.example_user("iago")
+        self.assertTrue(user_profile.is_realm_admin)
+
+        tarball_path = os.path.join(settings.TEST_WORKER_DIR, "tarball.tar.gz")
+        with open(tarball_path, "w") as f:
+            f.write("dummy")
+
+        # Upload export tarball to the export bucket.
+        with override_settings(S3_EXPORT_BUCKET=settings.S3_EXPORT_BUCKET):
+            backend = S3UploadBackend()
+            export_bucket = create_s3_buckets(settings.S3_EXPORT_BUCKET)[0]
+            with patch("zerver.lib.upload.upload_backend", backend):
+                public_url = upload_export_tarball(user_profile.realm, tarball_path)
+                export_object_key = urlsplit(public_url).path.removeprefix("/")
+
+        # Verify that old tarballs (uploaded to export bucket) can be accessed
+        # from avatar bucket, once server is configured to use ONLY avatar bucket.
+        with override_settings(S3_EXPORT_BUCKET=""):
+            backend = S3UploadBackend()
+            avatar_bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+            # Copy existing exports to the avatar bucket.
+            # This operation is performed as a part of the changes to use ONLY avatar bucket.
+            session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+            s3 = session.resource("s3")
+            copy_source: CopySourceTypeDef = {
+                "Bucket": export_bucket.name,
+                "Key": export_object_key,
+            }
+            avatar_object_key = "exports/" + export_object_key
+            s3.meta.client.copy(copy_source, avatar_bucket.name, avatar_object_key)
+
+            # Verify copy operation.
+            object = s3.Object(avatar_bucket.name, avatar_object_key)
+            content = object.get()["Body"].read()
+            self.assertEqual(content, b"dummy")
+
+            # Verify that tarball can still be accessed using old 'export_object_key'.
+            url = backend.get_export_tarball_url(user_profile.realm, export_object_key)
+            result = re.search(re.compile(r"/([0-9a-fA-F]{32})/"), url)
+            if result is not None:
+                hex_value = result.group(1)
+            expected_url = f"https://{avatar_bucket.name}.s3.amazonaws.com/exports/{hex_value}/{os.path.basename(tarball_path)}"
+            self.assertEqual(url, expected_url)

@@ -1,16 +1,14 @@
 import assert from "minimalistic-assert";
+import type {z} from "zod";
 
-import * as typeahead from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
 
-import {$t} from "./i18n";
-import * as pygments_data from "./pygments_data";
+import {$t} from "./i18n.ts";
+import * as pygments_data from "./pygments_data.ts";
+import type {realm_playground_schema} from "./state_data.ts";
+import * as util from "./util.ts";
 
-export type RealmPlayground = {
-    id: number;
-    name: string;
-    pygments_language: string;
-    url_template: string;
-};
+export type RealmPlayground = z.output<typeof realm_playground_schema>;
 
 const map_language_to_playground_info = new Map<string, RealmPlayground[]>();
 const map_pygments_pretty_name_to_aliases = new Map<string, string[]>();
@@ -90,7 +88,8 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        language_labels.set(key, key + " (" + values.join(", ") + ")");
+        const formatted_string = util.format_array_as_list_with_conjuction(values, "narrow");
+        language_labels.set(key, key + " (" + formatted_string + ")");
     }
 
     return language_labels;

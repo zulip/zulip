@@ -5,14 +5,14 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.reactions import check_add_reaction
+from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_topics import get_topic_mutes, topic_has_visibility_policy
-from zerver.models import UserProfile, UserTopic
+from zerver.models import Message, Reaction, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.streams import get_stream
 
@@ -38,8 +38,8 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
         stream.deactivated = True
         stream.save()
 
-        self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-        self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user, True))
+        self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
+        self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))
 
     def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -106,7 +106,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
                 result = self.api_patch(user, url, data)
                 self.assert_json_success(result)
 
-            self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
+            self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
             self.assertTrue(
                 topic_has_visibility_policy(
                     user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
@@ -160,12 +160,12 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
                 visibility_policy=UserTopic.VisibilityPolicy.MUTED,
                 last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
-            self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
+            self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
 
             result = self.api_patch(user, url, data)
 
             self.assert_json_success(result)
-            self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
+            self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
             self.assertFalse(
                 topic_has_visibility_policy(
                     user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
@@ -269,8 +269,8 @@ class MutedTopicsTests(ZulipTestCase):
         stream.deactivated = True
         stream.save()
 
-        self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-        self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user, True))
+        self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
+        self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))
 
     def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1024,6 +1024,28 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
             UserTopic.VisibilityPolicy.UNMUTED
         )
         self.assertEqual(user_ids, {cordelia.id})
+
+        # Add test coverage for 'should_change_visibility_policy' when
+        # user from a different realm reacted to the message.
+        starnine_mit = self.mit_user("starnine")
+        do_change_user_setting(
+            starnine_mit,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            acting_user=None,
+        )
+        do_add_reaction(
+            user_profile=starnine_mit,
+            message=Message.objects.get(id=message_id),
+            emoji_name="outbox",
+            emoji_code="1f4e4",
+            reaction_type=Reaction.UNICODE_EMOJI,
+        )
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertNotIn(starnine_mit.id, user_ids)
 
     def test_automatically_follow_topic_on_participation_participate_in_poll(self) -> None:
         iago = self.example_user("iago")

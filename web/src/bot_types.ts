@@ -30,12 +30,14 @@ export const services_schema = z.union([
     z.array(embedded_service_schema),
 ]);
 
-export const server_update_bot_schema = basic_bot_schema.extend({
-    services: services_schema,
+export const server_update_bot_schema = basic_bot_schema.partial().extend({
+    user_id: z.number(),
+    services: services_schema.optional(),
 });
 
-export const server_add_bot_schema = server_update_bot_schema.extend({
+export const server_add_bot_schema = basic_bot_schema.extend({
     bot_type: z.number(),
     email: z.string(),
     is_active: z.boolean(),
+    services: services_schema,
 });

@@ -150,9 +150,9 @@
                 <td class="comparison-table-feature">
                     <a href="/help/share-and-upload-files">File sharing and storage</a>
                 </td>
-                <td class="comparison-value-warning cloud-cell">5 GB total</td>
-                <td class="comparison-value-positive cloud-cell">5 GB/user</td>
-                <td class="comparison-value-positive cloud-cell">5 GB/user</td>
+                <td class="comparison-value-warning cloud-cell" data-title="{{ _('Files up to 10 MB') }}">5 GB total</td>
+                <td class="comparison-value-positive cloud-cell" data-title="{{ _('Files up to 1 GB') }}">5 GB/user</td>
+                <td class="comparison-value-positive cloud-cell" data-title="{{ _('Files up to 1 GB') }}">5 GB/user</td>
 
                 <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
                 <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
@@ -162,7 +162,7 @@
             <tr>
                 <td class="comparison-table-feature">
                     <a href="/help/start-a-call">Voice and video calls (1:1)</a>
-                    <div class="comparison-table-feature-desc">Choose a call provider (Zoom, Jitsi, etc.)</div>
+                    <div class="comparison-table-feature-desc"><a href="/help/configure-call-provider">Choose a call provider</a> (Zoom, Jitsi, etc.)</div>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
@@ -176,7 +176,7 @@
             <tr>
                 <td class="comparison-table-feature">
                     <a href="/help/start-a-call">Voice and video calls (group)</a>
-                    <div class="comparison-table-feature-desc">Choose a call provider (Zoom, Jitsi, etc.)</div>
+                    <div class="comparison-table-feature-desc"><a href="/help/configure-call-provider">Choose a call provider</a> (Zoom, Jitsi, etc.)</div>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
@@ -305,8 +305,8 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
-                    <a href="/help/create-a-poll">Collaborative messages</a>
-                    <div class="comparison-table-feature-desc">Polls, todo lists</div>
+                    Collaborative messages
+                    <div class="comparison-table-feature-desc"><a href="/help/create-a-poll">Polls</a>, <a href="/help/collaborative-to-do-lists">to-do lists</a></div>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -361,7 +361,7 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
-                    <a href="/help/link-to-a-message-or-conversation">Permanent message links</a>
+                    <a href="/help/link-to-a-message-or-conversation">Permanent links</a> to messages and topics
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -412,6 +412,19 @@
             <tr>
                 <td class="comparison-table-feature">
                     <a href="/help/typing-notifications">Typing notifications</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/saved-snippets">Saved snippets</a>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -498,7 +511,7 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
-                    <a href="/help/start-a-call#change-your-video-call-provider">
+                    <a href="/help/configure-call-provider">
                         Configurable call provider
                     </a>
                     <div class="comparison-table-feature-desc">Zoom, Jitsi, BigBlueButton, etc.</div>
@@ -711,7 +724,7 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
-                    <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#plug-and-play-sso-google-github-gitlab">SSO with Azure Active Directory</a>
+                    <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#plug-and-play-sso-google-github-gitlab">SSO with Microsoft Entra ID</a>
                 </td>
                 <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -812,12 +825,12 @@
                 <td class="comparison-table-feature">
                     <a href="/help/create-user-groups">Custom user groups</a>
                 </td>
-                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
 
                 <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
-                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
                 <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
             </tr>
@@ -854,7 +867,7 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
-                    <a href="/help/channel-permissions">Private channels with shared history</a>
+                    <a href="/help/channel-permissions#private-channels">Private channels with shared history</a>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -867,7 +880,7 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
-                    <a href="/help/channel-permissions">Private channels with private history</a>
+                    <a href="/help/channel-permissions#private-channels">Private channels with private history</a>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -893,6 +906,21 @@
             </tr>
             <tr>
                 <td class="comparison-table-feature">
+                    <a href="/help/restrict-direct-messages">
+                        Direct messaging permissions
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
                     Permissions for
                     <a href="/help/restrict-message-editing-and-deletion">
                         editing
@@ -901,6 +929,51 @@
                         deleting
                     </a>
                     and <a href="/help/restrict-moving-messages">moving</a> messages
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/user-roles">
+                        Manage permissions by user role
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/user-groups">
+                        Manage permissions with user groups
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/manage-permissions">
+                        Grant permissions to individual users
+                    </a>
                 </td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
                 <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
@@ -1472,6 +1545,19 @@
             <tr>
                 <td class="comparison-table-feature subheader">Support</td>
                 <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    Comprehensive documentation for <a href="/help/">users</a>, <a href="/help/moving-to-zulip">administrators</a> and <a href="https://zulip.readthedocs.io/en/stable/production/index.html">server administrators</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
             </tr>
             <tr>
                 <td class="comparison-table-feature">

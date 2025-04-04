@@ -4,21 +4,22 @@ import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
+import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as popovers from "./popovers";
-import * as settings_config from "./settings_config";
-import * as stream_data from "./stream_data";
-import * as ui_util from "./ui_util";
-import {user_settings} from "./user_settings";
-import * as util from "./util";
+import {$t} from "./i18n.ts";
+import * as information_density from "./information_density.ts";
+import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import * as stream_data from "./stream_data.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
-function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
+export function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
     if (reference instanceof HTMLElement && reference.dataset.tooltipTemplateId !== undefined) {
         const template = document.querySelector<HTMLTemplateElement>(
             `template#${CSS.escape(reference.dataset.tooltipTemplateId)}`,
@@ -152,6 +153,17 @@ export function initialize(): void {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "bottom",
+        onShow(instance) {
+            let template = "show-unsubscribe-tooltip-template";
+            if (instance.reference.classList.contains("unsubscribed")) {
+                template = "show-subscribe-tooltip-template";
+            }
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     tippy.delegate("body", {
@@ -170,82 +182,6 @@ export function initialize(): void {
             }
 
             return undefined;
-        },
-    });
-
-    tippy.delegate("body", {
-        target: ".tippy-left-sidebar-tooltip",
-        placement: "right",
-        delay: EXTRA_LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: "bottom",
-                    },
-                },
-            ],
-        },
-    });
-
-    // Variant of .tippy-left-sidebar-tooltip configuration. Since
-    // this element doesn't have an always visible label, and
-    // thus hovering it is a way to find out what it does, give
-    // it the faster LONG_HOVER_DELAY.
-    tippy.delegate("body", {
-        target: "#show-all-direct-messages",
-        placement: "right",
-        delay: LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: "bottom",
-                    },
-                },
-            ],
-        },
-    });
-
-    // Variant of .tippy-left-sidebar-tooltip configuration. Here
-    // we need to dynamically check which view is the home view.
-    tippy.delegate("body", {
-        target: ".tippy-views-tooltip",
-        placement: "right",
-        delay: EXTRA_LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        onShow(instance) {
-            const $container = $(instance.popper).find(".views-tooltip-container");
-            if ($container.data("view-code") === user_settings.web_home_view) {
-                $container.find(".views-tooltip-home-view-note").removeClass("hide");
-            }
-
-            // Since the tooltip is attached the anchor tag which doesn't
-            // include with of the ellipsis icon, we need to offset the
-            // tooltip so that the tooltip is displayed to right of the
-            // ellipsis icon.
-            if (instance.reference.classList.contains("left-sidebar-navigation-label-container")) {
-                instance.setProps({
-                    offset: [0, 40],
-                });
-            }
-        },
-        onHidden(instance) {
-            instance.destroy();
-        },
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: "bottom",
-                    },
-                },
-            ],
         },
     });
 
@@ -297,10 +233,33 @@ export function initialize(): void {
         },
     });
 
+    tippy.delegate("body", {
+        target: "#add-todo-modal .todo-description-container",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+
+            /* Due to height: 0, data-reference-hidden for tooltip is set on the tooltip and can
+            cause the tooltip to hide. We should  use .show-when-reference-hidden here too since we
+            want data-reference-hidden to work when user scrolls here.*/
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+
+            if ($elem.find(".todo-description-input").is(":disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Enter a task before adding a description.",
+                    }),
+                );
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+    });
+
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",
-        function (this: tippy.ReferenceElement) {
+        function (this: tippy.ReferenceElement, _event: JQuery.Event) {
             // Remove tooltip when user is trying to tab through all the icons.
             // If user tabs slowly, tooltips are displayed otherwise they are
             // destroyed before they can be displayed.
@@ -310,15 +269,12 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "#streams_header .streams-tooltip-target",
             "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
             "#stream-specific-notify-table .unmute_stream",
-            "#add_streams_tooltip",
-            "#filter_streams_tooltip",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
-            ".popover-group-menu-member-list .popover_user_presence",
+            ".popover-group-menu-member-list .popover-group-menu-user-presence",
             "#copy_generated_invite_link",
         ].join(","),
         appendTo: () => document.body,
@@ -412,7 +368,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#change_email_button_container.disabled_setting_tooltip",
+        target: "#email_field_container.disabled_setting_tooltip",
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -421,10 +377,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "#deactivate_account_container.disabled_setting_tooltip",
-            "#edit-user-form .deactivate_user_button_tooltip",
-        ].join(","),
+        target: "#deactivate_account_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
                 "Because you are the only organization owner, you cannot deactivate your account.",
@@ -521,45 +474,21 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".views-tooltip-target",
+        target: "#user_message_content_in_email_notifications_label",
         onShow(instance) {
-            if ($("#toggle-top-left-navigation-area-icon").hasClass("fa-caret-down")) {
+            if ($("#user_message_content_in_email_notifications").prop("disabled")) {
                 instance.setContent(
                     $t({
-                        defaultMessage: "Collapse views",
+                        defaultMessage:
+                            "Including message content in message notification emails is not allowed in this organization.",
                     }),
                 );
-            } else {
-                instance.setContent($t({defaultMessage: "Expand views"}));
+                return undefined;
             }
-        },
-        delay: EXTRA_LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-    });
-
-    tippy.delegate("body", {
-        target: ".dm-tooltip-target",
-        onShow(instance) {
-            if ($(".direct-messages-container").hasClass("zoom-in")) {
-                return false;
-            }
-
-            if ($("#toggle-direct-messages-section-icon").hasClass("fa-caret-down")) {
-                instance.setContent(
-                    $t({
-                        defaultMessage: "Collapse direct messages",
-                    }),
-                );
-            } else {
-                instance.setContent($t({defaultMessage: "Expand direct messages"}));
-            }
-            return undefined;
-        },
-        delay: EXTRA_LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        onHidden(instance) {
             instance.destroy();
+            return false;
         },
+        appendTo: () => document.body,
     });
 
     tippy.delegate("body", {
@@ -578,11 +507,17 @@ export function initialize(): void {
         target: ".user_row .actions button",
         trigger: "mouseenter",
         onShow(instance) {
-            if ($(instance.reference).hasClass("deactivate")) {
-                instance.setContent($t({defaultMessage: "Deactivate"}));
+            if ($(instance.reference).hasClass("deactivate-user-tooltip")) {
+                instance.setContent($t({defaultMessage: "Deactivate user"}));
                 return undefined;
-            } else if ($(instance.reference).hasClass("reactivate")) {
-                instance.setContent($t({defaultMessage: "Reactivate"}));
+            } else if ($(instance.reference).hasClass("reactivate-user-tooltip")) {
+                instance.setContent($t({defaultMessage: "Reactivate user"}));
+                return undefined;
+            } else if ($(instance.reference).hasClass("deactivate-bot-tooltip")) {
+                instance.setContent($t({defaultMessage: "Deactivate bot"}));
+                return undefined;
+            } else if ($(instance.reference).hasClass("reactivate-bot-tooltip")) {
+                instance.setContent($t({defaultMessage: "Reactivate bot"}));
                 return undefined;
             }
             return false;
@@ -605,14 +540,10 @@ export function initialize(): void {
         /*
             Status emoji tooltips for most locations in the app. This
             basic tooltip logic is overridden by separate logic in
-            click_handlers.js for the left and right sidebars, to
+            click_handlers.ts for the left and right sidebars, to
             avoid problematic interactions with the main tooltips for
             those regions.
         */
-
-        onShow() {
-            popovers.hide_all();
-        },
 
         onHidden(instance) {
             instance.destroy();
@@ -668,7 +599,8 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#userlist-header",
+        target: "#userlist-header-search",
+        delay: LONG_HOVER_DELAY,
         placement: "top",
         appendTo: () => document.body,
         onShow(instance) {
@@ -676,24 +608,6 @@ export function initialize(): void {
             instance.setContent(
                 ui_util.parse_html(render_buddy_list_title_tooltip({total_user_count})),
             );
-        },
-    });
-
-    tippy.delegate("body", {
-        target: ".header-main .column-left .left-sidebar-toggle-button",
-        delay: LONG_HOVER_DELAY,
-        placement: "bottom",
-        appendTo: () => document.body,
-        onShow(instance) {
-            let template = "show-left-sidebar-tooltip-template";
-            if ($("#left-sidebar-container").is(":visible")) {
-                template = "hide-left-sidebar-tooltip-template";
-            }
-            $(instance.reference).attr("data-tooltip-template-id", template);
-            instance.setContent(get_tooltip_content(instance.reference));
-        },
-        onHidden(instance) {
-            instance.destroy();
         },
     });
 
@@ -732,18 +646,21 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "#recent_view .recipient_bar_icon",
-            "#inbox-view .recipient_bar_icon",
-            "#left-sidebar-container .visibility-policy-icon",
-        ].join(","),
-        ...topic_visibility_policy_tooltip_props,
-    });
-
-    tippy.delegate("body", {
         target: ".custom-user-field-label-wrapper.required-field-wrapper",
         content: $t({
             defaultMessage: "This profile field is required.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".settings-profile-user-field.not-editable-by-user-input-wrapper",
+        content: $t({
+            defaultMessage:
+                "You are not allowed to change this field. Contact an administrator to update it.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -763,6 +680,79 @@ export function initialize(): void {
                 return undefined;
             }
             return false;
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".saved_snippets-dropdown-list-container .dropdown-list-delete",
+        content: $t({defaultMessage: "Delete snippet"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".saved_snippets-dropdown-list-container .dropdown-list-edit",
+        content: $t({defaultMessage: "Edit snippet"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".generate-channel-email-button-container.disabled_setting_tooltip",
+        onShow(instance) {
+            instance.setContent(
+                ui_util.parse_html(
+                    $("#compose_disable_stream_reply_button_tooltip_template").html(),
+                ),
+            );
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".disabled-tooltip",
+        trigger: "focus mouseenter",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: [
+            "#personal-menu-dropdown .info-density-button-container",
+            "#user-preferences .info-density-button-container",
+            "#realm-user-default-settings .information-density-settings:not(.disabled-setting) .info-density-button-container",
+            "#gear-menu-dropdown .info-density-button-container",
+        ].join(","),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            const button_container = instance.reference;
+            assert(button_container instanceof HTMLElement);
+
+            const tooltip_context =
+                information_density.get_tooltip_context_for_info_density_buttons(
+                    $(button_container).find(".info-density-button"),
+                );
+            instance.setContent(
+                ui_util.parse_html(
+                    render_information_density_update_button_tooltip(tooltip_context),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 }

@@ -1,12 +1,15 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
+import render_editing_notifications from "../templates/editing_notifications.hbs";
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
-import * as narrow_state from "./narrow_state";
-import * as people from "./people";
-import {current_user, realm} from "./state_data";
-import * as typing_data from "./typing_data";
+import * as message_lists from "./message_lists.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as typing_data from "./typing_data.ts";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
@@ -23,35 +26,60 @@ const MAX_USERS_TO_DISPLAY_NAME = 3;
 // Note!: There are also timing constants in typing_status.ts
 // that make typing indicators work.
 
-type UserInfo = {
-    email: string;
-    user_id: number;
-};
+export const typing_user_schema = z.object({
+    email: z.string(),
+    user_id: z.number(),
+});
 
-type TypingEvent = {
-    id: number;
-    op: "start" | "stop";
-    type: "typing";
-} & (
-    | {
-          message_type: "stream";
-          sender: UserInfo;
-          stream_id: number;
-          topic: string;
-      }
-    | {
-          message_type: "direct";
-          recipients: UserInfo[];
-          sender: UserInfo;
-      }
-);
+export const typing_event_schema = z
+    .object({
+        id: z.number(),
+        op: z.enum(["start", "stop"]),
+        type: z.literal("typing"),
+    })
+    .and(
+        z.discriminatedUnion("message_type", [
+            z.object({
+                message_type: z.literal("stream"),
+                sender: typing_user_schema,
+                stream_id: z.number(),
+                topic: z.string(),
+            }),
+            z.object({
+                message_type: z.literal("direct"),
+                recipients: z.array(typing_user_schema),
+                sender: typing_user_schema,
+            }),
+        ]),
+    );
+type TypingEvent = z.output<typeof typing_event_schema>;
+
+export const typing_edit_message_event_schema = z.object({
+    message_id: z.number(),
+    op: z.enum(["start", "stop"]),
+    type: z.literal("typing_edit_message"),
+    sender_id: z.number(),
+    recipient: z.discriminatedUnion("type", [
+        z.object({
+            type: z.literal("channel"),
+            channel_id: z.number(),
+            topic: z.string(),
+        }),
+        z.object({
+            type: z.literal("direct"),
+            user_ids: z.array(z.number()),
+        }),
+    ]),
+});
+
+type TypingMessageEditEvent = z.output<typeof typing_edit_message_event_schema>;
 
 function get_users_typing_for_narrow(): number[] {
     if (narrow_state.narrowed_by_topic_reply()) {
-        const current_stream_id = narrow_state.stream_id();
+        const current_stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         const current_topic = narrow_state.topic();
         if (current_stream_id === undefined) {
-            // narrowed to a stream which doesn't exist.
+            // Narrowed to a channel which doesn't exist.
             return [];
         }
         assert(current_topic !== undefined);
@@ -107,6 +135,24 @@ export function render_notifications_for_narrow(): void {
     }
 }
 
+function apply_message_edit_notifications($row: JQuery, is_typing: boolean): void {
+    const $editing_notifications = $row.find(".edit-notifications");
+    if (is_typing) {
+        $row.find(".message_edit_notice").addClass("hide");
+        $editing_notifications.html(render_editing_notifications());
+    } else {
+        $row.find(".message_edit_notice").removeClass("hide");
+        $editing_notifications.html("");
+    }
+}
+
+export function render_message_editing_typing(message_id: number, is_typing: boolean): void {
+    const $row = message_lists.current?.get_row(message_id);
+    if ($row !== undefined) {
+        apply_message_edit_notifications($row, is_typing);
+    }
+}
+
 function get_key(event: TypingEvent): string {
     if (event.message_type === "stream") {
         return typing_data.get_topic_key(event.stream_id, event.topic);
@@ -130,6 +176,16 @@ export function hide_notification(event: TypingEvent): void {
     }
 }
 
+export function hide_message_edit_notification(event: TypingMessageEditEvent): void {
+    const message_id = event.message_id;
+    const key = JSON.stringify(message_id);
+    typing_data.clear_inbound_timer(key);
+    const removed = typing_data.remove_edit_message_typing_id(message_id);
+    if (removed) {
+        render_message_editing_typing(message_id, false);
+    }
+}
+
 export function display_notification(event: TypingEvent): void {
     const sender_id = event.sender.user_id;
 
@@ -143,6 +199,20 @@ export function display_notification(event: TypingEvent): void {
         realm.server_typing_started_expiry_period_milliseconds,
         () => {
             hide_notification(event);
+        },
+    );
+}
+
+export function display_message_edit_notification(event: TypingMessageEditEvent): void {
+    const message_id = event.message_id;
+    const key = JSON.stringify(message_id);
+    typing_data.add_edit_message_typing_id(message_id);
+    render_message_editing_typing(message_id, true);
+    typing_data.kickstart_inbound_timer(
+        key,
+        realm.server_typing_started_expiry_period_milliseconds,
+        () => {
+            hide_message_edit_notification(event);
         },
     );
 }

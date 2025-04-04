@@ -104,6 +104,7 @@ function lookup() {
 
 AWS_ZONE_ID=$(lookup zone_id)
 SECURITY_GROUPS=$(lookup security_groups)
+read -r -a SECURITY_GROUPS <<<"$SECURITY_GROUPS"
 INSTANCE_TYPE=$(lookup instance_type)
 IAM_PROFILE=$(lookup iam_profile)
 AZ=$(lookup availability_zone)
@@ -128,12 +129,11 @@ if [ "$EXISTING_RECORDS" != "0" ]; then
 fi
 
 # https://docs.aws.amazon.com/cli/latest/reference/ec2/run-instances.html
-# shellcheck disable=SC2206  # We intentionally split $SECURITY_GROUPS
 EXTRA_ARGS+=(
     --iam-instance-profile "Name=\"$IAM_PROFILE\""
     --image-id "$AMI_ID"
     --instance-type "$INSTANCE_TYPE"
-    --security-group-ids $SECURITY_GROUPS
+    --security-group-ids "${SECURITY_GROUPS[@]}"
     --monitoring Enabled=true
     --placement "AvailabilityZone=$AZ"
     --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"

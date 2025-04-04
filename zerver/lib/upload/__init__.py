@@ -5,9 +5,10 @@ import re
 import unicodedata
 from collections.abc import Callable, Iterator
 from datetime import datetime
-from typing import IO, Any, BinaryIO
+from typing import IO, Any
 from urllib.parse import unquote, urljoin
 
+import pyvips
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
@@ -15,7 +16,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.mime_types import guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.thumbnail import (
     MAX_EMOJI_GIF_FILE_SIZE_BYTES,
@@ -26,7 +27,7 @@ from zerver.lib.thumbnail import (
     resize_avatar,
     resize_emoji,
 )
-from zerver.lib.upload.base import INLINE_MIME_TYPES, ZulipUploadBackend
+from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 from zerver.models.users import is_cross_realm_bot_email
 
@@ -48,22 +49,28 @@ def create_attachment(
     file_name: str,
     path_id: str,
     content_type: str,
-    file_data: bytes,
+    file_data: bytes | StreamingSourceWithSize,
     user_profile: UserProfile,
     realm: Realm,
 ) -> None:
     assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
         user_profile.delivery_email
     )
+    if isinstance(file_data, bytes):
+        file_size = len(file_data)
+        file_real_data: bytes | pyvips.Source = file_data
+    else:
+        file_size = file_data.size
+        file_real_data = file_data.source
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
         owner=user_profile,
         realm=realm,
-        size=len(file_data),
+        size=file_size,
         content_type=content_type,
     )
-    maybe_thumbnail(attachment, file_data)
+    maybe_thumbnail(file_real_data, content_type, path_id, realm.id)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
@@ -107,21 +114,32 @@ def get_public_upload_root_url() -> str:
     return upload_backend.get_public_upload_root_url()
 
 
-def sanitize_name(value: str) -> str:
-    """
-    Sanitizes a value to be safe to store in a Linux filesystem, in
+def sanitize_name(value: str, *, strict: bool = False) -> str:
+    """Sanitizes a value to be safe to store in a Linux filesystem, in
     S3, and in a URL.  So Unicode is allowed, but not special
     characters other than ".", "-", and "_".
+
+    In "strict" mode, it does not allow Unicode, allowing only ASCII
+    [A-Za-z0-9_] as word characters.  This is for the benefit of tusd,
+    which is not Unicode-aware.
 
     This implementation is based on django.utils.text.slugify; it is
     modified by:
     * adding '.' to the list of allowed characters.
     * preserving the case of the value.
     * not stripping trailing dashes and underscores.
+
     """
-    value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s.-]", "", value).strip()
+    if strict:
+        value = re.sub(r"[^A-Za-z0-9_ .-]", "", value).strip()
+    else:
+        value = unicodedata.normalize("NFKC", value)
+        value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
+
+    # Django's MultiPartParser never returns files named this, but we
+    # could get them after removing spaces; change the name to a safer
+    # value.
     if value in {"", ".", ".."}:
         return "uploaded-file"
     return value
@@ -133,15 +151,17 @@ def upload_message_attachment(
     file_data: bytes,
     user_profile: UserProfile,
     target_realm: Realm | None = None,
-) -> str:
+) -> tuple[str, str]:
     if target_realm is None:
         target_realm = user_profile.realm
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
-    with transaction.atomic():
+
+    with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
             path_id,
+            uploaded_file_name,
             content_type,
             file_data,
             user_profile,
@@ -154,7 +174,7 @@ def upload_message_attachment(
             user_profile,
             target_realm,
         )
-    return f"/user_uploads/{path_id}"
+    return f"/user_uploads/{path_id}", uploaded_file_name
 
 
 def claim_attachment(
@@ -181,14 +201,18 @@ def claim_attachment(
 
 def upload_message_attachment_from_request(
     user_file: UploadedFile, user_profile: UserProfile
-) -> str:
+) -> tuple[str, str]:
     uploaded_file_name, content_type = get_file_info(user_file)
     return upload_message_attachment(
         uploaded_file_name, content_type, user_file.read(), user_profile
     )
 
 
-def save_attachment_contents(path_id: str, filehandle: BinaryIO) -> None:
+def attachment_vips_source(path_id: str) -> StreamingSourceWithSize:
+    return upload_backend.attachment_vips_source(path_id)
+
+
+def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
     return upload_backend.save_attachment_contents(path_id, filehandle)
 
 
@@ -200,8 +224,10 @@ def delete_message_attachments(path_ids: list[str]) -> None:
     return upload_backend.delete_message_attachments(path_ids)
 
 
-def all_message_attachments(include_thumbnails: bool = False) -> Iterator[tuple[str, datetime]]:
-    return upload_backend.all_message_attachments(include_thumbnails)
+def all_message_attachments(
+    *, include_thumbnails: bool = False, prefix: str = ""
+) -> Iterator[tuple[str, datetime]]:
+    return upload_backend.all_message_attachments(include_thumbnails, prefix)
 
 
 # Avatar image uploads

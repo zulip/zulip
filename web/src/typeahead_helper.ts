@@ -1,31 +1,38 @@
-import Handlebars from "handlebars/runtime";
+import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as typeahead from "../shared/src/typeahead";
-import type {EmojiSuggestion} from "../shared/src/typeahead";
+import * as typeahead from "../shared/src/typeahead.ts";
+import type {EmojiSuggestion} from "../shared/src/typeahead.ts";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
-import {MAX_ITEMS} from "./bootstrap_typeahead";
-import * as buddy_data from "./buddy_data";
-import * as compose_state from "./compose_state";
-import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead";
-import type {InputPillContainer} from "./input_pill";
-import * as people from "./people";
-import type {PseudoMentionUser, User} from "./people";
-import * as pm_conversations from "./pm_conversations";
-import * as pygments_data from "./pygments_data";
-import * as recent_senders from "./recent_senders";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_list_sort from "./stream_list_sort";
-import type {StreamPill, StreamPillData} from "./stream_pill";
-import type {StreamSubscription} from "./sub_store";
-import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
-import type {UserPill, UserPillData} from "./user_pill";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
-import * as util from "./util";
+import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
+import * as buddy_data from "./buddy_data.ts";
+import * as compose_state from "./compose_state.ts";
+import type {
+    LanguageSuggestion,
+    SlashCommandSuggestion,
+    TopicSuggestion,
+} from "./composebox_typeahead.ts";
+import type {InputPillContainer} from "./input_pill.ts";
+import * as people from "./people.ts";
+import type {PseudoMentionUser, User} from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
+import * as pygments_data from "./pygments_data.ts";
+import * as recent_senders from "./recent_senders.ts";
+import * as settings_config from "./settings_config.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import type {StreamPill, StreamPillData} from "./stream_pill.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import type {UserPill, UserPillData} from "./user_pill.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as util from "./util.ts";
 
 export type UserOrMention =
     | {type: "broadcast"; user: PseudoMentionUser}
@@ -36,6 +43,9 @@ export type UserOrMentionPillData = UserOrMention & {
 
 export type CombinedPill = StreamPill | UserGroupPill | UserPill;
 export type CombinedPillContainer = InputPillContainer<CombinedPill>;
+
+export type GroupSettingPill = UserGroupPill | UserPill;
+export type GroupSettingPillContainer = InputPillContainer<GroupSettingPill>;
 
 export function build_highlight_regex(query: string): RegExp {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
@@ -89,7 +99,7 @@ type StreamData = {
     subscribed: boolean;
 };
 
-export function render_typeahead_item(args: {
+export let render_typeahead_item = (args: {
     primary?: string | undefined;
     is_person?: boolean;
     img_src?: string;
@@ -99,28 +109,36 @@ export function render_typeahead_item(args: {
     pronouns?: string | undefined;
     is_user_group?: boolean;
     stream?: StreamData;
-    is_unsubscribed?: boolean;
     emoji_code?: string | undefined;
-}): string {
+    topic_object?: TopicSuggestion;
+    is_stream_topic?: boolean;
+    is_empty_string_topic?: boolean;
+}): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
-    const has_secondary = args.secondary !== undefined;
+    const has_secondary = args.secondary !== undefined && args.secondary !== null;
     const has_secondary_html = args.secondary_html !== undefined;
     const has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item({
         ...args,
+        ...args.topic_object,
         has_image,
         has_status,
         has_secondary,
         has_secondary_html,
         has_pronouns,
     });
+};
+
+export function rewire_render_typeahead_item(value: typeof render_typeahead_item): void {
+    render_typeahead_item = value;
 }
 
-export function render_person(person: UserPillData | UserOrMentionPillData): string {
+export let render_person = (person: UserPillData | UserOrMentionPillData): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
+            secondary: person.user.secondary_text,
             is_person: true,
         });
     }
@@ -140,6 +158,7 @@ export function render_person(person: UserPillData | UserOrMentionPillData): str
         img_src: avatar_url,
         user_circle_class,
         is_person: true,
+        is_bot: person.user.is_bot,
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(
             person.user.user_id,
@@ -149,14 +168,21 @@ export function render_person(person: UserPillData | UserOrMentionPillData): str
     };
 
     return render_typeahead_item(typeahead_arguments);
+};
+
+export function rewire_render_person(value: typeof render_person): void {
+    render_person = value;
 }
 
-export function render_user_group(user_group: {name: string; description: string}): string {
-    return render_typeahead_item({
-        primary: user_group.name,
+export let render_user_group = (user_group: {name: string; description: string}): string =>
+    render_typeahead_item({
+        primary: user_groups.get_display_group_name(user_group.name),
         secondary: user_group.description,
         is_user_group: true,
     });
+
+export function rewire_render_user_group(value: typeof render_user_group): void {
+    render_user_group = value;
 }
 
 export function render_person_or_user_group(
@@ -169,15 +195,23 @@ export function render_person_or_user_group(
     return render_person(item);
 }
 
-export function render_stream(stream: StreamData): string {
-    return render_typeahead_item({
+export let render_stream = (stream: StreamData): string =>
+    render_typeahead_item({
         secondary_html: stream.rendered_description,
         stream,
-        is_unsubscribed: !stream.subscribed,
     });
+
+export const render_stream_topic = (topic_object: TopicSuggestion): string =>
+    render_typeahead_item({
+        topic_object,
+        is_stream_topic: true,
+    });
+
+export function rewire_render_stream(value: typeof render_stream): void {
+    render_stream = value;
 }
 
-export function render_emoji(item: EmojiSuggestion): string {
+export let render_emoji = (item: EmojiSuggestion): string => {
     const args = {
         is_emoji: true,
         primary: item.emoji_name.replaceAll("_", " "),
@@ -193,6 +227,10 @@ export function render_emoji(item: EmojiSuggestion): string {
         ...args,
         emoji_code: item.emoji_code,
     });
+};
+
+export function rewire_render_emoji(value: typeof render_emoji): void {
+    render_emoji = value;
 }
 
 export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string): T[] {
@@ -220,12 +258,6 @@ export function compare_by_pms(user_a: User, user_b: User): number {
     if (a_is_partner && !b_is_partner) {
         return -1;
     } else if (!a_is_partner && b_is_partner) {
-        return 1;
-    }
-
-    if (!user_a.is_bot && user_b.is_bot) {
-        return -1;
-    } else if (user_a.is_bot && !user_b.is_bot) {
         return 1;
     }
 
@@ -410,25 +442,15 @@ export function sort_languages(matches: LanguageSuggestion[], query: string): La
     }));
 }
 
-export function sort_recipients<UserType extends UserOrMentionPillData | UserPillData>({
-    users,
-    query,
-    current_stream_id,
-    current_topic,
-    groups = [],
-    max_num_items = MAX_ITEMS,
-}: {
-    users: UserType[];
-    query: string;
-    current_stream_id?: number | undefined;
-    current_topic?: string | undefined;
-    groups?: UserGroupPillData[];
-    max_num_items?: number | undefined;
-}): (UserType | UserGroupPillData)[] {
-    function sort_relevance(items: UserType[]): UserType[] {
-        return sort_people_for_relevance(items, current_stream_id, current_topic);
-    }
-
+const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | UserPillData>(
+    users: UserType[],
+    query: string,
+    sort_relevance: (items: UserType[]) => UserType[],
+): {
+    best_users: () => UserType[];
+    ok_users: () => UserType[];
+    worst_users: () => UserType[];
+} => {
     const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
     const users_name_good_matches = [
         ...users_name_results.exact_matches,
@@ -448,8 +470,65 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
         ...email_results.begins_with_case_insensitive_matches,
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
+    const best_users = (): UserType[] => [
+        ...sort_relevance(users_name_good_matches),
+        ...sort_relevance(users_name_okay_matches),
+    ];
+    const ok_users = (): UserType[] => [
+        ...sort_relevance(email_good_matches),
+        ...sort_relevance(email_okay_matches),
+    ];
+    const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
+    return {best_users, ok_users, worst_users};
+};
 
-    const groups_results = typeahead.triage_raw(query, groups, (g) => g.name);
+export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillData>({
+    users,
+    query,
+    current_stream_id,
+    current_topic,
+    groups = [],
+    max_num_items = MAX_ITEMS,
+}: {
+    users: UserType[];
+    query: string;
+    current_stream_id?: number | undefined;
+    current_topic?: string | undefined;
+    groups?: UserGroupPillData[];
+    max_num_items?: number | undefined;
+}): (UserType | UserGroupPillData)[] => {
+    function sort_relevance(items: UserType[]): UserType[] {
+        return sort_people_for_relevance(items, current_stream_id, current_topic);
+    }
+
+    function is_bot(user: UserType): boolean {
+        // broadcasts are not bots by definition.
+        return user.type !== "broadcast" && user.user.is_bot;
+    }
+
+    const [bots, non_bots] = _.partition(users, is_bot);
+
+    const {best_users, ok_users, worst_users} = get_user_matches_with_quality(
+        non_bots,
+        query,
+        sort_relevance,
+    );
+
+    const {
+        best_users: best_bots,
+        ok_users: ok_bots,
+        worst_users: worst_bots,
+    } = get_user_matches_with_quality(bots, query, sort_relevance);
+
+    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+        if (g.name === "role:members") {
+            return [
+                user_groups.get_display_group_name(g.name),
+                settings_config.alternate_members_group_typeahead_matching_name,
+            ];
+        }
+        return [user_groups.get_display_group_name(g.name)];
+    });
     const groups_good_matches = [
         ...groups_results.exact_matches,
         ...groups_results.begins_with_case_sensitive_matches,
@@ -457,16 +536,7 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     ];
     const groups_okay_matches = [...groups_results.word_boundary_matches];
 
-    const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
     const best_groups = (): UserGroupPillData[] => [...groups_good_matches, ...groups_okay_matches];
-    const ok_users = (): UserType[] => [
-        ...sort_relevance(email_good_matches),
-        ...sort_relevance(email_okay_matches),
-    ];
-    const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
     const worst_groups = (): UserGroupPillData[] => groups_results.no_matches;
 
     const getters: (
@@ -488,7 +558,15 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
             type: "groups",
         },
         {
+            getter: best_bots,
+            type: "users",
+        },
+        {
             getter: ok_users,
+            type: "users",
+        },
+        {
+            getter: ok_bots,
             type: "users",
         },
         {
@@ -498,6 +576,10 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
         {
             getter: worst_groups,
             type: "groups",
+        },
+        {
+            getter: worst_bots,
+            type: "users",
         },
     ];
 
@@ -523,6 +605,10 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
 
     function add_group_recipients(items: UserGroupPillData[]): void {
         for (const item of items) {
+            const is_empty_group = user_groups.is_empty_group(item.id);
+            if (is_empty_group) {
+                continue;
+            }
             recipients.push(item);
         }
     }
@@ -551,6 +637,167 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
     // FirstName, which we don't want to artificially prioritize over the
     // the lone active user whose name is FirstName LastName.
     return recipients.slice(0, max_num_items);
+};
+
+export function rewire_sort_recipients(value: typeof sort_recipients): void {
+    sort_recipients = value;
+}
+
+export function compare_setting_options(
+    option_a: UserPillData | UserGroupPillData,
+    option_b: UserPillData | UserGroupPillData,
+    target_group: UserGroup | undefined,
+): number {
+    if (option_a.type === "user_group" && option_b.type === "user") {
+        return -1;
+    }
+
+    if (option_b.type === "user_group" && option_a.type === "user") {
+        return 1;
+    }
+
+    if (option_a.type === "user_group" && option_b.type === "user_group") {
+        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+
+        if (user_group_a.is_system_group && !user_group_b.is_system_group) {
+            return -1;
+        }
+
+        if (user_group_b.is_system_group && !user_group_a.is_system_group) {
+            return 1;
+        }
+
+        if (user_group_a.name < user_group_b.name) {
+            return -1;
+        }
+
+        return 1;
+    }
+
+    assert(option_a.type === "user");
+    assert(option_b.type === "user");
+
+    if (target_group !== undefined) {
+        if (
+            !target_group.members.has(option_a.user.user_id) &&
+            target_group.members.has(option_b.user.user_id)
+        ) {
+            return 1;
+        }
+
+        if (
+            target_group.members.has(option_a.user.user_id) &&
+            !target_group.members.has(option_b.user.user_id)
+        ) {
+            return -1;
+        }
+    }
+
+    if (option_a.user.full_name < option_b.user.full_name) {
+        return -1;
+    } else if (option_a.user.full_name === option_b.user.full_name) {
+        return 0;
+    }
+
+    return 1;
+}
+
+export let sort_group_setting_options = ({
+    users,
+    query,
+    groups,
+    target_group,
+}: {
+    users: UserPillData[];
+    query: string;
+    groups: UserGroupPillData[];
+    target_group: UserGroup | undefined;
+}): (UserPillData | UserGroupPillData)[] => {
+    function sort_group_setting_items(
+        objs: (UserPillData | UserGroupPillData)[],
+    ): (UserPillData | UserGroupPillData)[] {
+        objs.sort((option_a, option_b) =>
+            compare_setting_options(option_a, option_b, target_group),
+        );
+        return objs;
+    }
+
+    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
+    const email_results = typeahead.triage_raw(
+        query,
+        users_name_results.no_matches,
+        (p) => p.user.email,
+    );
+    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+        if (g.name === "role:members") {
+            return [
+                user_groups.get_display_group_name(g.name),
+                settings_config.alternate_members_group_typeahead_matching_name,
+            ];
+        }
+        return [user_groups.get_display_group_name(g.name)];
+    });
+
+    const exact_matches = sort_group_setting_items([
+        ...groups_results.exact_matches,
+        ...users_name_results.exact_matches,
+        ...email_results.exact_matches,
+    ]);
+
+    const prefix_matches = sort_group_setting_items([
+        ...groups_results.begins_with_case_sensitive_matches,
+        ...groups_results.begins_with_case_insensitive_matches,
+        ...users_name_results.begins_with_case_sensitive_matches,
+        ...users_name_results.begins_with_case_insensitive_matches,
+        ...email_results.begins_with_case_sensitive_matches,
+        ...email_results.begins_with_case_insensitive_matches,
+    ]);
+
+    const word_boundary_matches = sort_group_setting_items([
+        ...groups_results.word_boundary_matches,
+        ...users_name_results.word_boundary_matches,
+        ...email_results.word_boundary_matches,
+    ]);
+
+    const no_matches = sort_group_setting_items([
+        ...groups_results.no_matches,
+        ...email_results.no_matches,
+    ]);
+
+    const getters: {
+        getter: (UserPillData | UserGroupPillData)[];
+    }[] = [
+        {
+            getter: exact_matches,
+        },
+        {
+            getter: prefix_matches,
+        },
+        {
+            getter: word_boundary_matches,
+        },
+        {
+            getter: no_matches,
+        },
+    ];
+
+    const setting_options: (UserPillData | UserGroupPillData)[] = [];
+
+    for (const getter of getters) {
+        if (setting_options.length >= MAX_ITEMS) {
+            break;
+        }
+        for (const item of getter.getter) {
+            setting_options.push(item);
+        }
+    }
+
+    return setting_options.slice(0, MAX_ITEMS);
+};
+
+export function rewire_sort_group_setting_options(value: typeof sort_group_setting_options): void {
+    sort_group_setting_options = value;
 }
 
 type SlashCommand = {
@@ -629,7 +876,11 @@ function compare_by_name(stream_a: StreamSubscription, stream_b: StreamSubscript
     return util.strcmp(stream_a.name, stream_b.name);
 }
 
-export function sort_streams(matches: StreamPillData[], query: string): StreamPillData[] {
+function compare_by_user_group_name(group_a: UserGroup, group_b: UserGroup): number {
+    return util.strcmp(group_a.name, group_b.name);
+}
+
+export let sort_streams = (matches: StreamPillData[], query: string): StreamPillData[] => {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,
@@ -639,11 +890,31 @@ export function sort_streams(matches: StreamPillData[], query: string): StreamPi
     );
 
     return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
+};
+
+export function rewire_sort_streams(value: typeof sort_streams): void {
+    sort_streams = value;
 }
 
-export function sort_streams_by_name(matches: StreamPillData[], query: string): StreamPillData[] {
+export let sort_streams_by_name = (matches: StreamPillData[], query: string): StreamPillData[] => {
     const results = typeahead.triage(query, matches, (x) => x.name, compare_by_name);
     return [...results.matches, ...results.rest];
+};
+
+export function rewire_sort_streams_by_name(value: typeof sort_streams_by_name): void {
+    sort_streams_by_name = value;
+}
+
+export let sort_user_groups = (
+    matches: UserGroupPillData[],
+    query: string,
+): UserGroupPillData[] => {
+    const results = typeahead.triage(query, matches, (x) => x.name, compare_by_user_group_name);
+    return [...results.matches, ...results.rest];
+};
+
+export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
+    sort_user_groups = value;
 }
 
 export function query_matches_person(
@@ -663,9 +934,28 @@ export function query_matches_person(
     return false;
 }
 
-export function query_matches_name(
-    query: string,
-    user_group_or_stream: UserGroupPillData | StreamPillData,
-): boolean {
-    return typeahead.query_matches_string_in_order(query, user_group_or_stream.name, " ");
+export function query_matches_stream_name(query: string, stream: StreamPillData): boolean {
+    return typeahead.query_matches_string_in_order(query, stream.name, " ");
+}
+
+export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+    if (user_group.name === "role:members") {
+        return (
+            typeahead.query_matches_string_in_order(
+                query,
+                user_groups.get_display_group_name(user_group.name),
+                "",
+            ) ||
+            typeahead.query_matches_string_in_order(
+                query,
+                settings_config.alternate_members_group_typeahead_matching_name,
+                "",
+            )
+        );
+    }
+    return typeahead.query_matches_string_in_order(
+        query,
+        user_groups.get_display_group_name(user_group.name),
+        "",
+    );
 }

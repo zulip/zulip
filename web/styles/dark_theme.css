@@ -13,63 +13,11 @@
         @extend .placeholder;
     }
 
-    .demo-organization-warning {
-        background-color: hsl(0deg 60% 19%);
-        border-color: hsl(3deg 73% 74% / 40%);
-        color: hsl(3deg 73% 80%);
-
-        .convert-demo-organization-button {
-            &:focus {
-                color: hsl(200deg 79% 66%);
-                outline-color: hsl(200deg 79% 66%);
-            }
-        }
-    }
-
-    & a:hover {
-        color: hsl(200deg 79% 66%);
-
-        & code {
-            color: hsl(200deg 79% 66%);
-        }
-    }
-
-    & ul.dm-list,
-    & ul.filters {
-        color: hsl(0deg 0% 100% / 80%);
-
-        & a:hover {
-            color: inherit;
-        }
-
-        .has-unmuted-mentions .unread_mention_info {
-            color: hsl(236deg 33% 90%);
-        }
-
-        & li.muted_topic,
-        li.out_of_home_view {
-            color: hsl(236deg 33% 90%/50%);
-        }
-
-        & li.out_of_home_view {
-            &:hover {
-                color: hsl(236deg 33% 90%/ 75%);
-            }
-        }
+    kbd {
+        text-shadow: none;
     }
 
     /************************* MODAL DARK THEME *******************/
-    .user-profile-manage-own-edit-button,
-    .user-profile-manage-others-edit-button,
-    .user-profile-manage-own-copy-link-button {
-        color: hsl(200deg 100% 50%);
-        cursor: pointer;
-
-        &:hover {
-            color: hsl(200deg 79% 66%);
-        }
-    }
-
     .modal__content.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 100% / 20%);
     }
@@ -84,31 +32,22 @@
         }
     }
 
-    #subscription_overlay #stream-creation .settings-sticky-footer,
-    #groups_overlay #user-group-creation .settings-sticky-footer {
-        box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
+    #message-formatting,
+    #keyboard-shortcuts {
+        & kbd {
+            border: 1px solid var(--color-hotkey-hint);
+            border-radius: 3px;
+            color: var(--color-hotkey-hint);
+            text-align: center;
+            opacity: 0.8;
+        }
     }
 
     .enter_sends_choices {
         color: hsl(236deg 33% 90%);
 
-        & kbd {
-            background-color: hsl(211deg 29% 14%);
-            border-color: hsl(211deg 29% 14%);
-            text-shadow: none;
-            color: hsl(236deg 33% 90%);
-        }
-
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
-        }
-    }
-
-    & table.table-striped thead.table-sticky-headers th {
-        background-color: hsl(0deg 0% 0%);
-
-        &[data-sort]:hover {
-            background-color: hsl(211deg 29% 14%) !important;
         }
     }
 
@@ -150,6 +89,19 @@
             0 7px 13px hsl(0deg 0% 0% / 35%),
             0 5px 8px hsl(0deg 0% 0% / 32%),
             0 2px 4px hsl(0deg 0% 0% / 20%);
+    }
+
+    .dropdown-list-delete {
+        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
+        color: color-mix(
+            in oklch,
+            hsl(7deg 100% 74%) 70%,
+            transparent
+        ) !important;
+
+        &:hover {
+            color: hsl(7deg 100% 74%) !important;
+        }
     }
 
     #navbar-middle .column-middle-inner,
@@ -302,37 +254,6 @@
         }
     }
 
-    #message-content-container {
-        &:has(textarea.new_message_textarea.invalid),
-        &:has(textarea.new_message_textarea.invalid:focus) {
-            border-color: hsl(3deg 73% 74%);
-            box-shadow: 0 0 2px hsl(3deg 73% 74%);
-        }
-    }
-
-    .stream_name_search_section,
-    .group_name_search_section {
-        border-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .new-style label.checkbox input[type="checkbox"] ~ span {
-        border-color: hsl(0deg 0% 100% / 40%);
-    }
-
-    #stream-actions-menu-popover .sp-container {
-        background-color: transparent;
-
-        & button {
-            background-color: hsl(208deg 35% 11%);
-            border: 1px solid hsl(210deg 36% 4%);
-            color: hsl(236deg 31% 90%);
-        }
-
-        .sp-picker-container {
-            border-left: solid 1px hsl(210deg 36% 4%);
-        }
-    }
-
     .stream_header_colorblock.disabled {
         filter: brightness(50%);
     }
@@ -344,7 +265,7 @@
 
     /* these are converting grey things to "new grey".
        :disabled rules are exploded for CSS selector performance reasons. */
-    button:disabled,
+    button:disabled:not(.action-button, .icon-button, .info-density-button),
     option:disabled,
     select:disabled,
     textarea:disabled,
@@ -358,33 +279,9 @@
         opacity: 0.5;
     }
 
-    .rendered_markdown button,
-    .new-style .button {
-        background-color: hsl(0deg 0% 0% / 20%);
-
-        &:not(
-                .sea-green,
-                .btn-danger,
-                .btn-warning,
-                .btn-link,
-                .poll-vote,
-                button.poll-option,
-                button.add-task
-            ) {
-            border-color: hsl(0deg 0% 0% / 60%);
-            color: inherit;
-        }
-
-        &.btn-link {
-            border-color: hsl(0deg 0% 0% / 60%);
-            color: hsl(200deg 79% 66%);
-        }
-
-        &:hover,
-        &:focus,
-        &:active {
-            background-color: hsl(0deg 0% 0% / 15%);
-        }
+    button.info-density-button:disabled {
+        color: inherit;
+        opacity: 0.4;
     }
 
     .rendered_markdown .message_inline_image {
@@ -406,15 +303,13 @@
     input[type="url"],
     input[type="date"],
     textarea,
-    .new-style .tab-switcher .ind-tab:not(.selected),
     select,
     .pill-container,
     .user-status-content-wrapper,
-    #custom-expiration-time-input,
+    .custom-time-input-value,
     #organization-permissions .dropdown-widget-button,
     #organization-settings .dropdown-widget-button,
-    #stream-advanced-configurations .dropdown-widget-button,
-    #compose_recipient_box {
+    #stream-advanced-configurations .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
@@ -426,11 +321,6 @@
         box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
     }
 
-    .dropdown-widget-button {
-        border-color: hsl(0deg 0% 0% / 60%);
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
     & select option {
         background-color: var(--color-background);
         color: hsl(236deg 33% 90%);
@@ -439,14 +329,14 @@
     .pill-container {
         border-style: solid;
         border-width: 1px;
+
+        &.not-editable-by-user {
+            opacity: 0.5;
+        }
     }
 
     .settings-profile-user-field {
         border-color: hsl(3deg 73% 74%);
-    }
-
-    #compose-direct-recipient .pill-container {
-        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     #searchbox {
@@ -460,25 +350,11 @@
         }
     }
 
-    .new-style .button.no-style {
-        background-color: transparent;
-    }
-
     .create_user_group_plus_button,
     .create_stream_plus_button {
         color: hsl(0deg 0% 100%);
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .new-style .tab-switcher .ind-tab.selected,
-    .table-striped thead th {
-        background-color: hsl(0deg 0% 0% / 50%);
-        border-color: hsl(0deg 0% 0% / 90%);
-    }
-
-    .ind-tab.disabled {
-        color: hsl(0deg 0% 42% / 90%) !important;
     }
 
     & input[type="text"]:focus,
@@ -488,10 +364,6 @@
     textarea.new_message_textarea:focus,
     #compose_recipient_box:focus {
         border-color: hsl(0deg 0% 0% / 90%);
-    }
-
-    .compose-control-buttons-container .divider {
-        color: hsl(236deg 33% 90% / 25%);
     }
 
     .compose_control_button:hover {
@@ -513,10 +385,6 @@
     .overlay-message-row .overlay-message-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    .top-navbar-border {
-        border-color: hsl(0deg 0% 0% / 60%);
     }
 
     & div.overlay,
@@ -542,7 +410,6 @@
     #message-edit-history-overlay-container {
         .flex.overlay-content > .overlay-container {
             box-shadow: 0 0 30px hsl(213deg 31% 0%);
-            background-color: var(--color-background);
         }
     }
 
@@ -558,28 +425,13 @@
     }
 
     .narrow_to_compose_recipients,
-    .clear_search_button,
-    .clear_search_button:focus,
-    .clear_search_button:active,
-    .clear_search_button:disabled:hover,
     .close {
         color: hsl(236deg 33% 80%);
-    }
-
-    .clear_search_button:hover {
-        color: hsl(0deg 0% 100%);
     }
 
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
-        }
-    }
-
-    #topics_header {
-        .show-all-streams {
-            color: hsl(0deg 0% 100% / 75%);
-            opacity: 0.75;
         }
     }
 
@@ -607,67 +459,28 @@
         }
     }
 
-    .recent_view_participant_overflow {
-        color: hsl(0deg 0% 100%) !important;
-        background-color: hsl(211deg 18% 25%) !important;
-    }
-
-    .recent_view_container #recent_view_table .btn-recent-filters {
-        background-color: hsl(211deg 29% 14%);
-        border-color: hsl(0deg 0% 0%);
-        color: hsl(0deg 0% 100%);
-
-        &:focus {
-            background-color: hsl(0deg 0% 0% / 50%) !important;
-            outline: 0;
-        }
-
-        &.fake_disabled_button {
-            cursor: not-allowed;
-            opacity: 0.5;
-
-            &:hover {
-                background-color: hsl(0deg 0% 0% / 50%);
-                border-color: hsl(0deg 0% 0%);
-            }
-        }
-    }
-
-    .btn-recent-selected,
-    #recent_view_table thead th {
-        background-color: hsl(228deg 11% 17%) !important;
-
-        &[data-sort]:hover {
-            background-color: hsl(211deg 29% 14%) !important;
-        }
-    }
-
     #recent_view_table {
-        .zulip-icon-user,
-        .fa-group {
+        .zulip-icon-user {
             opacity: 0.7;
         }
+    }
+
+    #recent_view
+        .change_visibility_policy
+        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+        filter: invert(1);
     }
 
     .drafts-container .header-body .delete-drafts-group > *:focus {
         background-color: hsl(228deg 11% 17%);
     }
 
-    & .drafts-container .drafts-header,
-    .subscriptions-container .subscriptions-header,
-    .user-groups-container .user-groups-header,
-    .overlay-messages-header,
+    & .overlay-messages-header,
     .grey-box,
     .white-box,
     .stream-email,
     #generate-integration-url-modal .integration-url,
-    #settings_page .settings-header,
-    #settings_page .sidebar li.active,
-    #settings_page .sidebar-wrapper .tab-container,
-    .table-striped tbody tr:nth-child(odd) th,
-    #subscription_overlay #stream-creation .settings-sticky-footer,
-    #groups_overlay #user-group-creation .settings-sticky-footer {
-        border-color: hsl(0deg 0% 0% / 20%);
+    .table-striped tbody tr:nth-child(odd) th {
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -680,26 +493,11 @@
         );
     }
 
-    .table-striped tbody tr:nth-child(odd) td {
-        background-color: var(--color-background-modal);
-    }
-
-    .user-groups-container .right .display-type,
-    .subscriptions-container .right .display-type,
-    .stream-row,
-    .group-row,
-    .subscriptions-container .left .list-toggler-container,
-    .user-groups-container .left .list-toggler-container,
-    .subscriptions-container .left,
-    .user-groups-container .left,
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list td,
     .member-list-box,
     .member-list-box .member_list_container .member-list td,
-    #subscription_overlay .settings-radio-input-parent,
-    #settings_page .sidebar-wrapper,
-    #settings_page .sidebar-wrapper *,
-    #recent_view_table table td {
+    #subscription_overlay .settings-radio-input-parent {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -708,20 +506,6 @@
         .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
-    }
-
-    #message-edit-history-overlay-container {
-        .message_edit_history_content {
-            .highlight_text_inserted {
-                color: hsl(122deg 100% 81%);
-                background-color: hsl(120deg 64% 95% / 30%);
-            }
-
-            .highlight_text_deleted {
-                color: hsl(0deg 90% 67%);
-                background-color: hsl(7deg 54% 62% / 38%);
-            }
-        }
     }
 
     & time {
@@ -734,16 +518,10 @@
     .tip,
     .invite-stream-notice {
         color: inherit;
-        background-color: hsl(46deg 28% 38% / 27%);
-        border: 1px solid hsl(49deg 38% 46%);
     }
 
     #request-progress-status-banner {
         background-color: hsl(212deg 32% 14%);
-
-        .alert-content {
-            color: hsl(236deg 33% 90%);
-        }
     }
 
     .alert.home-error-bar {
@@ -871,9 +649,7 @@
     }
 
     #feedback_container {
-        background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);
-        color: inherit;
 
         & a:hover {
             color: hsl(0deg 0% 100%);
@@ -883,15 +659,6 @@
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
         background-color: hsl(51deg 100% 23%);
-    }
-
-    .streams_subheader {
-        color: hsl(240deg 11% 85%);
-
-        & .streams_subheader_name::before,
-        .streams_subheader_name::after {
-            border-color: hsl(240deg 11% 85%);
-        }
     }
 
     .sub-unsub-message span::before,
@@ -911,7 +678,7 @@
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 33%);
     }
 
-    .collapse-settings-btn:hover {
+    .collapse-settings-button:hover {
         color: hsl(200deg 79% 66%);
     }
 
@@ -923,40 +690,17 @@
         }
     }
 
-    .small_square_button {
-        &.small_square_x {
-            background-color: hsl(0deg 0% 95%);
-            color: hsl(0deg 0% 42%);
-
-            &:hover {
-                color: hsl(0deg 0% 18%);
-            }
-        }
-    }
-
     & a:not(:active):focus,
-    button:focus,
-    .new-style label.checkbox input[type="checkbox"]:focus ~ span,
+    button:not(.action-button, .icon-button):focus,
     i.fa:focus,
     i.zulip-icon:focus,
     [role="button"]:focus {
         outline-color: hsl(0deg 0% 67%);
     }
 
-    .animated-purple-button:focus {
-        box-shadow: 0 1px 4px 0 hsl(0deg 0% 100% / 66.6%);
-    }
-
     .color_animated_button {
-        background-color: hsl(211deg 29% 14%);
-
-        .zulip-icon,
-        .color-animated-button-text {
+        .zulip-icon {
             color: hsl(0deg 0% 100%);
-        }
-
-        &:hover {
-            background-color: hsl(240deg 96% 68%);
         }
     }
 
@@ -1010,7 +754,7 @@
     }
 
     .panel_user_list > .pill-container,
-    .stream_creator_details > .display_only_pill {
+    .creator_details > .display_only_pill {
         &:hover {
             color: inherit;
         }
@@ -1020,20 +764,6 @@
             &:hover {
                 color: inherit;
             }
-        }
-    }
-
-    /* Originally the icon inherits the color of label, but when the setting
-    is disabled, the color of the label is changed and thus the icon becomes
-    too light. So, we set the color explicitly to original color of label to
-    keep the color of the icon same even when the setting is disabled. */
-    #id_realm_enable_spectator_access_label a {
-        color: hsl(236deg 33% 90%);
-    }
-
-    #stream-specific-notify-table .unmute_stream {
-        &:hover {
-            color: hsl(0deg 0% 100%);
         }
     }
 

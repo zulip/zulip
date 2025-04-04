@@ -37,7 +37,8 @@ def verify_release_download_link(link: str) -> bool:
 
 PLATFORM_TO_SETUP_FILE = {
     "linux": "Zulip-{version}-x86_64.AppImage",
-    "mac": "Zulip-{version}-x64.dmg",
+    "mac": "Zulip-{version}-arm64.dmg",
+    "mac-intel": "Zulip-{version}-x64.dmg",
     "mac-arm64": "Zulip-{version}-arm64.dmg",
     "windows": "Zulip-Web-Setup-{version}.exe",
 }
@@ -54,8 +55,7 @@ def get_latest_github_release_download_link_for_platform(platform: str) -> str:
 
     latest_version = get_latest_github_release_version_for_repo("zulip-desktop")
     if latest_version:
-        if latest_version[0] in ["v", "V"]:
-            latest_version = latest_version[1:]
+        latest_version = latest_version.removeprefix("v")
         setup_file = PLATFORM_TO_SETUP_FILE[platform].format(version=latest_version)
         link = f"https://desktop-download.zulip.com/v{latest_version}/{setup_file}"
         if verify_release_download_link(link):

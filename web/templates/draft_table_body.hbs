@@ -1,4 +1,4 @@
-<div id="draft_overlay" class="overlay new-style" data-overlay="drafts">
+<div id="draft_overlay" class="overlay" data-overlay="drafts">
     <div class="flex overlay-content">
         <div class="drafts-container overlay-messages-container overlay-container">
             <div class="overlay-messages-header">
@@ -7,10 +7,8 @@
                     <span class="exit-sign">&times;</span>
                 </div>
                 <div class="header-body">
-                    <div class="removed-drafts-message">
+                    <div class="drafts-header-note">
                         {{t "Drafts are not synced to other devices and browsers." }}
-                        <br />
-                        {{#tr}}Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.{{/tr}}
                     </div>
                     <div class="delete-drafts-group">
                         <div class="delete-selected-drafts-button-container">
@@ -33,13 +31,13 @@
                 <div id="drafts-from-conversation">
                     <h2>{{narrow_drafts_header}}</h2>
                     {{#each narrow_drafts}}
-                        {{> draft}}
+                        {{> draft .}}
                     {{/each}}
                 </div>
                 <div id="other-drafts">
                     <h2 id="other-drafts-header">{{t "Other drafts" }}</h2>
                     {{#each other_drafts}}
-                        {{> draft}}
+                        {{> draft .}}
                     {{/each}}
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import type {StateData} from "./state_data";
+import type {StateData} from "./state_data.ts";
 
 export const stream_notification_settings_schema = z.object({
     enable_stream_audible_notifications: z.boolean(),
@@ -34,6 +34,7 @@ export const user_settings_schema = stream_notification_settings_schema
     .merge(pm_notification_settings_schema)
     .merge(followed_topic_notification_settings_schema)
     .extend({
+        allow_private_data_export: z.boolean(),
         automatically_follow_topics_policy: z.number(),
         automatically_follow_topics_where_mentioned: z.boolean(),
         automatically_unmute_topics_in_muted_streams_policy: z.number(),
@@ -41,7 +42,6 @@ export const user_settings_schema = stream_notification_settings_schema
         color_scheme: z.number(),
         default_language: z.string(),
         demote_inactive_streams: z.number(),
-        dense_mode: z.boolean(),
         desktop_icon_count_display: z.number(),
         display_emoji_reaction_users: z.boolean(),
         email_address_visibility: z.number(),
@@ -55,6 +55,7 @@ export const user_settings_schema = stream_notification_settings_schema
         enable_online_push_notifications: z.boolean(),
         enter_sends: z.boolean(),
         fluid_layout_width: z.boolean(),
+        hide_ai_features: z.boolean(),
         high_contrast_mode: z.boolean(),
         left_side_userlist: z.boolean(),
         message_content_in_email_notifications: z.boolean(),
@@ -80,6 +81,7 @@ export const user_settings_schema = stream_notification_settings_schema
         web_mark_read_on_scroll_policy: z.number(),
         web_navigate_to_sent_message: z.boolean(),
         web_stream_unreads_count_display_policy: z.number(),
+        web_suggest_update_timezone: z.boolean(),
     });
 export type UserSettings = z.infer<typeof user_settings_schema>;
 

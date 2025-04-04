@@ -131,7 +131,7 @@ messages.
   causes Zulip to insert the message into the relevant feed(s).
 - Since the message hasn't been confirmed by the server yet, it
   doesn't have a message ID. The frontend makes one up, via
-  `local_message.next_local_id`, by taking the highest message ID it
+  `local_message.get_next_id_float`, by taking the highest message ID it
   has seen and adding the decimal `0.01`. The use of a floating point
   value is critical, because it means the message should sort
   correctly with other messages (at the bottom) and also won't be
@@ -162,13 +162,13 @@ messages.
   properties (at the very least, message ID and timestamp) and
   rerenders it in any message lists where it appears. This is
   primarily done in the `process_from_server` function in
-  `web/src/echo.js`.
+  `web/src/echo.ts`.
 
 ### Local echo in message editing
 
 Zulip also supports local echo in the message editing code path for
 edits to just the content of a message. The approach is analogous
-(using `markdown.contains_backend_only_syntax`, etc.)), except we
+(using `markdown.contains_backend_only_syntax`, etc.), except we
 don't need any of the `local_id` tracking logic, because the message
 already has a permanent message id; as a result, the whole
 implementation was under 150 lines of code.
@@ -183,7 +183,7 @@ one place:
   echoes the message and then sends a request to the `POST /messages`
   API endpoint.
 - The Django URL routes and middleware run, and eventually call the
-  `send_message_backend` view function in `zerver/views/messages.py`.
+  `send_message_backend` view function in `zerver/views/message_send.py`.
   (Alternatively, for an API request to send a message via Zulip's
   REST API, things start here).
 - `send_message_backend` does some validation before triggering the

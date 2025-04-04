@@ -1,19 +1,25 @@
 # Archive a channel
 
-{!admin-only.md!}
+You can archive channels you no longer plan to use. Archiving a channel:
 
-Archiving a channel will immediately unsubscribe all users from the channel,
-remove the channel from search and other typeaheads, and remove the channel's
-messages from **Combined feed**.
+- Removes it from the left sidebar for all users.
+- Prevents new messages from being sent to the channel.
+- Prevents messages in the channel from being edited, deleted, or moved.
 
-Archiving a channel does not delete a channel's messages. Users will still be
-able to find any given message by searching for it. However, links to
-messages and topics in the channel may or may not continue to work.
-
-In most cases, we recommend [renaming channels](/help/rename-a-channel) rather
-than archiving them.
+Archiving a channel does not unsubscribe users, or change who can access it.
+Messages in archived channels still appear in [search
+results](/help/search-for-messages), the [combined feed](/help/combined-feed),
+and [recent conversations](/help/recent-conversations). If you prefer, you can
+configure an archived channel to [hide its
+content](#hide-content-in-an-archived-channel).
 
 ## Archive a channel
+
+!!! warn ""
+
+    Channels can be [unarchived](#unarchiving-archived-channels) only by
+    [contacting support](/help/contact-support) for organizations hosted
+    on Zulip Cloud, or by your self-hosted server's administrator.
 
 {start_tabs}
 
@@ -23,31 +29,71 @@ than archiving them.
 
 1. Select a channel.
 
-1. Click the **trash** <i class="fa fa-trash-o"></i> icon near the top right
-   corner of the channel settings panel.
+1. Click the **archive** (<i class="zulip-icon zulip-icon-archive"></i>) icon
+   in the upper right corner of the channel settings panel.
 
-1. Approve by clicking **Confirm**.
+1. Click **Confirm**.
 
 !!! tip ""
 
     You can also hover over a channel in the left sidebar, click on the
     **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>), and
-    select **Channel settings** to access the **trash**
-    <i class="fa fa-trash-o"></i> icon.
+    select **Channel settings** to access settings for the channel.
 
 {end_tabs}
 
-!!! warn ""
+## View archived channels
 
-    Archiving a channel is currently irreversible via the UI.
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|channel|all}
+
+1. Select **Archived channels** from the dropdown next to the **Filter** box
+   above the list of channels.
+
+{end_tabs}
+
+## Hide content in an archived channel
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|channel|all}
+
+1. Select **Archived channels** from the dropdown next to the **Filter** box
+   above the list of channels.
+
+1. Select a channel.
+
+1. Select the **Subscribers** tab on the right.
+
+1. Remove all subscribers.
+
+{!select-channel-view-general.md!}
+
+1. Under **Channel permissions**, [make the channel
+   private](/help/change-the-privacy-of-a-channel).
+
+1. Under **Advanced configurations**, remove everyone from **Who can subscribe
+   to this channel**, and **Who can subscribe anyone to this channel**. These
+   permissions give users content access to the channel.
+
+{end_tabs}
+
+You can also make these configuration changes prior to archiving a channel.
 
 ## Unarchiving archived channels
+
+Zulip Cloud organizations that need to unarchive a channel can [contact Zulip
+support](/help/contact-support).
 
 If you are self-hosting, you can unarchive an archived channel using the
 `unarchive_channel` [management command][management-command]. This will restore
 it as a private channel with shared history, and subscribe all organization
-owners to it. If you are using Zulip Cloud, you can [contact us](/help/contact-support)
-for help.
+owners to it.
 
 [management-command]:
 https://zulip.readthedocs.io/en/latest/production/management-commands.html#other-useful-manage-py-commands
@@ -59,4 +105,3 @@ https://zulip.readthedocs.io/en/latest/production/management-commands.html#other
 * [Delete a topic](/help/delete-a-topic)
 * [Message retention policy](/help/message-retention-policy)
 * [Channel permissions](/help/channel-permissions)
-* [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)

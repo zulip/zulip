@@ -3,10 +3,10 @@
 The primary communication forum for the Zulip community is the Zulip server
 hosted at [chat.zulip.org](https://chat.zulip.org/). If you are not familiar
 with it, start by reading the [Zulip development community
-section](contributing.md#zulip-development-community) of the contributing guide.
-The guidelines here also apply to how we communicate on GitHub issues and pull
-requests, but other pages in this section go into greater detail about
-expectations that are specific to pull requests.
+guide](https://zulip.com/development-community/). The guidelines here also apply
+to how we communicate on GitHub issues and pull requests, but other pages in
+this section go into greater detail about expectations that are specific to pull
+requests.
 
 We are deeply committed to maintaining a respectful, collaborative atmosphere in
 across all interactions in the Zulip community. To get a feel for what that

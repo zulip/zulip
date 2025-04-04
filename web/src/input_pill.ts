@@ -5,14 +5,17 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
-import * as keydown_util from "./keydown_util";
-import * as ui_util from "./ui_util";
-import * as util from "./util";
+import * as keydown_util from "./keydown_util.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
 export type InputPillConfig = {
     exclude_inaccessible_users?: boolean;
+    setting_name?: string;
+    setting_type?: "realm" | "stream" | "group";
+    user_id?: number;
 };
 
 type InputPillCreateOptions<ItemType> = {
@@ -23,21 +26,23 @@ type InputPillCreateOptions<ItemType> = {
     create_item_from_text: (
         text: string,
         existing_items: ItemType[],
-        pill_config?: InputPillConfig | undefined,
+        pill_config?: InputPillConfig,
     ) => ItemType | undefined;
     get_text_from_item: (item: ItemType) => string;
     get_display_value_from_item: (item: ItemType) => string;
-    generate_pill_html?: (item: ItemType) => string;
+    generate_pill_html?: (item: ItemType, disabled?: boolean) => string;
     on_pill_exit?: (
         clicked_pill: HTMLElement,
         all_pills: InputPill<ItemType>[],
         remove_pill: (pill: HTMLElement) => void,
     ) => void;
+    show_outline_on_invalid_input?: boolean;
 };
 
 export type InputPill<ItemType> = {
     item: ItemType;
     $element: JQuery;
+    disabled: boolean;
 };
 
 type InputPillStore<ItemType> = {
@@ -56,14 +61,19 @@ type InputPillStore<ItemType> = {
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
+    show_outline_on_invalid_input: boolean;
 };
 
 // These are the functions that are exposed to other modules.
 export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
-    appendValidatedData: (item: ItemType) => void;
+    appendValidatedData: (item: ItemType, disabled?: boolean, quiet?: boolean) => void;
     getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
     items: () => ItemType[];
+    removePill: (
+        element: HTMLElement,
+        trigger: RemovePillTrigger,
+    ) => InputPill<ItemType> | undefined;
     onPillCreate: (callback: () => void) => void;
     onPillRemove: (
         callback: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void,
@@ -96,6 +106,7 @@ export function create<ItemType extends {type: string}>(
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
+        show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -131,35 +142,48 @@ export function create<ItemType extends {type: string}>(
         create_item(text: string) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
-
             if (!item) {
                 store.$input.addClass("shake");
+
+                if (store.show_outline_on_invalid_input) {
+                    store.$parent.addClass("invalid");
+                }
                 return undefined;
             }
-
             return item;
         },
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item: ItemType) {
+        appendValidatedData(item: ItemType, disabled = false, quiet = false) {
             let pill_html;
             if (store.generate_pill_html !== undefined) {
-                pill_html = store.generate_pill_html(item);
+                pill_html = store.generate_pill_html(item, disabled);
             } else {
                 pill_html = render_input_pill({
                     display_value: store.get_display_value_from_item(item),
+                    disabled,
                 });
             }
             const payload: InputPill<ItemType> = {
                 item,
                 $element: $(pill_html),
+                disabled,
             };
 
             store.pills.push(payload);
             store.$input.before(payload.$element);
 
-            if (store.onPillCreate !== undefined) {
+            if (store.show_outline_on_invalid_input && store.$parent.hasClass("invalid")) {
+                store.$parent.removeClass("invalid");
+            }
+
+            // If we check is_pending just after adding a pill, the
+            // text is still present until further input, so we
+            // manually clear it here.
+            this.clear_text();
+
+            if (!quiet && store.onPillCreate !== undefined) {
                 store.onPillCreate();
             }
         },
@@ -194,6 +218,9 @@ export function create<ItemType extends {type: string}>(
             const idx = store.pills.findIndex((pill) => pill.$element[0] === element);
 
             if (idx !== -1) {
+                if (store.pills[idx]!.disabled) {
+                    return undefined;
+                }
                 store.pills[idx]!.$element.remove();
                 const pill = util.the(store.pills.splice(idx, 1));
                 if (store.onPillRemove !== undefined) {
@@ -212,15 +239,14 @@ export function create<ItemType extends {type: string}>(
             return undefined;
         },
 
-        // this will remove the last pill in the container -- by default tied
-        // to the "Backspace" key when the value of the input is empty.
+        // This will remove the last pill in the container.
         // If quiet is a truthy value, the event handler associated with the
         // pill will not be evaluated. This is useful when using clear to reset
         // the pills.
         removeLastPill(trigger: RemovePillTrigger, quiet?: boolean) {
             const pill = store.pills.pop();
 
-            if (pill) {
+            if (pill && !pill.disabled) {
                 pill.$element.remove();
                 if (!quiet && store.onPillRemove !== undefined) {
                     store.onPillRemove(pill, trigger);
@@ -306,8 +332,8 @@ export function create<ItemType extends {type: string}>(
                     if (ret) {
                         // clear the input.
                         funcs.clear(this);
-                        e.stopPropagation();
                     }
+                    e.stopPropagation();
                 }
 
                 return;
@@ -315,16 +341,21 @@ export function create<ItemType extends {type: string}>(
             const selection = window.getSelection();
             // If no text is selected, and the cursor is just to the
             // right of the last pill (with or without text in the
-            // input), then backspace deletes the last pill.
+            // input), then backspace highlights or deletes the last pill.
             if (
                 e.key === "Backspace" &&
                 (funcs.value(this).length === 0 ||
                     (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
             ) {
                 e.preventDefault();
-                funcs.removeLastPill("backspace");
-
-                return;
+                const pill = store.pills.at(-1);
+                // We focus the pill first first, as a signal that the pill
+                // is about to be deleted. The deletion will then happen through
+                // `removePill` from the event handler on the pill.
+                if (pill) {
+                    assert(!pill.$element.is(":focus"));
+                    pill.$element.trigger("focus");
+                }
             }
 
             // if one is on the ".input" element and back/left arrows, then it
@@ -353,6 +384,13 @@ export function create<ItemType extends {type: string}>(
         // the hook receives the updated text content of the input unlike the "keydown"
         // event which does not have the updated text content.
         store.$parent.on("input", ".input", () => {
+            if (
+                store.show_outline_on_invalid_input &&
+                funcs.value(store.$input[0]!).length === 0 &&
+                store.$parent.hasClass("invalid")
+            ) {
+                store.$parent.removeClass("invalid");
+            }
             store.onTextInputHook?.();
         });
 
@@ -369,9 +407,14 @@ export function create<ItemType extends {type: string}>(
                     $pill.next().trigger("focus");
                     break;
                 case "Backspace": {
+                    const $prev = $pill.prev();
                     const $next = $pill.next();
                     funcs.removePill(util.the($pill), "backspace");
-                    $next.trigger("focus");
+                    if ($prev.length > 0) {
+                        $prev.trigger("focus");
+                    } else {
+                        $next.trigger("focus");
+                    }
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
                     e.preventDefault();
@@ -396,6 +439,7 @@ export function create<ItemType extends {type: string}>(
             const text = e.originalEvent.clipboardData?.getData("text/plain").replaceAll("\n", ",");
 
             // insert text manually
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             document.execCommand("insertText", false, text);
 
             if (funcs.createPillonPaste()) {
@@ -447,6 +491,7 @@ export function create<ItemType extends {type: string}>(
         getByElement: funcs.getByElement.bind(funcs),
         getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
+        removePill: funcs.removePill.bind(funcs),
 
         onPillCreate(callback) {
             store.onPillCreate = callback;

@@ -1,6 +1,6 @@
-<div class="group-row" data-group-id="{{id}}" data-group-name="{{name}}">
+<div class="group-row {{#if deactivated}}deactivated-group{{/if}}" data-group-id="{{id}}" data-group-name="{{name}}">
     {{#if is_member}}
-        <div class="check checked join_leave_button tippy-zulip-tooltip {{#unless can_edit}}disabled{{/unless}}" data-tooltip-template-id="{{#if can_edit}}leave-{{name}}-group-tooltip-template{{else}}cannot-leave-{{name}}-group-tooltip-template{{/if}}">
+        <div class="check checked join_leave_button tippy-zulip-tooltip {{#unless can_leave}}disabled{{/unless}} {{#unless is_direct_member}}not-direct-member{{/unless}}" data-tooltip-template-id="{{#if can_leave}}{{#if is_direct_member}}leave-{{name}}-group-tooltip-template{{else}}cannot-leave-{{name}}-because-of-subgroup-tooltip-template{{/if}}{{else}}cannot-leave-{{name}}-group-tooltip-template{{/if}}">
             <template id="leave-{{name}}-group-tooltip-template">
                 <span>
                     {{#tr}}
@@ -9,12 +9,28 @@
                 </span>
             </template>
 
-            <template id="cannot-leave-{{name}}-group-tooltip-template">
+            <template id="cannot-leave-{{name}}-because-of-subgroup-tooltip-template">
                 <span>
                     {{#tr}}
-                        Cannot leave group {name}
+                        You are a member of this group because you are a member of a subgroup (<b>{associated_subgroup_names}</b>).
                     {{/tr}}
                 </span>
+            </template>
+
+            <template id="cannot-leave-{{name}}-group-tooltip-template">
+                {{#if deactivated}}
+                    <span>
+                        {{#tr}}
+                            You cannot leave a deactivated user group.
+                        {{/tr}}
+                    </span>
+                {{else}}
+                    <span>
+                        {{#tr}}
+                            You do not have permission to leave this group.
+                        {{/tr}}
+                    </span>
+                {{/if}}
             </template>
 
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
@@ -23,7 +39,7 @@
             <div class='join_leave_status'></div>
         </div>
     {{else}}
-        <div class="check join_leave_button {{#unless can_edit}}disabled{{/unless}} tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_edit}}join-{{name}}-group-tooltip-template{{else}}cannot-join-{{name}}-group-tooltip-template{{/if}}">
+        <div class="check join_leave_button {{#unless can_join}}disabled{{/unless}} tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_join}}join-{{name}}-group-tooltip-template{{else}}cannot-join-{{name}}-group-tooltip-template{{/if}}">
             <template id="join-{{name}}-group-tooltip-template">
                 <span>
                     {{#tr}}
@@ -33,11 +49,19 @@
             </template>
 
             <template id="cannot-join-{{name}}-group-tooltip-template">
-                <span>
-                    {{#tr}}
-                        Cannot join group {name}
-                    {{/tr}}
-                </span>
+                {{#if deactivated}}
+                    <span>
+                        {{#tr}}
+                            You cannot join a deactivated user group.
+                        {{/tr}}
+                    </span>
+                {{else}}
+                    <span>
+                        {{#tr}}
+                            You do not have permission to join this group.
+                        {{/tr}}
+                    </span>
+                {{/if}}
             </template>
 
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
@@ -48,7 +72,11 @@
     {{/if}}
     <div class="group-info-box">
         <div class="top-bar">
-            <div class="group-name">{{name}}</div>
+            <div class="group-name">{{name}}
+                {{#if deactivated}}
+                    <i class="fa fa-ban deactivated-user-icon"></i>
+                {{/if}}
+            </div>
         </div>
         <div class="bottom-bar">
             <div class="description rendered_markdown" data-no-description="{{t 'No description.'}}">{{description}}</div>

@@ -40,7 +40,7 @@
                                 <li><span>File storage up to 5 GB total</span></li>
                                 <li><span><a href="{{ billing_base_url }}/plans/#cloud-plan-comparison">Complete</a> team chat solution</span></li>
                                 <li><span><a href="/integrations/">Hundreds of integrations</a></span></li>
-                                <li><span>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/channel-permissions">permissions</a></span></li>
+                                <li><span>Advanced <a href="/help/user-roles">roles</a> and <a href="/help/manage-permissions">permissions</a></span></li>
                                 <li><span><a href="/help/guest-users">Guest</a>
                                 accounts</span></li>
                                 <li><span>Many organizations are eligible for a <a href="{{ billing_base_url }}/plans/#cloud-sponsorships">free Standard plan</a></span></li>
@@ -68,6 +68,7 @@
                             <ul class="feature-list">
                                 <li><span>Unlimited search history</span></li>
                                 <li><span>File storage up to 5 GB per user</span></li>
+                                <li><span>Flexible permissions with <a href="/help/user-groups">custom groups</a></span></li>
                                 <li><span><a href="/help/message-retention-policy">Message retention policies</a></span></li>
                                 <li><span>Brand Zulip with your logo</span></li>
                                 <li><span>Priority commercial support</span></li>
@@ -107,6 +108,10 @@
                                 <a href="/billing/" class="button current-plan-button" type="button">
                                     Sponsorship requested
                                 </a>
+                                {% elif customer_plan and customer_plan.tier != customer_plan.TIER_CLOUD_STANDARD %}
+                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Contact sales
+                                </a>
                                 {% else %}
                                 <a href="/upgrade/?tier={{ tier_cloud_standard }}" class="button upgrade-button">
                                     {% if free_trial_days %}
@@ -121,7 +126,7 @@
                     </div>
                     <div class="price-box" tabindex="-1">
                         <div class="text-content">
-                            <h2>Plus</h2>
+                            <h2 class="with-fine-print">Plus <small>10 users minimum</small></h2>
                             <ul class="feature-list">
                                 <li><span>All Standard plan features</span></li>
                                 <li><span><a href="/help/saml-authentication">SSO with SAML</a> (Okta, OneLogIn, etc.)</span></li>
@@ -147,6 +152,10 @@
                                 <a href='/billing' class="button current-plan-button" type="button">
                                     <i class="icon current-plan-icon"></i>
                                     Current plan
+                                </a>
+                                {% elif customer_plan and customer_plan.tier != customer_plan.TIER_CLOUD_PLUS %}
+                                <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="button upgrade-button">
+                                    Contact sales
                                 </a>
                                 {% else %}
                                 <a href="/upgrade/?tier={{ tier_cloud_plus }}" class="button upgrade-button">
@@ -216,7 +225,7 @@
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC)
+                                    {% if (has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BASIC)
                                       or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Basic")
                                       or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
                                     <div class="price"><span class="currency-symbol">$</span>3.50</div>
@@ -237,7 +246,7 @@
                                     </div>
                                     {% endif %}
                                 </div>
-                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BASIC %}
+                                {% if has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BASIC %}
                                 <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
                                     Upgrade is scheduled
                                 </a>
@@ -290,7 +299,7 @@
                                 <li><span>Complete team chat solution, with <a href="{{ billing_base_url }}/plans/#self-hosted-plan-comparison">all Zulip features</a> included</span></li>
                                 <li><span>Unlimited <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">mobile notifications</a></span></li>
                                 <li class="support-note"><span>Email and chat support for:</span></li>
-                                <li><span><a href="/help/saml-authentication">SSO with SAML, Azure AD</a></span></li>
+                                <li><span><a href="/help/saml-authentication">SSO with SAML, Microsoft Entra ID</a></span></li>
                                 <li><span><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">AD/LDAP user sync </a></span></li>
                                 <li><span><a href="/help/guest-users">Guests</a> with configurable access</span></li>
                                 <li><span><a href="/help/export-your-organization">Full</a> and <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html#compliance-exports">compliance</a> data exports</span></li>
@@ -301,7 +310,7 @@
                         <div class="bottom">
                             <div class="text-content">
                                 <div class="standard-price-box">
-                                    {% if (is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS)
+                                    {% if (has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BUSINESS)
                                       or (is_self_hosted_realm and sponsorship_pending and requested_sponsorship_plan == "Business")
                                       or (is_self_hosted_realm and customer_plan and customer_plan.tier != customer_plan.TIER_SELF_HOSTED_LEGACY)%}
                                     <div class="price"><span class="currency-symbol">$</span>6.67</div>
@@ -324,7 +333,7 @@
                                     </div>
                                     {% endif %}
                                 </div>
-                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_BUSINESS %}
+                                {% if has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_BUSINESS %}
                                 <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
                                     Upgrade is scheduled
                                 </a>
@@ -380,7 +389,7 @@
                         </div>
                         <div class="bottom">
                             <div class="text-content">
-                                {% if is_legacy_server_with_scheduled_upgrade and legacy_server_new_plan.tier == legacy_server_new_plan.TIER_SELF_HOSTED_ENTERPRISE %}
+                                {% if has_scheduled_upgrade and scheduled_upgrade_plan.tier == scheduled_upgrade_plan.TIER_SELF_HOSTED_ENTERPRISE %}
                                 <a href="{{ billing_base_url }}/billing/" class="button current-plan-button">
                                     Upgrade is scheduled
                                 </a>

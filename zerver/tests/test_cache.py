@@ -1,5 +1,6 @@
 from unittest.mock import Mock, patch
 
+from bmemcached.exceptions import MemcachedException
 from django.conf import settings
 
 from zerver.apps import flush_cache
@@ -156,6 +157,36 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             result_two = get_user_function_can_return_none(last_user_id + 1)
 
         self.assertEqual(result_two, None)
+
+
+class SetCacheExceptionTest(ZulipTestCase):
+    def test_set_cache_exception(self) -> None:
+        with (
+            patch("zerver.lib.cache.get_cache_backend") as mock_backend,
+            self.assertLogs("", level="INFO") as logs,
+        ):
+            mock_backend.return_value.set.side_effect = MemcachedException(
+                b"Out of memory during read", 130
+            )
+            cache_set("test-key", 1)
+            mock_backend.assert_called_once()
+            mock_backend.return_value.set.assert_called_once()
+            self.assert_length(logs.output, 1)
+            self.assertIn("Out of memory during read", logs.output[0])
+
+    def test_set_many_cache_exception(self) -> None:
+        with (
+            patch("zerver.lib.cache.get_cache_backend") as mock_backend,
+            self.assertLogs("", level="INFO") as logs,
+        ):
+            mock_backend.return_value.set_many.side_effect = MemcachedException(
+                b"Out of memory during read", 130
+            )
+            cache_set_many({"test-key": 1, "other-key": 2})
+            mock_backend.assert_called_once()
+            mock_backend.return_value.set_many.assert_called_once()
+            self.assert_length(logs.output, 1)
+            self.assertIn("Out of memory during read", logs.output[0])
 
 
 class SafeCacheFunctionsTest(ZulipTestCase):

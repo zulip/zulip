@@ -8,7 +8,18 @@ integrations involves writing Markdown files, either at
 `templates/zerver/integrations/{integration_name}.md` (for other
 integrations).
 
-Usually, this involves a few steps:
+The [integrations][api-integrations] in
+[zulip/python-zulip-api][api-repo] have their corresponding Markdown files
+at `zulip/integrations/{integration_name}/doc.md`, which are imported into
+[zulip/zulip][zulip-repo] at
+`static/generated/integrations/{integration_name}/doc.md` using the
+`tools/setup/generate_bots_integrations_static_files.py` script.
+
+[api-repo]: https://github.com/zulip/python-zulip-api/
+[api-integrations]: https://github.com/zulip/python-zulip-api/tree/main/zulip/integrations
+[zulip-repo]: https://github.com/zulip/zulip
+
+Typically, the documentation process involves the following steps:
 
 - Add text explaining all of the steps required to set up the
   integration, including what URLs to use, etc. See
@@ -74,7 +85,7 @@ Here are a few common macros used to document Zulip's integrations:
 - `{!create-channel.md!}` macro - Recommends that users create a dedicated
   channel for a given integration. Usually the first step is setting up an
   integration or incoming webhook. For an example rendering, see **Step 1** of
-  [the docs for Zulip's GitHub integration][github-integration].
+  [the docs for Zulip's Zendesk integration][zendesk].
 
 - `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
   for a given integration and select **Incoming webhook** as the **Bot type**.
@@ -85,32 +96,20 @@ Here are a few common macros used to document Zulip's integrations:
   for a given integration and select **Generic bot** as the **Bot type**. For an
   example rendering, see [the docs for Zulip's Matrix integration][matrix].
 
-- `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
-  for a given integration and select **Incoming webhook** as the **Bot type**.
-  This macro is usually used right after `{!create-channel.md!}`. For an example
-  rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
-
-  **Note:** If special configuration is
-  required to set up the URL and you can't use this macro, be sure to use the
-  `{{ api_url }}` template variable, so that your integration
-  documentation will provide the correct URL for whatever server it is
-  deployed on. If special configuration is required to set the `SITE`
-  variable, you should document that too.
+- `{!generate-webhook-url-basic.md!}` - Instructs user how to get the URL for a
+  bot for a given integration. Note that this macro should not be used with the
+  `{!create-channel.md!}` macro. For an example rendering, see **Step 2** of
+  [the docs for Zulip's GitHub integration][github-integration].
 
 - `{!generate-integration-url.md!}` - Instructs user how to get the URL for a
   bot for a given integration. An example URL is generated automatically for
   every incoming webhook by using attributes in the `WebhookIntegration` class
   in [zerver/lib/integrations.py][integrations-file].
 
-- `{!append-channel-name.md!}` macro - Recommends appending `&stream=channel_name`
-  to a URL in cases where supplying a channel name in the URL is optional.
-  Supplying a channel name is optional for most Zulip integrations. If you use
-  `{!generate-integration-url.md!}`, this macro need not be used.
-
-- `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
-  to supply a custom topic for webhook notification messages. Supplying a custom
-  topic is optional for most Zulip integrations. If you use
-  `{!generate-integration-url.md!}`, this macro need not be used.
+  **Note:** If special configuration is required to set up the URL and you can't
+  use these macros, be sure to use the `{{ api_url }}` template variable, so
+  that your integration documentation will provide the correct URL for whatever
+  server it is deployed on.
 
 - `{!congrats.md!}` macro - Inserts congratulatory lines signifying the
   successful setup of a given integration. This macro is usually used at
@@ -138,15 +137,6 @@ Here are a few common macros used to document Zulip's integrations:
   `templates/zerver/integrations/<integration_name>.md`. For an example
   rendering, see **Step 4** of
   [the docs for Zulip's Codebase integration][codebase].
-
-- `{!git-append-branches.md!}` and `{!git-webhook-url-with-branches.md!}` -
-  These two macros explain how to specify a list of branches in the webhook URL
-  to filter notifications in our Git-related webhooks. For an example rendering,
-  see the last paragraph of **Step 2** in
-  [the docs for Zulip's GitHub integration][github-integration].
-
-- `{!webhook-url.md!}` - Used internally by `{!generate-integration-url.md!}`
-  to generate the webhook URL.
 
 - `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:

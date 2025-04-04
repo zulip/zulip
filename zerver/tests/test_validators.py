@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 from django.conf import settings
@@ -10,7 +9,6 @@ from zerver.lib.types import Validator
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
-    check_color,
     check_dict,
     check_dict_only,
     check_float,
@@ -27,7 +25,6 @@ from zerver.lib.validator import (
     check_union,
     check_url,
     equals,
-    to_non_negative_int,
     to_wild_value,
 )
 
@@ -118,17 +115,6 @@ class ValidatorTestCase(ZulipTestCase):
         with self.assertRaisesRegex(ValidationError, r"x is not an integer"):
             check_int("x", x)
 
-    def test_to_non_negative_int(self) -> None:
-        self.assertEqual(to_non_negative_int("x", "5"), 5)
-        with self.assertRaisesRegex(ValueError, "argument is negative"):
-            to_non_negative_int("x", "-1")
-        with self.assertRaisesRegex(ValueError, re.escape("5 is too large (max 4)")):
-            to_non_negative_int("x", "5", max_int_size=4)
-        with self.assertRaisesRegex(
-            ValueError, re.escape(f"{2**32} is too large (max {2**32 - 1})")
-        ):
-            to_non_negative_int("x", str(2**32))
-
     def test_check_float(self) -> None:
         x: Any = 5.5
         check_float("x", x)
@@ -140,21 +126,6 @@ class ValidatorTestCase(ZulipTestCase):
         x = [{}]
         with self.assertRaisesRegex(ValidationError, r"x is not a float"):
             check_float("x", x)
-
-    def test_check_color(self) -> None:
-        x = ["#000099", "#80ffaa", "#80FFAA", "#abcd12", "#ffff00", "#ff0", "#f00"]  # valid
-        y = ["000099", "#80f_aa", "#80fraa", "#abcd1234", "blue"]  # invalid
-        z = 5  # invalid
-
-        for hex_color in x:
-            check_color("color", hex_color)
-
-        for hex_color in y:
-            with self.assertRaisesRegex(ValidationError, r"color is not a valid hex color code"):
-                check_color("color", hex_color)
-
-        with self.assertRaisesRegex(ValidationError, r"color is not a string"):
-            check_color("color", z)
 
     def test_check_list(self) -> None:
         x: Any = 999

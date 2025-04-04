@@ -1,0 +1,203 @@
+.banner-wrapper {
+    container: banner / inline-size;
+}
+
+.banner {
+    box-sizing: border-box;
+    display: grid;
+    grid-template: var(--banner-grid-template-rows-lg) / var(
+            --banner-grid-template-columns-lg
+        );
+    grid-template-areas: var(--banner-grid-template-areas-lg);
+    place-items: start;
+    border: 1px solid;
+    border-radius: 6px;
+}
+
+.banner-link {
+    color: var(--color-text-link);
+    text-decoration: underline;
+    text-decoration-color: var(--color-text-link-decoration);
+
+    &:hover {
+        color: var(--color-text-link-hover);
+        text-decoration-color: var(--color-text-link-decoration-hover);
+    }
+
+    &:active {
+        color: var(--color-text-link-active);
+        text-decoration-color: currentcolor;
+    }
+}
+
+.banner-label {
+    grid-area: banner-label;
+    padding: 0.3376em 0 0.271em;
+    line-height: 1.2667;
+}
+
+.banner-action-buttons {
+    grid-area: banner-action-buttons;
+    display: flex;
+    gap: 0.5em; /* 8px at 16px/1em */
+    /* This margin is required to align the banner action
+       buttons vertically, since we cannot use flexbox
+       center alignment as we also need to account for the
+       UI when the banner has a muli-line label. */
+    margin: 0.0625em 0; /* 1px at 16px/1em */
+    margin-left: 0.625em; /* 10px at 16px/1em */
+}
+
+.banner-close-button {
+    display: flex;
+    grid-area: banner-close-button;
+    padding: 0.75em; /* 12px at 16px/1em */
+    margin-left: 0.3125em; /* 5px at 16px/1em */
+
+    &:focus-visible {
+        outline-offset: -2px;
+    }
+}
+
+.navbar-alert-banner {
+    grid-template-columns:
+        var(--banner-horizontal-padding) minmax(0, 1fr)
+        auto 0 auto minmax(0, 1fr) minmax(0, auto) var(
+            --banner-horizontal-padding
+        );
+    border: unset;
+    border-bottom: 1px solid;
+    border-radius: 0;
+    place-items: start center;
+}
+
+.navbar-alert-banner .banner-action-buttons {
+    justify-content: center;
+}
+
+@container banner (width >= 44em) and (width < 63em) {
+    .navbar-alert-banner[data-process="desktop-notifications"] {
+        grid-template: var(--banner-grid-template-rows-md) / var(
+                --banner-grid-template-columns-md
+            );
+        grid-template-areas: var(--banner-grid-template-areas-md);
+        text-align: center;
+    }
+}
+
+@container banner (width < 44em) {
+    .banner {
+        grid-template: var(--banner-grid-template-rows-md) / var(
+                --banner-grid-template-columns-md
+            );
+        grid-template-areas: var(--banner-grid-template-areas-md);
+    }
+
+    .banner-action-buttons {
+        flex-wrap: wrap;
+        margin-left: 0;
+    }
+
+    .navbar-alert-banner {
+        text-align: center;
+    }
+}
+
+@container banner (width < 25em) {
+    .banner {
+        grid-template-areas: var(--banner-grid-template-areas-sm);
+    }
+
+    .banner-action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+.banner-neutral {
+    background-color: var(--color-background-neutral-banner);
+    color: var(--color-text-neutral-banner);
+    border-color: var(--color-border-neutral-banner);
+}
+
+.banner-brand {
+    background-color: var(--color-background-brand-banner);
+    color: var(--color-text-brand-banner);
+    border-color: var(--color-border-brand-banner);
+}
+
+.banner-info {
+    background-color: var(--color-background-info-banner);
+    color: var(--color-text-info-banner);
+    border-color: var(--color-border-info-banner);
+}
+
+.banner-success {
+    background-color: var(--color-background-success-banner);
+    color: var(--color-text-success-banner);
+    border-color: var(--color-border-success-banner);
+}
+
+.banner-warning {
+    background-color: var(--color-background-warning-banner);
+    color: var(--color-text-warning-banner);
+    border-color: var(--color-border-warning-banner);
+}
+
+.banner-danger {
+    background-color: var(--color-background-danger-banner);
+    color: var(--color-text-danger-banner);
+    border-color: var(--color-border-danger-banner);
+}
+
+@keyframes popup-banner-fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes popup-banner-fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+}
+
+.popup-banner-animations {
+    animation-name: popup-banner-fadeIn;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+
+    &.fade-out {
+        animation-name: popup-banner-fadeOut;
+    }
+}
+
+.popup-banner {
+    @extend .popup-banner-animations;
+
+    pointer-events: auto;
+    max-width: 900px;
+    width: 100%;
+
+    /* Here the container width == viewport width,
+       so we can work with the media breakpoints. */
+    @container banner (width < $lg_min) {
+        max-width: 90%;
+    }
+}

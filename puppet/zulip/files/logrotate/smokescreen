@@ -7,5 +7,4 @@
     delaycompress
     notifempty
     copytruncate
-    create 644 zulip zulip
 }

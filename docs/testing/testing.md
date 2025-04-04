@@ -33,8 +33,8 @@ typically involve running subsets of the tests with commands like these:
 
 ```bash
 ./tools/lint zerver/models/__init__.py # Lint the file you just changed
-./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
-./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
+./tools/test-backend zerver.tests.test_markdown.MarkdownEmbedsTest.test_inline_youtube
+./tools/test-backend MarkdownEmbedsTest # Run `test-backend --help` for more options
 ./tools/test-js-with-node util
 # etc.
 ```
@@ -70,11 +70,6 @@ Additionally, Zulip also has about a dozen smaller tests suites:
 - `tools/test-api`: Tests that the API documentation at `/api`
   actually works; the actual code for this is defined in
   `zerver/openapi/python_examples.py`.
-- `test-locked-requirements`: Verifies that developers didn't forget
-  to run `tools/update-locked-requirements` after modifying
-  `requirements/*.in`. See
-  [our dependency documentation](../subsystems/dependencies.md) for
-  details on the system this is verifying.
 - `tools/check-capitalization`: Checks whether translated strings (aka
   user-facing strings) correctly follow Zulip's capitalization
   conventions. This requires some maintenance of an exclude list

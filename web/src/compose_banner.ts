@@ -3,11 +3,12 @@ import $ from "jquery";
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
+import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
 
-import {$t} from "./i18n";
-import * as scroll_util from "./scroll_util";
-import * as stream_data from "./stream_data";
-import type {StreamSubscription} from "./sub_store";
+import {$t} from "./i18n.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
@@ -41,8 +42,10 @@ export const CLASSNAMES = {
     // warnings
     topic_resolved: "topic_resolved",
     recipient_not_subscribed: "recipient_not_subscribed",
+    group_entirely_not_subscribed: "group_entirely_not_subscribed",
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
+    guest_in_dm_recipient_warning: "guest_in_dm_recipient_warning",
     unscheduled_message: "unscheduled_message",
     search_view: "search_view",
     // errors
@@ -60,6 +63,7 @@ export const CLASSNAMES = {
     zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
+    unknown_zoom_user: "unknown_zoom_user",
 };
 
 export function get_compose_banner_container($textarea: JQuery): JQuery {
@@ -71,11 +75,16 @@ export function get_compose_banner_container($textarea: JQuery): JQuery {
 // This function provides a convenient way to add new elements
 // to a banner container. The function accepts a container element
 // as a parameter, to which a banner should be appended.
+// Returns a boolean value indicating whether the append had succeeded.
 export function append_compose_banner_to_banner_list(
     $banner: JQuery,
     $list_container: JQuery,
-): void {
+): boolean {
+    if ($banner.hasClass("warning") && has_error()) {
+        return false;
+    }
     scroll_util.get_content_element($list_container).append($banner);
+    return true;
 }
 
 export function update_or_append_banner(
@@ -91,10 +100,10 @@ export function update_or_append_banner(
     }
 }
 
-export function clear_message_sent_banners(
+export let clear_message_sent_banners = (
     include_unmute_banner = true,
     skip_automatic_new_visibility_policy_banner = false,
-): void {
+): void => {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         if (
             skip_automatic_new_visibility_policy_banner &&
@@ -115,13 +124,17 @@ export function clear_message_sent_banners(
         clear_unmute_topic_notifications();
     }
     scroll_to_message_banner_message_id = null;
+};
+
+export function rewire_clear_message_sent_banners(value: typeof clear_message_sent_banners): void {
+    clear_message_sent_banners = value;
 }
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
 function hide_compose_spinner(): void {
     $(".compose-submit-button .loader").hide();
     $(".compose-submit-button span").show();
-    $(".compose-submit-button").removeClass("disable-btn");
+    $(".compose-submit-button").removeClass("compose-button-disabled");
 }
 
 export function clear_errors(): void {
@@ -225,17 +238,17 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     $("#compose_select_recipient_widget").trigger("click");
 }
 
-export function show_stream_not_subscribed_error(sub: StreamSubscription): void {
+export function show_stream_not_subscribed_error(
+    sub: StreamSubscription,
+    banner_text: string,
+): void {
     const $banner_container = $("#compose_banners");
-    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length) {
+    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length > 0) {
         return;
     }
     const new_row_html = render_compose_banner({
         banner_type: ERROR,
-        banner_text: $t({
-            defaultMessage:
-                "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
-        }),
+        banner_text,
         button_text: stream_data.can_toggle_subscription(sub)
             ? $t({defaultMessage: "Subscribe"})
             : null,
@@ -245,4 +258,20 @@ export function show_stream_not_subscribed_error(sub: StreamSubscription): void 
         hide_close_button: true,
     });
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+}
+
+export function show_unknown_zoom_user_error(email: string): void {
+    // Remove any existing banners with this warning.
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.unknown_zoom_user)}`).remove();
+
+    const new_row_html = render_unknown_zoom_user_error({
+        banner_type: ERROR,
+        email,
+        classname: CLASSNAMES.unknown_zoom_user,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+}
+
+export function has_error(): boolean {
+    return $("#compose_banners .error:visible").length > 0;
 }

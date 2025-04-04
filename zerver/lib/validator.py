@@ -28,7 +28,6 @@ for any particular type of object.
 
 """
 
-import re
 from collections.abc import Collection, Container, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -172,17 +171,6 @@ def check_bool(var_name: str, val: object) -> bool:
     if not isinstance(val, bool):
         raise ValidationError(_("{var_name} is not a boolean").format(var_name=var_name))
     return val
-
-
-def check_color(var_name: str, val: object) -> str:
-    s = check_string(var_name, val)
-    valid_color_pattern = re.compile(r"^#([a-fA-F0-9]{3,6})$")
-    matched_results = valid_color_pattern.match(s)
-    if not matched_results:
-        raise ValidationError(
-            _("{var_name} is not a valid hex color code").format(var_name=var_name)
-        )
-    return s
 
 
 def check_none_or(sub_validator: Validator[ResultT]) -> Validator[ResultT | None]:
@@ -560,16 +548,6 @@ def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
         return
 
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
-
-
-# Converter functions for use with has_request_variables
-def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) -> int:
-    x = int(s)
-    if x < 0:
-        raise ValueError("argument is negative")
-    if x > max_int_size:
-        raise ValueError(f"{x} is too large (max {max_int_size})")
-    return x
 
 
 def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:

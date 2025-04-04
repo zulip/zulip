@@ -1,20 +1,20 @@
 import $ from "jquery";
 
-import {PollData} from "../shared/src/poll_data";
+import {PollData} from "../shared/src/poll_data.ts";
 import type {
     InboundData,
     NewOptionOutboundData,
     QuestionOutboundData,
     VoteOutboundData,
-} from "../shared/src/poll_data";
+} from "../shared/src/poll_data.ts";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
-import * as blueslip from "./blueslip";
-import {$t} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import type {Message} from "./message_store";
-import * as people from "./people";
+import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
+import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
 
 export type Event = {sender_id: number; data: InboundData};
 
@@ -61,9 +61,7 @@ export function activate({
         const input_mode = poll_data.get_input_mode();
         const can_edit = is_my_poll && !input_mode;
         const has_question = question.trim() !== "";
-        const can_vote = has_question;
         const waiting = !is_my_poll && !has_question;
-        const author_help = is_my_poll && !has_question;
 
         $elem.find(".poll-question-header").toggle(!input_mode);
         $elem.find(".poll-question-header").text(question);
@@ -71,11 +69,9 @@ export function activate({
         update_edit_controls();
 
         $elem.find(".poll-question-bar").toggle(input_mode);
-        $elem.find(".poll-option-bar").toggle(can_vote);
+        $elem.find(".poll-option-bar").show();
 
         $elem.find(".poll-please-wait").toggle(waiting);
-
-        $elem.find(".poll-author-help").toggle(author_help);
     }
 
     function start_editing(): void {

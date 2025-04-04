@@ -1,9 +1,9 @@
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
-import {localstorage} from "./localstorage";
+import * as blueslip from "./blueslip.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import {localstorage} from "./localstorage.ts";
 
 export function get_hotkey_deprecation_notice(
     originalHotkey: string,

@@ -4,6 +4,7 @@ from typing import Any, Concatenate
 from unittest import mock
 
 import orjson
+import responses
 from django.conf import settings
 from django.test import override_settings
 from typing_extensions import ParamSpec, override
@@ -17,6 +18,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
 from zerver.models import Recipient, UserProfile
+from zerver.models.messages import UserMessage
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 
@@ -488,7 +490,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         content = "@**FooBot** foo bar!!!"
         recipient = "Denmark"
         trigger = "mention"
-        message_type = Recipient._type_names[Recipient.STREAM]
+        recipient_type = Recipient._type_names[Recipient.STREAM]
 
         def check_values_passed(
             queue_name: Any,
@@ -500,7 +502,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertEqual(trigger_event["message"]["content"], content)
             self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
             self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
-            self.assertEqual(trigger_event["message"]["type"], message_type)
+            self.assertEqual(trigger_event["message"]["type"], recipient_type)
             self.assertEqual(trigger_event["trigger"], trigger)
             self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
 
@@ -604,3 +606,26 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         recipients = [self.user_profile, self.bot_profile]
         self.send_group_direct_message(sender, recipients)
         self.assertFalse(mock_queue_event_on_commit.called)
+
+    @responses.activate
+    @for_all_bot_types
+    def test_flag_messages_service_bots_has_processed(self) -> None:
+        """
+        Verifies that once an event has been processed by the service bot's
+        queue processor, the message is marked as processed (flagged with `read`).
+        """
+        sender = self.user_profile
+        recipients = [self.user_profile, self.bot_profile, self.second_bot_profile]
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        message_id = self.send_group_direct_message(
+            sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
+        )
+        # message = Message.objects.get(id=message_id, sender=sender)
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertIn("read", bot_user_message.flags_list())

@@ -1,4 +1,4 @@
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 
 const unsuspend_callbacks: (() => void)[] = [];
 let watchdog_time = Date.now();

@@ -17,7 +17,7 @@ from django.test import override_settings
 from typing_extensions import override
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
-from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingError
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
@@ -32,7 +32,7 @@ from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import base as base_worker
 from zerver.worker.email_mirror import MirrorWorker
-from zerver.worker.email_senders import EmailSendingWorker
+from zerver.worker.email_senders import ImmediateEmailSenderWorker
 from zerver.worker.embed_links import FetchLinksEmbedData
 from zerver.worker.missedmessage_emails import MissedMessageWorker
 from zerver.worker.missedmessage_mobile_notifications import PushNotificationsWorker
@@ -552,7 +552,8 @@ class WorkerTest(ZulipTestCase):
 
                 with (
                     mock_queue_publish(
-                        "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
+                        "zerver.lib.queue.queue_json_publish_rollback_unsafe",
+                        side_effect=fake_publish,
                     ),
                     self.assertLogs(
                         "zerver.worker.missedmessage_mobile_notifications", "WARNING"
@@ -573,7 +574,9 @@ class WorkerTest(ZulipTestCase):
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
         fake_client = FakeClient()
         stream = get_stream("Denmark", get_realm("zulip"))
-        stream_to_address = encode_email_address(stream)
+        hamlet = self.example_user("hamlet")
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        stream_to_address = encode_email_address(stream.name, email_token)
         data = [
             dict(
                 msg_base64=base64.b64encode(b"\xf3test").decode(),
@@ -598,7 +601,9 @@ class WorkerTest(ZulipTestCase):
         realm = get_realm("zulip")
         RateLimitedRealmMirror(realm).clear_history()
         stream = get_stream("Denmark", realm)
-        stream_to_address = encode_email_address(stream)
+        hamlet = self.example_user("hamlet")
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        stream_to_address = encode_email_address(stream.name, email_token)
         data = [
             dict(
                 msg_base64=base64.b64encode(b"\xf3test").decode(),
@@ -690,11 +695,13 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue(queue_name, event)
 
         with simulated_queue_client(fake_client):
-            worker = EmailSendingWorker()
+            worker = ImmediateEmailSenderWorker()
             worker.setup()
             with (
                 patch("zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError),
-                mock_queue_publish("zerver.lib.queue.queue_json_publish", side_effect=fake_publish),
+                mock_queue_publish(
+                    "zerver.lib.queue.queue_json_publish_rollback_unsafe", side_effect=fake_publish
+                ),
                 self.assertLogs(level="ERROR") as m,
             ):
                 worker.start()

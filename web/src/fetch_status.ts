@@ -1,5 +1,5 @@
-import * as message_feed_loading from "./message_feed_loading";
-import type {Message, RawMessage} from "./message_store";
+import * as message_feed_loading from "./message_feed_loading.ts";
+import type {Message, RawMessage} from "./message_store.ts";
 
 function max_id_for_messages(messages: (Message | RawMessage)[]): number {
     let max_id = 0;
@@ -101,7 +101,7 @@ export class FetchStatus {
             //
             // 1. Client initiates GET /messages to fetch the last
             //    batch of messages in this view.  The server
-            //    completes the database access and and starts sending
+            //    completes the database access and starts sending
             //    the response with found_newest=true.
             // 1. A new message is sent matching the view, the event reaches
             //    the client.  We discard the message because found_newest=false.
@@ -140,5 +140,16 @@ export class FetchStatus {
             this._expected_max_message_id,
             max_id_for_messages(messages),
         );
+    }
+
+    copy_status(fetch_status: FetchStatus): void {
+        this._found_newest = fetch_status.has_found_newest();
+        this._found_oldest = fetch_status.has_found_oldest();
+        this._expected_max_message_id = fetch_status._expected_max_message_id;
+        this._history_limited = fetch_status._history_limited;
+        // We don't want to copy over the loading state of the message list
+        // data since the same data object is not used for two messages lists
+        // and hence when the fetch is finished, only the original message list
+        // data will be updated.
     }
 }

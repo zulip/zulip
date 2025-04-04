@@ -1,0 +1,10 @@
+{{#with export_consent}}
+<tr>
+    <td class="user_name panel_user_list">
+        {{> ../user_display_only_pill display_value=full_name user_id=user_id img_src=img_src is_active=true}}
+    </td>
+    <td>
+        <span>{{consent}}</span>
+    </td>
+</tr>
+{{/with}}

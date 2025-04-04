@@ -1,16 +1,13 @@
 # Setting up Zulip for a class
 
 Welcome to Zulip! This page will guide you through setting everything
-up for [teaching with Zulip](https://zulip.com/for/education/). If you are using Zulip
-for a different purpose, we recommend checking out the [Setting up
-your organization][setting-up] guide instead.
+up for [teaching with Zulip](https://zulip.com/for/education/). If you
+are using Zulip for a different purpose, we recommend checking out the
+[moving to Zulip](/help/moving-to-zulip) guide instead.
 
 If you are a student, or if your Zulip organization is already set up,
 you can proceed to the [Using Zulip for a
 class](/help/using-zulip-for-a-class) guide.
-
-[getting-started]: /help/getting-started-with-zulip
-[setting-up]: /help/getting-your-organization-started-with-zulip
 
 If you encounter any problems as you're getting started, please drop
 by our [friendly development community](/development-community/) and let
@@ -141,7 +138,7 @@ A few settings to highlight:
 ### Roles and permissions
 
 Zulip offers [several levels of permissions based on user
-roles](/help/roles-and-permissions). Here are some recommendations for
+roles](/help/user-roles). Here are some recommendations for
 how to assign roles and permissions for a class.
 
 #### Recommended roles and permissions for a single-class Zulip organization
@@ -165,7 +162,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins only)
 - Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins for public channels; Admins, moderators and members for private channels)
-- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
+- Set [who can subscribe other users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: (default) Members for small classes;
@@ -175,7 +172,7 @@ how to assign roles and permissions for a class.
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
-[user-group-permissions]: /help/manage-user-groups#configure-who-can-create-and-manage-user-groups
+[user-group-permissions]: /help/manage-user-groups#configure-who-can-create-user-groups
 [move-between-channels]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel
 
 #### Recommended roles and permissions for a department
@@ -196,7 +193,7 @@ how to assign roles and permissions for a class.
 - Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins and moderators for public channels;
    Admins, moderators and members for private channels)
-- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
+- Set [who can subscribe other users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: Admins and moderators)
@@ -221,9 +218,6 @@ how to assign roles and permissions for a class.
 
 {end_tabs}
 
-For more details about channel settings, see [Create a
-channel](/help/create-a-channel#channel-options).
-
 ### Tips for creating channels
 
 For most classes, the following channels are recommended:
@@ -231,7 +225,7 @@ For most classes, the following channels are recommended:
 - **#announcements**: For general announcements about the class. When
   creating this channel, [restrict posting
   permissions](/help/channel-posting-policy) so that only course staff
-  ([administrators and moderators](/help/roles-and-permissions)) are
+  ([administrators and moderators](/help/user-roles)) are
   allowed to post.
 - **#staff (private)**: For discussions among course staff.
 - **#general**: For random topics, e.g., students forming study groups.
@@ -277,10 +271,10 @@ A few notes:
 ### How to invite users to join
 
 To simplify subscription management, be sure to set the channels
-students and staff should be added to when you create the
+students and staff should be subscribed to when you create the
 invitations. You may choose to send invitations to course staff
-separately, so that they can immediately be added to private channels
-for your class.
+separately, so that they can immediately be subscribed to private
+channels for your class.
 
 {!how-to-invite-users-to-join.md!}
 
@@ -290,7 +284,7 @@ to [Getting started with Zulip][getting-started] and the guide to
 
 !!! tip ""
 
-    If you create new channels later on, you can add users
+    If you create new channels later on, you can subscribe users
     [by group][create-user-groups] or copy membership from another
     channel (e.g., from Lecture 5 to Lecture 6).
 
@@ -338,7 +332,7 @@ for your own classes or for your department), you will likely want to:
   from the prior term (e.g., because you posted homework solutions),
   [make all the channels from the class private][make-private]. You’ll
   be able to find and reuse content yourself, and [invite course
-  staff][add-to-channel] to these private channels as needed.
+  staff][subscribe-to-channel] to these private channels as needed.
 - You may choose to [deactivate students’ Zulip
   accounts][deactivate-user] when the class is over.
 - [Unpin channels](/help/pin-a-channel) from the class from your
@@ -358,5 +352,6 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 * [Moderating open organizations](/help/moderating-open-organizations)
 
 [make-private]: /help/change-the-privacy-of-a-channel
-[add-to-channel]: /help/add-or-remove-users-from-a-channel
+[subscribe-to-channel]: /help/subscribe-users-to-a-channel
 [deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user
+[getting-started]: /help/getting-started-with-zulip

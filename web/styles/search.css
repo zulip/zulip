@@ -3,18 +3,22 @@
     height: var(--header-height);
 
     .navbar-search {
-        margin: 3.5px 0;
+        margin: 0.2187em 0; /* 3.5px at 16px em */
         border-radius: 5px;
         position: absolute;
         overflow: hidden;
+        /* We bump the z-index to keep the search box
+           clickable despite position-based layout
+           adjustments. */
+        z-index: 1;
     }
 
     .search_icon {
         grid-area: search-icon;
         align-self: center;
         text-decoration: none;
-        padding: 0 7px;
-        font-size: 17px;
+        padding: 0 0.4117em; /* 7px at 17px em */
+        font-size: 1.0625em; /* 17px at 16px em */
         border: none;
         background-color: transparent;
         color: var(--color-search-icons);
@@ -33,7 +37,7 @@
 
     .search_close_button {
         grid-area: search-close;
-        width: 28px;
+        width: 1.75em; /* 28px at 16px em */
         height: 100%;
         background: none;
         border: none;
@@ -43,13 +47,15 @@
         /* Reset iOS button defaults. */
         color: var(--color-search-icons);
         padding: 0;
-
-        &:not(:focus-visible) {
-            outline: none;
-        }
+        outline: none;
 
         &:hover {
             opacity: 1;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -3px;
         }
 
         &:disabled {
@@ -62,7 +68,7 @@
         display: flex;
         padding: 0;
         flex-wrap: wrap;
-        gap: 2px;
+        gap: 0.125em; /* 2px at 16px em */
         align-self: center;
     }
 
@@ -75,6 +81,13 @@
 
         #searchbox-input-container {
             width: var(--search-box-width);
+
+            @media (width < $md_min) {
+                grid-template:
+                    "search-icon search-pills" var(--search-box-height)
+                    / var(--search-box-height) 0;
+                column-gap: 0;
+            }
         }
 
         .search-input {
@@ -105,7 +118,7 @@
 
         @media (height < $short_navbar_cutoff_height) {
             #searchbox-input-container .search_icon {
-                font-size: 18px;
+                font-size: 1.125em; /* 18px at 16px/em */
             }
         }
     }
@@ -118,6 +131,12 @@
 
         .search-input {
             cursor: text;
+        }
+
+        #searchbox-input-container.pill-container {
+            /* Pill container should display the same background
+               color as the search typeahead. */
+            background-color: var(--color-background-search);
         }
 
         @media (width < $md_min) {
@@ -181,7 +200,7 @@
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
-        white-space: nowrap;
+        white-space: pre;
         flex-grow: 1;
 
         color: var(--color-text-search);
@@ -204,17 +223,16 @@
         border: none;
         grid-template:
             "search-icon search-pills search-close" var(--search-box-height)
-            ". search-pills ." auto / auto minmax(0, 1fr) 28px;
+            ". search-pills ." auto / auto minmax(0, 1fr)
+            1.75em; /* 28px at 16px em */
         align-content: center;
         cursor: pointer;
 
         /* Override styles for .pill-container that aren't relevant for search. */
         &.pill-container {
-            /* Pill container should display the same background
-               color as the search typeahead. */
-            background-color: var(--color-background-search);
+            background: inherit;
             /* Maintain only a column gap. */
-            gap: 0 5px;
+            gap: 0 0.3125em; /* 5px at 16px em */
             /* Override padding. */
             padding: 0;
         }
@@ -225,7 +243,7 @@
         }
 
         &:not(.focused) {
-            max-height: var(--search-box-height);
+            height: var(--search-box-height);
             overflow: hidden;
 
             .search-input-and-pills {
@@ -256,7 +274,7 @@
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
-                line-height: 1;
+                line-height: 1.1;
             }
 
             .pill {
@@ -269,21 +287,24 @@
                 /* Match border radius to image */
                 border-radius: 4px;
                 max-width: none;
+                /* Set the minimum width on the pill container;
+                   this accommodates the avatar, a minimum
+                   two-character username, and the closing X.
+                   90px at 20px/1em */
+                min-width: 4.5em;
                 display: grid;
-                grid-template-columns: auto 1fr auto;
-
+                grid-template-columns:
+                    var(--length-input-pill-image) minmax(0, 1fr)
+                    var(--length-input-pill-exit);
+                align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
-                line-height: 1;
+                line-height: 1.1;
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);
                 }
             }
         }
-    }
-
-    .pill-label {
-        min-width: 30px;
     }
 
     @media (width >= $md_min) {
@@ -376,6 +397,6 @@
 
     /* Break really long words (unlikely to happen). */
     .search_list_item span {
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 }

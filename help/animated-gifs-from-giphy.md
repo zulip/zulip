@@ -1,10 +1,9 @@
 # Animated GIFs from GIPHY
 
-!!! tip ""
+!!! warn ""
 
-    This feature is not available on self-hosted Zulip servers where
-    the [GIPHY integration][configure-giphy] has not been configured
-    by a system administrator.
+    On self-hosted servers, this feature need to be
+    [configured][configure-giphy] by a server administrator.
 
 Zulip integrates with [GIPHY](https://giphy.com), allowing you to
 conveniently search for animated GIFs and include them in your
@@ -46,7 +45,7 @@ this configure or disable GIPHY integration entirely:
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, select a rating from **Maximum rating of GIFs**.
+1. Under **Compose settings**, select a rating for **GIPHY integration**.
 
 {!save-changes.md!}
 

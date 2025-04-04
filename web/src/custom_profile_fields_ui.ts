@@ -4,16 +4,16 @@ import {z} from "zod";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
-import {Typeahead} from "./bootstrap_typeahead";
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as pill_typeahead from "./pill_typeahead";
-import * as settings_components from "./settings_components";
-import {realm} from "./state_data";
-import * as typeahead_helper from "./typeahead_helper";
-import type {UserPillWidget} from "./user_pill";
-import * as user_pill from "./user_pill";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
+import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
+import * as pill_typeahead from "./pill_typeahead.ts";
+import * as settings_components from "./settings_components.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
+import type {UserPillWidget} from "./user_pill.ts";
+import * as user_pill from "./user_pill.ts";
 
 const user_value_schema = z.array(z.number());
 
@@ -38,6 +38,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
 
     for (const field of all_custom_fields) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
+        const editable_by_user = current_user.is_admin || field.editable_by_user;
         const is_select_field = field.type === all_field_types.SELECT.id;
         const field_choices = [];
 
@@ -70,28 +71,28 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
             is_empty_required_field: field.required && !field_value.value,
+            editable_by_user,
         });
         $(element_id).append($(html));
     }
 }
 
+export type PillUpdateField = {
+    type: number;
+    field_data: string;
+    hint: string;
+    id: number;
+    name: string;
+    order: number;
+    required: boolean;
+    display_in_profile_summary?: boolean | undefined;
+};
+
 export function initialize_custom_user_type_fields(
     element_id: string,
     user_id: number,
     is_target_element_editable: boolean,
-    pill_update_handler?: (
-        field: {
-            type: number;
-            field_data: string;
-            hint: string;
-            id: number;
-            name: string;
-            order: number;
-            required: boolean;
-            display_in_profile_summary?: boolean | undefined;
-        },
-        pills: UserPillWidget,
-    ) => void,
+    pill_update_handler?: (field: PillUpdateField, pills: UserPillWidget) => void,
 ): Map<number, UserPillWidget> {
     const field_types = realm.custom_profile_field_types;
     const user_pills = new Map<number, UserPillWidget>();
@@ -153,6 +154,16 @@ export function initialize_custom_user_type_fields(
         }
     }
 
+    // Enable the label associated to this field to focus on the input when clicked.
+    $(element_id)
+        .find(".custom_user_field label.settings-field-label")
+        .on("click", function () {
+            const $input_element = $(this)
+                .closest(".custom_user_field")
+                .find(".person_picker.pill-container .input");
+            $input_element.trigger("focus");
+        });
+
     return user_pills;
 }
 
@@ -168,6 +179,13 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         allowInput: true,
         static: true,
     });
+
+    // Enable the label associated to this field to open the datepicker when clicked.
+    $(element_id)
+        .find(".custom_user_field label.settings-field-label")
+        .on("click", function () {
+            $(this).closest(".custom_user_field").find("input.datepicker").trigger("click");
+        });
 
     $(element_id)
         .find<HTMLInputElement>(".custom_user_field input.datepicker")

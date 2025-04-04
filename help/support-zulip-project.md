@@ -55,8 +55,11 @@ Collective](https://opencollective.com/zulip).
   your experience with Zulip (good or bad) helps them evaluate whether Zulip
   might work for their needs.
 
+- **Subscribe** to [our blog](https://blog.zulip.org/), and share our posts.
+
 * **Mention** Zulip on social media, or like and retweet [Zulip's
-  tweets](https://twitter.com/zulip).
+  tweets](https://twitter.com/zulip), or retoot [Zulip's
+  toots](https://fosstodon.org/@zulip).
 
 * **Share** your Zulip story on your blog, or get it posted [on the Zulip
   website](https://zulip.com/use-cases/#customer-stories) (contact
@@ -73,17 +76,17 @@ Collective](https://opencollective.com/zulip).
   Many improvements to the Zulip app start with a user's suggestion.
 
 * [**Give
-  feedback**](https://zulip.readthedocs.io/en/stable/contributing/contributing.html#user-feedback)
+  feedback**](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html#evaluation-and-onboarding-feedback)
   if you are evaluating or using Zulip.
 
-* [**Translate**](https://zulip.readthedocs.io/en/stable/translating/translating.html)
+* [**Translate**](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip into your language. Zulip has been translated into over 25 languages by
   an amazing group of volunteers, and you can help expand, improve, and
   maintain the translation for your language, or start working on a language
   that hasn't been covered yet.
 
 * [**Contribute
-  code**](https://zulip.readthedocs.io/en/stable/contributing/contributing.html)
+  code**](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
   to the Zulip open-source project. To make it easy for contributors from a
   variety of backgrounds to get started, we have invested into making Zulip’s
   code uniquely readable, well tested, and easy to modify.

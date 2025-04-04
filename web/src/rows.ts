@@ -1,10 +1,10 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
-import type {Message} from "./message_store";
+import * as blueslip from "./blueslip.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
 
 // We don't need an andSelf() here because we already know
 // that our next element is *not* a message_row, so this
@@ -14,7 +14,7 @@ export function next_visible($message_row: JQuery): JQuery {
         return $();
     }
     const $row = $message_row.next(".selectable_row");
-    if ($row.length !== 0) {
+    if ($row.length > 0) {
         return $row;
     }
     const $recipient_row = get_message_recipient_row($message_row);
@@ -30,7 +30,7 @@ export function prev_visible($message_row: JQuery): JQuery {
         return $();
     }
     const $row = $message_row.prev(".selectable_row");
-    if ($row.length !== 0) {
+    if ($row.length > 0) {
         return $row;
     }
     const $recipient_row = get_message_recipient_row($message_row);
@@ -75,7 +75,7 @@ export function visible_range(start_id: number, end_id: number): JQuery[] {
 }
 
 export function is_overlay_row($row: JQuery): boolean {
-    return $row.closest(".overlay-message-row").length >= 1;
+    return $row.closest(".overlay-message-row").length > 0;
 }
 
 export function id($message_row: JQuery): number {

@@ -45,7 +45,6 @@
         align-items: center;
 
         .recent-view-table-link,
-        .recent-view-table-unread-count,
         & > .zulip-icon {
             outline: 0;
         }
@@ -55,14 +54,34 @@
             box-shadow: 0 3px 0 var(--color-outline-focus);
         }
 
-        &.change_visibility_policy.visibility-policy-popover-visible {
-            .zulip-icon-inherit {
+        &.change_visibility_policy.topic-popover-visible {
+            .visibility-status-icon {
                 opacity: 0.4;
             }
         }
 
-        &.change_visibility_policy .zulip-icon-inherit {
+        &.change_visibility_policy
+            .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+            /* Show vertical ellipsis when user hovers over visibility indicator icon. */
+            background-image: url("../shared/icons/more-vertical.svg");
+            background-repeat: no-repeat;
+            background-position: left bottom;
+            background-size: contain;
+            width: var(--base-font-size-px);
+            height: var(--base-font-size-px);
+
+            &::before {
+                content: "";
+            }
+        }
+
+        &.change_visibility_policy .recent-view-row-topic-menu {
             opacity: 0;
+            cursor: pointer;
+
+            &:not(.visibility-status-icon) {
+                display: none;
+            }
 
             &:focus {
                 opacity: 0.2;
@@ -79,6 +98,10 @@
         }
     }
 
+    .white-space-preserve-wrap {
+        overflow-wrap: anywhere;
+    }
+
     .empty-table-message {
         background-color: var(--color-background);
         padding: 3em 1em;
@@ -86,8 +109,9 @@
 
     .fa-check-square-o,
     .fa-square-o {
-        padding: 0 2px;
-        width: 10px;
+        width: 0.7142em; /* Legacy 10px size at 14px/1em. */
+        padding-right: 0.3571em; /* Legacy 5px size at 14px/1em. */
+        padding-left: 0.1428em; /* Legacy 2px size at 14px/1em. */
     }
 
     .zulip-icon-user {
@@ -123,10 +147,6 @@
     .table_fix_head table th {
         padding: 8px;
         text-align: left;
-
-        &[data-sort] {
-            padding-right: var(--table-header-sortable-column-padding-right);
-        }
     }
 
     #recent_view_filter_buttons {
@@ -140,30 +160,49 @@
     }
 
     .search_group {
-        display: flex;
+        display: grid;
+        grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
         flex-grow: 1;
-        margin: 0 -27px 10px 0;
+        margin: 0 0 10px;
+    }
+
+    #recent_view_search:placeholder-shown + #recent_view_search_clear {
+        visibility: hidden;
     }
 
     #recent_view_search {
-        flex-grow: 1;
-        padding-right: 20px;
+        grid-column: search-input-start / clear-search-end;
+        grid-row: search-input;
+        padding-right: 28px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
     }
 
-    .clear_search_button {
-        /* Overrides app_components.css property. */
-        padding-top: 4px !important;
-    }
-
-    .btn-recent-filters {
+    .button-recent-filters {
+        color: var(--color-text-default);
+        background-color: var(--color-background-zulip-button);
+        border: 1px solid var(--color-border-zulip-button);
         border-radius: 40px;
-        margin: 0 5px 10px 0;
+        /* Legacy 5px 10px at 14px/1em. */
+        margin: 0 0.3571em 0.7142em 0;
+        /* Legacy 6px 12px at 14px/1em. */
+        padding: 0.4285em 0.8571em;
+        line-height: 100%;
+        display: inline-flex;
+
+        &:hover {
+            background-color: var(--color-background-zulip-button-hover);
+        }
+
+        &:active {
+            background-color: var(--color-background-zulip-button-active);
+        }
 
         &:focus {
-            background-color: hsl(0deg 0% 80%);
+            background-color: var(
+                --color-background-recent-filters-button-focus
+            );
             outline: 0;
         }
 
@@ -172,14 +211,18 @@
             opacity: 0.5;
 
             &:hover {
-                background-color: hsl(0deg 0% 100%);
-                border-color: hsl(0deg 0% 80%);
+                background-color: var(
+                    --color-background-recent-filters-button-disabled
+                );
+                border-color: var(
+                    --color-border-recent-filters-button-disabled
+                );
             }
         }
     }
 
-    .btn-recent-selected {
-        background-color: hsl(0deg 11% 93%);
+    .button-recent-selected {
+        background-color: var(--color-background-recent-view-selected);
     }
 
     .unread_count {
@@ -187,7 +230,13 @@
         margin-right: 1px;
         margin-left: 1px;
         align-self: center;
-        background-color: hsl(105deg 2% 50%);
+        opacity: 1;
+        outline: 0 solid var(--color-background-unread-counter);
+        transition: outline-width 0.1s ease;
+
+        &:hover {
+            outline-width: 1.5px;
+        }
     }
 
     .unread_mention_info:not(:empty) {
@@ -258,10 +307,14 @@
 
     .recent_view_participants {
         display: inline-flex; /* Causes LI items to display in row. */
+        /* Keep avatars centered on the line. */
+        vertical-align: middle;
         list-style-type: none;
         margin: auto; /* Centers vertically / horizontally in flex container. */
-        height: 24px;
-        padding: 4px;
+        /* 24px at 16px/1em */
+        height: 1.5em;
+        /* 4px at 16px/1em */
+        padding: 0.25em 4px;
         border-radius: 6px;
         overflow: hidden;
 
@@ -276,11 +329,13 @@
     }
 
     .recent_view_participant_item {
-        height: 24px;
+        /* 24px at 16px/1em */
+        height: 1.5em;
         margin: 0;
         padding: 0 1.5px;
         position: relative;
-        min-width: 24px;
+        /* 24px at 16px/1em */
+        min-width: 1.5em;
         cursor: pointer;
 
         .fa-user {
@@ -291,17 +346,26 @@
     .recent_view_participant_avatar,
     .recent_view_participant_overflow {
         border: 0;
-        border-radius: 6px;
-        color: hsl(0deg 0% 100%);
+        /* Keep the rounded corners from ballooning
+           to a circle at smaller font sizes.
+           6px at 16px/1em */
+        border-radius: 0.375em;
+        color: var(--color-recent-view-participant-overflow-text);
         display: block;
-        height: 24px;
+        height: 100%;
         text-align: center;
-        background-color: hsl(0deg 0% 88%);
+        background-color: var(
+            --color-background-recent-view-participant-overflow
+        );
+    }
+
+    .recent_view_participant_avatar {
+        background-color: transparent;
     }
 
     .recent_view_participant_overflow {
-        color: hsl(0deg 0% 0%);
-        line-height: 24px;
+        /* 24px at 16px/1em */
+        line-height: 1.5;
     }
 
     & tr {
@@ -310,7 +374,7 @@
         &:hover {
             background-color: var(--color-background-recent-view-row-hover);
 
-            .change_visibility_policy .zulip-icon-inherit {
+            .change_visibility_policy .recent-view-row-topic-menu {
                 opacity: 0.4;
             }
         }
@@ -332,40 +396,44 @@
     }
 
     & thead th {
-        background-color: hsl(0deg 0% 100%);
+        background-color: var(--color-background-recent-view-table-thead-th);
         color: inherit;
         border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
         border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
         z-index: 1;
 
-        &.active::after,
-        &[data-sort]:hover::after {
-            content: " \f0d8";
-            white-space: pre;
-            display: inline-block;
-            position: absolute;
-            padding-top: 3px;
-            font: normal normal normal 12px/1 FontAwesome;
-            font-size: inherit;
+        .table-sortable-arrow {
+            /* Sub alignment works perfectly in this context,
+               where the table header is a text node. */
+            vertical-align: sub;
+            transform: rotate(180deg);
+            opacity: 0;
+            transition: opacity 100ms ease-out;
+        }
+
+        &.descend .table-sortable-arrow {
+            transform: rotate(0deg);
+        }
+
+        &:not(.active)[data-sort]:hover .table-sortable-arrow {
+            opacity: 0.3;
+        }
+
+        &.active .table-sortable-arrow {
+            opacity: 1;
         }
 
         &.active {
             opacity: 1;
             transition: opacity 100ms ease-out;
-
-            &.descend::after {
-                content: " \f0d7";
-            }
         }
 
         &[data-sort]:hover {
             cursor: pointer;
-            background-color: hsl(0deg 0% 95%);
+            background-color: var(
+                --color-background-recent-view-table-thead-sort-header
+            );
             transition: background-color 100ms ease-in-out;
-
-            &:not(.active)::after {
-                opacity: 0.3;
-            }
         }
     }
 
@@ -375,11 +443,13 @@
     }
 
     .recent-view-topic-header {
-        width: 35%;
+        width: 33%;
     }
 
     .recent-view-unread-header {
-        width: 5%;
+        width: 7%;
+        /* 64px at 20px/1em */
+        min-width: 3.2em;
 
         .zulip-icon-unread {
             position: relative;
@@ -411,24 +481,20 @@
                the left of the filter icon. */
             gap: 7px;
             place-content: center center;
+            /* Visually match the 8px of padding around the
+               filter icon, and keep DM icons from colliding
+               with the "Direct messages" text. */
+            margin-right: 9px;
         }
 
         & a {
-            word-break: break-word;
+            overflow-wrap: anywhere;
             hyphens: auto;
         }
     }
 
     .recent_topic_name {
         width: 40%;
-
-        & a {
-            word-break: break-word;
-            /* No hyphes for word break since it caused hyphens to appear before
-                the ellipsis `longText-...` which is not desirable. Ellipsis appears due
-                to the line clamp applied below.
-            */
-        }
 
         .line_clamp {
             /* This -webkit-box display property is webkit-specific, but
@@ -465,7 +531,7 @@
 
         .recent_topic_actions {
             margin-right: 5px;
-            font-size: 15px;
+            font-size: 1.0714em; /* 15px at 14px / em */
         }
     }
 
@@ -480,30 +546,33 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* To accommodate fa-group icon */
-            width: 14px;
-            height: 14px;
 
-            .fa-group,
+            .zulip-icon.conversation-partners-icon,
             .zulip-icon.zulip-icon-bot {
-                font-size: 0.8rem;
                 opacity: 0.6;
             }
 
-            .user_circle {
+            .user-circle {
                 min-width: var(
                     --length-user-status-circle-recent-conversations
                 );
-                height: var(--length-user-status-circle-recent-conversations);
+                font-size: 0.625em;
                 float: left;
                 position: unset;
             }
         }
 
-        .user_status_icon_wrapper {
-            /* Keep status emoji with usernames,
-               and better vertically align the emoji. */
-            display: inline-flex;
+        .recent-view-dm-group {
+            /* We don't display status emoji in group DMs,
+               so prepare an ordinary inline layout... */
+            .user-status-microlayout {
+                display: inline;
+                white-space: collapse;
+            }
+            /* ...and hide the status emoji. */
+            .status-emoji {
+                display: none;
+            }
         }
     }
 
@@ -534,8 +603,9 @@
 
 #recent-view-filter_widget {
     display: inline-flex;
-    width: 150px;
-    margin: 0 5px 10px 0;
+    width: 10.7142em; /* 150px at 14px em */
+    /* Legacy 5px 10px at 14px/1em. */
+    margin: 0 0.3571em 0.7142em 0;
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);

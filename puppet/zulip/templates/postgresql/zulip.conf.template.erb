@@ -54,11 +54,11 @@ primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user 
 <% end -%>
 
 <% unless @ssl_cert_file.nil? -%>
-ssl_cert_file = '<%= @ssl_cert_file %>'		# (change requires restart)
+ssl_cert_file = '<%= @ssl_cert_file %>'
 <% end -%>
 <% unless @ssl_key_file.nil? -%>
-ssl_key_file = '<%= @ssl_key_file %>'		# (change requires restart)
+ssl_key_file = '<%= @ssl_key_file %>'
 <% end -%>
 <% unless @ssl_ca_file.nil? -%>
-ssl_ca_file = '<%= @ssl_ca_file %>'		# (change requires restart)
+ssl_ca_file = '<%= @ssl_ca_file %>'
 <% end -%>

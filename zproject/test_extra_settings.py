@@ -55,6 +55,9 @@ if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
 if "GENERATE_STRIPE_FIXTURES" in os.environ:
     GENERATE_STRIPE_FIXTURES = True
 
+if "GENERATE_LITELLM_FIXTURES" in os.environ:
+    GENERATE_LITELLM_FIXTURES = True
+
 if "BAN_CONSOLE_OUTPUT" in os.environ:
     BAN_CONSOLE_OUTPUT = True
 
@@ -145,6 +148,7 @@ S3_KEY = "test-key"
 S3_SECRET_KEY = "test-secret-key"
 S3_AUTH_UPLOADS_BUCKET = "test-authed-bucket"
 S3_AVATAR_BUCKET = "test-avatar-bucket"
+S3_EXPORT_BUCKET = "test-export-bucket"
 
 INLINE_URL_EMBED_PREVIEW = False
 
@@ -190,6 +194,7 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
 
 
+VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "account_id"
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 
@@ -280,8 +285,6 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {
     }
 }
 
-ALLOW_GROUP_VALUED_SETTINGS = True
-
 # This override disables the grace period for undoing resolving/unresolving
 # a topic in tests.
 # This allows tests to not worry about the special behavior during the grace period.
@@ -289,3 +292,5 @@ ALLOW_GROUP_VALUED_SETTINGS = True
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 0
 
 KATEX_SERVER = False
+
+ROOT_DOMAIN_LANDING_PAGE = False

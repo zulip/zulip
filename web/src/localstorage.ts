@@ -1,12 +1,11 @@
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
+import * as blueslip from "./blueslip.ts";
 
 const formDataSchema = z
     .object({
         data: z.unknown(),
         __valid: z.literal(true),
-        expires: z.number().nullable(),
     })
     // z.unknown by default marks the field as optional.
     // Use zod transform to make optional data field non-optional.
@@ -15,13 +14,12 @@ const formDataSchema = z
 type FormData = z.infer<typeof formDataSchema>;
 
 export type LocalStorage = {
-    setExpiry: (expires: number, isGlobal: boolean) => LocalStorage;
     get: (name: string) => unknown;
     set: (name: string, data: unknown) => boolean;
     remove: (name: string) => void;
     removeDataRegexWithCondition: (
         name: string,
-        condition_checker: (value: string | null | undefined) => boolean,
+        condition_checker: (value: unknown) => boolean,
     ) => void;
     migrate: <T = unknown>(
         name: string,
@@ -32,23 +30,17 @@ export type LocalStorage = {
 };
 
 const ls = {
-    // check if the datestamp is from before now and if so return true.
-    isExpired(stamp: number): boolean {
-        return new Date(stamp) < new Date();
-    },
-
     // return the localStorage key that is bound to a version of a key.
     formGetter(version: number, name: string): string {
         return `ls__${version}__${name}`;
     },
 
-    // create a formData object to put in the data, a signature that it was
-    // created with this library, and when it expires (if ever).
-    formData(data: unknown, expires: number): FormData {
+    // create a formData object to put in the data and a signature that it was
+    // created with this library.
+    formData(data: unknown): FormData {
         return {
             data,
             __valid: true,
-            expires: Date.now() + expires,
         };
     },
 
@@ -59,26 +51,16 @@ const ls = {
             if (raw_data === null) {
                 return undefined;
             }
-            const data = formDataSchema.parse(JSON.parse(raw_data));
-            if (
-                // JSON forms of data with `Infinity` turns into `null`,
-                // so if null then it hasn't expired since nothing was specified.
-                data.expires === null ||
-                !ls.isExpired(data.expires)
-            ) {
-                return data;
-            }
+            return formDataSchema.parse(JSON.parse(raw_data));
         } catch {
-            // data stays undefined
+            return undefined;
         }
-
-        return undefined;
     },
 
     // set the wrapped version of the data into localStorage.
-    setData(version: number, name: string, data: unknown, expires: number): void {
+    setData(version: number, name: string, data: unknown): void {
         const key = this.formGetter(version, name);
-        const val = this.formData(data, expires);
+        const val = this.formData(data);
 
         localStorage.setItem(key, JSON.stringify(val));
     },
@@ -96,7 +78,7 @@ const ls = {
     removeDataRegexWithCondition(
         version: number,
         regex: string,
-        condition_checker: (value: string | null | undefined) => boolean,
+        condition_checker: (value: unknown) => boolean,
     ): void {
         const key_regex = new RegExp(this.formGetter(version, regex));
         let keys: string[] = [];
@@ -109,15 +91,17 @@ const ls = {
         keys = keys.filter((key) => key_regex.test(key));
 
         for (const key of keys) {
-            let value;
-            let value_set = false;
+            let raw_data;
             try {
-                value = localStorage.getItem(key);
-                value_set = true;
+                raw_data = localStorage.getItem(key);
             } catch {
-                // Do nothing if the fetch fails
+                continue;
             }
-            if (value_set && condition_checker(value)) {
+            if (raw_data === null) {
+                continue;
+            }
+            const data = formDataSchema.parse(JSON.parse(raw_data));
+            if (condition_checker(data.data)) {
                 try {
                     localStorage.removeItem(key);
                 } catch {
@@ -140,7 +124,7 @@ const ls = {
 
         if (old?.__valid) {
             const data = callback(old.data);
-            this.setData(v2, name, data, Number.POSITIVE_INFINITY);
+            this.setData(v2, name, data);
 
             return data;
         }
@@ -153,21 +137,9 @@ const ls = {
 export const localstorage = function (): LocalStorage {
     const _data = {
         VERSION: 1,
-        expires: Number.POSITIVE_INFINITY,
-        expiresIsGlobal: false,
     };
 
     const prototype = {
-        // `expires` should be a Number that represents the number of ms from
-        // now that this should expire in.
-        // this allows for it to either be set only once or permanently.
-        setExpiry(expires: number, isGlobal: boolean): LocalStorage {
-            _data.expires = expires;
-            _data.expiresIsGlobal = isGlobal || false;
-
-            return this;
-        },
-
         get(name: string): unknown {
             const data = ls.getData(_data.VERSION, name);
 
@@ -180,15 +152,7 @@ export const localstorage = function (): LocalStorage {
 
         set(name: string, data: unknown): boolean {
             if (_data.VERSION !== undefined) {
-                ls.setData(_data.VERSION, name, data, _data.expires);
-
-                // if the expires attribute was not set as a global, then
-                // make sure to return it back to Infinity to not impose
-                // constraints on the next key.
-                if (!_data.expiresIsGlobal) {
-                    _data.expires = Number.POSITIVE_INFINITY;
-                }
-
+                ls.setData(_data.VERSION, name, data);
                 return true;
             }
 
@@ -205,7 +169,7 @@ export const localstorage = function (): LocalStorage {
         // match the pattern given by `name`.
         removeDataRegexWithCondition(
             name: string,
-            condition_checker: (value: string | null | undefined) => boolean,
+            condition_checker: (value: unknown) => boolean,
         ): void {
             ls.removeDataRegexWithCondition(_data.VERSION, name, condition_checker);
         },

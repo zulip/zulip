@@ -10,7 +10,7 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {tab|by-card}
 
-{relative|gear|plans}
+{relative|gear-billing|plans}
 
 1. On the page listing Zulip Cloud plans, click the button at the bottom
    of the plan you would like to purchase.
@@ -21,7 +21,7 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {!pay-by-invoice-warning.md!}
 
-{relative|gear|plans}
+{relative|gear-billing|plans}
 
 1. On the page listing Zulip Cloud plans, click the button at the bottom
    of the plan you would like to purchase.
@@ -38,9 +38,13 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {tab|desktop-web}
 
-{relative|gear|billing}
+{relative|gear-billing|billing}
 
 {end_tabs}
+
+### Configure who can manage plans and billing
+
+{!configure-who-can-manage-plans.md!}
 
 ## Cancel paid plan
 
@@ -51,7 +55,7 @@ Free** at the end of the current billing period.
 
 {tab|desktop-web}
 
-{relative|gear|billing}
+{relative|gear-billing|billing}
 
 1. At the bottom of the page, click **Cancel plan**.
 
@@ -190,7 +194,7 @@ tool.
 
 {tab|desktop-web}
 
-{relative|gear|billing}
+{relative|gear-billing|billing}
 
 {!manual-add-license-instructions.md!}
 
@@ -206,8 +210,8 @@ Deactivating a user frees up their license for reuse.
 ### How are guest accounts billed? Is there special pricing?
 
 For an organization with N other users, 5*N [guest users](/help/guest-users)
-are included at no extra charge. After that, you will be charged at 1/5 of
-your regular per-user pricing for each additional guest.
+are included at no extra charge. After that, you will need to purchase an
+extra license for every 5 additional guest users.
 
 ## Related articles
 

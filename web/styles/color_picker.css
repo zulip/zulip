@@ -1,0 +1,59 @@
+.color-swatch-list {
+    display: grid;
+    grid-template-columns: repeat(6, var(--size-color-swatch));
+    gap: var(--grid-gap-color-swatch);
+    place-items: center;
+    padding: var(--padding-color-swatch-list);
+}
+
+.color-swatch-input {
+    display: none;
+}
+
+.color-swatch-input:checked + .color-swatch-label {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: 1px;
+}
+
+.color-swatch-label {
+    width: var(--size-color-swatch);
+    height: var(--size-color-swatch);
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: 1px;
+    }
+}
+
+.custom-color-picker {
+    position: relative;
+}
+
+.color-picker-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100% !important;
+    visibility: hidden;
+}
+
+.custom-color-swatch-icon {
+    border-radius: 50%;
+    background: var(--gradient-custom-swatch);
+}
+
+.color-picker-popover .message-header-contents {
+    border: none;
+}
+
+.color_picker_confirm_button {
+    height: 100%;
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+}

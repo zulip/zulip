@@ -1,6 +1,8 @@
 import calendar
+import os
 import time
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -14,7 +16,7 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
@@ -49,22 +51,6 @@ def get_furthest_read_time(user_profile: UserProfile | None) -> float | None:
     return calendar.timegm(user_activity.last_visit.utctimetuple())
 
 
-def get_bot_types(user_profile: UserProfile | None) -> list[dict[str, object]]:
-    bot_types: list[dict[str, object]] = []
-    if user_profile is None:
-        return bot_types
-
-    for type_id, name in UserProfile.BOT_TYPES.items():
-        bot_types.append(
-            dict(
-                type_id=type_id,
-                name=name,
-                allowed=type_id in user_profile.allowed_bot_types,
-            )
-        )
-    return bot_types
-
-
 def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
     if not settings.PROMOTE_SPONSORING_ZULIP:
         return False
@@ -72,45 +58,6 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
     # If PROMOTE_SPONSORING_ZULIP is enabled, advertise sponsoring
     # Zulip in the gear menu of non-paying organizations.
     return realm.plan_type in [Realm.PLAN_TYPE_STANDARD_FREE, Realm.PLAN_TYPE_SELF_HOSTED]
-
-
-def get_billing_info(user_profile: UserProfile | None) -> BillingInfo:
-    # See https://zulip.com/help/roles-and-permissions for clarity.
-    show_billing = False
-    show_plans = False
-    sponsorship_pending = False
-
-    # We want to always show the remote billing option as long as the user is authorized,
-    # except on zulipchat.com where it's not applicable.
-    show_remote_billing = (
-        (not settings.CORPORATE_ENABLED)
-        and user_profile is not None
-        and user_profile.has_billing_access
-    )
-
-    # This query runs on home page load, so we want to avoid
-    # hitting the database if possible. So, we only run it for the user
-    # types that can actually see the billing info.
-    if settings.CORPORATE_ENABLED and user_profile is not None and user_profile.has_billing_access:
-        from corporate.models import CustomerPlan, get_customer_by_realm
-
-        customer = get_customer_by_realm(user_profile.realm)
-        if customer is not None:
-            if customer.sponsorship_pending:
-                sponsorship_pending = True
-
-            if CustomerPlan.objects.filter(customer=customer).exists():
-                show_billing = True
-
-        if user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
-            show_plans = True
-
-    return BillingInfo(
-        show_billing=show_billing,
-        show_plans=show_plans,
-        sponsorship_pending=sponsorship_pending,
-        show_remote_billing=show_remote_billing,
-    )
 
 
 def get_user_permission_info(user_profile: UserProfile | None) -> UserPermissionInfo:
@@ -137,7 +84,7 @@ def build_page_params_for_home_page_load(
     user_profile: UserProfile | None,
     realm: Realm,
     insecure_desktop_app: bool,
-    narrow: list[NarrowTerm],
+    narrow: list[NeverNegatedNarrowTerm],
     narrow_stream: Stream | None,
     narrow_topic_name: str | None,
 ) -> tuple[int, dict[str, object]]:
@@ -155,11 +102,15 @@ def build_page_params_for_home_page_load(
         user_settings_object=True,
         linkifier_url_template=True,
         user_list_incomplete=True,
+        include_deactivated_groups=True,
+        archived_channels=True,
+        empty_topic_name=True,
     )
 
     if user_profile is not None:
         client = RequestNotes.get_notes(request).client
         assert client is not None
+        partial_subscribers = os.environ.get("PARTIAL_SUBSCRIBERS") is not None
         state_data = do_events_register(
             user_profile,
             realm,
@@ -168,9 +119,11 @@ def build_page_params_for_home_page_load(
             client_gravatar=True,
             slim_presence=True,
             presence_last_update_id_fetched_by_client=-1,
+            presence_history_limit_days=settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
             client_capabilities=client_capabilities,
             narrow=narrow,
             include_streams=False,
+            include_subscribers="partial" if partial_subscribers else True,
         )
         queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
@@ -183,16 +136,20 @@ def build_page_params_for_home_page_load(
 
     if user_profile is None:
         request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language)
+        split_url = urlsplit(request.build_absolute_uri())
+        show_try_zulip_modal = (
+            settings.DEVELOPMENT or split_url.hostname == "chat.zulip.org"
+        ) and split_url.query == "show_try_zulip_modal"
     else:
         request_language = get_and_set_request_language(
             request,
             default_language,
             translation.get_language_from_path(request.path_info),
         )
+        show_try_zulip_modal = False
 
     furthest_read_time = get_furthest_read_time(user_profile)
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
-    billing_info = get_billing_info(user_profile)
     user_permission_info = get_user_permission_info(user_profile)
 
     # Pass parameters to the client-side JavaScript code.
@@ -211,22 +168,20 @@ def build_page_params_for_home_page_load(
         ## Misc. extra data.
         language_list=get_language_list(),
         furthest_read_time=furthest_read_time,
-        bot_types=get_bot_types(user_profile),
+        embedded_bots_enabled=settings.EMBEDDED_BOTS_ENABLED,
         two_fa_enabled=two_fa_enabled,
         apps_page_url=get_apps_page_url(),
-        show_billing=billing_info.show_billing,
-        show_remote_billing=billing_info.show_remote_billing,
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
-        show_plans=billing_info.show_plans,
-        sponsorship_pending=billing_info.sponsorship_pending,
         show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
         is_spectator=user_profile is None,
+        presence_history_limit_days_for_web_app=settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
         # There is no event queue for spectators since
         # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,
+        show_try_zulip_modal=show_try_zulip_modal,
     )
 
     page_params["state_data"] = state_data

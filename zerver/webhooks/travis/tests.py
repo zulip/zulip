@@ -31,16 +31,33 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_ignore_travis_pull_request_by_default(self) -> None:
-        self.check_webhook(
-            "pull_request", content_type="application/x-www-form-urlencoded", expect_noop=True
-        )
-
-    def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
-        self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
+    def test_travis_only_pull_request_event(self) -> None:
+        self.url = f'{self.build_webhook_url()}&only_events=["pull_request"]'
 
         self.check_webhook(
             "pull_request",
+            self.TOPIC_NAME,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+        self.check_webhook(
+            "build",
+            content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
+        )
+
+    def test_travis_exclude_pull_request_event(self) -> None:
+        self.url = f'{self.build_webhook_url()}&exclude_events=["pull_request"]'
+
+        self.check_webhook(
+            "pull_request",
+            content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
+        )
+
+        self.check_webhook(
+            "build",
             self.TOPIC_NAME,
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
@@ -55,9 +72,6 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
             self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
-
-    def test_travis_only_push_event_not_sent(self) -> None:
-        self.url = f'{self.build_webhook_url()}&only_events=["push"]&ignore_pull_requests=false'
 
         self.check_webhook(
             "pull_request",
@@ -74,9 +88,6 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
             expect_noop=True,
         )
 
-    def test_travis_exclude_push_event_sent(self) -> None:
-        self.url = f'{self.build_webhook_url()}&exclude_events=["push"]&ignore_pull_requests=false'
-
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
@@ -85,7 +96,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
     def test_travis_include_glob_events(self) -> None:
-        self.url = f'{self.build_webhook_url()}&include_events=["*"]&ignore_pull_requests=false'
+        self.url = f'{self.build_webhook_url()}&include_events=["*"]'
 
         self.check_webhook(
             "pull_request",
@@ -102,7 +113,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
     def test_travis_exclude_glob_events(self) -> None:
-        self.url = f'{self.build_webhook_url()}&exclude_events=["*"]&ignore_pull_requests=false'
+        self.url = f'{self.build_webhook_url()}&exclude_events=["*"]'
 
         self.check_webhook(
             "pull_request",

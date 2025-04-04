@@ -4,9 +4,9 @@ Zulip supports attaching multiple files to messages, including images,
 documents, sound, and video. You can edit the names of the files others see
 after you upload them.
 
-For images and videos, a small preview will be shown directly in the message.
-People reading the message can click on the preview to
-[view the full-size image or video](/help/view-images-and-videos).
+For images and videos, a small preview will be shown directly in the message, if
+there are up to 24 attachments. People reading the message can click on the
+preview to [view the full-size image or video](/help/view-images-and-videos).
 
 ## Uploading files
 
@@ -114,13 +114,21 @@ You can share files from other apps on Zulip.
 
 ![Markdown image](/static/images/help/markdown-image.png)
 
-## Troubleshooting info
+## File upload limits
 
-Zulip does not generate thumbnails for messages with more than ten
-attachments.
+The Zulip Cloud Standard and Zulip Cloud Plus
+[plans](https://zulip.com/plans/#cloud) include 5 GB of file storage per user.
+Each uploaded file can be up to 1 GB.
 
-The maximum file size for attachments is 25MB in most Zulip installations.
-This limit can be changed by the server administrator.
+The Zulip Cloud Free [plan](https://zulip.com/plans/#cloud) includes a total of
+5 GB of file storage. Each uploaded file can be up to 10 MB.
+
+In organizations on a self-hosted server, server administrators can configure
+the maximum size for uploaded files via the `MAX_FILE_UPLOAD_SIZE`
+[server setting][system-settings]. Setting it to 0 disables file uploads, and
+hides the UI for uploading files from the web and desktop apps.
+
+[system-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
 ## Related articles
 

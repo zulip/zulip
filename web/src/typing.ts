@@ -1,16 +1,21 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
-import * as typing_status from "../shared/src/typing_status";
-import type {Recipient} from "../shared/src/typing_status";
+import * as typing_status from "../shared/src/typing_status.ts";
+import type {EditingStatusWorker, Recipient} from "../shared/src/typing_status.ts";
 
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_state from "./compose_state";
-import * as people from "./people";
-import {realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import {user_settings} from "./user_settings";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_state from "./compose_state.ts";
+import * as message_store from "./message_store.ts";
+import * as people from "./people.ts";
+import * as rows from "./rows.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import {user_settings} from "./user_settings.ts";
+
+let edit_box_worker: EditingStatusWorker;
 
 type TypingAPIRequest = {op: "start" | "stop"} & (
     | {
@@ -41,6 +46,24 @@ function send_typing_notification_ajax(data: TypingAPIRequest): void {
     });
 }
 
+function send_message_edit_typing_notification_ajax(
+    message_id: number,
+    operation: "start" | "stop",
+): void {
+    const data = {
+        op: operation,
+    };
+    void channel.post({
+        url: `/json/messages/${message_id}/typing`,
+        data,
+        error(xhr) {
+            if (xhr.readyState !== 0) {
+                blueslip.warn("Failed to send message edit typing event: " + xhr.responseText);
+            }
+        },
+    });
+}
+
 function send_direct_message_typing_notification(
     user_ids_array: number[],
     operation: "start" | "stop",
@@ -58,6 +81,10 @@ function send_stream_typing_notification(
     topic: string,
     operation: "start" | "stop",
 ): void {
+    const stream = stream_data.get_sub_by_id(stream_id)!;
+    if (!stream_data.can_post_messages_in_stream(stream)) {
+        return;
+    }
     const data = {
         type: "stream",
         stream_id: JSON.stringify(stream_id),
@@ -71,10 +98,29 @@ function send_typing_notification_based_on_message_type(
     to: Recipient,
     operation: "start" | "stop",
 ): void {
+    assert(to.notification_event_type === "typing");
     if (to.message_type === "direct" && user_settings.send_private_typing_notifications) {
         send_direct_message_typing_notification(to.ids, operation);
     } else if (to.message_type === "stream" && user_settings.send_stream_typing_notifications) {
         send_stream_typing_notification(to.stream_id, to.topic, operation);
+    }
+}
+
+function message_edit_typing_notifications_enabled(message_id: number): boolean {
+    const message = message_store.get(message_id);
+    assert(message !== undefined);
+    if (message.type === "stream") {
+        return user_settings.send_stream_typing_notifications;
+    }
+    return user_settings.send_private_typing_notifications;
+}
+
+function send_typing_notifications_for_message_edit(
+    message_id: number,
+    operation: "start" | "stop",
+): void {
+    if (message_edit_typing_notifications_enabled(message_id)) {
+        send_message_edit_typing_notification_ajax(message_id, operation);
     }
 }
 
@@ -108,13 +154,28 @@ function notify_server_stop(to: Recipient): void {
     send_typing_notification_based_on_message_type(to, "stop");
 }
 
+function notify_server_editing_start(to: Recipient): void {
+    assert(to.notification_event_type === "typing_message_edit");
+    send_typing_notifications_for_message_edit(to.message_id, "start");
+}
+
+function notify_server_editing_stop(to: Recipient): void {
+    assert(to.notification_event_type === "typing_message_edit");
+    send_typing_notifications_for_message_edit(to.message_id, "stop");
+}
+
 export function get_recipient(): Recipient | null {
     const message_type = compose_state.get_message_type();
     if (message_type === "private") {
+        const user_ids = get_user_ids_array();
+        // compose box with no valid user pills.
+        if (user_ids === null) {
+            return null;
+        }
         return {
             message_type: "direct",
             notification_event_type: "typing",
-            ids: get_user_ids_array()!,
+            ids: user_ids,
         };
     }
     if (message_type === "stream") {
@@ -125,6 +186,10 @@ export function get_recipient(): Recipient | null {
             return null;
         }
         const topic = compose_state.topic();
+        if (realm.realm_mandatory_topics && topic === "") {
+            // compose box with empty topic string.
+            return null;
+        }
         return {
             message_type: "stream",
             notification_event_type: "typing",
@@ -135,11 +200,34 @@ export function get_recipient(): Recipient | null {
     return null;
 }
 
+function get_message_edit_recipient(message_id: number): Recipient {
+    return {
+        notification_event_type: "typing_message_edit",
+        message_id,
+    };
+}
+export function stop_message_edit_notifications(message_id: number): void {
+    const recipient = get_message_edit_recipient(message_id);
+    typing_status.update_editing_status(
+        edit_box_worker,
+        recipient,
+        "stop",
+        realm.server_typing_started_wait_period_milliseconds,
+        realm.server_typing_stopped_wait_period_milliseconds,
+    );
+}
+
 export function initialize(): void {
     const worker = {
         get_current_time,
         notify_server_start,
         notify_server_stop,
+    };
+
+    edit_box_worker = {
+        get_current_time,
+        notify_server_editing_start,
+        notify_server_editing_stop,
     };
 
     $(document).on("input", "#compose-textarea", () => {
@@ -149,6 +237,19 @@ export function initialize(): void {
         typing_status.update(
             worker,
             new_recipient,
+            realm.server_typing_started_wait_period_milliseconds,
+            realm.server_typing_stopped_wait_period_milliseconds,
+        );
+    });
+
+    $("body").on("input", ".message_edit_content", function (this: HTMLElement) {
+        const $message_row = $(this).closest(".message_row");
+        const message_id = rows.id($message_row);
+        const new_recipient = get_message_edit_recipient(message_id);
+        typing_status.update_editing_status(
+            edit_box_worker,
+            new_recipient,
+            "start",
             realm.server_typing_started_wait_period_milliseconds,
             realm.server_typing_stopped_wait_period_milliseconds,
         );

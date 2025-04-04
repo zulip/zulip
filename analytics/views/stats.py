@@ -185,8 +185,7 @@ def get_chart_data_for_stream(
     stream, ignored_sub = access_stream_by_id(
         user_profile,
         stream_id,
-        require_active=True,
-        allow_realm_admin=True,
+        require_content_access=False,
     )
 
     return do_get_chart_data(
@@ -610,7 +609,7 @@ def client_label_map(name: str) -> str:
     if name in ["ZulipPython", "API: Python"]:
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
-        return name[len("Zulip") : -len("Webhook")] + " webhook"
+        return name.removeprefix("Zulip").removesuffix("Webhook") + " webhook"
     return name
 
 

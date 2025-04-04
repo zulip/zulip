@@ -76,6 +76,7 @@
                     <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
                     <b>Non-guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.non_guest_user_count }}<br />
                     <b>Guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.guest_user_count }}<br />
+                    <a target="_blank" rel="noopener noreferrer" href="/activity/remote/logs/server/{{ remote_server.uuid }}/">View audit logs</a><br />
                     <br />
                     <b>Total mobile user count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.total_mobile_users }}<br />
                     {% if remote_realms[remote_server.id] != [] %}

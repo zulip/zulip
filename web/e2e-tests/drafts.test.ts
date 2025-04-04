@@ -1,8 +1,8 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
     await page.waitForSelector("#draft_overlay.show", {hidden: true});
@@ -215,7 +215,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     await common.pm_recipient.expect(page, `${cordelia_internal_email},${hamlet_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
-        "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
+        "Cordelia, Lear's daughter and King Hamlet - Zulip Dev - Zulip",
         "Didn't narrow to the direct messages with cordelia and hamlet",
     );
     await page.click("#compose_close");
@@ -306,7 +306,6 @@ async function drafts_test(page: Page): Promise<void> {
     await common.send_message(page, "private", {
         recipient: "cordelia@zulip.com, hamlet@zulip.com",
         content: "howdy doo",
-        outside_view: true,
     });
     await create_private_message_draft(page);
     // Close and try restoring it by opening the composebox again.

@@ -1,0 +1,109 @@
+<div class="information-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="subsection-header">
+        <h3 class="light">{{t "Information" }}</h3>
+        {{> settings_save_discard_widget section_name="information-settings" show_only_indicator=(not for_realm_settings) }}
+    </div>
+
+    <div class="input-group">
+        <label class="settings-field-label">{{t "User list style" }}</label>
+        <div class="user_list_style_values grey-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
+            {{#each user_list_style_values}}
+                <label class="preferences-radio-choice-label">
+                    <div class="radio-choice-controls">
+                        <input type="radio" class="setting_user_list_style_choice" name="user_list_style" value="{{this.code}}"/>
+                        <span class="preferences-radio-choice-text">{{this.description}}</span>
+                    </div>
+                    <span class="right preview">
+                        {{#if (eq this.code 1)}}
+                        <div class="user-name-and-status-emoji">
+                            <span class="user-name">{{../full_name}}</span>
+                            {{> ../status_emoji emoji_name="house" emoji_code="1f3e0"}}
+                        </div>
+                        {{/if}}
+                        {{#if (eq this.code 2)}}
+                        <div class="user-name-and-status-text">
+                            <div class="user-name-and-status-emoji">
+                                <span class="user-name">{{../full_name}}</span>
+                                {{> ../status_emoji emoji_name="house" emoji_code="1f3e0"}}
+                            </div>
+                            <span class="status-text">{{t "Working remotely" }}</span>
+                        </div>
+                        {{/if}}
+                        {{#if (eq this.code 3)}}
+                        <div class="profile-with-avatar">
+                            <div class="user-profile-picture">
+                                <img src="{{../profile_picture}}"/>
+                            </div>
+                            <div class="user-name-and-status-wrapper">
+                                <div class="user-name-and-status-emoji">
+                                    <span class="user-name">{{../full_name}}</span>
+                                    {{> ../status_emoji emoji_name="house" emoji_code="1f3e0"}}
+                                </div>
+                                <span class="status-text">{{t "Working remotely" }}</span>
+                            </div>
+                        </div>
+                        {{/if}}
+                    </span>
+                </label>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="input-group thinner setting-next-is-related">
+        <label for="{{prefix}}web_animate_image_previews" class="settings-field-label">{{t "Play animated images" }}</label>
+        <select name="web_animate_image_previews" class="setting_web_animate_image_previews prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_animate_image_previews" data-setting-widget-type="string">
+            {{> dropdown_options_widget option_values=web_animate_image_previews_values}}
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label for="{{prefix}}web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
+        <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
+            {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
+        </select>
+    </div>
+
+    {{> settings_checkbox
+      setting_name="starred_message_counts"
+      is_checked=settings_object.starred_message_counts
+      label=settings_label.starred_message_counts
+      render_only=settings_render_only.starred_message_counts
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="receives_typing_notifications"
+      is_checked=settings_object.receives_typing_notifications
+      label=settings_label.receives_typing_notifications
+      render_only=settings_render_only.receives_typing_notifications
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="hide_ai_features"
+      is_checked=settings_object.hide_ai_features
+      label=settings_label.hide_ai_features
+      render_only=settings_render_only.hide_ai_features
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="fluid_layout_width"
+      is_checked=settings_object.fluid_layout_width
+      label=settings_label.fluid_layout_width
+      render_only=settings_render_only.fluid_layout_width
+      prefix=prefix}}
+
+    <div class="input-group">
+        <label for="{{prefix}}demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
+            {{> ../help_link_widget link="/help/manage-inactive-channels" }}
+        </label>
+        <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
+            {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
+        </select>
+    </div>
+
+    {{> settings_checkbox
+      setting_name="high_contrast_mode"
+      is_checked=settings_object.high_contrast_mode
+      label=settings_label.high_contrast_mode
+      render_only=settings_render_only.high_contrast_mode
+      prefix=prefix}}
+</div>

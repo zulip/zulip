@@ -59,7 +59,8 @@
             width: 120px;
             height: 70px;
             background-color: hsl(0deg 0% 94%);
-            transition: all 0.2s ease;
+            transition: 0.2s ease;
+            transition-property: background-color, border-color;
             display: inline-block;
             text-align: center;
             cursor: pointer;
@@ -550,7 +551,7 @@ input[name="licenses"] {
 
 #server-login-page-details #server-login-form-title,
 #billing-page-details .stripe-customer-billing-portal,
-#billing-page-details #legacy-server-push-notification-notice,
+#billing-page-details #complimentary-access-end-notice,
 #billing-page-details .next-payment-info {
     width: 450px;
     padding-top: 0;
@@ -649,7 +650,7 @@ input[name="licenses"] {
 #upgrade-page-details #upgrade-payment-menthod-wrapper {
     margin-left: 0;
     grid-area: payment-info;
-    width: auto;
+    width: 100%;
 }
 
 /* Used class twice to increase specificity */
@@ -723,7 +724,7 @@ input[name="licenses"] {
 
 #remote-billing-confirm-login-button,
 #remote-billing-confirm-email-button,
-#billing-page-details #legacy-server-push-notification-notice-wrapper {
+#billing-page-details #complimentary-access-end-notice-wrapper {
     margin-top: 10px;
 }
 
@@ -747,4 +748,12 @@ input[name="licenses"] {
 
 .flat-discount-separator {
     border-bottom: 1px solid hsl(0deg 0% 0%);
+}
+
+.toggle-license-management {
+    cursor: pointer;
+}
+
+#billing-page-details .billing-page-license-management-description {
+    padding-top: 5px;
 }

@@ -10,16 +10,21 @@ import $ from "jquery";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
-import {$t} from "./i18n";
-import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util";
-import {parse_html} from "./ui_util";
-import {user_settings} from "./user_settings";
+import {$t} from "./i18n.ts";
+import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util.ts";
+import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let next_timerender_id = 0;
 
-export let display_time_zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+export let display_time_zone = browser_time_zone();
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
+
+export function browser_time_zone(): string {
+    return new Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
 
 export function clear_for_testing(): void {
     next_timerender_id = 0;
@@ -174,7 +179,7 @@ export type TimeRender = {
     needs_update: boolean;
 };
 
-export function render_now(time: Date, today = new Date()): TimeRender {
+export let render_now = (time: Date, today = new Date(), display_year?: boolean): TimeRender => {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
@@ -193,7 +198,7 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     } else if (days_old === 1) {
         time_str = $t({defaultMessage: "Yesterday"});
         needs_update = true;
-    } else if (time.getFullYear() !== today.getFullYear()) {
+    } else if (time.getFullYear() !== today.getFullYear() || display_year) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is from an older year
         time_str = get_localized_date_or_time_for_format(time, "dayofyear_year");
@@ -209,6 +214,10 @@ export function render_now(time: Date, today = new Date()): TimeRender {
         formal_time_str,
         needs_update,
     };
+};
+
+export function rewire_render_now(value: typeof render_now): void {
+    render_now = value;
 }
 
 // Relative time rendering for use in most screens like Recent conversations.
@@ -353,10 +362,11 @@ function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-export function render_date(time: Date): JQuery {
+export function render_date(time: Date, display_year?: boolean): HTMLElement {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
-    const rendered_time = render_now(time);
+    const today = new Date();
+    const rendered_time = render_now(time, today, display_year);
     let $node = $("<span>").attr("class", `timerender-content ${className}`);
     $node = render_date_span($node, rendered_time);
     maybe_add_update_list_entry({
@@ -364,7 +374,7 @@ export function render_date(time: Date): JQuery {
         className,
         time,
     });
-    return $node;
+    return util.the($node);
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
@@ -534,13 +544,44 @@ export function get_time_limit_setting_in_appropriate_unit(
     return {value: time_limit_in_days, unit: "day"};
 }
 
-export function should_display_profile_incomplete_alert(timestamp: number): boolean {
-    const today = new Date(Date.now());
-    const time = new Date(timestamp * 1000);
-    const days_old = difference_in_calendar_days(today, time, display_time_zone);
+export function get_time_in_timezone(date: Date, timezone: string): number {
+    return Date.parse(date.toLocaleString("en-US", {timeZone: timezone}));
+}
 
-    if (days_old >= 15) {
+export function get_offset_difference_at_date(
+    timezone1: string,
+    timezone2: string,
+    reference_date: Date,
+): number {
+    const date1 = get_time_in_timezone(reference_date, timezone1);
+    const date2 = get_time_in_timezone(reference_date, timezone2);
+    return date1 - date2;
+}
+
+export function are_timezones_on_same_clock_now(timezone1: string, timezone2: string): boolean {
+    // America/Los_Angeles is clearly the same as America/Los_Angeles:
+    if (timezone1 === timezone2) {
         return true;
     }
-    return false;
+
+    // We still want this function to return true if the timezones are
+    // on the same clock for now, even though they may eventually diverge
+    // during Daylight Savings. This avoids nagging the user.  The only
+    // tradeoff is if the user stays logged on while the clocks change,
+    // but that should be rare.
+    const now = new Date();
+
+    try {
+        return get_offset_difference_at_date(timezone1, timezone2, now) === 0;
+    } catch {
+        // This should only happen during testing, but we just catch any error
+        // related to invalid time zones.
+        return false;
+    }
+}
+
+export function is_browser_timezone_same_as(zulip_time_zone: string): boolean {
+    // We delegate most of this check to facilitate testing.
+    // We don't want to mock browser_time_zone.
+    return are_timezones_on_same_clock_now(browser_time_zone(), zulip_time_zone);
 }

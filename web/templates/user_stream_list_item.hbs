@@ -1,17 +1,21 @@
 <tr data-stream-id="{{stream_id}}">
-    <td class="subscription_list_stream">
-        <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
-            {{> stream_privacy }}
-        </span>
-        <a class = "stream_list_item" href="{{stream_edit_url}}">{{name}}</a>
+    <td class="user-profile-channel-row">
+        <div class="user-profile-channel-container">
+            <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                {{> stream_privacy . }}
+            </span>
+            <a class="user-profile-channel-list-item" href="{{stream_edit_url}}">{{name}}</a>
+        </div>
     </td>
     {{#if show_unsubscribe_button}}
     <td class="remove_subscription">
-        <div class="subscription_list_remove">
-            <button type="button" name="unsubscribe" class="remove-subscription-button button small rounded btn-danger {{#if (or show_private_stream_unsub_tooltip show_last_user_in_private_stream_unsub_tooltip)}}tippy-zulip-tooltip{{/if}}" data-tippy-content='{{#if show_private_stream_unsub_tooltip}}{{t "Use channel settings to unsubscribe from private channels."}}{{else}}{{t "Use channel settings to unsubscribe the last user from a private channel."}}{{/if}}'>
-                {{t 'Unsubscribe' }}
-            </button>
-        </div>
+        {{#if show_private_stream_unsub_tooltip}}
+            {{> components/action_button label=(t "Unsubscribe") custom_classes="remove-subscription-button tippy-zulip-tooltip" attention="quiet" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Use channel settings to unsubscribe from private channels.") }}
+        {{else if show_last_user_in_private_stream_unsub_tooltip}}
+            {{> components/action_button label=(t "Unsubscribe") custom_classes="remove-subscription-button tippy-zulip-tooltip" attention="quiet" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Use channel settings to unsubscribe the last user from a private channel.") }}
+        {{else}}
+            {{> components/action_button label=(t "Unsubscribe") custom_classes="remove-subscription-button" attention="quiet" intent="danger" aria-label=(t "Unsubscribe") }}
+        {{/if}}
     </td>
     {{/if}}
 </tr>

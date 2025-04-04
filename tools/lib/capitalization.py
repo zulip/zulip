@@ -1,4 +1,5 @@
 import re
+from io import StringIO
 from re import Match
 
 from bs4 import BeautifulSoup
@@ -10,6 +11,7 @@ from bs4 import BeautifulSoup
 # this list without any modification.
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
+    r"AI",
     r"API",
     r"APNS",
     r"Botserver",
@@ -28,6 +30,7 @@ IGNORED_PHRASES = [
     r"IP",
     r"JSON",
     r"Jitsi",
+    r"Jotform",
     r"Kerberos",
     r"LinkedIn",
     r"LDAP",
@@ -112,6 +115,7 @@ IGNORED_PHRASES = [
     r"^moving messages$",
     r"^start a conversation$",
     r"^welcome to Zulip!$",
+    r"^general chat$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",
@@ -126,9 +130,12 @@ IGNORED_PHRASES = [
     # Emoji name placeholder
     r"leafy green vegetable",
     # Subdomain placeholder
-    r"your-organization-url",
+    r"your-organization",
     # Used in invite modal
     r"or",
+    # Units
+    r"MB",
+    r"GB",
     # Used in GIPHY integration setting. GIFs Rating.
     r"rated Y",
     r"rated G",
@@ -160,10 +167,21 @@ IGNORED_PHRASES = [
     r"does not apply to users who can delete any message",
     # Used as indicator with names for guest users.
     r"guest",
+    # Used as indicator with names for archived streams.
+    r"archived",
     # Used in pills for deactivated users.
     r"deactivated",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
+    # These are custom time unit options for modal dropdowns
+    r"minutes",
+    r"hours",
+    r"days",
+    r"weeks",
+    # Used in "Who can subscribe to this channel" label.
+    r"everyone except guests can subscribe to any public channel",
+    # Used in branch-filtering label in the integration-url-modal.
+    r"comma-separated list",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -174,7 +192,8 @@ IGNORED_PHRASES.sort(key=len, reverse=True)
 # text using BeautifulSoup and then removes extra whitespaces from
 # it. This step enables us to add HTML in our regexes directly.
 COMPILED_IGNORED_PHRASES = [
-    re.compile(r" ".join(BeautifulSoup(regex, "lxml").text.split())) for regex in IGNORED_PHRASES
+    re.compile(r" ".join(BeautifulSoup(StringIO(regex), "lxml").text.split()))
+    for regex in IGNORED_PHRASES
 ]
 
 SPLIT_BOUNDARY = r"?.!"  # Used to split string into sentences.
@@ -233,7 +252,7 @@ def get_safe_text(text: str) -> str:
     This returns text which is rendered by BeautifulSoup and is in the
     form that can be split easily and has all IGNORED_PHRASES processed.
     """
-    soup = BeautifulSoup(text, "lxml")
+    soup = BeautifulSoup(StringIO(text), "lxml")
     text = " ".join(soup.text.split())  # Remove extra whitespaces.
     for phrase_regex in COMPILED_IGNORED_PHRASES:
         text = phrase_regex.sub(replace_with_safe_phrase, text)

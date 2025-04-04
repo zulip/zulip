@@ -6,16 +6,42 @@
 
 {start_tabs}
 
+{tab|via-compose-box-buttons}
+
 {!start-composing.md!}
 
 1. Make sure the compose box is empty.
 
-2. Type `/todo` followed by a space, and the title of the to-do list.
+1. Click the **Add to-do list** (<i class="zulip-icon
+   zulip-icon-todo-list"></i>) icon at the bottom of the compose box.
 
-3. _(optional)_ Type each task on a new line, with its description, if any, after a <kbd>:</kbd> and blank space.
+1. Fill out todo-list information as desired, and click **Create to-do
+   list** to insert todo-list formatting.
 
-4. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
-   use a [keyboard shortcut](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
+1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>)
+   button, or use a [keyboard shortcut](/help/configure-send-message-keys)
+   to send your message.
+
+!!! tip ""
+
+    To reorder the list of todos, click and drag the **vertical dots**
+    (<i class="zulip-icon zulip-icon-grip-vertical"></i>) to the left of
+    each option. To delete an option, click the **trash**
+    (<i class="fa fa-trash-o"></i>) icon to the right of it.
+
+{tab|via-markdown}
+
+{!start-composing.md!}
+
+1. Make sure the compose box is empty.
+
+1. Type `/todo` followed by a space, and the title of the to-do list.
+
+1. _(optional)_ Type each task on a new line, with its description, if
+   any, after a <kbd>:</kbd> and blank space.
+
+1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>)
+   button, or use a [keyboard shortcut](/help/configure-send-message-keys)
    to send your message.
 
 !!! tip ""
@@ -28,7 +54,8 @@
 
 {start_tabs}
 
-1. Fill out the **New task** field and optionally the **Description** field at the bottom of the to-do list.
+1. Fill out the **New task** field, and optionally the **Description**
+   field at the bottom of the to-do list.
 
 1. Click **Add task** to add the new task to the to-do list.
 

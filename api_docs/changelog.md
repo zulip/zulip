@@ -18,7 +18,980 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 11.0
+
+**Feature level 377**
+
+* [`GET /events`](/api/get-events): When a user is deactivate, send
+  `peer_remove` event to all the subscribers of the streams that the
+  user was subscribed to.
+
+Feature levels 373-376 reserved for future use in 10.x maintenance
+releases.
+
+## Changes in Zulip 10.1
+
+**Feature level 372**
+
+* [`POST /typing`](/api/set-typing-status): The `"(no topic)"` value
+  when used for `topic` parameter is now interpreted as an empty string.
+
 ## Changes in Zulip 10.0
+
+**Feature level 371**
+
+No changes; feature level used for Zulip 10.0 release.
+
+**Feature level 370**
+
+* [`POST /messages`](/api/send-message),
+  [`POST /scheduled_messages`](/api/create-scheduled-message),
+  [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  The `"(no topic)"` value when used for `topic` parameter is
+  now interpreted as an empty string.
+
+**Feature level 369**
+
+* [`POST /register`](/api/register-queue): Added `navigation_tour_video_url`
+  to the response.
+
+**Feature level 368**
+
+* [`GET /events`](/api/get-events): An event with `type: "saved_snippet"`
+  and `op: "update"` is sent to the current user when a saved snippet is edited.
+* [`PATCH /saved_snippets/{saved_snippet_id}`](/api/edit-saved-snippet):
+  Added a new endpoint for editing a saved snippet.
+
+**Feature level 367**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events):
+  Added new  `can_resolve_topics_group` realm setting, which is a
+  [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to resolve topics in a stream.
+
+**Feature level 366**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added a new [search/narrow filter](/api/construct-narrow),
+  `is:muted`, matching messages in topics and channels that the user
+  has [muted](/help/mute-a-topic).
+
+**Feature level 365**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added
+  `last_moved_timestamp` field to message objects for when the message
+  was last moved to a different channel or topic. If the message's topic
+  has only been [resolved or unresolved](/help/resolve-a-topic), then
+  the field is not present. Clients should use this field, rather than
+  parsing the message object's `edit_history` array, to display an
+  indicator that the message has been moved.
+ * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): The
+  `last_edit_timestamp` field on message objects is only present if the
+  message's content has been edited. Previously, this field was present
+  if the message's content had been edited or moved to a different
+  channel or topic. Clients should use this field, rather than parsing
+  the message object's `edit_history` array, to display an indicator
+  that the message has been edited.
+
+**Feature level 364**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings)
+  [`GET /events`](/api/get-events): Removed `dense_mode` setting.
+
+**Feature level 363**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_manage_billing_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission manage plans and billing for the organization.
+* [`POST /register`](/api/register-queue): Added a new `realm_billing` object
+  containing additional information about the organization's billing state,
+  such as sponsorship request status.
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email), [`GET /users/me`](/api/get-own-user),
+  [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `is_billing_admin` field from user objects, as the permission to manage
+  plans and billing in the organization is now controlled by `can_manage_billing_group`.
+
+**Feature level 362**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`DELETE /users/me/subscriptions`](/api/unsubscribe): Subscriptions
+  in archived channels can now be edited by users with the appropriate
+  permission, just like in non-archived channels.
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Archived
+  channels can now be converted between public and private channels,
+  just like non-archived channels.
+* [`POST /register`](/api/register-queue): The `never_subscribed` data
+  structure now includes archived channels for clients that declared
+  the `archived_channels` client capability.
+
+**Feature level 361**
+
+* [`POST /messages/{message_id}/typing`](/api/set-typing-status-for-message-edit):
+  Renamed `POST /messages/{message_id}/typing` to
+  `POST /message_edit_typing`, passing the one `message_id` parameter
+  in the URL path, for consistency with the rest of the API.
+
+**Feature level 360**
+
+* [`GET /messages/{message_id}`](/api/get-message), [`GET
+  /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Messages from an archived channels can now be read through these API
+  endpoints, if the channel's access control permissions permit doing
+  so.
+
+**Feature level 359**
+
+* `PATCH /bots/{bot_user_id}`: Previously, changing the owner of a bot
+  unsubscribed the bot from any channels that the new owner was not
+  subscribed to. This behavior was removed in favor of documenting the
+  security trade-off associated with giving bots read access to
+  sensitive channel content.
+
+**Feature level 358**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events): Changed `allow_edit_history`
+  boolean field to `message_edit_history_visibility_policy` integer field to
+  support an intermediate field for `Moves only` edit history of messages.
+* [`POST /register`](/api/register-queue): `realm_allow_edit_history` field is
+  deprecated and has been replaced by `realm_message_edit_history_visibility_policy`.
+  The value of `realm_allow_edit_history` is set to `False` if
+  `realm_message_edit_history_visibility_policy` is configured as "None",
+  and `True` for "Moves only" or "All" message edit history.
+
+**Feature level 357**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_subscribe_group`
+  field to Stream and Subscription objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_subscribe_group` parameter to support setting and changing the
+  user group whose members can subscribe to the specified stream.
+
+**Feature level 356**
+
+* [`GET /streams`](/api/get-streams): The new parameter
+  `include_can_access_content`, if set to True, returns all the
+  channels that the user making the request has content access to.
+* [`GET /streams`](/api/get-streams): Rename `include_all_active` to
+  `include_all` since the separate `exclude_archived` parameter is
+  what controls whether to include archived channels. The
+  `include_all` parameter is now supported for non-administrators.
+
+**Feature level 355**
+
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /messages/flags`](/api/update-message-flags):
+  Added `ignored_because_not_subscribed_channels` field in the response, which
+  is a list of the channels whose messages were skipped to mark as unread
+  because the user is not subscribed to them.
+
+**Feature level 354**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`POST
+  /messages/flags/narrow`]: Users can access messages in unsubscribed
+  private channels that are accessible only via groups that grant
+  content access.
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Users can access read receipts in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction),
+  [`DELETE /messages/{message_id}/reactions`](/api/remove-reaction):
+  Users can react to messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* `POST /submessage`: Users can interact with polls and similar
+  widgets in messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`PATCH /messages/{message_id}`](/api/update-message): Users can
+  edit messages they have posted in unsubscribed private channels that
+  are accessible only via groups that grant content access.
+* [`POST
+  /message_edit_typing`](/api/set-typing-status-for-message-edit):
+  Users can generate typing notifications when editing messages in
+  unsubscribed private channels that are accessible only via groups
+  that grant content access.
+* [`POST /messages`](/api/send-message): Users can send messages to
+  private channels with shared history without subscribing if they are
+  part of groups that grant content access and also in
+  `can_send_message_group`.
+
+**Feature level 353**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Zoom Server to Server OAuth integration added as an option
+  for the realm setting `video_chat_provider`.
+
+**Feature level 352**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_mention_many_users_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to use wildcard mentions in large
+  channels.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `wildcard_mention_policy` property, as the permission to use wildcard mentions
+  in large channels is now controlled by `can_mention_many_users_group` setting.
+* [`POST /register`](/api/register-queue): `realm_wildcard_mention_policy`
+  field is deprecated, having been replaced by `can_mention_many_users_group`.
+  Notably, this backwards-compatible `realm_wildcard_mention_policy` value
+  now contains the superset of the true value that best approximates the actual
+  permission setting.
+
+**Feature level 351**
+
+* [`POST /message_edit_typing`](/api/set-typing-status-for-message-edit):
+  Added a new endpoint for sending typing notification when a message is
+  being edited both in streams and direct messages.
+
+* [`GET /events`](/api/get-events): The new `typing_edit_message` event
+  is sent when a user starts editing a message.
+
+**Feature level 350**
+
+* [`POST /register`](/api/register-queue): Added
+  `server_can_summarize_topics` to the response.
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `can_summarize_topics_group` realm setting which is
+  a [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to use AI summarization.
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `hide_ai_features` option for hiding all AI features in the UI.
+
+**Feature level 349**
+
+* [`POST /users/me/subscriptions`](/api/subscribe): Users belonging to
+  `can_add_subscribers_group` should be able to add subscribers to a
+  private channel without being subscribed to it.
+* [`DELETE /users/me/subscriptions`](/api/get-subscriptions): Channel
+  administrators can now unsubscribe other users even if they are not
+  an organization administrator or part of
+  `can_remove_subscribers_group`.
+* [`PATCH /streams/{stream_id}`](/api/update-stream),
+  [`DELETE /streams/{stream_id}`](/api/archive-stream): Channel and
+  organization administrators can modify all the settings requiring
+  only metadata access without having content access to it. They
+  cannot add subscribers to the channel or change it's privacy setting
+  without having content access to it.
+* [`GET /events`](/api/get-events): All users with metadata access to
+  a channel are now notified when a relevant stream event occurs.
+  Previously, non-admin users who were channel admins or users
+  belonging to `can_add_subscribers_group` were not notified of events
+  for a private channel they were not subscribed to.
+* [`GET /events`](/api/get-events): If a user is a channel
+  administrator for a private channel they are not subscribed to. That
+  channel will now appear either in the `unsubscribed` or
+  `never_subscribed` list in subscription info.
+
+**Feature level 348**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `enable_guest_user_dm_warning` setting to decide
+  whether clients should show a warning when a user is composing to a
+  guest user in the organization.
+
+**Feature level 347**
+
+* [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
+  Links to topic without a specified message now use the `with`
+  operator to follow moves of topics.
+
+**Feature level 346**
+
+* [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
+  Added support for empty string as a valid topic name in syntaxes
+  for linking to topics and messages.
+
+**Feature level 345**
+
+* `POST /remotes/server/register/transfer`,
+  `POST /remotes/server/register/verify_challenge`,
+  `POST /zulip-services/verify/{access_token}/`: Added new API
+  endpoints for transferring Zulip services registrations.
+* `POST /remotes/server/register`: Added new response format for
+  hostnames that are already registered.
+
+**Feature level 344**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added two new realm settings, `can_create_bots_group` which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to create bot users in the organization, and
+  `can_create_write_only_bots_group`  which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to create bot users who can only send messages in the organization
+  in addition to the users who are in `can_create_bots_group`.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `bot_creation_policy` property, as the permission to create bot users
+  in the organization is now controlled by two new realm settings,
+  `can_create_bots_group` and `can_create_write_only_bots_group`.
+
+**Feature level 343**
+
+* [`GET /events`](/api/get-events): Added a new field `stream_ids` to replace
+  `streams` in stream delete event and label `streams` as deprecated.
+
+**Feature level 342**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added
+  `can_add_subscribers_group` field to Stream and Subscription
+  objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_add_subscribers_group` parameter to support setting and
+  changing the user group whose members can add other subscribers
+  to the specified stream.
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Users can now always
+  include default channels in an invite's initial subscriptions.
+
+**Feature level 341**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_add_subscribers_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to add subscribers to channels in the organization.
+* [`POST /register`](/api/register-queue): Removed
+  `can_subscribe_other_users` boolean field from the response.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `invite_to_stream_policy` property, as the permission to subscribe
+  other users to channels in the organization is now controlled by the
+  `can_add_subscribers_group` setting.
+
+**Feature level 340**
+
+[`PATCH /user_groups/{user_group_id}`](/api/update-user-group): All
+the permission settings and description can now be updated for
+deactivated groups.
+
+**Feature level 339**
+
+* [`GET /events`](/api/get-events): Added `user` field back in
+  `reaction` events, reverting part of the feature level 328
+  changes. Note that this field was only restored in the events API,
+  and remains deprecated, pending core clients fully migrating away
+  from accessing it.
+
+**Feature level 338**
+
+* [`POST /register`](/api/register-queue): Added `password_max_length`
+  field, which is the maximum allowed password length.
+
+**Feature level 337**
+
+* `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
+  controlling whether the call should be voice-only, in which case we
+  keep cameras disabled for this call. Now the call creator is a
+  moderator and all other joiners are viewers.
+
+**Feature level 336**
+
+* [Markdown message formatting](/api/message-formatting#image-previews): Added
+  `data-original-content-type` attribute to convey the type of the original
+  image, and optional `data-transcoded-image` attribute for images with formats
+  which are not widely supported by browsers.
+
+**Feature level 335**
+
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Added an optional `sender_id` parameter to specify the ID of a user or bot
+  which should appear as the sender when messages are sent to the channel using
+  the returned channel email address.
+
+**Feature level 334**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_empty_topic_display_name` field for clients to use
+  while adding support for empty string as topic name.
+
+* [`POST /register`](/api/register-queue): Added `empty_topic_name`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  to allow client to specify whether it supports empty string as a topic name
+  in `register` response or events involving topic names.
+  Clients that don't support this client capability receive
+  `realm_empty_topic_display_name` field value as the topic name replacing
+  the empty string.
+
+* [`GET /events`](/api/get-events): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the following fields will have the value of `realm_empty_topic_display_name`
+  field replacing the empty string for channel messages:
+    * `subject` field in the `message` event type
+    * `topic` field in the `delete_message` event type
+    * `orig_subject` and `subject` fields in the `update_message` event type
+    * `topic_name` field in the `user_topic` event type
+    * `topic` field in the `typing` event type
+    * `topic` field in the `update_message_flags` event type when removing `read` flag
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`
+  boolean parameter to decide whether the topic names in the fetched messages
+  can be empty strings.
+
+* [`GET /messages/{message_id}/history`](/api/get-message-history):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched message history objects can be empty strings.
+
+* [`GET /users/me/{stream_id}/topics`](/api/get-stream-topics):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched `topics` array can be empty strings.
+
+* [`POST /register`](/api/register-queue): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the `topic` field in the `unread_msgs` object and `topic_name` field
+  in the `user_topics` objects will have the value of
+  `realm_empty_topic_display_name` field replacing the empty string
+  for channel messages.
+
+**Feature level 333**
+
+* [Message formatting](/api/message-formatting): System groups can now
+  be silently mentioned.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_send_message_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to post in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_send_message_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to post in the channel.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): `stream_post_policy` field is
+  deprecated, having been replaced by `can_send_message_group`. Notably,
+  this backwards-compatible `stream_post_policy` value now contains the
+  superset of the true value that best approximates the actual permission
+  setting.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Removed
+  `stream_post_policy` and `is_announcement_only` properties, as the permission
+  to post in the channel is now controlled by `can_send_message_group` setting.
+
+**Feature level 332**
+
+* [`POST /register`](/api/register-queue): Added
+  `server_min_deactivated_realm_deletion_days` and
+  `server_max_deactivated_realm_deletion_days` fields for the permitted
+  number of days before full data deletion of a deactivated organization
+  on the server.
+* `POST /realm/deactivate`: Added `deletion_delay_days` parameter to
+  support setting when a full data deletion of the deactivated
+  organization may be done.
+
+**Feature level 331**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `moderation_request_channel_id` realm setting, which is
+  the ID of the private channel to which moderation requests will be sent.
+
+**Feature level 330**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Default channels data only includes channel IDs now instead of full
+  channel data.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Default channel groups data only includes channel IDs now instead of
+  full channel data.
+
+**Feature level 329**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `web_suggest_update_timezone` user setting to indicate whether
+  the user should be shown an alert, offering to update their [profile
+  time zone](/help/change-your-timezone), when the time displayed for the
+  profile time zone differs from the current time displayed by the time
+  zone configured on their device.
+
+**Feature level 328**
+
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
+  Removed deprecated `user` dictionary from the `reactions` objects returned
+  by the API, as the clients now use `user_id` field instead.
+
+**Feature level 327**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`GET /events`](/api/get-events):
+  Adjusted the `recipient_id` field of an incoming 1:1 direct message to use the
+  same value that would be used for an outgoing message in that conversation.
+
+**Feature level 326**
+
+* [`POST /register`](/api/register-queue): Removed `allow_owners_group`
+  field from configuration data object of permission settings passed in
+  `server_supported_permission_settings`.
+* [`POST /register`](/api/register-queue): Removed `id_field_name`
+  field from configuration data object of permission settings passed
+  in `server_supported_permission_settings`.
+
+**Feature level 325**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_administer_channel_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to administer the channel in addition to realm
+  admins.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_administer_channel_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to administer the channel in addition to realm
+  admins.
+
+**Feature level 324**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_remove_members_group`
+  to user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added
+  `can_remove_members_group` parameter to support setting the user group which
+  can remove members from the user group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_remove_members_group` parameter to support changing the user group which
+  can remove members from the specified user group.
+
+**Feature level 323**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id): Added a new
+  field `is_recently_active` to stream objects as a new deterministic
+  source of truth for `demote_inactive_streams` activity decisions.
+
+**Feature level 322**
+
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Added a new parameter
+  `group_ids` which allows users to be added to user groups through
+  invitations.
+
+**Feature level 321**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_invite_users_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to send email invitations for inviting other users to the
+  organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `invite_to_realm_policy` property, as the permission to send email invitations
+  for inviting other users to the organization is now controlled by
+  `can_invite_users_group` setting.
+
+**Feature level 320**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): `can_remove_subscribers_group`
+  field can now either be an ID of a named user group with the permission,
+  or an object describing the set of users and groups with the permission.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): The
+  `can_remove_subscribers_group` parameter can now either be an ID of a
+  named user group or an object describing a set of users and groups.
+
+**Feature level 319**
+
+* [Markdown message
+  formatting](/api/message-formatting#links-to-channels-topics-and-messages): Added
+  new `message-link` format for special direct links to messages.
+
+**Feature level 318**
+
+* [`POST /register`](/api/register-queue): Updated
+  `realm_incoming_webhook_bots` with a new `config_options` key,
+  defining which options should be offered when creating URLs for this
+  integration.
+
+**Feature level 317**
+
+* [`POST /user_groups/create`](/api/create-user-group):
+  Added `group_id` to the success response of the user group creation
+  endpoint, enabling clients to easily access the unique identifier
+  of the newly created user group.
+
+**Feature level 316**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_move_messages_between_topics_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to move messages from one topic to another within a channel
+  in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `edit_topic_policy` property, as the permission to move messages between
+  topics in the organization is now controlled by
+  `can_move_messages_between_topics_group` setting.
+
+**Feature level 315**
+
+* [POST /register](/api/register-queue), [`GET
+  /streams/{stream_id}`](/api/get-stream-by-id), [`GET
+  /events`](/api/get-events), [GET
+  /users/me/subscriptions](/api/get-subscriptions): The `is_archived`
+  property has been added to channel and subscription objects.
+
+* [`GET /streams`](/api/get-streams): The new parameter
+  `exclude_archived` controls whether archived channels should be
+  returned.
+
+* [`POST /register`](/api/register-queue): The new `archived_channels`
+  [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  allows the client to specify whether it supports archived channels
+  being present in the response.
+
+**Feature level 314**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Anonymous groups are now accepted
+  by `create_multiuse_invite_group` realm setting, which is a now a
+  [group-setting value](/api/group-setting-values) instead of an
+  integer ID of the group.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Anonymous groups are now accepted
+  by `can_access_all_users_group` realm setting, which is a now a
+  [group-setting value](/api/group-setting-values) instead of an
+  integer ID of the group.
+
+**Feature level 313**
+
+* [`PATCH /users/{user_id}`](/api/update-user): Added `new_email` field to
+  allow updating the email address of the target user. The requester must be
+  an organization administrator and have the `can_change_user_emails` special
+  permission.
+* [`PATCH /users/{email}`](/api/update-user-by-email): Added new endpoint,
+  which is a copy of [`PATCH /users/{user_id}`](/api/update-user), but the user
+  is specified by their email address, following the same rules as [`GET
+  /users/{email}`](/api/get-user-by-email).
+
+**Feature level 312**
+
+* [`GET /events`](/api/get-events): Added `realm_export_consent` event
+  type to allow realm administrators to view which users have
+  consented to export their private data as part of a realm export.
+
+**Feature level 311**
+
+* [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members):
+  Added `add_subgroups` and `delete_subgroups` parameters to support updating
+  subgroups of a user group using this endpoint.
+* [`POST /user_groups/create`](/api/create-user-group): Added `subgroups`
+  parameter to support setting subgroups of a user group during its creation.
+
+**Feature level 310**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_move_messages_between_channels_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to move messages from one channel to another in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `move_messages_between_streams_policy` property, as the permission to move
+  messages between channels in the organization is now controlled by
+  `can_move_messages_between_channels_group` setting.
+
+**Feature level 309**
+
+* [Group-setting values](/api/group-setting-values): Starting with
+  this feature level, it's now possible to use group-setting values in
+  production for those settings whose value is not required to be a
+  system group
+
+**Feature level 308**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_leave_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_leave_group`
+  parameter to support setting the user group whose members can leave the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_leave_group` parameter to support changing the user group whose
+  members can leave the specified user group.
+
+**Feature level 307**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_add_custom_emoji_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to add custom emoji in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `add_custom_emoji_policy` property, as the permission to add custom emoji
+  in the organization is now controlled by `can_add_custom_emoji_group` setting.
+
+**Feature level 306**
+
+* [`GET /events`](/api/get-events): Removed the `extra_data` optional
+  field from the `realm/update` event format, which was only used for
+  `plan_type` events, with a single `upload_quota` field. Now, we use
+  a standard `realm/update_dict` event to notify clients about changes
+  in `plan_type` and other fields that atomically change with a given
+  change in plan.
+* [`GET /events`](/api/get-events): Added `max_file_upload_size_mib`
+  field to the `data` object in `realm/update_dict` event format;
+  previously, this was a constant. Note that the field does not have a
+  `realm_` prefix in the [`POST /register`](/api/register-queue)
+  response.
+
+**Feature level 305**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_add_members_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_add_members_group`
+  parameter to support setting the user group which can add members to the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_add_members_group` parameter to support changing the user group which
+  can add members to the specified user group.
+* The `can_manage_all_groups` permission now has the natural semantics
+  of applying to all groups, regardless of the role of the user given
+  this permission. Since its introduction in feature level 299,
+  `can_manage_all_groups` had temporarily had unusual semantics
+  matching those of the original`user_group_edit_policy` setting.
+
+**Feature level 304**
+
+* [`GET /export/realm`](/api/get-realm-exports),
+  [`GET /events`](/api/get-events): Added `export_type` field
+  to the dictionaries in `exports` array. It indicates whether
+  the export is of public data or full data with user consent
+  (standard export).
+
+* [`POST /export/realm`](/api/get-realm-exports): Added `export_type`
+  parameter to add support for admins to decide whether to create a
+  public or a standard data export.
+
+**Feature level 303**
+
+* [`POST /register`](/api/register-queue), [`GET /user_groups`](/api/get-user-groups),
+  [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member),
+  [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
+  Deactivated users are no longer returned as members of the user groups
+  that they were members of prior to deactivation.
+* [`POST /register`](/api/register-queue): Settings, represented as
+  [group-setting value](/api/group-setting-values), will never include
+  deactivated users in the `direct_members` list for settings whose
+  value is an anonymous group.
+* [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members):
+  Deactivated users cannot be added or removed from a user group; they
+  are now implicitly not members of any groups while deactivated.
+* [`GET /events`](/api/get-events): User reactivation event is not sent
+  to users who cannot access the reactivated user anymore due to a
+  `can_access_all_users_group` policy.
+* [`GET /events`](/api/get-events): The server will now send
+  `user_group` events with the `add_members`/`remove_members`
+  operations as appropriate when deactivating or reactivating a user,
+  to ensure client state correctly reflects groups never containing
+  deactivated users.
+* [`GET /events`](/api/get-events): To ensure that [group-setting
+  values](/api/group-setting-values) are correct, `realm/update_dict`
+  and `user_group/update` events may now be by sent by the server when
+  processing a deactivation/reactivation of a user, to ensure client
+  state correctly reflects the state, given that deactivated users
+  cannot have permissions in an organization.
+
+**Feature level 302**
+
+* [`GET /users/{email}`](/api/get-user-by-email): Changed the `email`
+  values by which users can successfully be looked up to match the
+  user email visibility setting's semantics better.
+
+**Feature level 301**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_join_group` to
+  user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_join_group`
+  parameter to support setting the user group whose members can join the user
+  group.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Added
+  `can_join_group` parameter to support changing the user group whose
+  members can join the specified user group.
+
+**Feature level 300**
+
+* [`GET /messages`](/api/get-message): Added a new message_ids parameter,
+  as an alternative method of specifying which messages to fetch.
+
+**Feature level 299**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_create_groups`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to create user groups.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_manage_all_groups`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to manage all user groups.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `user_group_edit_policy` property, as the permission to create user
+  groups is now controlled by `can_create_groups` setting and permission to
+  manage groups in now controlled by `can_manage_all_groups` setting.
+* [`POST /register`](/api/register-queue): `user_group_edit_policy`
+  field is deprecated, having been replaced by `can_create_groups` for user
+  group creation and `can_manage_all_groups` for user group management.
+
+**Feature level 298**
+
+* [`POST /user_groups/{user_group_id}/deactivate`](/api/deactivate-user-group):
+  Server now returns a specific error response (`"code": CANNOT_DEACTIVATE_GROUP_IN_USE`)
+  when a user group cannot be deactivated because it is in use. The
+  error response contains details about where the user group is being used.
+
+**Feature level 297**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  An event with `type: "saved_snippet"` is sent to the current user when a
+  saved snippet is created or deleted.
+* [`GET /saved_snippets`](/api/get-saved-snippets): Added a new endpoint for
+  fetching saved snippets of the user.
+* [`POST /saved_snippets`](/api/create-saved-snippet): Added a new endpoint for
+  creating a new saved snippet.
+* [`DELETE /saved_snippets/{saved_snippet_id}`](/api/delete-saved-snippet): Added
+  a new endpoint for deleting saved snippets.
+
+**Feature level 296**:
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a new
+  parameter `editable_by_user` to custom profile field objects, which indicates whether
+  regular users can edit the value of the profile field on their own account.
+
+**Feature level 295**
+
+* [`GET /export/realm/consents`](/api/get-realm-export-consents): Added
+  a new endpoint to fetch the [consents of users](/help/export-your-organization#configure-whether-administrators-can-export-your-private-data)
+  for their private data exports.
+* `/api/v1/tus` is an endpoint implementing the [`tus`
+  protocol](https://tus.io/protocols/resumable-upload) for resumable uploads.
+  Clients which send authenticated credentials (either via browser-based
+  cookies, or API key via `Authorization` header) may use this endpoint to
+  create uploads, similar to [`POST /user_uploads`](/api/upload-file).
+
+**Feature level 294**
+
+* [`POST /register`](/api/register-queue): Clients that do not
+  support the `include_deactivated_groups`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  do not receive deactivated user groups in the response.
+* [`GET /events`](/api/get-events): Clients that do not support the
+  `include_deactivated_groups`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  receive `remove` event on user group deactivation instead of `update`
+  event.
+* [`GET /events`](/api/get-events): Clients that do not support the
+  `include_deactivated_groups`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  do not receive `update` event when name of a deactivated user group
+  is updated.
+* [`GET /user_groups`](/api/get-user-groups): Renamed `allow_deactivated`
+  parameter to `include_deactivated_groups`.
+* `DELETE /user_groups/{user_group_id}`: Removed support for user group
+  deletion as we now support deactivating user groups.
+
+**Feature level 293**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added a new `allow_private_data_export` setting to allow users to decide
+  whether to let administrators export their private data.
+
+**Feature level 292**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`GET
+  /user_groups`](/api/get-user-groups): Added `creator_id` and
+  `date_created` fields to user groups objects.
+
+**Feature level 291**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_delete_own_message_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to delete the messages that they have sent in the organization.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `delete_own_message_policy` property, as the permission to delete own messages
+  is now controlled by `can_delete_own_message_group` setting.
+
+**Feature level 290**
+
+* [`POST /user_groups/{user_group_id}/deactivate`](/api/deactivate-user-group):
+  Added new API endpoint to deactivate a user group.
+* [`POST /register`](/api/register-queue), [`GET
+  /user_groups`](/api/get-user-groups): Added `deactivated` field in
+  the user group objects to identify deactivated user groups.
+* [`GET /events`](/api/get-events): When a user group is deactivated,
+  a `user_group` event with `op=update` is sent to clients.
+* [`GET /user_groups`](/api/get-user-groups): Added support for
+  excluding deactivated user groups from the response.
+
+**Feature level 289**
+
+* [`POST /users/{user_id}/subscription`](/api/subscribe): In the response,
+  users are identified by their numeric user ID rather than by their
+  Zulip API email address.
+
+**Feature level 288**
+
+* [`POST /register`](/api/register-queue):
+  A new `presence_history_limit_days` parameter can be given, instructing
+  the server to only fetch presence data more recent than the given
+  number of days ago.
+* [`POST /users/me/presence`](/api/update-presence):
+  A new `history_limit_days` parameter can be given, with the
+  same meaning as in the `presence_history_limit_days` parameter of
+  [`POST /register`](/api/register-queue) above.
+
+**Feature level 287**
+
+* [Markdown message
+  formatting](/api/message-formatting#image-previews): Added
+  `data-original-dimensions` attributes to placeholder images
+  (`image-loading-placeholder`), containing the dimensions of the
+  original image. This change was also backported to the Zulip 9.x
+  series, at feature level 278.
+
+**Feature level 286**
+
+* [`POST /user_uploads`](/api/upload-file): Added `filename` field to
+  the response, which is closer to the original filename than the
+  basename of the `url` field in the response.
+
+**Feature level 285**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Added
+  `detached_uploads` to the response, indicating which uploaded files
+  are now only accessible via message edit history.
+
+**Feature level 284**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message),
+  [`POST /zulip-outgoing-webhook`](/api/zulip-outgoing-webhooks): Removed
+  the `prev_rendered_content_version` field from the `edit_history` object
+  within message objects and the `update_message` event type as it is an
+  internal server implementation detail not used by any client.
 
 **Feature level 283**
 
@@ -61,8 +1034,18 @@ format used by the Zulip server that they are interacting with.
   now contains the superset of the true value that best approximates the actual
   permission setting.
 
-Feature levels 278-279 are reserved for future use in 9.x maintenance
+Feature level 279 is reserved for future use in 9.x maintenance
 releases.
+
+## Changes in Zulip 9.2
+
+**Feature level 278**
+
+* [Markdown message
+  formatting](/api/message-formatting#image-previews): Added
+  `data-original-dimensions` attributes to placeholder images
+  (`image-loading-placeholder`), containing the dimensions of the
+  original image. Backported change from feature level 287.
 
 ## Changes in Zulip 9.0
 
@@ -345,7 +1328,7 @@ No changes; feature level used for Zulip 9.0 release.
 
 **Feature level 247**
 
-* [Markdown message formatting](/api/message-formatting#mentions):
+* [Markdown message formatting](/api/message-formatting#mentions-and-silent-mentions):
   Added `channel` to the supported options for [wildcard
   mentions](/help/mention-a-user-or-group#mention-everyone-on-a-stream).
 
@@ -552,7 +1535,7 @@ No changes; feature level used for Zulip 8.0 release.
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
   [`GET /events`](/api/get-events): Added `can_access_all_users_group_id`
   realm setting, which is the ID of the user group whose members can
-  access all the users in the oragnization.
+  access all the users in the organization.
 
 * [`POST /register`](/api/register-queue): Added `allowed_system_groups`
   field to configuration data object of permission settings passed in
@@ -758,7 +1741,7 @@ No changes; feature level used for Zulip 8.0 release.
   now includes [web-public streams](/help/public-access-option) as well.
 * [`GET /events`](/api/get-events): Events for stream creation and deletion
   are now sent to clients when a user gains or loses access to any streams
-  due to a change in their [role](/help/roles-and-permissions).
+  due to a change in their [role](/help/user-roles).
 * [`GET /events`](/api/get-events): The `subscription` events for `op:
   "peer_add"` are now sent to clients when a user gains access to a stream
   due to a change in their role.

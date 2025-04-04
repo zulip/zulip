@@ -1,0 +1,5 @@
+{{#if (eq toggle_type "expander")}}
+    <button type="button" class="message_expander message_length_toggle" data-tooltip-template-id="message-expander-tooltip-template">{{t "Show more" }}</button>
+{{else if (eq toggle_type "condenser")}}
+    <button type="button" class="message_condenser message_length_toggle" data-tooltip-template-id="message-condenser-tooltip-template">{{t "Show less" }}</button>
+{{/if}}

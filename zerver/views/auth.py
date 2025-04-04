@@ -23,6 +23,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from pydantic import Json
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -59,15 +60,16 @@ from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key, get_users_for_api, is_2fa_verified
+from zerver.lib.users import get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
-from zerver.lib.validator import check_bool, validate_login_email
+from zerver.lib.validator import validate_login_email
 from zerver.models import (
     MultiuseInvite,
     PreregistrationRealm,
@@ -461,7 +463,7 @@ def finish_desktop_flow(
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URL scheme.
-    api_key = get_api_key(user_profile)
+    api_key = user_profile.api_key
     response = create_response_for_otp_flow(
         api_key, otp, user_profile, encrypted_key_field_name="otp_encrypted_api_key"
     )
@@ -508,12 +510,13 @@ def create_response_for_otp_flow(
 
 
 @log_view_func
-@has_request_variables
+@typed_endpoint
 def remote_user_sso(
     request: HttpRequest,
-    mobile_flow_otp: str | None = REQ(default=None),
-    desktop_flow_otp: str | None = REQ(default=None),
-    next: str = REQ(default="/"),
+    *,
+    mobile_flow_otp: str | None = None,
+    desktop_flow_otp: str | None = None,
+    next: str = "/",
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
@@ -562,9 +565,8 @@ def remote_user_sso(
     return login_or_register_remote_user(request, result)
 
 
-@has_request_variables
 def get_email_and_realm_from_jwt_authentication_request(
-    request: HttpRequest, json_web_token: str
+    request: HttpRequest, *, json_web_token: str
 ) -> tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
@@ -595,9 +597,11 @@ def get_email_and_realm_from_jwt_authentication_request(
 @csrf_exempt
 @require_post
 @log_view_func
-@has_request_variables
-def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpResponse:
-    email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
+@typed_endpoint
+def remote_user_jwt(request: HttpRequest, *, token: str = "") -> HttpResponse:
+    email, realm = get_email_and_realm_from_jwt_authentication_request(
+        request, json_web_token=token
+    )
 
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
@@ -611,17 +615,22 @@ def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpR
     return login_or_register_remote_user(request, result)
 
 
-@has_request_variables
+@typed_endpoint
 def oauth_redirect_to_root(
     request: HttpRequest,
     url: str,
     sso_type: str,
-    is_signup: bool = False,
-    extra_url_params: Mapping[str, str] = {},
-    next: str | None = REQ(default=None),
-    multiuse_object_key: str = REQ(default=""),
-    mobile_flow_otp: str | None = REQ(default=None),
-    desktop_flow_otp: str | None = REQ(default=None),
+    is_signup: bool,
+    extra_url_params: Mapping[str, str],
+    # Protect the above parameters from being processed as kwargs
+    # provided by @typed_endpoint by marking them as mandatory
+    # positional parameters.
+    /,
+    *,
+    next: str | None = None,
+    multiuse_object_key: str = "",
+    mobile_flow_otp: str | None = None,
+    desktop_flow_otp: str | None = None,
 ) -> HttpResponse:
     main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
@@ -716,7 +725,13 @@ def start_social_login(
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
             return config_error(request, backend)
 
-    return oauth_redirect_to_root(request, backend_url, "social", extra_url_params=extra_url_params)
+    return oauth_redirect_to_root(
+        request,
+        backend_url,
+        "social",
+        False,
+        extra_url_params,
+    )
 
 
 @handle_desktop_flow
@@ -738,7 +753,11 @@ def start_social_signup(
             return config_error(request, "saml")
         extra_url_params = {"idp": extra_arg}
     return oauth_redirect_to_root(
-        request, backend_url, "social", is_signup=True, extra_url_params=extra_url_params
+        request,
+        backend_url,
+        "social",
+        True,
+        extra_url_params,
     )
 
 
@@ -784,12 +803,15 @@ def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int)
         raise AssertionError("Invalid error type")
 
 
-def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
+def show_deactivation_notice(request: HttpRequest, next: str = "/") -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
         context = {"deactivated_domain_name": realm.name}
         if realm.deactivated_redirect is not None:
-            context["deactivated_redirect"] = realm.deactivated_redirect
+            # URL hash is automatically preserved by the browser.
+            # See https://stackoverflow.com/a/5283739
+            redirect_to = get_safe_redirect_to(next, realm.deactivated_redirect)
+            return HttpResponseRedirect(redirect_to)
         return render(request, "zerver/deactivated.html", context=context)
 
     return HttpResponseRedirect(reverse("login_page"))
@@ -862,15 +884,24 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
             return super().done(form_list, **kwargs)
 
 
-@has_request_variables
+@typed_endpoint
 def login_page(
     request: HttpRequest,
     /,
-    next: str = REQ(default="/"),
+    *,
+    next: str = "/",
     **kwargs: Any,
 ) -> HttpResponse:
-    if get_subdomain(request) == settings.SOCIAL_AUTH_SUBDOMAIN:
+    subdomain = get_subdomain(request)
+    if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
         return social_auth_subdomain_login_page(request)
+
+    if subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN:
+        context = {
+            "current_url": request.get_host(),
+            "is_selfhosting_management_error_page": True,
+        }
+        return render(request, "zerver/invalid_realm.html", status=404, context=context)
 
     # To support previewing the Zulip login pages, we have a special option
     # that disables the default behavior of redirecting logged-in users to the
@@ -891,6 +922,8 @@ def login_page(
 
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
+        if realm.deactivated_redirect:
+            return show_deactivation_notice(request, next)
         return redirect_to_deactivation_notice()
 
     extra_context = kwargs.pop("extra_context", {})
@@ -1000,7 +1033,7 @@ def process_api_key_fetch_authenticate_result(
     process_client(request, user_profile)
     RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
 
-    api_key = get_api_key(user_profile)
+    api_key = user_profile.api_key
     return api_key
 
 
@@ -1014,20 +1047,26 @@ def get_api_key_fetch_authenticate_failure(return_data: dict[str, bool]) -> Json
     if return_data.get("password_reset_needed"):
         return PasswordResetRequiredError()
     if return_data.get("invalid_subdomain"):
-        raise InvalidSubdomainError
+        # We must not report invalid_subdomain here; that value is intended only for informing server logs,
+        # and should never be exposed to end users, since it would leak whether there exists
+        # an account in a different organization with the same email address.
+        return AuthenticationFailedError()
 
     return AuthenticationFailedError()
 
 
 @csrf_exempt
 @require_post
-@has_request_variables
+@typed_endpoint
 def jwt_fetch_api_key(
     request: HttpRequest,
-    include_profile: bool = REQ(default=False, json_validator=check_bool),
-    token: str = REQ(default=""),
+    *,
+    include_profile: Json[bool] = False,
+    token: str = "",
 ) -> HttpResponse:
-    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
+    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(
+        request, json_web_token=token
+    )
 
     return_data: dict[str, bool] = {}
 
@@ -1062,10 +1101,8 @@ def jwt_fetch_api_key(
 
 @csrf_exempt
 @require_post
-@has_request_variables
-def api_fetch_api_key(
-    request: HttpRequest, username: str = REQ(), password: str = REQ()
-) -> HttpResponse:
+@typed_endpoint
+def api_fetch_api_key(request: HttpRequest, *, username: str, password: str) -> HttpResponse:
     return_data: dict[str, bool] = {}
 
     realm = get_realm_from_request(request)
@@ -1160,9 +1197,9 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     return json_success(request, data=result)
 
 
-@has_request_variables
+@typed_endpoint
 def json_fetch_api_key(
-    request: HttpRequest, user_profile: UserProfile, password: str = REQ(default="")
+    request: HttpRequest, user_profile: UserProfile, *, password: str = ""
 ) -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm is None:
@@ -1172,7 +1209,7 @@ def json_fetch_api_key(
     ):
         raise JsonableError(_("Password is incorrect."))
 
-    api_key = get_api_key(user_profile)
+    api_key = user_profile.api_key
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 

@@ -8,7 +8,7 @@ $ code .
 ```
 
 to open VS Code connected to your Vagrant environment. See the
-[Remote development over SSH][remote-ssh] tutorial for more information.
+[Remote development over SSH](https://code.visualstudio.com/docs/remote/ssh-tutorial) tutorial for more information.
 
 When using this plugin with Vagrant, you will want to run the command
 `vagrant ssh-config` from your `zulip` folder:

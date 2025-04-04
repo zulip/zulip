@@ -1,12 +1,12 @@
-import * as activity_ui from "./activity_ui";
-import * as message_lists from "./message_lists";
-import * as muted_users from "./muted_users";
-import type {RawMutedUser} from "./muted_users";
-import * as overlays from "./overlays";
-import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
-import * as recent_view_ui from "./recent_view_ui";
-import * as settings_muted_users from "./settings_muted_users";
+import * as activity_ui from "./activity_ui.ts";
+import * as message_lists from "./message_lists.ts";
+import * as muted_users from "./muted_users.ts";
+import type {RawMutedUser} from "./muted_users.ts";
+import * as overlays from "./overlays.ts";
+import * as pm_list from "./pm_list.ts";
+import * as popovers from "./popovers.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
+import * as settings_muted_users from "./settings_muted_users.ts";
 
 export function rerender_for_muted_user(): void {
     for (const msg_list of message_lists.all_rendered_message_lists()) {

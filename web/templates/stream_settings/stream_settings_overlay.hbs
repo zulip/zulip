@@ -1,4 +1,4 @@
-<div id="subscription_overlay" class="overlay new-style" data-overlay="subscriptions">
+<div id="subscription_overlay" class="overlay" data-overlay="subscriptions">
     <div class="flex overlay-content">
         <div class="subscriptions-container overlay-container">
             <div class="subscriptions-header">
@@ -13,7 +13,7 @@
                     <div id="add_new_subscription">
                         {{#if can_create_streams}}
                         <button class="create_stream_button create_stream_plus_button tippy-zulip-delayed-tooltip" data-tooltip-template-id="create-new-stream-tooltip-template" data-tippy-placement="bottom">
-                            <span class="create_button_plus_sign">+</span>
+                            <i class="create_button_plus_sign zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                         </button>
                         {{/if}}
                         <div class="float-clear"></div>
@@ -21,10 +21,13 @@
                 </div>
                 <div class="input-append stream_name_search_section" id="stream_filter">
                     <input type="text" name="stream_name" id="search_stream_name" class="filter_text_input" autocomplete="off"
-                      placeholder="{{t 'Filter channels' }}" value=""/>
-                    <button type="button" class="btn clear_search_button" id="clear_search_stream_name">
-                        <i class="fa fa-remove" aria-hidden="true"></i>
+                      placeholder="{{t 'Filter' }}" value=""/>
+                    <button type="button" class="clear_search_button" id="clear_search_stream_name">
+                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                     </button>
+                    <div class="stream_settings_filter_container {{#unless realm_has_archived_channels}}hide_filter{{/unless}}">
+                        {{> ../dropdown_widget widget_name="stream_settings_filter"}}
+                    </div>
                 </div>
                 <div class="no-streams-to-show">
                     <div class="subscribed_streams_tab_empty_text">
@@ -63,24 +66,20 @@
                     <div id="stream_settings_title" class="stream-info-title">{{t 'Channel settings' }}</div>
                 </div>
                 <div class="nothing-selected">
-                    <button type="button" class="create_stream_button animated-purple-button" {{#unless can_create_streams}}disabled{{/unless}}>{{t 'Create channel' }}</button>
-                    {{#if can_create_streams}}
-                    <span class="settings-empty-option-text">
-                        {{#tr}}
-                            First time? Read our <z-link>guidelines</z-link> for creating and naming channels.
-                            {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                        {{/tr}}
-                    </span>
-                    {{else}}
-                    <span class="settings-empty-option-text">
-                        {{t 'You do not have permission to create channels in this organization.' }}
-                    </span>
-                    {{/if}}
+                    <div class="stream-info-banner"></div>
+                    <div class="create-stream-button-container">
+                        <button type="button" class="create_stream_button animated-purple-button" {{#unless can_create_streams}}disabled{{/unless}}>{{t 'Create channel' }}</button>
+                        {{#unless can_create_streams}}
+                        <span class="settings-empty-option-text">
+                            {{t 'You do not have permission to create channels.' }}
+                        </span>
+                        {{/unless}}
+                    </div>
                 </div>
                 <div id="stream_settings" class="settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                     {{!-- edit stream here --}}
                 </div>
-                {{> stream_creation_form }}
+                {{> stream_creation_form . }}
             </div>
         </div>
     </div>

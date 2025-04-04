@@ -10,6 +10,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
 from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -17,7 +18,6 @@ from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
-from django.views.defaults import server_error
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
 
@@ -38,6 +38,7 @@ from zerver.actions.user_settings import (
     do_change_password,
     do_change_user_setting,
 )
+from zerver.actions.users import do_change_user_role
 from zerver.context_processors import (
     get_realm_create_form_context,
     get_realm_from_request,
@@ -55,6 +56,7 @@ from zerver.lib.email_validation import email_allowed_for_realm, validate_email_
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.i18n import (
     get_browser_language_code,
+    get_default_language_for_anonymous_user,
     get_default_language_for_new_user,
     get_language_name,
 )
@@ -79,6 +81,7 @@ from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     MultiuseInvite,
+    NamedUserGroup,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -117,10 +120,6 @@ from zproject.backends import (
     ldap_auth_enabled,
     password_auth_enabled,
 )
-
-if settings.BILLING_ENABLED:
-    from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
-    from corporate.lib.stripe import LicenseLimitError
 
 
 @typed_endpoint
@@ -330,6 +329,11 @@ def registration_helper(
             return redirect_to_email_login_url(email)
 
         if settings.BILLING_ENABLED:
+            from corporate.lib.registration import (
+                check_spare_licenses_available_for_registering_new_user,
+            )
+            from corporate.lib.stripe import LicenseLimitError
+
             try:
                 check_spare_licenses_available_for_registering_new_user(realm, email, role=role)
             except LicenseLimitError:
@@ -503,6 +507,13 @@ def registration_helper(
                 how_realm_creator_found_zulip_extra_context = form.cleaned_data[
                     "how_realm_creator_found_zulip_which_organization"
                 ]
+            elif (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["review_site"]
+            ):  # nocoverage
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_review_site"
+                ]
 
             realm = do_create_realm(
                 string_id,
@@ -626,7 +637,19 @@ def registration_helper(
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
-            do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
+            with transaction.atomic(durable=True):
+                # We reactivate the mirror dummy user, but we need to respect the role
+                # that was passed in via the PreregistrationUser. Mirror dummy users can
+                # come from data import from 3rd party tools, with their role not necessarily
+                # set to what the realm admins may want. Such users have to explicitly go through
+                # the sign up flow, and thus their final role should match what the administrators
+                # may have set in the invitation, to avoid surprises.
+                #
+                # It's also important to reactivate the account and adjust the role in a single
+                # transaction, to avoid security issues if the process is interrupted halfway,
+                # e.g. leaving the user reactivated but with the wrong role.
+                do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
+                do_change_user_role(user_profile, role, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
@@ -636,8 +659,6 @@ def registration_helper(
                 get_default_language_for_new_user(realm, request=request),
                 acting_user=None,
             )
-            # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
-            # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
             try:
@@ -768,6 +789,7 @@ def prepare_activation_url(
     *,
     realm: Realm | None,
     streams: Iterable[Stream] | None = None,
+    user_groups: Iterable[NamedUserGroup] | None = None,
     invited_as: int | None = None,
     include_realm_default_subscriptions: bool | None = None,
     multiuse_invite: MultiuseInvite | None = None,
@@ -780,6 +802,9 @@ def prepare_activation_url(
 
     if streams is not None:
         prereg_user.streams.set(streams)
+
+    if user_groups is not None:
+        prereg_user.groups.set(user_groups)
 
     if invited_as is not None:
         prereg_user.invited_as = invited_as
@@ -920,7 +945,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
-                    return server_error(request)
+                    return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
 
             if key_record is not None:
@@ -1024,6 +1049,7 @@ def accounts_home(
 
     from_multiuse_invite = False
     streams_to_subscribe = None
+    user_groups_to_subscribe = None
     invited_as = None
     include_realm_default_subscriptions = None
 
@@ -1034,6 +1060,7 @@ def accounts_home(
         assert realm == multiuse_object.realm
 
         streams_to_subscribe = multiuse_object.streams.all()
+        user_groups_to_subscribe = multiuse_object.groups.all()
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
         include_realm_default_subscriptions = multiuse_object.include_realm_default_subscriptions
@@ -1069,6 +1096,7 @@ def accounts_home(
                 request.session,
                 realm=realm,
                 streams=streams_to_subscribe,
+                user_groups=user_groups_to_subscribe,
                 invited_as=invited_as,
                 include_realm_default_subscriptions=include_realm_default_subscriptions,
                 multiuse_invite=multiuse_object,
@@ -1078,7 +1106,7 @@ def accounts_home(
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during user registration")
                 if settings.CORPORATE_ENABLED:
-                    return server_error(request)
+                    return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
             signup_send_confirm_url = reverse("signup_send_confirm")
             query = urlencode({"email": email})
@@ -1213,6 +1241,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     ),
                     from_address=FromAddress.SUPPORT,
                     request=request,
+                    language=get_default_language_for_anonymous_user(request),
                 )
     return render(
         request,

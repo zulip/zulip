@@ -1,9 +1,9 @@
 import _ from "lodash";
 
-import {FoldDict} from "./fold_dict";
-import * as message_store from "./message_store";
-import * as people from "./people";
-import type {User} from "./people";
+import {FoldDict} from "./fold_dict.ts";
+import * as message_store from "./message_store.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
 
 // This class is only exported for unit testing purposes.
 // If we find reuse opportunities, we should just put it into

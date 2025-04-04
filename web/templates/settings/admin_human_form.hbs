@@ -18,7 +18,7 @@
         </div>
         <div class="input-group">
             <label for="user-role-select" class="modal-field-label">{{t 'User role' }}
-                {{> ../help_link_widget link="/help/roles-and-permissions" }}
+                {{> ../help_link_widget link="/help/user-roles" }}
             </label>
             <select name="user-role-select" class="bootstrap-focus-style modal_select" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
                 {{> dropdown_options_widget option_values=user_role_values}}
@@ -26,19 +26,11 @@
         </div>
         <div class="custom-profile-field-form"></div>
     </form>
-    <div class="input-group new-style">
+    <div class="input-group {{#if hide_deactivate_button}}hide{{/if}}">
         {{#if is_active}}
-        <span {{#if owner_is_only_user_in_organization}}class="deactivate_user_button_tooltip"{{/if}}>
-            <button class="button rounded btn-danger deactivate_user_button" {{#if owner_is_only_user_in_organization}}disabled="disabled"{{/if}}>
-                {{t 'Deactivate user' }}
-            </button>
-        </span>
+        {{> ../components/action_button custom_classes="deactivate_user_button" attention="quiet" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") }}
         {{else}}
-        <span>
-            <button class="button rounded reactivate_user_button">
-                {{t 'Reactivate user' }}
-            </button>
-        </span>
+        {{> ../components/action_button custom_classes="reactivate_user_button" attention="quiet" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
         {{/if}}
     </div>
 </div>

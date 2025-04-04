@@ -1,4 +1,4 @@
-<div class="add_subscribers_container">
+<div class="add_subscribers_container add-button-container">
     <div class="pill-container person_picker">
         <div class="input" contenteditable="true"
           data-placeholder="{{t 'Add subscribers. Use usergroup or #channelname to bulk add subscribers.' }}">
@@ -6,10 +6,14 @@
         </div>
     </div>
     {{#if (not hide_add_button)}}
-        <div class="add_subscriber_btn_wrapper inline-block">
-            <button type="submit" name="add_subscriber" class="button add-subscriber-button add-users-button small rounded sea-green" tabindex="0">
-                {{t 'Add' }}
-            </button>
+        <div class="add_subscriber_button_wrapper inline-block">
+            {{> ../components/action_button
+              label=(t "Add")
+              custom_classes="add-subscriber-button add-users-button"
+              attention="quiet"
+              intent="brand"
+              type="submit"
+              }}
         </div>
     {{/if}}
 </div>

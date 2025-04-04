@@ -1,15 +1,13 @@
 # User groups
 
+{!cloud-paid-plans-only.md!}
+
 {!user-groups-intro.md!}
 
-You can also:
+{!user-groups-applications.md!}
 
-- Add a user group to another user group. This individually adds all the users
-  in the group.
-- Subscribe a user group to a channel. This individually subscribes all the users
-  in the group.
-- Compose a [direct message](/help/direct-messages) to a user group. This
-  automatically puts all the users in the group into the addressee field.
+You can add a group to another user group, making it easy to express your
+organization's structure in Zulip's permissions system.
 
 ## Browse and join user groups
 
@@ -22,9 +20,10 @@ You can also:
 1. Scroll through the list of user groups. You can use the **search box** near
    the top of the menu to filter the list by group name or description.
 
-1. Click the **plus**
-   (<img src="/static/images/help/desktop-web-plus-icon.svg" alt="plus" class="help-center-icon"/>)
-   icon to the left of a user group to join the group.
+1. Click the **plus** (<img src="/static/images/help/desktop-web-plus-icon.svg"
+   alt="plus" class="help-center-icon"/>) icon to the left of a user group to
+   join the group, if you have
+   [permission](/help/manage-user-groups#configure-group-permissions) to do so.
 
 {end_tabs}
 
@@ -36,9 +35,11 @@ You can also:
 
 {relative|gear|group-settings}
 
-1. Click the **checkmark**
-   (<img src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
-   icon to the left of a user group to leave the group.
+1. Click the **checkmark** (<img
+   src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark"
+   class="help-center-icon"/>) icon to the left of a user group to leave the
+   group, if you have
+   [permission](/help/manage-user-groups#configure-group-permissions) to do so.
 
 {end_tabs}
 
@@ -55,7 +56,8 @@ You can also:
 ## Related articles
 
 * [Mention a user or group](/help/mention-a-user-or-group)
+* [View group members](/help/view-group-members)
 * [Create user groups](/help/create-user-groups)
 * [Manage user groups](/help/manage-user-groups)
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
-* [Roles and permissions](/help/roles-and-permissions)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [User roles](/help/user-roles)

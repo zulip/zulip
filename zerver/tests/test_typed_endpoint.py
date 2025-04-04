@@ -73,6 +73,8 @@ class TestEndpoint(ZulipTestCase):
 
             __pydantic_config__ = ConfigDict(extra="forbid")
 
+        default_foo = Foo(10, 10)
+
         @typed_endpoint
         def view(
             request: HttpRequest,
@@ -81,7 +83,7 @@ class TestEndpoint(ZulipTestCase):
             json_str: Json[str],
             json_data: Json[Foo],
             json_optional: Json[int | None] | None = None,
-            json_default: Json[Foo] = Foo(10, 10),
+            json_default: Json[Foo] = default_foo,
             non_json: str = "ok",
             non_json_optional: str | None = None,
         ) -> HttpResponse:
@@ -635,3 +637,14 @@ class ValidationErrorHandlingTest(ZulipTestCase):
 
                 self.assertEqual(m.exception.msg, subtest.error_message)
                 self.assertEqual(m.exception.error_type, subtest.error_type)
+
+    def test_response(self) -> None:
+        @typed_endpoint
+        def view(request: HttpRequest, *, foo: Json[int]) -> MutableJsonResponse:
+            return json_success(request, {"value": foo})
+
+        response = call_endpoint(view, HostRequestMock({"foo": orjson.dumps(42).decode()}))
+        for content in response:
+            decoded_content = content.decode()
+            self.assertIn("value", decoded_content)
+            self.assertIn("success", decoded_content)

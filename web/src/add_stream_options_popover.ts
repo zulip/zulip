@@ -4,9 +4,9 @@ import type * as tippy from "tippy.js";
 
 import render_left_sidebar_stream_setting_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_setting_popover.hbs";
 
-import * as popover_menus from "./popover_menus";
-import * as settings_data from "./settings_data";
-import {parse_html} from "./ui_util";
+import * as popover_menus from "./popover_menus.ts";
+import * as settings_data from "./settings_data.ts";
+import {parse_html} from "./ui_util.ts";
 
 export function initialize(): void {
     popover_menus.register_popover_menu("#streams_inline_icon", {
@@ -30,6 +30,8 @@ export function initialize(): void {
             popover_menus.popover_instances.stream_settings = instance;
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
             popover_menus.on_show_prep(instance);
+
+            $("#streams_header").addClass("showing-streams-popover");
 
             //  When showing the popover menu, we want the
             // "Add channels" and the "Filter channels" tooltip
@@ -55,6 +57,9 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.stream_settings = null;
+
+            $("#streams_header").removeClass("showing-streams-popover");
+
             //  After the popover menu is closed, we want the
             //  "Add channels" and the "Filter channels" tooltip
             //  to appear at it's original position that is

@@ -1,9 +1,9 @@
-<form class="new-style" id="add-custom-emoji-form">
+<form id="add-custom-emoji-form">
     <div>
         <input type="file" name="emoji_file_input" class="notvisible"
           id="emoji_file_input" value="{{t 'Upload image or GIF' }}"/>
         <button type="button" class="button rounded" id="emoji_upload_button">{{t "Upload image or GIF" }}</button>
-        <div id="emoji_preview_text"><span id="preview_label">Preview:</span>
+        <div id="emoji_preview_text"><span id="preview_label">{{t "Preview:"}}</span>
             <i id="emoji_placeholder_icon" class="fa fa-file-image-o" aria-hidden="true"></i><img class="emoji" id="emoji_preview_image" src=""/>
         </div>
         <div id="emoji-file-name"></div>

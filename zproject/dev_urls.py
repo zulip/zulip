@@ -31,6 +31,7 @@ from zerver.views.development.registration import (
     register_development_realm,
     register_development_user,
 )
+from zerver.views.development.showroom import showroom_component_banners, showroom_component_buttons
 from zerver.views.errors import config_error
 
 # These URLs are available only in the development environment
@@ -97,6 +98,9 @@ urls = [
     path("flush_caches", remove_caches),
     # Redirect camo URLs for development
     path("external_content/<digest>/<received_url>", handle_camo_url),
+    # Endpoints for Showroom components.
+    path("devtools/buttons/", showroom_component_buttons),
+    path("devtools/banners/", showroom_component_banners),
 ]
 
 v1_api_mobile_patterns = [

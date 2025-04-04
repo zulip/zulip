@@ -7,7 +7,7 @@
         "node_id": "MDEwOJllG9zcXaRcvknzNYyTzM4OUQD=",
         "name": "infra-core",
         "full_name": "some-organization/infra-core",
-        "private": true,
+        "private": false,
         "owner": {
             "name": "some-organization",
             "email": null,

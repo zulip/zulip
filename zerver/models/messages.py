@@ -42,7 +42,7 @@ class AbstractMessage(models.Model):
         RESOLVE_TOPIC_NOTIFICATION = 2
 
     # IMPORTANT: message.type is not to be confused with the
-    # "recipient type" ("channel" or "direct"), which is is sometimes
+    # "recipient type" ("channel" or "direct"), which is sometimes
     # called message_type in the APIs, CountStats or some variable
     # names. We intend to rename those to recipient_type.
     #
@@ -97,6 +97,8 @@ class AbstractMessage(models.Model):
     has_image = models.BooleanField(default=False, db_index=True)
     # Whether the message contains a link.
     has_link = models.BooleanField(default=False, db_index=True)
+    # If the message is a channel message (as opposed to a DM or group-DM)
+    is_channel_message = models.BooleanField(default=True, db_index=True)
 
     class Meta:
         abstract = True
@@ -111,6 +113,10 @@ class ArchiveTransaction(models.Model):
     # Marks if the data archived in this transaction has been restored:
     restored = models.BooleanField(default=False, db_index=True)
     restored_timestamp = models.DateTimeField(null=True, db_index=True)
+
+    # ArchiveTransaction objects are regularly deleted. This flag allows tagging
+    # an ArchiveTransaction as protected from such automated deletion.
+    protect_from_deletion = models.BooleanField(default=False, db_index=True)
 
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types:
@@ -157,6 +163,10 @@ class Message(AbstractMessage):
 
     DEFAULT_SELECT_RELATED = ["sender", "realm", "recipient", "sending_client"]
 
+    # Name to be used for the empty topic with clients that have not
+    # yet migrated to have the `empty_topic_name` client capability.
+    EMPTY_TOPIC_FALLBACK_NAME = "general chat"
+
     class Meta:
         indexes = [
             GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
@@ -202,6 +212,7 @@ class Message(AbstractMessage):
                 Upper("subject"),
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_upper_subject",
+                condition=Q(is_channel_message=True),
             ),
             models.Index(
                 # Most stream/topic searches are case-insensitive by
@@ -213,6 +224,7 @@ class Message(AbstractMessage):
                 Upper("subject"),
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_recipient_upper_subject",
+                condition=Q(is_channel_message=True),
             ),
             models.Index(
                 # Used by already_sent_mirrored_message_id, and when
@@ -223,12 +235,19 @@ class Message(AbstractMessage):
                 "subject",
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_recipient_subject",
+                condition=Q(is_channel_message=True),
             ),
             models.Index(
                 # Only used by update_first_visible_message_id
                 "realm_id",
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_id",
+            ),
+            models.Index(
+                # Used by 0680_rename_general_chat_to_empty_string_topic
+                fields=["id"],
+                condition=Q(edit_history__isnull=False),
+                name="zerver_message_edit_history_id",
             ),
         ]
 
@@ -287,6 +306,7 @@ def get_context_for_message(message: Message) -> QuerySet[Message]:
         realm_id=message.realm_id,
         recipient_id=message.recipient_id,
         subject__iexact=message.subject,
+        is_channel_message=True,
         id__lt=message.id,
         date_sent__gt=message.date_sent - timedelta(minutes=15),
     ).order_by("-id")[:10]
@@ -398,9 +418,7 @@ class Reaction(AbstractReaction):
             "emoji_name",
             "emoji_code",
             "reaction_type",
-            "user_profile__email",
             "user_profile_id",
-            "user_profile__full_name",
         ]
         # The ordering is important here, as it makes it convenient
         # for clients to display reactions in order without
@@ -665,6 +683,7 @@ class ArchivedUserMessage(AbstractUserMessage):
 class ImageAttachment(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     path_id = models.TextField(db_index=True, unique=True)
+    content_type = models.TextField(null=True)
 
     original_width_px = models.IntegerField()
     original_height_px = models.IntegerField()

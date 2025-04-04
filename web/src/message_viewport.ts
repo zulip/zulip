@@ -1,14 +1,14 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip";
-import * as message_lists from "./message_lists";
-import * as message_scroll_state from "./message_scroll_state";
-import type {Message} from "./message_store";
-import * as rows from "./rows";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_scroll_state from "./message_scroll_state.ts";
+import type {Message} from "./message_store.ts";
+import * as rows from "./rows.ts";
+import * as util from "./util.ts";
 
-type MessageViewportInfo = {
+export type MessageViewportInfo = {
     visible_top: number;
     visible_bottom: number;
     visible_height: number;
@@ -22,13 +22,6 @@ const cached_width = new util.CachedValue({compute_value: () => $scroll_containe
 const cached_height = new util.CachedValue({compute_value: () => $scroll_container.height() ?? 0});
 export const width = cached_width.get.bind(cached_width);
 export const height = cached_height.get.bind(cached_height);
-
-// TODO: This function lets us use the DOM API instead of jquery
-// (<10x faster) for condense.js, but we want to eventually do a
-// bigger of refactor `height` and `width` above to do the same.
-export function max_message_height(): number {
-    return document.querySelector("html")!.offsetHeight * 0.65;
-}
 
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
@@ -56,7 +49,7 @@ export function message_viewport_info(): MessageViewportInfo {
     let visible_top = $element_just_above_us.outerHeight() ?? 0;
 
     const $sticky_header = $(".sticky_header");
-    if ($sticky_header.length) {
+    if ($sticky_header.length > 0) {
         visible_top += $sticky_header.outerHeight() ?? 0;
     }
 
@@ -160,6 +153,16 @@ export function set_message_position(
 
     const new_scroll_top = message_top - message_offset;
 
+    // Ensure we will scroll before we disable updating selection.
+    // This avoids a bug where message selection doesn't change on user scroll.
+    if (
+        // Can't scroll up if we are already at top.
+        (new_scroll_top <= 0 && window.scrollY === 0) ||
+        // Can't scroll down if we are already at bottom.
+        (new_scroll_top >= height() && window.scrollY === height())
+    ) {
+        return;
+    }
     message_scroll_state.set_update_selection_on_next_scroll(false);
     scrollTop(new_scroll_top);
 }
@@ -205,7 +208,7 @@ const top_of_feed = new util.CachedValue({
         let visible_top = $header.outerHeight() ?? 0;
 
         const $sticky_header = $(".sticky_header");
-        if ($sticky_header.length) {
+        if ($sticky_header.length > 0) {
             visible_top += $sticky_header.outerHeight() ?? 0;
         }
         return visible_top;
@@ -522,7 +525,7 @@ export function keep_pointer_in_view(): void {
 export function scroll_to_selected(): void {
     assert(message_lists.current !== undefined);
     const $selected_row = message_lists.current.selected_row();
-    if ($selected_row && $selected_row.length !== 0) {
+    if ($selected_row && $selected_row.length > 0) {
         recenter_view($selected_row);
     }
 }
@@ -540,6 +543,11 @@ export function maybe_scroll_to_selected(): void {
         scroll_to_selected();
         scroll_to_selected_planned = false;
     }
+}
+
+export function can_scroll(): boolean {
+    const full_height = util.the($scroll_container).scrollHeight;
+    return full_height > window.innerHeight;
 }
 
 export function initialize(): void {

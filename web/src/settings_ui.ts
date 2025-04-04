@@ -2,10 +2,11 @@ import $ from "jquery";
 
 import checkbox_image from "../images/checkbox-green.svg";
 
-import type {AjaxRequestHandler} from "./channel";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import * as ui_report from "./ui_report";
+import type {AjaxRequestHandler} from "./channel.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 export type RequestOpts = {
     success_msg_html?: string | undefined;
@@ -19,7 +20,7 @@ export type RequestOpts = {
 export function display_checkmark($elem: JQuery): void {
     const $check_mark = $("<img>");
     $check_mark.attr("src", checkbox_image);
-    $check_mark.css("width", "13px");
+    $check_mark.addClass("settings-save-checkmark");
     $elem.prepend($check_mark);
 }
 
@@ -50,15 +51,17 @@ export function do_settings_change(
     loading.make_indicator($spinner, {text: strings.saving});
     const remove_after = sticky ? undefined : 1000;
     const appear_after = 500;
+    const request_start_time = Date.now();
 
     void request_method({
         url,
         data,
         success(response_data) {
+            const remaining_delay = util.get_remaining_time(request_start_time, appear_after);
             setTimeout(() => {
                 ui_report.success(success_msg_html, $spinner, remove_after);
                 display_checkmark($spinner);
-            }, appear_after);
+            }, remaining_delay);
             if (success_continuation !== undefined) {
                 success_continuation(response_data);
             }
@@ -88,7 +91,7 @@ export function disable_sub_setting_onchange(
     is_checked: boolean,
     sub_setting_id: string,
     disable_on_uncheck: boolean,
-    include_label: boolean,
+    include_label = false,
 ): void {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);

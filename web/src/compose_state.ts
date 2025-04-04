@@ -1,14 +1,15 @@
 import $ from "jquery";
 
-import * as compose_pm_pill from "./compose_pm_pill";
-import {$t} from "./i18n";
-import * as people from "./people";
-import * as sub_store from "./sub_store";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
+import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
+let preview_render_count = 0;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -17,6 +18,7 @@ let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 // the narrow and the user should still be able to see the banner once after
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
+let recipient_guest_ids_for_dm_warning: number[] = [];
 
 export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
@@ -56,6 +58,22 @@ export function set_recipient_viewed_topic_resolved_banner(flag: boolean): void 
 
 export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
+}
+
+export function set_recipient_guest_ids_for_dm_warning(guest_ids: number[]): void {
+    recipient_guest_ids_for_dm_warning = guest_ids;
+}
+
+export function get_recipient_guest_ids_for_dm_warning(): number[] {
+    return recipient_guest_ids_for_dm_warning;
+}
+
+export function get_preview_render_count(): number {
+    return preview_render_count;
+}
+
+export function set_preview_render_count(count: number): void {
+    preview_render_count = count;
 }
 
 export function composing(): boolean {
@@ -106,12 +124,16 @@ export function stream_id(): number | undefined {
     return undefined;
 }
 
-export function stream_name(): string {
+export let stream_name = (): string => {
     const stream_id = selected_recipient_id;
     if (typeof stream_id === "number") {
         return sub_store.maybe_get_stream_name(stream_id) ?? "";
     }
     return "";
+};
+
+export function rewire_stream_name(value: typeof stream_name): void {
+    stream_name = value;
 }
 
 export function set_stream_id(stream_id: number | ""): void {
@@ -123,10 +145,10 @@ export function set_compose_recipient_id(recipient_id: number | "direct"): void 
 }
 
 // TODO: Break out setter and getter into their own functions.
-export const topic = get_or_set("input#stream_message_recipient_topic");
+export let topic = get_or_set("input#stream_message_recipient_topic");
 
-export function empty_topic_placeholder(): string {
-    return $t({defaultMessage: "(no topic)"});
+export function rewire_topic(value: typeof topic): void {
+    topic = value;
 }
 
 // We can't trim leading whitespace in `compose_textarea` because
@@ -138,6 +160,15 @@ const untrimmed_message_content = get_or_set("textarea#compose-textarea", true, 
 function cursor_at_start_of_whitespace_in_compose(): boolean {
     const cursor_position = $("textarea#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
+}
+
+export function focus_in_formatting_buttons(): boolean {
+    const is_focused_formatting_button =
+        document.activeElement?.classList.contains("compose_control_button");
+    if (is_focused_formatting_button) {
+        return true;
+    }
+    return false;
 }
 
 export function focus_in_empty_compose(
@@ -210,7 +241,8 @@ export function has_savable_message_content(): boolean {
 
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
-        return stream_id() !== undefined && topic() !== "";
+        const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
+        return stream_id() !== undefined && has_topic;
     }
     return private_message_recipient() !== "";
 }

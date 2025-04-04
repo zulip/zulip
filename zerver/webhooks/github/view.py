@@ -3,6 +3,7 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
@@ -30,6 +31,7 @@ from zerver.lib.webhooks.git import (
     get_push_tag_event_message,
     get_release_event_message,
     get_short_sha,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 
@@ -92,20 +94,16 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     pull_request = payload["pull_request"]
-    assignee = pull_request.get("assignee")
-    if assignee:
-        stringified_assignee = assignee["login"].tame(check_string)
+    assignee = payload["assignee"]["login"].tame(check_string)
 
-    base_message = get_pull_request_event_message(
+    return get_pull_request_event_message(
         user_name=get_sender_name(payload),
         action=payload["action"].tame(check_string),
         url=pull_request["html_url"].tame(check_string),
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
+        assignee_updated=assignee,
     )
-    if assignee:
-        return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
-    return base_message
 
 
 def get_closed_pull_request_body(helper: Helper) -> str:
@@ -155,8 +153,7 @@ def get_issue_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
-    has_assignee = "assignee" in payload
-    base_message = get_issue_event_message(
+    return get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
         url=issue["html_url"].tame(check_string),
@@ -167,16 +164,10 @@ def get_issue_body(helper: Helper) -> str:
             else issue["body"].tame(check_none_or(check_string))
         ),
         title=issue["title"].tame(check_string) if include_title else None,
+        assignee_updated=(
+            payload["assignee"]["login"].tame(check_string) if "assignee" in payload else None
+        ),
     )
-
-    if has_assignee:
-        stringified_assignee = payload["assignee"]["login"].tame(check_string)
-        if action == "assigned":
-            return base_message.replace("assigned", f"assigned {stringified_assignee} to", 1)
-        elif action == "unassigned":
-            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from", 1)
-
-    return base_message
 
 
 def get_issue_comment_body(helper: Helper) -> str:
@@ -697,6 +688,33 @@ def get_tier_changed_body(helper: Helper) -> str:
     ).rstrip()
 
 
+def get_issue_transferred_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{sender} transferred [issue #{old_issue_number} {title}]({old_issue_url}) to [{new_repo_full_name}/#{new_issue_number}]({new_issue_url})."
+    return template.format(
+        sender=get_sender_name(payload),
+        old_issue_number=payload["issue"]["number"].tame(check_int),
+        old_issue_url=payload["issue"]["html_url"].tame(check_string),
+        title=payload["issue"]["title"].tame(check_string),
+        new_repo_full_name=payload["changes"]["new_repository"]["full_name"].tame(check_string),
+        new_issue_number=payload["changes"]["new_issue"]["number"].tame(check_int),
+        new_issue_url=payload["changes"]["new_issue"]["html_url"].tame(check_string),
+    )
+
+
+def get_issue_opened_via_transfer_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "[Issue #{new_issue_number} {title}]({new_issue_url}) was transferred from [{old_repo_full_name}#{old_issue_number}]({old_issue_url})."
+    return template.format(
+        new_issue_number=payload["issue"]["number"].tame(check_int),
+        new_issue_url=payload["issue"]["html_url"].tame(check_string),
+        title=payload["issue"]["title"].tame(check_string),
+        old_repo_full_name=payload["changes"]["old_repository"]["full_name"].tame(check_string),
+        old_issue_number=payload["changes"]["old_issue"]["number"].tame(check_int),
+        old_issue_url=payload["changes"]["old_issue"]["html_url"].tame(check_string),
+    )
+
+
 def get_subscription(payload: WildValue) -> str:
     return payload["sponsorship"]["tier"]["name"].tame(check_string)
 
@@ -826,6 +844,8 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "issue_comment": get_issue_comment_body,
     "issue_labeled_or_unlabeled": get_issue_labeled_or_unlabeled_body,
     "issue_milestoned_or_demilestoned": get_issue_milestoned_or_demilestoned_body,
+    "issues_opened_via_transfer": get_issue_opened_via_transfer_body,
+    "issues_transferred": get_issue_transferred_body,
     "issues": get_issue_body,
     "member": get_member_body,
     "membership": get_membership_body,
@@ -910,6 +930,7 @@ def api_github_webhook(
     payload: JsonBodyPayload[WildValue],
     branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
+    ignore_private_repositories: Json[bool] = False,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -918,6 +939,26 @@ def api_github_webhook(
     refine it based on the payload.
     """
     header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
+
+    # Check if the repository is private and skip processing if ignore_private_repositories is True
+    if (
+        "repository" in payload
+        and payload["repository"]["private"].tame(check_bool)
+        and ignore_private_repositories
+    ):
+        # Ignore private repository events
+        return json_success(request)
+
+    # Ignore 'comment edited' events (except discussion comments)
+    # if the comment body remains unchanged.
+    if (
+        "comment" in header_event
+        and "discussion" not in header_event
+        and payload.get("action", "").tame(check_string) == "edited"
+        and payload["changes"]["body"]["from"].tame(check_string)
+        == payload["comment"]["body"].tame(check_string)
+    ):
+        return json_success(request)
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
@@ -990,7 +1031,7 @@ def get_zulip_event_name(
         if is_commit_push_event(payload):
             if branches is not None:
                 branch = get_branch_name_from_ref(payload["ref"].tame(check_string))
-                if branches.find(branch) == -1:
+                if not is_branch_name_notifiable(branch, branches):
                     return None
             return "push_commits"
         else:
@@ -1016,6 +1057,10 @@ def get_zulip_event_name(
             return "issue_labeled_or_unlabeled"
         if action in ("milestoned", "demilestoned"):
             return "issue_milestoned_or_demilestoned"
+        if action == "transferred":
+            return "issues_transferred"
+        if action == "opened" and payload.get("changes", {}).get("old_issue"):
+            return "issues_opened_via_transfer"
         else:
             return "issues"
     elif header_event in EVENT_FUNCTION_MAPPER:

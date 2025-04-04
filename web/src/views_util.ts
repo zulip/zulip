@@ -1,25 +1,25 @@
 import $ from "jquery";
 import type * as tippy from "tippy.js";
 
-import * as activity_ui from "./activity_ui";
-import * as compose_actions from "./compose_actions";
-import * as compose_recipient from "./compose_recipient";
-import * as compose_state from "./compose_state";
-import * as dropdown_widget from "./dropdown_widget";
-import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as message_view_header from "./message_view_header";
-import * as message_viewport from "./message_viewport";
-import * as modals from "./modals";
-import * as narrow_state from "./narrow_state";
-import * as narrow_title from "./narrow_title";
-import * as overlays from "./overlays";
-import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
-import * as resize from "./resize";
-import * as sidebar_ui from "./sidebar_ui";
-import * as stream_list from "./stream_list";
-import * as unread_ui from "./unread_ui";
+import * as activity_ui from "./activity_ui.ts";
+import * as compose_actions from "./compose_actions.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_state from "./compose_state.ts";
+import type * as dropdown_widget from "./dropdown_widget.ts";
+import {$t} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_view_header from "./message_view_header.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as modals from "./modals.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
+import * as overlays from "./overlays.ts";
+import * as pm_list from "./pm_list.ts";
+import * as popovers from "./popovers.ts";
+import * as resize from "./resize.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
+import * as stream_list from "./stream_list.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 export const FILTERS = {
     ALL_TOPICS: "all_topics",
@@ -34,18 +34,14 @@ const TIPPY_PROPS: Partial<tippy.Props> = {
 export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     get_options: filters_dropdown_options,
     tippy_props: TIPPY_PROPS,
-    unique_id_type: dropdown_widget.DataTypes.STRING,
+    unique_id_type: "string",
     hide_search_box: true,
-    bold_current_selection: true,
     disable_for_spectators: true,
-};
+} satisfies Partial<dropdown_widget.DropdownWidgetOptions>;
 
-export function filters_dropdown_options(current_value: string | number | undefined): {
-    unique_id: string;
-    name: string;
-    description: string;
-    bold_current_selection: boolean;
-}[] {
+export function filters_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
     return [
         {
             unique_id: FILTERS.FOLLOWED_TOPICS,
@@ -111,7 +107,7 @@ export function show(opts: {
 
     // Misc.
     if (opts.is_recent_view) {
-        resize.update_recent_view_filters_height();
+        resize.update_recent_view();
     }
 }
 
@@ -147,6 +143,7 @@ export function is_in_focus(): boolean {
         !overlays.any_active() &&
         !modals.any_active_or_animating() &&
         !$(".home-page-input").is(":focus") &&
-        !$("#search_query").is(":focus")
+        !$("#search_query").is(":focus") &&
+        !$(".navbar-item:visible").is(":focus")
     );
 }

@@ -1,6 +1,6 @@
 <tr data-subscriber-id="{{user_id}}">
     <td class="subscriber-name panel_user_list">
-        {{> ../user_display_only_pill display_value=name is_active=true}}
+        {{> ../user_display_only_pill . display_value=name is_active=true}}
     </td>
     {{#if email}}
     <td class="subscriber-email settings-email-column">{{email}}</td>
@@ -9,17 +9,11 @@
     {{/if}}
     {{#if can_remove_subscribers}}
     <td class="unsubscribe">
-        <div class="subscriber_list_remove">
-            <form class="remove-subscriber-form">
-                <button type="submit" name="unsubscribe" class="remove-subscriber-button button small rounded btn-danger">
-                    {{#if for_user_group_members}}
-                    {{t 'Remove'}}
-                    {{else}}
-                    {{t 'Unsubscribe' }}
-                    {{/if}}
-                </button>
-            </form>
-        </div>
+        {{#if for_user_group_members}}
+            {{> ../components/action_button label=(t "Remove") custom_classes="remove-subscriber-button" attention="quiet" intent="danger" aria-label=(t "Remove") }}
+        {{else}}
+            {{> ../components/action_button label=(t "Unsubscribe") custom_classes="remove-subscriber-button" attention="quiet" intent="danger" aria-label=(t "Unsubscribe") }}
+        {{/if}}
     </td>
     {{/if}}
 </tr>

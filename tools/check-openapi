@@ -1,23 +1,24 @@
 #!/usr/bin/env node
 
-"use strict";
+import * as fs from "node:fs";
+import {parseArgs} from "node:util";
 
-const fs = require("fs");
+import * as Diff from "diff";
+import ExampleValidator from "openapi-examples-validator";
+import {format as prettierFormat} from "prettier";
+import SwaggerParser from "swagger-parser";
+import {CST, Composer, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} from "yaml";
 
-const Diff = require("diff");
-const ExampleValidator = require("openapi-examples-validator");
-const Prettier = require("prettier");
-const SwaggerParser = require("swagger-parser");
-const {Composer, CST, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} = require("yaml");
-const {hideBin} = require("yargs/helpers");
-const yargs = require("yargs/yargs");
+const usage = "Usage: check-openapi [--fix] <file>...";
+const {
+    values: {fix, help},
+    positionals: files,
+} = parseArgs({options: {fix: {type: "boolean"}, help: {type: "boolean"}}, allowPositionals: true});
 
-const argv = yargs(hideBin(process.argv))
-    .option("fix", {
-        type: "boolean",
-        description: "Automatically fix some problems",
-    })
-    .parse();
+if (help) {
+    console.log(usage);
+    process.exit(0);
+}
 
 async function checkFile(file) {
     const yaml = await fs.promises.readFile(file, "utf8");
@@ -52,6 +53,20 @@ async function checkFile(file) {
                 console.error("%s:%d:%d: Siblings of $ref have no effect", file, line, col);
                 ok = false;
             }
+
+            const combinator = ["allOf", "anyOf", "oneOf"].find((combinator) =>
+                node.has(combinator),
+            );
+            if (node.has("nullable") && combinator !== undefined) {
+                const {line, col} = lineCounter.linePos(node.range[0]);
+                console.error(
+                    `%s:%d:%d: nullable has no effect as a sibling of ${combinator}`,
+                    file,
+                    line,
+                    col,
+                );
+                ok = false;
+            }
         },
 
         Pair(_key, node) {
@@ -76,7 +91,7 @@ async function checkFile(file) {
             ) {
                 promises.push(
                     (async () => {
-                        let formatted = await Prettier.format(node.value.value, {
+                        let formatted = await prettierFormat(node.value.value, {
                             parser: "markdown",
                         });
                         if (
@@ -85,7 +100,7 @@ async function checkFile(file) {
                             formatted = formatted.replace(/\n$/, "");
                         }
                         if (formatted !== node.value.value) {
-                            if (argv.fix) {
+                            if (fix) {
                                 reformats.set(node.value.range[0], {
                                     value: formatted,
                                     context: {afterKey: true},
@@ -157,11 +172,6 @@ async function checkFile(file) {
     }
 }
 
-(async () => {
-    for (const file of argv._) {
-        await checkFile(file);
-    }
-})().catch((error) => {
-    console.error(error);
-    process.exit(1);
-});
+for (const file of files) {
+    await checkFile(file);
+}

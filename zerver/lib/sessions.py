@@ -6,13 +6,17 @@ from typing import Any, Protocol, cast
 
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.base import SessionBase
 from django.contrib.sessions.models import Session
+from django.http import HttpRequest
+from django.utils.functional import LazyObject
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.request import RequestNotes
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.models import Realm, UserProfile
-from zerver.models.users import get_user_profile_by_id
+from zerver.models.users import get_user_profile_narrow_by_id
 
 
 class SessionEngine(Protocol):
@@ -67,7 +71,7 @@ def delete_all_deactivated_user_sessions() -> None:
         user_profile_id = get_session_user_id(session)
         if user_profile_id is None:  # nocoverage  # TODO: Investigate why we lost coverage on this
             continue
-        user_profile = get_user_profile_by_id(user_profile_id)
+        user_profile = get_user_profile_narrow_by_id(user_profile_id)
         if not user_profile.is_active or user_profile.realm.deactivated:
             logging.info("Deactivating session for deactivated user %s", user_profile.id)
             delete_session(session)
@@ -99,3 +103,33 @@ def get_expirable_session_var(
     if delete:
         del session[var_name]
     return value
+
+
+def narrow_request_user(
+    request: HttpRequest, *, user_id: int | None = None
+) -> UserProfile | AnonymousUser:
+    # In Tornado and other performance-critical paths, we want to not
+    # load the extremely wide default UserProfile select_related.  We
+    # respect the request.user if it has been explicitly set already,
+    # and otherwise perform a cached lookup of a much narrower view of
+    # the UserProfile; this is faster than the normal UserProfile both
+    # for cache misses (1.8ms vs 15ms) and cache hits (147μs vs
+    # 387μs).  We fill the requester_for_logs to skip a session and
+    # user memcached fetch when writing the log lines.
+    if not isinstance(request.user, LazyObject):
+        return request.user  # nocoverage
+
+    if user_id is None:
+        user_id = get_session_dict_user(request.session)
+    if user_id is None:
+        return AnonymousUser()  # nocoverage
+
+    try:
+        request.user = get_user_profile_narrow_by_id(user_id)
+        RequestNotes.get_notes(
+            request
+        ).requester_for_logs = request.user.format_requester_for_logs()
+    except UserProfile.DoesNotExist:  # nocoverage
+        request.user = AnonymousUser()
+
+    return request.user

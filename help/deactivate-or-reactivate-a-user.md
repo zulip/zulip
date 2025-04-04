@@ -18,6 +18,12 @@ When you deactivate a user:
 * [Email invitations and invite links](/help/invite-new-users) created by the
   user will be disabled.
 
+* Other users will be able to see that the user has been deactivated (e.g., on
+  their [user card](/help/user-cards)). In sidebars and elsewhere, a user's
+  [availability](/help/status-and-availability) will be replaced with a
+  deactivated icon
+  (<span class="user-circle user-circle-deactivated zulip-icon zulip-icon-user-circle-deactivated"></span>).
+
 * Even if your organization [allows users to join without an
   invitation](/help/restrict-account-creation#set-whether-invitations-are-required-to-join),
   this user will not be able to rejoin with the same email account.
@@ -50,8 +56,8 @@ When you deactivate a user:
 
 {settings_tab|users}
 
-1. In the **Actions** column, click the **deactivate** (<i class="fa
-   fa-user-times"></i>) icon for the user you want to deactivate.
+1. In the **Actions** column, click the **deactivate user** (<i class="zulip-icon
+   zulip-icon-user-x"></i>) icon for the user you want to deactivate.
 
 1. *(optional)* Select **Notify this user by email?** if desired, and enter a
    custom comment to include in the notification email.
@@ -84,8 +90,8 @@ bots will be deactivated until the user manually
 
 1. Select the **Deactivated** tab.
 
-1. Click the **Reactivate** button to the right of the user that you
-   want to reactivate.
+1. In the **Actions** column, click the **reactivate user** (<i class="zulip-icon
+   zulip-icon-user-plus"></i>) icon for the user you want to reactivate.
 
 {tab|via-user-profile}
 
@@ -112,7 +118,7 @@ bots will be deactivated until the user manually
 ## Related articles
 
 * [Mute a user](/help/mute-a-user)
-* [Change a user's role](/help/change-a-users-role)
+* [Change a user's role](/help/user-roles#change-a-users-role)
 * [Change a user's name](/help/change-a-users-name)
 * [Deactivate your account](/help/deactivate-your-account)
 * [Manage a user](/help/manage-a-user)

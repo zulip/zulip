@@ -2,12 +2,13 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as channel from "./channel";
-import {page_params} from "./page_params";
-import * as presence from "./presence";
-import * as watchdog from "./watchdog";
+import * as channel from "./channel.ts";
+import {electron_bridge} from "./electron_bridge.ts";
+import {page_params} from "./page_params.ts";
+import * as presence from "./presence.ts";
+import * as watchdog from "./watchdog.ts";
 
-const post_presence_response_schema = z.object({
+export const post_presence_response_schema = z.object({
     msg: z.string(),
     result: z.string(),
     // A bunch of these fields below are .optional() due to the fact
@@ -32,10 +33,7 @@ const post_presence_response_schema = z.object({
 });
 
 /* Keep in sync with views.py:update_active_status_backend() */
-export enum ActivityState {
-    ACTIVE = "active",
-    IDLE = "idle",
-}
+export type ActivityState = "active" | "idle";
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -52,13 +50,29 @@ export let client_is_active = document.hasFocus();
 
 // new_user_input is a more strict version of client_is_active used
 // primarily for analytics.  We initialize this to true, to count new
-// page loads, but set it to false in the onload function in reload.js
+// page loads, but set it to false in the onload function in reload.ts
 // if this was a server-initiated-reload to avoid counting a
 // server-initiated reload as user activity.
 export let new_user_input = true;
 
+export let received_new_messages = false;
+
+type UserInputHook = () => void;
+const on_new_user_input_hooks: UserInputHook[] = [];
+
+export function register_on_new_user_input_hook(hook: UserInputHook): void {
+    on_new_user_input_hooks.push(hook);
+}
+
+export function set_received_new_messages(value: boolean): void {
+    received_new_messages = value;
+}
+
 export function set_new_user_input(value: boolean): void {
     new_user_input = value;
+    for (const hook of on_new_user_input_hooks) {
+        hook();
+    }
 }
 
 export function clear_for_testing(): void {
@@ -84,20 +98,20 @@ export function compute_active_status(): ActivityState {
     //
     // The check for `get_idle_on_system === undefined` is feature
     // detection; older desktop app releases never set that property.
-    if (window.electron_bridge?.get_idle_on_system !== undefined) {
-        if (window.electron_bridge.get_idle_on_system()) {
-            return ActivityState.IDLE;
+    if (electron_bridge?.get_idle_on_system !== undefined) {
+        if (electron_bridge.get_idle_on_system()) {
+            return "idle";
         }
-        return ActivityState.ACTIVE;
+        return "active";
     }
 
     if (client_is_active) {
-        return ActivityState.ACTIVE;
+        return "active";
     }
-    return ActivityState.IDLE;
+    return "idle";
 }
 
-export function send_presence_to_server(redraw?: () => void): void {
+export let send_presence_to_server = (redraw?: () => void): void => {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -138,7 +152,7 @@ export function send_presence_to_server(redraw?: () => void): void {
                 $("#zephyr-mirror-error").removeClass("show");
             }
 
-            new_user_input = false;
+            set_new_user_input(false);
 
             if (redraw) {
                 assert(
@@ -163,6 +177,10 @@ export function send_presence_to_server(redraw?: () => void): void {
             }
         },
     });
+};
+
+export function rewire_send_presence_to_server(value: typeof send_presence_to_server): void {
+    send_presence_to_server = value;
 }
 
 export function mark_client_active(): void {
@@ -175,7 +193,7 @@ export function mark_client_active(): void {
 
 export function initialize(): void {
     $("html").on("mousemove", () => {
-        new_user_input = true;
+        set_new_user_input(true);
     });
 
     $(window).on("focus", mark_client_active);

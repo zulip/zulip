@@ -18,7 +18,7 @@ to [Getting started with Zulip](/help/getting-started-with-zulip).
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)

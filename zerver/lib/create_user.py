@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from email.headerregistry import Address
 
@@ -24,7 +25,7 @@ def copy_default_settings(
     settings_source: UserProfile | RealmUserDefault, target_profile: UserProfile
 ) -> None:
     # Important note: Code run from here to configure the user's
-    # settings should not call send_event, as that would cause clients
+    # settings should not send events, as that would cause clients
     # to throw an exception (we haven't sent the realm_user/add event
     # yet, so that event will include the updated details of target_profile).
     #
@@ -65,8 +66,29 @@ def copy_default_settings(
     copy_onboarding_steps(settings_source, target_profile)
 
 
+def get_dummy_email_address_for_display_regex(realm: Realm) -> str:
+    """
+    Returns a regex that matches the format of dummy email addresses we
+    generate for the .email of users with limit email_address_visibility.
+
+    The reason we need a regex is that we want something that we can use both
+    for generating the dummy email addresses and recognizing them together with extraction
+    of the user ID.
+    """
+
+    # We can't directly have (\d+) in the username passed to Address, because it gets
+    # mutated by the underlying logic for escaping special characters.
+    # So we use a trick by using $ as a placeholder which will be preserved, and then
+    # replace it with (\d+) to obtain our intended regex.
+    address_template = Address(username="user$", domain=get_fake_email_domain(realm.host)).addr_spec
+    regex = re.escape(address_template).replace(r"\$", r"(\d+)", 1)
+    return regex
+
+
 def get_display_email_address(user_profile: UserProfile) -> str:
     if not user_profile.email_address_is_realm_public():
+        # The format of the dummy email address created here needs to stay consistent
+        # with get_dummy_email_address_for_display_regex.
         return Address(
             username=f"user{user_profile.id}", domain=get_fake_email_domain(user_profile.realm.host)
         ).addr_spec

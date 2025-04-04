@@ -1,12 +1,12 @@
-import {strict as assert} from "assert";
+import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
 
-import * as common from "./lib/common";
+import * as common from "./lib/common.ts";
 
 async function user_row_selector(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
-    const selector = `.remove_potential_subscriber[data-user-id="${user_id}"]`;
+    const selector = `.settings-subscriber-row[data-user-id="${user_id}"]`;
     return selector;
 }
 
@@ -22,7 +22,7 @@ async function await_user_hidden(page: Page, name: string): Promise<void> {
 
 async function add_user_to_stream(page: Page, name: string): Promise<void> {
     const user_id = await common.get_user_id_from_name(page, name);
-    assert(user_id !== undefined);
+    assert.ok(user_id !== undefined);
     await page.evaluate((user_id) => {
         zulip_test.add_user_id_to_new_stream(user_id);
     }, user_id);
@@ -92,15 +92,19 @@ async function create_stream(page: Page): Promise<void> {
     await page.click("#stream_creation_go_to_subscribers");
     await page.type("#create_stream_name", "Test Stream 2");
     await page.click("form#stream_creation_form .finalize_create_stream");
-    // an explanatory modal is shown for the first stream created
-    await common.wait_for_micromodal_to_open(page);
-    await page.click(".dialog_submit_button");
-    await common.wait_for_micromodal_to_close(page);
+
+    // We redirect to the channel message view.
+    await page.waitForSelector("#subscription_overlay", {hidden: true});
+    await page.waitForSelector(
+        `xpath///*[${common.has_class_x("message-header-navbar-title")} and text()="Puppeteer"]`,
+    );
+
     await page.waitForSelector(".message-header-stream-settings-button");
     await page.click(".message-header-stream-settings-button");
     await page.waitForSelector(".stream_section");
     await page.waitForSelector(
-        `xpath///*[${common.has_class_x("stream-name")} and text()="Puppeteer"]`,
+        `xpath///*[${common.has_class_x("stream-name-title")} and text()="Puppeteer"]`,
+        {visible: true},
     );
     const stream_name = await common.get_text_from_selector(
         page,

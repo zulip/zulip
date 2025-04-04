@@ -2,6 +2,7 @@ import re
 from unittest.mock import patch
 
 import pyvips
+from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import check_message, do_send_messages
@@ -9,7 +10,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.camo import get_camo_url
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file, read_test_image_file
+from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import (
@@ -25,20 +26,10 @@ from zerver.worker.thumbnail import ensure_thumbnails
 
 
 class MarkdownThumbnailTest(ZulipTestCase):
-    def upload_image(self, image_name: str) -> str:
+    @override
+    def setUp(self) -> None:
         self.login("othello")
-        with get_test_image_file(image_name) as image_file:
-            response = self.assert_json_success(
-                self.client_post("/json/user_uploads", {"file": image_file})
-            )
-            return re.sub(r"/user_uploads/", "", response["url"])
-
-    def upload_and_thumbnail_image(self, image_name: str) -> str:
-        with self.captureOnCommitCallbacks(execute=True):
-            # Running captureOnCommitCallbacks includes inserting into
-            # the Rabbitmq queue, which in testing means we
-            # immediately run the worker for it, producing the thumbnails.
-            return self.upload_image(image_name)
+        super().setUp()
 
     def assert_message_content_is(
         self, message_id: int, rendered_content: str, user_name: str = "othello"
@@ -82,15 +73,24 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 "<p>Test 1<br>\n"
                 f'<a href="/user_uploads/{path_ids[0]}">{image_names[0]}</a> </p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{path_ids[0]}" title="{image_names[0]}">'
-                f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_ids[0]}/840x560.webp"></a></div>'
+                "<img"
+                ' data-original-content-type="image/jpeg"'
+                ' data-original-dimensions="128x128"'
+                f' src="/user_uploads/thumbnail/{path_ids[0]}/840x560.webp"></a></div>'
                 "<p>Next image<br>\n"
                 f'<a href="/user_uploads/{path_ids[1]}">{image_names[1]}</a> </p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{path_ids[1]}" title="{image_names[1]}">'
-                f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_ids[1]}/840x560.webp"></a></div>'
+                "<img"
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                f' src="/user_uploads/thumbnail/{path_ids[1]}/840x560.webp"></a></div>'
                 "<p>Another screenshot<br>\n"
                 f'<a href="/user_uploads/{path_ids[2]}">{image_names[2]}</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{path_ids[2]}" title="{image_names[2]}">'
-                f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_ids[2]}/840x560.webp"></a></div>'
+                "<img"
+                ' data-original-content-type="image/gif"'
+                ' data-original-dimensions="128x128"'
+                f' src="/user_uploads/thumbnail/{path_ids[2]}/840x560.webp"></a></div>'
             ),
         )
 
@@ -123,7 +123,10 @@ class MarkdownThumbnailTest(ZulipTestCase):
             expected = (
                 f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                ' src="/static/images/loading/loader-black.svg"></a></div>'
             )
 
             message_id = self.send_message_content(content)
@@ -133,7 +136,10 @@ class MarkdownThumbnailTest(ZulipTestCase):
         expected = (
             f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assert_message_content_is(message_id, expected)
 
@@ -145,14 +151,17 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 "image/png",
                 read_test_image_file("img.png"),
                 self.example_user("othello"),
-            )
+            )[0]
             path_id = re.sub(r"/user_uploads/", "", url)
             self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
         message_id = self.send_message_content(f"[I am 95% ± 5% certain!](/user_uploads/{path_id})")
         expected = (
-            f'<p><a href="/user_uploads/{path_id}">I am 95% &plusmn; 5% certain!</a></p>\n'
-            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="I am 95% &plusmn; 5% certain!">'
-            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+            f'<p><a href="/user_uploads/{path_id}">I am 95% ± 5% certain!</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="I am 95% ± 5% certain!">'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assert_message_content_is(message_id, expected)
 
@@ -172,7 +181,9 @@ class MarkdownThumbnailTest(ZulipTestCase):
             expected = (
                 f'<p><a href="/user_uploads/{path_id}">animated_unequal_img.gif</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="animated_unequal_img.gif">'
-                '<img data-animated="true" data-original-dimensions="128x56"'
+                '<img data-animated="true"'
+                ' data-original-content-type="image/gif"'
+                ' data-original-dimensions="128x56"'
                 f' src="/user_uploads/thumbnail/{path_id}/100x75-anim.webp"></a></div>'
             )
             message_id = self.send_message_content(content, do_thumbnail=True)
@@ -203,9 +214,15 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 f'<p><a href="/user_uploads/{first_path_id}">first image</a><br>\n'
                 f'<a href="/user_uploads/{second_path_id}">second image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{first_path_id}" title="first image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                ' src="/static/images/loading/loader-black.svg"></a></div>'
                 f'<div class="message_inline_image"><a href="/user_uploads/{second_path_id}" title="second image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder"'
+                ' data-original-content-type="image/jpeg"'
+                ' data-original-dimensions="128x128"'
+                ' src="/static/images/loading/loader-black.svg"></a></div>'
             ),
         )
 
@@ -217,9 +234,15 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 f'<p><a href="/user_uploads/{first_path_id}">first image</a><br>\n'
                 f'<a href="/user_uploads/{second_path_id}">second image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{first_path_id}" title="first image">'
-                '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+                '<img class="image-loading-placeholder"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                ' src="/static/images/loading/loader-black.svg"></a></div>'
                 f'<div class="message_inline_image"><a href="/user_uploads/{second_path_id}" title="second image">'
-                f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{second_path_id}/840x560.webp"></a></div>'
+                "<img"
+                ' data-original-content-type="image/jpeg"'
+                ' data-original-dimensions="128x128"'
+                f' src="/user_uploads/thumbnail/{second_path_id}/840x560.webp"></a></div>'
             ),
         )
 
@@ -231,9 +254,15 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 f'<p><a href="/user_uploads/{first_path_id}">first image</a><br>\n'
                 f'<a href="/user_uploads/{second_path_id}">second image</a></p>\n'
                 f'<div class="message_inline_image"><a href="/user_uploads/{first_path_id}" title="first image">'
-                f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{first_path_id}/840x560.webp"></a></div>'
+                "<img"
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                f' src="/user_uploads/thumbnail/{first_path_id}/840x560.webp"></a></div>'
                 f'<div class="message_inline_image"><a href="/user_uploads/{second_path_id}" title="second image">'
-                f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{second_path_id}/840x560.webp"></a></div>'
+                "<img"
+                ' data-original-content-type="image/jpeg"'
+                ' data-original-dimensions="128x128"'
+                f' src="/user_uploads/thumbnail/{second_path_id}/840x560.webp"></a></div>'
             ),
         )
 
@@ -258,7 +287,10 @@ class MarkdownThumbnailTest(ZulipTestCase):
         expected = (
             f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assertEqual(
             ArchivedMessage.objects.get(id=message_id).rendered_content,
@@ -300,10 +332,14 @@ class MarkdownThumbnailTest(ZulipTestCase):
             from_user=sender_user_profile,
             to_user=self.example_user("hamlet"),
             content=f"This [image](/user_uploads/{path_id}) is private",
+            skip_capture_on_commit_callbacks=True,
         )
         placeholder = (
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+            '<img class="image-loading-placeholder"'
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            ' src="/static/images/loading/loader-black.svg"></a></div>'
         )
         self.assert_message_content_is(
             channel_message_id,
@@ -331,7 +367,10 @@ class MarkdownThumbnailTest(ZulipTestCase):
 
         rendered_thumb = (
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/100x75.webp"></a></div>'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/100x75.webp"></a></div>'
         )
 
         self.assert_message_content_is(
@@ -362,7 +401,10 @@ class MarkdownThumbnailTest(ZulipTestCase):
         expected = (
             f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            '<img class="image-loading-placeholder" src="/static/images/loading/loader-black.svg"></a></div>'
+            '<img class="image-loading-placeholder"'
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            ' src="/static/images/loading/loader-black.svg"></a></div>'
         )
         self.assertEqual(send_request.message.rendered_content, expected)
 
@@ -377,8 +419,62 @@ class MarkdownThumbnailTest(ZulipTestCase):
 
         rendered_thumb = (
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assert_message_content_is(
             message_id, f'<p><a href="/user_uploads/{path_id}">image</a></p>\n{rendered_thumb}'
         )
+
+    def test_thumbnail_historical_image(self) -> None:
+        # Note that this is outside the captureOnCommitCallbacks, so
+        # we don't actually run thumbnailing for it.  This results in
+        # a ImageAttachment row but no thumbnails, which matches the
+        # state of backfilled previously-uploaded images.
+        path_id = self.upload_image("img.png")
+
+        with self.captureOnCommitCallbacks(execute=True):
+            message_id = self.send_message_content(f"An [image](/user_uploads/{path_id})")
+
+            content = f"[image](/user_uploads/{path_id})"
+            expected = (
+                f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+                f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+                '<img class="image-loading-placeholder"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                ' src="/static/images/loading/loader-black.svg"></a></div>'
+            )
+
+            message_id = self.send_message_content(content)
+            self.assert_message_content_is(message_id, expected)
+
+        # Exiting the block should have run the thumbnailing that was
+        # enqueued when rendering the message.
+        expected = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assert_message_content_is(message_id, expected)
+
+    def test_thumbnail_transcode(self) -> None:
+        path_id = self.upload_image("img.tif")
+        message_id = self.send_message_content(
+            f"An [image](/user_uploads/{path_id})", do_thumbnail=True
+        )
+        expected = (
+            f'<p>An <a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            "<img"
+            ' data-original-content-type="image/tiff"'
+            ' data-original-dimensions="128x128"'
+            ' data-transcoded-image="4032x3024.webp"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assert_message_content_is(message_id, expected)

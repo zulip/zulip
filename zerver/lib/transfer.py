@@ -12,7 +12,7 @@ from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import upload_emoji_image, write_avatar_images
-from zerver.lib.upload.s3 import S3UploadBackend, upload_image_to_s3
+from zerver.lib.upload.s3 import S3UploadBackend, upload_content_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
 s3backend = S3UploadBackend()
@@ -74,7 +74,7 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
     try:
         with open(file_path, "rb") as f:
             guessed_type = guess_type(attachment.file_name)[0]
-            upload_image_to_s3(
+            upload_content_to_s3(
                 s3backend.uploads_bucket,
                 attachment.path_id,
                 guessed_type,

@@ -6,15 +6,16 @@
             <div id="stream_creating_indicator"></div>
             <div class="stream-creation-body">
                 <div class="configure_channel_settings stream_creation_container">
-                    <section id="create_stream_title_container" class="block">
+                    <section id="create_stream_title_container">
                         <label for="create_stream_name">
                             {{t "Channel name" }}
                         </label>
                         <input type="text" name="stream_name" id="create_stream_name" class="settings_text_input"
                           placeholder="{{t 'Channel name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
                         <div id="stream_name_error" class="stream_creation_error"></div>
+                        <a id="archived_stream_rename"></a>
                     </section>
-                    <section id="create_stream_description_container" class="block">
+                    <section id="create_stream_description_container">
                         <label for="create_stream_description" class="settings-field-label">
                             {{t "Channel description" }}
                             {{> ../help_link_widget link="/help/change-the-channel-description" }}
@@ -22,22 +23,26 @@
                         <input type="text" name="stream_description" id="create_stream_description" class="settings_text_input"
                           placeholder="{{t 'Channel description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
                     </section>
-                    <section class="block" id="make-invite-only">
+                    <section id="make-invite-only">
                         <div class="stream-types">
-                            {{> stream_types
-                              stream_post_policy=stream_post_policy_values.everyone.code
+                            {{> stream_types .
                               is_stream_edit=false
-                              can_remove_subscribers_setting_widget_name="new_stream_can_remove_subscribers_group" }}
+                              prefix="id_new_" }}
                         </div>
                     </section>
                 </div>
                 <div class="subscribers_container stream_creation_container">
-                    <section class="block stream_create_add_subscriber_container">
-                        <label class="choose-subscribers-label" for="people_to_add">
+                    <section class="stream_create_add_subscriber_container">
+                        <label class="choose-subscribers-label">
                             <h4 class="stream_setting_subsection_title">{{t "Choose subscribers" }}</h4>
                         </label>
-                        <span class="add_all_users_to_stream_btn_container">
-                            <button class="add_all_users_to_stream small button rounded sea-green">{{t 'Add all users'}}</button>
+                        <span class="add_all_users_to_stream_button_container">
+                            {{> ../components/action_button
+                              label=(t "Add all users")
+                              custom_classes="add_all_users_to_stream inline-block"
+                              attention="quiet"
+                              intent="brand"
+                              }}
                         </span>
                         <div id="stream_subscription_error" class="stream_creation_error"></div>
                         <div class="controls" id="people_to_add"></div>
@@ -47,12 +52,35 @@
         </div>
         <div class="settings-sticky-footer">
             <div class="settings-sticky-footer-left">
-                <button id="stream_creation_go_to_configure_channel_settings" class="button small sea-green rounded hide">{{t "Back to settings" }}</button>
+                {{> ../components/action_button
+                  label=(t "Back to settings")
+                  custom_classes="hide"
+                  id="stream_creation_go_to_configure_channel_settings"
+                  attention="quiet"
+                  intent="brand"
+                  }}
             </div>
             <div class="settings-sticky-footer-right">
-                <button class="create_stream_cancel button small white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
-                <button class="finalize_create_stream button small sea-green rounded hide" type="submit">{{t "Create" }}</button>
-                <button id="stream_creation_go_to_subscribers" class="button small sea-green rounded">{{t "Continue to add subscribers" }}</button>
+                {{> ../components/action_button
+                  label=(t "Cancel")
+                  custom_classes="create_stream_cancel inline-block"
+                  attention="quiet"
+                  intent="neutral"
+                  }}
+                {{> ../components/action_button
+                  label=(t "Create")
+                  custom_classes="finalize_create_stream hide"
+                  attention="quiet"
+                  intent="brand"
+                  type="submit"
+                  }}
+                {{> ../components/action_button
+                  label=(t "Continue to add subscribers")
+                  custom_classes="inline-block"
+                  id="stream_creation_go_to_subscribers"
+                  attention="quiet"
+                  intent="brand"
+                  }}
             </div>
         </div>
     </form>

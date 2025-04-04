@@ -13,7 +13,7 @@ from zerver.models import UserProfile
 MESSAGE_TEMPLATE = (
     "You are going to derail from goal **{goal_name}** in **{time:0.1f} hours**. "
     "You need **{limsum}** to avoid derailing.\n"
-    "* Pledge: **{pledge}$** {expression}\n"
+    "* Pledge: **${pledge}** {expression}\n"
 )
 
 

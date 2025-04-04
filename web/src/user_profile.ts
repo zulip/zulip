@@ -17,52 +17,56 @@ import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
-import * as avatar from "./avatar";
-import * as bot_data from "./bot_data";
-import * as browser_history from "./browser_history";
-import * as buddy_data from "./buddy_data";
-import * as channel from "./channel";
-import * as components from "./components";
-import {show_copied_confirmation} from "./copied_tooltip";
-import {csrf_token} from "./csrf";
-import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
-import * as dialog_widget from "./dialog_widget";
-import * as dropdown_widget from "./dropdown_widget";
-import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget";
-import {get_current_hash_category} from "./hash_parser";
-import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import type {InputPillContainer} from "./input_pill";
-import * as integration_url_modal from "./integration_url_modal";
-import * as ListWidget from "./list_widget";
-import type {ListWidget as ListWidgetType} from "./list_widget";
-import * as loading from "./loading";
-import * as modals from "./modals";
-import * as peer_data from "./peer_data";
-import * as people from "./people";
-import type {User} from "./people";
-import * as settings_components from "./settings_components";
-import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
-import * as settings_profile_fields from "./settings_profile_fields";
-import type {CustomProfileField, CustomProfileFieldTypes} from "./state_data";
-import {current_user, realm} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as sub_store from "./sub_store";
-import type {StreamSubscription} from "./sub_store";
-import * as subscriber_api from "./subscriber_api";
-import * as timerender from "./timerender";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
-import * as upload_widget from "./upload_widget";
-import type {UploadWidget} from "./upload_widget";
-import * as user_deactivation_ui from "./user_deactivation_ui";
-import * as user_groups from "./user_groups";
-import type {UserGroup} from "./user_groups";
-import * as user_pill from "./user_pill";
-import * as util from "./util";
+import * as avatar from "./avatar.ts";
+import * as bot_data from "./bot_data.ts";
+import * as browser_history from "./browser_history.ts";
+import * as buddy_data from "./buddy_data.ts";
+import * as channel from "./channel.ts";
+import * as components from "./components.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import {csrf_token} from "./csrf.ts";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
+import {get_current_hash_category} from "./hash_parser.ts";
+import * as hash_util from "./hash_util.ts";
+import {$t, $t_html} from "./i18n.ts";
+import type {InputPillContainer} from "./input_pill.ts";
+import * as integration_url_modal from "./integration_url_modal.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as modals from "./modals.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as settings_profile_fields from "./settings_profile_fields.ts";
+import type {CustomProfileField, CustomProfileFieldTypes} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as subscriber_api from "./subscriber_api.ts";
+import * as timerender from "./timerender.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
+import * as upload_widget from "./upload_widget.ts";
+import type {UploadWidget} from "./upload_widget.ts";
+import * as user_deactivation_ui from "./user_deactivation_ui.ts";
+import * as user_group_edit_members from "./user_group_edit_members.ts";
+import * as user_group_picker_pill from "./user_group_picker_pill.ts";
+import * as user_group_pill from "./user_group_pill.ts";
+import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
+import * as util from "./util.ts";
 
-type CustomProfileFieldData = {
+export type CustomProfileFieldData = {
     id: number;
     name: string;
     is_user_field: boolean;
@@ -78,7 +82,9 @@ type CustomProfileFieldData = {
 };
 
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
+let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
+let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
 let original_values: (Record<string, unknown> & {user_id?: string | undefined}) | undefined;
@@ -89,21 +95,14 @@ const EMBEDDED_BOT_TYPE = "4";
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
-    const dialog_submit_button_span_width = $button.find("span").width();
-    const dialog_submit_button_span_height = $button.find("span").height();
     $button.prop("disabled", true);
-    $button.find("span").hide();
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_spinner($button, $spinner);
 }
 
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);
-    $button.find("span").show();
-    loading.destroy_indicator($spinner);
+    loading.hide_spinner($button, $spinner);
 }
 
 function compare_by_name(
@@ -130,13 +129,22 @@ export function update_user_profile_streams_list_for_users(user_ids: number[]): 
     }
 }
 
+export function update_user_profile_groups_list_for_users(user_ids: number[]): void {
+    const user_id = get_user_id_if_user_profile_modal_open();
+    if (user_id && user_ids.includes(user_id) && user_groups_list_widget !== undefined) {
+        const user_groups_list = user_groups.get_user_groups_of_user(user_id);
+        user_groups_list.sort(compare_by_name);
+        user_groups_list_widget.replace_list_data(user_groups_list);
+    }
+}
+
 export function update_profile_modal_ui(
     user: User,
     new_data: {
         user_id?: number;
-        bot_owner_id?: string;
-        avatar_url?: string;
-        delivery_email?: string;
+        bot_owner_id?: number;
+        avatar_url?: string | null;
+        delivery_email?: string | null;
         role?: number;
         full_name?: string;
     },
@@ -163,7 +171,7 @@ export function update_profile_modal_ui(
         );
     }
     if (new_data.delivery_email !== undefined) {
-        $("#email").find(".value").text(new_data.delivery_email);
+        $("#email .value").text(new_data.delivery_email ?? "");
     }
     if (new_data.role !== undefined && !user.is_bot) {
         const user_type = settings_config.user_role_map.get(new_data.role);
@@ -207,10 +215,10 @@ function initialize_bot_owner(
 function render_user_profile_subscribe_widget(): void {
     const opts: DropdownWidgetOptions = {
         widget_name: "user_profile_subscribe",
-        get_options: get_user_unsub_streams,
+        get_options: get_user_unsub_streams_for_dropdown,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        unique_id_type: "number",
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
@@ -227,19 +235,13 @@ function change_state_of_subscribe_button(
     assert(user_profile_subscribe_widget !== undefined);
     user_profile_subscribe_widget.render();
     const $subscribe_button = $("#user-profile-modal .add-subscription-button");
-    const $element: (tippy.ReferenceElement & HTMLElement) | undefined =
-        $subscribe_button.parent()[0];
-    assert($element !== undefined);
-    $element._tippy?.destroy();
-    $subscribe_button.prop("disabled", false);
+    ui_util.enable_element_and_remove_tooltip($subscribe_button);
 }
 
 function reset_subscribe_widget(): void {
-    $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-    settings_components.initialize_disable_btn_hint_popover(
-        $("#user-profile-modal .add-subscription-button-wrapper"),
+    ui_util.disable_element_and_add_tooltip(
+        $("#user-profile-modal .add-subscription-button"),
         $t({defaultMessage: "Select a channel to subscribe"}),
-        {},
     );
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
         $t({defaultMessage: "Select a channel"}),
@@ -255,14 +257,14 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams(): {
-    name: string;
-    unique_id: number;
-    stream: StreamSubscription;
-}[] {
+export function get_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+    return get_user_unsub_streams(target_user_id);
+}
+
+export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
     return stream_data
-        .get_streams_for_user(target_user_id)
+        .get_streams_for_user(user_id)
         .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
@@ -299,12 +301,30 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
     });
 }
 
-function format_user_group_list_item_html(group: UserGroup): string {
+function format_user_group_list_item_html(group: UserGroup, user: User): string {
+    const is_direct_member = group.members.has(user.user_id);
+    const is_me = user.user_id === current_user.user_id;
+    const can_leave_user_group = is_me && settings_data.can_leave_user_group(group.id);
+    const subgroups_name = [];
+    if (!is_direct_member) {
+        const subgroups = user_groups.get_direct_subgroups_of_group(group).sort(compare_by_name);
+        subgroups_name.push(
+            ...subgroups
+                .filter((subgroup) =>
+                    user_groups.is_user_in_group(subgroup.id, user.user_id, false),
+                )
+                .map((subgroup) => user_groups.get_display_group_name(subgroup.name)),
+        );
+    }
     return render_user_group_list_item({
         group_id: group.id,
-        name: group.name,
+        name: user_groups.get_display_group_name(group.name),
         group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
+        is_direct_member,
+        subgroups_name: subgroups_name.join(", "),
+        is_me,
+        can_remove_members: settings_data.can_manage_user_group(group.id) || can_leave_user_group,
     });
 }
 
@@ -324,10 +344,10 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
-                return item && item.name.toLocaleLowerCase().includes(value);
+                return item?.name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                if ($container.find(".empty-table-message").length) {
+                if ($container.find(".empty-table-message").length > 0) {
                     $container.parent().addClass("empty-list");
                 }
             },
@@ -340,14 +360,25 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
-    ListWidget.create($container, groups, {
+    user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
         callback_after_render() {
             $container.parent().removeClass("empty-list");
         },
         modifier_html(item) {
-            return format_user_group_list_item_html(item);
+            return format_user_group_list_item_html(item, user);
+        },
+        filter: {
+            $element: $("#user-profile-groups-tab .group-search"),
+            predicate(item, value) {
+                return item?.name.toLocaleLowerCase().includes(value);
+            },
+            onupdate() {
+                if ($container.find(".empty-table-message").length > 0) {
+                    $container.parent().addClass("empty-list");
+                }
+            },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });
@@ -376,7 +407,7 @@ export function get_custom_profile_field_data(
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
 
-    if (!field_value) {
+    if (field_value === undefined) {
         return undefined;
     }
     if (!field_value.value) {
@@ -467,6 +498,7 @@ export function hide_user_profile(): void {
 
 function on_user_profile_hide(): void {
     user_streams_list_widget = undefined;
+    user_groups_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
     const base = get_current_hash_category();
     // After closing the user profile, if the hash consists of `#user`
@@ -508,6 +540,82 @@ export function show_user_profile_access_error_modal(): void {
     });
 }
 
+function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQuery): void {
+    const group_ids_successfully_added: number[] = [];
+
+    function add_user_to_next_group(): void {
+        if (group_ids_successfully_added.length >= group_ids.length) {
+            if (group_ids_successfully_added.length > 0) {
+                ui_report.success(
+                    $t_html({
+                        defaultMessage: "Added successfully!",
+                    }),
+                    $alert_box,
+                    1200,
+                );
+                clear_successful_pills();
+            }
+            return;
+        }
+
+        const group_id = group_ids[group_ids_successfully_added.length]!;
+        const target_user_group = user_groups.get_user_group_from_id(group_id);
+
+        if (!target_user_group) {
+            return;
+        }
+
+        user_group_edit_members.edit_user_group_membership({
+            group: target_user_group,
+            added: [user_id],
+            success(): void {
+                group_ids_successfully_added.push(group_id);
+                add_user_to_next_group();
+            },
+            error(xhr): void {
+                const parsed = z
+                    .object({
+                        result: z.literal("error"),
+                        msg: z.string(),
+                        code: z.string(),
+                    })
+                    .safeParse(xhr?.responseJSON);
+
+                const error_message = people.is_my_user_id(user_id)
+                    ? $t(
+                          {defaultMessage: "Error joining {group_name}: {error}"},
+                          {
+                              group_name: target_user_group.name,
+                              error: parsed.success ? parsed.data.msg : "Unknown error",
+                          },
+                      )
+                    : $t(
+                          {defaultMessage: "Error adding user to {group_name}: {error}"},
+                          {
+                              group_name: target_user_group.name,
+                              error: parsed.success ? parsed.data.msg : "Unknown error",
+                          },
+                      );
+
+                ui_report.client_error(error_message, $alert_box);
+                clear_successful_pills();
+            },
+        });
+    }
+
+    function clear_successful_pills(): void {
+        for (const id of group_ids_successfully_added) {
+            const $pill = $(`#user-group-to-add .pill-container .pill[data-user-group-id="${id}"]`);
+            if ($pill.length > 0) {
+                user_group_pill_widget.removePill($pill[0]!, "close");
+            }
+        }
+    }
+
+    // Start the process
+    add_user_to_next_group();
+}
+
 export function show_user_profile(user: User, default_tab_key = "profile-tab"): void {
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
@@ -516,16 +624,18 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     original_values = {
         user_id: user.user_id.toString(),
     };
-    const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
+    const user_unsub_streams = get_user_unsub_streams(user.user_id);
     // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
     // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
     // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
     // Therefore, we also check for that condition.
     const show_user_subscribe_widget =
-        (people.can_admin_user(user) || settings_data.user_can_subscribe_other_users()) &&
+        (people.can_admin_user(user) || user_unsub_streams.length > 0) &&
         !user.is_system_bot &&
         people.is_person_active(user.user_id);
-    const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+    const show_user_group_container =
+        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
+        people.is_person_active(user.user_id);
     // We currently have the main UI for editing your own profile in
     // settings, so can_manage_profile is artificially false for those.
     const can_manage_profile =
@@ -542,11 +652,12 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         full_name: user.full_name,
         is_active: people.is_person_active(user.user_id),
         is_bot: user.is_bot,
-        is_me: people.is_current_user(user.email),
+        is_me: people.is_my_user_id(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         profile_data,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         show_user_subscribe_widget,
+        show_user_group_container,
         user_avatar: people.medium_avatar_url_for_person(user),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         user_id: user.user_id,
@@ -580,6 +691,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         default_tab = 3;
     }
 
+    let has_initialized_user_type_fields = false;
     const opts = {
         selected: default_tab,
         child_wants_focus: true,
@@ -588,7 +700,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
-        callback(_name: string, key: string) {
+        callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
             $("#user-profile-modal .modal__footer").hide();
@@ -598,17 +710,30 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             );
             switch (key) {
                 case "profile-tab":
-                    initialize_user_type_fields(user);
-                    break;
-                case "user-profile-groups-tab":
-                    render_user_group_list(groups_of_user, user);
-                    break;
-                case "user-profile-streams-tab":
-                    if (show_user_subscribe_widget) {
-                        render_user_profile_subscribe_widget();
+                    if (!has_initialized_user_type_fields) {
+                        initialize_user_type_fields(user);
+                        has_initialized_user_type_fields = true;
                     }
-                    render_user_stream_list(user_streams, user);
                     break;
+                case "user-profile-groups-tab": {
+                    if (!user_groups_list_widget) {
+                        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+                        render_user_group_list(groups_of_user, user);
+                    }
+                    break;
+                }
+                case "user-profile-streams-tab": {
+                    if (!user_streams_list_widget) {
+                        const user_streams = stream_data.get_streams_for_user(
+                            user.user_id,
+                        ).subscribed;
+                        if (show_user_subscribe_widget) {
+                            render_user_profile_subscribe_widget();
+                        }
+                        render_user_stream_list(user_streams, user);
+                    }
+                    break;
+                }
                 case "manage-profile-tab":
                     $("#user-profile-modal .modal__footer").show();
                     render_manage_profile_content(user);
@@ -642,6 +767,13 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     if (show_user_subscribe_widget) {
         reset_subscribe_widget();
     }
+    if (show_user_group_container) {
+        const $user_group_pill_container = $("#user-group-to-add .pill-container");
+        user_group_pill_widget = user_group_picker_pill.create(
+            $user_group_pill_container,
+            user.user_id,
+        );
+    }
 }
 
 function handle_remove_stream_subscription(
@@ -672,7 +804,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const owner_id = bot_user.owner_id;
     assert(owner_id !== null);
-    const owner_full_name = people.get_full_name(owner_id);
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
@@ -684,8 +815,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
-        owner_full_name,
-        current_bot_owner: bot.bot_owner_id,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
     });
     $container.append($(html_body));
@@ -749,10 +878,10 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
         formData.append("file-0", upload_widget.get_edited_file());
 
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
+        const $submit_button = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_button = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_button);
+        $cancel_button.prop("disabled", true);
 
         void channel.patch({
             url,
@@ -760,8 +889,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             processData: false,
             contentType: false,
             success() {
+                $("#bot-edit-form-error").hide();
                 avatar_widget.clear();
-                hide_button_spinner($submit_btn);
+                hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));
                 toggle_submit_button($("#bot-edit-form"));
                 ui_report.success(
@@ -769,7 +899,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                     $("#user-profile-modal .save-success"),
                     1200,
                 );
-                $cancel_btn.prop("disabled", false);
+                $cancel_button.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(
@@ -781,8 +911,8 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 $("#bot-edit-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
+                hide_button_spinner($submit_button);
+                $cancel_button.prop("disabled", false);
             },
         });
     });
@@ -823,7 +953,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             item_click_callback,
             $events_container: $("#bot-edit-form"),
             default_id: owner_id,
-            unique_id_type: dropdown_widget.DataTypes.NUMBER,
+            unique_id_type: "number",
         });
         bot_owner_dropdown_widget.setup();
 
@@ -915,7 +1045,7 @@ function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPil
         to see how the form is built.
 
         TODO: Ideally, this logic would be cleaned up or deduplicated with
-        the settings_account.js logic.
+        the settings_account.ts logic.
     */
     const new_profile_data = [];
     $("#edit-user-form .custom_user_field_value").each(function () {
@@ -962,12 +1092,20 @@ function get_current_values(
 
 function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
-    const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-    if (!_.isEqual(original_values, current_values)) {
-        $submit_btn.prop("disabled", false);
-    } else {
-        $submit_btn.prop("disabled", true);
+    const $submit_button = $("#user-profile-modal .dialog_submit_button");
+    const full_name_value = $edit_form.find<HTMLInputElement>("input[name='full_name']").val()!;
+
+    if (full_name_value.trim() === "") {
+        $submit_button.prop("disabled", true);
+        return;
     }
+
+    if (_.isEqual(original_values, current_values)) {
+        $submit_button.prop("disabled", true);
+        return;
+    }
+
+    $submit_button.prop("disabled", false);
 }
 
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
@@ -978,14 +1116,16 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         return;
     }
 
+    const hide_deactivate_button =
+        current_user.is_admin && !current_user.is_owner && person.is_owner;
     const html_body = render_admin_human_form({
         user_id,
         email: person.delivery_email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
-        owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         is_active,
+        hide_deactivate_button,
     });
 
     $container.append($(html_body));
@@ -1063,16 +1203,17 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             profile_data: JSON.stringify(profile_data),
         };
 
-        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
-        const $cancel_btn = $("#user-profile-modal .dialog_exit_button");
-        show_button_spinner($submit_btn);
-        $cancel_btn.prop("disabled", true);
+        const $submit_button = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_button = $("#user-profile-modal .dialog_exit_button");
+        show_button_spinner($submit_button);
+        $cancel_button.prop("disabled", true);
 
         void channel.patch({
             url,
             data,
             success() {
-                hide_button_spinner($submit_btn);
+                $("#edit-user-form-error").hide();
+                hide_button_spinner($submit_button);
                 original_values = get_current_values($("#edit-user-form"));
                 toggle_submit_button($("#edit-user-form"));
                 ui_report.success(
@@ -1080,7 +1221,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                     $("#user-profile-modal .save-success"),
                     1200,
                 );
-                $cancel_btn.prop("disabled", false);
+                $cancel_button.prop("disabled", false);
             },
             error(xhr) {
                 ui_report.error(
@@ -1092,8 +1233,8 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $("#edit-user-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-                hide_button_spinner($submit_btn);
-                $cancel_btn.prop("disabled", false);
+                hide_button_spinner($submit_button);
+                $cancel_button.prop("disabled", false);
             },
         });
     });
@@ -1207,12 +1348,81 @@ export function initialize(): void {
         handle_remove_stream_subscription(target_user_id, sub, removal_success, removal_failure);
     });
 
+    $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
+        e.preventDefault();
+        const $group_row = $(e.currentTarget).closest("[data-group-id]");
+        const group_id = Number.parseInt($group_row.attr("data-group-id")!, 10);
+        const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+        const target_user_group = user_groups.get_user_group_from_id(group_id);
+        const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
+
+        function removal_success(): void {
+            ui_report.success($t_html({defaultMessage: "Removed successfully!"}), $alert_box, 1200);
+        }
+
+        function removal_failure(): void {
+            let error_message;
+            const group_name = user_groups.get_display_group_name(target_user_group.name);
+            if (people.is_my_user_id(target_user_id)) {
+                error_message = $t(
+                    {defaultMessage: "Error leaving group {group_name}"},
+                    {group_name},
+                );
+            } else {
+                error_message = $t(
+                    {defaultMessage: "Error removing user from group {group_name}"},
+                    {group_name},
+                );
+            }
+
+            ui_report.client_error(error_message, $alert_box, 1200);
+        }
+
+        user_group_edit_members.edit_user_group_membership({
+            group: target_user_group,
+            removed: [target_user_id],
+            success: removal_success,
+            error: removal_failure,
+        });
+    });
+
+    $("body").on("click", "#user-profile-modal .add-groups-button", (e) => {
+        e.preventDefault();
+        const user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+        const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
+        const item = $("#user-group-to-add .pill-container .input").text().trim();
+        if (item) {
+            $("#user-group-to-add .pill-container .input").addClass("shake");
+            if (
+                $("#user-group-to-add .pill-container .input").hasClass(
+                    "show-outline-on-invalid-input",
+                )
+            ) {
+                $("#user-group-to-add .pill-container").addClass("invalid");
+            }
+            return;
+        }
+
+        const group_ids = user_group_pill.get_group_ids(user_group_pill_widget);
+        add_user_to_groups(group_ids, user_id, $alert_box);
+    });
+
     $("body").on("click", "#user-profile-modal #clear_stream_search", (e) => {
         const $input = $("#user-profile-streams-tab .stream-search");
         $input.val("");
 
         // This is a hack to rerender complete
         // stream list once the text is cleared.
+        $input.trigger("input");
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", "#user-profile-modal #clear_groups_search", (e) => {
+        const $input = $("#user-profile-groups-tab .group-search");
+        $input.val("");
+
         $input.trigger("input");
 
         e.stopPropagation();
@@ -1229,14 +1439,16 @@ export function initialize(): void {
         },
     );
 
-    /* These click handlers are implemented as just deep links to the
-     * relevant part of the Zulip UI, so we don't want preventDefault,
-     * but we do want to close the modal when you click them. */
     $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
+        browser_history.go_to_location("#settings/profile");
         hide_user_profile();
     });
 
-    $("body").on("click", "#user-profile-modal .stream_list_item", () => {
+    /* These click handlers are implemented as just deep links to the
+     * relevant part of the Zulip UI, so we don't want preventDefault,
+     * but we do want to close the modal when you click them. */
+
+    $("body").on("click", "#user-profile-modal .user-profile-channel-list-item", () => {
         hide_user_profile();
     });
 
@@ -1245,19 +1457,26 @@ export function initialize(): void {
     });
 
     $("body").on("input", "#user-profile-streams-tab .stream-search", () => {
-        const $input = $<HTMLInputElement>("input#user-profile-streams-tab .stream-search");
+        const $input = $<HTMLInputElement>("#user-profile-streams-tab input.stream-search");
         if ($input.val()!.trim().length > 0) {
             $("#user-profile-streams-tab #clear_stream_search").show();
-            $input.css("margin-right", "-20px");
         } else {
             $("#user-profile-streams-tab #clear_stream_search").hide();
-            $input.css("margin-right", "0");
+        }
+    });
+
+    $("body").on("input", "#user-profile-groups-tab .group-search", () => {
+        const $input = $<HTMLInputElement>("#user-profile-groups-tab input.group-search");
+        if ($input.val()!.trim().length > 0) {
+            $("#user-profile-groups-tab #clear_groups_search").show();
+        } else {
+            $("#user-profile-groups-tab #clear_groups_search").hide();
         }
     });
 
     new ClipboardJS(".copy-link-to-user-profile", {
         text(trigger) {
-            const user_id = $(trigger).attr("data-user-id");
+            const user_id = $(trigger).closest("#user-profile-modal").attr("data-user-id");
             const user_profile_link = window.location.origin + "/#user/" + user_id;
 
             return user_profile_link;
@@ -1265,5 +1484,17 @@ export function initialize(): void {
     }).on("success", (e) => {
         assert(e.trigger instanceof HTMLElement);
         show_copied_confirmation(e.trigger);
+    });
+
+    new ClipboardJS(".copy-custom-field-url", {
+        text(trigger) {
+            const $custom_link = $(trigger).parent().find(".custom-profile-fields-link");
+            return $custom_link.attr("href") ?? "";
+        },
+    }).on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
     });
 }

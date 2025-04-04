@@ -61,7 +61,6 @@ def fetch_contributors(repo_name: str, max_retries: int) -> list[Contributor]:
 
     api_link = f"https://api.github.com/repos/zulip/{repo_name}/contributors"
     api_data = {"anon": "1"}
-    certificates = os.environ.get("CUSTOM_CA_CERTIFICATES")
 
     headers: dict[str, str] = {}
     personal_access_token = get_secret("github_personal_access_token")
@@ -84,7 +83,6 @@ def fetch_contributors(repo_name: str, max_retries: int) -> list[Contributor]:
         response = session.get(
             api_link,
             params={**api_data, "page": f"{page_index}"},
-            verify=certificates,
             headers=headers,
         )
         response.raise_for_status()

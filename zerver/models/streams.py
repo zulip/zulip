@@ -7,12 +7,10 @@ from django.db.models.functions import Upper
 from django.db.models.signals import post_delete, post_save
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
-from django_stubs_ext import StrPromise
 from typing_extensions import override
 
 from zerver.lib.cache import flush_stream
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import DefaultStreamDict, GroupPermissionSetting
+from zerver.lib.types import GroupPermissionSetting
 from zerver.models.groups import SystemGroups, UserGroup
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
@@ -79,27 +77,28 @@ class Stream(models.Model):
     # Whether this stream's content should be published by the web-public archive features
     is_web_public = models.BooleanField(default=False)
 
+    # These values are used to map the can_send_message_group setting value
+    # to the corresponding stream_post_policy value for legacy API clients
+    # in get_stream_post_policy_value_based_on_group_setting defined in
+    # zerver/lib/streams.py.
     STREAM_POST_POLICY_EVERYONE = 1
     STREAM_POST_POLICY_ADMINS = 2
     STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS = 3
     STREAM_POST_POLICY_MODERATORS = 4
-    # TODO: Implement policy to restrict posting to a user group or admins.
 
-    # Who in the organization has permission to send messages to this stream.
-    stream_post_policy = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    POST_POLICIES: dict[int, StrPromise] = {
-        # These strings should match the strings in the
-        # stream_post_policy_values object in stream_data.js.
-        STREAM_POST_POLICY_EVERYONE: gettext_lazy("All channel members can post"),
-        STREAM_POST_POLICY_ADMINS: gettext_lazy("Only organization administrators can post"),
-        STREAM_POST_POLICY_MODERATORS: gettext_lazy(
-            "Only organization administrators and moderators can post"
-        ),
-        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS: gettext_lazy(
-            "Only organization full members can post"
-        ),
+    STREAM_POST_POLICY_TYPES = [
+        STREAM_POST_POLICY_EVERYONE,
+        STREAM_POST_POLICY_ADMINS,
+        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        STREAM_POST_POLICY_MODERATORS,
+    ]
+
+    SYSTEM_GROUPS_ENUM_MAP = {
+        SystemGroups.EVERYONE: STREAM_POST_POLICY_EVERYONE,
+        SystemGroups.ADMINISTRATORS: STREAM_POST_POLICY_ADMINS,
+        SystemGroups.FULL_MEMBERS: STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        SystemGroups.MODERATORS: STREAM_POST_POLICY_MODERATORS,
     }
-    STREAM_POST_POLICY_TYPES = list(POST_POLICIES.keys())
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now
@@ -111,15 +110,6 @@ class Stream(models.Model):
     # and the reason for denormalizing field is performance.
     is_in_zephyr_realm = models.BooleanField(default=False)
 
-    # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
-    # e-mail length of 254, and our max stream length is 30, so we
-    # have plenty of room for the token.
-    email_token = models.CharField(
-        max_length=32,
-        default=generate_email_token_for_stream,
-        unique=True,
-    )
-
     # For old messages being automatically deleted.
     # Value NULL means "use retention policy of the realm".
     # Value -1 means "disable retention policy for this stream unconditionally".
@@ -130,28 +120,87 @@ class Stream(models.Model):
     }
     message_retention_days = models.IntegerField(null=True, default=None)
 
-    # on_delete field here is set to RESTRICT because we don't want to allow
-    # deleting a user group in case it is referenced by this setting.
-    # We are not using PROTECT since we want to allow deletion of user groups
-    # when realm itself is deleted.
+    # on_delete field for group value settings is set to RESTRICT
+    # because we don't want to allow deleting a user group in case it
+    # is referenced by the respective setting. We are not using PROTECT
+    # since we want to allow deletion of user groups when the realm
+    # itself is deleted.
+    can_add_subscribers_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_administer_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
+    can_send_message_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_subscribe_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
     # stream based on what messages they have cached.
     first_message_id = models.IntegerField(null=True, db_index=True)
 
+    LAST_ACTIVITY_DAYS_BEFORE_FOR_ACTIVE = 180
+
+    # Whether a message has been sent to this stream in the last X days.
+    is_recently_active = models.BooleanField(default=True, db_default=True)
+
     stream_permission_group_settings = {
-        "can_remove_subscribers_group": GroupPermissionSetting(
-            require_system_group=True,
+        "can_add_subscribers_group": GroupPermissionSetting(
+            require_system_group=False,
             allow_internet_group=False,
-            allow_owners_group=False,
-            allow_nobody_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_administer_channel_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name="stream_creator_or_nobody",
+        ),
+        "can_remove_subscribers_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
-            id_field_name="can_remove_subscribers_group_id",
+        ),
+        "can_send_message_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+        ),
+        "can_subscribe_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
         ),
     }
+
+    stream_permission_group_settings_requiring_content_access = [
+        "can_add_subscribers_group",
+        "can_subscribe_group",
+    ]
+    assert set(stream_permission_group_settings_requiring_content_access).issubset(
+        stream_permission_group_settings.keys()
+    )
+
+    stream_permission_group_settings_granting_metadata_access = [
+        "can_add_subscribers_group",
+        "can_administer_channel_group",
+        "can_subscribe_group",
+    ]
+    assert set(stream_permission_group_settings_granting_metadata_access).issubset(
+        stream_permission_group_settings.keys()
+    )
 
     class Meta:
         indexes = [
@@ -175,13 +224,13 @@ class Stream(models.Model):
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
-    # * "email_token" is not realm-public and thus is not included here.
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
         "creator_id",
         "date_created",
+        "deactivated",
         "description",
         "first_message_id",
         "history_public_to_subscribers",
@@ -191,27 +240,13 @@ class Stream(models.Model):
         "message_retention_days",
         "name",
         "rendered_description",
-        "stream_post_policy",
+        "can_add_subscribers_group_id",
+        "can_administer_channel_group_id",
+        "can_send_message_group_id",
         "can_remove_subscribers_group_id",
+        "can_subscribe_group_id",
+        "is_recently_active",
     ]
-
-    def to_dict(self) -> DefaultStreamDict:
-        return DefaultStreamDict(
-            can_remove_subscribers_group=self.can_remove_subscribers_group_id,
-            creator_id=self.creator_id,
-            date_created=datetime_to_timestamp(self.date_created),
-            description=self.description,
-            first_message_id=self.first_message_id,
-            history_public_to_subscribers=self.history_public_to_subscribers,
-            invite_only=self.invite_only,
-            is_web_public=self.is_web_public,
-            message_retention_days=self.message_retention_days,
-            name=self.name,
-            rendered_description=self.rendered_description,
-            stream_id=self.id,
-            stream_post_policy=self.stream_post_policy,
-            is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
-        )
 
 
 post_save.connect(flush_stream, sender=Stream)
@@ -229,14 +264,14 @@ def get_active_streams(realm: Realm) -> QuerySet[Stream]:
     return Stream.objects.filter(realm=realm, deactivated=False)
 
 
-def get_linkable_streams(realm_id: int) -> QuerySet[Stream]:
+def get_all_streams(realm: Realm, include_archived_channels: bool = True) -> QuerySet[Stream]:
     """
-    This returns the streams that we are allowed to linkify using
-    something like "#frontend" in our markup. For now the business
-    rule is that you can link any stream in the realm that hasn't
-    been deactivated (similar to how get_active_streams works).
+    Return all streams for `include_archived_channels`= true (including invite-only and deactivated streams).
     """
-    return Stream.objects.filter(realm_id=realm_id, deactivated=False)
+    if not include_archived_channels:
+        return get_active_streams(realm)
+
+    return Stream.objects.filter(realm=realm)
 
 
 def get_stream(stream_name: str, realm: Realm) -> Stream:
@@ -252,6 +287,18 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related("realm", "recipient").get(id=stream_id, realm=realm)
 
 
+def get_stream_by_name_for_sending_message(stream_name: str, realm: Realm) -> Stream:
+    return Stream.objects.select_related(
+        "can_send_message_group", "can_send_message_group__named_user_group"
+    ).get(name__iexact=stream_name.strip(), realm_id=realm.id)
+
+
+def get_stream_by_id_for_sending_message(stream_id: int, realm: Realm) -> Stream:
+    return Stream.objects.select_related(
+        "realm", "recipient", "can_send_message_group", "can_send_message_group__named_user_group"
+    ).get(id=stream_id, realm=realm)
+
+
 def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:
     def fetch_streams_by_name(stream_names: set[str]) -> QuerySet[Stream]:
         #
@@ -265,7 +312,11 @@ def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:
         where_clause = (
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
-        return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))  # noqa: S610
+        return (
+            get_all_streams(realm, include_archived_channels=True)
+            .select_related("can_send_message_group", "can_send_message_group__named_user_group")
+            .extra(where=[where_clause], params=(list(stream_names),))  # noqa: S610
+        )
 
     if not stream_names:
         return {}
@@ -382,9 +433,38 @@ class DefaultStreamGroup(models.Model):
             name=self.name,
             id=self.id,
             description=self.description,
-            streams=[stream.to_dict() for stream in self.streams.all().order_by("name")],
+            streams=[stream.id for stream in self.streams.all().order_by("name")],
         )
 
 
 def get_default_stream_groups(realm: Realm) -> QuerySet[DefaultStreamGroup]:
     return DefaultStreamGroup.objects.filter(realm=realm)
+
+
+class ChannelEmailAddress(models.Model):
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    channel = models.ForeignKey(Stream, on_delete=CASCADE)
+    creator = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE, related_name="+")
+    sender = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
+
+    # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
+    # e-mail length of 254, and our max stream length is 30, so we
+    # have plenty of room for the token.
+    email_token = models.CharField(
+        max_length=32,
+        default=generate_email_token_for_stream,
+        unique=True,
+        db_index=True,
+    )
+
+    date_created = models.DateTimeField(default=timezone_now)
+    deactivated = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("channel", "creator", "sender")
+        indexes = [
+            models.Index(
+                fields=("realm", "channel"),
+                name="zerver_channelemailaddress_realm_id_channel_id_idx",
+            ),
+        ]

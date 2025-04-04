@@ -91,7 +91,7 @@ ul {
 
     .screen-1 {
         background: linear-gradient(
-            180deg,
+            0deg,
             hsl(209deg 45% 58%) 0%,
             hsl(210deg 48% 66%) 100%
         );
@@ -165,20 +165,20 @@ ul {
             "pnum" on,
             "lnum" on;
         color: hsl(0deg 0% 100%);
-        transition: all 0.8s ease-out;
+        transition: 0.8s ease-out;
+        transition-property: background, transform;
         cursor: pointer;
     }
 
     .cta-buttons a:hover {
         transition-duration: 0.1s;
         background: hsl(215.9deg 98.3% 53.3%);
-        transform: scale(1.01);
     }
 
     .cta-buttons a:active {
         transition-duration: 0.1s;
         background: hsl(215.8deg 89.3% 47.8%);
-        transform: scale(0.99);
+        transform: scale(0.98);
     }
 
     .cta-desc {
@@ -198,7 +198,9 @@ ul {
     }
 
     .client-logos-div {
-        transition: all 0.7s ease-out;
+        transition:
+            opacity,
+            background 0.7s ease-out;
         background-position: center;
     }
 
@@ -210,15 +212,132 @@ ul {
     }
 
     .screen-2 {
-        height: 740px;
         background: linear-gradient(
             180deg,
-            hsl(210deg 48% 66%) 0%,
-            hsl(236deg 48% 58%) 100%
+            hsl(209deg 45% 58%) 0%,
+            hsl(236deg 47% 50%) 100%
         );
     }
 
-    .screen-2__container,
+    .screen-2__container {
+        margin: 0;
+        display: flex;
+        padding: 42px 8px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 32px;
+    }
+
+    .screen-2__tabs {
+        align-items: center;
+        max-width: 986px;
+        margin: 0 auto;
+        padding: 16px 16px 16px 28px;
+        display: flex;
+        border-radius: 64px;
+        background: hsl(0deg 0% 0% / 10%);
+    }
+
+    input[type="radio"].screen-2__tab-input {
+        display: none;
+    }
+
+    .screen-2__tabs ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .screen-2__tabs ul li {
+        flex: 1;
+        display: block;
+    }
+
+    .screen-2__tabs ul li label {
+        display: block;
+        padding: 24px 16px 24px 24px;
+        text-align: left;
+        cursor: pointer;
+        color: hsl(0deg 0% 100%);
+        font-family: sans-serif;
+        font-size: 26px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 130%; /* 33.8px */
+        position: relative;
+        opacity: 0.7;
+        transition: opacity 0.1s;
+    }
+
+    .screen-2__tabs ul li label:hover {
+        opacity: 0.85;
+    }
+
+    .screen-2__tabs ul li label::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 24px;
+        bottom: 24px;
+        left: -2px;
+        width: 5px;
+        border-radius: 5px;
+        background: hsl(0deg 0% 100%);
+        opacity: 0.3;
+        transition: opacity 0.1s;
+    }
+
+    .screen-2__tabs ul li label:hover::before {
+        opacity: 0.45;
+    }
+
+    .screen-2__tabs .screen-2__tabs-content .screen-2__tab-image {
+        display: none;
+    }
+
+    .screen-2__tabs-content img {
+        max-width: 357px;
+        border-radius: 50px;
+        vertical-align: bottom;
+    }
+
+    #screen-2__tab1:checked
+        ~ .screen-2__tabs-content
+        .screen-2__tab-image:nth-of-type(1),
+    #screen-2__tab2:checked
+        ~ .screen-2__tabs-content
+        .screen-2__tab-image:nth-of-type(2),
+    #screen-2__tab3:checked
+        ~ .screen-2__tabs-content
+        .screen-2__tab-image:nth-of-type(3),
+    #screen-2__tab4:checked
+        ~ .screen-2__tabs-content
+        .screen-2__tab-image:nth-of-type(4),
+    #screen-2__tab5:checked
+        ~ .screen-2__tabs-content
+        .screen-2__tab-image:nth-of-type(5) {
+        display: block;
+    }
+
+    #screen-2__tab1:checked ~ ul li:nth-of-type(1) label,
+    #screen-2__tab2:checked ~ ul li:nth-of-type(2) label,
+    #screen-2__tab3:checked ~ ul li:nth-of-type(3) label,
+    #screen-2__tab4:checked ~ ul li:nth-of-type(4) label,
+    #screen-2__tab5:checked ~ ul li:nth-of-type(5) label {
+        opacity: 1;
+    }
+
+    #screen-2__tab1:checked ~ ul li:nth-of-type(1) label::before,
+    #screen-2__tab2:checked ~ ul li:nth-of-type(2) label::before,
+    #screen-2__tab3:checked ~ ul li:nth-of-type(3) label::before,
+    #screen-2__tab4:checked ~ ul li:nth-of-type(4) label::before,
+    #screen-2__tab5:checked ~ ul li:nth-of-type(5) label::before {
+        opacity: 0.7;
+        width: 7px;
+        left: -3px;
+    }
+
     .screen-3__container,
     .screen-4__container,
     .screen-5__container {
@@ -229,8 +348,7 @@ ul {
         gap: 56px;
     }
 
-    .screen-4__container,
-    .screen-2__container {
+    .screen-4__container {
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
@@ -263,12 +381,7 @@ ul {
         margin: 32px 0 16px;
     }
 
-    .screen-2__header {
-        max-width: 600px;
-        display: inline-block;
-        margin: 0;
-    }
-
+    .screen-2__header,
     .screen-4__header,
     .screen-5__header {
         margin: 0;
@@ -308,7 +421,8 @@ ul {
     }
 
     .quote__text {
-        transition: all 0.5s ease-out;
+        transition: 0.5s ease-out;
+        transition-property: background, box-shadow;
         font-family: var(--font-ss3);
         font-style: normal;
         font-weight: 400;
@@ -325,7 +439,6 @@ ul {
         color: hsl(233deg 14% 26%);
     }
 
-    .screen-2 .quote__text,
     .screen-3 .quote__text {
         max-width: 580px;
     }
@@ -339,7 +452,7 @@ ul {
         bottom: -37px;
         left: 0;
         mask-image: var(--quote-tail-mask);
-        transition: all 0.5s ease-out;
+        transition: background 0.5s ease-out;
         background: linear-gradient(
             0deg,
             hsl(0deg 0% 100% / 49%) 0%,
@@ -389,11 +502,6 @@ ul {
         }
     }
 
-    .screen-2 .quote__text strong {
-        color: hsl(233.8deg 65% 52.9%);
-        font-weight: 600;
-    }
-
     .quote__source {
         position: relative;
         top: 7px;
@@ -410,7 +518,6 @@ ul {
     .quote__source strong {
         font-family: var(--font-ops);
         font-weight: 550;
-        font-style: bold;
     }
 
     .quote__source i {
@@ -421,11 +528,11 @@ ul {
 
     .quote__source a {
         border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
-        transition: border 0.4s ease-out;
+        transition: border-bottom-color 0.4s ease-out;
     }
 
     .quote__source a:hover {
-        border-bottom: 1px solid hsl(0deg 0% 100%);
+        border-bottom-color: hsl(0deg 0% 100%);
         transition: none;
     }
 
@@ -433,8 +540,8 @@ ul {
         height: 920px;
         background: linear-gradient(
             180deg,
-            hsl(236deg 48% 58%) 0%,
-            hsl(250deg 50% 54%) 100%
+            hsl(236deg 47% 50%) 0%,
+            hsl(250deg 50% 45%) 99.36%
         );
 
         .screen-3__quotes {
@@ -448,10 +555,6 @@ ul {
 
         .screen-3__quotes .quote {
             margin: 0;
-        }
-
-        .quote__text {
-            line-height: 130%;
         }
 
         .quote__text strong {
@@ -473,12 +576,14 @@ ul {
         padding: 60px 16px;
     }
 
+    .screen-2__header,
     .screen-3__header,
     .screen-5__header {
         margin: 0;
         text-align: center;
     }
 
+    .screen-2__subtitle,
     .screen-3__subtitle,
     .screen-5__subtitle {
         text-align: center;
@@ -493,8 +598,8 @@ ul {
     .screen-4 {
         background: linear-gradient(
             180deg,
-            hsl(250deg 50% 54%) 0%,
-            hsl(281deg 67% 62%) 100%
+            hsl(250deg 50% 45%) 0%,
+            hsl(281deg 68% 55%) 100%
         );
     }
 
@@ -520,20 +625,20 @@ ul {
     .screen-4__desc a {
         font-weight: 550;
         border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
-        transition: border 0.4s ease-out;
+        transition: border-bottom-color 0.4s ease-out;
     }
 
     .screen-2__desc a:hover,
     .screen-4__desc a:hover {
-        border-bottom: 1px solid hsl(0deg 0% 100%);
+        border-bottom-color: hsl(0deg 0% 100%);
         transition: none;
     }
 
     .screen-5 {
         background: linear-gradient(
             180deg,
-            hsl(281deg 67% 62%) 0%,
-            hsl(317deg 45% 32%) 100%
+            hsl(281deg 68% 55%) 0%,
+            hsl(317deg 45% 30%) 100%
         );
         box-sizing: border-box;
         overflow: hidden;
@@ -567,7 +672,7 @@ ul {
         border: 2px solid hsl(0deg 0% 100% / 26%);
         background: hsl(0deg 0% 100% / 7%);
         min-height: 80px;
-        transition: all 0.2s;
+        transition: background 0.2s;
         padding: 12px 16px 14px;
 
         .card__text {
@@ -607,9 +712,17 @@ ul {
 
         .screen-1 {
             background: linear-gradient(
-                180deg,
+                0deg,
                 hsl(209deg 55% 40%) 0%,
                 hsl(209deg 40% 55%) 100%
+            );
+        }
+
+        .screen-2 {
+            background: linear-gradient(
+                180deg,
+                hsl(209deg 55% 40%) 0%,
+                hsl(236deg 47% 50%) 100%
             );
         }
 
@@ -635,42 +748,6 @@ ul {
             background: hsl(216deg 90% 82%);
         }
 
-        .screen-2 {
-            background: linear-gradient(
-                180deg,
-                hsl(209deg 40% 55%) 0%,
-                hsl(236deg 47% 50%) 100%
-            );
-        }
-
-        .appshot-2__img {
-            box-shadow: 0 0 40px hsl(233.5deg 100% 18.2% / 50%);
-        }
-
-        .screen-3 {
-            background: linear-gradient(
-                180deg,
-                hsl(236deg 47% 50%) 0%,
-                hsl(250deg 50% 45%) 99.36%
-            );
-        }
-
-        .screen-4 {
-            background: linear-gradient(
-                180deg,
-                hsl(250deg 50% 45%) 0%,
-                hsl(281deg 68% 55%) 100%
-            );
-        }
-
-        .screen-5 {
-            background: linear-gradient(
-                180deg,
-                hsl(281deg 68% 55%) 0%,
-                hsl(317deg 45% 30%) 100%
-            );
-        }
-
         .screen-5 .quote__text {
             background: hsl(255deg 52% 80%);
         }
@@ -692,22 +769,11 @@ ul {
         }
     }
 
-    @media (width <= 1311px) {
-        .screen-2 {
-            height: 768px;
-        }
-
-        .appshot-2__img {
-            width: 320px;
-        }
-    }
-
     @media (width <= 1129px) {
         .appshot-1__img {
             width: calc(var(--appshot-1-img-width) * 0.8);
         }
 
-        .screen-2__container,
         .screen-4__container {
             gap: 32px;
         }
@@ -725,7 +791,6 @@ ul {
             grid-template-rows: 100px 100px;
         }
 
-        .screen-2__container,
         .screen-3__container,
         .screen-4__container {
             gap: 16px 24px;
@@ -746,6 +811,11 @@ ul {
             font-size: 28px;
         }
 
+        .screen-2__tabs ul li label {
+            font-size: 22px;
+        }
+
+        .screen-2 .screen-2__subtitle,
         .screen-3 .screen-3__subtitle,
         .screen-5 .screen-5__subtitle {
             font-size: 24px;
@@ -759,6 +829,7 @@ ul {
 
         .appshot-1__img {
             width: auto;
+            max-width: 400px;
             height: auto;
         }
 
@@ -795,7 +866,6 @@ ul {
             height: auto;
         }
 
-        .screen-2__container,
         .screen-3__container,
         .screen-4__container {
             flex-direction: column;
@@ -804,15 +874,11 @@ ul {
             align-items: unset;
         }
 
-        .screen-2__content,
         .screen-4__content {
             transform: scale(1);
             padding: 0;
             max-width: 600px;
             margin: auto;
-        }
-
-        .screen-4__content {
             flex-direction: column;
             gap: 16px;
             align-items: flex-start;
@@ -885,13 +951,6 @@ ul {
             margin-top: 50px;
         }
 
-        .appshot-2__img {
-            position: static;
-            width: 100%;
-            height: auto;
-            max-width: 375px;
-        }
-
         .badges {
             margin-top: 16px;
         }
@@ -901,6 +960,42 @@ ul {
         .client-logos {
             transform: scale(0.86);
         }
+
+        .screen-2__tabs ul li label {
+            padding: 16px 16px 16px 24px;
+            font-size: 20px;
+        }
+
+        .screen-2__tabs ul li label::before {
+            top: 16px;
+            bottom: 16px;
+        }
+
+        .screen-2__tabs-content img {
+            max-width: 300px;
+            border-radius: 42px;
+        }
+
+        .screen-2__tabs {
+            border-radius: 56px;
+        }
+    }
+
+    @media (width <= 700px) {
+        .screen-2__tabs ul li label {
+            font-size: 16px;
+            padding: 16px 12px 16px 14px;
+        }
+
+        .screen-2__tabs {
+            border-radius: 0;
+            background: none;
+            padding: 16px 16px 16px 10px;
+        }
+
+        .screen-2__tabs-content img {
+            max-width: 260px;
+        }
     }
 
     @media (width <= 530px) {
@@ -909,6 +1004,59 @@ ul {
             grid-template-columns: repeat(3, 200px);
             grid-template-rows: 100px 100px;
             margin: -29px -500px;
+        }
+
+        .screen-2__tabs {
+            flex-direction: column-reverse;
+            padding: 0;
+            gap: 8px;
+        }
+
+        .screen-2__tabs ul {
+            padding-left: 8px;
+        }
+
+        .screen-2__tabs ul li label {
+            padding: 8px 10px;
+        }
+
+        .screen-2__tabs ul li label::before {
+            top: 8px;
+            bottom: 8px;
+        }
+
+        .screen-2__tabs-content {
+            overflow: hidden;
+            height: 393px;
+            width: 100%;
+            text-align: center;
+            border-bottom: 1px solid hsl(0deg 0% 100%);
+            border-image-slice: 1;
+            border-width: 1px;
+            border-image-source: linear-gradient(
+                to right,
+                transparent 0%,
+                hsl(0deg 0% 100%) 25%,
+                hsl(0deg 0% 100%) 75%,
+                transparent 100%
+            );
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .screen-2__tabs-content {
+                border-color: hsl(0deg 0% 0%);
+                border-image-source: linear-gradient(
+                    to right,
+                    transparent 0%,
+                    hsl(0deg 0% 0%) 25%,
+                    hsl(0deg 0% 0%) 75%,
+                    transparent 100%
+                );
+            }
+        }
+
+        .screen-2__container {
+            padding-bottom: 24px;
         }
     }
 
@@ -927,7 +1075,6 @@ ul {
             margin: 30px 7px;
         }
 
-        .appshot-2__img,
         .appshot-1__img {
             /* Let the image change width based on window width */
             width: 100% !important;

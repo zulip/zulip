@@ -1,17 +1,11 @@
 import json
 import logging
 
-import stripe
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from corporate.lib.stripe import STRIPE_API_VERSION
-from corporate.lib.stripe_event_handler import (
-    handle_checkout_session_completed_event,
-    handle_invoice_paid_event,
-)
 from corporate.models import Event, Invoice, Session
 from zproject.config import get_secret
 
@@ -20,6 +14,14 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 @csrf_exempt
 def stripe_webhook(request: HttpRequest) -> HttpResponse:
+    import stripe
+
+    from corporate.lib.stripe import STRIPE_API_VERSION
+    from corporate.lib.stripe_event_handler import (
+        handle_checkout_session_completed_event,
+        handle_invoice_paid_event,
+    )
+
     stripe_webhook_endpoint_secret = get_secret("stripe_webhook_endpoint_secret", "")
     if (
         stripe_webhook_endpoint_secret and not settings.TEST_SUITE

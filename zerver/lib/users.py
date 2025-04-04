@@ -18,15 +18,13 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
-from zerver.lib.exceptions import (
-    JsonableError,
-    OrganizationAdministratorRequiredError,
-    OrganizationOwnerRequiredError,
-)
+from zerver.lib.create_user import get_dummy_email_address_for_display_regex
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
+from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, RawUserDict
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -39,12 +37,13 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import BotCreationPolicyEnum, get_fake_email_domain, require_unique_names
+from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
+    base_bulk_get_user_queryset,
+    base_get_user_queryset,
     get_realm_user_dicts,
-    get_user,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
@@ -59,9 +58,10 @@ def check_full_name(
         raise JsonableError(_("Name too long!"))
     if len(full_name) < UserProfile.MIN_NAME_LENGTH:
         raise JsonableError(_("Name too short!"))
-    for character in full_name:
-        if unicodedata.category(character)[0] == "C" or character in UserProfile.NAME_INVALID_CHARS:
-            raise JsonableError(_("Invalid characters in name!"))
+    if check_string_is_printable(full_name) is not None or any(
+        character in full_name for character in UserProfile.NAME_INVALID_CHARS
+    ):
+        raise JsonableError(_("Invalid characters in name!"))
     # Names ending with e.g. `|15` could be ambiguous for
     # sloppily-written parsers of our Markdown syntax for mentioning
     # users with ambiguous names, and likely have no real use, so we
@@ -108,7 +108,7 @@ def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bo
                 f'There is already an active bot named "{full_name}" in this organization. To reactivate this bot, you must rename or deactivate the other one first.'
             )
         else:
-            raise JsonableError(_("Name is already in use!"))
+            raise JsonableError(_("Name is already in use."))
 
 
 def check_short_name(short_name_raw: str) -> str:
@@ -128,7 +128,9 @@ def check_valid_bot_config(
         for integration in WEBHOOK_INTEGRATIONS:
             if integration.name == service_name:
                 # key: validator
-                config_options = {c[1]: c[2] for c in integration.config_options}
+                config_options = {
+                    option.name: option.validator for option in integration.config_options
+                }
                 break
         if not config_options:
             raise JsonableError(
@@ -182,20 +184,22 @@ def add_service(
     )
 
 
-def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
-    # Realm administrators can always add bot
-    if user_profile.is_realm_admin:
+def check_can_create_bot(user_profile: UserProfile, bot_type: int) -> None:
+    if user_has_permission_for_group_setting(
+        user_profile.realm.can_create_bots_group,
+        user_profile,
+        Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_bots_group"],
+    ):
         return
 
-    if user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.EVERYONE:
-        return
-    if user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.ADMINS_ONLY:
-        raise OrganizationAdministratorRequiredError
-    if (
-        user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        and bot_type == UserProfile.DEFAULT_BOT
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and user_has_permission_for_group_setting(
+        user_profile.realm.can_create_write_only_bots_group,
+        user_profile,
+        Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_write_only_bots_group"],
     ):
-        raise OrganizationAdministratorRequiredError
+        return
+
+    raise JsonableError(_("Insufficient permission"))
 
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
@@ -232,13 +236,14 @@ def bulk_get_cross_realm_bots() -> dict[str, UserProfile]:
     return {user.email.lower(): user for user in users}
 
 
-def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> list[UserProfile]:
-    # TODO: Consider adding a flag to control whether deactivated
-    # users should be included.
+def user_ids_to_users(
+    user_ids: Sequence[int], realm: Realm, *, allow_deactivated: bool
+) -> list[UserProfile]:
+    user_query = UserProfile.objects.filter(id__in=user_ids, realm=realm)
+    if not allow_deactivated:
+        user_query = user_query.filter(is_active=True)
 
-    user_profiles = list(
-        UserProfile.objects.filter(id__in=user_ids, realm=realm).select_related("realm")
-    )
+    user_profiles = list(user_query.select_related("realm"))
 
     found_user_ids = {user_profile.id for user_profile in user_profiles}
 
@@ -340,8 +345,71 @@ def access_user_by_email(
     allow_bots: bool = False,
     for_admin: bool,
 ) -> UserProfile:
+    """Fetch a user by email address. Endpoints using this function can be queried either with:
+
+    1) The real email address of the intended user, if the requester
+       believes that user exists and allows their email address to be
+       visible to the requester via their `email_address_visibility` setting.
+
+    2) The dummy email address (of the approximate shape
+       'user{user_id}@{realm_dummy_email_domain}') of the intended user. We
+       detect when the format of the provided email address matches
+       the format of our dummy email addresses and extract the user id
+       from it for a regular id-based lookup.
+
+       In particular, this mode is kept around for backwards
+       compatibility with the old behavior of the `GET /users/{email}`
+       endpoint, which required use of the dummy email address for
+       lookups of any user which didn't have
+       EMAIL_ADDRESS_VISIBILITY_EVERYONE set, regardless of how the
+       actual email_address_visibility setting related to the role of
+       the requester.
+
+       Note: If the realm.host value changes (e.g. due to the server moving to a new
+       domain), the required dummy email values passed here will need to be updated
+       accordingly to match the new value. This deviates from the original API behavior,
+       where the lookups were supposed to match the UserProfile.email value, which was
+       **not** updated for existing users even if the server moved domains. See
+       get_fake_email_domain for details of how the email domain for dummy email addresses
+       is determined.
+
+    The purpose of this is to be used at API endpoints that allow selecting the target user by
+    delivery_email, while preventing the endpoint from leaking information about user emails.
+    """
+
+    # First, check if the email is just the dummy email address format. In that case,
+    # we don't need to deal with email lookups or email address visibility restrictions
+    # and we simply get the user by id, extracted from the dummy address.
+    dummy_email_regex = get_dummy_email_address_for_display_regex(user_profile.realm)
+    match = re.match(dummy_email_regex, email)
+    if match:
+        target_id = int(match.group(1))
+        return access_user_by_id(
+            user_profile,
+            target_id,
+            allow_deactivated=allow_deactivated,
+            allow_bots=allow_bots,
+            for_admin=for_admin,
+        )
+
+    # Since the format doesn't match, we should treat it as a lookup
+    # for a real email address.
+    allowed_email_address_visibility_values = (
+        UserProfile.ROLE_TO_ACCESSIBLE_EMAIL_ADDRESS_VISIBILITY_IDS[user_profile.role]
+    )
+
     try:
-        target = get_user(email, user_profile.realm)
+        # Fetch the user from the subset of users which allow the
+        # requester to see their email address. We carefully do this
+        # with a single query to hopefully make timing attacks
+        # ineffective.
+        #
+        # Notably, we use the same select_related as access_user_by_id.
+        target = base_get_user_queryset().get(
+            delivery_email__iexact=email.strip(),
+            realm=user_profile.realm,
+            email_address_visibility__in=allowed_email_address_visibility_values,
+        )
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 
@@ -360,19 +428,11 @@ def bulk_access_users_by_email(
     # `email__iexact__in=emails` is not supported by Django.
     target_emails_upper = [email.strip().upper() for email in emails]
     users = (
-        UserProfile.objects.annotate(email_upper=Upper("email"))
-        .select_related(
-            "realm",
-            "realm__can_access_all_users_group",
-            "realm__can_access_all_users_group__named_user_group",
-            "realm__direct_message_initiator_group",
-            "realm__direct_message_initiator_group__named_user_group",
-            "realm__direct_message_permission_group",
-            "realm__direct_message_permission_group__named_user_group",
-            "bot_owner",
-        )
+        base_bulk_get_user_queryset()
+        .annotate(email_upper=Upper("email"))
         .filter(email_upper__in=target_emails_upper, realm=acting_user.realm)
     )
+
     valid_emails_upper = {user_profile.email_upper for user_profile in users}
     all_users_exist = all(email in valid_emails_upper for email in target_emails_upper)
 
@@ -393,16 +453,7 @@ def bulk_access_users_by_id(
     allow_bots: bool = False,
     for_admin: bool,
 ) -> set[UserProfile]:
-    users = UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
-        "bot_owner",
-    ).filter(id__in=user_ids, realm=acting_user.realm)
+    users = base_bulk_get_user_queryset().filter(id__in=user_ids, realm=acting_user.realm)
 
     valid_user_ids = {user_profile.id for user_profile in users}
     all_users_exist = all(user_id in valid_user_ids for user_id in user_ids)
@@ -434,24 +485,16 @@ def get_accounts_for_email(email: str) -> list[Account]:
         )
         .order_by("date_joined")
     )
+
     return [
         dict(
             realm_name=profile.realm.name,
             realm_id=profile.realm.id,
             full_name=profile.full_name,
-            avatar=avatar_url(profile),
+            avatar=avatar_url(profile, medium=True),
         )
         for profile in profiles
     ]
-
-
-def get_api_key(user_profile: UserProfile) -> str:
-    return user_profile.api_key
-
-
-def get_all_api_keys(user_profile: UserProfile) -> list[str]:
-    # Users can only have one API key for now
-    return [user_profile.api_key]
 
 
 def validate_user_custom_profile_field(
@@ -477,15 +520,22 @@ def validate_user_custom_profile_field(
 
 
 def validate_user_custom_profile_data(
-    realm_id: int, profile_data: list[ProfileDataElementUpdateDict]
+    realm_id: int, profile_data: list[ProfileDataElementUpdateDict], acting_user: UserProfile
 ) -> None:
     # This function validate all custom field values according to their field type.
     for item in profile_data:
         field_id = item["id"]
         try:
-            field = CustomProfileField.objects.get(id=field_id)
+            field = CustomProfileField.objects.get(realm_id=realm_id, id=field_id)
         except CustomProfileField.DoesNotExist:
             raise JsonableError(_("Field id {id} not found.").format(id=field_id))
+
+        if not acting_user.is_realm_admin and not field.editable_by_user:
+            raise JsonableError(
+                _(
+                    "You are not allowed to change this field. Contact an administrator to update it."
+                )
+            )
 
         try:
             validate_user_custom_profile_field(realm_id, field, item["value"])
@@ -501,20 +551,10 @@ def can_access_delivery_email(
     if target_user_id == user_profile.id:
         return True
 
-    # Bots always have email_address_visibility as EMAIL_ADDRESS_VISIBILITY_EVERYONE.
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        return True
-
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS:
-        return user_profile.is_realm_admin
-
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
-        return user_profile.is_realm_admin or user_profile.is_moderator
-
-    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS:
-        return not user_profile.is_guest
-
-    return False
+    return (
+        email_address_visibility
+        in UserProfile.ROLE_TO_ACCESSIBLE_EMAIL_ADDRESS_VISIBILITY_IDS[user_profile.role]
+    )
 
 
 class APIUserDict(TypedDict):
@@ -524,7 +564,6 @@ class APIUserDict(TypedDict):
     is_admin: bool
     is_owner: bool
     is_guest: bool
-    is_billing_admin: NotRequired[bool]
     role: int
     is_bot: bool
     full_name: str
@@ -572,7 +611,6 @@ def format_user_row(
         is_admin=is_admin,
         is_owner=is_owner,
         is_guest=is_guest,
-        is_billing_admin=row["is_billing_admin"],
         role=row["role"],
         is_bot=is_bot,
         full_name=row["full_name"],
@@ -588,7 +626,6 @@ def format_user_row(
     if acting_user is None:
         # Remove data about other users which are not useful to spectators
         # or can reveal personal information about a user.
-        del result["is_billing_admin"]
         del result["timezone"]
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
@@ -654,7 +691,11 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
         return True
 
     realm = acting_user.realm
-    if is_user_in_group(realm.can_access_all_users_group, acting_user):
+    if user_has_permission_for_group_setting(
+        realm.can_access_all_users_group,
+        acting_user,
+        Realm.REALM_PERMISSION_GROUP_SETTINGS["can_access_all_users_group"],
+    ):
         return True
 
     return False
@@ -914,7 +955,6 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         avatar_version=user_profile.avatar_version,
         is_active=user_profile.is_active,
         role=user_profile.role,
-        is_billing_admin=user_profile.is_billing_admin,
         is_bot=user_profile.is_bot,
         timezone=user_profile.timezone,
         date_joined=user_profile.date_joined,
@@ -967,7 +1007,6 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         is_admin=False,
         is_owner=False,
         is_guest=False,
-        is_billing_admin=False,
         role=UserProfile.ROLE_MEMBER,
         is_bot=False,
         full_name=str(UserProfile.INACCESSIBLE_USER_NAME),

@@ -3,11 +3,11 @@ import _ from "lodash";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
-import type {AjaxRequestHandler} from "./channel";
-import {$t_html} from "./i18n";
-import * as loading from "./loading";
-import * as modals from "./modals";
-import * as ui_report from "./ui_report";
+import type {AjaxRequestHandler} from "./channel.ts";
+import {$t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as modals from "./modals.ts";
+import * as ui_report from "./ui_report.ts";
 
 // Since only one dialog widget can be active at a time
 // and we don't support reopening already closed dialog widgets,
@@ -21,13 +21,13 @@ function current_dialog_widget_id(): string {
 }
 
 function current_dialog_widget_selector(): string {
-    return `#${current_dialog_widget_id()}`;
+    return `#${CSS.escape(current_dialog_widget_id())}`;
 }
 
 /*
- *  Look for confirm_dialog in settings_user_groups
- *  to see an example of how to use this widget.  It's
- *  pretty simple to use!
+ *  Look for dialog_widget or confirm_dialog in various
+ *  'web/src/' files to see examples of how to use this widget.
+ *  It's pretty simple to use!
  *
  *  Some things to note:
  *      1) We create DOM on the fly, and we remove
@@ -36,7 +36,7 @@ function current_dialog_widget_selector(): string {
  *      2) We attach the DOM for the modal to the body element
  *         to avoid interference from other elements.
  *
- *      3) For settings, we have a click handler in settings.js
+ *      3) For settings, we have a click handler in settings.ts
  *         that will close the dialog via modals.close_active.
  *
  *      4) We assume that since this is a modal, you will
@@ -59,7 +59,8 @@ function current_dialog_widget_selector(): string {
  */
 
 export type DialogWidgetConfig = {
-    html_heading: string;
+    html_heading?: string;
+    text_heading?: string;
     html_body: string;
     on_click: (e: JQuery.ClickEvent) => void;
     html_submit_button?: string;
@@ -79,6 +80,8 @@ export type DialogWidgetConfig = {
     loading_spinner?: boolean;
     update_submit_disabled_state_on_change?: boolean;
     always_visible_scrollbar?: boolean;
+    footer_minor_text?: string;
+    close_on_overlay_click?: boolean;
 };
 
 type RequestOpts = {
@@ -88,31 +91,21 @@ type RequestOpts = {
 };
 
 export function hide_dialog_spinner(): void {
-    $(".dialog_submit_button span").show();
     const dialog_widget_selector = current_dialog_widget_selector();
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", false);
-
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    loading.destroy_indicator($spinner);
+    $(`${dialog_widget_selector} .modal__button`).prop("disabled", false);
+
+    loading.hide_spinner($(".dialog_submit_button"), $spinner);
 }
 
 export function show_dialog_spinner(): void {
     const dialog_widget_selector = current_dialog_widget_selector();
     // Disable both the buttons.
-    $(`${dialog_widget_selector} .modal__btn`).prop("disabled", true);
+    $(`${dialog_widget_selector} .modal__button`).prop("disabled", true);
 
     const $spinner = $(`${dialog_widget_selector} .modal__spinner`);
-    const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
-    const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
 
-    // Hide the submit button after computing its height, since submit
-    // buttons with long text might affect the size of the button.
-    $(".dialog_submit_button span").hide();
-
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
+    loading.show_spinner($(".dialog_submit_button"), $spinner);
 }
 
 // Supports a callback to be called once the modal finishes closing.
@@ -145,7 +138,7 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
 
 export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
-    // * html_heading
+    // * html_heading | text_heading
     // * html_body
     // * on_click
     // The html_ fields should be safe HTML. If callers
@@ -174,6 +167,7 @@ export function launch(conf: DialogWidgetConfig): string {
     // * always_visible_scrollbar: Whether the scrollbar is always visible if modal body
     //   has scrollable content. Default behaviour is to hide the scrollbar when it is
     //   not in use.
+    // * close_on_overlay_click: Whether to close modal on clicking overlay.
 
     widget_id_counter += 1;
     const modal_unique_id = current_dialog_widget_id();
@@ -181,7 +175,8 @@ export function launch(conf: DialogWidgetConfig): string {
     const html_exit_button = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
     const html = render_dialog_widget({
         modal_unique_id,
-        heading_text: conf.html_heading,
+        html_heading: conf.html_heading,
+        text_heading: conf.text_heading,
         link: conf.help_link,
         html_submit_button,
         html_exit_button,
@@ -189,13 +184,17 @@ export function launch(conf: DialogWidgetConfig): string {
         id: conf.id,
         single_footer_button: conf.single_footer_button,
         always_visible_scrollbar: conf.always_visible_scrollbar,
+        footer_minor_text: conf.footer_minor_text,
+        close_on_overlay_click: conf.close_on_overlay_click ?? true,
     });
     const $dialog = $(html);
     $("body").append($dialog);
 
-    if (conf.post_render !== undefined) {
-        conf.post_render(modal_unique_id);
-    }
+    setTimeout(() => {
+        if (conf.post_render !== undefined) {
+            conf.post_render(modal_unique_id);
+        }
+    }, 0);
 
     const $submit_button = $dialog.find(".dialog_submit_button");
 
@@ -266,13 +265,19 @@ export function submit_api_request(
         success_continuation,
         error_continuation,
     }: RequestOpts = {},
+    close_on_success = true,
 ): void {
     show_dialog_spinner();
     void request_method({
         url,
         data,
         success(response_data, textStatus, jqXHR) {
-            close();
+            if (close_on_success) {
+                close();
+            } else {
+                hide_dialog_spinner();
+            }
+
             if (success_continuation !== undefined) {
                 success_continuation(response_data, textStatus, jqXHR);
             }

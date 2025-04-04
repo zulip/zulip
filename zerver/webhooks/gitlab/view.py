@@ -16,7 +16,10 @@ from zerver.lib.webhooks.common import (
     validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
+    CONTENT_MESSAGE_TEMPLATE,
     EMPTY_SHA,
+    RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME,
+    RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL,
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     get_commits_comment_action_message,
     get_issue_event_message,
@@ -24,6 +27,7 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_remove_branch_event_message,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 
@@ -342,6 +346,29 @@ def get_pipeline_event_body(payload: WildValue, include_title: bool) -> str:
     )
 
 
+def get_release_event_body(payload: WildValue, include_title: bool) -> str:
+    action = payload["action"].tame(check_string)
+    name = payload["name"].tame(check_string)
+    tag = payload["tag"].tame(check_string)
+    message_action = f"{action}d"
+
+    if action == "delete":
+        body = RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL.format(
+            release_name=name, tagname=tag, action=message_action
+        )
+    else:
+        url = payload["url"].tame(check_string)
+        body = RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME.format(
+            release_name=name, url=url, tagname=tag, action=message_action
+        )
+
+        if "description" in payload:
+            description = payload["description"].tame(check_string)
+            body += CONTENT_MESSAGE_TEMPLATE.format(message=description)
+
+    return body
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -411,6 +438,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Job Hook": get_build_hook_event_body,
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
+    "Release Hook": get_release_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -526,7 +554,7 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
         event = f"{event} {action}"
     elif event == "Push Hook" and branches is not None:
         branch = get_branch_name(payload)
-        if branches.find(branch) == -1:
+        if not is_branch_name_notifiable(branch, branches):
             return None
 
     if event in EVENT_FUNCTION_MAPPER:

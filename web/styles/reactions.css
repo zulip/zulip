@@ -6,6 +6,12 @@
         margin-bottom: var(--message-box-markdown-aligned-vertical-space);
     }
 
+    .message_reaction_container {
+        &.disabled {
+            cursor: not-allowed;
+        }
+    }
+
     .message_reaction {
         display: flex;
         /* Set a pixel and half padding to maintain
@@ -22,7 +28,7 @@
         box-shadow: inset 0 0 5px 0 var(--color-message-reaction-shadow-inner);
         transition:
             transform 100ms linear,
-            font-weight 100ms linear;
+            font-weight 100ms linear; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 
         &.reacted {
             color: var(--color-message-reaction-text-reacted);
@@ -37,6 +43,10 @@
             padding: 1px 4px 1px 3px;
             font-weight: var(--font-weight-message-reaction);
             box-shadow: none;
+        }
+
+        &.disabled {
+            pointer-events: none;
         }
 
         &:hover {
@@ -63,12 +73,7 @@
         .emoji_alt_code {
             /* Apply the same margins as on graphical emoji. */
             margin: 1px 3px;
-            /* Reset some properties from the base .emoji_alt_code
-               class that aren't appropriate in a flexbox context. */
-            position: static;
-            /* Flexbox will handle baselines, so don't mess with the
-               line-height. */
-            line-height: inherit;
+            font-size: 0.8em;
         }
     }
 
@@ -79,12 +84,12 @@
            flexbox to handle the vertical alignment. */
         margin: 0 3px;
         /* Set the 12.6px text on a 13px line;
-           the goal is to have that 13px line
-           center correctly on the vertical with
-           the 17px-square emoji, resulting in
-           2px of space above and below the
-           reaction count/name. */
-        line-height: 13px;
+           the goal is to center correctly on the
+           vertical with square emoji, resulting in
+           equal space above and below the reaction
+           count/name.
+           13px at 12.6/1em */
+        line-height: 1.0317em;
     }
 
     .message_reaction:hover .message_reaction_count {
@@ -119,15 +124,6 @@
 
         &:hover i {
             color: var(--color-message-reaction-button-text-hover);
-        }
-
-        /* Configure the reaction button to appear if and only if there's an
-           existing reaction to the message. We reference first-child
-           rather than only-child because tooltips may be appended to
-           the DOM after this element, whereas actual reactions are
-           appended before it. */
-        &:first-child {
-            display: none;
         }
 
         &:hover {
@@ -165,11 +161,10 @@
 
 .emoji-picker-popover {
     padding: 0;
-    height: 370px;
     user-select: none;
 
     .emoji-popover {
-        width: 250px;
+        width: 16.6667em; /* 250px at 15px/em */
 
         .emoji-popover-category-tabs {
             /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
@@ -180,12 +175,12 @@
             overflow: hidden;
 
             .emoji-popover-tab-item {
+                font-size: 1.0667em; /* 16px at 15px/em */
                 display: inline-block;
-                padding-top: 8px;
-                width: 25px;
-                height: 25px;
+                padding-top: 0.5em; /* 8px at 16px/em */
+                width: 1.5625em; /* 25px at 16px/em */
+                height: 1.5625em; /* 25px at 16px/em */
                 text-align: center;
-                font-size: 16px;
                 cursor: pointer;
                 /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
                 flex-grow: 1;
@@ -204,27 +199,27 @@
             position: relative;
             overflow: hidden auto;
             display: block;
-            width: 247px;
-            padding-left: 3px;
+            width: 16.4667em; /* 247px at 15px/em */
+            padding-left: 0.2em; /* 3px at 15px/em */
         }
 
         .emoji-popover-emoji-map {
-            height: 250px;
+            height: 16.6667em; /* 250px at 15px/em */
 
             .emoji-popover-subheading {
                 font-weight: 600;
-                padding: 5px 3px;
+                padding: 0.3333em 0.2em; /* 5px 3px at 15px/em */
             }
         }
 
         .emoji-popover-emoji {
             display: inline-block;
             margin: 0;
-            padding: 6px;
+            padding: 0.4em; /* 6px at 15px/em */
             cursor: pointer;
             border-radius: 0.5em;
-            height: 25px;
-            width: 25px;
+            height: 1.6667em; /* 25px at 15px/em */
+            width: 1.6667em; /* 25px at 15px/em */
 
             &:focus {
                 background-color: var(
@@ -255,17 +250,23 @@
             }
 
             .emoji {
-                top: 6px;
+                height: 1.6667em; /* 25px at 15px/em */
+                width: 1.6667em; /* 25px at 15px/em */
             }
         }
 
         .emoji-search-results-container {
-            height: 283px;
+            /* Keep it hidden initially to avoid it taking extra height
+               when the emoji popover is initially rendered which can
+               cause the popover to render at incorrect position when
+               the search container is hidden `onMount`. */
+            display: none;
+            height: 18.8667em; /* 283px at 15px/em */
 
             .emoji-popover-results-heading {
+                font-size: 1.1333em; /* 17px at 15px/em */
                 font-weight: 600;
-                padding: 5px 3px 3px 5px;
-                font-size: 17px;
+                padding: 0.2941em 0.1765em 0.1765em 0.2941em; /* 5px 3px 3px 5px at 17px/em */
             }
         }
     }
@@ -273,40 +274,30 @@
     .emoji-showcase-container {
         position: relative;
         background-color: var(--color-background-emoji-picker-popover);
-        min-height: 44px;
-        width: 250px;
-        border-radius: 0 0 3px 3px;
+        min-height: 2.9333em; /* 44px at 15px/em */
+        width: 16.6667em; /* 250px at 15px/em */
+        border-radius: 0 0 6px 6px;
 
         .emoji-preview {
             position: absolute;
-            width: 32px;
-            height: 32px;
-            left: 5px;
-            top: 6px;
+            width: 2.1333em; /* 32px at 15px/em */
+            height: 2.1333em; /* 32px at 15px/em */
+            left: 0.3333em; /* 5px at 15px/em */
+            top: 0.4em; /* 6px at 15px/em */
             margin-top: 0;
         }
 
         .emoji-canonical-name {
+            font-size: 1.0667em; /* 16px at 15px/em */
             position: relative;
-            top: 12px;
-            margin-left: 50px;
-            font-size: 16px;
+            top: 0.75em; /* 12px at 16px/em */
+            margin-left: 3.125em; /* 50px at 16px/em */
             font-weight: 600;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
         }
     }
-}
-
-.emoji_alt_code {
-    position: relative;
-    top: 4px;
-    font-size: 0.8em;
-    display: inline-block;
-    vertical-align: top;
-    margin: 0 1px 0 0;
-    line-height: 1em;
 }
 
 .typeahead .emoji {

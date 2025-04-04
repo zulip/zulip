@@ -12,11 +12,9 @@ from zerver.models import UserProfile
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~\n"
 
-ISSUE_CREATE_OR_UPDATE_TEMPLATE = (
-    "{type} [#{number} {title}]({url}) was {action} in team {team_name}"
-)
+ISSUE_CREATE_OR_UPDATE_TEMPLATE = "[{type}]({url}) was {action} in team {team_name}"
 
-ISSUE_REMOVE_TEMPLATE = "{type} **#{number} {title}** has been removed from team {team_name}."
+ISSUE_REMOVE_TEMPLATE = "This issue has been removed from team {team_name}."
 COMMENT_CREATE_OR_UPDATE_TEMPLATE = "{user} [{action}]({url}) on issue **{issue_title}**:"
 COMMENT_REMOVE_TEMPLATE = "{user} has removed a comment."
 
@@ -137,14 +135,14 @@ def get_topic(user_specified_topic: str | None, event: str, payload: WildValue) 
     if user_specified_topic is not None:
         return user_specified_topic
     elif event == "comment":
-        issue_id = payload["data"]["issueId"].tame(check_string)
-        return issue_id
+        issue_title = payload["data"]["issue"]["title"].tame(check_string)
+        return f"Issue: {issue_title}"
     elif event == "sub_issue":
-        parent = payload["data"]["parentId"].tame(check_string)
-        return parent
+        title = payload["data"]["title"].tame(check_string)
+        return f"Sub-Issue: {title}"
     elif event == "issue":
-        issue_id = payload["data"]["id"].tame(check_string)
-        return issue_id
+        title = payload["data"]["title"].tame(check_string)
+        return f"Issue: {title}"
 
     raise UnsupportedWebhookEventTypeError(event)
 

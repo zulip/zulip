@@ -11,12 +11,14 @@ will automatically redirect to the new location of the message. [Muted
 topics](/help/mute-a-topic) are automatically migrated when an entire
 topic is moved.
 
-Organizations can [configure](/help/restrict-moving-messages) which
-[roles](/help/roles-and-permissions) have permission to modify topics.
+Organization administrators can [configure](/help/restrict-moving-messages) who
+is allowed to move messages.
 
 ## Move messages to another topic
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {!message-actions-menu.md!}
 

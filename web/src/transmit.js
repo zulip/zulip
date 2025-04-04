@@ -1,14 +1,12 @@
-import * as Sentry from "@sentry/browser";
-
-import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as people from "./people";
-import * as reload from "./reload";
-import * as reload_state from "./reload_state";
-import * as sent_messages from "./sent_messages";
-import * as server_events from "./server_events";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
+import * as people from "./people.ts";
+import * as reload from "./reload.ts";
+import * as reload_state from "./reload_state.ts";
+import * as sent_messages from "./sent_messages.ts";
+import * as server_events from "./server_events.js";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 
 export function send_message(request, on_success, error) {
     if (!request.resend) {
@@ -17,10 +15,7 @@ export function send_message(request, on_success, error) {
             locally_echoed: request.locally_echoed,
         });
     }
-    const txn = sent_messages.start_send(request.local_id);
-    try {
-        const scope = Sentry.getCurrentHub().pushScope();
-        scope.setSpan(txn);
+    sent_messages.wrap_send(request.local_id, () => {
         channel.post({
             url: "/json/messages",
             data: request,
@@ -58,6 +53,7 @@ export function send_message(request, on_success, error) {
                 }
             },
             error(xhr, error_type) {
+                sent_messages.get_message_state(request.local_id)?.report_error();
                 if (error_type !== "timeout" && reload_state.is_pending()) {
                     // The error might be due to the server changing
                     reload.initiate({
@@ -72,9 +68,7 @@ export function send_message(request, on_success, error) {
                 error(response, xhr.responseJSON?.code);
             },
         });
-    } finally {
-        Sentry.getCurrentHub().popScope();
-    }
+    });
 }
 
 export function reply_message(opts) {

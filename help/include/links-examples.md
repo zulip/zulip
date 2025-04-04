@@ -4,7 +4,8 @@
 Named link: [Zulip homepage](zulip.com)
 A URL (links automatically): zulip.com
 Channel link: #**channel name**
-Channel and topic link: #**channel name>topic name**
+Topic link: #**channel name>topic name**
+Message link: #**channel name>topic name@123**
 Custom linkifier: For example, #2468 can automatically link to an issue in your tracker.
 ```
 

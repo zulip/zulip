@@ -46,9 +46,12 @@
                     <input type="text" id="linkifier_template" class="settings_text_input" name="url_template" placeholder="https://github.com/zulip/zulip/issues/{id}" />
                     <div class="alert" id="admin-linkifier-template-status"></div>
                 </div>
-                <button type="submit" class="button rounded sea-green">
-                    {{t 'Add linkifier' }}
-                </button>
+                {{> ../components/action_button
+                  label=(t 'Add linkifier')
+                  attention="quiet"
+                  intent="brand"
+                  type="submit"
+                  }}
             </div>
         </div>
     </form>
@@ -57,7 +60,7 @@
     <div class="settings_panel_list_header">
         <h3>{{t "Linkifiers"}}</h3>
         <div class="alert-notification edit-linkifier-status" id="linkifier-field-status"></div>
-        <input type="text" class="search filter_text_input" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
+        {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter linkifiers')}}
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">

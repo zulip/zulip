@@ -1,0 +1,51 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% set PAGE_TITLE = "Contact sales | Zulip" %}
+
+{% block portico_content %}
+<div class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>Contact sales</h1>
+        </div>
+
+        <form method="post" class="white-box" id="registration">
+            {{ csrf_input }}
+
+            <fieldset class="support-request">
+                <div class="input-box support-form-field">
+                    <label for="contact_sales_from" class="inline-block label-title">From</label>
+                    <div id="contact_sales_from" class="not-editable-realm-field">
+                        {{ user_full_name }} ({{ user_email }})
+                    </div>
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="sales_support_request_form_organization_website" class="inline-block label-title">Organization website</label>
+                    <input id="sales_support_request_form_organization_website" class="required" type="url" name="organization_website" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="sales_support_request_form_expected_user_count" class="inline-block label-title">Expected number of users (approximate range)</label>
+                    <input id="sales_support_request_form_expected_user_count" class="required" type="text" name="expected_user_count" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                </div>
+                <div class="input-box support-form-field">
+                    <label for="sales_support_request_form_message" class="inline-block label-title">Please tell us about your organization and how we can help.</label>
+                    <textarea id="sales_support_request_form_message" name="message" cols="100" rows="5" required></textarea>
+                </div>
+
+                <div class="register-button-box">
+                    <button class="register-button support-submit-button" type="submit">
+                        <span>Submit</span>
+                        <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                    </button>
+                </div>
+                <div class="input-box" id="sales-support-form-bottom-info">
+                    <div class="not-editable-realm-field">
+                        Your message will be sent to <a href="mailto:sales@zulip.com">Zulip Sales</a>.
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

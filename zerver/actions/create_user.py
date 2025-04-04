@@ -1,10 +1,10 @@
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
-from datetime import timedelta
+from contextlib import suppress
 from typing import Any
 
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -17,8 +17,15 @@ from zerver.actions.message_send import (
     internal_send_stream_message,
 )
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
-from zerver.actions.user_groups import do_send_user_group_members_update_event
-from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    do_send_user_group_members_update_event,
+)
+from zerver.actions.users import (
+    change_user_is_active,
+    get_service_dicts_for_bot,
+    send_update_events_for_anonymous_group_settings,
+)
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
@@ -28,15 +35,15 @@ from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
-from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.streams import can_access_stream_history
+from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
-    get_api_key,
     get_data_for_inaccessible_user,
+    get_user_ids_who_can_access_user,
     user_access_restricted_in_realm,
     user_profile_to_user_row,
 )
@@ -58,27 +65,18 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
-if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import RealmBillingSession
-
-
 MAX_NUM_RECENT_MESSAGES = 1000
 MAX_NUM_RECENT_UNREAD_MESSAGES = 20
-
-# We don't want to mark years-old messages as unread, since that might
-# feel like Zulip is buggy, but in low-traffic or bursty-traffic
-# organizations, it's reasonable for the most recent 20 messages to be
-# several weeks old and still be a good place to start.
-RECENT_MESSAGES_TIMEDELTA = timedelta(weeks=12)
 
 
 def send_message_to_signup_notification_stream(
     sender: UserProfile, realm: Realm, message: str
 ) -> None:
-    signup_announcements_stream = realm.get_signup_announcements_stream()
+    signup_announcements_stream = realm.signup_announcements_stream
     if signup_announcements_stream is None:
         return
 
@@ -123,7 +121,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
                 send_group_direct_message_to_admins(sender, user_profile.realm, message)
 
 
-def set_up_streams_for_new_human_user(
+def set_up_streams_and_groups_for_new_human_user(
     *,
     user_profile: UserProfile,
     prereg_user: PreregistrationUser | None = None,
@@ -135,12 +133,14 @@ def set_up_streams_for_new_human_user(
 
     if prereg_user is not None:
         streams: list[Stream] = list(prereg_user.streams.all())
+        user_groups: list[NamedUserGroup] = list(prereg_user.groups.all())
         acting_user: UserProfile | None = prereg_user.referred_by
 
         # A PregistrationUser should not be used for another UserProfile
         assert prereg_user.created_user is None, "PregistrationUser should not be reused"
     else:
         streams = []
+        user_groups = []
         acting_user = None
 
     if add_initial_stream_subscriptions:
@@ -151,7 +151,7 @@ def set_up_streams_for_new_human_user(
         # in StreamSetupTest tests that check query counts.
         if prereg_user is None or prereg_user.include_realm_default_subscriptions:
             default_streams = get_slim_realm_default_streams(realm.id)
-            streams = list(set(streams) | set(default_streams))
+            streams = list(set(streams) | default_streams)
 
         for default_stream_group in default_stream_groups:
             default_stream_group_streams = default_stream_group.streams.all()
@@ -166,6 +166,12 @@ def set_up_streams_for_new_human_user(
         streams,
         [user_profile],
         from_user_creation=True,
+        acting_user=acting_user,
+    )
+
+    bulk_add_members_to_user_groups(
+        user_groups,
+        [user_profile.id],
         acting_user=acting_user,
     )
 
@@ -198,13 +204,11 @@ def add_new_user_history(
     ]
 
     # Start by finding recent messages matching those recipients.
-    cutoff_date = timezone_now() - RECENT_MESSAGES_TIMEDELTA
     recent_message_ids = set(
         Message.objects.filter(
             # Uses index: zerver_message_realm_recipient_id
             realm_id=realm.id,
             recipient_id__in=recipient_ids,
-            date_sent__gt=cutoff_date,
         )
         .order_by("-id")
         .values_list("id", flat=True)[0:MAX_NUM_RECENT_MESSAGES]
@@ -275,7 +279,7 @@ def process_new_human_user(
 ) -> None:
     # subscribe to default/invitation streams and
     # fill in some recent historical messages
-    set_up_streams_for_new_human_user(
+    set_up_streams_and_groups_for_new_human_user(
         user_profile=user_profile,
         prereg_user=prereg_user,
         default_stream_groups=default_stream_groups,
@@ -349,7 +353,17 @@ def process_new_human_user(
 
     # The 'visibility_policy_banner' is only displayed to existing users.
     # Mark it as read for a new user.
-    OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
+    #
+    # If the new user opted to import settings from an existing account, and
+    # 'visibility_policy_banner' is already marked as read for the existing account,
+    # 'copy_onboarding_steps' function already did the needed copying.
+    # Simply ignore the IntegrityError in that case.
+    #
+    # The extremely brief nature of this subtransaction makes a savepoint safe.
+    # See https://postgres.ai/blog/20210831-postgresql-subtransactions-considered-harmful
+    # for context on risks around savepoints.
+    with suppress(IntegrityError), transaction.atomic(savepoint=True):
+        OnboardingStep.objects.create(user=user_profile, onboarding_step="visibility_policy_banner")
 
 
 def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -> None:
@@ -463,7 +477,7 @@ def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
         full_name=user_profile.full_name,
         bot_type=user_profile.bot_type,
         is_active=user_profile.is_active,
-        api_key=get_api_key(user_profile),
+        api_key=user_profile.api_key,
         default_sending_stream=default_sending_stream_name,
         default_events_register_stream=default_events_register_stream_name,
         default_all_public_streams=user_profile.default_all_public_streams,
@@ -485,6 +499,7 @@ def notify_created_bot(user_profile: UserProfile) -> None:
     send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
+@transaction.atomic(durable=True)
 def do_create_user(
     email: str,
     password: str | None,
@@ -511,86 +526,88 @@ def do_create_user(
     email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
 ) -> UserProfile:
-    with transaction.atomic():
-        user_profile = create_user(
-            email=email,
-            password=password,
-            realm=realm,
-            full_name=full_name,
-            role=role,
-            bot_type=bot_type,
-            bot_owner=bot_owner,
-            tos_version=tos_version,
-            timezone=timezone,
-            avatar_source=avatar_source,
-            default_language=default_language,
-            default_sending_stream=default_sending_stream,
-            default_events_register_stream=default_events_register_stream,
-            default_all_public_streams=default_all_public_streams,
-            source_profile=source_profile,
-            enable_marketing_emails=enable_marketing_emails,
-            email_address_visibility=email_address_visibility,
-        )
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
 
-        event_time = user_profile.date_joined
-        if not acting_user:
-            acting_user = user_profile
+    user_profile = create_user(
+        email=email,
+        password=password,
+        realm=realm,
+        full_name=full_name,
+        role=role,
+        bot_type=bot_type,
+        bot_owner=bot_owner,
+        tos_version=tos_version,
+        timezone=timezone,
+        avatar_source=avatar_source,
+        default_language=default_language,
+        default_sending_stream=default_sending_stream,
+        default_events_register_stream=default_events_register_stream,
+        default_all_public_streams=default_all_public_streams,
+        source_profile=source_profile,
+        enable_marketing_emails=enable_marketing_emails,
+        email_address_visibility=email_address_visibility,
+    )
+
+    event_time = user_profile.date_joined
+    if not acting_user:
+        acting_user = user_profile
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_CREATED,
+        event_time=event_time,
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        },
+    )
+    maybe_enqueue_audit_log_upload(user_profile.realm)
+
+    if realm_creation:
+        # If this user just created a realm, make sure they are
+        # properly tagged as the creator of the realm.
+        realm_creation_audit_log = (
+            RealmAuditLog.objects.filter(event_type=AuditLogEventType.REALM_CREATED, realm=realm)
+            .order_by("id")
+            .last()
+        )
+        assert realm_creation_audit_log is not None
+        realm_creation_audit_log.acting_user = user_profile
+        realm_creation_audit_log.save(update_fields=["acting_user"])
+
+    if settings.BILLING_ENABLED:
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(event_time)
+
+    system_user_group = get_system_user_group_for_user(user_profile)
+    UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        modified_user_group=system_user_group,
+        event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        event_time=event_time,
+        acting_user=acting_user,
+    )
+
+    if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+        full_members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS,
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+        UserGroupMembership.objects.create(
+            user_profile=user_profile, user_group=full_members_system_group
+        )
         RealmAuditLog.objects.create(
             realm=user_profile.realm,
-            acting_user=acting_user,
             modified_user=user_profile,
-            event_type=RealmAuditLog.USER_CREATED,
-            event_time=event_time,
-            extra_data={
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            },
-        )
-        maybe_enqueue_audit_log_upload(user_profile.realm)
-
-        if realm_creation:
-            # If this user just created a realm, make sure they are
-            # properly tagged as the creator of the realm.
-            realm_creation_audit_log = (
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
-                .order_by("id")
-                .last()
-            )
-            assert realm_creation_audit_log is not None
-            realm_creation_audit_log.acting_user = user_profile
-            realm_creation_audit_log.save(update_fields=["acting_user"])
-
-        if settings.BILLING_ENABLED:
-            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-            billing_session.update_license_ledger_if_needed(event_time)
-
-        system_user_group = get_system_user_group_for_user(user_profile)
-        UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
-        RealmAuditLog.objects.create(
-            realm=user_profile.realm,
-            modified_user=user_profile,
-            modified_user_group=system_user_group,
-            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            modified_user_group=full_members_system_group,
+            event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=event_time,
             acting_user=acting_user,
         )
-
-        if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
-            full_members_system_group = NamedUserGroup.objects.get(
-                name=SystemGroups.FULL_MEMBERS,
-                realm=user_profile.realm,
-                is_system_group=True,
-            )
-            UserGroupMembership.objects.create(
-                user_profile=user_profile, user_group=full_members_system_group
-            )
-            RealmAuditLog.objects.create(
-                realm=user_profile.realm,
-                modified_user=user_profile,
-                modified_user_group=full_members_system_group,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-                event_time=event_time,
-                acting_user=acting_user,
-            )
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
@@ -640,7 +657,12 @@ def do_activate_mirror_dummy_user(
     parallel code path to do_create_user; e.g. it likely does not
     handle preferences or default streams properly.
     """
-    with transaction.atomic():
+    assert user_profile.is_mirror_dummy
+
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
+    with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
         user_profile.set_unusable_password()
@@ -655,7 +677,7 @@ def do_activate_mirror_dummy_user(
             realm=user_profile.realm,
             modified_user=user_profile,
             acting_user=acting_user,
-            event_type=RealmAuditLog.USER_ACTIVATED,
+            event_type=AuditLogEventType.USER_ACTIVATED,
             event_time=event_time,
             extra_data={
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
@@ -683,7 +705,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         realm=user_profile.realm,
         modified_user=user_profile,
         acting_user=acting_user,
-        event_type=RealmAuditLog.USER_REACTIVATED,
+        event_type=AuditLogEventType.USER_REACTIVATED,
         event_time=event_time,
         extra_data={
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
@@ -705,19 +727,33 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
             realm=user_profile.realm,
             acting_user=acting_user,
             modified_user=user_profile,
-            event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
+            event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED,
             event_time=event_time,
         )
         bot_owner_changed = True
 
     if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import RealmBillingSession
+
         billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
         billing_session.update_license_ledger_if_needed(event_time)
 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
     )
-    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
+
+    if not user_profile.is_bot:
+        realm_export_consent_event = dict(
+            type="realm_export_consent",
+            user_id=user_profile.id,
+            consented=user_profile.allow_private_data_export,
+        )
+        send_event_on_commit(
+            user_profile.realm,
+            realm_export_consent_event,
+            list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
+        )
 
     if user_profile.is_bot:
         event = dict(
@@ -735,11 +771,6 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
 
             assert acting_user is not None
             send_bot_owner_update_events(user_profile, acting_user, previous_owner)
-
-    if bot_owner_changed:
-        from zerver.actions.bots import remove_bot_from_inaccessible_private_streams
-
-        remove_bot_from_inaccessible_private_streams(user_profile, acting_user=acting_user)
 
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile_id=user_profile.id, active=True, recipient__type=Recipient.STREAM
@@ -763,3 +794,25 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         stream_dict=stream_dict,
         subscriber_peer_info=subscriber_peer_info,
     )
+
+    member_user_groups = user_profile.direct_groups.select_related("named_user_group").order_by(
+        "id"
+    )
+    named_user_groups = []
+    setting_user_groups = []
+    for group in member_user_groups:
+        if hasattr(group, "named_user_group"):
+            named_user_groups.append(group)
+        else:
+            setting_user_groups.append(group)
+
+    for user_group in named_user_groups:
+        do_send_user_group_members_update_event(
+            "add_members", user_group.named_user_group, [user_profile.id]
+        )
+
+    if setting_user_groups:
+        notify_user_ids = active_user_ids(user_profile.realm_id)
+        send_update_events_for_anonymous_group_settings(
+            setting_user_groups, user_profile.realm, list(notify_user_ids)
+        )

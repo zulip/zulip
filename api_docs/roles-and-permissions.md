@@ -1,7 +1,7 @@
 # Roles and permissions
 
 Zulip offers several levels of permissions based on a
-[user's role](/help/roles-and-permissions) in a Zulip organization.
+[user's role](/help/user-roles) in a Zulip organization.
 
 Here are some important details to note when working with these
 roles and permissions in Zulip's API:
@@ -75,9 +75,9 @@ event](/api/get-events#realm_user-add), and the
 
 Many areas of Zulip are customizable by the roles
 above, such as (but not limited to) [restricting message editing and
-deletion](/help/restrict-message-editing-and-deletion) and
-[channels permissions](/help/channel-permissions). The potential
-permission levels are:
+deletion](/help/restrict-message-editing-and-deletion) and various
+permissions for different [channel types](/help/channel-permissions).
+The potential permission levels are:
 
 * Everyone / Any user including Guests (least restrictive)
 

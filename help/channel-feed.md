@@ -4,7 +4,7 @@ The **Channel feed** is a feed of all the topics that you have not
 [muted](/help/mute-a-topic) in a particular channel. It's a great way to get a
 quick overview of recent messages in a channel.
 
-## Go to channel feed
+## Go to channel feed for a subscribed channel
 
 {start_tabs}
 
@@ -20,6 +20,20 @@ quick overview of recent messages in a channel.
 !!! keyboard_tip ""
 
     Use <kbd>S</kbd> to go from a topic view to the channel feed.
+
+{end_tabs}
+
+## Go to channel feed for an unsubscribed channel
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|channel|not-subscribed}
+
+1. Select a channel.
+
+1. Click the channel name in the top bar.
 
 {end_tabs}
 

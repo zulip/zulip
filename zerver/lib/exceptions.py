@@ -31,6 +31,7 @@ class ErrorCode(Enum):
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
     INVALID_ZOOM_TOKEN = auto()
+    UNKNOWN_ZOOM_USER = auto()
     UNAUTHENTICATED_USER = auto()
     NONEXISTENT_SUBDOMAIN = auto()
     RATE_LIMIT_HIT = auto()
@@ -54,6 +55,10 @@ class ErrorCode(Enum):
     PUSH_NOTIFICATIONS_DISALLOWED = auto()
     EXPECTATION_MISMATCH = auto()
     SYSTEM_GROUP_REQUIRED = auto()
+    CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
+    CANNOT_ADMINISTER_CHANNEL = auto()
+    REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
+    HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
 
 
 class JsonableError(Exception):
@@ -704,14 +709,47 @@ class SystemGroupRequiredError(JsonableError):
         return _("'{setting_name}' must be a system user group.")
 
 
-class IncompatibleParameterValuesError(JsonableError):
-    data_fields = ["first_parameter", "second_parameter"]
+class CannotDeactivateGroupInUseError(JsonableError):
+    code = ErrorCode.CANNOT_DEACTIVATE_GROUP_IN_USE
+    data_fields = ["objections"]
 
-    def __init__(self, first_parameter: str, second_parameter: str) -> None:
-        self.first_parameter = first_parameter
-        self.second_parameter = second_parameter
+    def __init__(
+        self,
+        objections: list[dict[str, Any]],
+    ) -> None:
+        self.objections = objections
 
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("Incompatible values for '{first_parameter}' and '{second_parameter}'.")
+        return _("Cannot deactivate user group in use.")
+
+
+class CannotAdministerChannelError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to administer this channel.")
+
+
+class CannotManageDefaultChannelError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to change default channels.")
+
+
+class EmailAlreadyInUseError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Email is already in use.")

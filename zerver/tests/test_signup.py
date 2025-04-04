@@ -22,6 +22,7 @@ from confirmation.models import Confirmation, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
+from zerver.actions.invites import do_invite_users
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_realm_authentication_methods,
@@ -31,7 +32,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
-from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
+from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.initial_password import initial_password
@@ -52,6 +53,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
     avatar_disk_path,
+    dns_txt_answer,
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
@@ -66,6 +68,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    OnboardingStep,
     OnboardingUserMessage,
     PreregistrationRealm,
     PreregistrationUser,
@@ -79,6 +82,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
@@ -181,20 +185,14 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated", "deactivated_redirect"])
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["example.zulipchat.com"])
 
     def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "new-subdomain-name", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["new-subdomain-name.testserver"])
 
     def test_no_deactivation_notice_with_no_redirect(self) -> None:
         realm = get_realm("zulip")
@@ -216,18 +214,12 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-1", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-1.testserver"])
 
         realm = get_realm("new-name-1")
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-2.testserver"])
 
 
 class AddNewUserHistoryTest(ZulipTestCase):
@@ -435,8 +427,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         with patch("zerver.models.Recipient.label", return_value="recip"):
             self.assertEqual(
                 repr(message),
-                "<Message: recip /  / "
-                f"<UserProfile: {user_profile.email} {user_profile.realm!r}>>",
+                f"<Message: recip /  / <UserProfile: {user_profile.email} {user_profile.realm!r}>>",
             )
 
             user_message = most_recent_usermessage(user_profile)
@@ -869,7 +860,8 @@ class PasswordResetTest(ZulipTestCase):
 
         def reset_password() -> None:
             # start the password reset process by supplying an email address
-            result = self.client_post("/accounts/password/reset/", {"email": email})
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.client_post("/accounts/password/reset/", {"email": email})
 
             # check the redirect link telling you to check mail for password reset link
             self.assertEqual(result.status_code, 302)
@@ -991,7 +983,7 @@ class LoginTest(ZulipTestCase):
     def test_login_nonexistent_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("Please enter a correct email and password", result)
+        self.assert_in_response("Incorrect email or password.", result)
         self.assert_logged_in_user_id(None)
 
     def test_login_wrong_subdomain(self) -> None:
@@ -1007,9 +999,7 @@ class LoginTest(ZulipTestCase):
                 ],
             )
         self.assertEqual(result.status_code, 200)
-        expected_error = (
-            "Please enter a correct email and password. Note that both fields may be case-sensitive"
-        )
+        expected_error = "Incorrect email or password."
         self.assert_in_response(expected_error, result)
         self.assert_logged_in_user_id(None)
 
@@ -1024,23 +1014,10 @@ class LoginTest(ZulipTestCase):
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         realm = get_realm("zulip")
-        hamlet = self.example_user("hamlet")
         stream_names = [f"stream_{i}" for i in range(40)]
         for stream_name in stream_names:
             stream = self.make_stream(stream_name, realm=realm)
             DefaultStream.objects.create(stream=stream, realm=realm)
-
-        # Make sure there's at least one recent message to be mark
-        # unread.  This prevents a bug where this test would start
-        # failing the test database was generated more than
-        # RECENT_MESSAGES_TIMEDELTA ago.
-        self.subscribe(hamlet, "stream_0")
-        self.send_stream_message(
-            hamlet,
-            "stream_0",
-            topic_name="test topic",
-            content="test message",
-        )
 
         # Clear the ContentType cache.
         ContentType.objects.clear_cache()
@@ -1052,7 +1029,7 @@ class LoginTest(ZulipTestCase):
         # the alert words for a realm, etc.
         with (
             self.assert_database_query_count(94),
-            self.assert_memcached_count(14),
+            self.assert_memcached_count(15),
             self.captureOnCommitCallbacks(execute=True),
         ):
             self.register(self.nonreg_email("test"), "test")
@@ -1250,7 +1227,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
         result = self.client_get(urlsplit(unsubscribe_link).path)
 
-        # The welcome email jobs are no longer scheduled.
+        # The welcome email job are no longer scheduled.
         self.assertEqual(result.status_code, 200)
         self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
@@ -1259,8 +1236,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
         We provide one-click unsubscribe links in digest e-mails that you can
         click even when logged out to stop receiving them.
 
-        Unsubscribing from these emails also dequeues any digest email jobs that
-        have been queued.
+        Since pending digests are in a RabbitMQ queue, we cannot unqueue them
+        once they're enqueued.
         """
         user_profile = self.example_user("hamlet")
         self.assertTrue(user_profile.enable_digest_emails)
@@ -1281,8 +1258,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
             to_user_ids=[user_profile.id],
             context=context,
         )
-
-        self.assertEqual(1, ScheduledEmail.objects.filter(users=user_profile).count())
+        self.assert_length(ScheduledEmail.objects.filter(users=user_profile), 0)
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
@@ -1294,7 +1270,6 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_digest_emails)
-        self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
     def test_login_unsubscribe(self) -> None:
         """
@@ -1448,7 +1423,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual("new organizations", messages[0].topic_name())
 
         realm_creation_audit_log = RealmAuditLog.objects.get(
-            realm=realm, event_type=RealmAuditLog.REALM_CREATED
+            realm=realm, event_type=AuditLogEventType.REALM_CREATED
         )
         self.assertEqual(realm_creation_audit_log.acting_user, user)
         self.assertEqual(realm_creation_audit_log.event_time, realm.date_created)
@@ -1748,8 +1723,8 @@ class RealmCreationTest(ZulipTestCase):
 
         # Organization type is not education or education_nonprofit,
         # and organization is not a demo organization.
-        self.assertIn("Getting started guide", welcome_msg.content)
-        self.assertNotIn("Using Zulip for a class guide", welcome_msg.content)
+        self.assertIn("getting started guide", welcome_msg.content)
+        self.assertNotIn("using Zulip for a class guide", welcome_msg.content)
         self.assertNotIn("demo organization", welcome_msg.content)
 
         # Organization has tracked onboarding messages.
@@ -1816,8 +1791,8 @@ class RealmCreationTest(ZulipTestCase):
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
         # Organization type is education, and organization is a demo organization.
-        self.assertNotIn("Getting started guide", welcome_msg.content)
-        self.assertIn("Using Zulip for a class guide", welcome_msg.content)
+        self.assertNotIn("getting started guide", welcome_msg.content)
+        self.assertIn("using Zulip for a class guide", welcome_msg.content)
         self.assertIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
@@ -2171,7 +2146,7 @@ class RealmCreationTest(ZulipTestCase):
     def test_subdomain_check_api(self) -> None:
         result = self.client_get("/json/realm/subdomain/zulip")
         self.assert_in_success_response(
-            ["Subdomain already in use. Please choose a different one."], result
+            ["Subdomain is already in use. Please choose a different one."], result
         )
 
         result = self.client_get("/json/realm/subdomain/zu_lip")
@@ -2330,7 +2305,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertNotIn(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
-        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue(
             "ERROR:root:Failed to deliver email during user registration" in m.output[0]
         )
@@ -2379,7 +2354,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertNotIn(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
-        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
 
     def test_user_default_language_and_timezone(self) -> None:
@@ -2594,6 +2569,18 @@ class UserSignUpTest(ZulipTestCase):
         # User should now be logged in.
         self.assert_logged_in_user_id(user_profile.id)
 
+    def test_signup_very_long_password(self) -> None:
+        """
+        Check if signing up without a password works properly when
+        password_auth_enabled is False.
+        """
+        email = self.nonreg_email("newuser")
+        user_profile = self.verify_signup(email=email, password="a" * 80)
+
+        assert isinstance(user_profile, UserProfile)
+        # User should now be logged in.
+        self.assert_logged_in_user_id(user_profile.id)
+
     def test_signup_without_full_name(self) -> None:
         """
         Check if signing up without a full name redirects to a registration
@@ -2698,19 +2685,19 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
-        default_streams = []
+        default_streams = set()
 
         existing_default_streams = DefaultStream.objects.filter(realm=realm)
         self.assert_length(existing_default_streams, 3)
         expected_default_streams = ["Zulip", "sandbox", "Verona"]
         for i, expected_default_stream in enumerate(expected_default_streams):
             self.assertEqual(existing_default_streams[i].stream.name, expected_default_stream)
-            default_streams.append(existing_default_streams[i].stream)
+            default_streams.add(existing_default_streams[i].stream)
 
         for stream_name in ["venice", "rome"]:
             stream = get_stream(stream_name, realm)
             do_add_default_stream(stream)
-            default_streams.append(stream)
+            default_streams.add(stream)
 
         group1_streams = []
         for stream_name in ["scotland", "denmark"]:
@@ -2719,7 +2706,7 @@ class UserSignUpTest(ZulipTestCase):
         do_create_default_stream_group(realm, "group 1", "group 1 description", group1_streams)
 
         result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1"])
-        self.check_user_subscribed_only_to_streams("newguy", default_streams + group1_streams)
+        self.check_user_subscribed_only_to_streams("newguy", default_streams | set(group1_streams))
 
     def test_signup_two_confirmation_links(self) -> None:
         email = self.nonreg_email("newguy")
@@ -2750,7 +2737,7 @@ class UserSignUpTest(ZulipTestCase):
         user_profile = UserProfile.objects.get(delivery_email=email)
         self.assertEqual(user_profile.delivery_email, email)
 
-        # Now try to to register using the first confirmation url:
+        # Now try to register using the first confirmation url:
         result = self.client_get(first_confirmation_url)
         self.assertEqual(result.status_code, 404)
         result = self.client_post(
@@ -2807,7 +2794,7 @@ class UserSignUpTest(ZulipTestCase):
             email, password, default_stream_groups=["group 1", "group 2"]
         )
         self.check_user_subscribed_only_to_streams(
-            "newguy", list(set(default_streams + group1_streams + group2_streams))
+            "newguy", set(default_streams + group1_streams + group2_streams)
         )
 
     def test_signup_without_user_settings_from_another_realm(self) -> None:
@@ -2825,6 +2812,9 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.enter_sends = True
         hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
+
+        OnboardingStep.objects.filter(user=hamlet_in_zulip).delete()
+        OnboardingStep.objects.create(user=hamlet_in_zulip, onboarding_step="intro_resolve_topic")
 
         result = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(result.status_code, 302)
@@ -2844,6 +2834,12 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet.high_contrast_mode, False)
         self.assertEqual(hamlet.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet.enter_sends, False)
+        # 'visibility_policy_banner' is marked as read in 'process_new_human_user'.
+        # 'copy_default_settings' is not executed as the user decided to NOT import
+        # settings from another realm, hence 'intro_resolve_topic' not marked as seen.
+        onboarding_steps = OnboardingStep.objects.filter(user=hamlet)
+        self.assertEqual(onboarding_steps.count(), 1)
+        self.assertEqual(onboarding_steps[0].onboarding_step, "visibility_policy_banner")
 
     def test_signup_with_user_settings_from_another_realm(self) -> None:
         hamlet_in_zulip = self.example_user("hamlet")
@@ -2863,6 +2859,12 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.enter_sends = True
         hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
+
+        OnboardingStep.objects.filter(user=hamlet_in_zulip).delete()
+        OnboardingStep.objects.create(user=hamlet_in_zulip, onboarding_step="intro_resolve_topic")
+        OnboardingStep.objects.create(
+            user=hamlet_in_zulip, onboarding_step="visibility_policy_banner"
+        )
 
         # Now we'll be making requests to another subdomain, so we need to logout
         # to avoid polluting the session in the test environment by still being
@@ -2908,6 +2910,13 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet_in_lear.enable_stream_audible_notifications, False)
         self.assertEqual(
             hamlet_in_lear.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+        # Verify that 'copy_default_settings' copies the onboarding steps.
+        onboarding_steps = OnboardingStep.objects.filter(user=hamlet_in_lear)
+        self.assertEqual(onboarding_steps.count(), 2)
+        self.assertEqual(
+            set(onboarding_steps.values_list("onboarding_step", flat=True)),
+            {"intro_resolve_topic", "visibility_policy_banner"},
         )
 
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
@@ -2979,7 +2988,7 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_success_response(
             [
-                "Subdomain already in use. Please choose a different one.",
+                "Subdomain is already in use. Please choose a different one.",
                 'value="Test"',
                 'name="realm_name"',
             ],
@@ -3024,7 +3033,7 @@ class UserSignUpTest(ZulipTestCase):
             last_message = Message.objects.last()
             assert last_message is not None
             self.assertIn(
-                f"A new member ({self.nonreg_email('test')}) was unable to join your organization because all Zulip",
+                f"A new user ({self.nonreg_email('test')}) was unable to join because your organization",
                 last_message.content,
             )
             self.assertEqual(
@@ -3042,7 +3051,27 @@ class UserSignUpTest(ZulipTestCase):
             )
 
         ledger.licenses = 50
-        ledger.save(update_fields=["licenses"])
+        ledger.licenses_at_next_renewal = 5
+        ledger.save(update_fields=["licenses", "licenses_at_next_renewal"])
+        with self.settings(BILLING_ENABLED=True):
+            form = HomepageForm({"email": self.nonreg_email("test")}, realm=realm)
+            self.assertIn(
+                "New members cannot join this organization because all Zulip licenses",
+                form.errors["email"][0],
+            )
+            last_message = Message.objects.last()
+            assert last_message is not None
+            self.assertIn(
+                f"A new user ({self.nonreg_email('test')}) was unable to join because your organization",
+                last_message.content,
+            )
+            self.assertEqual(
+                set(get_direct_message_group_user_ids(last_message.recipient)),
+                expected_group_direct_message_user_ids,
+            )
+
+        ledger.licenses_at_next_renewal = 50
+        ledger.save(update_fields=["licenses_at_next_renewal"])
         with self.settings(BILLING_ENABLED=True):
             form = HomepageForm({"email": self.nonreg_email("test")}, realm=realm)
             self.assertEqual(form.errors, {})
@@ -3964,9 +3993,7 @@ class UserSignUpTest(ZulipTestCase):
         stream_name = "Rome"
         realm = get_realm("zulip")
         stream = get_stream(stream_name, realm)
-        default_stream_names = {
-            stream["name"] for stream in get_default_streams_for_realm_as_dicts(realm.id)
-        }
+        default_stream_names = {stream.name for stream in get_slim_realm_default_streams(realm.id)}
         self.assertNotIn(stream_name, default_stream_names)
 
         # Invite user.
@@ -4070,9 +4097,48 @@ class UserSignUpTest(ZulipTestCase):
                 result,
             )
 
+    def test_registration_of_mirror_dummy_user_role_comes_from_invite(self) -> None:
+        """
+        Verify that when a mirror dummy user does their registration, their role is set
+        based on the value from the invite rather than the original role set on the UserProfile.
+        """
+
+        admin = self.example_user("iago")
+        realm = get_realm("zulip")
+        mirror_dummy = self.example_user("hamlet")
+        do_deactivate_user(mirror_dummy, acting_user=admin)
+        mirror_dummy.is_mirror_dummy = True
+        mirror_dummy.role = UserProfile.ROLE_MEMBER
+        mirror_dummy.save()
+
+        # Invite the user as a guest.
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                admin,
+                [mirror_dummy.delivery_email],
+                [],
+                invite_expires_in_minutes=None,
+                include_realm_default_subscriptions=True,
+                invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+            )
+
+        result = self.submit_reg_form_for_user(
+            mirror_dummy.delivery_email, "testpassword", full_name="New Hamlet"
+        )
+
+        # Verify that we successfully registered and that the role is set correctly.
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{realm.url}/")
+        self.assert_logged_in_user_id(mirror_dummy.id)
+        mirror_dummy.refresh_from_db()
+        self.assertEqual(mirror_dummy.role, UserProfile.ROLE_GUEST)
+
     @patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_registration_of_mirror_dummy_user(self, ignored: Any) -> None:
         password = "test"
@@ -4152,8 +4218,11 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_logged_in_user_id(user_profile.id)
 
     @patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
         """
@@ -4626,14 +4695,14 @@ class TwoFactorAuthTest(ZulipTestCase):
 
 
 class NameRestrictionsTest(ZulipTestCase):
-    def test_whitelisted_disposable_domains(self) -> None:
+    def test_override_allow_email_domains(self) -> None:
         self.assertFalse(is_disposable_domain("OPayQ.com"))
 
 
 class RealmRedirectTest(ZulipTestCase):
     def test_realm_redirect_without_next_param(self) -> None:
         result = self.client_get("/accounts/go/")
-        self.assert_in_success_response(["Enter your organization's Zulip URL"], result)
+        self.assert_in_success_response(["Organization URL"], result)
 
         result = self.client_post("/accounts/go/", {"subdomain": "zephyr"})
         self.assertEqual(result.status_code, 302)
@@ -4645,7 +4714,7 @@ class RealmRedirectTest(ZulipTestCase):
     def test_realm_redirect_with_next_param(self) -> None:
         result = self.client_get("/accounts/go/", {"next": "billing"})
         self.assert_in_success_response(
-            ["Enter your organization's Zulip URL", 'action="/accounts/go/?next=billing"'], result
+            ["Organization URL", 'action="/accounts/go/?next=billing"'], result
         )
 
         result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})

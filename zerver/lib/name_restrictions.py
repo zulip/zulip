@@ -9,11 +9,11 @@ def is_reserved_subdomain(subdomain: str) -> bool:
         return True
     if subdomain in ZULIP_RESERVED_SUBDOMAINS:
         return True
-    if subdomain[-1] == "s" and subdomain[:-1] in ZULIP_RESERVED_SUBDOMAINS:
+    if subdomain.endswith("s") and subdomain.removesuffix("s") in ZULIP_RESERVED_SUBDOMAINS:
         return True
     if subdomain in GENERIC_RESERVED_SUBDOMAINS:
         return True
-    if subdomain[-1] == "s" and subdomain[:-1] in GENERIC_RESERVED_SUBDOMAINS:
+    if subdomain.endswith("s") and subdomain.removesuffix("s") in GENERIC_RESERVED_SUBDOMAINS:
         return True
     if settings.CORPORATE_ENABLED and ("zulip" in subdomain or "kandra" in subdomain):
         return True
@@ -21,7 +21,7 @@ def is_reserved_subdomain(subdomain: str) -> bool:
 
 
 def is_disposable_domain(domain: str) -> bool:
-    if domain.lower() in WHITELISTED_EMAIL_DOMAINS:
+    if domain.lower() in OVERRIDE_ALLOW_EMAIL_DOMAINS:
         return False
     return domain.lower() in DISPOSABLE_DOMAINS
 
@@ -371,7 +371,8 @@ GENERIC_RESERVED_SUBDOMAINS = {
 
 DISPOSABLE_DOMAINS = set(blocklist)
 
-WHITELISTED_EMAIL_DOMAINS = {
+OVERRIDE_ALLOW_EMAIL_DOMAINS = {
+    "airsi.de",
     # Controlled by https://www.abine.com; more legitimate than most
     # disposable domains
     "opayq.com",

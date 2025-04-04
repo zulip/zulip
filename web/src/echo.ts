@@ -2,31 +2,36 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import * as alert_words from "./alert_words";
-import {all_messages_data} from "./all_messages_data";
-import * as blueslip from "./blueslip";
-import * as compose_notifications from "./compose_notifications";
-import * as compose_ui from "./compose_ui";
-import * as echo_state from "./echo_state";
-import * as local_message from "./local_message";
-import * as markdown from "./markdown";
-import * as message_events_util from "./message_events_util";
-import * as message_lists from "./message_lists";
-import * as message_live_update from "./message_live_update";
-import * as message_store from "./message_store";
-import type {DisplayRecipientUser, Message, RawMessage} from "./message_store";
-import * as message_util from "./message_util";
-import * as people from "./people";
-import * as pm_list from "./pm_list";
-import * as recent_view_data from "./recent_view_data";
-import * as rows from "./rows";
-import * as sent_messages from "./sent_messages";
-import {current_user} from "./state_data";
-import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
-import * as stream_topic_history from "./stream_topic_history";
-import type {TopicLink} from "./types";
-import * as util from "./util";
+import render_message_controls from "../templates/message_controls.hbs";
+import render_message_controls_failed_msg from "../templates/message_controls_failed_msg.hbs";
+
+import * as alert_words from "./alert_words.ts";
+import * as blueslip from "./blueslip.ts";
+import * as browser_history from "./browser_history.ts";
+import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_ui from "./compose_ui.ts";
+import * as echo_state from "./echo_state.ts";
+import * as hash_util from "./hash_util.ts";
+import * as local_message from "./local_message.ts";
+import * as markdown from "./markdown.ts";
+import * as message_events_util from "./message_events_util.ts";
+import * as message_list_data_cache from "./message_list_data_cache.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_live_update from "./message_live_update.ts";
+import * as message_store from "./message_store.ts";
+import type {DisplayRecipientUser, Message, RawMessage} from "./message_store.ts";
+import * as message_util from "./message_util.ts";
+import * as people from "./people.ts";
+import * as pm_list from "./pm_list.ts";
+import * as recent_view_data from "./recent_view_data.ts";
+import * as rows from "./rows.ts";
+import * as sent_messages from "./sent_messages.ts";
+import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_list from "./stream_list.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import type {TopicLink} from "./types.ts";
+import * as util from "./util.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
@@ -119,20 +124,22 @@ function hide_retry_spinner($row: JQuery): boolean {
     return true;
 }
 
-function show_message_failed(message_id: number, failed_msg: string): void {
+function show_message_failed(message_id: number, _failed_msg: string): void {
     // Failed to send message, so display inline retry/cancel
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         $row.find(".slow-send-spinner").addClass("hidden");
-        const $failed_div = $row.find(".message_failed");
-        $failed_div.toggleClass("hide", false);
-        $failed_div.find(".failed_text").attr("title", failed_msg);
+        const $message_controls = $row.find(".message_controls");
+        $message_controls.html(render_message_controls_failed_msg());
     });
+    // TODO: Show the `_failed_msg` in the UI, describing the reason for the failure.
 }
 
 function show_failed_message_success(message_id: number): void {
     // Previously failed message succeeded
+    const msg = message_store.get(message_id);
     message_live_update.update_message_in_all_views(message_id, ($row) => {
-        $row.find(".message_failed").toggleClass("hide", true);
+        const $message_controls = $row.find(".message_controls");
+        $message_controls.html(render_message_controls({msg}));
     });
 }
 
@@ -167,7 +174,6 @@ function resend_message(
     function on_success(raw_data: unknown): void {
         const data = send_message_api_response_schema.parse(raw_data);
         const message_id = data.id;
-        message.locally_echoed = true;
 
         hide_retry_spinner($row);
 
@@ -234,6 +240,12 @@ export function build_display_recipient(message: LocalMessage): DisplayRecipient
     return display_recipient;
 }
 
+export function track_local_message(message: Message): void {
+    assert(message.local_id !== undefined);
+    echo_state.set_message_waiting_for_id(message.local_id, message);
+    echo_state.set_message_waiting_for_ack(message.local_id, message);
+}
+
 export function insert_local_message(
     message_request: MessageRequest,
     local_id_float: number,
@@ -270,9 +282,6 @@ export function insert_local_message(
 
     const [message] = insert_new_messages([local_message], true, true);
     assert(message !== undefined);
-    assert(message.local_id !== undefined);
-    echo_state.set_message_waiting_for_id(message.local_id, message);
-    echo_state.set_message_waiting_for_ack(message.local_id, message);
 
     return message;
 }
@@ -281,14 +290,14 @@ export function is_slash_command(content: string): boolean {
     return !content.startsWith("/me") && content.startsWith("/");
 }
 
-export function try_deliver_locally(
+export let try_deliver_locally = (
     message_request: MessageRequest,
     insert_new_messages: (
         messages: LocalMessage[],
         send_by_this_client: boolean,
         deliver_locally: boolean,
     ) => Message[],
-): Message | undefined {
+): Message | undefined => {
     // Checks if the message request can be locally echoed, and if so,
     // adds a local echoed copy of the message to appropriate message lists.
     //
@@ -342,6 +351,10 @@ export function try_deliver_locally(
 
     const message = insert_local_message(message_request, local_id_float, insert_new_messages);
     return message;
+};
+
+export function rewire_try_deliver_locally(value: typeof try_deliver_locally): void {
+    try_deliver_locally = value;
 }
 
 export function edit_locally(message: Message, request: LocalEditRequest): Message {
@@ -425,7 +438,33 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
     return message;
 }
 
-export function reify_message_id(local_id: string, server_id: number): void {
+export function update_topic_hash_to_contain_with_term(message: Message): void {
+    // If the current filter consists only of channel and topic terms
+    // and the incoming message belongs to same narrow, we try to
+    // add the `with` term to the narrow, and update the hash, to
+    // convert to permalink.
+    if (message.type !== "stream") {
+        return;
+    }
+    const filter = message_lists.current?.data.filter;
+
+    if (!filter?.has_exactly_channel_topic_operators()) {
+        return;
+    }
+
+    filter.adjust_with_operand_to_message(message.id);
+
+    // Adjust the URL to include the /with/ operator. We update the
+    // existing history entry, so that you don't have to hit Back
+    // twice to get to where you were before visiting the new topic.
+    //
+    // Since we're not changing the view, we want to preserve whatever
+    // scroll position StateData was already present.
+    const new_hash = hash_util.search_terms_to_hash(filter.terms());
+    browser_history.update_current_history_state_data({}, new_hash);
+}
+
+export let reify_message_id = (local_id: string, server_id: number): void => {
     const message = echo_state.get_message_waiting_for_id(local_id);
     echo_state.remove_message_from_waiting_for_id(local_id);
 
@@ -445,15 +484,33 @@ export function reify_message_id(local_id: string, server_id: number): void {
     update_message_lists(opts);
     compose_notifications.reify_message_id(opts);
     recent_view_data.reify_message_id_if_available(opts);
+
+    // We add the message to stream_topic_history only after we receive
+    // it from the server i.e., is acked, so as to maintain integer
+    // message id values there.
+    if (message.type === "stream") {
+        stream_topic_history.add_message({
+            stream_id: message.stream_id,
+            topic_name: message.topic,
+            message_id: message.id,
+        });
+    }
+    update_topic_hash_to_contain_with_term(message);
+};
+
+export function rewire_reify_message_id(value: typeof reify_message_id): void {
+    reify_message_id = value;
 }
 
 export function update_message_lists({old_id, new_id}: {old_id: number; new_id: number}): void {
-    if (all_messages_data !== undefined) {
-        all_messages_data.change_message_id(old_id, new_id);
-    }
+    // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.change_message_id(old_id, new_id);
         msg_list.view.change_message_id(old_id, new_id);
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        msg_list_data.change_message_id(old_id, new_id);
     }
 }
 
@@ -522,15 +579,18 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
     if (msgs_to_rerender_or_add_to_narrow.length > 0) {
         for (const msg_list of message_lists.all_rendered_message_lists()) {
+            // Since we already have this message locally echoed, it is ok to
+            // not scroll when this message is added to the view as user has
+            // already seen this message. Hence, we are not passing the
+            // `message_are_new` boolean as `true` here.
             if (!msg_list.data.filter.can_apply_locally()) {
                 // If this message list is a search filter that we
                 // cannot apply locally, we will not have locally
                 // echoed echoed the message at all originally, and
-                // must the server now whether to add it to the view.
+                // must request the server now whether to add it to the view.
                 message_events_util.maybe_add_narrowed_messages(
                     msgs_to_rerender_or_add_to_narrow,
                     msg_list,
-                    message_util.add_new_messages,
                 );
             } else {
                 // In theory, we could just rerender messages where there were
@@ -538,6 +598,17 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
                 // message content, but in practice, there's no harm to just
                 // doing it unconditionally.
                 msg_list.view.rerender_messages(msgs_to_rerender_or_add_to_narrow);
+                msg_list.add_messages(msgs_to_rerender_or_add_to_narrow, {});
+            }
+        }
+
+        for (const msg_list_data of message_lists.non_rendered_data()) {
+            if (!msg_list_data.filter.can_apply_locally()) {
+                // Ideally we would ask server to if messages matches filter
+                // but it is not worth doing so for every new message.
+                message_list_data_cache.remove(msg_list_data.filter);
+            } else {
+                msg_list_data.add_messages(msgs_to_rerender_or_add_to_narrow);
             }
         }
     }
@@ -545,20 +616,27 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
     return non_echo_messages;
 }
 
-export function message_send_error(message_id: number, error_response: string): void {
+export let message_send_error = (message_id: number, error_response: string): void => {
     // Error sending message, show inline
     const message = message_store.get(message_id)!;
     message.failed_request = true;
     message.show_slow_send_spinner = false;
 
     show_message_failed(message_id, error_response);
+};
+
+export function rewire_message_send_error(value: typeof message_send_error): void {
+    message_send_error = value;
 }
 
 function abort_message(message: Message): void {
-    // Remove in all lists in which it exists
-    all_messages_data.remove([message.id]);
+    // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
+    }
+
+    for (const msg_list_data of message_lists.non_rendered_data()) {
+        msg_list_data.remove([message.id]);
     }
 }
 

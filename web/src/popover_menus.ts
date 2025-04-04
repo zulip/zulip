@@ -5,12 +5,13 @@
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
-import * as blueslip from "./blueslip";
-import {media_breakpoints_num} from "./css_variables";
-import * as modals from "./modals";
-import * as overlays from "./overlays";
-import * as popovers from "./popovers";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
+import * as popovers from "./popovers.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
 type PopoverName =
     | "compose_control_buttons"
@@ -21,13 +22,17 @@ type PopoverName =
     | "left_sidebar_recent_view_popover"
     | "top_left_sidebar"
     | "message_actions"
+    | "stream_card_popover"
     | "stream_settings"
     | "topics_menu"
     | "send_later"
     | "change_visibility_policy"
     | "personal_menu"
     | "gear_menu"
-    | "help_menu";
+    | "help_menu"
+    | "buddy_list"
+    | "stream_actions_popover"
+    | "color_picker_popover";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     compose_control_buttons: null,
@@ -38,6 +43,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     left_sidebar_recent_view_popover: null,
     top_left_sidebar: null,
     message_actions: null,
+    stream_card_popover: null,
     stream_settings: null,
     topics_menu: null,
     send_later: null,
@@ -45,7 +51,14 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     personal_menu: null,
     gear_menu: null,
     help_menu: null,
+    buddy_list: null,
+    stream_actions_popover: null,
+    color_picker_popover: null,
 };
+
+// Font size in em for popover derived from popover font size being
+// 15px at base font size of 14px.
+export const POPOVER_FONT_SIZE_IN_EM = 1.0714;
 
 /* Keyboard UI functions */
 export function popover_items_handle_keyboard(key: string, $items?: JQuery): void {
@@ -74,7 +87,7 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
     $items.eq(index).trigger("focus");
 }
 
-export function focus_first_popover_item($items: JQuery, index = 0): void {
+export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {
     if (!$items) {
         return;
     }
@@ -95,51 +108,63 @@ export function get_topic_menu_popover(): tippy.Instance | null {
     return popover_instances.topics_menu;
 }
 
-export function is_topic_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.topics_menu?.state.isVisible;
+export function is_topic_menu_popover_displayed(): boolean {
+    return popover_instances.topics_menu?.state.isVisible ?? false;
 }
 
-export function is_visibility_policy_popover_displayed(): boolean | undefined {
-    return popover_instances.change_visibility_policy?.state.isVisible;
+export function is_visibility_policy_popover_displayed(): boolean {
+    return popover_instances.change_visibility_policy?.state.isVisible ?? false;
 }
 
 export function get_scheduled_messages_popover(): tippy.Instance | null {
     return popover_instances.send_later;
 }
 
-export function is_scheduled_messages_popover_displayed(): boolean | undefined {
-    return popover_instances.send_later?.state.isVisible;
-}
-
-export function get_compose_control_buttons_popover(): tippy.Instance | null {
-    return popover_instances.compose_control_buttons;
+export function is_scheduled_messages_popover_displayed(): boolean {
+    return popover_instances.send_later?.state.isVisible ?? false;
 }
 
 export function get_starred_messages_popover(): tippy.Instance | null {
     return popover_instances.starred_messages;
 }
 
-export function is_personal_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.personal_menu?.state.isVisible;
+export function is_personal_menu_popover_displayed(): boolean {
+    return popover_instances.personal_menu?.state.isVisible ?? false;
 }
 
-export function is_gear_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.gear_menu?.state.isVisible;
+export function is_gear_menu_popover_displayed(): boolean {
+    return popover_instances.gear_menu?.state.isVisible ?? false;
 }
 
 export function get_gear_menu_instance(): tippy.Instance | null {
     return popover_instances.gear_menu;
 }
 
-export function is_help_menu_popover_displayed(): boolean | undefined {
-    return popover_instances.help_menu?.state.isVisible;
+export function is_help_menu_popover_displayed(): boolean {
+    return popover_instances.help_menu?.state.isVisible ?? false;
 }
 
-export function is_message_actions_popover_displayed(): boolean | undefined {
-    return popover_instances.message_actions?.state.isVisible;
+export function is_message_actions_popover_displayed(): boolean {
+    return popover_instances.message_actions?.state.isVisible ?? false;
 }
 
-function get_popover_items_for_instance(instance: tippy.Instance): JQuery | undefined {
+export function get_stream_actions_popover(): tippy.Instance | null {
+    return popover_instances.stream_actions_popover;
+}
+
+export function is_stream_actions_popover_displayed(): boolean | undefined {
+    return popover_instances.stream_actions_popover?.state.isVisible;
+}
+
+export function get_color_picker_popover(): tippy.Instance | null {
+    return popover_instances.color_picker_popover;
+}
+
+export function is_color_picker_popover_displayed(): boolean | undefined {
+    return popover_instances.color_picker_popover?.state.isVisible;
+}
+
+export function get_popover_items_for_instance(instance: tippy.Instance): JQuery | undefined {
     const $current_elem = $(instance.popper);
     const class_name = $current_elem.attr("class");
 
@@ -187,8 +212,10 @@ export const default_popover_props: Partial<tippy.Props> = {
                 phase: "beforeWrite",
                 requires: ["$$tippy"],
                 fn({state}) {
+                    // Since the reference element can be removed from DOM, we rely on popper
+                    // here to access the tippy instance which is reliable.
                     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                    const instance = (state.elements.reference as tippy.ReferenceElement)._tippy!;
+                    const instance = (state.elements.popper as tippy.PopperElement)._tippy!;
                     const $popover = $(state.elements.popper);
                     const $tippy_box = $popover.find(".tippy-box");
                     // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
@@ -315,7 +342,10 @@ function get_props_for_popover_centering(
     return {
         arrow: false,
         getReferenceClientRect: () => new DOMRect(0, 0, 0, 0),
-        placement: "top",
+        // Since we are resetting the reference to (0,0) in DOM the placement here doesn't matter
+        // Using "bottom" placement as it works well with Popper's positioning system
+        // when the popover exceeds window height
+        placement: "bottom",
         popperOptions: {
             modifiers: [
                 {
@@ -379,10 +409,21 @@ function get_props_for_popover_centering(
 export function toggle_popover_menu(
     target: tippy.ReferenceElement,
     popover_props: Partial<tippy.Props>,
-    options?: {show_as_overlay_on_mobile: boolean; show_as_overlay_always: boolean},
+    options?: {
+        show_as_overlay_on_mobile: boolean;
+        show_as_overlay_always: boolean;
+        // Only works for elements which are in message feed.
+        message_feed_overlay_detection?: boolean;
+    },
 ): tippy.Instance {
     const instance = target._tippy;
     if (instance) {
+        // Ideally, we'd check that the _tippy object is a
+        // popover. For elements that host both a Tippy tooltip and a
+        // popover, this can incorrectly return early after hiding the
+        // Tippy tooltip.
+        //
+        // If we fix this, we can remove a few popovers.hide_all calls.
         hide_current_popover_if_visible(instance);
         return instance;
     }
@@ -391,11 +432,28 @@ export function toggle_popover_menu(
 
     // If the window is mobile-sized, we will render the
     // popover centered on the screen as an overlay.
-    if (
+    let show_as_overlay =
         (options?.show_as_overlay_on_mobile === true &&
-            window.innerWidth <= media_breakpoints_num.md) ||
-        options?.show_as_overlay_always === true
+            ui_util.matches_viewport_state("lt_md_min")) ||
+        options?.show_as_overlay_always === true;
+
+    // Show the popover as overlay if the reference element is hidden in message feed.
+    if (
+        !show_as_overlay &&
+        options?.message_feed_overlay_detection &&
+        $(target).parents("#message_feed_container").length === 1
     ) {
+        const target_props = $(target).get_offset_to_window();
+        const viewport_info = message_viewport.message_viewport_info();
+        if (
+            target_props.top < viewport_info.visible_top ||
+            target_props.bottom > viewport_info.visible_bottom
+        ) {
+            show_as_overlay = true;
+        }
+    }
+
+    if (show_as_overlay) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };

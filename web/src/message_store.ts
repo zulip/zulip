@@ -1,11 +1,11 @@
 import _ from "lodash";
 import {z} from "zod";
 
-import * as blueslip from "./blueslip";
-import * as people from "./people";
-import {topic_link_schema} from "./types";
-import type {UserStatusEmojiInfo} from "./user_status";
-import * as util from "./util";
+import * as blueslip from "./blueslip.ts";
+import * as people from "./people.ts";
+import {topic_link_schema} from "./types.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as util from "./util.ts";
 
 const stored_messages = new Map<number, Message>();
 
@@ -37,7 +37,6 @@ const message_edit_history_entry_schema = z.object({
     timestamp: z.number(),
     prev_content: z.optional(z.string()),
     prev_rendered_content: z.optional(z.string()),
-    prev_rendered_content_version: z.optional(z.number()),
     prev_stream: z.optional(z.number()),
     prev_topic: z.optional(z.string()),
     stream: z.optional(z.number()),
@@ -75,6 +74,7 @@ export const raw_message_schema = z.intersection(
             id: z.number(),
             is_me_message: z.boolean(),
             last_edit_timestamp: z.optional(z.number()),
+            last_moved_timestamp: z.optional(z.number()),
             reactions: z.array(message_reaction_schema),
             recipient_id: z.number(),
             sender_email: z.string(),
@@ -154,13 +154,13 @@ export type Message = (
     // The original markup for the message, which we'll have if we
     // sent it or if we fetched it (usually, because the current user
     // tried to edit the message).
-    raw_content?: string;
+    raw_content?: string | undefined;
 
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;
     reply_to: string;
 
-    // These properties are set and used in `message_list_view.js`.
+    // These properties are set and used in `message_list_view.ts`.
     // TODO: It would be nice if we could not store these on the message
     // object and only reference them within `message_list_view`.
     message_reactions?: MessageCleanReaction[];
@@ -170,10 +170,12 @@ export type Message = (
     // `convert_raw_message_to_message_with_booleans`
     flags?: string[];
 
-    small_avatar_url?: string; // Used in `message_avatar.hbs`
+    small_avatar_url?: string | null; // Used in `message_avatar.hbs`
     status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
 
     local_edit_timestamp?: number; // Used for edited messages
+
+    notification_sent?: boolean; // Used in message_notifications
 } & (
         | {
               type: "private";
@@ -304,7 +306,7 @@ export function update_sender_full_name(user_id: number, new_name: string): void
     }
 }
 
-export function update_small_avatar_url(user_id: number, new_url: string): void {
+export function update_small_avatar_url(user_id: number, new_url: string | null): void {
     for (const msg of stored_messages.values()) {
         if (msg.sender_id && msg.sender_id === user_id) {
             msg.small_avatar_url = new_url;

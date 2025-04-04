@@ -5,17 +5,25 @@
         <div class="alert-notification" id="user-field-status"></div>
         <div class="user_filters">
             {{> ../dropdown_widget widget_name=active_user_list_dropdown_widget_name}}
-            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+            {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter users')}}
         </div>
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
         <table class="table table-striped wrapped-table">
             <thead class="table-sticky-headers">
-                <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
-                <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
-                <th class="user_role" data-sort="role">{{t "Role" }}</th>
-                <th class="last_active" data-sort="last_active">{{t "Last active" }}</th>
+                <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="settings-email-column" data-sort="email">{{t "Email" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="user_role" data-sort="role">{{t "Role" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="last_active" data-sort="last_active">{{t "Last active" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
                 {{#if is_admin}}
                 <th class="actions">{{t "Actions" }}</th>
                 {{/if}}

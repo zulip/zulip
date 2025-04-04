@@ -1,0 +1,114 @@
+{
+    "token": "x8GlZSSaBheFZWjZPbxPasEY",
+    "team_id": "T06NRA6HM3P",
+    "context_team_id": "T06NRA6HM3P",
+    "context_enterprise_id": null,
+    "api_app_id": "A07A20JQSAG",
+    "event": {
+      "subtype": "bot_message",
+      "text": "*Task status changed* from `complete` to `to do`",
+      "username": "ClickUp",
+      "attachments": [
+        {
+          "id": 1,
+          "blocks": [
+            {
+              "type": "section",
+              "block_id": "bZ4XB",
+              "text": {
+                "type": "mrkdwn",
+                "text": "*<https://app.clickup.com/t/25567147/86cw30wf2|asd>*",
+                "verbatim": false
+              }
+            },
+            {
+              "type": "context",
+              "block_id": "TEfLM",
+              "elements": [
+                {
+                  "type": "image",
+                  "image_url": "https://search.clickup-au.com/media/app-icons/clickup/logo_alpha.png",
+                  "alt_text": "Cookie / The Goodiest of Cstdddddsdd / dds"
+                },
+                {
+                  "type": "mrkdwn",
+                  "text": "in dds",
+                  "verbatim": false
+                },
+                {
+                  "type": "image",
+                  "image_url": "https://search.clickup-au.com/media/app-icons/clickup/status.png",
+                  "alt_text": "Status"
+                },
+                {
+                  "type": "mrkdwn",
+                  "text": "To Do",
+                  "verbatim": false
+                }
+              ]
+            },
+            {
+              "type": "actions",
+              "block_id": "cg8fg",
+              "elements": [
+                {
+                  "type": "button",
+                  "action_id": "NOOP",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "View task",
+                    "emoji": true
+                  },
+                  "url": "https://app.clickup.com/t/25567147/86cw30wf2"
+                },
+                {
+                  "type": "button",
+                  "action_id": "EDIT_TASK_ACTION",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Edit task",
+                    "emoji": true
+                  },
+                  "value": "{\"taskID\":\"86cw30wf2\",\"teamID\":\"25567147\",\"taskUrl\":\"https://app.clickup.com/t/25567147/86cw30wf2\"}"
+                }
+              ]
+            }
+          ],
+          "color": "#656f7d",
+          "fallback": "[no preview available]"
+        }
+      ],
+      "type": "message",
+      "ts": "1723609070.703489",
+      "bot_id": "B06NWMNUQ3W",
+      "app_id": "A3G4A68V9",
+      "blocks": [
+        {
+          "type": "section",
+          "block_id": "X0xqC",
+          "text": {
+            "type": "mrkdwn",
+            "text": "*Task status changed* from `complete` to `to do`",
+            "verbatim": false
+          }
+        }
+      ],
+      "channel": "C06P6T3QGD7",
+      "event_ts": "1723609070.703489",
+      "channel_type": "channel"
+    },
+    "type": "event_callback",
+    "event_id": "Ev07GMTJQFEJ",
+    "event_time": 1723609070,
+    "authorizations": [
+      {
+        "enterprise_id": null,
+        "team_id": "T06NRA6HM3P",
+        "user_id": "U07A1PEN4JW",
+        "is_bot": true,
+        "is_enterprise_install": false
+      }
+    ],
+    "is_ext_shared_channel": false,
+    "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDZOUkE2SE0zUCIsImFpZCI6IkEwN0EyMEpRU0FHIiwiY2lkIjoiQzA2UDZUM1FHRDcifQ"
+  }

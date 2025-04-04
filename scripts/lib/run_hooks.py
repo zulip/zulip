@@ -27,8 +27,13 @@ from version import ZULIP_MERGE_BASE as NEW_ZULIP_MERGE_BASE
 from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 deploy_path = get_deploy_root()
-old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
-old_merge_base = parse_version_from(DEPLOYMENTS_DIR + "/current", merge_base=True)
+
+if args.kind == "post-deploy":
+    old_dir_name = "last"
+else:
+    old_dir_name = "current"
+old_version = parse_version_from(DEPLOYMENTS_DIR + "/" + old_dir_name)
+old_merge_base = parse_version_from(DEPLOYMENTS_DIR + "/" + old_dir_name, merge_base=True)
 
 path = f"/etc/zulip/hooks/{args.kind}.d"
 if not os.path.exists(path):
@@ -51,7 +56,7 @@ def resolve_version_string(version: str) -> str:
     ).strip()
 
 
-if NEW_ZULIP_MERGE_BASE:
+if args.from_git:
     # If we have a git repo, we also resolve those `git describe`
     # values to full commit hashes, as well as provide the
     # merge-base of the old/new commits with mainline.

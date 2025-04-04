@@ -1,5 +1,5 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
-    <form class="new-style edit_bot_form name-setting">
+    <form class="edit_bot_form name-setting">
         <div class="alert" id="bot-edit-form-error"></div>
         <div class="input-group name_change_container hideable">
             <label for="edit_bot_full_name" class="modal-field-label">{{t "Name" }}</label>
@@ -16,7 +16,7 @@
         </div>
         <div class="input-group hideable">
             <label for="bot-role-select" class="modal-field-label">{{t 'Role' }}
-                {{> ../help_link_widget link="/help/roles-and-permissions" }}
+                {{> ../help_link_widget link="/help/user-roles" }}
             </label>
             <select name="bot-role-select" id="bot-role-select" class="modal_select bootstrap-focus-style hideable" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
                 {{> dropdown_options_widget option_values=user_role_values}}
@@ -30,37 +30,36 @@
         <div id="service_data" class="hideable">
         </div>
         <div class="input-group edit-avatar-section">
-            <label class="modal-field-label hideable">{{t "Avatar" }}</label>
-            {{!-- Shows the current avatar --}}
-            <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
-            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
-            <div class="edit_bot_avatar_file"></div>
+            <label for="bot_avatar_file_input" class="modal-field-label">{{t "Avatar" }}</label>
+            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
             <div id="edit_bot_avatar_preview_text">
-                <img class="edit_bot_avatar_preview_image" />
+                <img class="edit_bot_avatar_preview_image" id="edit_bot_avatar_preview_image" />
             </div>
-            <button type="button" class="button white rounded edit_bot_avatar_upload_button hideable">{{t "Change avatar" }}</button>
+            <div id="bot_avatar_file_input_error" class="text-error"></div>
             <div id="image_editor">
-                <button class="modal__btn image_clear" id="edit_bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+                <button type="button" class="modal__btn image_clear btn-small" id="edit_bot_avatar_clear_button">{{t "Clear avatar" }}</button>
                 <div>
-                    <button class="modal__btn image_save" id="edit_bot_avatar_scale_to_fit_button">{{t "Scale to fit" }}</button>
-                    <button class="modal__btn image_save" id="edit_bot_reset_button">{{t "Reset scale" }}</button>
-                    <button class="modal__btn image_save" id="edit_bot_avatar_save_button">{{t "Save changes" }}</button>
+                    <button type="button" class="modal__btn image_save btn-small" id="edit_bot_avatar_scale_to_fit_button">{{t "Scale to fit" }}</button>
+                    <button type="button" class="modal__btn image_save btn-small" id="edit_bot_reset_button">{{t "Reset scale" }}</button>
+                    <button type="button" class="modal__btn image_save btn-small" id="edit_bot_avatar_save_button">{{t "Save changes" }}</button>
                 </div>
             </div>
-            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
-            <div id="image_loading_indicator"></div>
+            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
+            <div class="inline-block">
+                <img class="bot-avatar-image" id="current_bot_avatar_image" src="{{bot_avatar_url}}"/>
+            </div>
         </div>
     </form>
     {{#if is_incoming_webhook_bot}}
-    <div class="input-group new-style hideable">
-        <button class="button rounded generate_url_for_integration hideable">
+    <div class="input-group">
+        <button class="button rounded generate_url_for_integration">
             {{t 'Generate URL for an integration' }}
         </button>
     </div>
     {{/if}}
-    <div class="input-group new-style hideable">
+    <div class="input-group">
         {{#if is_active}}
-        <button class="button rounded btn-danger deactivate_bot_button hideable">
+        <button class="button rounded button-danger deactivate_bot_button">
             {{t 'Deactivate bot' }}
         </button>
         {{else}}

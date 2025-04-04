@@ -50,7 +50,7 @@ problematic behavior.
 * [Configure email visibility](/help/configure-email-visibility)
   to prevent off-platform spam.
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-  so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.
+  so only [moderators](/help/user-roles) can mention everyone in your organization.
 * Create a [default channel](/help/set-default-channels-for-new-users)
   for announcements where [only admins can
   post](/help/channel-posting-policy).
@@ -73,7 +73,7 @@ organization's policy choices.
 * Investigate behavior by [viewing messages sent by a
   user](/help/view-messages-sent-by-a-user).
 * Delete messages, [archive channels](/help/archive-a-channel), and
-  [unsubscribe users from channels](/help/add-or-remove-users-from-a-channel).
+  [unsubscribe users from channels](/help/unsubscribe-users-from-a-channel).
 * [Move topics](/help/rename-a-topic), including between channels, when
   users start conversations in the wrong place.
 * [Change users' names](/help/change-a-users-name) (e.g., to "Name (Spammer)")
@@ -94,6 +94,6 @@ directory](/help/communities-directory).
 
 ## Related articles
 
-* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
 * [Public access option](/help/public-access-option)
 * [Communities directory](/help/communities-directory)

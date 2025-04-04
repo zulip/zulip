@@ -1,8 +1,3 @@
-/* The height of the settings header (including tab switcher). */
-$settings_header_height: 45px;
-/* The width of the settings sidebar. */
-$settings_sidebar_width: 255px;
-
 label {
     margin: 0;
 }
@@ -54,67 +49,6 @@ h3,
     }
 }
 
-.new-style {
-    .block {
-        display: block;
-    }
-
-    .center-block {
-        margin: 0 auto;
-    }
-
-    .center {
-        text-align: center;
-    }
-
-    .w-200 {
-        width: 200px;
-    }
-
-    .grid {
-        & label {
-            min-width: 200px;
-        }
-
-        .warning {
-            display: inline-block;
-            vertical-align: top;
-            width: 150px;
-            padding: 5px 10px;
-            text-align: left;
-        }
-    }
-
-    #account-settings,
-    #profile-field-settings {
-        .grid {
-            & label {
-                min-width: 120px;
-            }
-
-            .warning {
-                display: block;
-                width: calc(100% - 20px - 5px);
-                text-align: right;
-            }
-        }
-    }
-
-    .warning {
-        #pw_strength {
-            width: 140px;
-            height: 8px;
-            margin: 6px 0 0;
-        }
-    }
-
-    .button {
-        & ul {
-            text-align: left;
-        }
-    }
-}
-
 .profile-settings-form {
     display: flex;
     justify-content: space-between;
@@ -153,7 +87,12 @@ h3,
 
 #change_password_modal,
 #change_email_modal {
-    max-width: 480px;
+    width: 34.2857em; /* 480px at 14px/em */
+    max-width: 90vw;
+}
+
+#change-email-form-input-email {
+    max-width: 90%;
 }
 
 #change_email_modal {
@@ -185,6 +124,11 @@ h3,
     min-width: 0;
 }
 
+.change-email {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .admin-realm-description {
     height: 16em;
     width: 100%;
@@ -195,11 +139,13 @@ h3,
 .setting_notification_sound,
 .play_notification_sound {
     margin-right: 4px;
+}
 
-    & i {
-        font-size: 22px;
+.play_notification_sound {
+    .notification-sound-icon {
+        font-size: 1.5714em; /* 22px at 14px / em */
         /* Visually center with chevron in select */
-        line-height: 26px;
+        line-height: 1.8571em; /* 26px at 14px / em */
         cursor: pointer;
     }
 }
@@ -215,7 +161,7 @@ h3,
 }
 
 .wrapped-table {
-    word-break: break-word;
+    overflow-wrap: anywhere;
     word-wrap: break-word;
     white-space: pre-wrap;
     white-space: normal;
@@ -250,11 +196,6 @@ h3,
     #playground_url_template {
         width: calc(100% - 10em - 6em);
     }
-}
-
-td .button {
-    margin: 2px 0;
-    box-shadow: none;
 }
 
 #language_selection_modal {
@@ -311,10 +252,10 @@ td .button {
     }
 
     .loading_indicator_text {
-        font-size: 12px;
+        font-size: 0.8571em; /* 12px at 14px/em */
         font-weight: 400;
         vertical-align: middle;
-        line-height: 20px;
+        line-height: 1.6667em; /* 20px at 12px/em */
         display: inline-block;
         float: none;
         margin-top: 9px;
@@ -322,7 +263,7 @@ td .button {
 
     .loading_indicator_spinner {
         width: 30%;
-        height: 20px;
+        height: 1.4286em; /* 20px at 14px/em */
         margin-top: 7px;
         vertical-align: middle;
         display: inline-block;
@@ -330,13 +271,6 @@ td .button {
 
     .inline {
         display: inline !important;
-    }
-
-    /* Messy implementation of buttons with text and a pencil icon in them
-       having spacing before the pencil icon. */
-    & button.btn-link i.fa-pencil,
-    button[data-dismiss="modal"] i.fa-pencil {
-        margin-left: 3px;
     }
 
     .hidden-email {
@@ -348,13 +282,23 @@ td .button {
     too light. So, we set the color explicitly to original color of label to
     keep the color of the icon same even when the setting is disabled. */
     #id_realm_enable_spectator_access_label a {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-realm-enable-spectator-access-link);
     }
 
+    /* The height and width of this should match input fields in settings
+       menu. We try to keep the padding and height the same, and both without
+       border-box box-sizing.
+
+       These styles should be kept in sync with the styles for .settings_select
+       in subscriptions.css */
     .settings_select {
-        height: 30px;
-        min-width: 325px;
+        box-sizing: unset;
+        /* Subtract 1px border on each side and 25+6 padding */
+        width: calc(var(--modal-input-width) - 33px);
         max-width: 100%;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        height: 1.4em; /* To match height of input elements */
     }
 
     .account-settings-heading {
@@ -368,6 +312,13 @@ td .button {
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 1.5em;
+}
+
+/* Make this one less wide because it's indented, so that the right
+   edge lines up with other dropdown menus. Usual 33px plus 23px extra
+   margin. */
+#id_realm_jitsi_server_url {
+    width: calc(var(--modal-input-width) - 33px - 23px);
 }
 
 /* list_select is similar to settings_select, but without the height styling. */
@@ -414,12 +365,20 @@ select.settings_select {
     word-break: normal;
 }
 
-.button,
-.input-group {
-    margin: 0 0 20px;
+.last_active {
+    .loading_indicator_spinner {
+        width: 1.25em;
+        height: auto;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        margin-left: 0.5em; /* The spinner is left-justified with a slight left margin to look good. */
+    }
 }
 
 .input-group {
+    margin: 0 0 20px;
+
     /* Class to use when the following input-group is related and should
        appear just after this element. Normally the margin is 20px, but
        for related settings, we set it to 10px. */
@@ -441,20 +400,19 @@ select.settings_select {
     /* Preserve the effective space allotted
        inside the input group.
 
-       Select element: 325px
+       Select element: --modal-input-width
        Button element: ~29px
-       Right margin:     4px
-       TOTAL           358px */
-    max-width: 358px;
+       Right margin:     4px */
+    max-width: calc(var(--modal-input-width) + 29px + 4px);
 
     .settings_select {
-        /* Hold the settings select to its usual 325px;
+        /* Hold the settings select to its usual value;
            a TODO would be to fix up the min- and max-
            width values on the parent class, as the
            min-width always applies, and max-width: 100%
            has no meaning without an actual width:
            declaration. */
-        max-width: 325px;
+        max-width: var(--modal-input-width);
         /* Disregard the min-width from the main
            .settings_select selector. */
         min-width: 0;
@@ -511,24 +469,33 @@ input[type="checkbox"] {
     }
 }
 
+.preferences-settings-form {
+    .tab-picker {
+        width: 325px;
+    }
+}
+
 .information-density-settings {
-    max-width: 325px;
+    display: flex;
+    gap: 2em;
 
-    .input-group {
+    &.disabled-setting .display-value {
+        opacity: 0.4;
+    }
+
+    .display-value {
+        background-color: var(--color-background-popover);
+        font-size: 1.15em;
+        line-height: 1;
         display: flex;
-        gap: 5px;
-        align-items: baseline;
+        align-items: center;
+        padding: 0.25em 0.375em;
+    }
 
-        label {
-            flex: 1 0 max-content;
-        }
-
-        .settings_text_input {
-            width: 0;
-            flex: 0 0 8ch;
-            margin-left: auto;
-            text-align: right;
-        }
+    .zulip-icon {
+        font-size: 1.15em;
+        width: 1.15em;
+        height: 1.15em;
     }
 }
 
@@ -538,7 +505,7 @@ input[type="checkbox"] {
     top: 2px;
 
     &:hover {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-unmute-stream-hover);
         cursor: pointer;
     }
 }
@@ -548,13 +515,20 @@ input[type="checkbox"] {
         display: flex;
         align-items: center;
         cursor: pointer;
+        flex-wrap: wrap;
 
         .stream_setting_subsection_title {
             margin: 4px 8px;
         }
 
         .toggle-advanced-configurations-icon {
-            font-size: 20px;
+            font-size: 1.4286em; /* 20px at 14px / em */
+        }
+    }
+
+    .advanced-configurations-collapase-view {
+        .admin-permissions-tip {
+            margin-bottom: 1em;
         }
     }
 }
@@ -575,14 +549,25 @@ input[type="checkbox"] {
     padding-top: 10px;
 }
 
+#org-other-permissions .tip {
+    margin-top: 0;
+}
+
 .language_selection_widget .language_selection_button {
     text-decoration: none;
-    color: hsl(0deg 0% 20%);
     min-width: 0;
+}
 
-    .fa.fa-pencil {
-        margin-left: 5px;
-    }
+#user_enter_sends_label kbd,
+#realm_enter_sends_label kbd {
+    /* 14px at 15px/1em */
+    font-size: 0.9333em;
+    font-style: normal;
+    font-weight: 500;
+    color: var(--color-kbd-enter-sends);
+    position: relative;
+    bottom: 1px;
+    margin: 0 2px;
 }
 
 .edit-attachment-buttons {
@@ -595,7 +580,7 @@ input[type="checkbox"] {
     margin-left: 5px;
 }
 
-.edit-attachment-buttons #download_attachment {
+.edit-attachment-buttons .download-attachment {
     display: block;
     padding: 6px 9px;
     text-decoration: none;
@@ -610,11 +595,12 @@ input[type="checkbox"] {
 }
 
 .alert_word_status_text {
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .alert-notification {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     vertical-align: top;
     height: auto !important;
     width: auto !important;
@@ -643,8 +629,8 @@ input[type="checkbox"] {
     }
 
     .loading_indicator_spinner {
-        width: 13px;
-        height: 20px;
+        width: 0.9283em; /* 13px at 14px/em */
+        height: 1.4286em; /* 20px at 14px/em */
         margin: 0;
     }
 
@@ -664,18 +650,24 @@ input[type="checkbox"] {
         vertical-align: middle;
         margin-top: -2px;
     }
+
+    .settings-save-checkmark {
+        width: 0.9285em; /* 13px at 14px/em */
+    }
 }
 
 #profile-field-settings #admin-add-profile-field-status {
     margin-top: 4px;
 }
 
-#add-custom-profile-field-btn {
-    float: right;
-    margin-top: 4px;
+#add-custom-profile-field-button {
+    margin-top: auto;
+    margin-bottom: 12px;
+    padding: 4px 14px;
 }
 
-#user-notification-settings {
+#user-notification-settings,
+#realm-user-default-settings {
     .notification-table {
         thead {
             background-color: var(--color-background-notification-table-thead);
@@ -730,11 +722,13 @@ input[type="checkbox"] {
     }
 
     .person_picker {
-        min-width: 319px;
+        /* Subtract 2 * (2px padding) + 2 * (1px border) */
+        min-width: calc(var(--modal-input-width) - 6px);
     }
 
     & textarea {
-        width: 311px;
+        /* Subtract 6px of padding from side */
+        width: calc(var(--modal-input-width) - 12px);
     }
 }
 
@@ -745,6 +739,18 @@ input[type="checkbox"] {
 .settings-profile-user-field {
     margin-top: 5px;
     max-width: fit-content;
+
+    > .settings_url_input {
+        margin-bottom: 0;
+    }
+}
+
+.settings-profile-user-field.editable-date-field {
+    display: grid;
+    grid-template-areas: "datepicker close-button";
+    grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
+    align-items: center;
+    width: var(--modal-input-width);
 }
 
 .control-label-disabled {
@@ -777,23 +783,17 @@ input[type="checkbox"] {
 }
 
 .add_default_streams_button_container {
-    float: right;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: auto;
+    margin-bottom: 12px;
+    gap: 6px;
 
     #show-add-default-streams-modal {
-        /* We want this button to have the same height as the filter
-           button on its right. We're overriding the default vertical
-           padding of `.new-style` and setting it to 0. Having the
-           height fixed will mean that the vertical whitespace will
-           adjust itself for different font-sizes without changing the
-           height.
-           */
         padding-top: 0;
         padding-bottom: 0;
-        height: 30px;
 
         min-width: 0;
-        margin-top: 12px;
-        margin-right: 6px;
     }
 }
 
@@ -905,37 +905,19 @@ input[type="checkbox"] {
 
 .admin_profile_fields_table,
 .edit_profile_field_choices_container,
-.profile_field_choices_table {
-    .movable-row {
-        cursor: move;
-
-        .fa-ellipsis-v {
-            color: hsl(0deg 0% 75%);
-            position: relative;
-            top: 1px;
-
-            + i {
-                margin-right: 5px;
-            }
-        }
-    }
-}
-
+.profile_field_choices_table,
 .admin_linkifiers_table {
     .movable-row {
         .move-handle {
             cursor: move;
             user-select: none;
+            margin-right: 5px;
         }
 
         .fa-ellipsis-v {
             color: hsl(0deg 0% 75%);
             position: relative;
             top: 1px;
-
-            + i {
-                margin-right: 5px;
-            }
         }
     }
 }
@@ -947,8 +929,6 @@ input[type="checkbox"] {
 
 #organization-permissions {
     .dropdown-widget-button {
-        min-width: 325px;
-        width: auto;
         color: hsl(0deg 0% 33%);
     }
 }
@@ -956,6 +936,21 @@ input[type="checkbox"] {
 #organization-settings {
     .dropdown-widget-button {
         color: hsl(0deg 0% 33%);
+    }
+}
+
+.org-permissions-form .pill-container {
+    /* Subtract 2 * (2px padding) + 2 * (1px border) */
+    min-width: calc(var(--modal-input-width) - 6px);
+    background-color: hsl(0deg 0% 100%);
+
+    .input {
+        flex-grow: 1;
+
+        &:first-child:empty::before {
+            opacity: 0.5;
+            content: attr(data-placeholder);
+        }
     }
 }
 
@@ -1013,7 +1008,7 @@ input[type="checkbox"] {
         position: relative;
         margin-left: 5px;
         color: hsl(0deg 0% 67%);
-        transition: all 0.3s ease;
+        transition: color 0.3s ease;
 
         &:hover {
             color: hsl(0deg 0% 27%);
@@ -1027,7 +1022,7 @@ input[type="checkbox"] {
             background-color: transparent;
         }
 
-        .btn {
+        .bootstrap-btn {
             padding: 4px;
         }
 
@@ -1044,15 +1039,7 @@ input[type="checkbox"] {
         }
 
         .copy_zuliprc {
-            padding: 0 4px;
-
-            #clipboard_image {
-                margin: 0 -2px 0 0;
-
-                path {
-                    fill: hsl(51deg 90% 50%);
-                }
-            }
+            color: hsl(51deg 90% 50%);
         }
 
         .purple {
@@ -1336,7 +1323,7 @@ label.preferences-radio-choice-label {
 }
 
 .emojiset_choices {
-    width: 350px;
+    width: 25em; /* 350px / 14px em */
 
     .emoji {
         height: 22px;
@@ -1344,26 +1331,34 @@ label.preferences-radio-choice-label {
     }
 }
 
-$right_sidebar_width: 170px;
-$option_title_width: 180px;
-
 .user_list_style_values {
-    max-width: calc($right_sidebar_width + $option_title_width);
+    max-width: 25em; /* 350px / 14px em */
+
+    .preferences-radio-choice-label {
+        display: grid;
+        grid-template-columns: 10.7143em auto; /* 150px / 14px em */
+        justify-content: left;
+        margin-right: 6px;
+
+        .right {
+            margin-left: unset;
+        }
+    }
 
     .preview {
-        background-color: inherit !important;
-        /* Match the 170px width of the right sidebar region for the name/status,
-           doing something reasonable if the window shrinks. */
-        width: calc(100% - $option_title_width);
-        text-align: left;
         white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden visible;
-        position: relative;
+        overflow: hidden;
 
         .user-name-and-status-text {
             display: flex;
             flex-direction: column;
+        }
+
+        .user-name-and-status-emoji {
+            .user-name {
+                max-width: 100%;
+                overflow: hidden;
+            }
         }
 
         .status-text {
@@ -1390,19 +1385,53 @@ $option_title_width: 180px;
 }
 
 .right.show .emoji_alt_code {
-    font-size: 1.2em;
+    /* This better aligns the example alt code
+       with the other emoji styles. */
+    margin-right: 1px;
 }
 
-.invite-user-link .fa-user-plus {
+.manage-user-button,
+.deactivate-user-button,
+.reactivate-user-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 35px;
+}
+
+.download_bot_zuliprc,
+.copy_zuliprc,
+.open_bots_subscribed_streams,
+.manage-bot-button,
+.deactivate-bot-button {
+    display: inline-flex;
+    align-items: center;
+}
+
+.invite-user-link {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    width: fit-content;
+    align-items: center;
     text-decoration: none;
-    margin-right: 5px;
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    .zulip-icon-user-plus {
+        margin-right: 5px;
+    }
+
+    &:hover .user-settings-invite-user-label {
+        text-decoration: underline;
+    }
 }
 
 /* -- new settings overlay -- */
 #settings_page {
     height: 95vh;
     width: 97vw;
-    max-width: 1024px;
+    max-width: 73.1429em; /* 1024px at 14px em */
     margin: 2.5vh auto;
     overflow: hidden;
     border-radius: 4px;
@@ -1423,7 +1452,7 @@ $option_title_width: 180px;
     }
 
     & h5 {
-        font-size: 1.2em;
+        font-size: 1em;
         font-weight: normal;
         line-height: 1.2;
         margin: 10px 0;
@@ -1432,46 +1461,34 @@ $option_title_width: 180px;
     .sidebar-wrapper {
         float: left;
         position: relative;
-        width: $settings_sidebar_width;
+        width: var(--settings-sidebar-width);
         height: 100%;
 
         .tab-container {
             box-sizing: border-box;
-            height: $settings_header_height;
-            padding: 6px;
-            border-bottom: 1px solid hsl(0deg 0% 87%);
+            height: var(--settings-overlay-header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-background-modal-bar);
+            border-bottom: 1px solid var(--color-border-modal-bar);
 
-            @media (width >= $md_min) {
-                .tab-switcher {
-                    position: absolute;
-                    display: flex;
-                    left: 10px;
-                    z-index: 1;
+            .tab-switcher {
+                display: flex;
+                justify-content: center;
 
-                    .ind-tab {
-                        width: auto;
-                        min-width: 95px;
-                    }
-                }
-            }
-
-            @media (width < $md_min) {
-                .tab-switcher {
-                    display: flex;
-                    justify-content: center;
-
-                    .ind-tab {
-                        width: auto;
-                    }
+                .ind-tab {
+                    width: auto;
+                    min-width: 6.7857em; /* 95px at 14px em */
                 }
             }
         }
     }
 
     .sidebar {
-        height: calc(100% - $settings_header_height);
+        height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
-        border-right: 1px solid hsl(0deg 0% 93%);
+        border-right: 1px solid var(--color-border-modal);
 
         .header {
             height: auto;
@@ -1481,21 +1498,16 @@ $option_title_width: 180px;
             text-align: center;
             text-transform: uppercase;
 
-            background-color: hsl(180deg 6% 93%);
-            border-bottom: 1px solid hsl(0deg 0% 87%);
+            background-color: var(--color-background-modal-bar);
+            border-bottom: 1px solid var(--color-border-modal-bar);
         }
 
-        & ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        & li {
+        .sidebar-item {
             display: grid;
             /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
+            /* 2.8571em is 40px at 14px/1em */
             grid-template:
-                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 40px minmax(
+                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 2.8571em minmax(
                     0,
                     1fr
                 )
@@ -1506,18 +1518,19 @@ $option_title_width: 180px;
             transition:
                 background-color 0.2s ease,
                 border-bottom 0.2s ease;
-            border-bottom: 1px solid hsl(0deg 0% 93%);
+            border-bottom: 1px solid var(--color-border-modal);
 
             &:last-of-type .text {
                 border-bottom: none;
             }
 
             &.active {
-                background-color: hsl(0deg 0% 93%);
-                border-bottom: 1px solid transparent;
+                /* TODO: Check with Vlad about highlight
+                   colors such as this. */
+                background-color: var(--color-active-row-modal);
             }
 
-            .icon {
+            .sidebar-item-icon {
                 font-size: 1.4em;
                 text-align: center;
                 color: hsl(0deg 0% 53%);
@@ -1528,14 +1541,20 @@ $option_title_width: 180px;
                 hyphens: auto;
             }
 
-            .zulip-icon-smart-toy {
-                font-size: 1.6em;
-            }
-
             .locked {
                 font-size: 1em;
                 text-align: center;
                 color: hsl(0deg 0% 62%);
+            }
+        }
+
+        .collapse-settings-button,
+        .collapse-settings-button > #toggle_collapse_chevron {
+            color: var(--color-text-url);
+
+            &:hover {
+                cursor: pointer;
+                color: var(--color-text-url-hover);
             }
         }
 
@@ -1550,21 +1569,24 @@ $option_title_width: 180px;
         .normal-settings-list,
         .org-settings-list {
             position: relative;
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
     }
 
     .settings-header {
         padding-top: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &.mobile {
             display: none;
-            border-bottom: 1px solid hsl(0deg 0% 87%);
+            border-bottom: 1px solid var(--color-border-modal-bar);
 
             .fa-chevron-left {
                 float: left;
-                position: relative;
-                top: 14px;
-                left: 10px;
             }
         }
 
@@ -1572,26 +1594,19 @@ $option_title_width: 180px;
             text-align: center;
             font-size: 1.1em;
             line-height: 1;
-            margin: 15px;
             text-transform: uppercase;
         }
 
         .exit {
             font-weight: 600;
             position: absolute;
-            top: 10px;
-            right: 10px;
+            right: 0.7142em; /* 10px at 14px em */
             color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
 
         .exit-sign {
-            float: right;
-            position: relative;
-            top: 1px;
-            margin-left: 3px;
-            font-size: 1.5rem;
-            line-height: 1;
+            font-size: 1.5em;
             font-weight: 600;
             cursor: pointer;
         }
@@ -1599,16 +1614,17 @@ $option_title_width: 180px;
 
     .content-wrapper {
         position: absolute;
-        left: $settings_sidebar_width;
-        width: calc(100% - $settings_sidebar_width);
+        left: var(--settings-sidebar-width);
+        width: calc(100% - var(--settings-sidebar-width));
         height: 100%;
         overflow: hidden;
 
         .settings-header {
             width: 100%;
-            height: $settings_header_height;
+            height: var(--settings-overlay-header-height);
             box-sizing: border-box;
-            border-bottom: 1px solid hsl(0deg 0% 87%);
+            border-bottom: 1px solid var(--color-border-modal-bar);
+            background-color: var(--color-background-modal-bar);
 
             & h1 .section {
                 font-weight: 400;
@@ -1620,7 +1636,7 @@ $option_title_width: 180px;
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - $settings_header_height);
+            height: calc(100% - var(--settings-overlay-header-height));
 
             float: left;
             overflow: auto;
@@ -1630,7 +1646,7 @@ $option_title_width: 180px;
     }
 
     .preferences-settings-form select {
-        width: 245px;
+        width: var(--modal-input-width);
     }
 }
 
@@ -1640,7 +1656,7 @@ $option_title_width: 180px;
     color: hsl(0deg 0% 33%);
     border: 1px solid hsl(0deg 0% 80%);
     transition:
-        border linear 0.2s,
+        border-color linear 0.2s,
         box-shadow linear 0.2s;
 
     &:focus {
@@ -1679,9 +1695,8 @@ $option_title_width: 180px;
             opacity: 0.5;
             display: none;
             cursor: pointer;
-            position: relative;
-            top: 2px;
-            left: -20px;
+            grid-area: close-button;
+            z-index: 5;
 
             &:hover {
                 opacity: 1;
@@ -1690,6 +1705,15 @@ $option_title_width: 180px;
 
         .datepicker {
             cursor: default;
+            padding-right: 1.4285em; /* 20px at 14px em */
+            /* full input width minus right padding and
+               6px left padding from .settings_text_input
+               and 1px border on each side */
+            max-width: calc(var(--modal-input-width) - 1.4285em - 8px);
+        }
+
+        & input[disabled].datepicker {
+            cursor: not-allowed;
         }
     }
 
@@ -1697,22 +1721,23 @@ $option_title_width: 180px;
         width: 100%;
         top: 20px;
         position: sticky;
-    }
 
-    #show_my_user_profile_modal i {
-        padding-left: 2px;
-        vertical-align: middle;
+        .show-user-profile-icon {
+            padding-left: 2px;
+            vertical-align: middle;
+        }
     }
 }
 
 #edit-user-form {
     .person_picker {
-        min-width: 206px;
+        /* Subtract (1px border and 2px of padding) on each side */
+        min-width: calc(var(--modal-input-width) - 6px);
     }
 
     & textarea {
-        width: max(206px, 25vw);
-        max-width: 320px;
+        /* Subtract (1px border and 6px padding) on each side */
+        width: calc(var(--modal-input-width) - 14px);
     }
 }
 
@@ -1757,6 +1782,8 @@ $option_title_width: 180px;
 
 .settings-field-label {
     margin-bottom: var(--margin-bottom-field-description);
+    /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
 }
 
 .settings-profile-user-field-hint {
@@ -1772,6 +1799,10 @@ $option_title_width: 180px;
        with .settings-field-label to display text-input
        combinations uniformly throughout the settings UI. */
     margin-bottom: var(--margin-bottom-field-description);
+}
+
+.cursor-text {
+    cursor: text;
 }
 
 .profile-field-choices {
@@ -1825,22 +1856,16 @@ $option_title_width: 180px;
 #attachment-stats-holder {
     position: relative;
     margin-top: 13px;
-    display: inline-block;
-}
+    display: block;
 
-.collapse-settings-btn {
-    margin: 10px 0 0 10px;
-    color: hsl(200deg 100% 40%);
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(208deg 56% 38%);
+    .upgrade-tip {
+        width: auto;
     }
-}
 
-#toggle_collapse {
-    margin-left: 2px;
-    display: inline-block;
+    .tip::before {
+        content: "\f135";
+        margin-right: 8px;
+    }
 }
 
 .admin_exports_table {
@@ -1857,7 +1882,7 @@ $option_title_width: 180px;
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
-        border linear 0.2s,
+        border-color linear 0.2s,
         box-shadow linear 0.2s;
 
     &:focus {
@@ -1880,6 +1905,14 @@ $option_title_width: 180px;
         display: none;
     }
 
+    .empty-email-col-for-user-group {
+        display: none;
+    }
+
+    .hidden-subscriber-email {
+        display: none;
+    }
+
     .upload-size {
         display: none;
     }
@@ -1889,10 +1922,6 @@ $option_title_width: 180px;
         display: block;
     }
 
-    #settings_content .warning {
-        display: none;
-    }
-
     .subsection-failed-status p {
         margin: 5px 0 0;
     }
@@ -1900,7 +1929,7 @@ $option_title_width: 180px;
 
 /* This value needs to match with the same in subscriptions.css, as
    we have some shared styles declared there */
-@media (width < $md_min) {
+@container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .profile-settings-form {
         .user-avatar-section {
             flex: 100%;
@@ -1914,7 +1943,28 @@ $option_title_width: 180px;
 
     #settings_page {
         .settings-header.mobile {
-            display: block;
+            display: flex;
+            justify-content: space-between;
+            height: var(--settings-overlay-header-height);
+            /* We need the height to disregard border and
+               padding values added to other instances of
+               .settings-header. */
+            box-sizing: border-box;
+
+            .fa-chevron-left {
+                transform: translate(-50px, 0);
+                opacity: 0;
+                color: hsl(0deg 0% 67%);
+                padding: 2px 10px;
+                cursor: pointer;
+                transition: 0.3s ease;
+                transition-property: opacity, transform;
+            }
+
+            .exit {
+                position: static;
+                margin-right: 10px;
+            }
 
             &:not(.slide-left) .section {
                 /* When viewing the settings list we hide the active section. */
@@ -1944,19 +1994,15 @@ $option_title_width: 180px;
             position: absolute;
             width: 100%;
             border: none;
-            /* 48px is the height of settings header and 45px is the height of tab-container */
-            height: calc(100% - 93px);
-
-            & li.active {
-                /* Don't highlight the active section in the settings list. */
-                background: inherit;
-                border-bottom: 1px solid hsl(0deg 0% 93%);
-            }
+            height: calc(
+                100% - var(--settings-overlay-header-height) -
+                    var(--settings-overlay-subheader-height)
+            );
         }
     }
 }
 
-@media (width < 830px) and (width > $md_min) {
+@container (width > $settings_overlay_sidebar_collapse_breakpoint) {
     #attachments-settings .upload-file-name {
         min-width: 10em;
     }
@@ -2115,6 +2161,10 @@ $option_title_width: 180px;
 
 .settings_panel_list_header {
     position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
 
     & h3 {
         display: inline-block;
@@ -2122,14 +2172,72 @@ $option_title_width: 180px;
 
     .user_filters {
         display: flex;
-        float: right;
         flex-wrap: wrap;
+        margin-top: auto;
+        margin-bottom: 12px;
+        gap: 6px;
 
         & .dropdown-widget-button {
-            height: 30px;
+            height: 1.4em;
             max-width: 160px;
-            margin-right: 12px;
-            margin-top: 12px;
+            box-sizing: content-box;
+        }
+
+        & input.search {
+            /* Margins need to be only handled by the container holding the
+            filters to keep them aligned in .settings_panel_list_header */
+            margin: 0;
+        }
+    }
+
+    .add_default_streams_button_container {
+        & input.search {
+            /* Margins need to be only handled by the container holding the
+            filters to keep them aligned in .settings_panel_list_header */
+            margin: 0;
+        }
+    }
+
+    .alert-notification {
+        margin-top: auto;
+        margin-bottom: 12px;
+        margin-right: auto;
+    }
+
+    & .search-container {
+        display: grid;
+        grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+
+        & input.search {
+            grid-column: search-input-start / clear-search-end;
+            grid-row: search-input;
+            padding-right: 23px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        & .clear-filter {
+            grid-area: clear-search;
+            padding: 0;
+            background: none;
+            color: var(--color-text-clear-search-button);
+            border: none;
+            outline: none;
+            display: grid;
+
+            &:hover {
+                color: var(--color-text-clear-search-button-hover);
+            }
+
+            .zulip-icon-close {
+                align-self: center;
+            }
+        }
+
+        input.search:placeholder-shown + .clear-filter {
+            display: none;
         }
     }
 
@@ -2139,11 +2247,12 @@ $option_title_width: 180px;
         .dropdown-widget-button, we need to explicitly set the height here.
         We could set the height inside .user_filters but that would make
         the height a tiny bit inconsistent on pages without .user_filters. */
-        height: 20px;
+        height: 1.4em;
         float: right;
         font-size: 1em;
         max-width: 160px;
-        margin-top: 12px;
+        margin-top: auto;
+        margin-bottom: 12px;
     }
 }
 
@@ -2152,6 +2261,11 @@ $option_title_width: 180px;
     .disabled_label {
         cursor: default;
         opacity: 0.7;
+    }
+
+    /* Needed for settings_checkbox partial. */
+    .inline {
+        display: inline;
     }
 }
 
@@ -2172,13 +2286,12 @@ $option_title_width: 180px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
-        border linear 0.2s,
+        border-color linear 0.2s,
         box-shadow linear 0.2s;
     margin-bottom: 10px;
 
-    /* 311px + 2 * 6px (padding) + 2 * 1px (border) = 325px (min width of select
-    elements in settings) */
-    width: 311px;
+    /* Subtract 2 * 6px (padding) + 2 * 1px (border) */
+    width: calc(var(--modal-input-width) - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -2247,4 +2360,8 @@ $option_title_width: 180px;
 
 #admin-user-list .tab-switcher .ind-tab {
     width: 110px;
+}
+
+#data-exports .tab-switcher .ind-tab {
+    width: 160px;
 }

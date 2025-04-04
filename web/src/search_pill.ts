@@ -4,15 +4,16 @@ import assert from "minimalistic-assert";
 import render_input_pill from "../templates/input_pill.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
-import {Filter} from "./filter";
-import * as input_pill from "./input_pill";
-import type {InputPill, InputPillContainer} from "./input_pill";
-import * as people from "./people";
-import type {User} from "./people";
-import type {NarrowTerm} from "./state_data";
-import * as user_status from "./user_status";
-import type {UserStatusEmojiInfo} from "./user_status";
-import * as util from "./util";
+import {Filter} from "./filter.ts";
+import * as input_pill from "./input_pill.ts";
+import type {InputPill, InputPillContainer} from "./input_pill.ts";
+import * as people from "./people.ts";
+import type {User} from "./people.ts";
+import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
+import * as util from "./util.ts";
 
 export type SearchUserPill = {
     type: "search_user";
@@ -56,7 +57,7 @@ export function create_item_from_search_string(search_string: string): SearchPil
 
 export function get_search_string_from_item(item: SearchPill): string {
     const sign = item.negated ? "-" : "";
-    return `${sign}${item.operator}: ${get_search_operand(item)}`;
+    return `${sign}${item.operator}: ${get_search_operand(item, true)}`;
 }
 
 // This is called when the a pill is closed. We have custom logic here
@@ -69,7 +70,7 @@ function on_pill_exit(
     remove_pill: (pill: HTMLElement) => void,
 ): void {
     const $user_pill_container = $(clicked_element).parents(".user-pill-container");
-    if (!$user_pill_container.length) {
+    if ($user_pill_container.length === 0) {
         // This is just a regular search pill, so we don't need to do fancy logic.
         const $clicked_pill = $(clicked_element).closest(".pill");
         remove_pill(util.the($clicked_pill));
@@ -118,6 +119,13 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         generate_pill_html(item) {
             if (item.type === "search_user") {
                 return render_search_user_pill(item);
+            }
+            if (item.operator === "topic" && item.operand === "") {
+                return render_input_pill({
+                    is_empty_string_topic: true,
+                    sign: item.negated ? "-" : "",
+                    topic_display_name: util.get_final_topic_display_name(""),
+                });
             }
             const display_value = get_search_string_from_item(item);
             return render_input_pill({
@@ -179,9 +187,20 @@ export function set_search_bar_contents(
         // Instead, we keep the partial pill to the end of the
         // search box as text input, which will update the
         // typeahead to show operand suggestions.
+        // Note: We make a pill for `topic:` as it represents empty string topic
+        // except the case where it suggests `topic` operator.
         if (input.at(-1) === ":" && term.operand === "" && term === search_terms.at(-1)) {
-            partial_pill = input;
-            continue;
+            const is_topic_operator_suggestion = (): boolean => {
+                const is_typeahead_visible = $("#searchbox_form .typeahead").is(":visible");
+                return (
+                    is_typeahead_visible &&
+                    $("#searchbox_form .typeahead-item.active .empty-topic-display").length === 0
+                );
+            };
+            if (term.operator !== "topic" || is_topic_operator_suggestion()) {
+                partial_pill = input;
+                continue;
+            }
         }
 
         if (!Filter.is_valid_search_term(term)) {
@@ -210,14 +229,20 @@ export function set_search_bar_contents(
         search_bar_text_strings.push(partial_pill);
     }
     set_search_bar_text(search_bar_text_strings.join(" "));
-    if (invalid_inputs.length) {
+    if (invalid_inputs.length > 0) {
         $("#search_query").addClass("shake");
     }
 }
 
-function get_search_operand(item: SearchPill): string {
+function get_search_operand(item: SearchPill, for_display: boolean): string {
     if (item.type === "search_user") {
         return item.users.map((user) => user.email).join(",");
+    }
+    if (for_display && item.operator === "channel") {
+        return stream_data.get_valid_sub_by_id_string(item.operand).name;
+    }
+    if (for_display && item.operator === "topic") {
+        return util.get_final_topic_display_name(item.operand);
     }
     return item.operand;
 }
@@ -225,6 +250,6 @@ function get_search_operand(item: SearchPill): string {
 export function get_current_search_pill_terms(pill_widget: SearchPillWidget): NarrowTerm[] {
     return pill_widget.items().map((item) => ({
         ...item,
-        operand: get_search_operand(item),
+        operand: get_search_operand(item, false),
     }));
 }

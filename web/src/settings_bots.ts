@@ -7,7 +7,8 @@ import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs"
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
 
-import * as avatar from "./avatar";
+import * as avatar from "./avatar.ts";
+import * as settings_bots from "./settings_bots";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as components from "./components";
@@ -43,6 +44,11 @@ type BotInfo = {
     is_active: boolean;
     is_incoming_webhook_bot: boolean;
     zuliprc: string;
+};
+
+type BotType = {
+    type_id: number;
+    name: string;
 };
 
 function add_bot_row(info: BotInfo): void {
@@ -106,7 +112,12 @@ export function encode_zuliprc_as_url(zuliprc: string): string {
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 }
 
-export function generate_zuliprc_content(bot: bot_data.Bot): string {
+export function generate_zuliprc_content(bot: {
+    bot_type?: number;
+    user_id: number;
+    email: string;
+    api_key: string;
+}): string {
     let token;
     // For outgoing webhooks, include the token in the zuliprc.
     // It's needed for authenticating to the Botserver.
@@ -150,59 +161,43 @@ export function generate_botserverrc_content(
     );
 }
 
-export const bot_creation_policy_values = {
-    admins_only: {
-        code: 3,
-        description: $t({defaultMessage: "Admins"}),
-    },
-    everyone: {
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-    restricted: {
-        code: 2,
-        description: $t({
-            defaultMessage: "Admins, moderators and members, but only admins can add generic bots",
-        }),
-    },
-};
-
 export function can_create_new_bots(): boolean {
-    if (current_user.is_admin) {
-        return true;
-    }
-
-    if (current_user.is_guest) {
-        return false;
-    }
-
-    return realm.realm_bot_creation_policy !== bot_creation_policy_values.admins_only.code;
+    return settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_create_bots_group,
+        "can_create_bots_group",
+        "realm",
+    );
 }
 
-export function update_bot_settings_tip($tip_container: JQuery, for_org_settings: boolean): void {
-    if (
-        !current_user.is_admin &&
-        realm.realm_bot_creation_policy === bot_creation_policy_values.everyone.code
-    ) {
-        $tip_container.hide();
-        return;
-    }
+export function can_create_incoming_webhooks(): boolean {
+    // User who have the permission to create any bot can also
+    // create incoming webhooks.
+    return (
+        can_create_new_bots() ||
+        settings_data.user_has_permission_for_group_setting(
+            realm.realm_can_create_write_only_bots_group,
+            "can_create_write_only_bots_group",
+            "realm",
+        )
+    );
+}
 
-    if (current_user.is_admin && !for_org_settings) {
+export function update_bot_settings_tip($tip_container: JQuery): void {
+    if (can_create_new_bots()) {
         $tip_container.hide();
         return;
     }
 
     const rendered_tip = render_bot_settings_tip({
-        realm_bot_creation_policy: realm.realm_bot_creation_policy,
-        permission_type: bot_creation_policy_values,
+        can_create_any_bots: can_create_new_bots(),
+        can_create_incoming_webhooks: can_create_incoming_webhooks(),
     });
     $tip_container.show();
     $tip_container.html(rendered_tip);
 }
 
 function update_add_bot_button(): void {
-    if (can_create_new_bots()) {
+    if (can_create_incoming_webhooks()) {
         $("#bot-settings .add-a-new-bot").show();
         $("#admin-bot-list .add-new-bots").show();
         $("#admin-bot-list .manage-your-bots").hide();
@@ -219,15 +214,32 @@ function update_add_bot_button(): void {
 }
 
 export function update_bot_permissions_ui(): void {
-    update_bot_settings_tip($("#admin-bot-settings-tip"), true);
-    update_bot_settings_tip($("#personal-bot-settings-tip"), false);
+    update_bot_settings_tip($("#admin-bot-settings-tip"));
+    update_bot_settings_tip($("#personal-bot-settings-tip"));
     update_add_bot_button();
-    $("#id_realm_bot_creation_policy").val(realm.realm_bot_creation_policy);
+}
+
+export function get_allowed_bot_types(): BotType[] {
+    const allowed_bot_types: BotType[] = [];
+    const bot_types = settings_config.bot_type_values;
+    if (can_create_new_bots()) {
+        allowed_bot_types.push(
+            bot_types.default_bot,
+            bot_types.incoming_webhook_bot,
+            bot_types.outgoing_webhook_bot,
+        );
+        if (page_params.embedded_bots_enabled) {
+            allowed_bot_types.push(bot_types.embedded_bot);
+        }
+    } else if (can_create_incoming_webhooks()) {
+        allowed_bot_types.push(bot_types.incoming_webhook_bot);
+    }
+    return allowed_bot_types;
 }
 
 export function add_a_new_bot(): void {
     const html_body = render_add_new_bot_form({
-        bot_types: page_params.bot_types,
+        bot_types: get_allowed_bot_types(),
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
     });
@@ -291,6 +303,7 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
@@ -505,7 +518,9 @@ export function set_up(): void {
     // Show a tippy tooltip when the bot zuliprc is copied
     clipboard.on("success", (e) => {
         assert(e.trigger instanceof HTMLElement);
-        show_copied_confirmation(e.trigger);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
     });
 
     $("#bot-settings .add-a-new-bot").on("click", (e) => {

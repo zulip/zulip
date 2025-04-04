@@ -1,11 +1,12 @@
-import * as blueslip from "./blueslip";
-import {LazySet} from "./lazy_set";
-import type {User} from "./people";
-import * as people from "./people";
-import * as sub_store from "./sub_store";
+import * as blueslip from "./blueslip.ts";
+import {LazySet} from "./lazy_set.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
+import * as sub_store from "./sub_store.ts";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();
+const fetched_stream_ids = new Set<number>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
@@ -43,7 +44,7 @@ export function potential_subscribers(stream_id: number): User[] {
         stream.  This may include some bots.
 
         We currently use it for typeahead in
-        stream_edit.js.
+        stream_edit.ts.
 
         This may be a superset of the actual
         subscribers that you can change in some cases
@@ -69,18 +70,22 @@ export function potential_subscribers(stream_id: number): User[] {
     return people.filter_all_users(is_potential_subscriber);
 }
 
-export function get_subscriber_count(stream_id: number, include_bots = true): number {
+export let get_subscriber_count = (stream_id: number, include_bots = true): number => {
     if (include_bots) {
         return get_user_set(stream_id).size;
     }
 
     let count = 0;
     for (const user_id of get_user_set(stream_id).keys()) {
-        if (!people.is_valid_bot_user(user_id)) {
+        if (!people.is_valid_bot_user(user_id) && people.is_person_active(user_id)) {
             count += 1;
         }
     }
     return count;
+};
+
+export function rewire_get_subscriber_count(value: typeof get_subscriber_count): void {
+    get_subscriber_count = value;
 }
 
 export function get_subscribers(stream_id: number): number[] {
@@ -91,9 +96,12 @@ export function get_subscribers(stream_id: number): number[] {
     return [...subscribers.keys()];
 }
 
-export function set_subscribers(stream_id: number, user_ids: number[]): void {
+export function set_subscribers(stream_id: number, user_ids: number[], full_data = true): void {
     const subscribers = new LazySet(user_ids);
     stream_subscribers.set(stream_id, subscribers);
+    if (full_data) {
+        fetched_stream_ids.add(stream_id);
+    }
 }
 
 export function add_subscriber(stream_id: number, user_id: number): void {
@@ -157,4 +165,19 @@ export function is_user_subscribed(stream_id: number, user_id: number): boolean 
 
     const subscribers = get_user_set(stream_id);
     return subscribers.has(user_id);
+}
+
+export function get_unique_subscriber_count_for_streams(stream_ids: number[]): number {
+    const valid_subscribers = new LazySet([]);
+
+    for (const stream_id of stream_ids) {
+        const subscribers = get_user_set(stream_id);
+
+        for (const user_id of subscribers.keys()) {
+            if (!people.is_valid_bot_user(user_id)) {
+                valid_subscribers.add(user_id);
+            }
+        }
+    }
+    return valid_subscribers.size;
 }

@@ -99,8 +99,7 @@ class RemoteTestResult(django_runner.RemoteTestResult):
 
     def addInstrumentation(self, test: unittest.TestCase, data: dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
-        if "info" in data:
-            del data["info"]
+        data.pop("info", None)
 
         self.events.append(("addInstrumentation", self.test_index, data))
 
@@ -346,7 +345,7 @@ class Runner(DiscoverRunner):
         prefix = "unittest.loader._FailedTest."
         for test_name in get_test_names(suite):
             if test_name.startswith(prefix):
-                test_name = test_name[len(prefix) :]
+                test_name = test_name.removeprefix(prefix)
                 for label in test_labels:
                     # This code block is for when a test label is
                     # directly provided, for example:
