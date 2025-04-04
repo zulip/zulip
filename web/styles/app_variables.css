@@ -576,14 +576,12 @@
     --overlay-container-max-height: 1000px;
     /* The width of the settings sidebar. */
     --settings-sidebar-width: 18.2142em; /* 255px at 14px/em */
-    /* .subscriptions-header and .settings-header */
+    /* .two-pane-settings-header and .settings-header */
     --settings-overlay-header-height: 3.2143em; /* 45px at 14px/em */
     /* .display-type and .list-toggler-container
        in subscriptions and user group settings overlays */
     --settings-overlay-subheader-height: 3.1429em; /* 44px at 14px/em */
     --settings-overlay-header-button-height: 2em;
-    /* .settings-sticky-footer */
-    --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
     --informational-overlay-max-width: 43.75em;
     --modal-input-width: 23.2142em;
