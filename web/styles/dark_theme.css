@@ -81,12 +81,6 @@
         }
     }
 
-    #navbar-middle .column-middle-inner,
-    .header,
-    #message_view_header {
-        background-color: var(--color-background-navbar);
-    }
-
     #scroll-to-bottom-button-container {
         background: transparent;
     }
