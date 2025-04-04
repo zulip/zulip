@@ -8,13 +8,14 @@
 # João Alves <suri.cata.ja@gmail.com>, 2021-2022
 # supermarsx, 2024
 # Tim Abbott <tabbott@kandralabs.com>, 2024
+# tmpod <tom@tmpod.dev>, 2025
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: supermarsx, 2024\n"
+"Last-Translator: tmpod <tom@tmpod.dev>, 2025\n"
 "Language-Team: Portuguese (Portugal) (http://app.transifex.com/zulip/zulip/language/pt_PT/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,7 +26,7 @@ msgstr ""
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
 msgid "Not allowed for guest users"
-msgstr "Não é permitido a visitantes"
+msgstr "Não permitido a visitantes"
 
 #: analytics/views/stats.py:160
 msgid "Invalid organization"
@@ -109,19 +110,19 @@ msgid ""
 "have enough Zulip licenses. To allow new users to join, make sure that the "
 "[number of licenses for the current and next billing "
 "period]({billing_page_link}) is greater than the current number of users."
-msgstr ""
+msgstr "Um novo utilizador ({email}) não pôde entrar porque a sua organização Zulip não tem licenças suficientes. Para permitir a entrada de novos utilizadores, certifique-se que o [número de licenças no período de faturação atual]({billing_page_link}) é superior ao número de utilizadores."
 
 #: corporate/lib/registration.py:119
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
-msgstr ""
+msgstr "A sua organização Zulip não tem licenças suficientes. Os convites não foram enviados."
 
 #: corporate/lib/registration.py:133
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
-msgstr ""
+msgstr "A sua organização Zulip não tem licenças suficientes para alterar a função de um visitante."
 
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
@@ -817,12 +818,12 @@ msgstr "Ilimitado"
 
 #: templates/corporate/comparison_table_integrated.html:153
 msgid "Files up to 10 MB"
-msgstr ""
+msgstr "Ficheiros até 10 MB"
 
 #: templates/corporate/comparison_table_integrated.html:154
 #: templates/corporate/comparison_table_integrated.html:155
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "Ficheiros até 1 GB"
 
 #: templates/corporate/comparison_table_integrated.html:211
 #: templates/corporate/comparison_table_integrated.html:212
@@ -1293,7 +1294,7 @@ msgstr "Criar organização"
 #: templates/corporate/self-hosting.html:27
 #: templates/corporate/why-zulip.html:30 templates/zerver/footer.html:45
 msgid "Get a demo"
-msgstr ""
+msgstr "Obter uma demonstração"
 
 #: templates/corporate/for/business.html:30
 #: templates/corporate/for/communities.html:43
@@ -1498,13 +1499,13 @@ msgstr "Se não encontrar a mensagem de confirmação na sua caixa de email na p
 #: templates/zerver/app/index.html:6
 #, python-brace-format
 msgid "Public view of {org_name} | Zulip team chat"
-msgstr ""
+msgstr "Vista pública do Zulip de {org_name}"
 
 #: templates/zerver/app/index.html:7
 #, python-brace-format
 msgid ""
 "Browse the publicly accessible channels in {org_name} without logging in."
-msgstr ""
+msgstr "Explore os canais publicamente acessíveis de {org_name} sem iniciar sessão."
 
 #: templates/zerver/app/index.html:135
 msgid ""
