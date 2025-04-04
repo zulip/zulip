@@ -313,10 +313,6 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose_control_button:hover {
-        color: inherit;
-    }
-
     #compose-content {
         border-color: hsl(0deg 0% 0% / 60%);
     }
