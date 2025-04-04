@@ -233,6 +233,7 @@ class SubscriptionStreamDict(TypedDict):
     stream_post_policy: int
     stream_weekly_traffic: int | None
     subscribers: NotRequired[list[int]]
+    partial_subscribers: NotRequired[list[int]]
     wildcard_mentions_notify: bool | None
 
 
@@ -259,6 +260,7 @@ class NeverSubscribedStreamDict(TypedDict):
     stream_post_policy: int
     stream_weekly_traffic: int | None
     subscribers: NotRequired[list[int]]
+    partial_subscribers: NotRequired[list[int]]
 
 
 class DefaultStreamDict(TypedDict):

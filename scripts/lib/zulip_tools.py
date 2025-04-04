@@ -626,15 +626,6 @@ def get_deploy_options(config_file: configparser.RawConfigParser) -> list[str]:
     return shlex.split(get_config(config_file, "deployment", "deploy_options", ""))
 
 
-def run_psql_as_postgres(
-    config_file: configparser.RawConfigParser,
-    sql_query: str,
-) -> None:
-    dbname = get_config(config_file, "postgresql", "database_name", "zulip")
-    subcmd = shlex.join(["psql", "-v", "ON_ERROR_STOP=1", "-d", dbname, "-c", sql_query])
-    subprocess.check_call(["su", "postgres", "-c", subcmd])
-
-
 def get_tornado_ports(config_file: configparser.RawConfigParser) -> list[int]:
     ports = []
     if config_file.has_section("tornado_sharding"):
@@ -712,24 +703,6 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
             help="Restart with more concern for expediency than minimizing availability interruption",
         )
     return parser
-
-
-def listening_publicly(port: int) -> list[str]:
-    filter = f"sport = :{port} and not src 127.0.0.1:{port} and not src [::1]:{port}"
-    # Parse lines that look like this:
-    # tcp    LISTEN     0          128             0.0.0.0:25672        0.0.0.0:*
-    lines = (
-        subprocess.check_output(
-            ["/bin/ss", "-Hnl", filter],
-            text=True,
-            # Hosts with IPv6 disabled will get "RTNETLINK answers: Invalid
-            # argument"; eat stderr to hide that
-            stderr=subprocess.DEVNULL,
-        )
-        .strip()
-        .splitlines()
-    )
-    return [line.split()[4] for line in lines]
 
 
 def atomic_nagios_write(

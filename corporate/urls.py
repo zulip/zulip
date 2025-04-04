@@ -150,7 +150,6 @@ landing_page_urls = [
     path("why-zulip/", landing_view, {"template_name": "corporate/why-zulip.html"}),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
     path("security/", landing_view, {"template_name": "corporate/security.html"}),
-    path("try-zulip/", landing_view, {"template_name": "corporate/try-zulip.html"}),
     # /for pages
     path("use-cases/", landing_view, {"template_name": "corporate/for/use-cases.html"}),
     path(

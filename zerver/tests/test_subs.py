@@ -7667,6 +7667,80 @@ class GetSubscribersTest(ZulipTestCase):
         stream_name = gather_subscriptions(self.user_profile)[0][0]["name"]
         self.make_successful_subscriber_request(stream_name)
 
+    def test_gather_partial_subscriptions(self) -> None:
+        othello = self.example_user("othello")
+        bot = self.create_test_bot("bot", othello, "Foo Bot")
+
+        stream_names = [
+            "never_subscribed_only_bots",
+            "never_subscribed_more_than_bots",
+            "unsubscribed_only_bots",
+            "subscribed_more_than_bots",
+        ]
+        for stream_name in stream_names:
+            self.make_stream(stream_name)
+
+        self.subscribe_via_post(
+            self.user_profile,
+            ["never_subscribed_only_bots"],
+            dict(principals=orjson.dumps([bot.id]).decode()),
+        )
+        self.subscribe_via_post(
+            self.user_profile,
+            ["never_subscribed_more_than_bots"],
+            dict(principals=orjson.dumps([bot.id, othello.id]).decode()),
+        )
+        self.subscribe_via_post(
+            self.user_profile,
+            ["unsubscribed_only_bots"],
+            dict(principals=orjson.dumps([bot.id, self.user_profile.id]).decode()),
+        )
+        self.unsubscribe(
+            self.user_profile,
+            "unsubscribed_only_bots",
+        )
+        self.subscribe_via_post(
+            self.user_profile,
+            ["subscribed_more_than_bots"],
+            dict(principals=orjson.dumps([bot.id, othello.id, self.user_profile.id]).decode()),
+        )
+
+        with self.assert_database_query_count(10):
+            sub_data = gather_subscriptions_helper(self.user_profile, include_subscribers="partial")
+            never_subscribed_streams = sub_data.never_subscribed
+            unsubscribed_streams = sub_data.unsubscribed
+            subscribed_streams = sub_data.subscriptions
+        self.assertGreaterEqual(len(never_subscribed_streams), 2)
+        self.assertGreaterEqual(len(unsubscribed_streams), 1)
+        self.assertGreaterEqual(len(subscribed_streams), 1)
+
+        # Streams with only bots have sent all of their subscribers,
+        # since we always send bots. We tell the client it doesn't
+        # need to fetch more, by filling "subscribers" instead
+        # of "partial_subscribers". If there are non-bot subscribers,
+        # a partial fetch will return only partial subscribers.
+
+        for sub in never_subscribed_streams:
+            if sub["name"] == "never_subscribed_only_bots":
+                self.assert_length(sub["subscribers"], 1)
+                self.assertIsNone(sub.get("partial_subscribers"))
+                continue
+            if sub["name"] == "never_subscribed_more_than_bots":
+                self.assert_length(sub["partial_subscribers"], 1)
+                self.assertIsNone(sub.get("subscribers"))
+
+        for sub in unsubscribed_streams:
+            if sub["name"] == "unsubscribed_only_bots":
+                self.assert_length(sub["subscribers"], 1)
+                self.assertIsNone(sub.get("partial_subscribers"))
+                break
+
+        for sub in subscribed_streams:
+            if sub["name"] == "subscribed_more_than_bots":
+                self.assert_length(sub["partial_subscribers"], 1)
+                self.assertIsNone(sub.get("subscribers"))
+                break
+
     def test_gather_subscriptions(self) -> None:
         """
         gather_subscriptions returns correct results with only 3 queries
@@ -7678,7 +7752,6 @@ class GetSubscribersTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         polonius = self.example_user("polonius")
-        bot = self.create_test_bot("bot", cordelia, "Foo Bot")
         realm = hamlet.realm
 
         stream_names = [f"stream_{i}" for i in range(10)]
@@ -7689,7 +7762,6 @@ class GetSubscribersTest(ZulipTestCase):
             othello.id,
             cordelia.id,
             polonius.id,
-            bot.id,
         ]
 
         with self.assert_database_query_count(50):
@@ -7773,17 +7845,6 @@ class GetSubscribersTest(ZulipTestCase):
             setting_group_members_dict,
             acting_user=hamlet,
         )
-
-        # Test partial subscribers
-        with self.assert_database_query_count(10):
-            sub_data = gather_subscriptions_helper(self.user_profile, include_subscribers="partial")
-            subscribed_streams = sub_data.subscriptions
-        self.assertGreaterEqual(len(subscribed_streams), 11)
-        for sub in subscribed_streams:
-            if not sub["name"].startswith("stream_"):
-                continue
-            # Just the bot
-            self.assert_length(sub["subscribers"], 1)
 
         with self.assert_database_query_count(9):
             subscribed_streams, _ = gather_subscriptions(

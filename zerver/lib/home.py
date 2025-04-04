@@ -2,6 +2,7 @@ import calendar
 import os
 import time
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -135,12 +136,17 @@ def build_page_params_for_home_page_load(
 
     if user_profile is None:
         request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language)
+        split_url = urlsplit(request.build_absolute_uri())
+        show_try_zulip_modal = (
+            settings.DEVELOPMENT or split_url.hostname == "chat.zulip.org"
+        ) and split_url.query == "show_try_zulip_modal"
     else:
         request_language = get_and_set_request_language(
             request,
             default_language,
             translation.get_language_from_path(request.path_info),
         )
+        show_try_zulip_modal = False
 
     furthest_read_time = get_furthest_read_time(user_profile)
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
@@ -175,6 +181,7 @@ def build_page_params_for_home_page_load(
         # There is no event queue for spectators since
         # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,
+        show_try_zulip_modal=show_try_zulip_modal,
     )
 
     page_params["state_data"] = state_data

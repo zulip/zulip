@@ -21,8 +21,12 @@
     <div class="member_list_container" data-simplebar data-simplebar-tab-index="-1">
         <table class="member-list table table-striped">
             <thead class="table-sticky-headers">
-                <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
-                <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="settings-email-column" data-sort="email">{{t "Email" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
                 <th>{{t "Action" }}</th>
             </thead>
             <tbody id="create_user_group_members" class="member_table" data-empty="{{t 'This group has no members.' }}" data-search-results-empty="{{t 'No group members match your current filter.'}}"></tbody>

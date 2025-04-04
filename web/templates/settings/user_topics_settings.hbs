@@ -17,10 +17,18 @@
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
         <table class="table table-striped wrapped-table">
             <thead class="table-sticky-headers">
-                <th data-sort="alphabetic" data-sort-prop="stream">{{t "Channel" }}</th>
-                <th data-sort="alphabetic" data-sort-prop="topic">{{t "Topic" }}</th>
-                <th data-sort="numeric" data-sort-prop="visibility_policy">{{t "Status" }}</th>
-                <th data-sort="numeric" data-sort-prop="date_updated" class="active topic_date_updated">{{t "Date updated" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="stream">{{t "Channel" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th data-sort="alphabetic" data-sort-prop="topic">{{t "Topic" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th data-sort="numeric" data-sort-prop="visibility_policy">{{t "Status" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th data-sort="numeric" data-sort-prop="date_updated" class="active topic_date_updated">{{t "Date updated" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
             </thead>
             <tbody id="user_topics_table" data-empty="{{t 'You have not configured any topics yet.'}}" data-search-results-empty="{{t 'No topics match your current filter.' }}"></tbody>
         </table>

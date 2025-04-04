@@ -5,12 +5,8 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 import argparse
-import glob
-import hashlib
 import logging
 import os
-import re
-import shutil
 import subprocess
 import sys
 import time
@@ -28,9 +24,7 @@ from scripts.lib.zulip_tools import (
     assert_running_as_root,
     get_config,
     get_config_file,
-    listening_publicly,
     parse_version_from,
-    run_psql_as_postgres,
     start_arg_parser,
     su_to_zulip,
 )
@@ -120,37 +114,6 @@ from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
 logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)
 
-# Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
-rabbitmq_dist_listen = listening_publicly(25672)
-# Check the erlang magic cookie size
-cookie_size: int | None = None
-if os.path.exists("/var/lib/rabbitmq/.erlang.cookie"):
-    with open("/var/lib/rabbitmq/.erlang.cookie") as cookie_fh:
-        cookie_size = len(cookie_fh.readline())
-else:
-    logging.info("No RabbitMQ erlang cookie found, not auditing RabbitMQ security.")
-if (args.skip_restart or args.skip_puppet) and rabbitmq_dist_listen:
-    logging.error(
-        "RabbitMQ is publicly-accessible on %s; this is a security vulnerability!",
-        ", ".join(rabbitmq_dist_listen),
-    )
-    issue = "issue"
-    if cookie_size is not None and cookie_size == 20:
-        # See the below comment -- this is used as a lightweight
-        # signal for a cookie made with Erlang's bad randomizer.
-        logging.error(
-            "RabbitMQ erlang cookie is insecure; this is a critical security vulnerability!"
-        )
-        issue = "issues"
-    logging.error(
-        "To fix the above security %s, re-run the upgrade without --skip-puppet "
-        "(which may be set in /etc/zulip/zulip.conf), in order to restart the "
-        "necessary services.  Running zulip-puppet-apply by itself is not sufficient.",
-        issue,
-    )
-    sys.exit(1)
-
-
 migrations_needed = False
 
 
@@ -181,14 +144,6 @@ def shutdown_server(fill_caches: bool = True) -> None:
         IS_SERVER_UP = False
 
 
-if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
-    # Remove legacy tsearch_extras package references
-    run_psql_as_postgres(
-        config_file=config_file,
-        sql_query="DROP EXTENSION IF EXISTS tsearch_extras;",
-    )
-    subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
-
 if not (args.skip_restart or args.skip_puppet):
     # We need to temporarily hold pgroonga, if installed -- upgrading
     # it without running the appropriate upgrade SQL can cause
@@ -200,17 +155,6 @@ if not (args.skip_restart or args.skip_puppet):
     subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
     if get_config(config_file, "machine", "pgroonga", False):
         subprocess.check_call(["apt-mark", "unhold", "postgresql-*-pgdg-pgroonga"])
-
-# To bootstrap zulip-puppet-apply, we need to install the system yaml
-# package; new installs get this, but old installs may not have it.
-if not os.path.exists("/usr/share/doc/python3-yaml"):
-    logging.info("Installing system YAML package, for puppet...")
-    subprocess.check_call(["apt-get", "install", "python3-yaml"])
-
-if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
-    # This is normally done in unpack-zulip, but for upgrading from
-    # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
-    os.symlink("/etc/zulip/settings.py", os.path.join(deploy_path, "zproject/prod_settings.py"))
 
 # Now we should have an environment set up where we can run our tools;
 # first, creating the production venv.
@@ -234,48 +178,6 @@ subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node
 subprocess.check_call(
     [os.path.join(deploy_path, "scripts", "setup", "generate_secrets.py"), "--production"]
 )
-
-# Adjust Puppet class names for the manifest renames in the 4.0 release
-class_renames = {
-    "zulip::app_frontend": "zulip::profile::app_frontend",
-    "zulip::dockervoyager": "zulip::profile::docker",
-    "zulip::memcached": "zulip::profile::memcached",
-    "zulip::postgres_appdb_tuned": "zulip::profile::postgresql",
-    "zulip::postgres_backups": "zulip::postgresql_backups",
-    "zulip::rabbit": "zulip::profile::rabbitmq",
-    "zulip::voyager": "zulip::profile::standalone",
-}
-classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes", ""))
-new_classes = [class_renames.get(c, c) for c in classes if c != "zulip::base"]
-if classes != new_classes:
-    if args.skip_restart:
-        logging.error("Would need to adjust puppet classes -- aborting!")
-        sys.exit(1)
-    logging.info("Adjusting Puppet classes for renames...")
-    subprocess.check_call(
-        [
-            "crudini",
-            "--set",
-            "/etc/zulip/zulip.conf",
-            "machine",
-            "puppet_classes",
-            ", ".join(new_classes),
-        ]
-    )
-
-# Unpleasant migration: Remove any legacy deployed copies of
-# images-google-64 from before we renamed that emojiset to
-# "googleblob":
-emoji_path = "/home/zulip/prod-static/generated/emoji/images-google-64/1f32d.png"
-if os.path.exists(emoji_path):
-    with open(emoji_path, "rb") as f:
-        emoji_data = f.read()
-    emoji_sha = hashlib.sha1(emoji_data).hexdigest()
-    if emoji_sha == "47033121dc20b376e0f86f4916969872ad22a293":
-        if args.skip_restart:
-            logging.error("Would need to delete images-google-64 -- aborting!")
-            sys.exit(1)
-        shutil.rmtree("/home/zulip/prod-static/generated/emoji/images-google-64")
 
 # And then, building/installing the static assets.
 if args.ignore_static_assets:
@@ -394,22 +296,6 @@ else:
         hooks_args = ["--from-git"]
 
     subprocess.check_call(["./scripts/lib/run_hooks.py", "pre-deploy", *hooks_args])
-
-    if rabbitmq_dist_listen:
-        shutdown_server()
-        logging.info("Shutting down rabbitmq to adjust its ports...")
-        subprocess.check_call(["/usr/sbin/service", "rabbitmq-server", "stop"])
-
-    if cookie_size is not None and cookie_size == 20:
-        # Checking for a 20-character cookie is used as a signal that it
-        # was generated by Erlang's insecure randomizer, which only
-        # provides between 20 and 36 bits of entropy; were it 20
-        # characters long by a good randomizer, it would be 96 bits and
-        # more than sufficient.  We generate, using good randomness, a
-        # 255-character cookie, the max allowed length.
-        shutdown_server()
-        logging.info("Generating a secure erlang cookie...")
-        subprocess.check_call(["./scripts/setup/generate-rabbitmq-cookie"])
 
     if not args.skip_puppet:
         # Puppet may adjust random services; to minimize risk of issues
