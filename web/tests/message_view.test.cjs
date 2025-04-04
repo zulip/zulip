@@ -327,6 +327,13 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
+    current_filter = set_filter([["is", "alerted"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You have no alerted messages!"),
+    );
+
     current_filter = set_filter([["is", "mentioned"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
