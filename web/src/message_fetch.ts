@@ -33,7 +33,6 @@ export const response_schema = z.object({
     anchor: z.number(),
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
-    found_anchor: z.boolean(),
     history_limited: z.boolean(),
     messages: z.array(raw_message_schema),
     result: z.string(),
