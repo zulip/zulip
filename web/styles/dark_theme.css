@@ -221,10 +221,6 @@
         }
     }
 
-    .stream_header_colorblock.disabled {
-        filter: brightness(50%);
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
@@ -339,10 +335,6 @@
 
     #compose-content {
         border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .compose_table .stream-selection-header-colorblock {
-        border-color: hsl(240deg 11% 5%);
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark theme */

@@ -206,18 +206,6 @@
     display: flex;
     flex-flow: column;
 
-    .stream-selection-header-colorblock {
-        box-shadow: none;
-        border: 1px solid hsl(0deg 0% 80%);
-        border-right: none;
-
-        &.message_header_private_message {
-            border-radius: 3px 0 0 3px;
-            border-bottom: 0;
-            background-color: hsl(0deg 0% 27%);
-        }
-    }
-
     #compose-recipient {
         &.compose-recipient-direct-selected {
             #compose_select_recipient_widget_wrapper {
