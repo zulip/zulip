@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Alex Vandiver <alexmv@zulip.com>, 2023
 # Iorek Byrnison <bojanmaksimovic@gmail.com>, 2023
@@ -10,18 +10,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-20 06:34+0000\n"
+"POT-Creation-Date: 2025-04-04 22:58+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Iorek Byrnison <bojanmaksimovic@gmail.com>, 2023\n"
 "Language-Team: Serbian (http://app.transifex.com/zulip/zulip/language/sr/)\n"
+"Language: sr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sr\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: analytics/views/stats.py:109 zerver/decorator.py:667
-#: zerver/decorator.py:685
+#: analytics/views/stats.py:109 zerver/decorator.py:667 zerver/decorator.py:685
 msgid "Not allowed for guest users"
 msgstr "Није дозвољено за госте"
 
@@ -58,11 +58,15 @@ msgstr "Непознат назив графикона: {chart_name}"
 #: analytics/views/stats.py:435
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "Време почетка је касније од времена завршетка. Почетак: {start}, Завршетак: {end}"
+msgstr ""
+"Време почетка је касније од времена завршетка. Почетак: {start}, Завршетак: "
+"{end}"
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Нема доступних података за аналитику. Молим вас контактирајте вашег администратора сервера."
+msgstr ""
+"Нема доступних података за аналитику. Молим вас контактирајте вашег "
+"администратора сервера."
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -71,42 +75,55 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr "Ваша организација нема слободних Зулип лиценци и више не може да прихвата нове кориснике. Молим вас [повећајте број лиценци]({billing_page_link}) или [деактивирајте неактивне кориснике]({deactivate_user_help_page_link}) да би сте омогућили приступ новим корисницима."
+msgstr ""
+"Ваша организација нема слободних Зулип лиценци и више не може да прихвата "
+"нове кориснике. Молим вас [повећајте број лиценци]({billing_page_link}) или "
+"[деактивирајте неактивне кориснике]({deactivate_user_help_page_link}) да би "
+"сте омогућили приступ новим корисницима."
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
 msgid ""
 "Your organization has only one Zulip license remaining. You can [increase "
-"the number of licenses]({billing_page_link}) or [deactivate inactive "
-"users]({deactivate_user_help_page_link}) to allow more than one user to "
-"join."
-msgstr "Ваша организација има само једну слободну Зулип лиценцу. Можете [повећати број лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]({deactivate_user_help_page_link}) да би сте омогућили приступ више од једном кориснику."
+"the number of licenses]({billing_page_link}) or [deactivate inactive users]"
+"({deactivate_user_help_page_link}) to allow more than one user to join."
+msgstr ""
+"Ваша организација има само једну слободну Зулип лиценцу. Можете [повећати "
+"број лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]"
+"({deactivate_user_help_page_link}) да би сте омогућили приступ више од "
+"једном кориснику."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
 msgid ""
 "Your organization has only two Zulip licenses remaining. You can [increase "
-"the number of licenses]({billing_page_link}) or [deactivate inactive "
-"users]({deactivate_user_help_page_link}) to allow more than two users to "
-"join."
-msgstr "Ваша организација има само две слободне Зулип лиценце. Можете [повећати број лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]({deactivate_user_help_page_link}) да би сте омогућили приступ више од два корисника."
+"the number of licenses]({billing_page_link}) or [deactivate inactive users]"
+"({deactivate_user_help_page_link}) to allow more than two users to join."
+msgstr ""
+"Ваша организација има само две слободне Зулип лиценце. Можете [повећати број "
+"лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]"
+"({deactivate_user_help_page_link}) да би сте омогућили приступ више од два "
+"корисника."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
 msgid ""
-"Your organization has only three Zulip licenses remaining. You can [increase"
-" the number of licenses]({billing_page_link}) or [deactivate inactive "
-"users]({deactivate_user_help_page_link}) to allow more than three users to "
-"join."
-msgstr "Ваша организација има само три слободне Зулип лиценце. Можете [повећати број лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]({deactivate_user_help_page_link}) да би сте омогућили приступ више од три корисника."
+"Your organization has only three Zulip licenses remaining. You can [increase "
+"the number of licenses]({billing_page_link}) or [deactivate inactive users]"
+"({deactivate_user_help_page_link}) to allow more than three users to join."
+msgstr ""
+"Ваша организација има само три слободне Зулип лиценце. Можете [повећати број "
+"лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]"
+"({deactivate_user_help_page_link}) да би сте омогућили приступ више од три "
+"корисника."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
 msgid ""
 "A new user ({email}) was unable to join because your organization does not "
 "have enough Zulip licenses. To allow new users to join, make sure that the "
-"[number of licenses for the current and next billing "
-"period]({billing_page_link}) is greater than the current number of users."
+"[number of licenses for the current and next billing period]"
+"({billing_page_link}) is greater than the current number of users."
 msgstr ""
 
 #: corporate/lib/registration.py:119
@@ -135,14 +152,18 @@ msgstr "Неисправан удаљени сервер."
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
-msgstr "Морате купити лиценце за све активне кориснике у вашој организацији (минимално {min_licenses})."
+msgstr ""
+"Морате купити лиценце за све активне кориснике у вашој организацији "
+"(минимално {min_licenses})."
 
 #: corporate/lib/stripe.py:226
 #, python-brace-format
 msgid ""
-"Invoices with more than {max_licenses} licenses can't be processed from this"
-" page. To complete the upgrade, please contact {email}."
-msgstr "Фактуре са више од {max_licenses} лиценци не могу бити обрађене путем ове странице. Да би сте завршили надоградњу, молим вас контактирајте {email}."
+"Invoices with more than {max_licenses} licenses can't be processed from this "
+"page. To complete the upgrade, please contact {email}."
+msgstr ""
+"Фактуре са више од {max_licenses} лиценци не могу бити обрађене путем ове "
+"странице. Да би сте завршили надоградњу, молим вас контактирајте {email}."
 
 #: corporate/lib/stripe.py:358
 msgid "No payment method on file."
@@ -169,11 +190,14 @@ msgstr "Десило се нешто непредвиђено. Молим вас
 
 #: corporate/lib/stripe.py:504
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Десило се нешто непредвиђено. Молим вас сачекајте неколико секунди па покушајте поново."
+msgstr ""
+"Десило се нешто непредвиђено. Молим вас сачекајте неколико секунди па "
+"покушајте поново."
 
 #: corporate/lib/stripe.py:1888
 msgid "Please add a credit card before starting your free trial."
-msgstr "Молимо додајте кредитну картицу пре почетка бесплатног пробног периода."
+msgstr ""
+"Молимо додајте кредитну картицу пре почетка бесплатног пробног периода."
 
 #: corporate/lib/stripe.py:1911
 msgid "Please add a credit card to schedule upgrade."
@@ -181,8 +205,8 @@ msgstr "Молим вас додајте кредитну картицу да б
 
 #: corporate/lib/stripe.py:2968
 msgid ""
-"Unable to update the plan. The plan has been expired and replaced with a new"
-" plan."
+"Unable to update the plan. The plan has been expired and replaced with a new "
+"plan."
 msgstr "Није могуће освежити план. План је истекао и замењен је новим планом."
 
 #: corporate/lib/stripe.py:2973
@@ -192,13 +216,17 @@ msgstr "Није могуће освежити план. План је завр�
 #: corporate/lib/stripe.py:3041
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr "Није могуће изменити лиценцу у тренутном обрачунском периоду за бесплатан пробни план."
+msgstr ""
+"Није могуће изменити лиценцу у тренутном обрачунском периоду за бесплатан "
+"пробни план."
 
 #: corporate/lib/stripe.py:3046 corporate/lib/stripe.py:3074
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
-msgstr "Није могуће ручно освежавање лиценце. Ваш план је на аутоматском управљању лиценце."
+msgstr ""
+"Није могуће ручно освежавање лиценце. Ваш план је на аутоматском управљању "
+"лиценце."
 
 #: corporate/lib/stripe.py:3052
 #, python-brace-format
@@ -221,7 +249,8 @@ msgstr ""
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
-msgstr "За ваш план је већ организована обнова са {licenses_at_next_renewal} лиценци."
+msgstr ""
+"За ваш план је већ организована обнова са {licenses_at_next_renewal} лиценци."
 
 #: corporate/lib/stripe.py:3113
 #, python-brace-format
@@ -242,17 +271,17 @@ msgstr "Нема купца за ову организацију!"
 msgid "Session not found"
 msgstr "Сесија није пронађена"
 
-#: corporate/lib/stripe.py:3410 zerver/decorator.py:209
-#: zerver/decorator.py:708 zerver/lib/streams.py:1327
-#: zerver/lib/streams.py:1353 zerver/lib/streams.py:1355
-#: zerver/lib/streams.py:1357 zerver/lib/streams.py:1376
-#: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
-#: zerver/lib/user_groups.py:356 zerver/lib/user_groups.py:452
-#: zerver/lib/users.py:202 zerver/lib/users.py:265 zerver/lib/users.py:294
-#: zerver/lib/users.py:298 zerver/views/invite.py:144
-#: zerver/views/invite.py:255 zerver/views/message_summary.py:31
-#: zerver/views/presence.py:53 zerver/views/realm_emoji.py:35
-#: zerver/views/streams.py:357 zerver/views/streams.py:722
+#: corporate/lib/stripe.py:3410 zerver/decorator.py:209 zerver/decorator.py:708
+#: zerver/lib/streams.py:1340 zerver/lib/streams.py:1366
+#: zerver/lib/streams.py:1368 zerver/lib/streams.py:1370
+#: zerver/lib/streams.py:1389 zerver/lib/user_groups.py:166
+#: zerver/lib/user_groups.py:192 zerver/lib/user_groups.py:356
+#: zerver/lib/user_groups.py:452 zerver/lib/users.py:202
+#: zerver/lib/users.py:265 zerver/lib/users.py:294 zerver/lib/users.py:298
+#: zerver/views/invite.py:144 zerver/views/invite.py:255
+#: zerver/views/message_summary.py:31 zerver/views/presence.py:53
+#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:357
+#: zerver/views/streams.py:722
 msgid "Insufficient permission"
 msgstr "Недовољне дозволе"
 
@@ -267,10 +296,17 @@ msgstr ""
 #: corporate/lib/stripe.py:4167
 #, python-brace-format
 msgid ""
-"Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
+"Your organization's request for sponsored hosting has been approved! You "
+"have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
-"If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
-msgstr "Захтев ваше организације за спонзорисаним хостингом је одобрен! Унапређени сте на {plan_name}, потпуно бесплатно. {emoji}\n\nАко би сте могли да {begin_link}наведете Зулип као спонзора на вашем веб сајту{end_link}, били би смо вам много захвални!"
+"If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
+"we would really appreciate it!"
+msgstr ""
+"Захтев ваше организације за спонзорисаним хостингом је одобрен! Унапређени "
+"сте на {plan_name}, потпуно бесплатно. {emoji}\n"
+"\n"
+"Ако би сте могли да {begin_link}наведете Зулип као спонзора на вашем веб "
+"сајту{end_link}, били би смо вам много захвални!"
 
 #: corporate/views/billing_page.py:351
 msgid "Parameter 'confirmed' is required"
@@ -304,7 +340,9 @@ msgstr "Морате прихватити Услове сервиса да би 
 #: corporate/views/remote_billing_page.py:542
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
-msgstr "Ова zulip_org_id није регистрована са Зулиповим системом за управљањем наплате."
+msgstr ""
+"Ова zulip_org_id није регистрована са Зулиповим системом за управљањем "
+"наплате."
 
 #: corporate/views/remote_billing_page.py:549
 msgid "Invalid zulip_org_key for this zulip_org_id."
@@ -370,43 +408,52 @@ msgstr "Начин није дозвољен (405)"
 msgid "Internal server error"
 msgstr "Интерна грешка сервера"
 
-#: templates/500.html:18
+#: templates/500.html:20
 msgid ""
 "\n"
-"            Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
-"            "
-msgstr ""
-
-#: templates/500.html:23
-msgid ""
-"\n"
-"            This page will reload automatically when service is restored.\n"
-"            "
+"                Something went wrong. Sorry about that! We're aware of\n"
+"                the problem and are working to fix it.\n"
+"                Zulip will load automatically once it is working again.\n"
+"                "
 msgstr ""
 
 #: templates/500.html:27
 #, python-format
 msgid ""
 "\n"
-"                In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
+"                Please check <a href=\"%(status_url)s\">Zulip Cloud status</"
+"a> for\n"
+"                more information, and <a href=\"mailto:"
+"%(support_email)s\">contact\n"
+"                Zulip support</a> with any questions.\n"
 "                "
 msgstr ""
 
-#: templates/500.html:31
-#, python-format
+#: templates/500.html:36
 msgid ""
 "\n"
-"                In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n"
-"                this server's administrators</a> for support.\n"
+"                Something went wrong. Sorry about that!\n"
+"                Zulip will load automatically once it is working again.\n"
 "                "
 msgstr ""
 
-#: templates/500.html:39
+#: templates/500.html:42
 #, python-format
 msgid ""
 "\n"
-"                If you administer this server, you may want to check out the\n"
-"                <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
+"                <a href=\"mailto:%(support_email)s\">Contact this server's "
+"administrators</a> for support.\n"
+"                "
+msgstr ""
+
+#: templates/500.html:47
+#, python-format
+msgid ""
+"\n"
+"                If you administer this server, you may want to check out "
+"the\n"
+"                <a href=\"%(troubleshooting_url)s\">Zulip server "
+"troubleshooting guide</a>.\n"
 "                "
 msgstr ""
 
@@ -416,11 +463,15 @@ msgid ""
 "\n"
 "    Analytics for %(target_name)s | Zulip\n"
 "    "
-msgstr "\n    Аналитика за %(target_name)s | Зулип\n    "
+msgstr ""
+"\n"
+"    Аналитика за %(target_name)s | Зулип\n"
+"    "
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr "Аналитика је у потпуности доступна 24 сата након креирања организације."
+msgstr ""
+"Аналитика је у потпуности доступна 24 сата након креирања организације."
 
 #: templates/analytics/stats.html:23
 #, python-format
@@ -471,8 +522,7 @@ msgstr "Активни 15 дана"
 msgid "Total users"
 msgstr "Укупно корисника"
 
-#: templates/analytics/stats.html:50
-#: zerver/models/custom_profile_fields.py:104
+#: templates/analytics/stats.html:50 zerver/models/custom_profile_fields.py:104
 msgid "Users"
 msgstr "Корисници"
 
@@ -546,7 +596,9 @@ msgstr "Последње освежавање"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "Потпуно освежавање свих графикона дешава се једном дневно. Графикон “Поруке послате током времена” се освежава на сат времена."
+msgstr ""
+"Потпуно освежавање свих графикона дешава се једном дневно. Графикон “Поруке "
+"послате током времена” се освежава на сат времена."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -560,10 +612,15 @@ msgstr "Е-пошта је промењена!"
 #, python-format
 msgid ""
 "\n"
-"            This confirms that the email address for your Zulip account has changed\n"
+"            This confirms that the email address for your Zulip account has "
+"changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\n            Ово потврђује да је адреса е-поште вашег Зулип налога промењена\n            из %(old_email_html_tag)s у %(new_email_html_tag)s\n            "
+msgstr ""
+"\n"
+"            Ово потврђује да је адреса е-поште вашег Зулип налога промењена\n"
+"            из %(old_email_html_tag)s у %(new_email_html_tag)s\n"
+"            "
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -582,7 +639,8 @@ msgstr "Упс. Нисмо успели да пронађемо везу пот�
 #, python-format
 msgid ""
 "\n"
-"            Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
+"            Anyway, shoot us a line at %(support_email_html_tag)s and we'll "
+"get this resolved shortly.\n"
 "            "
 msgstr ""
 
@@ -610,7 +668,9 @@ msgstr "Упс. Веза потврде је лоше формирана."
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
-msgstr "Проверите да сте исправно ископирали везу у вашем прегледачу. Ако и даље долазите на ову страну, вероватно је то због наше грешке. Извињавамо се."
+msgstr ""
+"Проверите да сте исправно ископирали везу у вашем прегледачу. Ако и даље "
+"долазите на ову страну, вероватно је то због наше грешке. Извињавамо се."
 
 #: templates/corporate/billing/billing.html:5
 msgid "Billing"
@@ -682,8 +742,10 @@ msgid ""
 " Plan management is not available for this\n"
 "            organization, because your Zulip server is already on a\n"
 "            %(server_plan_name)s plan, which covers all\n"
-"            organizations on this server. See the <b>Server-level billing</b> tab of the\n"
-"            <a href=\"https://zulip.com/help/self-hosted-billing#log-in-to-billing-management\">log\n"
+"            organizations on this server. See the <b>Server-level billing</"
+"b> tab of the\n"
+"            <a href=\"https://zulip.com/help/self-hosted-billing#log-in-to-"
+"billing-management\">log\n"
 "            in instructions</a> to administer the plan for your\n"
 "            Zulip server.\n"
 "            "
@@ -700,7 +762,8 @@ msgstr ""
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:13
 msgid ""
 "\n"
-"            Plan management for this server is not available because at least one organization\n"
+"            Plan management for this server is not available because at "
+"least one organization\n"
 "            hosted on this server already has an active plan.\n"
 "            "
 msgstr ""
@@ -709,8 +772,10 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"            <a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">Log in</a> to plan management for your\n"
-"            organization instead, or <a href='mailto:%(support_email)s'>contact support</a> with any questions.\n"
+"            <a href=\"https://zulip.com/help/self-hosted-billing#manage-"
+"billing\">Log in</a> to plan management for your\n"
+"            organization instead, or <a href='mailto:"
+"%(support_email)s'>contact support</a> with any questions.\n"
 "            "
 msgstr ""
 
@@ -1373,22 +1438,29 @@ msgid ""
 "            You can find answers to frequently asked questions in the\n"
 "            <a href=\"/help/\">Zulip help center</a>.\n"
 "            "
-msgstr "\n            Можете пронаћи одговоре на често постављана питања у\n            <a href=\"/help/\">Зулиповом центру за помоћ</a>.\n            "
+msgstr ""
+"\n"
+"            Можете пронаћи одговоре на често постављана питања у\n"
+"            <a href=\"/help/\">Зулиповом центру за помоћ</a>.\n"
+"            "
 
 #: templates/corporate/team.html:139
 msgid "Avatar"
 msgstr "Аватар"
 
-#: templates/corporate/try-zulip.html:36
-msgid "Try Zulip now"
-msgstr "Пробајте Зулип сада"
-
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
 "\n"
-"        This team chat is now being hosted on Zulip Cloud. Please accept the <a href=\"https://zulip.com/policies/terms\">Zulip Terms of Service</a> to continue.\n"
+"        This team chat is now being hosted on Zulip Cloud. Please accept the "
+"<a href=\"https://zulip.com/policies/terms\">Zulip Terms of Service</a> to "
+"continue.\n"
 "        "
-msgstr "\n        Ово тимско ћаскање се хостује у Зулип Облаку. Молим вас прихватите <a href=\"https://zulip.com/policies/terms\">Зулипове Услове сервиса</a> да би сте наставили.\n        "
+msgstr ""
+"\n"
+"        Ово тимско ћаскање се хостује у Зулип Облаку. Молим вас прихватите "
+"<a href=\"https://zulip.com/policies/terms\">Зулипове Услове сервиса</a> да "
+"би сте наставили.\n"
+"        "
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -1423,20 +1495,23 @@ msgstr "Е-пошта"
 msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Слажем се са <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">условима коришћења</a>."
+msgstr ""
+"Слажем се са <a href=\"%(root_domain_url)s/policies/terms\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">условима коришћења</a>."
 
 #: templates/zerver/accounts_accept_terms.html:68
 #: templates/zerver/register.html:250
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
-msgstr "Претплати ме на Зулипов нискофреквентни билтен (неколико е-порука годишње)."
+msgstr ""
+"Претплати ме на Зулипов нискофреквентни билтен (неколико е-порука годишње)."
 
 #: templates/zerver/accounts_accept_terms.html:74
 msgid "Continue"
 msgstr "Настави"
 
-#: templates/zerver/accounts_home.html:5
-#: templates/zerver/accounts_home.html:72 templates/zerver/login.html:153
-#: templates/zerver/portico-header.html:51 templates/zerver/register.html:256
+#: templates/zerver/accounts_home.html:5 templates/zerver/accounts_home.html:72
+#: templates/zerver/login.html:153 templates/zerver/portico-header.html:51
+#: templates/zerver/register.html:256
 msgid "Sign up"
 msgstr "Региструјте се"
 
@@ -1449,8 +1524,7 @@ msgid "You need an invitation to join this organization."
 msgstr "Потребна вам је позивница за приступ овој организацији."
 
 #: templates/zerver/accounts_home.html:76 templates/zerver/login.html:50
-#: templates/zerver/login.html:132
-#: templates/zerver/realm_creation_form.html:70
+#: templates/zerver/login.html:132 templates/zerver/realm_creation_form.html:70
 msgid "OR"
 msgstr "ОР"
 
@@ -1485,13 +1559,19 @@ msgid ""
 "To complete your registration, check your email account (<span "
 "class=\"user_email semi-bold\">%(email)s</span>) for a confirmation email "
 "from Zulip."
-msgstr "Да би сте завршили регистрацију, проверите налог ваше е-поште (<span class=\"user_email semi-bold\">%(email)s</span>) за е-поруку потврде од Зулипа."
+msgstr ""
+"Да би сте завршили регистрацију, проверите налог ваше е-поште (<span "
+"class=\"user_email semi-bold\">%(email)s</span>) за е-поруку потврде од "
+"Зулипа."
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid ""
 "If you don't see a confirmation email in your Inbox or Spam folder, we can "
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Ако не видите е-поруку потврде у вашем пријемном сандучету или међу нежељеном поштом, ми је можемо <a href=\"#\" id=\"resend_email_link\">поново послати</a>."
+msgstr ""
+"Ако не видите е-поруку потврде у вашем пријемном сандучету или међу "
+"нежељеном поштом, ми је можемо <a href=\"#\" id=\"resend_email_link\">поново "
+"послати</a>."
 
 #: templates/zerver/app/index.html:6
 #, python-brace-format
@@ -1504,25 +1584,30 @@ msgid ""
 "Browse the publicly accessible channels in {org_name} without logging in."
 msgstr ""
 
-#: templates/zerver/app/index.html:135
+#: templates/zerver/app/index.html:143
 msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
 "the page."
-msgstr "Уколико се ова порука сама не уклони, покушајте <a class=\"reload-lnk\">да освежите</a> страницу."
+msgstr ""
+"Уколико се ова порука сама не уклони, покушајте <a class=\"reload-lnk\">да "
+"освежите</a> страницу."
 
-#: templates/zerver/app/index.html:138
-msgid "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
-msgstr "Грешка приликом учитавања Зулипа. Покушајте <a class=\"reload-lnk\">да освежите</a> страницу."
+#: templates/zerver/app/index.html:146
+msgid ""
+"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+msgstr ""
+"Грешка приликом учитавања Зулипа. Покушајте <a class=\"reload-lnk\">да "
+"освежите</a> страницу."
 
-#: templates/zerver/app/index.html:237
+#: templates/zerver/app/index.html:245
 msgid "No conversations match your filters."
 msgstr "Ниједан разговор се не поклапа са вашим филтерима."
 
-#: templates/zerver/app/index.html:250
+#: templates/zerver/app/index.html:258
 msgid "This view is still loading messages."
 msgstr "Приказ и даље учитава поруке."
 
-#: templates/zerver/app/index.html:253
+#: templates/zerver/app/index.html:261
 msgid "Load more"
 msgstr "Учитај више"
 
@@ -1534,13 +1619,17 @@ msgstr "Подесите приватност адресе е-поште"
 msgid ""
 "Zulip lets you control which roles in the organization can view your email "
 "address."
-msgstr "Зулип вам омогућава да контролишете које улоге у организацији могу да виде ваше адресе е-поште."
+msgstr ""
+"Зулип вам омогућава да контролишете које улоге у организацији могу да виде "
+"ваше адресе е-поште."
 
 #: templates/zerver/change_email_address_visibility_modal.html:13
 msgid ""
 "Do you want to change the privacy setting for your email from the default "
 "configuration for this organization?"
-msgstr "Да ли желите да промените подешавања приватности ваше е-поште од предефинисаног подешавања за ову организацију?"
+msgstr ""
+"Да ли желите да промените подешавања приватности ваше е-поште од "
+"предефинисаног подешавања за ову организацију?"
 
 #: templates/zerver/change_email_address_visibility_modal.html:15
 msgid "Who can access your email address"
@@ -1549,10 +1638,13 @@ msgstr "Ко може да приступи вашој адреси е-пошт�
 #: templates/zerver/change_email_address_visibility_modal.html:22
 #, python-format
 msgid ""
-"You can also change this setting <a "
-"href=\"%(root_domain_url)s/help/configure-email-visibility\" "
-"target=\"_blank\" rel=\"noopener noreferrer\">after you join</a>."
-msgstr "Такође можете променити ово подешавање <a href=\"%(root_domain_url)s/help/configure-email-visibility\" target=\"_blank\" rel=\"noopener noreferrer\">након што приступите</a>."
+"You can also change this setting <a href=\"%(root_domain_url)s/help/"
+"configure-email-visibility\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">after you join</a>."
+msgstr ""
+"Такође можете променити ово подешавање <a href=\"%(root_domain_url)s/help/"
+"configure-email-visibility\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">након што приступите</a>."
 
 #: templates/zerver/close_window.html:5
 msgid "Video call ended"
@@ -1574,13 +1666,19 @@ msgid ""
 "        organization first. Please use EmailAuthBackend to create\n"
 "        your organization and then try again.\n"
 "    "
-msgstr "\n        Покушавате да се пријавите користећи LDAP без да сте прво\n        направили организацију. Користите EmailAuthBackend да би сте\n        направили вашу организацију а затим покушајте поново.\n    "
+msgstr ""
+"\n"
+"        Покушавате да се пријавите користећи LDAP без да сте прво\n"
+"        направили организацију. Користите EmailAuthBackend да би сте\n"
+"        направили вашу организацију а затим покушајте поново.\n"
+"    "
 
 #: templates/zerver/config_error/remote_billing_bouncer_not_configured.html:4
 #, python-format
 msgid ""
 "\n"
-"        This server is not configured to use push notifications. For instructions on how to\n"
+"        This server is not configured to use push notifications. For "
+"instructions on how to\n"
 "        configure push notifications, please see the\n"
 "        <a href=\"%(doc_url)s\">documentation</a>.\n"
 "    "
@@ -1600,7 +1698,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                            Нема налога за %(email)s.\n                            "
+msgstr ""
+"\n"
+"                            Нема налога за %(email)s.\n"
+"                            "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -1630,8 +1731,10 @@ msgstr "Адреса ваше е-поште"
 msgid ""
 "\n"
 "                Or import\n"
-"                from <a href=\"/help/import-from-slack\">Slack</a>, <a href=\"/help/import-from-mattermost\">Mattermost</a>,\n"
-"                or <a href=\"/help/import-from-rocketchat\">Rocket.Chat</a>.\n"
+"                from <a href=\"/help/import-from-slack\">Slack</a>, <a "
+"href=\"/help/import-from-mattermost\">Mattermost</a>,\n"
+"                or <a href=\"/help/import-from-rocketchat\">Rocket.Chat</"
+"a>.\n"
 "                "
 msgstr ""
 
@@ -1647,7 +1750,8 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"                        This organization has moved to <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
+"                        This organization has moved to <a "
+"href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
 "                        "
 msgstr ""
 
@@ -1662,7 +1766,9 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"                            If you are an owner of this organization, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a> to reactivate it.\n"
+"                            If you are an owner of this organization, you "
+"can <a href=\"mailto:%(support_email)s\">contact Zulip support</a> to "
+"reactivate it.\n"
 "                            "
 msgstr ""
 
@@ -1670,7 +1776,9 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"                            If you are an owner of this organization, you can <a href=\"mailto:%(support_email)s\">contact this Zulip server's administrators</a> to reactivate it.\n"
+"                            If you are an owner of this organization, you "
+"can <a href=\"mailto:%(support_email)s\">contact this Zulip server's "
+"administrators</a> to reactivate it.\n"
 "                            "
 msgstr ""
 
@@ -1686,7 +1794,9 @@ msgstr "Завршите пријаву на рачунару"
 msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
-msgstr "Користите ваш веб прегледач да завршите пријављивање, затим се вратите овамо да налепите ваш токен за пријаву."
+msgstr ""
+"Користите ваш веб прегледач да завршите пријављивање, затим се вратите овамо "
+"да налепите ваш токен за пријаву."
 
 #: templates/zerver/desktop_login.html:18
 msgid "Paste token here"
@@ -1711,7 +1821,9 @@ msgstr "Пријавите се у апликацију на рачунару"
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
-msgstr "Ископирајте овај токен за пријаву и вратите се у Зулип да би сте завршили пријављивање:"
+msgstr ""
+"Ископирајте овај токен за пријаву и вратите се у Зулип да би сте завршили "
+"пријављивање:"
 
 #: templates/zerver/desktop_redirect.html:17
 msgid "Copy"
@@ -1775,18 +1887,27 @@ msgstr "Сажми"
 #, python-format
 msgid ""
 "Congratulations, you have created a new Zulip demo organization. Note\n"
-"    that this organization will be automatically deleted in 30 days. Learn more\n"
+"    that this organization will be automatically deleted in 30 days. Learn "
+"more\n"
 "    about demo organizations <a\n"
 "    href=\"%(demo_organizations_help_link)s\">here</a>!\n"
 "    "
-msgstr "Честитамо, направили сте нову Зулип демонстративну организацију. Упамтите\n    да ће ова организација бити аутоматски обрисана након 30 дана. Сазнајте више\n    о демонстративним организацијама <a\n    href=\"%(demo_organizations_help_link)s\">овде</a>!\n    "
+msgstr ""
+"Честитамо, направили сте нову Зулип демонстративну организацију. Упамтите\n"
+"    да ће ова организација бити аутоматски обрисана након 30 дана. Сазнајте "
+"више\n"
+"    о демонстративним организацијама <a\n"
+"    href=\"%(demo_organizations_help_link)s\">овде</a>!\n"
+"    "
 
 #: templates/zerver/emails/account_registered.html:19
 #, python-format
 msgid ""
 "Congratulations, you have created a new Zulip\n"
 "    organization: <b>%(realm_name)s</b>."
-msgstr "Честитамо, направили сте нову Зулип\n    организацију: <b>%(realm_name)s</b>."
+msgstr ""
+"Честитамо, направили сте нову Зулип\n"
+"    организацију: <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/account_registered.html:24
 #: templates/zerver/emails/account_registered.txt:1
@@ -1798,14 +1919,18 @@ msgstr "Добродошли у Зулип!"
 msgid ""
 "You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
 "    "
-msgstr "Придружили сте се Зулип организацији <b>%(realm_name)s</b>.\n    "
+msgstr ""
+"Придружили сте се Зулип организацији <b>%(realm_name)s</b>.\n"
+"    "
 
 #: templates/zerver/emails/account_registered.html:32
 #, python-format
 msgid ""
 "You will use the following info to log into the Zulip web, <a "
 "href=\"%(apps_page_link)s\">mobile and desktop</a> apps:"
-msgstr "Користићете следеће податке за пријаву у Зулип на вебу, у апликацији за <a href=\"%(apps_page_link)s\">телефон и рачунар</a>:"
+msgstr ""
+"Користићете следеће податке за пријаву у Зулип на вебу, у апликацији за <a "
+"href=\"%(apps_page_link)s\">телефон и рачунар</a>:"
 
 #: templates/zerver/emails/account_registered.html:34
 #: templates/zerver/emails/account_registered.txt:16
@@ -1856,7 +1981,9 @@ msgstr ""
 msgid ""
 "Questions? <a href=\"mailto:%(support_email)s\">Contact us</a> — we'd love "
 "to help!"
-msgstr "Питања? <a href=\"mailto:%(support_email)s\">Контактирајте нас</a> — волели би смо да помогнемо!"
+msgstr ""
+"Питања? <a href=\"mailto:%(support_email)s\">Контактирајте нас</a> — волели "
+"би смо да помогнемо!"
 
 #: templates/zerver/emails/account_registered.subject.txt:2
 #, python-format
@@ -1872,9 +1999,12 @@ msgstr "%(realm_name)s на Зулипу: Детаљи вашег новог н�
 #, python-format
 msgid ""
 " Congratulations, you have created a new demo Zulip organization. Note that "
-"this organization will be automatically deleted in 30 days. Learn more about"
-" demo organizations here: %(demo_organizations_help_link)s!"
-msgstr "Честитамо, направили сте нову Зулип демонстративну организацију. Упамтите да ће ова организација бити аутоматски обрисана након 30 дана. Сазнајте више о демонстративним организацијама овде: %(demo_organizations_help_link)s! "
+"this organization will be automatically deleted in 30 days. Learn more about "
+"demo organizations here: %(demo_organizations_help_link)s!"
+msgstr ""
+"Честитамо, направили сте нову Зулип демонстративну организацију. Упамтите да "
+"ће ова организација бити аутоматски обрисана након 30 дана. Сазнајте више о "
+"демонстративним организацијама овде: %(demo_organizations_help_link)s! "
 
 #: templates/zerver/emails/account_registered.txt:7
 #, python-format
@@ -1892,7 +2022,9 @@ msgstr "Приступили сте Зулип организацији %(realm_
 msgid ""
 "You will use the following info to log into the Zulip web, mobile and "
 "desktop apps (%(apps_page_link)s):"
-msgstr "Користићете следеће податке за пријаву у Зулип на вебу, у апликацији за телефон и рачунар (%(apps_page_link)s):"
+msgstr ""
+"Користићете следеће податке за пријаву у Зулип на вебу, у апликацији за "
+"телефон и рачунар (%(apps_page_link)s):"
 
 #: templates/zerver/emails/account_registered.txt:29
 #, python-format
@@ -1911,7 +2043,8 @@ msgstr ""
 #: templates/zerver/emails/account_registered.txt:36
 #, python-format
 msgid "Questions? Contact us at %(support_email)s — we'd love to help!"
-msgstr "Питања? Контактирајте нас на %(support_email)s — волели би смо да помогнемо!"
+msgstr ""
+"Питања? Контактирајте нас на %(support_email)s — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/account_registered.txt:38
 #: templates/zerver/emails/confirm_registration.txt:21
@@ -1921,9 +2054,11 @@ msgstr "Питања? Контактирајте нас на %(support_email)s �
 #: templates/zerver/emails/realm_reactivation.txt:16
 #, python-format
 msgid ""
-"If you have any questions, please contact this Zulip server's administrators"
-" at %(support_email)s."
-msgstr "Ако имате било каква питања, молим вас контактирајте администратора Зулип сервера на %(support_email)s."
+"If you have any questions, please contact this Zulip server's administrators "
+"at %(support_email)s."
+msgstr ""
+"Ако имате било каква питања, молим вас контактирајте администратора Зулип "
+"сервера на %(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:8
 #: templates/zerver/emails/confirm_demo_organization_email.txt:1
@@ -1939,8 +2074,8 @@ msgstr "Здраво,"
 #, python-format
 msgid ""
 "We received a request to add the email address %(new_email)s to your Zulip "
-"demo organization account on %(realm_url)s. To confirm this update and set a"
-" password for this account, please click below:"
+"demo organization account on %(realm_url)s. To confirm this update and set a "
+"password for this account, please click below:"
 msgstr ""
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:11
@@ -1953,11 +2088,14 @@ msgstr "Потврди и подеси лозинку"
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
-msgstr "Уколико нисте тражили ову промену, молим вас контактирајте нас моментално на %(support_email)s."
+msgstr ""
+"Уколико нисте тражили ову промену, молим вас контактирајте нас моментално на "
+"%(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt:1
 msgid "Verify your new email address for your demo Zulip organization"
-msgstr "Потврдите вашу нову адресу е-поште за вашу демонстративну Зулип организацију"
+msgstr ""
+"Потврдите вашу нову адресу е-поште за вашу демонстративну Зулип организацију"
 
 #: templates/zerver/emails/confirm_demo_organization_email.txt:9
 #: templates/zerver/emails/confirm_new_email.txt:9
@@ -1965,7 +2103,9 @@ msgstr "Потврдите вашу нову адресу е-поште за в�
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
-msgstr "Уколико нисте тражили ову промену, молим вас контактирајте нас моментално на <%(support_email)s>."
+msgstr ""
+"Уколико нисте тражили ову промену, молим вас контактирајте нас моментално на "
+"<%(support_email)s>."
 
 #: templates/zerver/emails/confirm_new_email.html:10
 #: templates/zerver/emails/confirm_new_email.txt:4
@@ -2004,9 +2144,11 @@ msgstr "Недавно сте се регистровали на Зулип. О�
 #: templates/zerver/emails/confirm_registration.html:21
 #: templates/zerver/emails/confirm_registration.txt:12
 msgid ""
-"Click the button below to create the organization and register your account."
-" You'll be able to update the information above if you like."
-msgstr "Кликните на дугме испод да бисте креирали организацију и регистровали свој налог. Ако желите, моћи ћете да ажурирате информације изнад."
+"Click the button below to create the organization and register your account. "
+"You'll be able to update the information above if you like."
+msgstr ""
+"Кликните на дугме испод да бисте креирали организацију и регистровали свој "
+"налог. Ако желите, моћи ћете да ажурирате информације изнад."
 
 #: templates/zerver/emails/confirm_registration.html:23
 msgid "Click the button below to complete registration."
@@ -2039,7 +2181,9 @@ msgstr "Кликните на везу испод да би сте заврши�
 msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
-msgstr "Да ли имате питања или утисак који би сте поделили? Контактирајте нас на %(support_email)s — волели би смо да помогнемо!"
+msgstr ""
+"Да ли имате питања или утисак који би сте поделили? Контактирајте нас на "
+"%(support_email)s — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/custom_email_base.pre.html:19
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:8
@@ -2057,7 +2201,8 @@ msgstr "Одјавите се од маркетиншких е-порука"
 #, python-format
 msgid ""
 "\n"
-"Your Zulip account on <a href=\"%(realm_url)s\">%(realm_url)s</a> has been deactivated, and you will no longer be able to log in.\n"
+"Your Zulip account on <a href=\"%(realm_url)s\">%(realm_url)s</a> has been "
+"deactivated, and you will no longer be able to log in.\n"
 msgstr ""
 
 #: templates/zerver/emails/deactivate.html:15
@@ -2074,7 +2219,8 @@ msgstr "Обавештење о деактивирању налога на %(rea
 #, python-format
 msgid ""
 "\n"
-"Your Zulip account on %(realm_url)s has been deactivated, and you will no longer be able to log in.\n"
+"Your Zulip account on %(realm_url)s has been deactivated, and you will no "
+"longer be able to log in.\n"
 msgstr ""
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
@@ -2097,7 +2243,8 @@ msgstr "Зулип сажетак за %(realm_name)s"
 #: templates/zerver/emails/digest.txt:12
 #, python-format
 msgid "Click here to log in to Zulip and catch up: %(organization_url)s."
-msgstr "Кликните овде да се пријавите у Зулип и будете у току: %(organization_url)s."
+msgstr ""
+"Кликните овде да се пријавите у Зулип и будете у току: %(organization_url)s."
 
 #: templates/zerver/emails/digest.txt:15
 msgid "Manage email preferences:"
@@ -2131,7 +2278,9 @@ msgstr ""
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
-msgstr "Ваша адреса е-поште %(email)s има налоге у следећим Зулип организацијама које хостује %(external_host)s:"
+msgstr ""
+"Ваша адреса е-поште %(email)s има налоге у следећим Зулип организацијама "
+"које хостује %(external_host)s:"
 
 #: templates/zerver/emails/find_team.html:24
 #, python-format
@@ -2170,8 +2319,7 @@ msgstr ""
 #: templates/zerver/emails/find_team.html:38
 #: templates/zerver/emails/find_team.txt:26
 #: templates/zerver/emails/find_team.txt:34
-msgid ""
-"If you do not recognize this request, you can safely ignore this email."
+msgid "If you do not recognize this request, you can safely ignore this email."
 msgstr ""
 
 #: templates/zerver/emails/find_team.subject.txt:2
@@ -2204,7 +2352,9 @@ msgstr "Здраво,"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
-msgstr "%(referrer_name)s жели да им се придружите на Зулипу &mdash; алату за комуникацију тимова дизајнираном за продуктивност."
+msgstr ""
+"%(referrer_name)s жели да им се придружите на Зулипу &mdash; алату за "
+"комуникацију тимова дизајнираном за продуктивност."
 
 #: templates/zerver/emails/invitation.html:15
 #: templates/zerver/emails/invitation_reminder.html:13
@@ -2214,14 +2364,17 @@ msgstr "Да би сте почели, кликните на дугме испо
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
-msgstr "%(referrer_full_name)s вас је позвао да се придружите %(referrer_realm_name)s"
+msgstr ""
+"%(referrer_full_name)s вас је позвао да се придружите %(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
 msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
-msgstr "%(referrer_full_name)s (%(referrer_email)s) жели да им се придружите на Зулипу -- алату за комуникацију тимова дизајнираном за продуктивност."
+msgstr ""
+"%(referrer_full_name)s (%(referrer_email)s) жели да им се придружите на "
+"Зулипу -- алату за комуникацију тимова дизајнираном за продуктивност."
 
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
@@ -2236,9 +2389,11 @@ msgstr "Здраво опет,"
 #: templates/zerver/emails/invitation_reminder.html:10
 #, python-format
 msgid ""
-"This is a friendly reminder that %(referrer_name)s wants you to join them on"
-" Zulip &mdash; the team communication tool designed for productivity."
-msgstr "Ово је пријатељски подсетник да %(referrer_name)s жели да им се придружите на Зулипу &mdash; алату за комуникацију тимова дизајнираном за продуктивност."
+"This is a friendly reminder that %(referrer_name)s wants you to join them on "
+"Zulip &mdash; the team communication tool designed for productivity."
+msgstr ""
+"Ово је пријатељски подсетник да %(referrer_name)s жели да им се придружите "
+"на Зулипу &mdash; алату за комуникацију тимова дизајнираном за продуктивност."
 
 #: templates/zerver/emails/invitation_reminder.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
@@ -2252,7 +2407,11 @@ msgid ""
 "    This invitation expires in two days. If the invitation expires,\n"
 "    you'll need to ask %(referrer_name)s for another one.\n"
 "    "
-msgstr "\n    Ова позивница истиче за два дана. Ако позивница истекне,\n    мораћете замолити %(referrer_name)s за нову.\n    "
+msgstr ""
+"\n"
+"    Ова позивница истиче за два дана. Ако позивница истекне,\n"
+"    мораћете замолити %(referrer_name)s за нову.\n"
+"    "
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -2265,28 +2424,37 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "Ово је пријатељски подсетник да %(referrer_name)s (%(referrer_email)s) жели да им се придружите на Зулипу -- алату за комуникацију тимова дизајнираном за продуктивност."
+msgstr ""
+"Ово је пријатељски подсетник да %(referrer_name)s (%(referrer_email)s) жели "
+"да им се придружите на Зулипу -- алату за комуникацију тимова дизајнираном "
+"за продуктивност."
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr "Ова позивница истиче за два дана. Ако позивница истекне, мораћете замолити %(referrer_name)s за нову."
+msgstr ""
+"Ова позивница истиче за два дана. Ако позивница истекне, мораћете замолити "
+"%(referrer_name)s за нову."
 
 #: templates/zerver/emails/macros.html:14
 #, python-format
 msgid ""
-"If you have any questions, please contact this Zulip server's administrators"
-" at <a href=\"mailto:%(email)s\">%(email)s</a>."
-msgstr "Ако имате било каква питања, молим вас контактирајте администратора овог Зулип сервера на <a href=\"mailto:%(email)s\">%(email)s</a>."
+"If you have any questions, please contact this Zulip server's administrators "
+"at <a href=\"mailto:%(email)s\">%(email)s</a>."
+msgstr ""
+"Ако имате било каква питања, молим вас контактирајте администратора овог "
+"Зулип сервера на <a href=\"mailto:%(email)s\">%(email)s</a>."
 
 #: templates/zerver/emails/macros.html:18
 #, python-format
 msgid ""
-"Do you have questions or feedback to share? <a "
-"href=\"mailto:%(email)s\">Contact us</a> — we'd love to help!"
-msgstr "Да ли имате питања или утисак који би сте поделили? <a href=\"mailto:%(email)s\">Контактирајте нас</a> — волели би смо да помогнемо!"
+"Do you have questions or feedback to share? <a href=\"mailto:"
+"%(email)s\">Contact us</a> — we'd love to help!"
+msgstr ""
+"Да ли имате питања или утисак који би сте поделили? <a href=\"mailto:"
+"%(email)s\">Контактирајте нас</a> — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/missed_message.html:17
 #, python-format
@@ -2294,7 +2462,10 @@ msgid ""
 "This email does not include message content because your organization has "
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
-msgstr "Ова е-порука не садржи садржај поруке јер је ваша организација онемогућила <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">приказ садржаја поруке у обавештењима е-порукама</a>."
+msgstr ""
+"Ова е-порука не садржи садржај поруке јер је ваша организација онемогућила "
+"<a class=\"content_disabled_help_link\" href=\"%(help_url)s\">приказ "
+"садржаја поруке у обавештењима е-порукама</a>."
 
 #: templates/zerver/emails/missed_message.html:19
 #, python-format
@@ -2302,7 +2473,10 @@ msgid ""
 "This email does not include message content because you have disabled <a "
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
-msgstr "Ова е-порука не садржи садржај поруке јер је сте ви онемогућили <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">приказ садржаја поруке у обавештењима е-порукама</a>."
+msgstr ""
+"Ова е-порука не садржи садржај поруке јер је сте ви онемогућили <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">приказ "
+"садржаја поруке у обавештењима е-порукама</a>."
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:25
@@ -2331,7 +2505,9 @@ msgstr ""
 msgid ""
 "You are receiving this because you have wildcard mention notifications "
 "enabled for topics you follow."
-msgstr "Примате ово зато што сте омогућили обавештења за помињања путем посебног карактера за теме које пратите."
+msgstr ""
+"Примате ово зато што сте омогућили обавештења за помињања путем посебног "
+"карактера за теме које пратите."
 
 #: templates/zerver/emails/missed_message.html:39
 #: templates/zerver/emails/missed_message.txt:35
@@ -2345,7 +2521,9 @@ msgstr ""
 msgid ""
 "You are receiving this because you have email notifications enabled for "
 "topics you follow."
-msgstr "Примате ово зато што сте омогућили обавештења путем е-поште за теме које пратите."
+msgstr ""
+"Примате ово зато што сте омогућили обавештења путем е-поште за теме које "
+"пратите."
 
 #: templates/zerver/emails/missed_message.html:43
 #: templates/zerver/emails/missed_message.txt:39
@@ -2361,29 +2539,41 @@ msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
-msgstr "Одговорите директно на ову е-поруку, <a href=\"%(narrow_url)s\">прегледајте је у %(realm_name)s Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте поставкама е-поште</a>."
+msgstr ""
+"Одговорите директно на ову е-поруку, <a href=\"%(narrow_url)s\">прегледајте "
+"је у %(realm_name)s Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте "
+"поставкама е-поште</a>."
 
 #: templates/zerver/emails/missed_message.html:48
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Прегледајте или одговорите у %(realm_name)s Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте поставкама е-поште</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Прегледајте или одговорите у %(realm_name)s "
+"Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте поставкама е-поште</a>."
 
 #: templates/zerver/emails/missed_message.html:50
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Одговорите у %(realm_name)s Зулипу</a>, или <a href=\"%(notif_url)s\">управљајте поставкама е-поште</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Одговорите у %(realm_name)s Зулипу</a>, или <a "
+"href=\"%(notif_url)s\">управљајте поставкама е-поште</a>."
 
 #: templates/zerver/emails/missed_message.html:52
 #, python-format
 msgid ""
 "\n"
-"    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
+"    Do not reply to this email. This Zulip server is not configured to "
+"accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
 "    "
-msgstr "\n    Не одговарајте на ову е-поруку. Овај Зулип сервер није подешен да прихвата долазне е-поруке (<a href=\"%(url)s\">помоћ</a>).\n    "
+msgstr ""
+"\n"
+"    Не одговарајте на ову е-поруку. Овај Зулип сервер није подешен да "
+"прихвата долазне е-поруке (<a href=\"%(url)s\">помоћ</a>).\n"
+"    "
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -2408,22 +2598,33 @@ msgstr "Нове поруке"
 #, python-format
 msgid ""
 "\n"
-"This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
+"This email does not include message content because your organization has "
+"disabled message content appearing in email notifications.\n"
 "See %(hide_content_url)s for more details.\n"
-msgstr "\nОва е-порука не садржи садржај поруке јер је ваша организација онемогућила приказ садржаја поруке у обавештењима е-порукама.\nПогледајте %(hide_content_url)s за више детаља.\n"
+msgstr ""
+"\n"
+"Ова е-порука не садржи садржај поруке јер је ваша организација онемогућила "
+"приказ садржаја поруке у обавештењима е-порукама.\n"
+"Погледајте %(hide_content_url)s за више детаља.\n"
 
 #: templates/zerver/emails/missed_message.txt:16
 #, python-format
 msgid ""
 "\n"
-"This email does not include message content because you have disabled message content appearing in email notifications.\n"
+"This email does not include message content because you have disabled "
+"message content appearing in email notifications.\n"
 "See %(alert_notif_url)s for more details.\n"
-msgstr "\nОва е-порука не садржи садржај поруке јер је сте ви онемогућили приказ садржаја поруке у обавештењима е-порукама.\nПогледајте %(alert_notif_url)s за више детаља.\n"
+msgstr ""
+"\n"
+"Ова е-порука не садржи садржај поруке јер је сте ви онемогућили приказ "
+"садржаја поруке у обавештењима е-порукама.\n"
+"Погледајте %(alert_notif_url)s за више детаља.\n"
 
 #: templates/zerver/emails/missed_message.txt:43
 #, python-format
 msgid "Reply to this email directly, or view it in %(realm_name)s Zulip:"
-msgstr "Одговори директно на ову е-поруку или је прегледај у %(realm_name)s Зулип:"
+msgstr ""
+"Одговори директно на ову е-поруку или је прегледај у %(realm_name)s Зулип:"
 
 #: templates/zerver/emails/missed_message.txt:47
 #, python-format
@@ -2440,7 +2641,10 @@ msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
-msgstr "\nНе одговарајте на ову поруку. Овај Зулип сервер није подешен да прихвата\nдолазне е-поруке. Помоћ:\n"
+msgstr ""
+"\n"
+"Не одговарајте на ову поруку. Овај Зулип сервер није подешен да прихвата\n"
+"долазне е-поруке. Помоћ:\n"
 
 #: templates/zerver/emails/missed_message.txt:62
 msgid "Manage email preferences: "
@@ -2452,7 +2656,10 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
-msgstr "Е-пошта повезана са вашим Зулип налогом је недавно промењена у %(new_email)s. Ако ви нисте затражили ову промену, молим вас контактирајте на моментално на %(support_email)s."
+msgstr ""
+"Е-пошта повезана са вашим Зулип налогом је недавно промењена у "
+"%(new_email)s. Ако ви нисте затражили ову промену, молим вас контактирајте "
+"на моментално на %(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -2475,14 +2682,18 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
-msgstr "Е-пошта повезана са вашим Зулип налогом је недавно промењена у %(new_email)s. Ако ви нисте затражили ову промену, молим вас контактирајте на моментално на <%(support_email)s>."
+msgstr ""
+"Е-пошта повезана са вашим Зулип налогом је недавно промењена у "
+"%(new_email)s. Ако ви нисте затражили ову промену, молим вас контактирајте "
+"на моментално на <%(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
 msgid ""
-"Organization: %(organization_url)s Time: %(login_time)s Email: "
+"Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
+msgstr ""
+"Организација: %(organization_url)s Време: %(login_time)s Е-пошта: "
 "%(user_email)s"
-msgstr "Организација: %(organization_url)s Време: %(login_time)s Е-пошта: %(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -2529,7 +2740,10 @@ msgid ""
 "If you do not recognize this login, or think your account may have been "
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
-msgstr "Ако вам није позната ова пријава, или мислите да би ваш налог могао бити угрожен, молим вас <a href=\"%(reset_link)s\">ресетујте вашу лозинку</a> или нас моментално контактирајте на %(support_email)s."
+msgstr ""
+"Ако вам није позната ова пријава, или мислите да би ваш налог могао бити "
+"угрожен, молим вас <a href=\"%(reset_link)s\">ресетујте вашу лозинку</a> или "
+"нас моментално контактирајте на %(support_email)s."
 
 #: templates/zerver/emails/notify_new_login.html:40
 #: templates/zerver/emails/notify_new_login.txt:20
@@ -2559,8 +2773,14 @@ msgstr "Организација: %(organization_url)s"
 #, python-format
 msgid ""
 "\n"
-"If you do not recognize this login, or think your account may have been compromised, please reset your password at %(reset_link)s or contact us immediately at %(support_email)s."
-msgstr "\nАко вам није позната ова пријава, или мислите да би ваш налог могао бити угрожен, молим вас ресетујте вашу лозинку на %(reset_link)s или нас моментално контактирајте на %(support_email)s."
+"If you do not recognize this login, or think your account may have been "
+"compromised, please reset your password at %(reset_link)s or contact us "
+"immediately at %(support_email)s."
+msgstr ""
+"\n"
+"Ако вам није позната ова пријава, или мислите да би ваш налог могао бити "
+"угрожен, молим вас ресетујте вашу лозинку на %(reset_link)s или нас "
+"моментално контактирајте на %(support_email)s."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:10
 #, python-format
@@ -2574,14 +2794,18 @@ msgstr ""
 msgid ""
 "Otherwise, here is some advice we often hear from customers for evaluating "
 "<i>any</i> team chat product:"
-msgstr "У супротном, ево неких савета које често добијамо од наших корисника за процену <i>било ког</i> производа за тимску комуникацију:"
+msgstr ""
+"У супротном, ево неких савета које често добијамо од наших корисника за "
+"процену <i>било ког</i> производа за тимску комуникацију:"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:15
 #, python-format
 msgid ""
 "<a href=\"%(invite_users)s\"><b>Invite your teammates</b></a> to explore "
 "with you and share their unique perspectives."
-msgstr "<a href=\"%(invite_users)s\"><b>Позовите чланове вашег тима</b></a> да би сте заједно истражили и поделили своје јединствено виђење."
+msgstr ""
+"<a href=\"%(invite_users)s\"><b>Позовите чланове вашег тима</b></a> да би "
+"сте заједно истражили и поделили своје јединствено виђење."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:16
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
@@ -2594,7 +2818,11 @@ msgid ""
 "<a href=\"%(trying_out_zulip)s\"><b>Run a week-long trial</b></a> with your "
 "team, without using any other chat tools. This is the only way to truly "
 "experience how a new chat app will help your team communicate."
-msgstr "<a href=\"%(trying_out_zulip)s\"><b>Тестирајте недељу дана</b></a> са вашим тимом, без коришћења других алата за ћаскање. Ово је једини начин да изистински искусите како ће нова апликација за ћаскање помоћи вашем тиму да комуницирате."
+msgstr ""
+"<a href=\"%(trying_out_zulip)s\"><b>Тестирајте недељу дана</b></a> са вашим "
+"тимом, без коришћења других алата за ћаскање. Ово је једини начин да "
+"изистински искусите како ће нова апликација за ћаскање помоћи вашем тиму да "
+"комуницирате."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:23
 #, python-format
@@ -2602,7 +2830,10 @@ msgid ""
 "Zulip is designed to <a href=\"%(why_zulip)s\">enable efficient "
 "communication</a>, and we hope these tips help your team experience it in "
 "action."
-msgstr "Зулип је дизајниран да <a href=\"%(why_zulip)s\">омогући ефикасну комуникацију</a>, и ми се надамо да ће ови савети помоћи вашем тиму да то искуси на делу."
+msgstr ""
+"Зулип је дизајниран да <a href=\"%(why_zulip)s\">омогући ефикасну "
+"комуникацију</a>, и ми се надамо да ће ови савети помоћи вашем тиму да то "
+"искуси на делу."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:38
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:19
@@ -2628,34 +2859,46 @@ msgstr ""
 msgid ""
 "Otherwise, here is some advice we often hear from customers for evaluating "
 "any team chat product:"
-msgstr "У супротном, ево неких савета које често чујемо од потрошача за тестирање било ког производа за тимску комуникацију:"
+msgstr ""
+"У супротном, ево неких савета које често чујемо од потрошача за тестирање "
+"било ког производа за тимску комуникацију:"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
 msgid ""
 "Invite your teammates to explore with you and share their unique "
 "perspectives."
-msgstr "Позовите чланове вашег тима да би сте заједно истраживали и поделили са вама јединствене погледе."
+msgstr ""
+"Позовите чланове вашег тима да би сте заједно истраживали и поделили са вама "
+"јединствене погледе."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:8
 msgid ""
 "Run a week-long trial with your team, without using any other chat tools. "
 "This is the only way to truly experience how a new chat app will help your "
 "team communicate."
-msgstr "Покрените седмонедељни пробни период са својим тимом, без употребе било којих других алата за ћаскање. Ово је једини начин да заиста доживите како нова апликација за ћаскање може помоћи вашем тиму у комуникацији."
+msgstr ""
+"Покрените седмонедељни пробни период са својим тимом, без употребе било "
+"којих других алата за ћаскање. Ово је једини начин да заиста доживите како "
+"нова апликација за ћаскање може помоћи вашем тиму у комуникацији."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:10
 msgid ""
 "Zulip is designed to enable efficient communication, and we hope these tips "
 "help your team experience it in action."
-msgstr "Зулип је дизајниран да омогући ефикасну комуникацију, и надамо се да ће вам ови савети помоћи да то искусите у пракси."
+msgstr ""
+"Зулип је дизајниран да омогући ефикасну комуникацију, и надамо се да ће вам "
+"ови савети помоћи да то искусите у пракси."
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:9
 #: templates/zerver/emails/onboarding_zulip_guide.txt:1
 msgid ""
-"As you are getting started with Zulip, we'd love to help you discover how it"
-" can work best for your needs. Check out this guide to key Zulip features "
-"for organizations like yours!"
-msgstr "Како започињете са Зулипом, волели бисмо да вам помогнемо да откријете како може најбоље да одговара вашим потребама. Погледајте овај водич за кључне Зулип функције за организације попут ваше!"
+"As you are getting started with Zulip, we'd love to help you discover how it "
+"can work best for your needs. Check out this guide to key Zulip features for "
+"organizations like yours!"
+msgstr ""
+"Како започињете са Зулипом, волели бисмо да вам помогнемо да откријете како "
+"може најбоље да одговара вашим потребама. Погледајте овај водич за кључне "
+"Зулип функције за организације попут ваше!"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:13
 #: templates/zerver/emails/onboarding_zulip_guide.txt:4
@@ -2725,7 +2968,9 @@ msgstr "Зулипов водич за заједнице"
 msgid ""
 "Here are some tips for keeping your Zulip conversations organized with "
 "topics."
-msgstr "Ево неколико савета за одржавање ваших Зулип разговора организованим са темема."
+msgstr ""
+"Ево неколико савета за одржавање ваших Зулип разговора организованим са "
+"темема."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:13
 msgid ""
@@ -2736,9 +2981,12 @@ msgstr ""
 #: templates/zerver/emails/onboarding_zulip_topics.html:13
 #: templates/zerver/emails/onboarding_zulip_topics.txt:3
 msgid ""
-"Using topics, you can read Zulip one conversation at a time. You'll see each"
-" message in context, no matter how many different discussions are going on."
-msgstr "Користећи теме, можете читати Зулип  разговор по разговор. Видећете сваку поруку у контексту, без обзира колико различитих разговора се води истовремено."
+"Using topics, you can read Zulip one conversation at a time. You'll see each "
+"message in context, no matter how many different discussions are going on."
+msgstr ""
+"Користећи теме, можете читати Зулип  разговор по разговор. Видећете сваку "
+"поруку у контексту, без обзира колико различитих разговора се води "
+"истовремено."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:16
 msgid "Channels and topics in the Zulip app"
@@ -2749,8 +2997,8 @@ msgstr ""
 msgid ""
 "To kick off a new conversation, just pick a channel and start a new topic. "
 "This way, the new conversation thread won't interrupt ongoing discussions. "
-"For a good topic name, think about finishing the sentence: “Hey, can we chat"
-" about…?”"
+"For a good topic name, think about finishing the sentence: “Hey, can we chat "
+"about…?”"
 msgstr ""
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:22
@@ -2761,9 +3009,9 @@ msgstr "Примери кратких тема"
 #, python-format
 msgid ""
 "Don't stress about picking the perfect name for your topic. If anything is "
-"out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
-"messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
-"<a href=\"%(move_channels_link)s\">move a topic to a different channel</a>."
+"out of place, it's easy to <a href=\"%(move_messages_link)s\">move messages</"
+"a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even <a "
+"href=\"%(move_channels_link)s\">move a topic to a different channel</a>."
 msgstr ""
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:28
@@ -2787,8 +3035,8 @@ msgstr ""
 msgid ""
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
-"topics (%(rename_topics_link)s), or even move a topic to a different channel"
-" (%(move_channels_link)s)."
+"topics (%(rename_topics_link)s), or even move a topic to a different channel "
+"(%(move_channels_link)s)."
 msgstr ""
 
 #: templates/zerver/emails/password_reset.html:9
@@ -2813,7 +3061,10 @@ msgid ""
 "You previously had an account on %(organization_url)s, but it has been "
 "deactivated. You can contact an organization administrator to <a "
 "href=\"%(help_link)s\">reactivate your account</a>."
-msgstr "Раније сте имали налог у %(organization_url)s, али је он деактивиран. Можете контактирати администратора организације да вам <a href=\"%(help_link)s\">поново активира налог</a>."
+msgstr ""
+"Раније сте имали налог у %(organization_url)s, али је он деактивиран. Можете "
+"контактирати администратора организације да вам <a "
+"href=\"%(help_link)s\">поново активира налог</a>."
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -2830,13 +3081,17 @@ msgstr "Немате активне налоге у следећим орган�
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "Можете покушати пријаву или ресетовање ваше лозинке у организацији(ама) изнад."
+msgstr ""
+"Можете покушати пријаву или ресетовање ваше лозинке у организацији(ама) "
+"изнад."
 
 #: templates/zerver/emails/password_reset.html:38
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr "Ако не препознајете ову активност, можете безбедно да игноришете ову е-поруку."
+msgstr ""
+"Ако не препознајете ову активност, можете безбедно да игноришете ову е-"
+"поруку."
 
 #: templates/zerver/emails/password_reset.subject.txt:1
 #, python-format
@@ -2850,34 +3105,52 @@ msgstr "Кликните на везу испод да би сте ресето�
 #: templates/zerver/emails/password_reset.txt:8
 #, python-format
 msgid ""
-"You previously had an account on %(realm_url)s, but it has been deactivated."
-" You can contact an organization administrator to reactivate your account."
+"You previously had an account on %(realm_url)s, but it has been deactivated. "
+"You can contact an organization administrator to reactivate your account."
 msgstr ""
 
 #: templates/zerver/emails/realm_auto_downgraded.html:8
 #, python-format
 msgid ""
 "\n"
-"    Your organization, %(organization_name_with_link)s, has been downgraded to the Zulip Cloud\n"
-"    Free plan because of unpaid invoices. The unpaid invoices have been voided.\n"
+"    Your organization, %(organization_name_with_link)s, has been downgraded "
+"to the Zulip Cloud\n"
+"    Free plan because of unpaid invoices. The unpaid invoices have been "
+"voided.\n"
 "    "
-msgstr "\n    Ваша организација, %(organization_name_with_link)s, је пребачена на Зулип Облак\n    басплатан план због неплаћених фактура. Неплаћене фактуре проглашене ништавнима.\n    "
+msgstr ""
+"\n"
+"    Ваша организација, %(organization_name_with_link)s, је пребачена на "
+"Зулип Облак\n"
+"    басплатан план због неплаћених фактура. Неплаћене фактуре проглашене "
+"ништавнима.\n"
+"    "
 
 #: templates/zerver/emails/realm_auto_downgraded.html:15
 #, python-format
 msgid ""
 "\n"
-"    To continue on the Zulip Cloud Standard plan, please upgrade again by going to %(upgrade_url)s.\n"
+"    To continue on the Zulip Cloud Standard plan, please upgrade again by "
+"going to %(upgrade_url)s.\n"
 "    "
-msgstr "\n    Да би сте наставили да користите Зулип Облак стандардни план, поново га унапредите тако што ћете отићи на %(upgrade_url)s.\n    "
+msgstr ""
+"\n"
+"    Да би сте наставили да користите Зулип Облак стандардни план, поново га "
+"унапредите тако што ћете отићи на %(upgrade_url)s.\n"
+"    "
 
 #: templates/zerver/emails/realm_auto_downgraded.html:22
 #, python-format
 msgid ""
 "\n"
-"    If you think this was a mistake or need more details, please reach out to us at %(support_email)s.\n"
+"    If you think this was a mistake or need more details, please reach out "
+"to us at %(support_email)s.\n"
 "    "
-msgstr "\n    Ако мислите да је ово грешка или вам је потребно више детаља, контактирајте нас на %(support_email)s.\n    "
+msgstr ""
+"\n"
+"    Ако мислите да је ово грешка или вам је потребно више детаља, "
+"контактирајте нас на %(support_email)s.\n"
+"    "
 
 #: templates/zerver/emails/realm_deactivated.html:14
 #, python-format
@@ -2917,8 +3190,8 @@ msgstr ""
 #: templates/zerver/emails/realm_deactivated.html:27
 #: templates/zerver/emails/realm_deactivated.txt:19
 msgid ""
-"If you have any questions or concerns, please reply to this email as soon as"
-" possible."
+"If you have any questions or concerns, please reply to this email as soon as "
+"possible."
 msgstr ""
 
 #: templates/zerver/emails/realm_deactivated.subject.txt:1
@@ -2974,7 +3247,8 @@ msgstr "Рекативирајте организацију"
 msgid ""
 "If the request was in error, you can take no action and this link will "
 "expire in 24 hours."
-msgstr "Ако је захтев грешка, можете ово игнорисати и веза ће истећи за 24 часа."
+msgstr ""
+"Ако је захтев грешка, можете ово игнорисати и веза ће истећи за 24 часа."
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:1
 msgid "Reactivate your Zulip organization"
@@ -2987,8 +3261,8 @@ msgstr "Кликните на везу испод да би сте реакти�
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:9
 #, python-format
 msgid ""
-"Either you, or someone on your behalf, has requested a log in link to manage"
-" the Zulip plan for <b>%(remote_server_hostname)s</b>."
+"Either you, or someone on your behalf, has requested a log in link to manage "
+"the Zulip plan for <b>%(remote_server_hostname)s</b>."
 msgstr ""
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:12
@@ -2996,7 +3270,10 @@ msgid ""
 "\n"
 "    Click the button below to log in.\n"
 "    "
-msgstr "\n    Кликните на дугме испод да се пријавите.\n    "
+msgstr ""
+"\n"
+"    Кликните на дугме испод да се пријавите.\n"
+"    "
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:16
 #, python-format
@@ -3004,7 +3281,10 @@ msgid ""
 "\n"
 "    This link will expire in %(validity_in_hours)s hours.\n"
 "    "
-msgstr "\n    Ова веза ће истећи за %(validity_in_hours)s сати.\n    "
+msgstr ""
+"\n"
+"    Ова веза ће истећи за %(validity_in_hours)s сати.\n"
+"    "
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:24
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:17
@@ -3012,7 +3292,9 @@ msgstr "\n    Ова веза ће истећи за %(validity_in_hours)s са�
 msgid ""
 "Questions? <a href=\"%(billing_help_link)s\">Learn more</a> or contact "
 "%(billing_contact_email)s."
-msgstr "Питања? <a href=\"%(billing_help_link)s\">Сазнајте више</a> или контактирајте %(billing_contact_email)s."
+msgstr ""
+"Питања? <a href=\"%(billing_help_link)s\">Сазнајте више</a> или "
+"контактирајте %(billing_contact_email)s."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.subject.txt:1
 msgid "Log in to Zulip plan management"
@@ -3021,8 +3303,8 @@ msgstr "Пријавите се у Зулипово управљање план�
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:1
 #, python-format
 msgid ""
-"Either you, or someone on your behalf, has requested a log in link to manage"
-" the Zulip plan for %(remote_server_hostname)s."
+"Either you, or someone on your behalf, has requested a log in link to manage "
+"the Zulip plan for %(remote_server_hostname)s."
 msgstr ""
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:4
@@ -3040,13 +3322,16 @@ msgstr "Ова веза ће истећи за %(validity_in_hours)s сати."
 msgid ""
 "Questions? Learn more at %(billing_help_link)s or contact "
 "%(billing_contact_email)s."
-msgstr "Питања? Сазнајте више на %(billing_help_link)s или контактирајте %(billing_contact_email)s."
+msgstr ""
+"Питања? Сазнајте више на %(billing_help_link)s или контактирајте "
+"%(billing_contact_email)s."
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:9
 #, python-format
 msgid ""
 "\n"
-"    Click the button below to confirm your email and log in to Zulip plan management for <b>%(remote_realm_host)s</b>.\n"
+"    Click the button below to confirm your email and log in to Zulip plan "
+"management for <b>%(remote_realm_host)s</b>.\n"
 "    "
 msgstr ""
 
@@ -3071,14 +3356,18 @@ msgstr ""
 msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the <a href=\"%(plans_link)s\">Zulip Community plan</a>."
-msgstr "Ваш захтев за Зулип спонзорством је одобрен! Ваша организација је надограђена на <a href=\"%(plans_link)s\">Зулип Заједница план</a>."
+msgstr ""
+"Ваш захтев за Зулип спонзорством је одобрен! Ваша организација је "
+"надограђена на <a href=\"%(plans_link)s\">Зулип Заједница план</a>."
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:12
 #, python-format
 msgid ""
 "If you could <a href=\"%(link_to_zulip)s\">list Zulip as a sponsor on your "
 "website</a>, we would really appreciate it!"
-msgstr "Ако би сте могли <a href=\"%(link_to_zulip)s\">наведите Зулип као спонзора на вашем веб сајту</a>, то би нам заиста значило!"
+msgstr ""
+"Ако би сте могли <a href=\"%(link_to_zulip)s\">наведите Зулип као спонзора "
+"на вашем веб сајту</a>, то би нам заиста значило!"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.subject.txt:1
 #, python-format
@@ -3089,7 +3378,9 @@ msgstr ""
 msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the Zulip Community plan."
-msgstr "Ваш захтев за Зулип спонзорством је одобрен! Ваша организација је надограђена на Зулип Заједница план."
+msgstr ""
+"Ваш захтев за Зулип спонзорством је одобрен! Ваша организација је "
+"надограђена на Зулип Заједница план."
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:4
 msgid ""
@@ -3108,7 +3399,8 @@ msgstr "Пронађите ваше Зулип налоге"
 #: templates/zerver/find_account.html:19
 msgid ""
 "\n"
-"                    Emails sent! The addresses entered on the previous page are listed below:\n"
+"                    Emails sent! The addresses entered on the previous page "
+"are listed below:\n"
 "                    "
 msgstr ""
 
@@ -3117,20 +3409,21 @@ msgstr ""
 msgid ""
 "\n"
 "                If you don't receive an email, you can\n"
-"                <a href=\"%(current_url)s\">find accounts for another email address</a>.\n"
+"                <a href=\"%(current_url)s\">find accounts for another email "
+"address</a>.\n"
 "                "
 msgstr ""
 
 #: templates/zerver/find_account.html:42
 msgid ""
-"Enter your email address to receive an email with the URLs for all the Zulip"
-" Cloud organizations in which you have active accounts."
+"Enter your email address to receive an email with the URLs for all the Zulip "
+"Cloud organizations in which you have active accounts."
 msgstr ""
 
 #: templates/zerver/find_account.html:44
 msgid ""
-"Enter your email address to receive an email with the URLs for all the Zulip"
-" organizations on this server in which you have active accounts."
+"Enter your email address to receive an email with the URLs for all the Zulip "
+"organizations on this server in which you have active accounts."
 msgstr ""
 
 #: templates/zerver/find_account.html:46
@@ -3340,7 +3633,13 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\n                        И стотину више кроз\n                        <a href=\"/integrations/doc/zapier\">Zapier</a>\n                        и\n                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n                        "
+msgstr ""
+"\n"
+"                        И стотину више кроз\n"
+"                        <a href=\"/integrations/doc/zapier\">Zapier</a>\n"
+"                        и\n"
+"                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
+"                        "
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
@@ -3366,8 +3665,7 @@ msgstr "Интерактивни ботови"
 msgid "REST API"
 msgstr "REST API"
 
-#: templates/zerver/invalid_email.html:4
-#: templates/zerver/invalid_email.html:13
+#: templates/zerver/invalid_email.html:4 templates/zerver/invalid_email.html:13
 msgid "Invalid email"
 msgstr "Неисправна е-пошта"
 
@@ -3411,8 +3709,7 @@ msgstr "Молим вас региструјте се са исправном а
 msgid "Please sign up using an allowed email address."
 msgstr "Молим вас региструјте се са дозвољеном адресом е-поште."
 
-#: templates/zerver/invalid_realm.html:4
-#: templates/zerver/invalid_realm.html:12
+#: templates/zerver/invalid_realm.html:4 templates/zerver/invalid_realm.html:12
 msgid "No organization found"
 msgstr ""
 
@@ -3424,19 +3721,17 @@ msgstr ""
 #: templates/zerver/invalid_realm.html:21
 #, python-format
 msgid ""
-"Please try a different URL, <a "
-"href=\"%(root_domain_url)s/accounts/find/\">get a list of your Zulip Cloud "
-"accounts</a>, or <a href=\"mailto:%(support_email)s\">contact Zulip "
-"support</a>."
+"Please try a different URL, <a href=\"%(root_domain_url)s/accounts/find/"
+"\">get a list of your Zulip Cloud accounts</a>, or <a href=\"mailto:"
+"%(support_email)s\">contact Zulip support</a>."
 msgstr ""
 
 #: templates/zerver/invalid_realm.html:23
 #, python-format
 msgid ""
-"Please try a different URL, <a "
-"href=\"%(root_domain_url)s/accounts/find/\">get a list of your accounts</a> "
-"on this server, or <a href=\"mailto:%(support_email)s\">contact this Zulip "
-"server's administrators</a>."
+"Please try a different URL, <a href=\"%(root_domain_url)s/accounts/find/"
+"\">get a list of your accounts</a> on this server, or <a href=\"mailto:"
+"%(support_email)s\">contact this Zulip server's administrators</a>."
 msgstr ""
 
 #: templates/zerver/invalid_realm.html:28
@@ -3463,8 +3758,7 @@ msgid "View without an account"
 msgstr "Прегледај без налога"
 
 #: templates/zerver/login.html:69
-msgid ""
-"You've already registered with this email address. Please log in below."
+msgid "You've already registered with this email address. Please log in below."
 msgstr "Већ сте се регистровали са овом адресом е-поште. Пријавите се испод."
 
 #: templates/zerver/login.html:97
@@ -3492,31 +3786,45 @@ msgstr "Заборавили сте лозиннку?"
 #: templates/zerver/login.html:162
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
-msgstr "Још увек немате налог? Морате бити позвани да би сте се придружили овој организацији."
+msgstr ""
+"Још увек немате налог? Морате бити позвани да би сте се придружили овој "
+"организацији."
 
 #: templates/zerver/new_user_email_address_visibility.html:5
 msgid ""
-"Administrators of this Zulip organization will be able to see this email address.\n"
+"Administrators of this Zulip organization will be able to see this email "
+"address.\n"
 "            "
-msgstr "Администратори ове Зулип организације ће моћи да виде ову адресу е-поште.\n            "
+msgstr ""
+"Администратори ове Зулип организације ће моћи да виде ову адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
-"Administrators and moderators of this Zulip organization will be able to see this email address.\n"
+"Administrators and moderators of this Zulip organization will be able to see "
+"this email address.\n"
 "            "
-msgstr "Администратори и модератори ове Зулип организације ће моћи да виде ову адресу е-поште.\n            "
+msgstr ""
+"Администратори и модератори ове Зулип организације ће моћи да виде ову "
+"адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:11
 msgid ""
 "Nobody in this Zulip organization will be able to see this email address.\n"
 "            "
-msgstr "Нико у овој Зулип организацији неће моћи да види ову адресу е-поште.\n            "
+msgstr ""
+"Нико у овој Зулип организацији неће моћи да види ову адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:14
 msgid ""
-"Other users in this Zulip organization will be able to see this email address.\n"
+"Other users in this Zulip organization will be able to see this email "
+"address.\n"
 "            "
-msgstr "Остали корисници ове Зулип организације ће моћи да виде ову адресу е-поште.\n            "
+msgstr ""
+"Остали корисници ове Зулип организације ће моћи да виде ову адресу е-поште.\n"
+"            "
 
 #: templates/zerver/new_user_email_address_visibility.html:18
 msgid "Change"
@@ -3533,9 +3841,8 @@ msgstr "Организација тренутно не може да прими 
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
 msgid ""
-"New members cannot currently join <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a> because all Zulip Cloud licenses "
-"are in use."
+"New members cannot currently join <a href=\"%(realm_url)s\">%(realm_name)s</"
+"a> because all Zulip Cloud licenses are in use."
 msgstr ""
 
 #: templates/zerver/no_spare_licenses.html:19
@@ -3560,10 +3867,13 @@ msgstr "Аутентификација поддомена"
 msgid ""
 "\n"
 "            It appears you ended up here by accident. This site\n"
-"            is meant to be an intermediate step in the authentication process\n"
+"            is meant to be an intermediate step in the authentication "
+"process\n"
 "            and shouldn't be accessed manually. If you came here directly,\n"
-"            you probably got the address wrong. If you got stuck here while trying\n"
-"            to log in, this is most likely a server bug or misconfiguration.\n"
+"            you probably got the address wrong. If you got stuck here while "
+"trying\n"
+"            to log in, this is most likely a server bug or "
+"misconfiguration.\n"
 "            "
 msgstr ""
 
@@ -3606,8 +3916,11 @@ msgstr "Неопходна је веза за прављење организа�
 #: templates/zerver/portico_error_pages/realm_creation_disabled.html:13
 msgid ""
 "\n"
-"            Creating a new organization on this server requires a valid organization creation link.\n"
-"            Please see <a href=\"https://zulip.readthedocs.io/en/stable/production/multiple-organizations.html\">documentation</a> on creating a new organization for more information.\n"
+"            Creating a new organization on this server requires a valid "
+"organization creation link.\n"
+"            Please see <a href=\"https://zulip.readthedocs.io/en/stable/"
+"production/multiple-organizations.html\">documentation</a> on creating a new "
+"organization for more information.\n"
 "            "
 msgstr ""
 
@@ -3619,7 +3932,8 @@ msgstr "Веза за прављење организације је истек�
 #: templates/zerver/portico_error_pages/realm_creation_link_invalid.html:13
 msgid ""
 "\n"
-"            Unfortunately, this is not a valid link for creating an organization. Please <a href=\"/new/\">obtain a new link</a> and try again.\n"
+"            Unfortunately, this is not a valid link for creating an "
+"organization. Please <a href=\"/new/\">obtain a new link</a> and try again.\n"
 "            "
 msgstr ""
 
@@ -3634,7 +3948,8 @@ msgid ""
 "            Your Zulip organization is registered as associated with a\n"
 "            different Zulip server installation.\n"
 "\n"
-"            Please <a href=\"mailto:%(support_email)s\">contact Zulip support</a>\n"
+"            Please <a href=\"mailto:%(support_email)s\">contact Zulip "
+"support</a>\n"
 "            for assistance in resolving this issue.\n"
 "            "
 msgstr ""
@@ -3656,7 +3971,8 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"            Zulip supports <a href=\"%(supported_browsers_page_link)s\">modern browsers</a>\n"
+"            Zulip supports <a "
+"href=\"%(supported_browsers_page_link)s\">modern browsers</a>\n"
 "            like Firefox, Chrome, and Edge.\n"
 "            "
 msgstr ""
@@ -3665,7 +3981,8 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"            You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>.\n"
+"            You can also use the <a href=\"%(apps_page_link)s\">Zulip "
+"desktop app</a>.\n"
 "            "
 msgstr ""
 
@@ -3743,7 +4060,9 @@ msgstr "Следеће"
 #, python-format
 msgid ""
 "\n"
-"            <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"%(org_creation_link)s\">Create a new organization</a> if you don't have one yet.\n"
+"            <a target=\"_blank\" rel=\"noopener noreferrer\" "
+"href=\"%(org_creation_link)s\">Create a new organization</a> if you don't "
+"have one yet.\n"
 "            "
 msgstr ""
 
@@ -3764,7 +4083,11 @@ msgid ""
 "\n"
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
-msgstr "\n            <p>Унеисте детаље вашег налога да би сте завршили регистрацију.</p>\n            "
+msgstr ""
+"\n"
+"            <p>Унеисте детаље вашег налога да би сте завршили регистрацију.</"
+"p>\n"
+"            "
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
@@ -3800,9 +4123,10 @@ msgstr "Унесите лозинку вашег LDAP/Активног дире�
 
 #: templates/zerver/register.html:155
 msgid ""
-"This is used for mobile applications and other tools that require a "
-"password."
-msgstr "Ово се користи за апликације на телефону и остале алате који захтевају лозинку."
+"This is used for mobile applications and other tools that require a password."
+msgstr ""
+"Ово се користи за апликације на телефону и остале алате који захтевају "
+"лозинку."
 
 #: templates/zerver/register.html:163
 msgid "Password strength"
@@ -3850,7 +4174,9 @@ msgstr "Поново поставите вашу лозинку"
 msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
-msgstr "Заборавили сте лозинку? Нема проблема, послаћемо везу за ресетовање лозинке на адресу ваше е-поште са којом сте се регистровали."
+msgstr ""
+"Заборавили сте лозинку? Нема проблема, послаћемо везу за ресетовање лозинке "
+"на адресу ваше е-поште са којом сте се регистровали."
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
@@ -3870,7 +4196,8 @@ msgstr "Потврдите лозинку"
 
 #: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Извините, веза коју сте доставили је неисправна или је већ искоришћена."
+msgstr ""
+"Извините, веза коју сте доставили је неисправна или је већ искоришћена."
 
 #: templates/zerver/reset_done.html:4
 msgid " New password successfully set"
@@ -3883,7 +4210,8 @@ msgstr "Поставили сте нову лозинку!"
 #: templates/zerver/reset_done.html:17
 #, python-format
 msgid "Please <a href=\"%(login_url)s\">log in</a> with your new password."
-msgstr "Молим вас <a href=\"%(login_url)s\">пријавите се</a> са вашом новом лозинком."
+msgstr ""
+"Молим вас <a href=\"%(login_url)s\">пријавите се</a> са вашом новом лозинком."
 
 #: templates/zerver/reset_emailed.html:4
 msgid "Password reset email sent"
@@ -3906,7 +4234,10 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n        <h1 class=\"get-started\">Изаберите налог</h1>\n        "
+msgstr ""
+"\n"
+"        <h1 class=\"get-started\">Изаберите налог</h1>\n"
+"        "
 
 #: templates/zerver/social_auth_select_email.html:67
 msgid ""
@@ -3914,15 +4245,26 @@ msgid ""
 "            Your GitHub account also has unverified email addresses\n"
 "            associated with it.\n"
 "            "
-msgstr "\n            Ваш GitHub налог има непотврђену адресу е-поште\n            повезану са њим.\n            "
+msgstr ""
+"\n"
+"            Ваш GitHub налог има непотврђену адресу е-поште\n"
+"            повезану са њим.\n"
+"            "
 
 #: templates/zerver/social_auth_select_email.html:73
 msgid ""
 "\n"
 "            To use one of these to log in to Zulip, you must first\n"
-"            <a href=\"https://github.com/settings/emails\">verify it with GitHub.</a>\n"
+"            <a href=\"https://github.com/settings/emails\">verify it with "
+"GitHub.</a>\n"
 "            "
-msgstr "\n            Да би сте користили нешто од овога за пријаву у Зулип, прво морате\n            <a href=\"https://github.com/settings/emails\">да је потврдите са GitHub-ом.</a>\n            "
+msgstr ""
+"\n"
+"            Да би сте користили нешто од овога за пријаву у Зулип, прво "
+"морате\n"
+"            <a href=\"https://github.com/settings/emails\">да је потврдите "
+"са GitHub-ом.</a>\n"
+"            "
 
 #: templates/zerver/unsubscribe_link_error.html:4
 msgid "Error unsubscribing email"
@@ -3936,7 +4278,9 @@ msgstr "Захтев за отказивање претплате непозна
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
 "don't recognize the URL."
-msgstr "Здраво! Изгледа да сте покушали да откажете претплату са нечега, али не препознајемо адресу."
+msgstr ""
+"Здраво! Изгледа да сте покушали да откажете претплату са нечега, али не "
+"препознајемо адресу."
 
 #: templates/zerver/unsubscribe_link_error.html:19
 #, python-format
@@ -3944,7 +4288,10 @@ msgid ""
 "Please double-check that you have the full URL and try again, or <a "
 "href=\"mailto:%(support_email)s\">email us</a> and we'll get this squared "
 "away!"
-msgstr "Молим вас проверите да имате комплетну адресу и покушајте поново, или <a href=\"mailto:%(support_email)s\">нам пошаљите поруку</a> и ми ћемо ово одмах средити!"
+msgstr ""
+"Молим вас проверите да имате комплетну адресу и покушајте поново, или <a "
+"href=\"mailto:%(support_email)s\">нам пошаљите поруку</a> и ми ћемо ово "
+"одмах средити!"
 
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
@@ -3955,7 +4302,8 @@ msgstr "Подешавања е-поште су измењена"
 #, python-format
 msgid ""
 "\n"
-"                    You've successfully unsubscribed from Zulip %(subscription_type)s emails for\n"
+"                    You've successfully unsubscribed from Zulip "
+"%(subscription_type)s emails for\n"
 "                    <a href=\"%(realm_url)s\">%(realm_name)s</a>.\n"
 "                    "
 msgstr ""
@@ -3964,8 +4312,10 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"                    You can undo this change or review your preferences in your\n"
-"                    <a href=\"%(realm_url)s/#settings/notifications\">notification settings</a>.\n"
+"                    You can undo this change or review your preferences in "
+"your\n"
+"                    <a href=\"%(realm_url)s/#settings/"
+"notifications\">notification settings</a>.\n"
 "                    "
 msgstr ""
 
@@ -4006,8 +4356,8 @@ msgstr ""
 
 #: zerver/actions/custom_profile_fields.py:222 zerver/lib/users.py:536
 msgid ""
-"You are not allowed to change this field. Contact an administrator to update"
-" it."
+"You are not allowed to change this field. Contact an administrator to update "
+"it."
 msgstr ""
 
 #: zerver/actions/custom_profile_fields.py:240 zerver/lib/users.py:531
@@ -4070,19 +4420,26 @@ msgstr ""
 
 #: zerver/actions/invites.py:148
 msgid ""
-"To protect users, Zulip limits the number of invitations you can send in one"
-" day. Because you have reached the limit, no invitations were sent."
-msgstr "Да би заштитио кориснике, Зулип ограничава број позивница које можете послати у једном дану. Зато што сте достигли ово ограничење, ниједна позивница није послата."
+"To protect users, Zulip limits the number of invitations you can send in one "
+"day. Because you have reached the limit, no invitations were sent."
+msgstr ""
+"Да би заштитио кориснике, Зулип ограничава број позивница које можете "
+"послати у једном дану. Зато што сте достигли ово ограничење, ниједна "
+"позивница није послата."
 
 #: zerver/actions/invites.py:226
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "Ваш налог је превише нов да би сте слали позивнице за ову организацију. Питајте администратора организације или дугогодишњег корисника."
+msgstr ""
+"Ваш налог је превише нов да би сте слали позивнице за ову организацију. "
+"Питајте администратора организације или дугогодишњег корисника."
 
 #: zerver/actions/invites.py:266
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Неке адресе е-поште нису прошле проверу тако да нисмо послали ниједну позивницу."
+msgstr ""
+"Неке адресе е-поште нису прошле проверу тако да нисмо послали ниједну "
+"позивницу."
 
 #: zerver/actions/invites.py:274
 msgid "We weren't able to invite anyone."
@@ -4157,7 +4514,9 @@ msgstr "Порука је премештена из ове теме у {new_loca
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
-msgstr "{changed_messages_count} порука је премештено из ове теме у {new_location} од стране {user}."
+msgstr ""
+"{changed_messages_count} порука је премештено из ове теме у {new_location} "
+"од стране {user}."
 
 #: zerver/actions/message_edit.py:1169
 #, python-brace-format
@@ -4175,7 +4534,9 @@ msgstr ""
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
-msgstr "{changed_messages_count} порука је премештено овде из {old_location} од стране {user}."
+msgstr ""
+"{changed_messages_count} порука је премештено овде из {old_location} од "
+"стране {user}."
 
 #: zerver/actions/message_edit.py:1417
 msgid "You don't have permission to resolve topics."
@@ -4208,9 +4569,9 @@ msgstr ""
 msgid "Invalid message flag operation: '{operation}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:355 zerver/lib/message.py:399
-#: zerver/lib/message.py:414 zerver/lib/message.py:433
-#: zerver/lib/message.py:447
+#: zerver/actions/message_flags.py:355 zerver/lib/message.py:400
+#: zerver/lib/message.py:415 zerver/lib/message.py:434
+#: zerver/lib/message.py:448
 msgid "Invalid message(s)"
 msgstr "Неисправна порука(е)"
 
@@ -4233,7 +4594,8 @@ msgstr "Неисправан тип података за примаоце"
 
 #: zerver/actions/message_send.py:1346 zerver/actions/message_send.py:1354
 msgid "Recipient lists may contain emails or user IDs, but not both."
-msgstr "Списак прималаца може да садржи адресе е-поште или ИД корисника, али не оба."
+msgstr ""
+"Списак прималаца може да садржи адресе е-поште или ИД корисника, али не оба."
 
 #: zerver/actions/message_send.py:1504
 #, python-brace-format
@@ -4336,7 +4698,9 @@ msgstr "Порука није могла бити послата у заказа
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
 "the following error:"
-msgstr "Порука коју сте заказали за {delivery_datetime} није послата због следеће грешке:"
+msgstr ""
+"Порука коју сте заказали за {delivery_datetime} није послата због следеће "
+"грешке:"
 
 #: zerver/actions/scheduled_messages.py:349
 msgid "[View scheduled messages](#scheduled)"
@@ -4432,7 +4796,8 @@ msgstr ""
 #: zerver/actions/streams.py:1575
 #, python-brace-format
 msgid ""
-"{user} has changed the [message retention period]({help_link}) for this channel:\n"
+"{user} has changed the [message retention period]({help_link}) for this "
+"channel:\n"
 "* **Old retention period**: {old_retention_period}\n"
 "* **New retention period**: {new_retention_period}\n"
 "\n"
@@ -4448,7 +4813,7 @@ msgstr "Не можете прикачити потпоруку овој пор�
 msgid "Invalid user ID {user_id}"
 msgstr ""
 
-#: zerver/actions/user_groups.py:226 zerver/actions/user_groups.py:262
+#: zerver/actions/user_groups.py:239 zerver/actions/user_groups.py:275
 #, python-brace-format
 msgid "User group '{group_name}' already exists."
 msgstr "Корисничка група '{group_name}' већ постоји."
@@ -4494,7 +4859,9 @@ msgstr ""
 msgid ""
 "Your account {username} has been deactivated. Please contact your "
 "organization administrator to reactivate it."
-msgstr "Ваш налог {username} је деактивиран. Молим вас контактирајте администратора ваше организације да би сте га реактивирали."
+msgstr ""
+"Ваш налог {username} је деактивиран. Молим вас контактирајте администратора "
+"ваше организације да би сте га реактивирали."
 
 #: zerver/forms.py:60
 msgid "The password is too weak."
@@ -4528,20 +4895,24 @@ msgstr "Молим вас користите вашу праву адресу е
 #: zerver/forms.py:265
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "Не постоји организација којој покушавате да приступите користећи {email}."
+msgstr ""
+"Не постоји организација којој покушавате да приступите користећи {email}."
 
 #: zerver/forms.py:273
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr "Молим вас затражите позивницу за {email} од администратора организације."
+msgstr ""
+"Молим вас затражите позивницу за {email} од администратора организације."
 
 #: zerver/forms.py:282
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Ваша адреса е-поште, {email}, није једна од домена којима је дозвољено да региструју налоге у овој организацији."
+msgstr ""
+"Ваша адреса е-поште, {email}, није једна од домена којима је дозвољено да "
+"региструју налоге у овој организацији."
 
 #: zerver/forms.py:290
 msgid "Email addresses containing + are not allowed in this organization."
@@ -4552,7 +4923,10 @@ msgid ""
 "New members cannot join this organization because all Zulip licenses are in "
 "use. Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
-msgstr "Нови чланови не могу да приступе овој организацији јер су све Зулип лиценце искоришћене. Молим вас контактирајте особу која вас је позвала и замолите их да повећају број лиценци, а затим покушате поново."
+msgstr ""
+"Нови чланови не могу да приступе овој организацији јер су све Зулип лиценце "
+"искоришћене. Молим вас контактирајте особу која вас је позвала и замолите их "
+"да повећају број лиценци, а затим покушате поново."
 
 #: zerver/forms.py:327
 msgid "New password"
@@ -4573,7 +4947,9 @@ msgstr ""
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
-msgstr "Ваша лозинка је онемогућена јер је превише слаба. Ресетујте лозинку да би сте направили нову."
+msgstr ""
+"Ваша лозинка је онемогућена јер је превише слаба. Ресетујте лозинку да би "
+"сте направили нову."
 
 #: zerver/forms.py:537
 msgid "Token"
@@ -4597,7 +4973,7 @@ msgid "Invalid email '{email}'"
 msgstr "Неисправна е-пошта '{email}'"
 
 #: zerver/lib/addressee.py:64 zerver/lib/addressee.py:131
-#: zerver/views/typing.py:47
+#: zerver/views/typing.py:50
 msgid "Missing topic"
 msgstr "Недостаје тема"
 
@@ -4624,7 +5000,8 @@ msgstr "Неисправан прилог"
 #: zerver/lib/attachments.py:48
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "Појавила се грешка при брисању прилога. МОлим вас покушајте поново касније."
+msgstr ""
+"Појавила се грешка при брисању прилога. МОлим вас покушајте поново касније."
 
 #: zerver/lib/bot_lib.py:107
 msgid "Message must have recipients!"
@@ -4686,7 +5063,8 @@ msgstr "Нацрт не постоји"
 #: zerver/lib/email_mirror.py:226
 #, python-brace-format
 msgid ""
-"Error sending message to channel {channel_name} via message notification email reply:\n"
+"Error sending message to channel {channel_name} via message notification "
+"email reply:\n"
 "{error_message}"
 msgstr ""
 
@@ -4773,7 +5151,9 @@ msgstr "Имена емотикона морају се завршити са с
 msgid ""
 "Emoji names must contain only lowercase English letters, digits, spaces, "
 "dashes, and underscores."
-msgstr "Имена емотикона морају садржати само мала слова енглеског алфабета, цифре, размаке, цртице и доње цртице."
+msgstr ""
+"Имена емотикона морају садржати само мала слова енглеског алфабета, цифре, "
+"размаке, цртице и доње цртице."
 
 #: zerver/lib/emoji.py:147
 msgid "Emoji name is missing"
@@ -4857,7 +5237,9 @@ msgstr "Ова организације је деактивирана"
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
-msgstr "Регистрација сервиса за слање обавештења на телефонима вашег сервера је деактивирана"
+msgstr ""
+"Регистрација сервиса за слање обавештења на телефонима вашег сервера је "
+"деактивирана"
 
 #: zerver/lib/exceptions.py:363
 msgid "Password authentication is disabled in this organization"
@@ -4885,7 +5267,8 @@ msgstr ""
 #: zerver/lib/exceptions.py:456
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
-msgstr "Није могуће разлучити захтев: Да ли је {webhook_name} генерисао овај догађај?"
+msgstr ""
+"Није могуће разлучити захтев: Да ли је {webhook_name} генерисао овај догађај?"
 
 #: zerver/lib/exceptions.py:483
 msgid "User not authenticated"
@@ -4915,9 +5298,8 @@ msgstr "Приступ је одбијен"
 #: zerver/lib/exceptions.py:596
 #, python-brace-format
 msgid ""
-"You only have permission to move the "
-"{total_messages_allowed_to_move}/{total_messages_in_topic} most recent "
-"messages in this topic."
+"You only have permission to move the {total_messages_allowed_to_move}/"
+"{total_messages_in_topic} most recent messages in this topic."
 msgstr ""
 
 #: zerver/lib/exceptions.py:609
@@ -5045,15 +5427,15 @@ msgstr "Продуктивност"
 msgid "Version control"
 msgstr "Контрола верзија"
 
-#: zerver/lib/message.py:207
+#: zerver/lib/message.py:208
 msgid "Message must not be empty"
 msgstr "Порука не може бити празна"
 
-#: zerver/lib/message.py:209
+#: zerver/lib/message.py:210
 msgid "Message must not contain null bytes"
 msgstr "Порука не сме садржати нула бајтова"
 
-#: zerver/lib/message.py:1483 zerver/lib/message.py:1495
+#: zerver/lib/message.py:1527 zerver/lib/message.py:1539
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
 msgstr ""
@@ -5098,28 +5480,32 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-"To learn more, check out our [using Zulip for a class guide]({getting_started_url})!\n"
+"To learn more, check out our [using Zulip for a class guide]"
+"({getting_started_url})!\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:57
 #, python-brace-format
 msgid ""
 "\n"
-"To learn more, check out our [getting started guide]({getting_started_url})!\n"
+"To learn more, check out our [getting started guide]"
+"({getting_started_url})!\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:65
 #, python-brace-format
 msgid ""
 "\n"
-"We also have a guide for [setting up Zulip for a class]({organization_setup_url}).\n"
+"We also have a guide for [setting up Zulip for a class]"
+"({organization_setup_url}).\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:69
 #, python-brace-format
 msgid ""
 "\n"
-"We also have a guide for [moving your organization to Zulip]({organization_setup_url}).\n"
+"We also have a guide for [moving your organization to Zulip]"
+"({organization_setup_url}).\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:76
@@ -5141,14 +5527,16 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-"You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.\n"
+"You can always come back to the [Welcome to Zulip video]"
+"({navigation_tour_video_url}) for a quick app overview.\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:92
 #, python-brace-format
 msgid ""
 "\n"
-"Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}\n"
+"Hello, and welcome to Zulip!👋 "
+"{inform_about_tracked_onboarding_messages_text}\n"
 "\n"
 "{getting_started_text} {organization_setup_text}\n"
 "\n"
@@ -5168,7 +5556,8 @@ msgstr ""
 #: zerver/lib/onboarding.py:145
 msgid ""
 "\n"
-"Go to [Profile settings](#settings/profile) to add a [profile picture](/help/change-your-profile-picture)\n"
+"Go to [Profile settings](#settings/profile) to add a [profile picture](/help/"
+"change-your-profile-picture)\n"
 "and edit your [profile information](/help/edit-your-profile).\n"
 msgstr ""
 
@@ -5176,8 +5565,10 @@ msgstr ""
 msgid ""
 "\n"
 "You can switch between [light and dark theme](/help/dark-theme), [pick your\n"
-"favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), [change\n"
-"your language](/help/change-your-language), and otherwise customize your Zulip\n"
+"favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), "
+"[change\n"
+"your language](/help/change-your-language), and otherwise customize your "
+"Zulip\n"
 "experience in your [Preferences](#settings/preferences).\n"
 msgstr ""
 
@@ -5185,7 +5576,8 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-"Channels organize conversations based on who needs to see them. For example,\n"
+"Channels organize conversations based on who needs to see them. For "
+"example,\n"
 "it's common to have a channel for each team in an organization.\n"
 "\n"
 "[Browse and subscribe to channels]({settings_link}).\n"
@@ -5194,14 +5586,17 @@ msgstr ""
 #: zerver/lib/onboarding.py:164
 msgid ""
 "\n"
-"[Topics](/help/introduction-to-topics) summarize what each conversation in Zulip\n"
+"[Topics](/help/introduction-to-topics) summarize what each conversation in "
+"Zulip\n"
 "is about. You can read Zulip one topic at a time, seeing each message in\n"
 "context, no matter how many other conversations are going on.\n"
 "\n"
-"When you start a conversation, label it with a new topic. For a good topic name,\n"
+"When you start a conversation, label it with a new topic. For a good topic "
+"name,\n"
 "think about finishing the sentence: “Hey, can we chat about…?”\n"
 "\n"
-"Check out [Recent conversations](#recent) for a list of topics that are being\n"
+"Check out [Recent conversations](#recent) for a list of topics that are "
+"being\n"
 "discussed.\n"
 msgstr ""
 
@@ -5217,10 +5612,12 @@ msgstr ""
 #: zerver/lib/onboarding.py:183
 msgid ""
 "\n"
-"You can **format** *your* `message` using the handy formatting buttons, or by\n"
+"You can **format** *your* `message` using the handy formatting buttons, or "
+"by\n"
 "typing your formatting with Markdown.\n"
 "\n"
-"Check out the [cheat sheet](#message-formatting) to learn about spoilers, global\n"
+"Check out the [cheat sheet](#message-formatting) to learn about spoilers, "
+"global\n"
 "times, and more.\n"
 msgstr ""
 
@@ -5246,9 +5643,12 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-"If anything is out of place, it’s easy to [move messages]({move_content_another_topic_help_url}),\n"
-"[rename]({rename_topic_help_url}) and [split]({move_content_another_topic_help_url}) topics,\n"
-"or even move a topic [to a different channel]({move_content_another_channel_help_url}).\n"
+"If anything is out of place, it’s easy to [move messages]"
+"({move_content_another_topic_help_url}),\n"
+"[rename]({rename_topic_help_url}) and [split]"
+"({move_content_another_topic_help_url}) topics,\n"
+"or even move a topic [to a different channel]"
+"({move_content_another_channel_help_url}).\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:265
@@ -5261,11 +5661,13 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-"Zulip is organized to help you communicate more efficiently. Conversations are\n"
+"Zulip is organized to help you communicate more efficiently. Conversations "
+"are\n"
 "labeled with topics, which summarize what the conversation is about.\n"
 "\n"
 "For example, this message is in the “{topic_name}” topic in the\n"
-"#**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar\n"
+"#**{zulip_discussion_channel_name}** channel, as you can see in the left "
+"sidebar\n"
 "and above.\n"
 msgstr ""
 
@@ -5277,7 +5679,8 @@ msgstr ""
 #: zerver/lib/onboarding.py:281
 msgid ""
 "\n"
-"You can read Zulip one conversation at a time, seeing each message in context,\n"
+"You can read Zulip one conversation at a time, seeing each message in "
+"context,\n"
 "no matter how many other conversations are going on.\n"
 msgstr ""
 
@@ -5291,14 +5694,16 @@ msgstr ""
 #: zerver/lib/onboarding.py:291
 msgid ""
 "\n"
-"To kick off a new conversation, pick a channel in the left sidebar, and click\n"
+"To kick off a new conversation, pick a channel in the left sidebar, and "
+"click\n"
 "the `+` button next to its name.\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:296
 msgid ""
 "\n"
-"Label your conversation with a topic. Think about finishing the sentence: “Hey,\n"
+"Label your conversation with a topic. Think about finishing the sentence: "
+"“Hey,\n"
 "can we chat about…?”\n"
 msgstr ""
 
@@ -5312,7 +5717,8 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-":point_right:  Use this topic to try out [Zulip's messaging features]({format_message_help_url}).\n"
+":point_right:  Use this topic to try out [Zulip's messaging features]"
+"({format_message_help_url}).\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:312
@@ -5338,13 +5744,15 @@ msgstr ""
 #: zerver/lib/onboarding.py:333
 msgid ""
 "\n"
-"This **greetings** topic is a great place to say “hi” :wave: to your teammates.\n"
+"This **greetings** topic is a great place to say “hi” :wave: to your "
+"teammates.\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:337
 msgid ""
 "\n"
-":point_right: Click on this message to start a new message in the same conversation.\n"
+":point_right: Click on this message to start a new message in the same "
+"conversation.\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:354
@@ -5404,20 +5812,20 @@ msgstr "{full_name} вас је поменуо:"
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} је поменуо све:"
 
-#: zerver/lib/push_notifications.py:1465
+#: zerver/lib/push_notifications.py:1456
 msgid "Test notification"
 msgstr "Тестирај обавештење"
 
-#: zerver/lib/push_notifications.py:1466
+#: zerver/lib/push_notifications.py:1457
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1518
+#: zerver/lib/push_notifications.py:1509
 msgid "Device not recognized"
 msgstr "Уређај није препознат"
 
-#: zerver/lib/push_notifications.py:1530
+#: zerver/lib/push_notifications.py:1521
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -5425,8 +5833,8 @@ msgstr ""
 msgid "Invalid data type for channel ID"
 msgstr ""
 
-#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:505
-#: zerver/lib/streams.py:521 zerver/tornado/views.py:225
+#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:506
+#: zerver/lib/streams.py:522 zerver/tornado/views.py:225
 #: zerver/views/events_register.py:72 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
@@ -5451,8 +5859,7 @@ msgstr ""
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr ""
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:566
-#: zerver/views/typing.py:44
+#: zerver/lib/request.py:83 zerver/lib/streams.py:567 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr "Недостаје '{var_name}' аргумент"
@@ -5471,44 +5878,44 @@ msgstr "Заказана порука не постоји"
 msgid "{service_name} account security"
 msgstr ""
 
-#: zerver/lib/streams.py:468 zerver/lib/streams.py:476
+#: zerver/lib/streams.py:469 zerver/lib/streams.py:477
 msgid "You do not have permission to post in this channel."
 msgstr ""
 
-#: zerver/lib/streams.py:512 zerver/lib/streams.py:558
+#: zerver/lib/streams.py:513 zerver/lib/streams.py:559
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:654 zerver/lib/streams.py:689
-#: zerver/lib/streams.py:818 zerver/lib/streams.py:845
-#: zerver/lib/streams.py:916 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:655 zerver/lib/streams.py:690
+#: zerver/lib/streams.py:819 zerver/lib/streams.py:846
+#: zerver/lib/streams.py:917 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr ""
 
-#: zerver/lib/streams.py:887
+#: zerver/lib/streams.py:888
 msgid "Channel name is already in use."
 msgstr ""
 
-#: zerver/lib/streams.py:899 zerver/lib/streams.py:1024
+#: zerver/lib/streams.py:900 zerver/lib/streams.py:1037
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:1359 zerver/views/streams.py:333
+#: zerver/lib/streams.py:1372 zerver/views/streams.py:333
 msgid "A default channel cannot be private."
 msgstr ""
 
-#: zerver/lib/streams.py:1363
+#: zerver/lib/streams.py:1376
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:1372 zerver/views/streams.py:355
+#: zerver/lib/streams.py:1385 zerver/views/streams.py:355
 msgid "Web-public channels are not enabled."
 msgstr ""
 
-#: zerver/lib/streams.py:1405
+#: zerver/lib/streams.py:1418
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr ""
@@ -5823,7 +6230,8 @@ msgstr "{item} не може бити празно."
 #: zerver/lib/validator.py:101
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
-msgstr "{var_name} нема исправну дужину {length}; требало би бити {target_length}"
+msgstr ""
+"{var_name} нема исправну дужину {length}; требало би бити {target_length}"
 
 #: zerver/lib/validator.py:195
 #, python-brace-format
@@ -5913,7 +6321,7 @@ msgstr ""
 msgid "No such command: {command}"
 msgstr ""
 
-#: zerver/lib/zulip_update_announcements.py:542
+#: zerver/lib/zulip_update_announcements.py:561
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
@@ -6157,20 +6565,20 @@ msgstr "непознати оперативни систем"
 msgid "An unknown browser"
 msgstr "Непознати прегледач"
 
-#: zerver/tornado/event_queue.py:735
+#: zerver/tornado/event_queue.py:736
 msgid "Missing 'queue_id' argument"
 msgstr "Недостаје 'queue_id' аргумент"
 
-#: zerver/tornado/event_queue.py:738
+#: zerver/tornado/event_queue.py:739
 msgid "Missing 'last_event_id' argument"
 msgstr "Недостаје 'last_event_id' аргумент"
 
-#: zerver/tornado/event_queue.py:745
+#: zerver/tornado/event_queue.py:746
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:755
+#: zerver/tornado/event_queue.py:756
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr ""
@@ -6227,7 +6635,8 @@ msgstr "Неисправан тип поља."
 #: zerver/views/custom_profile_fields.py:186
 #: zerver/views/custom_profile_fields.py:255
 msgid "Only 2 custom profile fields can be displayed in the profile summary."
-msgstr "Само 2 прилагођена поља профила могу бити приказана у прегледу профила."
+msgstr ""
+"Само 2 прилагођена поља профила могу бити приказана у прегледу профила."
 
 #: zerver/views/custom_profile_fields.py:215
 #: zerver/views/custom_profile_fields.py:286
@@ -6305,7 +6714,9 @@ msgstr "Морате навести барем једну адресу е-пош
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Неке од ових адреса већ користе Зулип, тако да њима нисмо послали позивницу. Али зато јесмо послали свима осталима!"
+msgstr ""
+"Неке од ових адреса већ користе Зулип, тако да њима нисмо послали позивницу. "
+"Али зато јесмо послали свима осталима!"
 
 #: zerver/views/message_edit.py:121
 msgid "Message edit history is disabled in this organization"
@@ -6386,7 +6797,8 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-"You asked to watch the [Welcome to Zulip video]({navigation_tour_video_url}) later. Is this a good time?\n"
+"You asked to watch the [Welcome to Zulip video]({navigation_tour_video_url}) "
+"later. Is this a good time?\n"
 msgstr ""
 
 #: zerver/views/presence.py:48
@@ -6505,30 +6917,46 @@ msgstr "Само администратори могу да препишу пр�
 #: zerver/views/realm_logo.py:33 zerver/views/user_settings.py:411
 #, python-brace-format
 msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
-msgstr "Величина постављене датотеке је већа од дозвољеног ограничења од {max_size} MiB"
+msgstr ""
+"Величина постављене датотеке је већа од дозвољеног ограничења од {max_size} "
+"MiB"
 
-#: zerver/views/realm_export.py:58
+#: zerver/views/realm_export.py:62
 msgid "Exceeded rate limit."
 msgstr "Прекорачен је лимит брзине."
 
-#: zerver/views/realm_export.py:80
+#: zerver/views/realm_export.py:84
 #, python-brace-format
 msgid "Please request a manual export from {email}."
 msgstr "Молим вас затражите ручни извоз са {email}."
 
-#: zerver/views/realm_export.py:118
+#: zerver/views/realm_export.py:95
+#, python-brace-format
+msgid ""
+"Make sure at least one Organization Owner is consenting to the export or "
+"contact {email} for help."
+msgstr ""
+
+#: zerver/views/realm_export.py:102
+#, python-brace-format
+msgid ""
+"Make sure at least one Organization Owner allows other Administrators to see "
+"their email address or contact {email} for help"
+msgstr ""
+
+#: zerver/views/realm_export.py:141
 msgid "Invalid data export ID"
 msgstr "Неисправан ИД извоза података"
 
-#: zerver/views/realm_export.py:121
+#: zerver/views/realm_export.py:144
 msgid "Export already deleted"
 msgstr "Извоз је већ обрисан"
 
-#: zerver/views/realm_export.py:123
+#: zerver/views/realm_export.py:146
 msgid "Export failed, nothing to delete"
 msgstr "Извоз није успео, нема шта обрисати"
 
-#: zerver/views/realm_export.py:125
+#: zerver/views/realm_export.py:148
 msgid "Export still in progress"
 msgstr "Извоз је још увек у току"
 
@@ -6653,15 +7081,15 @@ msgstr "Неисправан json за потпоруку"
 #: zerver/views/tusd.py:108 zerver/views/upload.py:459
 #, python-brace-format
 msgid ""
-"File is larger than the maximum upload size ({max_size} MiB) allowed by your"
-" organization's plan."
+"File is larger than the maximum upload size ({max_size} MiB) allowed by your "
+"organization's plan."
 msgstr ""
 
 #: zerver/views/tusd.py:117 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
-"File is larger than this server's configured maximum upload size ({max_size}"
-" MiB)."
+"File is larger than this server's configured maximum upload size ({max_size} "
+"MiB)."
 msgstr ""
 
 #: zerver/views/tusd.py:249
@@ -6669,19 +7097,19 @@ msgstr ""
 msgid "Uploaded file is larger than the allowed limit of {max_file_size} MiB"
 msgstr ""
 
-#: zerver/views/typing.py:50 zerver/views/typing.py:92
+#: zerver/views/typing.py:53 zerver/views/typing.py:96
 msgid "User has disabled typing notifications for channel messages"
 msgstr ""
 
-#: zerver/views/typing.py:60
+#: zerver/views/typing.py:64
 msgid "Missing 'to' argument"
 msgstr "Недостаје 'за' аргумент"
 
-#: zerver/views/typing.py:65
+#: zerver/views/typing.py:69
 msgid "Empty 'to' list"
 msgstr "Празна 'за' листа"
 
-#: zerver/views/typing.py:68 zerver/views/typing.py:102
+#: zerver/views/typing.py:72 zerver/views/typing.py:106
 msgid "User has disabled typing notifications for direct messages"
 msgstr "Корисник је онемогућио обавештење за куцкање за директне поруке"
 
@@ -6750,7 +7178,8 @@ msgstr "Корисничка група {group_id} је већ подгрупа 
 msgid ""
 "User group {user_group_id} is already a subgroup of one of the passed "
 "subgroups."
-msgstr "Корисничка група {user_group_id} је већ подгрупа једне од наведених подгрупа."
+msgstr ""
+"Корисничка група {user_group_id} је већ подгрупа једне од наведених подгрупа."
 
 #: zerver/views/user_groups.py:463
 #, python-brace-format
@@ -6815,7 +7244,8 @@ msgstr ""
 #: zerver/views/users.py:282
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
-msgstr "Дозволу власника није могуће уклонити од јединог власника организације."
+msgstr ""
+"Дозволу власника није могуће уклонити од јединог власника организације."
 
 #: zerver/views/users.py:324
 msgid "Invalid new email address."
@@ -6836,7 +7266,8 @@ msgstr "Није успела промена власника, корисник 
 
 #: zerver/views/users.py:475
 msgid "Failed to change owner, bots can't own other bots"
-msgstr "Није успела промена власника, ботови не могу бити власници других ботова"
+msgstr ""
+"Није успела промена власника, ботови не могу бити власници других ботова"
 
 #: zerver/views/users.py:586
 msgid ""
@@ -6974,9 +7405,11 @@ msgstr ""
 #: zerver/worker/deferred_work.py:197
 #, python-brace-format
 msgid ""
-"Your data export is complete. [View and download "
-"exports]({export_settings_link})."
-msgstr "Извоз ваших података је завршен. [Прегледај и преузми извоз]({export_settings_link})."
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
+msgstr ""
+"Извоз ваших података је завршен. [Прегледај и преузми извоз]"
+"({export_settings_link})."
 
 #: zilencer/auth.py:61
 msgid "The verification secret has expired"
@@ -7044,8 +7477,8 @@ msgstr ""
 #: zilencer/views.py:342
 #, python-brace-format
 msgid ""
-"The global limits on recent usage of this endpoint have been reached. Please"
-" try again later or reach out to {support_email} for assistance."
+"The global limits on recent usage of this endpoint have been reached. Please "
+"try again later or reach out to {support_email} for assistance."
 msgstr ""
 
 #: zilencer/views.py:350
@@ -7101,18 +7534,21 @@ msgstr "Откривена је дуплирана регистрација."
 msgid "Malformed audit log data"
 msgstr ""
 
-#: zproject/backends.py:554
+#: zproject/backends.py:557
 msgid "You need to reset your password."
 msgstr "Морате да ресетујете вашу лозинку."
 
-#: zproject/backends.py:2446
+#: zproject/backends.py:2449
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:3166
+#: zproject/backends.py:3169
 msgid "Invalid OTP"
 msgstr "Неисправан OTP"
 
-#: zproject/backends.py:3169
+#: zproject/backends.py:3172
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
+
+#~ msgid "Try Zulip now"
+#~ msgstr "Пробајте Зулип сада"
