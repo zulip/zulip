@@ -144,7 +144,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         ) as enough_traffic_mock:
             bulk_handle_digest_email([othello.id], in_the_future)
             mock_send_future_email.assert_called()
-            enough_traffic_mock.assert_called_once_with([], 0)
+            enough_traffic_mock.assert_called_once_with(0, 0)
 
     @mock.patch("zerver.lib.digest.enough_traffic")
     @mock.patch("zerver.lib.digest.send_future_email")
