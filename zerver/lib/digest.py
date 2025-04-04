@@ -268,7 +268,7 @@ def gather_new_streams(
     return len(new_streams), {"html": channels_html, "plain": channels_plain}
 
 
-def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
+def enough_traffic(hot_conversations: int, new_streams: int) -> bool:
     return bool(hot_conversations or new_streams)
 
 
@@ -400,7 +400,7 @@ def bulk_handle_digest_email(user_ids: list[int], cutoff: float) -> None:
 
     for user, context in bulk_get_digest_context(users, cutoff):
         # We don't want to send emails containing almost no information.
-        if not enough_traffic(context["hot_conversations"], context["new_streams_count"]):
+        if not enough_traffic(len(context["hot_conversations"]), context["new_streams_count"]):
             continue
 
         digest_users.append(user)
