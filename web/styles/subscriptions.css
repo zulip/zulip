@@ -263,6 +263,13 @@ h4.user_group_setting_subsection_title {
     display: inline-flex;
     width: 100%;
     align-items: center;
+
+    /* We need on click events to fire on this input for our typeahead.
+       This ensures that the input occupies space in the parent
+       container. */
+    .input {
+        flex-grow: 1;
+    }
 }
 
 .add_subscribers_container .add_subscriber_button_wrapper,
