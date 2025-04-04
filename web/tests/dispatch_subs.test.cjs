@@ -13,8 +13,6 @@ const test_user = events.test_user;
 
 const compose_recipient = mock_esm("../src/compose_recipient");
 const message_lists = mock_esm("../src/message_lists");
-const message_live_update = mock_esm("../src/message_live_update");
-const message_view_header = mock_esm("../src/message_view_header");
 const narrow_state = mock_esm("../src/narrow_state");
 const overlays = mock_esm("../src/overlays");
 const settings_org = mock_esm("../src/settings_org");
@@ -225,16 +223,21 @@ test("stream delete (normal)", ({override}) => {
         bookend_updates += 1;
     });
 
+    const removed_stream_ids = [];
+
+    override(stream_settings_ui, "remove_stream", (stream_id) => {
+        removed_stream_ids.push(stream_id);
+    });
+
     let removed_sidebar_rows = 0;
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
-    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
-    override(message_live_update, "rerender_messages_view", noop);
-    override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
+
+    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     // We should possibly be able to make a single call to
     // update_trailing_bookend, but we currently do it for each stream.
@@ -263,6 +266,12 @@ test("stream delete (special streams)", ({override}) => {
 
     stream_data.subscribe_myself(devel_sub);
 
+    const removed_stream_ids = [];
+
+    override(stream_settings_ui, "remove_stream", (stream_id) => {
+        removed_stream_ids.push(stream_id);
+    });
+
     // sanity check data
     assert.equal(event.stream_ids.length, 2);
     override(realm, "realm_new_stream_announcements_stream_id", event.stream_ids[0]);
@@ -270,19 +279,18 @@ test("stream delete (special streams)", ({override}) => {
     override(realm, "realm_zulip_update_announcements_stream_id", event.stream_ids[0]);
 
     override(settings_org, "sync_realm_settings", noop);
-    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(settings_streams, "update_default_streams_table", noop);
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
-    override(message_live_update, "rerender_messages_view", noop);
-    override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
 
-    assert.equal(realm.realm_new_stream_announcements_stream_id, -1);
-    assert.equal(realm.realm_signup_announcements_stream_id, -1);
-    assert.equal(realm.realm_zulip_update_announcements_stream_id, -1);
+    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
+
+    assert.equal(realm.realm_new_stream_announcements_stream_id, event.stream_ids[0]);
+    assert.equal(realm.realm_signup_announcements_stream_id, event.stream_ids[1]);
+    assert.equal(realm.realm_zulip_update_announcements_stream_id, event.stream_ids[0]);
 });
 
 test("stream delete (stream is selected in compose)", ({override}) => {
@@ -308,6 +316,12 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     stream_data.subscribe_myself(devel_sub);
     compose_state.set_stream_id(event.stream_ids[0]);
 
+    const removed_stream_ids = [];
+
+    override(stream_settings_ui, "remove_stream", (stream_id) => {
+        removed_stream_ids.push(stream_id);
+    });
+
     override(settings_streams, "update_default_streams_table", noop);
 
     narrow_state.narrowed_to_stream_id = () => true;
@@ -321,12 +335,11 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
-    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
-    override(message_live_update, "rerender_messages_view", noop);
-    override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
+
+    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     assert.equal(compose_state.stream_name(), "");
 

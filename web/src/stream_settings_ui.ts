@@ -315,6 +315,21 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     update_empty_left_panel_message();
 }
 
+export function remove_stream(stream_id: number): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    // It is possible that row is empty when we deactivate a
+    // stream, but we let jQuery silently handle that.
+    const $row = stream_ui_updates.row_for_stream_id(stream_id);
+    $row.remove();
+    update_empty_left_panel_message();
+    if (hash_parser.is_editing_stream(stream_id)) {
+        stream_edit.open_edit_panel_empty();
+    }
+}
+
 export function update_settings_for_subscribed(slim_sub: StreamSubscription): void {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);

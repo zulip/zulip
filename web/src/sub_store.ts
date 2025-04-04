@@ -63,6 +63,10 @@ export function clear(): void {
     subs_by_stream_id.clear();
 }
 
+export function delete_sub(stream_id: number): void {
+    subs_by_stream_id.delete(stream_id);
+}
+
 export function add_hydrated_sub(stream_id: number, sub: StreamSubscription): void {
     // The only code that should call this directly is
     // in stream_data.js. Grep there to find callers.
