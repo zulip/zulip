@@ -18,7 +18,6 @@ from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
-from django.views.defaults import server_error
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
 
@@ -946,11 +945,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
-                    # BUG: Because Django's server_error doesn't
-                    # support context, this doesn't render the
-                    # template properly for the corporate case.
-                    # https://docs.djangoproject.com/en/5.1/ref/views/#the-500-server-error-view
-                    return server_error(request)
+                    return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
 
             if key_record is not None:
@@ -1111,7 +1106,7 @@ def accounts_home(
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during user registration")
                 if settings.CORPORATE_ENABLED:
-                    return server_error(request)
+                    return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
             signup_send_confirm_url = reverse("signup_send_confirm")
             query = urlencode({"email": email})
