@@ -1468,6 +1468,7 @@
   "This channel doesn't exist, or you are not allowed to view it.": "此频道对您不可见或不存在。",
   "This channel has been archived.": "此频道已被归档。",
   "This channel has no subscribers.": "此频道没有订阅者。",
+  "This channel has {sub_count, plural, =0 {no subscribers} one {# subscriber} other {# subscribers}}.": "",
   "This content remains saved in your drafts.": "此内容仍保存在您的草稿中。",
   "This conversation also has older unread messages.": "该对话中还有更早的未读消息。",
   "This conversation does not include any users who can authorize it.": "该对话不包括任何可以授权的用户。",
