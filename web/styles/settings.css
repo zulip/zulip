@@ -238,7 +238,7 @@ h3,
         }
     }
 
-    .table-sticky-headers th {
+    .table-sticky-headers {
         position: sticky;
         top: 0;
         z-index: 1;
