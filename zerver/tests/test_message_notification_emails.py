@@ -190,8 +190,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -250,8 +250,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -290,8 +290,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -349,8 +349,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -389,8 +389,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -497,15 +497,15 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             if message_content_disabled_by_realm:
                 verify_body_include = [
-                    "This email does not include message content because your organization has disabled",
+                    "This email does not include message content because your organization",
                     "http://zulip.testserver/help/hide-message-content-in-emails",
                     "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             elif message_content_disabled_by_user:
                 verify_body_include = [
-                    "This email does not include message content because you have disabled message ",
-                    "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                    "This email does not include message content because you have chosen to ",
+                    "http://zulip.testserver/help/email-notifications#hide-message-content ",
                     "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
@@ -565,8 +565,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
             verify_body_does_not_include: list[str] = []
         else:
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
