@@ -24,6 +24,8 @@ You will only see the options below if you have the required permissions.
 1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the channel.
 
+1. Configure **Send notification message to newly subscribed users** as desired.
+
 1. Click **Add**.
 
 !!! tip ""
@@ -51,6 +53,8 @@ You will only see the options below if you have the required permissions.
 
 1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the channel.
+
+1. Configure **Send notification message to newly subscribed users** as desired.
 
 1. Click **Add**.
 
