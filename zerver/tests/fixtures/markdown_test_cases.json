@@ -361,8 +361,8 @@
     {
       "name": "star_emoji",
       "input": "**:smile:**",
-      "expected_output": "<p><strong><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></strong></p>",
-      "text_content": "\ud83d\ude42"
+      "expected_output": "<p><strong><span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></strong></p>",
+      "text_content": "\ud83d\ude04"
     },
     {
       "name": "star_strong_em",
@@ -525,8 +525,8 @@
     {
       "name": "many_emoji",
       "input":  "test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
-      "expected_output": "<p>test <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span> again <span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
-      "text_content": "test \ud83d\ude42 again \ud83d\udca9\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:"
+      "expected_output": "<p>test <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span> again <span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
+      "text_content": "test \ud83d\ude04 again \ud83d\udca9\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:"
     },
     {
       "name": "translate_emoticons_not_enabled",
@@ -538,15 +538,15 @@
     {
       "name": "translate_emoticons_enabled",
       "input": ":)",
-      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>",
+      "expected_output": "<p><span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span></p>",
       "text_content": "\ud83d\ude42",
       "translate_emoticons": true
     },
     {
       "name": "translate_emoticons",
       "input":  ":) foo :( bar <3 with space : ) real emoji :smile:",
-      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span> foo <span aria-label=\"frown\" class=\"emoji emoji-1f641\" role=\"img\" title=\"frown\">:frown:</span> bar <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> with space : ) real emoji <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>",
-      "text_content": "\ud83d\ude42 foo \ud83d\ude41 bar \u2764 with space : ) real emoji \ud83d\ude42",
+      "expected_output": "<p><span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span> foo <span aria-label=\"frown\" class=\"emoji emoji-1f641\" role=\"img\" title=\"frown\">:frown:</span> bar <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> with space : ) real emoji <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>",
+      "text_content": "\ud83d\ude42 foo \ud83d\ude41 bar \u2764 with space : ) real emoji \ud83d\ude04",
       "translate_emoticons": true
     },
     {
@@ -559,7 +559,7 @@
     {
       "name": "translate_emoticons_newline",
       "input":  ":) test\n:) test",
-      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span> test<br>\n<span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span> test</p>",
+      "expected_output": "<p><span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span> test<br>\n<span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span> test</p>",
       "text_content": "\ud83d\ude42 test\n\ud83d\ude42 test",
       "translate_emoticons": true
     },
@@ -573,14 +573,14 @@
     {
       "name": "translate_emoticons_at_sentence_end",
       "input": "Translate this :).",
-      "expected_output": "<p>Translate this <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span>.</p>",
+      "expected_output": "<p>Translate this <span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span>.</p>",
       "text_content": "Translate this \ud83d\ude42.",
       "translate_emoticons": true
     },
     {
       "name": "translate_emoticons_between_symbols",
       "input": "Translate this !:)?",
-      "expected_output": "<p>Translate this !<span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span>?</p>",
+      "expected_output": "<p>Translate this !<span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span>?</p>",
       "marked_expected_output": "<p>Translate this !:)?</p>",
       "text_content": "Translate this !\ud83d\ude42?",
       "translate_emoticons": true
@@ -707,7 +707,7 @@
     {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
-      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span>, <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span>; <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>"
+      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span>, <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span>; <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>"
     },
     {
       "name": "new_emoji_test",
@@ -748,7 +748,7 @@
     {
       "name": "valid_emoji_preceded_by_invalid_emoji",
       "input": "This is :invalidemoji: which should not prevent rendering :smile:",
-      "expected_output": "<p>This is :invalidemoji: which should not prevent rendering <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>"
+      "expected_output": "<p>This is :invalidemoji: which should not prevent rendering <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>"
     },
     {
       "name": "safe_html",
@@ -993,8 +993,8 @@
     },
     {
       "name": "spoilers_with_header_markdown",
-      "input": "```spoiler [Header](https://example.com) :smile:\ncontent\n```",
-      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>",
+      "input": "```spoiler [Header](https://example.com) :slight_smile:\ncontent\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>",
       "text_content": "Header 🙂 (…)\n"
     },
     {
