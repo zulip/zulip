@@ -83,6 +83,9 @@ export function get_recipient_label(
         }
         if (user_ids_string !== undefined) {
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
+            if (user_ids.length === 1 && user_ids[0] && people.is_my_user_id(user_ids[0])) {
+                return {label_text: "yourself"};
+            }
             return {label_text: message_store.get_pm_full_names(user_ids)};
         }
         // Show the standard button text for empty narrows without
@@ -94,6 +97,14 @@ export function get_recipient_label(
     if (selected_message !== undefined) {
         if (selected_message?.is_stream) {
             return get_stream_recipient_label(selected_message.stream_id, selected_message.topic);
+        }
+        const user_ids = selected_message.to_user_ids;
+        if (
+            user_ids &&
+            !user_ids.includes(",") &&
+            people.is_my_user_id(Number.parseInt(user_ids, 10))
+        ) {
+            return {label_text: "yourself"};
         }
         return {label_text: selected_message.display_reply_to};
     }
