@@ -1,11 +1,15 @@
 import fnmatch
 import importlib
+import json
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
+from django.core.cache import cache
+from django.db.models import Q
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from pydantic import Json
@@ -27,7 +31,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.models import UserProfile
+from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -273,3 +277,89 @@ def parse_multipart_string(body: str) -> dict[str, str]:
         data[field_name] = body
 
     return data
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_user_by_external_account(
+    realm: Realm, external_username: str, service: str = "github"
+) -> list[dict]:
+    """
+    Fetch active users by external account username for a specific service.
+    Args:
+        realm: The realm to search in.
+        external_username: The username (e.g., "zulipbot").
+        service: The service type (e.g., "github" or "jira").
+    Returns:
+        List of user dictionaries (id, full_name, email, external_username, service).
+    """
+    # Use the cached field_id if available
+    cache_key = f"external_field_id:{realm.id}:{service}"
+    field_id = cache.get(cache_key)
+
+    if field_id is not None:
+        # If we have the field_id cached, use it directly
+        values = (
+            CustomProfileFieldValue.objects.filter(
+                field_id=field_id,
+                value__iexact=external_username,
+                user_profile__realm_id=realm.id,
+                user_profile__is_active=True,
+            )
+            .select_related("user_profile")
+            .values("user_profile__id", "user_profile__full_name", "user_profile__email")
+        )
+    else:
+        # Get field and users in a single query using a JOIN
+        try:
+            values = (
+                CustomProfileFieldValue.objects.filter(
+                    field__realm=realm,
+                    field__field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+                    value__iexact=external_username,
+                    user_profile__realm_id=realm.id,
+                    user_profile__is_active=True,
+                )
+                .filter(
+                    Q(field__field_data__contains=f'"service": "{service}"')
+                    | Q(field__field_data__contains=f'"subtype":"{service}"')
+                )
+                .select_related("user_profile", "field")
+                .values(
+                    "user_profile__id",
+                    "user_profile__full_name",
+                    "user_profile__email",
+                    "field__id",
+                )
+            )
+
+            # Cache the field_id if we found results
+            if values.exists():
+                field_id = values.first()["field__id"]
+                cache.set(cache_key, field_id, timeout=3600)  # Cache for 1 hour
+
+        except json.JSONDecodeError:
+            return []
+
+    result = [
+        {
+            "id": value["user_profile__id"],
+            "full_name": value["user_profile__full_name"],
+            "email": value["user_profile__email"],
+            "external_username": external_username,
+            "service": service,
+        }
+        for value in values
+    ]
+
+    # Warn if multiple users match (optional handling)
+    if len(result) > 1:
+        logger.warning(
+            "Multiple users found for %s username '%s' in realm %s",
+            service,
+            external_username,
+            realm.id,
+        )
+
+    return result
