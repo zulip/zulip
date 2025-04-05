@@ -1,0 +1,5 @@
+Monitor Storage size monitor just entered alert status. Please investigate the issue.
+- Trigger: Storage size over 1TB
+- Severity: 1
+- Period start: 2025-02-25T00:58:39.607Z UTC
+- Period end: 2025-02-25T00:59:39.607Z UTC
