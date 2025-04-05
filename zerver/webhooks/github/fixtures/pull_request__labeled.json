@@ -1,0 +1,20 @@
+{
+    "action": "labeled",
+    "pull_request": {
+        "html_url": "https://github.com/org/repo/pull/123",
+        "number": 123,
+        "title": "Test PR"
+    },
+    "label": {
+        "name": "bug"
+    },
+    "sender": {
+        "login": "username",
+        "html_url": "https://github.com/username"
+    },
+    "repository": {
+        "name": "repo",
+        "private": false,
+        "full_name": "org/repo"
+    }
+}

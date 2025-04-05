@@ -1,0 +1,16 @@
+{
+    "action": "approved",
+    "pull_request": {
+        "html_url": "https://github.com/org/repo/pull/123",
+        "number": 123,
+        "title": "Test PR"
+    },
+    "sender": {
+        "login": "username"
+    },
+    "repository": {
+        "name": "repo",
+        "private": false,
+        "full_name": "org/repo"
+    }
+}
