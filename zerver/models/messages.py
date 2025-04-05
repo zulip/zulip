@@ -244,7 +244,6 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_id",
             ),
             models.Index(
-                # Used by 0680_rename_general_chat_to_empty_string_topic
                 fields=["id"],
                 condition=Q(edit_history__isnull=False),
                 name="zerver_message_edit_history_id",
