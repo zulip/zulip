@@ -1,3 +1,4 @@
+import hashlib
 import re
 import secrets
 from collections.abc import Callable
@@ -68,3 +69,7 @@ def get_fk_field_name(model: type[models.Model], related_model: type[models.Mode
     assert len(foreign_key_fields_to_related_model) == 1
 
     return foreign_key_fields_to_related_model[0].name
+
+
+def sha256_hash(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()

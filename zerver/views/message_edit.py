@@ -153,6 +153,7 @@ def update_message_backend(
     send_notification_to_old_thread: Json[bool] = False,
     send_notification_to_new_thread: Json[bool] = True,
     content: str | None = None,
+    prev_content_sha256: str | None = None,
 ) -> HttpResponse:
     updated_message_result = check_update_message(
         user_profile,
@@ -163,6 +164,7 @@ def update_message_backend(
         send_notification_to_old_thread,
         send_notification_to_new_thread,
         content,
+        prev_content_sha256,
     )
 
     # Include the number of messages changed in the logs

@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 378**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Added
+ optional parameter `prev_content_sha256` which is the sha256 hash
+ of the present message content, used to check the
+ client side version of the message with the one in db before
+ updating the message content.
+
 **Feature level 377**
 
 * [`GET /events`](/api/get-events): When a user is deactivate, send
