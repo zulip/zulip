@@ -61,7 +61,6 @@ AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in thi
 
 def validate_email_change_request(user_profile: UserProfile, new_email: str) -> None:
     if not user_profile.is_active:
-        # TODO: Make this into a user-facing error, not JSON
         raise UserDeactivatedError
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
@@ -365,7 +364,12 @@ def json_change_settings(
     if email is not None:
         new_email = email.strip()
         if user_profile.delivery_email != new_email:
-            validate_email_change_request(user_profile, new_email)
+            try:
+                validate_email_change_request(user_profile, new_email)
+            except UserDeactivatedError as e:
+                # Raise JsonableError here to show an inline ui error
+                # report in the "Change email" modal.
+                raise JsonableError(e.msg_format())
 
             ratelimited, time_until_free = RateLimitedUser(
                 user_profile, domain="email_change_by_user"
