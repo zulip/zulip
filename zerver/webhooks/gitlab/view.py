@@ -489,16 +489,25 @@ def get_deployment_event_body(payload: WildValue, include_title: bool) -> str:
 def get_emoji_event_transformed_type(payload: WildValue, type: str) -> str:
     if type == "MergeRequest":
         return "MR"
+    elif type == "Note":
+        event_type = payload["note"]["noteable_type"].tame(check_string)
+        return get_emoji_event_transformed_type(payload, event_type)
     return type.lower()
+
+
+def get_emoji_event_subtype_message(type: str) -> str:
+    return "a comment" if type == "Note" else ""
 
 
 def get_emoji_event_url_id(payload: WildValue) -> tuple[str, str]:
     url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
 
-    # Extract the last numeric ID in the URL path.
+    # Extract the last numeric ID in the URL path before any '#' fragment.
     # Example:
     # https://gitlab.com/abc/def/issues/123 → "123"
-    match = re.search(r"/(\d+)(?:/)?$", url)
+    # https://gitlab.com/abc/def/-/merge_requests/456#note_789 → "456"
+    clean_url = url.split("#")[0]
+    match = re.search(r"/(\d+)(?:/)?$", clean_url)
     assert match is not None
     return url, match.group(1)
 
@@ -531,10 +540,12 @@ def get_emoji_event_body(action: str, payload: WildValue, include_title: bool) -
     awardable_type = emoji["awardable_type"].tame(check_string)
     transformed_type = get_emoji_event_transformed_type(payload, awardable_type)
     url, id = get_emoji_event_url_id(payload)
+    subtype = get_emoji_event_subtype_message(awardable_type)
     suffix = ""
 
     if include_title or awardable_type == "Note":
-        suffix = f" {preposition} [{transformed_type} #{id}]({url})"
+        target = "" if awardable_type == "Note" else f"{transformed_type} #{id}"
+        suffix = f" {preposition} [{subtype}{target}]({url})"
 
     return EMOJI_MESSAGE_TEMPLATE.format(
         user_name=get_issue_user_name(payload),

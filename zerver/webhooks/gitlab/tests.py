@@ -798,3 +798,11 @@ A trivial change that should probably be ignored.
             expected_topic_name,
             expected_message,
         )
+
+    def test_emoji_revoke_in_merge_request_note(self) -> None:
+        expected_topic_name = "sample / MR #1 Edit README.md"
+        expected_message = "Varun Kolanu removed the emoji :heart: from [a comment](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1#note_2431339003)."
+
+        self.check_webhook(
+            "emoji_hook__revoke__merge_request_note", expected_topic_name, expected_message
+        )
