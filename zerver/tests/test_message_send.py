@@ -2671,7 +2671,22 @@ class PersonalMessageSendTest(ZulipTestCase):
             user_group,
             acting_user=None,
         )
-        self.send_personal_message(user_profile, cordelia)
+        with self.assert_database_query_count(16):
+            self.send_personal_message(user_profile, cordelia)
+
+        # Test that query count decreases if setting is set to a system group.
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_initiator_group",
+            members_group,
+            acting_user=None,
+        )
+        othello = self.example_user("othello")
+        with self.assert_database_query_count(15):
+            self.send_personal_message(user_profile, othello)
 
     def test_direct_message_permission_group_setting(self) -> None:
         """
@@ -2743,7 +2758,26 @@ class PersonalMessageSendTest(ZulipTestCase):
             user_group,
             acting_user=None,
         )
-        self.send_personal_message(user_profile, cordelia)
+        cordelia.refresh_from_db()
+
+        with self.assertRaises(DirectMessagePermissionError):
+            self.send_personal_message(cordelia, polonius)
+
+        with self.assert_database_query_count(16):
+            self.send_personal_message(user_profile, cordelia)
+
+        # Test that query count decreases if setting is set to a system group.
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_permission_group",
+            members_group,
+            acting_user=None,
+        )
+        with self.assert_database_query_count(15):
+            self.send_personal_message(user_profile, cordelia)
 
         do_change_realm_permission_group_setting(
             realm,

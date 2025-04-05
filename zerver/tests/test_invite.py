@@ -1029,7 +1029,7 @@ class InviteUserTest(InviteUserBase):
             verona, "can_add_subscribers_group", members_group, acting_user=current_user
         )
         invitee = self.nonreg_email("newguy")
-        self.assertEqual(is_user_in_group(admins_group, current_user), False)
+        self.assertEqual(is_user_in_group(admins_group.id, current_user), False)
         self.assert_json_success(
             self.invite(
                 invitee,

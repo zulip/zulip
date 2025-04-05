@@ -942,10 +942,6 @@ def base_get_user_queryset() -> QuerySet[UserProfile]:
         "realm",
         "realm__can_access_all_users_group",
         "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
         "bot_owner",
     )
 

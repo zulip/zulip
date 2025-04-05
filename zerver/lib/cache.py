@@ -527,6 +527,10 @@ def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
     return f"active_non_guest_user_ids:{realm_id}"
 
 
+def get_realm_system_groups_cache_key(realm_id: int) -> str:
+    return f"realm_system_groups:{realm_id}"
+
+
 bot_dict_fields: list[str] = [
     "api_key",
     "avatar_source",

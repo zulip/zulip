@@ -985,7 +985,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_private": orjson.dumps(False).decode(),
         }
         stream = self.subscribe(user_profile, "private_stream_2")
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertTrue(stream.invite_only)
         self.assert_json_error(result, "You do not have permission to administer this channel.")
@@ -1069,7 +1069,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_private": orjson.dumps(True).decode(),
         }
         stream = self.subscribe(user_profile, "public_stream_2")
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertFalse(stream.invite_only)
         self.assert_json_error(result, "You do not have permission to administer this channel.")
@@ -1265,7 +1265,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_web_public": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "You do not have permission to administer this channel.")
 
@@ -1371,7 +1371,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_web_public": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "You do not have permission to administer this channel.")
 
@@ -1461,7 +1461,7 @@ class StreamAdminTest(ZulipTestCase):
         params = {
             "is_default_stream": orjson.dumps(True).decode(),
         }
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "You do not have permission to administer this channel.")
         self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
@@ -1501,7 +1501,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # User still needs to be an admin to remove a default channel.
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        self.assertTrue(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "You do not have permission to change default channels.")
@@ -2012,7 +2012,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream("new_stream")
         stream = self.subscribe(user_profile, "new_stream")
 
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_error(result, "You do not have permission to administer this channel.")
 
@@ -2266,7 +2266,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, "stream_name1")
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
         self.assert_json_error(result, "You do not have permission to administer this channel.")
 
@@ -2548,7 +2548,7 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
 
         stream = get_stream("stream_name1", user_profile.realm)
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, user_profile))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         result = self.client_patch(
             f"/json/streams/{stream.id}", {"description": "Test description"}
         )
@@ -2769,7 +2769,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         shiva = self.example_user("shiva")
         self.login_user(shiva)
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group, shiva))
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, shiva))
 
         params = {}
         params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
@@ -2931,7 +2931,7 @@ class StreamAdminTest(ZulipTestCase):
             shiva_group_member_dict,
             acting_user=shiva,
         )
-        self.assertTrue(is_user_in_group(stream.can_administer_channel_group, shiva))
+        self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, shiva))
         params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
         self.login_user(shiva)
         result = self.client_patch(
