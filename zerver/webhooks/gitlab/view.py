@@ -31,6 +31,11 @@ from zerver.lib.webhooks.git import (
 )
 from zerver.models import UserProfile
 
+TOPIC_WITH_EMOJI_INFO_TEMPLATE = "{repo} / {type} {id}{subtype} emoji"
+EMOJI_MESSAGE_TEMPLATE = (
+    "{user_name} {action} an emoji {preposition} [{subtype}{type} {id}]({url}):\n{emoji_text}"
+)
+
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name.startswith("build"):
@@ -369,6 +374,44 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
     return body
 
 
+def get_emoji_hook_transformed_type(payload: WildValue, type: str) -> str:
+    if type == "MergeRequest":
+        return "MR"
+    elif type == "Note":
+        type = payload["note"]["noteable_type"].tame(check_string)
+        return get_emoji_hook_transformed_type(payload, type)
+    return type
+
+
+def get_emoji_hook_subtype_message(type: str) -> str:
+    return "a comment on " if type == "Note" else ""
+
+
+def get_emoji_hook_subtype_topic(type: str) -> str:
+    return " comment" if type == "Note" else ""
+
+
+def get_emoji_hook_event_body(action: str, payload: WildValue, include_title: bool) -> str:
+    transformed_action = {"award": "added", "revoke": "removed"}.get(action, "reacted")
+    preposition = {"award": "to", "revoke": "from"}.get(action, "to")
+    emoji = payload["object_attributes"]
+    type = emoji["awardable_type"].tame(check_string)
+    transformed_type = get_emoji_hook_transformed_type(payload, type)
+    url = emoji["awarded_on_url"].tame(check_string)
+    content_message = CONTENT_MESSAGE_TEMPLATE.format(message=emoji["name"].tame(check_string))
+
+    return EMOJI_MESSAGE_TEMPLATE.format(
+        user_name=get_issue_user_name(payload),
+        action=transformed_action,
+        preposition=preposition,
+        subtype=get_emoji_hook_subtype_message(type),
+        type=transformed_type,
+        id="#" + url.split("/")[-1].split("#")[0],
+        url=url,
+        emoji_text=content_message,
+    )
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -439,6 +482,8 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
+    "Emoji Hook award": partial(get_emoji_hook_event_body, "award"),
+    "Emoji Hook revoke": partial(get_emoji_hook_event_body, "revoke"),
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -533,6 +578,19 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             id=payload["snippet"]["id"].tame(check_int),
             title=payload["snippet"]["title"].tame(check_string),
         )
+
+    elif event.startswith("Emoji Hook"):
+        type = payload["object_attributes"]["awardable_type"].tame(check_string)
+        return TOPIC_WITH_EMOJI_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type=get_emoji_hook_transformed_type(payload, type),
+            id="#"
+            + payload["object_attributes"]["awarded_on_url"]
+            .tame(check_string)
+            .split("/")[-1]
+            .split("#")[0],
+            subtype=get_emoji_hook_subtype_topic(type),
+        )
     return get_repo_name(payload)
 
 
@@ -556,6 +614,9 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
         branch = get_branch_name(payload)
         if not is_branch_name_notifiable(branch, branches):
             return None
+    elif event == "Emoji Hook":
+        action = payload["event_type"].tame(check_string)
+        event = f"{event} {action}"
 
     if event in EVENT_FUNCTION_MAPPER:
         return event
