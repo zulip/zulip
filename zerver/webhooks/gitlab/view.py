@@ -37,7 +37,7 @@ DESIGN_COMMENT_MESSAGE_TEMPLATE = (
 )
 
 EMOJI_MESSAGE_TEMPLATE = (
-    "{user_name} {action} the emoji **{emoji_text}** {preposition} [{type} #{id}]({url})"
+    "{user_name} {action} the emoji **{emoji_text}** {preposition} [{subtype}{type} #{id}]({url})"
 )
 
 
@@ -421,6 +421,10 @@ def get_emoji_hook_transformed_type(payload: WildValue, type: str) -> str:
     return type.lower()
 
 
+def get_emoji_hook_subtype_message(type: str) -> str:
+    return "a comment on " if type == "Note" else ""
+
+
 def get_emoji_hook_url_id(payload: WildValue) -> tuple[str, str]:
     url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
     return url, url.split("/")[-1].split("#")[0]
@@ -459,6 +463,7 @@ def get_emoji_hook_event_body(action: str, payload: WildValue, include_title: bo
         action=transformed_action,
         preposition=preposition,
         type=transformed_type,
+        subtype=get_emoji_hook_subtype_message(awardable_type),
         id=id,
         url=url,
         emoji_text=emoji["name"].tame(check_string),
