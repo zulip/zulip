@@ -378,6 +378,20 @@ function handle_keydown(
                 }
             } else {
                 // Enter
+
+                // We call `warn_if_quoting_in_progress` here because
+                // the banner will be cleared the second time someone
+                // hits send while the quoted message is being fetched
+                // and the message will be sent as is with the quoting
+                // placeholder.
+                compose_validate.warn_if_quoting_in_progress();
+                if (compose_state.is_quoting_in_progress_warning_displayed()) {
+                    return;
+                }
+                // We reset the banner and the flag as we have
+                // now decided to send anyways.
+                compose_state.set_quoting_in_progress(false);
+
                 if (should_enter_send(e)) {
                     e.preventDefault();
                     if (

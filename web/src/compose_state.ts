@@ -7,6 +7,8 @@ import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
+let quoting_in_progress = false;
+let displayed_quoting_in_progress_warning = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 let preview_render_count = 0;
@@ -26,6 +28,21 @@ export function set_recipient_edited_manually(flag: boolean): void {
 
 export function is_recipient_edited_manually(): boolean {
     return recipient_edited_manually;
+}
+
+export function set_quoting_in_progress(flag: boolean): void {
+    quoting_in_progress = flag;
+}
+
+export function get_quoting_in_progress(): boolean {
+    return quoting_in_progress;
+}
+
+export function set_displayed_quoting_in_progress_warning(flag: boolean): void {
+    displayed_quoting_in_progress_warning = flag;
+}
+export function is_quoting_in_progress_warning_displayed(): boolean {
+    return displayed_quoting_in_progress_warning;
 }
 
 export function set_is_content_unedited_restored_draft(flag: boolean): void {

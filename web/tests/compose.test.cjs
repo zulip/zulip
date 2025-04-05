@@ -666,6 +666,7 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
     override_rewire(compose, "finish", () => {
         compose_finish_checked = true;
     });
+    override_rewire(compose_validate, "clear_quoting_in_progress_warning", noop);
 
     new FakeComposeBox().trigger_submit_handler_on_compose_form({
         preventDefault() {
