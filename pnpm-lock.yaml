@@ -107,7 +107,7 @@ importers:
         specifier: ^5.1.0
         version: 5.3.3
       clipboard:
-        specifier: ^2.0.4
+        specifier: ^2.0.11
         version: 2.0.11
       colord:
         specifier: ^2.9.3
@@ -323,6 +323,9 @@ importers:
       '@types/blueimp-md5':
         specifier: ^2.18.0
         version: 2.18.2
+      '@types/clipboard':
+        specifier: ^2.0.10
+        version: 2.0.10
       '@types/co-body':
         specifier: ^6.1.3
         version: 6.1.3
@@ -2416,6 +2419,10 @@ packages:
 
   '@types/bonjour@3.5.13':
     resolution: {integrity: sha512-z9fJ5Im06zvUL548KvYNecEVlA7cVDkGUi6kZusb04mpyEFKCIZJvloCcmpmLaIahDpOQGHaHmG6imtPMmPXGQ==}
+
+  '@types/clipboard@2.0.10':
+    resolution: {integrity: sha512-6CIsNdBfOTN92GHhQ0BaGY9KoV4DPH7ynCk5eggSDy3HW7OHLKWJUskL72uoVxl2kZ/XCq28TEgI0HKxLbRxyQ==}
+    deprecated: This is a stub types definition. clipboard provides its own type definitions, so you do not need this installed.
 
   '@types/co-body@6.1.3':
     resolution: {integrity: sha512-UhuhrQ5hclX6UJctv5m4Rfp52AfG9o9+d9/HwjxhVB5NjXxr5t9oKgJxN8xRHgr35oo8meUEHUPFWiKg6y71aA==}
@@ -11543,6 +11550,10 @@ snapshots:
   '@types/bonjour@3.5.13':
     dependencies:
       '@types/node': 22.13.10
+
+  '@types/clipboard@2.0.10':
+    dependencies:
+      clipboard: 2.0.11
 
   '@types/co-body@6.1.3':
     dependencies:

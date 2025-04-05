@@ -1,7 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/confirm_deactivate_custom_emoji.hbs";
 import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_emoji_settings_warning.hbs";
 import render_add_emoji from "../templates/settings/add_emoji.hbs";
@@ -17,9 +16,8 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload_widget from "./upload_widget.ts";
 import type {CropperOptions} from "./upload_widget.ts";

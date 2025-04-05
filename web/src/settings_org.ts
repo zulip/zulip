@@ -1483,7 +1483,7 @@ export function build_page(): void {
     }
 
     function upload_realm_logo_or_icon(
-        $file_input: JQuery<HTMLInputElement>,
+        $file_input: HTMLInputElement | {files: File[]},
         night: boolean | null,
         icon: boolean,
     ): void {
@@ -1493,7 +1493,9 @@ export function build_page(): void {
 
         assert(csrf_token !== undefined);
         form_data.append("csrfmiddlewaretoken", csrf_token);
-        const files = util.the($file_input).files;
+        const files = $file_input instanceof HTMLInputElement ? 
+            $file_input.files : 
+            $file_input.files;
         assert(files !== null);
         for (const [i, file] of [...files].entries()) {
             form_data.append("file-" + i, file);

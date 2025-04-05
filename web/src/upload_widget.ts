@@ -5,12 +5,11 @@ import type {DashboardOptions} from "@uppy/dashboard";
 import ImageEditor from "@uppy/image-editor";
 import $ from "jquery";
 
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as loading from "./loading";
-import {any_active} from "./modals";
-import * as settings_data from "./settings_data";
-import * as util from "./util";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import {any_active} from "./modals.ts";
+import * as settings_data from "./settings_data.ts";
 
 const default_max_file_size = 5;
 
@@ -46,7 +45,7 @@ export type UploadWidget = {
 };
 
 export type UploadFunction = (
-    $file_input: {files: File[]},
+    $file_input: HTMLInputElement | {files: File[]},
     night: boolean | null,
     icon: boolean,
 ) => void;
@@ -581,12 +580,16 @@ export function build_direct_upload_widget(
                     edited = true;
                     const new_file = new File([file.data], file.name, {type: file.type});
                     const $realm_logo_section = $upload_button.closest(".image_upload_widget");
+                    
+                    // Create a proper object with a files array for the upload function
+                    const file_input_obj = { files: [new_file] };
+                    
                     if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
-                        upload_function({files: [new_file]}, true, false);
+                        upload_function(file_input_obj, true, false);
                     } else if ($realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
-                        upload_function({files: [new_file]}, false, false);
+                        upload_function(file_input_obj, false, false);
                     } else {
-                        upload_function({files: [new_file]}, null, true);
+                        upload_function(file_input_obj, null, true);
                     }
                     if (any_active()) {
                         dialog_widget.close();

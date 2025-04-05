@@ -1475,23 +1475,23 @@ export function initialize(): void {
     });
 
     new ClipboardJS(".copy-link-to-user-profile", {
-        text(trigger) {
+        text(trigger: HTMLElement) {
             const user_id = $(trigger).closest("#user-profile-modal").attr("data-user-id");
             const user_profile_link = window.location.origin + "/#user/" + user_id;
 
             return user_profile_link;
         },
-    }).on("success", (e) => {
+    }).on("success", (e: ClipboardJS.Event) => {
         assert(e.trigger instanceof HTMLElement);
         show_copied_confirmation(e.trigger);
     });
 
     new ClipboardJS(".copy-custom-field-url", {
-        text(trigger) {
+        text(trigger: HTMLElement) {
             const $custom_link = $(trigger).parent().find(".custom-profile-fields-link");
             return $custom_link.attr("href") ?? "";
         },
-    }).on("success", (e) => {
+    }).on("success", (e: ClipboardJS.Event) => {
         assert(e.trigger instanceof HTMLElement);
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,

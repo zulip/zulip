@@ -8,26 +8,26 @@ import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
 
 import * as avatar from "./avatar.ts";
-import * as settings_bots from "./settings_bots";
-import * as bot_data from "./bot_data";
-import * as channel from "./channel";
-import * as components from "./components";
-import {show_copied_confirmation} from "./copied_tooltip";
-import {csrf_token} from "./csrf";
-import * as dialog_widget from "./dialog_widget";
-import {$t, $t_html} from "./i18n";
-import * as integration_url_modal from "./integration_url_modal";
-import * as list_widget from "./list_widget";
-import {page_params} from "./page_params";
-import * as people from "./people";
-import * as settings_data from "./settings_data";
-import {current_user, realm} from "./state_data";
-import type {HTMLSelectOneElement} from "./types";
-import * as ui_report from "./ui_report";
-import * as upload_widget from "./upload_widget";
-import type {UploadWidget} from "./upload_widget";
-import * as user_deactivation_ui from "./user_deactivation_ui";
-import * as user_profile from "./user_profile";
+import * as bot_data from "./bot_data.ts";
+import * as channel from "./channel.ts";
+import * as components from "./components.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
+import {csrf_token} from "./csrf.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as integration_url_modal from "./integration_url_modal.ts";
+import * as list_widget from "./list_widget.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
+import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
+import type {UploadWidget} from "./upload_widget.ts";
+import * as upload_widget from "./upload_widget.ts";
+import * as user_deactivation_ui from "./user_deactivation_ui.ts";
+import * as user_profile from "./user_profile.ts";
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -505,7 +505,7 @@ export function set_up(): void {
     });
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {
-        text(trigger) {
+        text(trigger: HTMLElement): string {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot-card-info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
             const bot = bot_data.get(bot_id);
@@ -516,7 +516,7 @@ export function set_up(): void {
     });
 
     // Show a tippy tooltip when the bot zuliprc is copied
-    clipboard.on("success", (e) => {
+    clipboard.on("success", (e: ClipboardJS.Event) => {
         assert(e.trigger instanceof HTMLElement);
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
