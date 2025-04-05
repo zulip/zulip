@@ -7,14 +7,20 @@ import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import {$t} from "./i18n.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
+import type {SearchPillWidget} from "./search_pill.ts";
+import * as search_pill from "./search_pill.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
 import * as vdom from "./vdom.ts";
 
 /*
@@ -26,6 +32,7 @@ import * as vdom from "./vdom.ts";
 */
 
 const active_widgets = new Map<number, TopicListWidget>();
+export let search_pill_widget: SearchPillWidget | null = null;
 
 // We know whether we're zoomed or not.
 let zoomed = false;
@@ -49,7 +56,7 @@ export function clear(): void {
 export function focus_topic_search_filter(): void {
     popovers.hide_all();
     sidebar_ui.show_left_sidebar();
-    const $filter = $("#filter-topic-input").expectOne();
+    const $filter = $("#filter-topic-input .input");
     $filter.trigger("focus");
 }
 
@@ -164,6 +171,7 @@ export class TopicListWidget {
             this.my_stream_id,
             zoomed,
             get_topic_search_term(),
+            get_typeahead_search_term(),
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -234,12 +242,26 @@ export class TopicListWidget {
     }
 }
 
+export function toggle_clear_button(): void {
+    const $filter_query = $("#topic_filter_query");
+    const $clear_button = $("#clear_search_topic_button");
+    if (get_topic_search_term() === "") {
+        $clear_button.css("visibility", "hidden");
+        $filter_query.empty();
+    } else {
+        $clear_button.css("visibility", "visible");
+    }
+}
+
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
-    const $input = $("#filter-topic-input");
+    const $input = $("#filter-topic-input .input");
     if ($input.length > 0) {
-        $input.val("");
+        $input.text("");
         $input.trigger("blur");
+
+        search_pill_widget?.clear(true);
+        toggle_clear_button();
 
         // Since this changes the contents of the search input, we
         // need to rerender the topic list.
@@ -351,13 +373,86 @@ export function zoom_in(): void {
     scroll_zoomed_in_topic_into_view();
 }
 
+function set_search_bar_text(text: string): void {
+    const $input = $("#filter-topic-input .input");
+    $input.text(text);
+    $input.trigger("input");
+}
+
+const filter_options = new Map<string, string>([
+    [$t({defaultMessage: "Unresolved topics"}), "-is:resolved"],
+    [$t({defaultMessage: "Resolved topics"}), "is:resolved"],
+]);
+
 export function get_topic_search_term(): string {
-    const $filter = $<HTMLInputElement>("input#filter-topic-input");
-    const filter_val = $filter.val();
-    if (filter_val === undefined) {
-        return "";
-    }
-    return filter_val.trim();
+    return $("#filter-topic-input .input").text().trim();
+}
+
+export function get_typeahead_search_term(): string {
+    const $pills = $("#filter-topic-input .pill");
+    const value = $pills.find(".pill-label").find("span").text().trim();
+    return value;
+}
+
+export function setup_topic_search_typeahead(): void {
+    const $input = $("#filter-topic-input .input");
+    const $pill_container = $("#filter-topic-input");
+
+    search_pill_widget = search_pill.create_pills($pill_container);
+
+    const typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+
+    const options = {
+        items: filter_options.size,
+        source() {
+            return [...filter_options.keys()];
+        },
+        highlighter_html(item: string) {
+            return typeahead_helper.render_topic_state(item);
+        },
+        matcher(item: string, query: string) {
+            return item.toLowerCase().includes(query.toLowerCase());
+        },
+        sorter(items: string[]) {
+            return items;
+        },
+        updater(item: string) {
+            const value = filter_options.get(item)!;
+            assert(search_pill_widget !== null);
+            search_pill_widget.clear(true);
+            search_pill_widget.appendValue(value);
+            set_search_bar_text("");
+            return get_topic_search_term();
+        },
+        stopAdvance: true,
+        helpOnEmptyStrings: true,
+        hideOnEmptyAfterBackspace: true,
+        dropup: true,
+        showOnClick: true,
+    };
+
+    new Typeahead(typeahead_input, options);
+
+    $input.on("keydown", (e: JQuery.KeyDownEvent) => {
+        if (e.key === "," || e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            $input.addClass("shake");
+        }
+    });
+
+    search_pill_widget.onPillRemove(() => {
+        const stream_id = active_stream_id();
+        if (stream_id !== undefined) {
+            const widget = active_widgets.get(stream_id);
+            if (widget) {
+                widget.build();
+            }
+        }
+    });
 }
 
 export function initialize({
@@ -396,5 +491,8 @@ export function initialize({
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();
+        toggle_clear_button();
     });
+
+    toggle_clear_button();
 }
