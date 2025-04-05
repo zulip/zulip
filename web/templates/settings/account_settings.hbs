@@ -91,8 +91,10 @@
         </div>
 
         <div id="privacy_settings_box">
-            <h3 class="inline-block">{{t "Privacy" }}</h3>
-            <div class="alert-notification privacy-setting-status"></div>
+            <div class="subsection-header">
+                <h3 class="inline-block">{{t "Privacy" }}</h3>
+                <div class="alert-notification privacy-setting-status"></div>
+            </div>
             <div class="input-group">
                 {{> settings_checkbox
                   setting_name="send_private_typing_notifications"
