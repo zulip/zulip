@@ -656,3 +656,27 @@ A trivial change that should probably be ignored.
         expected_message = "Release v1.1 for tag v1.1 was deleted."
 
         self.check_webhook("release_hook__delete", expected_topic_name, expected_message)
+
+    def test_emoji_added_event_message(self) -> None:
+        expected_topic_name = "sample / MR #1 emoji"
+        expected_message = "Varun Kolanu added an emoji to [MR #1](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1):\n\n~~~ quote\nthumbsup\n~~~"
+
+        self.check_webhook("emoji_hook__added", expected_topic_name, expected_message)
+
+    def test_emoji_removed_event_message(self) -> None:
+        expected_topic_name = "sample / Issue #1 emoji"
+        expected_message = "Varun Kolanu removed an emoji from [Issue #1](https://gitlab.com/kolanuvarun/sample/-/issues/1):\n\n~~~ quote\nthumbsdown\n~~~"
+
+        self.check_webhook("emoji_hook__removed", expected_topic_name, expected_message)
+
+    def test_emoji_on_comment_event_message(self) -> None:
+        expected_topic_name = "sample / MR #1 comment emoji"
+        expected_message = "Varun Kolanu removed an emoji from [a comment on MR #1](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1#note_2431339003):\n\n~~~ quote\nheart\n~~~"
+
+        self.check_webhook("emoji_hook__comment", expected_topic_name, expected_message)
+
+    def test_emoji_on_design_comment_event_message(self) -> None:
+        expected_topic_name = "sample / Design Sample.png comment emoji"
+        expected_message = "Varun Kolanu added an emoji to [a comment on Design Sample.png](https://gitlab.com/kolanuvarun/sample/-/issues/1/designs/Sample.png#note_2421525600):\n\n~~~ quote\nheart\n~~~"
+
+        self.check_webhook("emoji_hook__design_comment", expected_topic_name, expected_message)
