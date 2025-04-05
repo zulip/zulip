@@ -32,7 +32,7 @@ const admin_settings_label = {
         defaultMessage: "Advertise organization in the Zulip communities directory",
     }),
     // Organization settings
-    realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
+    realm_topics_policy: $t({defaultMessage: "Default empty topic configuration for channels"}),
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
@@ -182,7 +182,8 @@ export function build_page(): void {
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url,
-        realm_mandatory_topics: realm.realm_mandatory_topics,
+        realm_topics_policy: realm.realm_topics_policy,
+        realm_topics_policy_values: settings_config.realm_topics_policy_values,
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
             realm.realm_message_content_allowed_in_email_notifications,
