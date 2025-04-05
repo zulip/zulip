@@ -25,6 +25,12 @@ import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as unread_ops from "./unread_ops.ts";
 
+export let is_processing_forward_message = false;
+
+export function set_is_processing_forward_message(val: boolean): void {
+    is_processing_forward_message = val;
+}
+
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
@@ -256,7 +262,7 @@ export function quote_message(opts: {
             topic = message.topic;
             stream_id = message.stream_id;
         }
-
+        is_processing_forward_message = true;
         compose_actions.start({
             message_type: message.type,
             topic,
