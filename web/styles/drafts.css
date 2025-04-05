@@ -1,4 +1,8 @@
 .drafts-container {
+    .banner-container {
+        margin: 0 25px 5px;
+    }
+
     .header-body {
         display: flex;
         align-items: center;
@@ -53,6 +57,10 @@
         @media (width < $lg_min) {
             display: block;
         }
+    }
+
+    #drafts_list_container {
+        overflow-y: auto;
     }
 
     .drafts-list {
