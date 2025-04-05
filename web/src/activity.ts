@@ -2,6 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
+import * as blueslip from "./blueslip.ts";
+import * as browser_idle_detection from "./browser_idle_detection.ts";
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
@@ -191,16 +193,55 @@ export function mark_client_active(): void {
     }
 }
 
+export function setup_browser_idle_detector(idle_handler: {cancel: () => void}): void {
+    // This code is separated out of `initialize` to facilitate testing
+    if (!browser_idle_detection.is_browser_idle_detector_supported()) {
+        blueslip.log("Browser idle detector not supported");
+        return;
+    }
+
+    void browser_idle_detection
+        .init_browser_idle_detector({
+            idle_timeout: DEFAULT_IDLE_TIMEOUT_MS,
+            on_idle: mark_client_idle,
+            on_active: mark_client_active,
+        })
+        .then((result) => {
+            if (result === "started") {
+                // We no longer need to track idle state with jQuery.
+                idle_handler.cancel();
+                blueslip.info("Browser IdleDetector started");
+                return;
+            } else if (result.name === "NotAllowedError") {
+                $(document).one("keypress click", () => {
+                    void browser_idle_detection
+                        .request_browser_idle_detector_permission()
+                        .then((result) => {
+                            if (result === "granted") {
+                                setup_browser_idle_detector(idle_handler);
+                            } else {
+                                blueslip.log("Browser IdleDetector permission denied");
+                            }
+                        });
+                });
+            } else {
+                blueslip.log("Browser IdleDetector failed to start: " + result.message);
+            }
+        });
+}
+
 export function initialize(): void {
     $("html").on("mousemove", () => {
         set_new_user_input(true);
     });
 
     $(window).on("focus", mark_client_active);
-    $(window).idle({
+    const idle_handler = $(window).idle({
         idle: DEFAULT_IDLE_TIMEOUT_MS,
         onIdle: mark_client_idle,
         onActive: mark_client_active,
         keepTracking: true,
     });
+
+    setup_browser_idle_detector(idle_handler);
 }

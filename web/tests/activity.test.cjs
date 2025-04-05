@@ -10,6 +10,7 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -17,16 +18,22 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
-$(window).idle = noop;
+const idle_handler_cancel_stub = make_stub();
+const idle_handler = {cancel: idle_handler_cancel_stub.f};
+$(window).idle = () => idle_handler;
 
 const _document = {
     hasFocus() {
         return true;
     },
+    to_$() {
+        return $("document-stub");
+    },
 };
 
 const channel = mock_esm("../src/channel");
 const electron_bridge = mock_esm("../src/electron_bridge");
+const browser_idle_detection = mock_esm("../src/browser_idle_detection");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
@@ -812,6 +819,66 @@ test("initialize", ({override, override_rewire}) => {
         set_timeout_function_called = true;
         func();
     });
+
+    let permission_result = "rejected";
+
+    // We initially did not have permission, but got it on request
+    override(browser_idle_detection, "is_browser_idle_detector_supported", () => true);
+
+    override(browser_idle_detection, "init_browser_idle_detector", () => {
+        let idle_detector_state = {name: "NotAllowedError"};
+        if (permission_result === "granted") {
+            idle_detector_state = "started";
+        }
+        return {
+            // eslint-disable-next-line unicorn/no-thenable
+            then(cb) {
+                cb(idle_detector_state);
+            },
+        };
+    });
+
+    override(browser_idle_detection, "request_browser_idle_detector_permission", () => {
+        permission_result = "granted";
+        return {
+            // eslint-disable-next-line unicorn/no-thenable
+            then(cb) {
+                cb(permission_result);
+            },
+        };
+    });
+    activity.setup_browser_idle_detector(idle_handler);
+    $(document).trigger("keypress click");
+    assert.equal(idle_handler_cancel_stub.num_calls, 1);
+    blueslip.expect("info", "Browser IdleDetector started");
+
+    // We initially did not have permission, and the user rejected the request
+    permission_result = "rejected";
+    override(browser_idle_detection, "request_browser_idle_detector_permission", () => ({
+        // eslint-disable-next-line unicorn/no-thenable
+        then(cb) {
+            cb(permission_result);
+        },
+    }));
+    activity.setup_browser_idle_detector(idle_handler);
+    $(document).trigger("keypress click");
+    assert.equal(idle_handler_cancel_stub.num_calls, 1);
+    blueslip.expect("log", "Browser IdleDetector permission denied");
+
+    // For complete coverage
+    override(browser_idle_detection, "init_browser_idle_detector", () => ({
+        // eslint-disable-next-line unicorn/no-thenable
+        then(cb) {
+            cb(new Error("Some other error"));
+        },
+    }));
+    activity.setup_browser_idle_detector(idle_handler);
+
+    // For complete coverage
+    override(browser_idle_detection, "is_browser_idle_detector_supported", () => false);
+    activity.setup_browser_idle_detector(idle_handler);
+    blueslip.expect("log", "Browser idle detector not supported");
+    blueslip.reset();
 
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
