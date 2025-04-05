@@ -1449,10 +1449,6 @@
         hsl(0deg 0% 20%),
         hsl(236deg 33% 90%)
     );
-    --color-unmute-stream-hover: light-dark(
-        hsl(0deg 0% 20%),
-        hsl(0deg 0% 100%)
-    );
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: light-dark(
