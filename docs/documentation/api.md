@@ -113,6 +113,10 @@ in the [API changelog](https://zulip.com/api/changelog), see
 Endpoints that only administrators can use should be tagged with the
 custom `x-requires-administrator` field in the OpenAPI definition.
 
+Endpoints that doesn't follow the typical `api/v1` pattern should be
+tagged with the custom `x-non-api-v1-path` field in the OpenAPI
+definition.
+
 All of this information is rendered via a Markdown preprocessor,
 specifically the `APIHeaderPreprocessor` class defined in
 `zerver/openapi/markdown_extension.py`.
@@ -237,6 +241,10 @@ discussed above, except with the `fixture` argument instead of the
 Additional content that you'd like to appear in the responses part of
 the page can be added using the custom `x-response-description` field
 in the OpenAPI definition.
+
+If your API endpoint doesn't return any response body--such as when it
+redirects the client-- you can use the `x-no-response-body` field in its
+response schema to not show the JSON body response example.
 
 ## Step by step guide
 
