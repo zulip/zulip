@@ -643,7 +643,7 @@ export function rewire_sort_recipients(value: typeof sort_recipients): void {
     sort_recipients = value;
 }
 
-export function compare_setting_options(
+export function compare_group_setting_options(
     option_a: UserPillData | UserGroupPillData,
     option_b: UserPillData | UserGroupPillData,
     target_group: UserGroup | undefined,
@@ -703,18 +703,24 @@ export function compare_setting_options(
     return 1;
 }
 
-export let sort_group_setting_options = ({
+export const sort_setting_options = ({
     users,
     query,
     groups,
+    compare_setting_options,
     target_group,
 }: {
     users: UserPillData[];
     query: string;
     groups: UserGroupPillData[];
+    compare_setting_options: (
+        option_a: UserPillData | UserGroupPillData,
+        option_b: UserPillData | UserGroupPillData,
+        target_group: UserGroup | undefined,
+    ) => number;
     target_group: UserGroup | undefined;
 }): (UserPillData | UserGroupPillData)[] => {
-    function sort_group_setting_items(
+    function sort_setting_items(
         objs: (UserPillData | UserGroupPillData)[],
     ): (UserPillData | UserGroupPillData)[] {
         objs.sort((option_a, option_b) =>
@@ -739,13 +745,13 @@ export let sort_group_setting_options = ({
         return [user_groups.get_display_group_name(g.name)];
     });
 
-    const exact_matches = sort_group_setting_items([
+    const exact_matches = sort_setting_items([
         ...groups_results.exact_matches,
         ...users_name_results.exact_matches,
         ...email_results.exact_matches,
     ]);
 
-    const prefix_matches = sort_group_setting_items([
+    const prefix_matches = sort_setting_items([
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -754,13 +760,13 @@ export let sort_group_setting_options = ({
         ...email_results.begins_with_case_insensitive_matches,
     ]);
 
-    const word_boundary_matches = sort_group_setting_items([
+    const word_boundary_matches = sort_setting_items([
         ...groups_results.word_boundary_matches,
         ...users_name_results.word_boundary_matches,
         ...email_results.word_boundary_matches,
     ]);
 
-    const no_matches = sort_group_setting_items([
+    const no_matches = sort_setting_items([
         ...groups_results.no_matches,
         ...email_results.no_matches,
     ]);
@@ -796,8 +802,115 @@ export let sort_group_setting_options = ({
     return setting_options.slice(0, MAX_ITEMS);
 };
 
+export let sort_group_setting_options = ({
+    users,
+    query,
+    groups,
+    target_group,
+}: {
+    users: UserPillData[];
+    query: string;
+    groups: UserGroupPillData[];
+    target_group: UserGroup | undefined;
+}): (UserPillData | UserGroupPillData)[] =>
+    sort_setting_options({
+        users,
+        query,
+        groups,
+        compare_setting_options: compare_group_setting_options,
+        target_group,
+    });
+
 export function rewire_sort_group_setting_options(value: typeof sort_group_setting_options): void {
     sort_group_setting_options = value;
+}
+
+export function compare_stream_setting_options(
+    option_a: UserPillData | UserGroupPillData,
+    option_b: UserPillData | UserGroupPillData,
+): number {
+    if (option_a.type === "user_group") {
+        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+        if (user_group_a.name === "role:members") {
+            return -1;
+        }
+    }
+    if (option_b.type === "user_group") {
+        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+        if (user_group_b.name === "role:members") {
+            return 1;
+        }
+    }
+
+    if (option_a.type === "user_group" && option_b.type === "user") {
+        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+
+        if (user_group_a.is_system_group) {
+            return 1;
+        }
+        return -1;
+    }
+
+    if (option_b.type === "user_group" && option_a.type === "user") {
+        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+        if (user_group_b.is_system_group) {
+            return -1;
+        }
+        return 1;
+    }
+
+    if (option_a.type === "user_group" && option_b.type === "user_group") {
+        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+
+        if (user_group_a.is_system_group && !user_group_b.is_system_group) {
+            return 1;
+        }
+
+        if (user_group_b.is_system_group && !user_group_a.is_system_group) {
+            return -1;
+        }
+
+        if (user_group_a.name < user_group_b.name) {
+            return -1;
+        }
+
+        return 1;
+    }
+
+    assert(option_a.type === "user");
+    assert(option_b.type === "user");
+
+    if (option_a.user.full_name < option_b.user.full_name) {
+        return -1;
+    } else if (option_a.user.full_name === option_b.user.full_name) {
+        return 0;
+    }
+
+    return 1;
+}
+
+export let sort_stream_setting_options = ({
+    users,
+    query,
+    groups,
+}: {
+    users: UserPillData[];
+    query: string;
+    groups: UserGroupPillData[];
+}): (UserPillData | UserGroupPillData)[] =>
+    sort_setting_options({
+        users,
+        query,
+        groups,
+        compare_setting_options: compare_stream_setting_options,
+        target_group: undefined,
+    });
+
+export function rewire_sort_stream_setting_options(
+    value: typeof sort_stream_setting_options,
+): void {
+    sort_stream_setting_options = value;
 }
 
 type SlashCommand = {

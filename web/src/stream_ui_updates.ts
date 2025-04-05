@@ -501,20 +501,7 @@ export function enable_or_disable_add_subscribers_elements(
         $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");
     }
 
-    if (stream_creation) {
-        const $subscribe_all_users_button = $container_elem.find("button.add_all_users_to_stream");
-        $subscribe_all_users_button.prop("disabled", !enable_elem);
-
-        if (enable_elem) {
-            $container_elem
-                .find(".add_all_users_to_stream_button_container")
-                .removeClass("add_subscribers_disabled");
-        } else {
-            $container_elem
-                .find(".add_all_users_to_stream_button_container")
-                .addClass("add_subscribers_disabled");
-        }
-    } else {
+    if (!stream_creation) {
         const $add_subscribers_button = $container_elem.find(".add-subscriber-button").expectOne();
         $add_subscribers_button.prop("disabled", !enable_elem);
         if (enable_elem) {

@@ -30,10 +30,6 @@ function add_user_ids(user_ids: number[]): void {
     redraw_subscriber_list();
 }
 
-function add_all_users(): void {
-    add_subscribers_pill.append_user_group_from_name("role:everyone", pill_widget!);
-}
-
 function soft_remove_user_id(user_id: number): void {
     stream_create_subscribers_data.soft_remove_user_id(user_id);
     redraw_subscriber_list();
@@ -72,12 +68,6 @@ function build_pill_widget({
 }
 
 export function create_handlers($container: JQuery): void {
-    $container.on("click", ".add_all_users_to_stream", (e) => {
-        e.preventDefault();
-        add_all_users();
-        $(".add-user-list-filter").trigger("focus");
-    });
-
     $container.on("click", ".remove_potential_subscriber", function (this: HTMLElement, e) {
         e.preventDefault();
         const $subscriber_row = $(this).closest(".settings-subscriber-row");

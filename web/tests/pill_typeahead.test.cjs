@@ -30,6 +30,7 @@ set_realm(realm);
 let sort_recipients_called = false;
 let sort_streams_called = false;
 let sort_group_setting_options_called = false;
+let sort_stream_setting_options_called = false;
 const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
@@ -43,6 +44,10 @@ function override_typeahead_helper(override_rewire) {
     });
     override_rewire(typeahead_helper, "sort_recipients", ({users}) => {
         sort_recipients_called = true;
+        return users;
+    });
+    override_rewire(typeahead_helper, "sort_stream_setting_options", ({users}) => {
+        sort_stream_setting_options_called = true;
         return users;
     });
 }
@@ -427,6 +432,13 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         update_func_called = true;
     }
 
+    function mock_pill_removes(widget) {
+        const pills = widget._get_pills_for_testing();
+        for (const pill of pills) {
+            pill.$element.remove = noop;
+        }
+    }
+
     let opts = {};
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
@@ -518,15 +530,31 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 config.sorter([denmark_item], stream_query);
                 assert.ok(sort_streams_called);
             }
-            if (opts.user_group) {
+            if (opts.user_group && !opts.is_stream_subscriber_input) {
                 sort_recipients_called = false;
+                sort_stream_setting_options_called = false;
                 config.sorter([testers_item], group_query);
                 assert.ok(sort_recipients_called);
-            }
-            if (opts.user) {
+                assert.ok(!sort_stream_setting_options_called);
+            } else if (opts.user_group && opts.is_stream_subscriber_input) {
                 sort_recipients_called = false;
+                sort_stream_setting_options_called = false;
+                config.sorter([testers_item], group_query);
+                assert.ok(!sort_recipients_called);
+                assert.ok(sort_stream_setting_options_called);
+            }
+            if (opts.user && !opts.is_stream_subscriber_input) {
+                sort_recipients_called = false;
+                sort_stream_setting_options_called = false;
                 config.sorter([me_item], person_query);
                 assert.ok(sort_recipients_called);
+                assert.ok(!sort_stream_setting_options_called);
+            } else if (opts.user && opts.is_stream_subscriber_input) {
+                sort_recipients_called = false;
+                sort_stream_setting_options_called = false;
+                config.sorter([me_item], person_query);
+                assert.ok(!sort_recipients_called);
+                assert.ok(sort_stream_setting_options_called);
             }
         })();
 
@@ -599,6 +627,10 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 assert.equal(number_of_pills(), 3);
 
                 assert.ok(update_func_called);
+
+                // Clear pills for the next test.
+                mock_pill_removes($pill_widget);
+                $pill_widget.clear();
             }
         })();
 
@@ -634,6 +666,8 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     for (const config of all_possible_opts) {
         opts = config;
         test_pill_typeahead(config);
+        opts = {...config, is_stream_subscriber_input: true};
+        test_pill_typeahead({...config, is_stream_subscriber_input: true});
     }
 
     // Special case to test coverage and to test

@@ -38,11 +38,6 @@ function add_members(user_ids: number[], subgroup_ids: number[]): void {
     redraw_member_list();
 }
 
-function add_all_users(): void {
-    const user_ids = user_group_create_members_data.get_all_user_ids();
-    add_members(user_ids, []);
-}
-
 function soft_remove_user_id(user_id: number): void {
     user_group_create_members_data.soft_remove_user_id(user_id);
     redraw_member_list();
@@ -91,12 +86,6 @@ function build_pill_widget({$parent_container}: {$parent_container: JQuery}): vo
 }
 
 export function create_handlers($container: JQuery): void {
-    $container.on("click", ".add_all_users_to_user_group", (e) => {
-        e.preventDefault();
-        add_all_users();
-        $(".add-user-list-filter").trigger("focus");
-    });
-
     $container.on("click", ".remove_potential_subscriber", function (this: HTMLElement, e) {
         e.preventDefault();
         const $subscriber_row = $(this).closest(".settings-subscriber-row");

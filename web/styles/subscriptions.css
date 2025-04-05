@@ -257,11 +257,23 @@ h4.user_group_setting_subsection_title {
     display: inline-flex;
     width: 100%;
     align-items: center;
+
+    /* We need on click events to fire on this input for our typeahead.
+       This ensures that the input occupies space in the parent
+       container. */
+    .input {
+        flex-grow: 1;
+    }
 }
 
 .add_subscribers_container .add_subscriber_button_wrapper,
 .add_members_container .add_member_button_wrapper {
     padding-left: 5px;
+}
+
+.add-subscribers-subtitle,
+.add-members-subtitle {
+    opacity: 0.7;
 }
 
 .choose-subscribers-label {
@@ -961,16 +973,6 @@ h4.user_group_setting_subsection_title {
             .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
-        }
-
-        .add_all_users_to_user_group {
-            margin-left: 10px;
-        }
-
-        .add_all_users_to_stream {
-            margin-left: 10px;
-            /* same bottom margin as h4.stream_setting_subsection_title */
-            margin-bottom: 5px;
         }
 
         .create_user_group_member_list_header,

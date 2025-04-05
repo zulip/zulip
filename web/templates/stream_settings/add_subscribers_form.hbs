@@ -1,7 +1,7 @@
 <div class="add_subscribers_container add-button-container">
     <div class="pill-container person_picker">
         <div class="input" contenteditable="true"
-          data-placeholder="{{t 'Add subscribers. Use usergroup or #channelname to bulk add subscribers.' }}">
+          data-placeholder="{{t 'Add subscribers.' }}">
             {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
         </div>
     </div>
@@ -16,4 +16,15 @@
               }}
         </div>
     {{/if}}
+</div>
+<div class="add-subscribers-subtitle">
+    {{#tr}}
+        You can add subscribers by name or email address.
+        Enter a <z-user-roles-link>user role</z-user-roles-link>,
+        <z-user-groups-link>user group</z-user-groups-link>,
+        or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
+        {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
 </div>
