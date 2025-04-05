@@ -27,7 +27,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.models import UserProfile
+from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -178,6 +178,33 @@ def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
         canonical_headers[polished_header] = str(input_headers[raw_header])
 
     return canonical_headers
+
+
+def get_user_by_external_account(
+    realm: Realm, external_account_name: str, external_username: str
+) -> UserProfile | None:
+    github_field = CustomProfileField.objects.filter(
+        realm=realm,
+        field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+        name__iexact=external_account_name,
+    ).first()
+
+    if not github_field:
+        return None
+
+    profile_value = (
+        CustomProfileFieldValue.objects.filter(
+            field=github_field,
+            value__iexact=external_username,
+        )
+        .select_related("user_profile")
+        .first()
+    )
+
+    if not profile_value:
+        return None
+
+    return profile_value.user_profile
 
 
 def validate_extract_webhook_http_header(
