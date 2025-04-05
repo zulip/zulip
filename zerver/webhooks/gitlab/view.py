@@ -214,6 +214,23 @@ def replace_assignees_username_with_name(
     return formatted_assignees
 
 
+def parse_design_comment(comment: WildValue, repository_url: str) -> tuple[str, str, str]:
+    note_id = comment["id"].tame(check_int)
+
+    # As there is no issue field in the payloads related to designs,
+    # we need to parse the issue number from the new_path field.
+    design_path = comment["position"]["new_path"].tame(check_string)
+
+    # Sample design_path: "designs/issue-1/Screenshot_20250302_230445.png"
+    _, issue_subpath, design_name = design_path.split("/")
+
+    issue_number = issue_subpath.split("-")[-1]
+    design_url = f"{repository_url}/-/issues/{issue_number}/designs/{design_name}"
+    comment_url = f"{design_url}#note_{note_id}"
+
+    return comment_url, design_url, design_name
+
+
 def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({})".format(comment["url"].tame(check_string))
@@ -377,6 +394,8 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
 def get_emoji_hook_transformed_type(payload: WildValue, type: str) -> str:
     if type == "MergeRequest":
         return "MR"
+    elif type == "DesignManagement::Design":
+        return "Design"
     elif type == "Note":
         type = payload["note"]["noteable_type"].tame(check_string)
         return get_emoji_hook_transformed_type(payload, type)
@@ -391,14 +410,25 @@ def get_emoji_hook_subtype_topic(type: str) -> str:
     return " comment" if type == "Note" else ""
 
 
+def get_emoji_hook_url_id(payload: WildValue, type: str) -> tuple[str, str]:
+    if type == "Design":
+        comment_url, _, design_name = parse_design_comment(
+            payload["note"], payload["project"]["web_url"].tame(check_string)
+        )
+        return comment_url, design_name
+
+    url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
+    return url, "#" + url.split("/")[-1].split("#")[0]
+
+
 def get_emoji_hook_event_body(action: str, payload: WildValue, include_title: bool) -> str:
     transformed_action = {"award": "added", "revoke": "removed"}.get(action, "reacted")
     preposition = {"award": "to", "revoke": "from"}.get(action, "to")
     emoji = payload["object_attributes"]
     type = emoji["awardable_type"].tame(check_string)
     transformed_type = get_emoji_hook_transformed_type(payload, type)
-    url = emoji["awarded_on_url"].tame(check_string)
     content_message = CONTENT_MESSAGE_TEMPLATE.format(message=emoji["name"].tame(check_string))
+    url, id = get_emoji_hook_url_id(payload, transformed_type)
 
     return EMOJI_MESSAGE_TEMPLATE.format(
         user_name=get_issue_user_name(payload),
@@ -406,7 +436,7 @@ def get_emoji_hook_event_body(action: str, payload: WildValue, include_title: bo
         preposition=preposition,
         subtype=get_emoji_hook_subtype_message(type),
         type=transformed_type,
-        id="#" + url.split("/")[-1].split("#")[0],
+        id=id,
         url=url,
         emoji_text=content_message,
     )
@@ -580,16 +610,14 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
         )
 
     elif event.startswith("Emoji Hook"):
-        type = payload["object_attributes"]["awardable_type"].tame(check_string)
+        temp_type = payload["object_attributes"]["awardable_type"].tame(check_string)
+        transformed_type = get_emoji_hook_transformed_type(payload, temp_type)
+        _, id = get_emoji_hook_url_id(payload, transformed_type)
         return TOPIC_WITH_EMOJI_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
-            type=get_emoji_hook_transformed_type(payload, type),
-            id="#"
-            + payload["object_attributes"]["awarded_on_url"]
-            .tame(check_string)
-            .split("/")[-1]
-            .split("#")[0],
-            subtype=get_emoji_hook_subtype_topic(type),
+            type=transformed_type,
+            id=id,
+            subtype=get_emoji_hook_subtype_topic(temp_type),
         )
     return get_repo_name(payload)
 
