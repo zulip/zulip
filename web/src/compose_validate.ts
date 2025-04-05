@@ -15,6 +15,8 @@ import render_compose_limit_indicator from "../templates/compose_limit_indicator
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t} from "./i18n.ts";
@@ -403,6 +405,14 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     //
     // Pass topic_changed=true if this function was called in response
     // to a topic being edited.
+
+    if (compose_reply.is_processing_forward_message && !compose_recipient.is_item_clicked()) {
+        // When the "Forward message" option is clicked, the channel picker is
+        // opened. Sometimes, if the topic is a resolved one, a warning banner
+        // is also shown. We want to prevent the banner from appearing while
+        // the channel picker is active.
+        return;
+    }
 
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {

@@ -10,6 +10,7 @@ import render_inline_decorated_stream_name from "../templates/inline_decorated_s
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
@@ -229,6 +230,10 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     }
 }
 
+export function is_item_clicked(): boolean {
+    return compose_select_recipient_dropdown_widget.item_clicked;
+}
+
 function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
     const recipient_id_str = $(event.currentTarget).attr("data-unique-id");
     assert(recipient_id_str !== undefined);
@@ -276,6 +281,10 @@ function on_hidden_callback(): void {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
         return;
+    }
+    if (is_item_clicked()) {
+        compose_reply.set_is_processing_forward_message(false);
+        compose_validate.warn_if_topic_resolved(false);
     }
     if (compose_state.get_message_type() === "stream") {
         // Always move focus to the topic input even if it's not empty,
