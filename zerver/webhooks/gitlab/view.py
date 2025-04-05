@@ -36,6 +36,10 @@ DESIGN_COMMENT_MESSAGE_TEMPLATE = (
     "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
 )
 
+EMOJI_MESSAGE_TEMPLATE = (
+    "{user_name} {action} the emoji **{emoji_text}** {preposition} [{type} #{id}]({url})"
+)
+
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name.startswith("build"):
@@ -408,6 +412,59 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
     return body
 
 
+def get_emoji_hook_transformed_type(payload: WildValue, type: str) -> str:
+    if type == "MergeRequest":
+        return "MR"
+    elif type == "Note":
+        type = payload["note"]["noteable_type"].tame(check_string)
+        return get_emoji_hook_transformed_type(payload, type)
+    return type.lower()
+
+
+def get_emoji_hook_url_id(payload: WildValue) -> tuple[str, str]:
+    url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
+    return url, url.split("/")[-1].split("#")[0]
+
+
+def get_emoji_event_topic_title(
+    payload: WildValue, awardable_type: str, type: str, use_merge_request_title: bool
+) -> str:
+    # The title is found in:
+    # 1. "merge_request" field for both MergeRequest and Note awardable types.
+    # 2. "issue" field in Note, and "work_item" field in the Issue awardable type.
+    # 3. "project_snippet" field in both Snippet and Note awardable types.
+    if type == "MR":
+        type = "merge_request" if use_merge_request_title else ""
+    elif type == "issue":
+        type = "issue" if awardable_type == "Note" else "work_item"
+    elif type == "snippet":
+        type = "project_snippet"
+
+    if type:
+        return payload[type]["title"].tame(check_string)
+
+    return ""
+
+
+def get_emoji_hook_event_body(action: str, payload: WildValue, include_title: bool) -> str:
+    transformed_action = {"award": "added", "revoke": "removed"}.get(action, "reacted")
+    preposition = {"award": "to", "revoke": "from"}.get(action, "to")
+    emoji = payload["object_attributes"]
+    awardable_type = emoji["awardable_type"].tame(check_string)
+    transformed_type = get_emoji_hook_transformed_type(payload, awardable_type)
+    url, id = get_emoji_hook_url_id(payload)
+
+    return EMOJI_MESSAGE_TEMPLATE.format(
+        user_name=get_issue_user_name(payload),
+        action=transformed_action,
+        preposition=preposition,
+        type=transformed_type,
+        id=id,
+        url=url,
+        emoji_text=emoji["name"].tame(check_string),
+    )
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -491,6 +548,8 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
+    "Emoji Hook award": partial(get_emoji_hook_event_body, "award"),
+    "Emoji Hook revoke": partial(get_emoji_hook_event_body, "revoke"),
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -599,6 +658,18 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             id=payload["snippet"]["id"].tame(check_int),
             title=payload["snippet"]["title"].tame(check_string),
         )
+
+    elif event.startswith("Emoji Hook"):
+        awardable_type = payload["object_attributes"]["awardable_type"].tame(check_string)
+        transformed_type = get_emoji_hook_transformed_type(payload, awardable_type)
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type=transformed_type,
+            id=get_emoji_hook_url_id(payload)[1],
+            title=get_emoji_event_topic_title(
+                payload, awardable_type, transformed_type, use_merge_request_title
+            ),
+        )
     return get_repo_name(payload)
 
 
@@ -622,6 +693,9 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
         branch = get_branch_name(payload)
         if not is_branch_name_notifiable(branch, branches):
             return None
+    elif event == "Emoji Hook":
+        action = payload["event_type"].tame(check_string)
+        event = f"{event} {action}"
 
     if event in EVENT_FUNCTION_MAPPER:
         return event
