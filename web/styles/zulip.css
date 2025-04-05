@@ -2256,6 +2256,12 @@ body:not(.spectator-view) {
             top: 0.05em;
         }
 
+        .decorated-stream-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .dropdown-list-delete,
         .dropdown-list-edit {
             position: absolute;
