@@ -8,6 +8,7 @@ types {
     image/png                             png;
     image/tiff                            tif tiff;
     image/webp                            webp;
+    image/svg+xml                         svg;
 
     video/3gpp                            3gpp 3gp;
     video/mp4                             mp4;
