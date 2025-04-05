@@ -589,3 +589,13 @@ run_test("get_retry_backoff_seconds", () => {
     assert.ok(backoff >= 45);
     assert.ok(backoff <= 90);
 });
+
+run_test("sha256_hash", async ({override}) => {
+    const expected_hash = "f8e27cb511cd469712e3e0f2ac05a990481c0a39e11830b4f6aee729a894b769";
+    const data = "@*hamlet_and_cordelia* and #**channel>topic**";
+    let hash = await util.sha256_hash(data);
+    assert.equal(hash, undefined);
+    override(window, "isSecureContext", true);
+    hash = await util.sha256_hash(data);
+    assert.equal(hash, expected_hash);
+});
