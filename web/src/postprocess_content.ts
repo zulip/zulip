@@ -14,6 +14,34 @@ export function postprocess_content(html: string): string {
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 
+    // This will also process uploaded video thumbnails, which likewise
+    // take the `.message_inline_image` class
+    for (const elt of template.content.querySelectorAll(".message_inline_image")) {
+        let gallery_element;
+
+        const is_part_of_open_gallery = elt.previousElementSibling?.classList.contains(
+            "message-thumbnail-gallery",
+        );
+
+        if (is_part_of_open_gallery) {
+            // If the the current media element's previous sibling is a gallery,
+            // it should be kept with the other media in that gallery.
+            gallery_element = elt.previousElementSibling;
+        } else {
+            // Otherwise, we've found an image element that follows some other
+            // content (or is the first in the message) and need to create a
+            // gallery for it, and perhaps other adjacent sibling media elements,
+            // if they exist.
+            gallery_element = inertDocument.createElement("div");
+            gallery_element.classList.add("message-thumbnail-gallery");
+            // We insert the gallery just before the media element we've found
+            elt.before(gallery_element);
+        }
+
+        // Finally, the media element gets appended to the gallery
+        gallery_element?.append(elt);
+    }
+
     for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
@@ -73,6 +101,43 @@ export function postprocess_content(html: string): string {
             if (title !== null) {
                 elt.setAttribute("aria-label", title);
                 elt.removeAttribute("title");
+            }
+            // Make it more performant to refer to media links
+            elt.classList.add("media-link");
+            // To prevent layout shifts and flexibly size image previews,
+            // we read the image's original dimensions, when present, and
+            // set those values as `height` and `width` attributes on the
+            // image source.
+            const inline_image = elt.querySelector("img");
+            if (inline_image?.hasAttribute("data-original-dimensions")) {
+                const original_dimensions_attribute = inline_image.dataset.originalDimensions;
+                assert(original_dimensions_attribute);
+                const original_dimensions: string[] = original_dimensions_attribute.split("x");
+                assert(
+                    original_dimensions.length === 2 &&
+                        typeof original_dimensions[0] === "string" &&
+                        typeof original_dimensions[1] === "string",
+                );
+                const original_width = Number(original_dimensions[0]);
+                const original_height = Number(original_dimensions[1]);
+                const aspect_ratio: number = original_width / original_height;
+
+                inline_image.setAttribute("width", `${original_width}`);
+                inline_image.setAttribute("height", `${original_height}`);
+                // We set the aspect ratio on `message_inline_image` to ensure
+                // the wrapping flexbox maintains space for the image prior to
+                // the image's loading
+                elt.parentElement?.setAttribute("style", `aspect-ratio: ${aspect_ratio}`);
+
+                // We use slightly different CSS, based on portrait or landscape/square
+                // orientation.
+                // TODO: Handle cases where these dimensions are smaller than the set
+                // width/height for thumbnails.
+                if (original_width >= original_height) {
+                    elt.parentElement?.classList.add("landscape-thumbnail");
+                } else {
+                    elt.parentElement?.classList.add("portrait-thumbnail");
+                }
             }
         } else {
             // For non-image user uploads, the following block ensures that the title
