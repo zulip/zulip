@@ -420,58 +420,99 @@
 
     .twitter-image,
     .message_inline_image {
-        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+
         margin-bottom: var(--markdown-interelement-space-px);
         margin-right: 5px;
 
-        /* Sizing CSS for inline images requires care, because images load
-           asynchronously, and browsers will unfortunately jump your
-           scroll position when elements load above the current
-           position in the message feed in a way that changes the
-           height of elements. (As of March 2022, both Firefox and
-           Chrome exhibit this problem, though in Chrome it is pretty
-           subtle).
-
-           We prevent this by setting a fixed height for inline
-           previews. 8em is chosen because we don't want images to
-           overwhelm conversation in message feeds, as it does in chat
-           tools that show images at half-screen height or larger.
-
-           If there are several images next to each other, we display
-           them in a grid format; the same considerations requires
-           that either use a scrollable region or set a fixed width
-           for images so that the browser statically knows whether
-           it'll need to overflow. We choose fixed width here. */
-        height: 8em;
-        width: 12em;
-
-        /* Inline image containers also need an inline-block display in order
-           to implement the desired grid layout. */
-        display: inline-block;
-
-        /* Set a background for the image; the background will be visible for
-           messages whose aspect ratio is different from that of this
-           container. */
-        border: solid 1px transparent;
+        /* Set a background for the image; the background will be visible
+           behind the width of the transparent border. */
+        border: solid 3px transparent;
         transition: background 0.3s ease;
-        background: hsl(0deg 0% 0% / 3%);
+        background: var(--color-background-image-thumbnail);
+
+        &:has(.dinky-thumbnail, .extreme-aspect-ratio) {
+            background: var(--color-background-image-thumbnail-dinky);
+
+            &:hover {
+                background: var(--color-background-image-thumbnail-dinky-hover);
+            }
+        }
 
         &:first-child {
             margin-top: var(--markdown-interelement-space-px);
         }
 
         &:hover {
-            background: hsl(0deg 0% 0% / 15%);
+            background: var(--color-background-image-thumbnail-hover);
         }
 
         & a {
             display: block;
-            height: 100%;
-            width: 100%;
+        }
+
+        img {
+            display: block;
+            object-fit: scale-down;
+
+            /* Sizing CSS for inline images requires care, because images load
+               asynchronously, and browsers will unfortunately jump your
+               scroll position when elements load above the current
+               position in the message feed in a way that changes the
+               height of elements. (As of March 2022, both Firefox and
+               Chrome exhibit this problem, though in Chrome it is pretty
+               subtle).
+
+               We prevent this by utilizing dimensions on the `<img>` elements,
+               but further care is needed because different layout mechanisms,
+               including inline-block, can ignore those dimensions. For that
+               reason, we enforce a minimum 4em square for "dinky" images,
+               and a maximum 10em square for all others.
+
+               If there are several images next to each other, we display
+               them in a grid format; the same considerations require
+               use to either use a scrollable region or set a predictable
+               size for images so that the browser statically knows whether
+               it'll need to overflow. We choose predictable sizes here. */
+
+            /* Ensure a reasonable clickable area on
+               extremely tall or extremely wide images. */
+            min-width: 4em;
+            min-height: 4em;
+
+            /* Constrain height and width to a 10em box. */
+            max-width: 10em;
+            max-height: 10em;
+
+            /* Allow height and width to grow as needed... */
+            width: auto;
+            height: auto;
+
+            /* But set specific widths based on the image's
+               orientation. */
+            &.landscape-thumbnail {
+                width: 10em;
+
+                /* For dinky thumbnails (those whose dimensions are
+                   less than 10em on both sides), we set a 4em
+                   thumbnail. */
+                &.dinky-thumbnail {
+                    width: 4em;
+                }
+            }
+
+            &.portrait-thumbnail {
+                height: 10em;
+
+                &.dinky-thumbnail {
+                    height: 4em;
+                }
+            }
         }
 
         img.image-loading-placeholder {
-            content: url("../images/loading/loader-black.svg");
+            content: var(--svg-url-thumbnail-loader);
         }
     }
 
@@ -579,26 +620,6 @@
         margin-right: 5px;
     }
 
-    .twitter-image img,
-    .message_inline_image img,
-    .message_inline_ref img {
-        /* We use `scale-down` so that images smaller than the container are
-           neither scaled up nor cropped to fit. This preserves
-           their aspect ratio, which is often helpful. */
-        object-fit: scale-down;
-
-        /* We need to explicitly specify the image dimensions to have
-           object-fit work; likely because internally object-fit needs
-           to know the frame it is targeting, and images don't default
-           to container dimensions. */
-        height: 100%;
-        width: 100%;
-
-        float: left;
-        margin-right: 10px;
-        border-radius: inherit;
-    }
-
     .message_inline_image img {
         cursor: zoom-in;
     }
@@ -632,6 +653,10 @@
     .message_inline_video,
     .message_inline_animated_image_still,
     .youtube-video a[data-id] {
+        /* We require a relative positioning context
+           for the sake of play buttons. */
+        position: relative;
+
         &:hover {
             &::after {
                 transform: scale(1);
@@ -649,7 +674,7 @@
             /* Match the width to the background size. */
             width: 2.2857em;
             height: 2.2857em;
-            /* Center according to those widths; at present,
+            /* Center according to those widths; media
                thumbnails are 8em tall and 12em wide. So,
                2.2857em / 2 = 1.1429em as the center of the
                play button. We subtract that value from half
@@ -666,8 +691,12 @@
         & video {
             display: block;
             object-fit: contain;
-            height: 100%;
-            width: 100%;
+            /* Since we do not yet read height and width
+               values for media thumbnails, we carry forward
+               reasonable dimensions for a landscape thumbnail
+               here. */
+            height: 8em;
+            width: 12em;
         }
     }
 

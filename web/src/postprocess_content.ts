@@ -74,6 +74,63 @@ export function postprocess_content(html: string): string {
                 elt.setAttribute("aria-label", title);
                 elt.removeAttribute("title");
             }
+            // To prevent layout shifts and flexibly size image previews,
+            // we read the image's original dimensions, when present, and
+            // set those values as `height` and `width` attributes on the
+            // image source.
+            const inline_image = elt.querySelector("img");
+            if (inline_image?.hasAttribute("data-original-dimensions")) {
+                // TODO: Modify eslint config, if we wish to avoid dataset
+                //
+                /* eslint unicorn/prefer-dom-node-dataset: "off" */
+                const original_dimensions_attribute = inline_image.getAttribute(
+                    "data-original-dimensions",
+                );
+                assert(original_dimensions_attribute);
+                const original_dimensions: string[] = original_dimensions_attribute.split("x");
+                assert(
+                    original_dimensions.length === 2 &&
+                        typeof original_dimensions[0] === "string" &&
+                        typeof original_dimensions[1] === "string",
+                );
+
+                const original_width = Number(original_dimensions[0]);
+                const original_height = Number(original_dimensions[1]);
+                const font_size_in_use = user_settings.web_font_size_px;
+                // At 20px/1em, image boxes are 200px by 80px in either
+                // horizontal or vertical orientation; 80 / 200 = 0.4
+                // We need to show more of the background color behind
+                // these extremely tall or extremely wide images, and
+                // use a subtler background color than on other images
+                const image_min_aspect_ratio = 0.4;
+                // "Dinky" images are those that are smaller than the
+                // 10em box reserved for thumbnails
+                const image_box_em = 10;
+                const is_dinky_image =
+                    original_width / font_size_in_use <= image_box_em &&
+                    original_height / font_size_in_use <= image_box_em;
+                const has_extreme_aspect_ratio =
+                    original_width / original_height <= image_min_aspect_ratio ||
+                    original_height / original_width <= image_min_aspect_ratio;
+                const is_portrait_image = original_width <= original_height;
+
+                inline_image.setAttribute("width", `${original_width}`);
+                inline_image.setAttribute("height", `${original_height}`);
+
+                if (is_dinky_image) {
+                    inline_image.classList.add("dinky-thumbnail");
+                }
+
+                if (has_extreme_aspect_ratio) {
+                    inline_image.classList.add("extreme-aspect-ratio");
+                }
+
+                if (is_portrait_image) {
+                    inline_image.classList.add("portrait-thumbnail");
+                } else {
+                    inline_image.classList.add("landscape-thumbnail");
+                }
+            }
         } else {
             // For non-image user uploads, the following block ensures that the title
             // attribute always displays the filename as a security measure.
