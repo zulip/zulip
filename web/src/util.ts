@@ -601,3 +601,17 @@ export function get_retry_backoff_seconds(
     }
     return Math.max(backoff_delay_secs, rate_limit_delay_secs);
 }
+
+export async function sha256_hash(text: string): Promise<string | undefined> {
+    // The Web Crypto API is only available in secure contexts (HTTPS or localhost).
+    if (!window.isSecureContext) {
+        return undefined;
+    }
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = [...new Uint8Array(hashBuffer)];
+    const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    return hashHex;
+}

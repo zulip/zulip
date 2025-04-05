@@ -414,7 +414,7 @@ function handle_message_edit_enter(
             compose_validate.validate_message_length($row);
             return;
         }
-        save_message_row_edit($row);
+        void save_message_row_edit($row);
         e.stopPropagation();
         e.preventDefault();
     } else {
@@ -1197,7 +1197,7 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
     });
 }
 
-export function save_message_row_edit($row: JQuery): void {
+export async function save_message_row_edit($row: JQuery): Promise<void> {
     compose_tooltips.hide_compose_control_button_tooltips($row);
 
     assert(message_lists.current !== undefined);
@@ -1218,6 +1218,7 @@ export function save_message_row_edit($row: JQuery): void {
 
     let new_content;
     const old_content = message.raw_content;
+    assert(old_content !== undefined);
 
     const $edit_content_input = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
     const can_edit_content = $edit_content_input.attr("readonly") !== "readonly";
@@ -1263,8 +1264,11 @@ export function save_message_row_edit($row: JQuery): void {
         return;
     }
 
-    const request = {message_id: message.id, content: new_content};
-
+    const request = {
+        message_id: message.id,
+        content: new_content,
+        prev_content_sha256: await util.sha256_hash(old_content),
+    };
     if (!markdown.contains_backend_only_syntax(new_content ?? "")) {
         // If the new message content could have been locally echoed,
         // than we can locally echo the edit.
@@ -1359,6 +1363,17 @@ export function save_message_row_edit($row: JQuery): void {
                             });
                             compose_banner.append_compose_banner_to_banner_list(
                                 $(new_row_html),
+                                $container,
+                            );
+                            return;
+                        } else if (code === "EXPECTATION_MISMATCH") {
+                            const message = $t({
+                                defaultMessage:
+                                    "Error editing message: Message was edited by another client.",
+                            });
+                            compose_banner.show_error_message(
+                                message,
+                                compose_banner.CLASSNAMES.generic_compose_error,
                                 $container,
                             );
                             return;

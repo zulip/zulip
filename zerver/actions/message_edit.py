@@ -25,9 +25,11 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
+from zerver.lib import utils
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
+    PreviousMessageContentMismatchedError,
     StreamWildcardMentionNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
@@ -107,9 +109,10 @@ def validate_message_edit_payload(
     topic_name: str | None,
     propagate_mode: str | None,
     content: str | None,
+    prev_content_sha256: str | None,
 ) -> None:
     """
-    Checks that the data sent is well-formed. Does not handle editability, permissions etc.
+    Validates that a message edit request is well-formed. Does not handle permissions.
     """
     if topic_name is None and content is None and stream_id is None:
         raise JsonableError(_("Nothing to change"))
@@ -141,6 +144,14 @@ def validate_message_edit_payload(
     # Right now, we prevent users from editing widgets.
     if content is not None and is_widget_message(message):
         raise JsonableError(_("Widgets cannot be edited."))
+
+    # We don't restrict this check to requests to edit content, to
+    # give the parameter a pure meaning. But clients sending this for
+    # topic moves are likely doing so in error.
+    if prev_content_sha256 is not None and prev_content_sha256 != utils.sha256_hash(
+        message.content
+    ):
+        raise PreviousMessageContentMismatchedError
 
 
 def validate_user_can_edit_message(
@@ -1370,6 +1381,7 @@ def check_update_message(
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
     content: str | None = None,
+    prev_content_sha256: str | None = None,
 ) -> UpdateMessageResult:
     """This will update a message given the message id and user profile.
     It checks whether the user profile has the permission to edit the message
@@ -1397,7 +1409,9 @@ def check_update_message(
         if topic_name == message.topic_name():
             topic_name = None
 
-    validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
+    validate_message_edit_payload(
+        message, stream_id, topic_name, propagate_mode, content, prev_content_sha256
+    )
 
     message_edit_request = build_message_edit_request(
         message=message,
