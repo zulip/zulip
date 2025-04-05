@@ -1473,6 +1473,21 @@ class RealmCreationTest(ZulipTestCase):
             self.assert_in_response("Organization creation link required", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_realm_without_password_backend_enabled(self) -> None:
+        email = "user@example.com"
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain="custom-test", realm_name="Zulip test"
+            )
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response("Organization creation link required", result)
+
+    @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_subdomain(self) -> None:
         password = "test"
         string_id = "custom-test"

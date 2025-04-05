@@ -892,11 +892,17 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             request,
             "zerver/portico_error_pages/realm_creation_link_invalid.html",
         )
-    if not settings.OPEN_REALM_CREATION and key_record is None:
-        return TemplateResponse(
-            request,
-            "zerver/portico_error_pages/realm_creation_disabled.html",
-        )
+    if key_record is None:
+        if not settings.OPEN_REALM_CREATION:
+            return TemplateResponse(
+                request,
+                "zerver/portico_error_pages/realm_creation_disabled.html",
+            )
+        if not password_auth_enabled():
+            return TemplateResponse(
+                request,
+                "zerver/portico_error_pages/realm_creation_disabled.html",
+            )
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # with a few restrictions on their email address.
