@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from datetime import timedelta
+from enum import Enum
 
 from django.conf import settings
 from django.db import transaction
@@ -433,19 +434,27 @@ def update_scheduled_email_notifications_time(
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
-    setting_value: bool | str | int,
+    raw_setting_value: bool | str | int | Enum,
     *,
     acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(user_profile, setting_name)
     event_time = timezone_now()
 
+    if isinstance(raw_setting_value, Enum):
+        setting_value = raw_setting_value.value
+    else:
+        setting_value = raw_setting_value
+
     if setting_name == "timezone":
         assert isinstance(setting_value, str)
         setting_value = canonicalize_timezone(setting_value)
     else:
         property_type = UserProfile.property_types[setting_name]
-        assert isinstance(setting_value, property_type)
+        if isinstance(raw_setting_value, Enum):
+            assert isinstance(raw_setting_value, property_type)
+        else:
+            assert isinstance(setting_value, property_type)
     setattr(user_profile, setting_name, setting_value)
 
     # TODO: Move these database actions into a transaction.atomic block.
@@ -482,6 +491,9 @@ def do_change_user_setting(
     if setting_name == "default_language":
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
+
+    if isinstance(raw_setting_value, Enum):
+        event["value"] = raw_setting_value.name
 
     transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
 

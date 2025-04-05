@@ -559,7 +559,7 @@ class NormalActionsTest(BaseAction):
         do_change_user_setting(
             user_profile=user,
             setting_name="automatically_follow_topics_where_mentioned",
-            setting_value=True,
+            raw_setting_value=True,
             acting_user=None,
         )
 
@@ -750,14 +750,14 @@ class NormalActionsTest(BaseAction):
         do_change_user_setting(
             user_profile=hamlet,
             setting_name="automatically_follow_topics_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
             do_change_user_setting(
                 user_profile=hamlet,
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
-                setting_value=setting_value,
+                raw_setting_value=setting_value,
                 acting_user=None,
             )
             # Three events are generated:
@@ -776,14 +776,14 @@ class NormalActionsTest(BaseAction):
         do_change_user_setting(
             user_profile=hamlet,
             setting_name="automatically_follow_topics_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
             acting_user=None,
         )
         for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
             do_change_user_setting(
                 user_profile=hamlet,
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
-                setting_value=setting_value,
+                raw_setting_value=setting_value,
                 acting_user=None,
             )
             # Three events are generated:
@@ -803,7 +803,7 @@ class NormalActionsTest(BaseAction):
         do_change_user_setting(
             user_profile=hamlet,
             setting_name="automatically_follow_topics_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
         )
         for index, setting_value in enumerate(
@@ -812,7 +812,7 @@ class NormalActionsTest(BaseAction):
             do_change_user_setting(
                 user_profile=hamlet,
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
-                setting_value=setting_value,
+                raw_setting_value=setting_value,
                 acting_user=None,
             )
             # Three events are generated:
@@ -837,7 +837,7 @@ class NormalActionsTest(BaseAction):
         do_change_user_setting(
             user_profile=hamlet,
             setting_name="automatically_follow_topics_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
         for setting_value in [
@@ -848,7 +848,7 @@ class NormalActionsTest(BaseAction):
             do_change_user_setting(
                 user_profile=hamlet,
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
-                setting_value=setting_value,
+                raw_setting_value=setting_value,
                 acting_user=None,
             )
             # Three events are generated:
@@ -869,7 +869,7 @@ class NormalActionsTest(BaseAction):
         do_change_user_setting(
             user_profile=hamlet,
             setting_name="automatically_unmute_topics_in_muted_streams_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         # 1 event for the message sent
@@ -881,7 +881,7 @@ class NormalActionsTest(BaseAction):
         do_change_user_setting(
             user_profile=hamlet,
             setting_name="automatically_unmute_topics_in_muted_streams_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
         # Only one message event is generated
@@ -4486,6 +4486,7 @@ class RealmPropertyActionTest(BaseAction):
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
+            mark_resolved_topic_notifications_as_read_policy=UserProfile.MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -4522,7 +4523,12 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                 )
 
-            old_value = vals[count]
+            if isinstance(val, Enum):
+                old_value = vals[count].value
+                new_value = val.value
+            else:
+                old_value = vals[count]
+                new_value = val
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
@@ -4531,7 +4537,7 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                     extra_data={
                         RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: val,
+                        RealmAuditLog.NEW_VALUE: new_value,
                         "property": name,
                     },
                 ).count(),
@@ -4613,6 +4619,7 @@ class UserDisplayActionTest(BaseAction):
             web_line_height_percent=[105, 120, 160],
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
+            mark_resolved_topic_notifications_as_read_policy=UserProfile.MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_POLICY_TYPES,
         )
 
         user_settings_object = True
