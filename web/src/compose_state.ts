@@ -11,6 +11,7 @@ let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 let preview_render_count = 0;
+let is_processing_forward_message = false;
 let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
@@ -28,6 +29,14 @@ export function set_compose_select_recipient_dropdown_widget(val: DropdownWidget
 
 export function get_compose_select_recipient_dropdown_widget(): DropdownWidget {
     return compose_select_recipient_dropdown_widget;
+}
+
+export function set_is_processing_forward_message(val: boolean): void {
+    is_processing_forward_message = val;
+}
+
+export function get_is_processing_forward_message(): boolean {
+    return is_processing_forward_message;
 }
 
 export function set_recipient_edited_manually(flag: boolean): void {
@@ -84,6 +93,15 @@ export function get_preview_render_count(): number {
 
 export function set_preview_render_count(count: number): void {
     preview_render_count = count;
+}
+
+export let is_compose_select_recipient_item_clicked = (): boolean =>
+    compose_select_recipient_dropdown_widget.item_clicked;
+
+export function rewire_is_compose_select_recipient_item_clicked(
+    value: typeof is_compose_select_recipient_item_clicked,
+): void {
+    is_compose_select_recipient_item_clicked = value;
 }
 
 export function composing(): boolean {

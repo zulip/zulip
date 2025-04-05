@@ -270,10 +270,14 @@ function focus_compose_recipient(): void {
 
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
-    if (!compose_state.get_compose_select_recipient_dropdown_widget().item_clicked) {
+    if (!compose_state.is_compose_select_recipient_item_clicked()) {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
         return;
+    }
+    if (compose_state.is_compose_select_recipient_item_clicked()) {
+        compose_state.set_is_processing_forward_message(false);
+        compose_validate.warn_if_topic_resolved(false);
     }
     if (compose_state.get_message_type() === "stream") {
         // Always move focus to the topic input even if it's not empty,
