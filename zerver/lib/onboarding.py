@@ -7,6 +7,7 @@ from django.utils.translation import override as override_language
 from zerver.actions.create_realm import setup_realm_internal_bots
 from zerver.actions.message_send import (
     do_send_messages,
+    internal_prep_private_message,
     internal_prep_stream_message_by_name,
     internal_send_private_message,
 )
@@ -38,12 +39,17 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_direct_message(user: UserProfile) -> int:
+def send_initial_direct_message(
+    user: UserProfile,
+    *,
+    welcome_bot_custom_message: str | None = None,
+) -> int:
     # We adjust the initial Welcome Bot direct message for education organizations.
     education_organization = user.realm.org_type in (
         Realm.ORG_TYPES["education_nonprofit"]["id"],
         Realm.ORG_TYPES["education"]["id"],
     )
+    welcome_bot_message = []
 
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
@@ -84,6 +90,18 @@ will be **automatically deleted** in 30 days.
 I've kicked off some conversations to help you get started. You can find
 them in your [Inbox](/#inbox).
 """)
+        welcome_bot_custom_message_string = ""
+        welcome_bot_custom_message_content = ""
+        can_add_welcome_bot_custom_message = False
+        # Add welcome bot custom message.
+        if welcome_bot_custom_message is not None:
+            welcome_bot_custom_message_content = welcome_bot_custom_message
+            can_add_welcome_bot_custom_message = True
+        if can_add_welcome_bot_custom_message:
+            welcome_bot_custom_message_string = _("""
+The administrators for this organization would like to share the following information:
+```quote\n{}\n```
+""").format(welcome_bot_custom_message_content)
 
         navigation_tour_video_string = _("""
 You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.
@@ -106,14 +124,29 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
             demo_organization_text=demo_organization_warning_string,
         )
 
-    message_id = internal_send_private_message(
-        get_system_bot(settings.WELCOME_BOT, user.realm_id),
-        user,
-        remove_single_newlines(content),
-        # Note: Welcome bot doesn't trigger email/push notifications,
-        # as this is intended to be seen contextually in the application.
-        disable_external_notifications=True,
+    welcome_bot_message.append(
+        internal_prep_private_message(
+            get_system_bot(settings.WELCOME_BOT, user.realm_id),
+            user,
+            remove_single_newlines(content),
+            # Note: Welcome bot doesn't trigger email/push notifications,
+            # as this is intended to be seen contextually in the application.
+            disable_external_notifications=True,
+        )
     )
+
+    if can_add_welcome_bot_custom_message:
+        welcome_bot_message.append(
+            internal_prep_private_message(
+                get_system_bot(settings.WELCOME_BOT, user.realm_id),
+                user,
+                welcome_bot_custom_message_string,
+                disable_external_notifications=True,
+            )
+        )
+
+    message_id = do_send_messages(welcome_bot_message)[0].message_id
+
     assert message_id is not None
     return message_id
 

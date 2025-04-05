@@ -129,11 +129,16 @@ h3,
     gap: 0.5rem;
 }
 
-.admin-realm-description {
+.admin-realm-description,
+.admin-realm-default-welcome-bot-custom-message {
     height: 16em;
     width: 100%;
     max-width: 500px;
     box-sizing: border-box;
+}
+
+#id_realm_default_welcome_bot_custom_message {
+    margin: 10px 0;
 }
 
 .setting_notification_sound,
