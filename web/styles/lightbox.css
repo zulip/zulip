@@ -50,19 +50,23 @@
     }
 
     .exit {
-        flex-shrink: 0;
-
         color: hsl(0deg 0% 100% / 80%);
-        font-size: 2rem;
-        line-height: 1.8rem;
-
-        transform: scaleY(0.75);
-        font-weight: 300;
 
         opacity: 0;
         pointer-events: none;
         cursor: pointer;
         transition: opacity 0.2s ease;
+
+        position: relative;
+        height: 0.9rem;
+        width: 0.9rem;
+
+        span::before {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
     }
 
     &.show .exit {
@@ -73,7 +77,7 @@
     .media-info-wrapper {
         display: flex;
         justify-content: end;
-        align-items: start;
+        align-items: center;
         gap: 20px;
         padding: 20px;
 
@@ -180,20 +184,30 @@
         padding: 12px 20px;
 
         .arrow {
-            padding: 0 10px;
             color: hsl(0deg 0% 100%);
-            font-size: 1.8rem;
-            line-height: 1.6rem;
-            font-weight: 200;
+            height: 50px;
+            width: 0.7em; /* 14 px at 20px/em */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 10px;
 
-            transform: scaleY(2);
             cursor: pointer;
+            position: relative;
 
             opacity: 0.5;
             transition: opacity 0.3s ease;
 
             &:hover {
                 opacity: 1;
+            }
+
+            i::before {
+                /* transform: scale(2); */
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(2);
             }
         }
 
