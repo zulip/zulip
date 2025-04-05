@@ -9002,6 +9002,20 @@ paths:
                   example: true
                 content:
                   $ref: "#/components/schemas/OptionalContent"
+                prev_content_sha256:
+                  description: |
+                    An optional SHA-256 hash of the previous raw content of the message
+                    that the client has at the time of the request.
+
+                    If provided, the server will return an error if it does not match the
+                    SHA-256 hash of the message's content stored in the database.
+
+                    Clients can use this feature to prevent races where multiple clients
+                    save conflicting edits to a message.
+
+                    **Changes**: New in Zulip 11.0 (feature level 379).
+                  type: string
+                  example: "6ae8a75555209fd6c44157c0aed8016e763ff435a19cf186f76863140143ff72" # "test content"
                 stream_id:
                   description: |
                     The channel ID to move the message(s) to, to request moving

@@ -341,7 +341,7 @@ export function initialize(): void {
     });
     $("body").on("click", ".message_edit_save", function (e) {
         const $row = $(this).closest(".message_row");
-        message_edit.save_message_row_edit($row);
+        void message_edit.save_message_row_edit($row);
         e.stopPropagation();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {

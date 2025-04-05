@@ -1195,7 +1195,7 @@ def delete_saved_snippet(client: Client, saved_snippet_id: int) -> None:
 
 
 @openapi_test_function("/messages:post")
-def send_message(client: Client) -> int:
+def send_message(client: Client) -> tuple[int, str]:
     request: dict[str, Any] = {}
     # {code_example|start}
     # Send a channel message.
@@ -1231,7 +1231,7 @@ def send_message(client: Client) -> int:
     # Confirm the message was actually sent.
     message_id = result["id"]
     validate_message(client, message_id, request["content"])
-    return message_id
+    return message_id, request["content"]
 
 
 @openapi_test_function("/messages/{message_id}/reactions:post")
@@ -1298,7 +1298,11 @@ def test_private_message_invalid_recipient(client: Client) -> None:
 
 
 @openapi_test_function("/messages/{message_id}:patch")
-def update_message(client: Client, message_id: int) -> None:
+def update_message(client: Client, message_id: int, prev_content: str) -> None:
+    # We elect not to pass prev_content_sha256, because at present, it
+    # is likely to be experienced as clutter for almost all end users
+    # of this API.
+    #
     # {code_example|start}
     # Edit a message. Make sure that `message_id` is set to the ID of the
     # message you wish to update.
@@ -1799,11 +1803,11 @@ def test_invalid_stream_error(client: Client) -> None:
 
 def test_messages(client: Client, nonadmin_client: Client) -> None:
     render_message(client)
-    message_id = send_message(client)
+    message_id, content = send_message(client)
     set_message_edit_typing_status(client, message_id)
     add_reaction(client, message_id)
     remove_reaction(client, message_id)
-    update_message(client, message_id)
+    update_message(client, message_id, content)
     get_raw_message(client, message_id)
     get_messages(client)
     check_messages_match_narrow(client)
