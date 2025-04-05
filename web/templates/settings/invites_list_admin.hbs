@@ -3,11 +3,12 @@
     {{#unless is_admin }}
     <div class="tip">{{t "You can only view or manage invitations that you sent." }}</div>
     {{/unless}}
-    <a class="invite-user-link" role="button">
-        <i class="zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
-        <span class="user-settings-invite-user-label">{{t "Invite users to organization" }}</span>
-    </a>
-
+    {{> ../components/action_button
+      label=(t 'Invite users to organization')
+      attention="quiet"
+      intent="brand"
+      custom_classes="user-settings-invite-user-label invite-user-link"
+      }}
     <div class="settings_panel_list_header">
         <h3>{{t "Invitations "}}</h3>
         <div class="alert-notification" id="invites-field-status"></div>

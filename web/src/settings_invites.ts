@@ -196,6 +196,7 @@ function do_revoke_invite({
 function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const $resend_button = $row.find("button.resend");
+    const $check_button = $row.find("button.check");
 
     if (modal_invite_id !== invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
@@ -224,9 +225,15 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         success() {
             dialog_widget.hide_dialog_spinner();
             dialog_widget.close();
-            $resend_button.prop("disabled", true);
-            $resend_button.text($t({defaultMessage: "Sent!"}));
-            $resend_button.removeClass("resend button-warning").addClass("sea-green");
+
+            // Showing a success checkmark for a short time (3 seconds).
+            $resend_button.addClass("hide");
+            $check_button.removeClass("hide");
+
+            setTimeout(() => {
+                $check_button.addClass("hide");
+                $resend_button.removeClass("hide");
+            }, 3000);
         },
     });
 }
@@ -266,8 +273,8 @@ export function on_load_success(
         const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
         const referred_by = $row.find(".referred_by").text();
-        const invite_id = $(this).attr("data-invite-id")!;
-        const is_multiuse = $(this).attr("data-is-multiuse")!;
+        const invite_id = $(this).closest("td").attr("data-invite-id")!;
+        const is_multiuse = $(this).closest("td").attr("data-is-multiuse")!;
         const ctx = {
             is_multiuse: is_multiuse === "true",
             email,
@@ -300,7 +307,7 @@ export function on_load_success(
 
         const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
-        const invite_id = $(this).attr("data-invite-id")!;
+        const invite_id = $(this).closest("td").attr("data-invite-id")!;
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({

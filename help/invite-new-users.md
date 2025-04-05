@@ -100,8 +100,9 @@ for invitations for the organization owners role.
 
 1. Select the **Invitations** tab.
 
-1. From there, you can view pending invitations, **Revoke** email
-   invitations and invitation links, or **Resend** email invitations.
+1. From there, you can view pending invitations, **Revoke** (<i class="zulip-icon zulip-icon-trash"></i>)
+   icon for email invitations and invitation links, or **Resend** (<i class="zulip-icon zulip-icon-send-dm"></i>)
+   icon for email invitations.
 
 {end_tabs}
 

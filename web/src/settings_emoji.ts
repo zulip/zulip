@@ -321,7 +321,9 @@ export function set_up(): void {
         e.preventDefault();
         e.stopPropagation();
         const $button = $(this);
-        const url = "/json/realm/emoji/" + encodeURIComponent($button.attr("data-emoji-name")!);
+        const url =
+            "/json/realm/emoji/" +
+            encodeURIComponent($button.closest("tr").attr("data-emoji-name")!);
         const html_body = render_confirm_deactivate_custom_emoji({});
 
         const opts = {

@@ -20,11 +20,15 @@
         <span class="export_status">{{t 'Deleted' }}: {{time_deleted}}</span>
         {{/if}}
     </td>
-    <td class="actions">
+    <td class="actions" data-export-id="{{id}}">
         {{#if url}}
-        <button class="button rounded small delete button-danger" data-export-id="{{id}}">
-            <i class="fa fa-trash-o" aria-hidden="true"></i>
-        </button>
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip delete"
+          data-tippy-content=(t "Delete")
+          aria-label=(t "Delete")
+          }}
         {{/if}}
     </td>
 </tr>
