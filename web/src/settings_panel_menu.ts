@@ -166,10 +166,19 @@ export class SettingsPanelMenu {
     }
 
     enter_panel(): boolean {
-        const $panel = this.get_panel();
-        const $panel_elem = $panel.find("input:visible,button:visible,select:visible").first();
+        const $focused_li = this.$main_elem.find(":focus");
 
-        $panel_elem.trigger("focus");
+        // If the currently active element is focused,
+        // focus on the first element in the corresponding panel.
+        // Otherwise, click the element that was focused using the Tab key.
+        if ($focused_li.is(this.$curr_li)) {
+            const $panel = this.get_panel();
+            const $panel_elem = $panel.find("input:visible,button:visible,select:visible").first();
+
+            $panel_elem.trigger("focus");
+        } else {
+            $focused_li.trigger("click");
+        }
         return true;
     }
 
