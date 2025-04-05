@@ -1,3 +1,7 @@
+:root.dark-theme {
+    color-scheme: dark;
+}
+
 body {
     --base-font-size-px: 16px;
     width: 100%;
