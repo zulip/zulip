@@ -668,3 +668,9 @@ A trivial change that should probably be ignored.
         expected_message = "Varun Kolanu removed an emoji from [Issue #1](https://gitlab.com/kolanuvarun/sample/-/issues/1):\n\n~~~ quote\nthumbsdown\n~~~"
 
         self.check_webhook("emoji_hook__removed", expected_topic_name, expected_message)
+
+    def test_emoji_on_comment_event_message(self) -> None:
+        expected_topic_name = "sample / MR #1 comment emoji"
+        expected_message = "Varun Kolanu removed an emoji from [a comment on MR #1](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1#note_2431339003):\n\n~~~ quote\nheart\n~~~"
+
+        self.check_webhook("emoji_hook__comment", expected_topic_name, expected_message)
