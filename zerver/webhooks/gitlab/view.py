@@ -42,7 +42,7 @@ FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url}
 ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE = "The access token [{name}]({url}) will expire on {date}."
 
 EMOJI_MESSAGE_TEMPLATE = (
-    "{user_name} {action} the emoji **{emoji_text}** {preposition} [{type} #{id}]({url})."
+    "{user_name} {action} the emoji **{emoji_text}** {preposition} [{subtype}{type} #{id}]({url})."
 )
 
 
@@ -485,16 +485,25 @@ def get_deployment_event_body(payload: WildValue, include_title: bool) -> str:
 def get_emoji_event_transformed_type(payload: WildValue, type: str) -> str:
     if type == "MergeRequest":
         return "MR"
+    elif type == "Note":
+        event_type = payload["note"]["noteable_type"].tame(check_string)
+        return get_emoji_event_transformed_type(payload, event_type)
     return type.lower()
+
+
+def get_emoji_event_subtype_message(type: str) -> str:
+    return "a comment on " if type == "Note" else ""
 
 
 def get_emoji_event_url_id(payload: WildValue) -> tuple[str, str]:
     url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
 
-    # Extract the last numeric ID in the URL path.
+    # Extract the last numeric ID in the URL path before any '#' fragment.
     # Example:
     # https://gitlab.com/abc/def/issues/123 → "123"
-    match = re.search(r"/(\d+)(?:/)?$", url)
+    # https://gitlab.com/abc/def/-/merge_requests/456#note_789 → "456"
+    clean_url = url.split("#")[0]
+    match = re.search(r"/(\d+)(?:/)?$", clean_url)
     assert match is not None
     return url, match.group(1)
 
@@ -527,12 +536,14 @@ def get_emoji_event_body(action: str, payload: WildValue, include_title: bool) -
     awardable_type = emoji["awardable_type"].tame(check_string)
     transformed_type = get_emoji_event_transformed_type(payload, awardable_type)
     url, id = get_emoji_event_url_id(payload)
+    subtype = get_emoji_event_subtype_message(awardable_type)
 
     return EMOJI_MESSAGE_TEMPLATE.format(
         user_name=get_issue_user_name(payload),
         action=transformed_action,
         preposition=preposition,
         type=transformed_type,
+        subtype=subtype,
         id=id,
         url=url,
         emoji_text=emoji["name"].tame(check_string),
