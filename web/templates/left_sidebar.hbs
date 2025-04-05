@@ -37,6 +37,14 @@
                         <span class="unread_count"></span>
                     </a>
                 </li>
+                <li class="top_left_alerts left-sidebar-navigation-condensed-item">
+                    <a href="#narrow/is/alerted" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="alert-words-tooltip-template">
+                        <span class="filter-icon">
+                            <i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
+                        </span>
+                        <span class="unread_count"></span>
+                    </a>
+                </li>
                 <li class="top_left_starred_messages left-sidebar-navigation-condensed-item">
                     <a href="#narrow/is/starred" class="tippy-left-sidebar-tooltip left-sidebar-navigation-icon-container" data-tooltip-template-id="starred-message-tooltip-template">
                         <span class="filter-icon">
@@ -97,6 +105,19 @@
                     <span class="left-sidebar-navigation-label">{{t 'Mentions' }}</span>
                     <span class="unread_count"></span>
                 </a>
+            </li>
+            <li class="top_left_alerts top_left_row hidden-for-spectators">
+                <a class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" href="#narrow/is/alerted" data-tooltip-template-id="alert-words-tooltip-template">
+                    <span class="filter-icon">
+                        <i class="zulip-icon zulip-icon-eye" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span class="left-sidebar-navigation-label">{{t 'Alerts' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+                <span class="arrow sidebar-menu-icon alert-words-sidebar-menu-icon hidden-for-spectators">
+                    <i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Alert words settings'}}"></i>
+                </span>
             </li>
             <li class="top_left_my_reactions top_left_row hidden-for-spectators">
                 <a class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" href="#narrow/has/reaction/sender/me" data-tooltip-template-id="my-reactions-tooltip-template">
