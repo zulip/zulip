@@ -1254,6 +1254,23 @@ def can_resolve_topics(user: UserProfile, orig_stream: Stream, target_stream: St
     return False
 
 
+def bulk_check_basic_stream_access(user_profile: UserProfile, streams: list[Stream]) -> bool:
+    existing_recipient_ids = [stream.recipient_id for stream in streams]
+    sub_recipient_ids = Subscription.objects.filter(
+        user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
+    ).values_list("recipient_id", flat=True)
+
+    for stream in streams:
+        assert stream.recipient_id is not None
+        is_subscribed = stream.recipient_id in sub_recipient_ids
+        if not check_basic_stream_access(
+            user_profile, stream, is_subscribed=is_subscribed, require_content_access=False
+        ):
+            return False
+
+    return True
+
+
 def bulk_can_remove_subscribers_from_streams(
     streams: list[Stream], user_profile: UserProfile
 ) -> bool:
@@ -1285,18 +1302,8 @@ def bulk_can_remove_subscribers_from_streams(
     if not bool(permission_failure_streams):
         return True
 
-    existing_recipient_ids = [stream.recipient_id for stream in streams]
-    sub_recipient_ids = Subscription.objects.filter(
-        user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
-    ).values_list("recipient_id", flat=True)
-
-    for stream in streams:
-        assert stream.recipient_id is not None
-        is_subscribed = stream.recipient_id in sub_recipient_ids
-        if not check_basic_stream_access(
-            user_profile, stream, is_subscribed=is_subscribed, require_content_access=False
-        ):
-            return False
+    if not bulk_check_basic_stream_access(user_profile, streams):
+        return False
 
     for stream in streams:
         if not is_user_in_can_remove_subscribers_group(stream, user_recursive_group_ids):
