@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 378**
+
+* [`GET /invites`](/api/get-invites): The `stream_ids` and
+  `include_realm_default_subscriptions` field has been added
+  to be returned for all invites.
+* [`PATCH /invites/multiuse/{invite_id}`](/api/edit-invite-link):
+  Added support for editing `invite_as` and `stream_ids` fields of
+  reusable invitation links.
+* [`PATCH /invites/multiuse/{invite_id}`](/api/edit-invite-link):
+  A user can only edit the invitations that they can manage.
+
 **Feature level 377**
 
 * [`GET /events`](/api/get-events): When a user is deactivate, send
