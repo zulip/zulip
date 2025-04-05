@@ -12,15 +12,6 @@ mock_jquery((selector) => {
                 val() {
                     return "lunch";
                 },
-                is(arg) {
-                    switch (arg) {
-                        case ":focus":
-                            return true;
-                        /* istanbul ignore next */
-                        default:
-                            throw new Error(`Unknown arg ${arg}`);
-                    }
-                },
             };
         /* istanbul ignore next */
         default:

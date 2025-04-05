@@ -54,7 +54,7 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
 export const TOPICS_REQUIRED_ERROR_MESSAGE = $t({
-    defaultMessage: "Topics are required in this organization.",
+    defaultMessage: "Sending messages to the empty topic is not allowed in this channel.",
 });
 export const get_message_too_long_for_compose_error = (): string =>
     $t(
