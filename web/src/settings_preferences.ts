@@ -42,6 +42,10 @@ export const user_settings_property_schema = user_settings_schema
     .keyof();
 type UserSettingsProperty = z.output<typeof user_settings_property_schema>;
 
+const translated_message_response_schema = z.object({
+    msg: z.string(),
+});
+
 const meta = {
     loaded: false,
 };
@@ -152,23 +156,25 @@ function user_default_language_modal_post_render(): void {
                 setting_value,
             );
 
-            change_display_setting(
+            const $spinner = $("#settings_content").find(".general-settings-status").expectOne();
+            $spinner.fadeTo(0, 1);
+            loading.make_indicator($spinner, {text: settings_ui.strings.saving});
+            channel.patch({
+                url: "/json/settings",
                 data,
-                $("#settings_content").find(".general-settings-status"),
-                undefined,
-                undefined,
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a class='reload_link'>${content_html.join("")}</a>`,
-                    },
-                ),
-                true,
-            );
+                success(response_data) {
+                    const appear_after = 500;
+                    const data = translated_message_response_schema.parse(response_data);
+                    const success_msg_html = data.msg;
+                    setTimeout(() => {
+                        ui_report.success(success_msg_html, $spinner);
+                        settings_ui.display_checkmark($spinner);
+                    }, appear_after);
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, $spinner);
+                },
+            });
         });
 }
 
