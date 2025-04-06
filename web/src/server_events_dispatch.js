@@ -1,6 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import { is_resolved } from "../shared/src/resolved_topic.ts";
+
 import * as activity_ui from "./activity_ui.ts";
 import * as alert_words from "./alert_words.ts";
 import * as alert_words_ui from "./alert_words_ui.ts";
@@ -86,6 +88,7 @@ import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
+import { get_unread_topics } from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_events from "./user_events.ts";
@@ -909,6 +912,38 @@ export function dispatch_normal_event(event) {
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
+                }
+            }
+            if (event.property === "web_mark_resolved_topic_notifications_as_read") {
+                const unread_stream_message = get_unread_topics();
+                const unread_stream_msg_count = unread_stream_message.stream_unread_messages;
+                const unread_streams_dict = unread_stream_message.topic_counts;
+                if (unread_stream_msg_count) {
+                    for (const [stream_id, topic_dict] of unread_streams_dict) {
+                        for (const [topic] of topic_dict) {
+                            if (is_resolved(topic)) {
+                                switch (user_settings.web_mark_resolved_topic_notifications_as_read) {
+                                case settings_config.web_mark_resolved_topic_notifications_as_read_values.always.code: {
+                                    unread_ops.mark_topic_as_read(stream_id, topic)
+                                break;
+                                }
+                                case settings_config.web_mark_resolved_topic_notifications_as_read_values.in_topics_im_not_following.code: {
+                                    if (!user_topics.is_topic_followed(stream_id, topic)) {
+                                        unread_ops.mark_topic_as_read(stream_id, topic)
+                                    }
+                                break;
+                                }
+                                case settings_config.web_mark_resolved_topic_notifications_as_read_values.never.code: {
+                                break;
+                                }
+                                default:
+                                    if (!user_topics.is_topic_followed(stream_id, topic)) {
+                                        unread_ops.mark_topic_as_read(stream_id, topic)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             if (event.property === "web_stream_unreads_count_display_policy") {

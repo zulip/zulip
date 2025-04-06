@@ -207,6 +207,10 @@ def json_change_settings(
         Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
     ]
     | None = None,
+    web_mark_resolved_topic_notifications_as_read: Annotated[
+        Json[int], check_int_in_validator(UserProfile.WEB_MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_CHOICES)
+    ]
+    | None = None,
     web_channel_default_view: Annotated[
         Json[int], check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)
     ]

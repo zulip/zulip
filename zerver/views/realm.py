@@ -689,6 +689,13 @@ def update_realm_user_settings_defaults(
     ]
     | None = None,
     web_animate_image_previews: Literal["always", "on_hover", "never"] | None = None,
+    web_mark_resolved_topic_notifications_as_read: Json[
+        Annotated[
+            int,
+            check_int_in_validator(UserProfile.WEB_MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_CHOICES),
+        ]
+    ]
+    | None = None,
     email_address_visibility: Json[
         Annotated[int, check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)]
     ]

@@ -119,6 +119,21 @@ class UserBaseSettings(models.Model):
 
     web_mark_read_on_scroll_policy = models.SmallIntegerField(default=MARK_READ_ON_SCROLL_ALWAYS)
 
+    # UI setting controlling whether or not the Zulip web app will
+    # mark resolved topic notifications as read.
+
+    MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_ALWAYS = 1
+    MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_TOPICS_NOT_FOLLOWING = 2
+    MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_NEVER = 3
+
+    WEB_MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_CHOICES = [
+        MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_ALWAYS,
+        MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_TOPICS_NOT_FOLLOWING,
+        MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_NEVER,
+    ]
+
+    web_mark_resolved_topic_notifications_as_read = models.SmallIntegerField(default=MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_TOPICS_NOT_FOLLOWING)
+
     # UI setting controlling if clicking on a channel link should open
     # the channel feed (interleaved view) or narrow to the first topic
     # in the channel.
@@ -374,6 +389,7 @@ class UserBaseSettings(models.Model):
         automatically_follow_topics_policy=int,
         automatically_unmute_topics_in_muted_streams_policy=int,
         automatically_follow_topics_where_mentioned=bool,
+        web_mark_resolved_topic_notifications_as_read=int,
     )
 
     notification_setting_types = {

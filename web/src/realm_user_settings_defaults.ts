@@ -54,6 +54,7 @@ export const realm_default_settings_schema = z.object({
     twenty_four_hour_time: z.boolean(),
     user_list_style: z.number(),
     web_animate_image_previews: z.string(),
+    web_mark_resolved_topic_notifications_as_read: z.number(),
     web_channel_default_view: z.number(),
     web_escape_navigates_to_home_view: z.boolean(),
     web_font_size_px: z.number(),

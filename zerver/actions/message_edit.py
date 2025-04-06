@@ -72,7 +72,8 @@ from zerver.lib.topic import (
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.addressee import get_user_profiles_by_ids
+from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy, topic_has_visibility_policy
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -210,6 +211,18 @@ def maybe_send_resolve_topic_notifications(
             )
         )
     )
+    affected_participant_profiles = get_user_profiles_by_ids(affected_participant_ids, user_profile.realm)
+    for profile in affected_participant_profiles:
+        setting = profile.web_mark_resolved_topic_notifications_as_read
+        if topic_resolved:
+            if setting == UserProfile.MARK_READ_ON_SCROLL_ALWAYS:
+                affected_participant_ids.discard(profile.id)
+            elif setting == UserProfile.MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_TOPICS_NOT_FOLLOWING:
+                if topic_has_visibility_policy(profile, stream.id, message_edit_request.target_topic_name, UserTopic.VisibilityPolicy.FOLLOWED):
+                    affected_participant_ids.discard(profile.id)
+            elif setting == UserProfile.MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_NEVER:
+                pass
+
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
     with override_language(stream.realm.default_language):

@@ -79,6 +79,7 @@ export const user_settings_schema = stream_notification_settings_schema
         web_home_view: z.enum(["inbox", "recent_topics", "all_messages"]),
         web_line_height_percent: z.number(),
         web_mark_read_on_scroll_policy: z.number(),
+        web_mark_resolved_topic_notifications_as_read: z.number(),
         web_navigate_to_sent_message: z.boolean(),
         web_stream_unreads_count_display_policy: z.number(),
         web_suggest_update_timezone: z.boolean(),

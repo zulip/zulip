@@ -594,6 +594,7 @@ def fetch_initial_state_data(
         state["realm_user_settings_defaults"]["available_notification_sounds"] = (
             get_available_notification_sounds()
         )
+        state["realm_user_settings_defaults"]["web_mark_resolved_topic_notifications_as_read"] = realm_user_default.web_mark_resolved_topic_notifications_as_read
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -837,6 +838,7 @@ def fetch_initial_state_data(
         state["user_settings"]["available_notification_sounds"] = (
             get_available_notification_sounds()
         )
+        state["user_settings"]["web_mark_resolved_topic_notifications_as_read"] = settings_user.web_mark_resolved_topic_notifications_as_read
 
     if want("user_status"):
         # We require creating an account to access statuses.
