@@ -1,4 +1,6 @@
 import fnmatch
+import hashlib
+import hmac
 import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -6,7 +8,9 @@ from datetime import datetime
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
+from django.conf import settings
 from django.http import HttpRequest
+from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
 from pydantic import Json
 from typing_extensions import override
@@ -280,3 +284,34 @@ def parse_multipart_string(body: str) -> dict[str, str]:
         data[field_name] = body
 
     return data
+
+
+def validate_webhook_signature(
+    request: HttpRequest, payload: str, signature: str, algorithm: str = "sha256"
+) -> None:
+    if not settings.VERIFY_WEBHOOK_SIGNATURES:  # nocoverage
+        return
+
+    if algorithm not in hashlib.algorithms_available:
+        raise AssertionError(
+            _("The algorithm '{algorithm}' is not supported.").format(algorithm=algorithm)
+        )
+
+    webhook_secret: str | None = request.GET.get("webhook_secret")
+    if webhook_secret is None:
+        raise JsonableError(
+            _(
+                "The webhook secret is missing. Please set the webhook_secret while generating the URL."
+            )
+        )
+    webhook_secret_bytes = force_bytes(webhook_secret)
+    payload_bytes = force_bytes(payload)
+
+    signed_payload = hmac.new(
+        webhook_secret_bytes,
+        payload_bytes,
+        algorithm,
+    ).hexdigest()
+
+    if signed_payload != signature:
+        raise JsonableError(_("Webhook signature verification failed."))
