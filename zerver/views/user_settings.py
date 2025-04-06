@@ -13,6 +13,7 @@ from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from django.utils.translation import override as override_language
 from pydantic import Json
 
 from confirmation.models import (
@@ -387,6 +388,11 @@ def json_change_settings(
     # Loop over user_profile.property_types
     request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
     for k, v in request_settings.items():
+        if k == "default_language" and v is not None:
+            with override_language(v):
+                result["msg"] = _(
+                    "Saved. Please <a class='reload_link'>reload</a> for the change to take effect."
+                )
         if v is not None and getattr(user_profile, k) != v:
             do_change_user_setting(user_profile, k, v, acting_user=user_profile)
 
