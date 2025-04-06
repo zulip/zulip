@@ -714,3 +714,6 @@ MAX_PER_USER_MONTHLY_AI_COST: float | None = 0.5
 NAVIGATION_TOUR_VIDEO_URL: str | None = (
     "https://static.zulipchat.com/static/navigation-tour-video/zulip-10.mp4"
 )
+
+# Webhook signature verification.
+VERIFY_WEBHOOK_SIGNATURES = True

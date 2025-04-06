@@ -1,8 +1,12 @@
+import hashlib
+import hmac
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from django.http import HttpRequest
+from django.http import HttpRequest, QueryDict
 from django.http.response import HttpResponse
+from django.test import override_settings
+from django.utils.encoding import force_bytes
 from typing_extensions import override
 
 from zerver.actions.streams import do_rename_stream
@@ -18,6 +22,7 @@ from zerver.lib.webhooks.common import (
     get_fixture_http_headers,
     standardize_headers,
     validate_extract_webhook_http_header,
+    validate_webhook_signature,
 )
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -139,6 +144,37 @@ class WebhooksCommonTestCase(ZulipTestCase):
         djangoified_headers = standardize_headers(raw_headers)
         expected_djangoified_headers = {"CONTENT_TYPE": "text/plain", "HTTP_X_EVENT_TYPE": "ping"}
         self.assertEqual(djangoified_headers, expected_djangoified_headers)
+
+    @override_settings(VERIFY_WEBHOOK_SIGNATURES=True)
+    def test_validate_webhook_signature(self) -> None:
+        request = HostRequestMock()
+        request.GET = QueryDict("", mutable=True)
+
+        # Valid signature
+        webhook_secret = "test_secret"
+        payload = '{"key": "value"}'
+        signature = hmac.new(
+            force_bytes(webhook_secret), force_bytes(payload), hashlib.sha256
+        ).hexdigest()
+
+        request.GET.update({"webhook_secret": webhook_secret})
+        validate_webhook_signature(request, payload, signature)
+
+        # Invalid signature
+        invalid_signature = "invalid_signature"
+        with self.assertRaisesRegex(
+            JsonableError,
+            "Webhook signature verification failed.",
+        ):
+            validate_webhook_signature(request, payload, invalid_signature)
+
+        # No webhook_secret parameter
+        request.GET.clear()
+        with self.assertRaisesRegex(
+            JsonableError,
+            "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
+        ):
+            validate_webhook_signature(request, payload, signature)
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):
