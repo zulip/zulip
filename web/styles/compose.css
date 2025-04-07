@@ -695,6 +695,10 @@
     align-items: center;
     line-height: 1.2em; /* 18px at 15px/1em. */
 
+    .above_compose_banner_action_link {
+        color: var(--color-main-view-banner-action-link);
+    }
+
     .main-view-banner-elements-wrapper {
         display: flex;
         align-items: center;

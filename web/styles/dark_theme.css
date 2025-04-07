@@ -81,12 +81,6 @@
         }
     }
 
-    .main-view-banner {
-        .above_compose_banner_action_link {
-            color: hsl(200deg 100% 50%);
-        }
-    }
-
     .upload_banner {
         .moving_bar {
             background: hsl(204deg 63% 18%);
