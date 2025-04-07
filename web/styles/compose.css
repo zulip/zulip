@@ -173,7 +173,7 @@
 #compose-content {
     background-color: var(--color-compose-box-background);
     padding: 7px 7px 8px;
-    border: 1px solid hsl(0deg 0% 0% / 10%);
+    border: 1px solid var(--color-border-compose-content);
     border-radius: 9px 9px 0 0;
     box-shadow: 0 0 0 hsl(236deg 11% 28%);
     height: 100%;
@@ -205,18 +205,6 @@
     height: 100%;
     display: flex;
     flex-flow: column;
-
-    .stream-selection-header-colorblock {
-        box-shadow: none;
-        border: 1px solid hsl(0deg 0% 80%);
-        border-right: none;
-
-        &.message_header_private_message {
-            border-radius: 3px 0 0 3px;
-            border-bottom: 0;
-            background-color: hsl(0deg 0% 27%);
-        }
-    }
 
     #compose-recipient {
         &.compose-recipient-direct-selected {

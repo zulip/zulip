@@ -3,34 +3,11 @@
 %dark-theme {
     color-scheme: dark;
 
-    .placeholder {
-        color: hsl(0deg 0% 55%);
-        opacity: 1;
-    }
-
-    & textarea::placeholder,
-    input::placeholder {
-        @extend .placeholder;
-    }
-
     kbd {
         text-shadow: none;
     }
 
     /************************* MODAL DARK THEME *******************/
-    .modal__content.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 100% / 20%);
-    }
-
-    .modal__close {
-        &::before {
-            color: hsl(236deg 33% 90%);
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 91% / 10%);
-        }
-    }
 
     #message-formatting,
     #keyboard-shortcuts {
@@ -48,14 +25,6 @@
 
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
-        }
-    }
-
-    & table.table-striped thead.table-sticky-headers th {
-        background-color: hsl(0deg 0% 0%);
-
-        &[data-sort]:hover {
-            background-color: hsl(211deg 29% 14%) !important;
         }
     }
 
@@ -110,16 +79,6 @@
         &:hover {
             color: hsl(7deg 100% 74%) !important;
         }
-    }
-
-    #navbar-middle .column-middle-inner,
-    .header,
-    #message_view_header {
-        background-color: var(--color-background-navbar);
-    }
-
-    #scroll-to-bottom-button-container {
-        background: transparent;
     }
 
     .main-view-banner {
@@ -262,10 +221,6 @@
         }
     }
 
-    .stream_header_colorblock.disabled {
-        filter: brightness(50%);
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
@@ -334,17 +289,8 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .pill-container {
-        border-style: solid;
-        border-width: 1px;
-
-        &.not-editable-by-user {
-            opacity: 0.5;
-        }
-    }
-
-    .settings-profile-user-field {
-        border-color: hsl(3deg 73% 74%);
+    .pill-container.not-editable-by-user {
+        opacity: 0.5;
     }
 
     #searchbox {
@@ -358,18 +304,6 @@
         }
     }
 
-    .create_user_group_plus_button,
-    .create_stream_plus_button {
-        color: hsl(0deg 0% 100%);
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .table-striped thead th {
-        background-color: hsl(0deg 0% 0% / 50%);
-        border-color: hsl(0deg 0% 0% / 90%);
-    }
-
     & input[type="text"]:focus,
     input[type="email"]:focus,
     input[type="number"]:focus,
@@ -379,37 +313,12 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose_control_button:hover {
-        color: inherit;
-    }
-
-    #compose-content {
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .compose_table .stream-selection-header-colorblock {
-        border-color: hsl(240deg 11% 5%);
-    }
-
     /* Not that .message_row (below) needs to be more contrast on dark theme */
-    #compose-content,
     .message-feed .recipient_row,
     .message_row,
     .overlay-message-row .overlay-message-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    & div.overlay,
-    #subscription_overlay
-        #stream-creation
-        #stream_creation_form
-        #stream_creating_indicator:not(:empty),
-    #groups_overlay
-        #user-group-creation
-        #user_group_creation_form
-        #user_group_creating_indicator:not(:empty) {
-        background-color: hsl(212deg 28% 8% / 75%);
     }
 
     & div.overlay .flex.overlay-content > .overlay-container,
@@ -426,18 +335,11 @@
         }
     }
 
-    /* Undo default dropdown background color for dark mode. */
-    #searchbox_form .dropdown-menu ul {
-        background-color: unset;
-    }
-
     .popover hr,
     hr {
-        color: hsl(212deg 28% 18%);
         opacity: 0.2;
     }
 
-    .narrow_to_compose_recipients,
     .close {
         color: hsl(236deg 33% 80%);
     }

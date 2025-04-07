@@ -1005,6 +1005,7 @@ test("create_sub", () => {
         name: "Antarctica",
         subscribed: true,
         color: "#76ce90",
+        partial_subscribers: [1, 2, 3],
     };
 
     const india_sub = stream_data.create_sub_from_server_data(india);
@@ -1024,6 +1025,7 @@ test("create_sub", () => {
     const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
     assert.ok(antarctica_sub);
     assert.equal(antarctica_sub.color, "#76ce90");
+    assert.deepEqual(antarctica_sub.partial_subscribers, [1, 2, 3]);
 });
 
 test("creator_id", ({override}) => {
