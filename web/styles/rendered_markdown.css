@@ -456,10 +456,6 @@
         transition: background 0.3s ease;
         background: hsl(0deg 0% 0% / 3%);
 
-        &:first-child {
-            margin-top: var(--markdown-interelement-space-px);
-        }
-
         &:hover {
             background: hsl(0deg 0% 0% / 15%);
         }
