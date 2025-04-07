@@ -1,5 +1,10 @@
+import assert from "minimalistic-assert";
+import {z} from "zod";
+
 import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import {LazySet} from "./lazy_set.ts";
+import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as sub_store from "./sub_store.ts";
@@ -7,9 +12,47 @@ import * as sub_store from "./sub_store.ts";
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();
 const fetched_stream_ids = new Set<number>();
+export function has_full_subscriber_data(stream_id: number): boolean {
+    return fetched_stream_ids.has(stream_id);
+}
+const pending_subscriber_requests = new Map<number, Promise<LazySet>>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
+    fetched_stream_ids.clear();
+}
+
+const fetch_stream_subscribers_response_schema = z.object({
+    subscribers: z.array(z.number()),
+});
+
+export async function maybe_fetch_stream_subscribers(stream_id: number): Promise<LazySet> {
+    if (pending_subscriber_requests.has(stream_id)) {
+        return pending_subscriber_requests.get(stream_id)!;
+    }
+    const promise = (async () => {
+        let subscribers: number[];
+        try {
+            const xhr = await channel.get({
+                url: `/json/streams/${stream_id}/members`,
+            });
+            subscribers = fetch_stream_subscribers_response_schema.parse(xhr).subscribers;
+        } catch {
+            blueslip.error("Failure fetching channel subscribers", {
+                stream_id,
+            });
+            pending_subscriber_requests.delete(stream_id);
+            // Fall back to what we already have.
+            return get_loaded_subscriber_subset(stream_id);
+        }
+
+        set_subscribers(stream_id, subscribers);
+        pending_subscriber_requests.delete(stream_id);
+        return new LazySet(subscribers);
+    })();
+
+    pending_subscriber_requests.set(stream_id, promise);
+    return promise;
 }
 
 function get_loaded_subscriber_subset(stream_id: number): LazySet {
@@ -29,6 +72,17 @@ function get_loaded_subscriber_subset(stream_id: number): LazySet {
     }
 
     return subscribers;
+}
+
+async function get_full_subscriber_set(stream_id: number): Promise<LazySet> {
+    assert(!page_params.is_spectator);
+    // This function parallels `get_loaded_subscriber_subset` but ensures we include all
+    // subscribers, possibly fetching that data from the server.
+    if (!fetched_stream_ids.has(stream_id) && sub_store.get(stream_id)) {
+        const fetched_subscribers = await maybe_fetch_stream_subscribers(stream_id);
+        stream_subscribers.set(stream_id, fetched_subscribers);
+    }
+    return get_loaded_subscriber_subset(stream_id);
 }
 
 export function is_subscriber_subset(stream_id1: number, stream_id2: number): boolean {
@@ -166,6 +220,17 @@ export function is_user_subscribed(stream_id: number, user_id: number): boolean 
     // which does additional checks.
 
     const subscribers = get_loaded_subscriber_subset(stream_id);
+    return subscribers.has(user_id);
+}
+
+// TODO: If the server sends us a list of users for whom we have complete data,
+// we can use that to avoid waiting for the `get_full_subscriber_set` check. We'd
+// like to add that optimization in the future.
+export async function maybe_fetch_is_user_subscribed(
+    stream_id: number,
+    user_id: number,
+): Promise<boolean> {
+    const subscribers = await get_full_subscriber_set(stream_id);
     return subscribers.has(user_id);
 }
 
