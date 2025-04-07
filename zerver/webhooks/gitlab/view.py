@@ -492,6 +492,8 @@ def get_emoji_event_transformed_type(payload: WildValue, type: str) -> str:
     elif type == "Note":
         event_type = payload["note"]["noteable_type"].tame(check_string)
         return get_emoji_event_transformed_type(payload, event_type)
+    elif type == "DesignManagement::Design":
+        return "design"
     return type.lower()
 
 
@@ -499,7 +501,13 @@ def get_emoji_event_subtype_message(type: str) -> str:
     return "a comment" if type == "Note" else ""
 
 
-def get_emoji_event_url_id(payload: WildValue) -> tuple[str, str]:
+def get_emoji_event_url_id(payload: WildValue, type: str) -> tuple[str, str]:
+    if type == "design":
+        comment_url, _, design_name = parse_design_comment(
+            payload["note"], payload["project"]["web_url"].tame(check_string)
+        )
+        return comment_url, design_name
+
     url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
 
     # Extract the last numeric ID in the URL path before any '#' fragment.
@@ -533,18 +541,23 @@ def get_emoji_event_topic_title(
     return ""
 
 
+def get_emoji_event_number_sign(type: str) -> str:
+    return "" if type == "design" else "#"
+
+
 def get_emoji_event_body(action: str, payload: WildValue, include_title: bool) -> str:
     transformed_action = {"award": "added", "revoke": "removed"}.get(action, "reacted")
     preposition = {"award": "to", "revoke": "from"}.get(action, "to")
     emoji = payload["object_attributes"]
     awardable_type = emoji["awardable_type"].tame(check_string)
     transformed_type = get_emoji_event_transformed_type(payload, awardable_type)
-    url, id = get_emoji_event_url_id(payload)
+    url, id = get_emoji_event_url_id(payload, transformed_type)
     subtype = get_emoji_event_subtype_message(awardable_type)
+    number_sign = get_emoji_event_number_sign(transformed_type)
     suffix = ""
 
     if include_title or awardable_type == "Note":
-        target = "" if awardable_type == "Note" else f"{transformed_type} #{id}"
+        target = "" if awardable_type == "Note" else f"{transformed_type} {number_sign}{id}"
         suffix = f" {preposition} [{subtype}{target}]({url})"
 
     return EMOJI_MESSAGE_TEMPLATE.format(
@@ -599,6 +612,8 @@ def skip_previews(event: str) -> bool:
         # doesn't work.
         "Note Hook DesignManagement::Design",
         "Confidential Note Hook DesignManagement::Design",
+        "Emoji Hook award",
+        "Emoji Hook revoke",
     ]
 
 
@@ -767,10 +782,16 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
     elif event.startswith("Emoji Hook"):
         awardable_type = payload["object_attributes"]["awardable_type"].tame(check_string)
         transformed_type = get_emoji_event_transformed_type(payload, awardable_type)
+        id = get_emoji_event_url_id(payload, transformed_type)[1]
+        if transformed_type == "design":
+            return TOPIC_WITH_DESIGN_INFO_TEMPLATE.format(
+                repo=get_repo_name(payload), type="design", design_name=id
+            )
+
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type=transformed_type,
-            id=get_emoji_event_url_id(payload)[1],
+            id=id,
             title=get_emoji_event_topic_title(
                 payload, awardable_type, transformed_type, use_merge_request_title
             ),

@@ -806,3 +806,20 @@ A trivial change that should probably be ignored.
         self.check_webhook(
             "emoji_hook__revoke__merge_request_note", expected_topic_name, expected_message
         )
+
+    def test_emoji_award_in_design_note(self) -> None:
+        expected_topic_name = "sample / design Sample.png"
+        expected_message = "Varun Kolanu added the emoji :heart: to [a comment](https://gitlab.com/kolanuvarun/sample/-/issues/1/designs/Sample.png#note_2421525600)."
+
+        self.check_webhook("emoji_hook__award__design_note", expected_topic_name, expected_message)
+
+    def test_emoji_revoke_in_merge_request_note_with_custom_topic(self) -> None:
+        expected_topic_name = "notifications"
+        expected_message = "[[sample](https://gitlab.com/kolanuvarun/sample)] Varun Kolanu removed the emoji :heart: from [a comment](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1#note_2431339003)."
+
+        self.url = self.build_webhook_url(topic="notifications")
+        self.check_webhook(
+            "emoji_hook__revoke__merge_request_note",
+            expected_topic_name,
+            expected_message,
+        )
