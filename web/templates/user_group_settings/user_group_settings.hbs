@@ -10,16 +10,17 @@
               attention="quiet" intent="brand" }}
             {{/if}}
         </div>
-        {{#unless group.deactivated}}
         {{> ../components/icon_button icon="user-group-x" intent="danger" custom_classes="deactivate-group-button deactivate tippy-zulip-delayed-tooltip"
           data-tippy-content=(t 'Deactivate group') }}
-        {{/unless}}
+        {{> ../components/icon_button icon="user-group-plus" intent="success" custom_classes="reactivate-group-button reactivate tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t 'Reactivate group') }}
     </div>
 </div>
 <div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
     <div class="inner-box">
 
         <div class="group_general_settings group_setting_section" data-group-section="general">
+            <div class="group-reactivation-error-banner"></div>
             <div class="group-banner"></div>
             <div class="group-header">
                 <div class="group-name-wrapper">

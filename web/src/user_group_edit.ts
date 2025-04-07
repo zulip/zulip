@@ -21,6 +21,7 @@ import render_user_group_settings_overlay from "../templates/user_group_settings
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
@@ -210,20 +211,43 @@ function show_general_settings(group: UserGroup): void {
     update_general_panel_ui(group);
 }
 
+function update_deactivate_and_reactivate_buttons(group: UserGroup): void {
+    if (!settings_data.can_manage_user_group(group.id)) {
+        $(
+            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
+        ).hide();
+        $(
+            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
+        ).hide();
+        return;
+    }
+
+    if (group.deactivated) {
+        $(
+            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
+        ).hide();
+        $(
+            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
+        ).show();
+    } else {
+        $(
+            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
+        ).show();
+        $(
+            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
+        ).hide();
+    }
+}
+
 function update_general_panel_ui(group: UserGroup): void {
     const $edit_container = get_edit_container(group);
 
     if (settings_data.can_manage_user_group(group.id)) {
         $edit_container.find(".group-header .button-group").show();
-        $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
-        ).show();
     } else {
         $edit_container.find(".group-header .button-group").hide();
-        $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
-        ).hide();
     }
+    update_deactivate_and_reactivate_buttons(group);
     update_group_permission_settings_elements(group);
     update_group_membership_button(group.id);
 }
@@ -972,6 +996,25 @@ export function update_group_setting_in_permissions_panel(
     );
 }
 
+export function update_group_deactivated_banner(group: UserGroup): void {
+    if (!group.deactivated) {
+        $("#user_group_settings .group-banner").empty();
+        return;
+    }
+
+    const context = {
+        banner_type: compose_banner.WARNING,
+        classname: "group_deactivated",
+        hide_close_button: true,
+        banner_text: $t({
+            defaultMessage:
+                "This group is deactivated. It can't be mentioned or used for any permissions.",
+        }),
+    };
+
+    $("#user_group_settings .group-banner").html(render_modal_banner(context));
+}
+
 export function show_settings_for(group: UserGroup): void {
     const group_assigned_realm_permissions =
         settings_components.get_group_assigned_realm_permissions(group);
@@ -1021,19 +1064,7 @@ export function show_settings_for(group: UserGroup): void {
     show_membership_settings(group);
     show_general_settings(group);
 
-    const context = {
-        banner_type: compose_banner.WARNING,
-        classname: "group_deactivated",
-        hide_close_button: true,
-        banner_text: $t({
-            defaultMessage:
-                "This group is deactivated. It can't be mentioned or used for any permissions.",
-        }),
-    };
-
-    if (group.deactivated) {
-        $("#user_group_settings .group-banner").html(render_modal_banner(context));
-    }
+    update_group_deactivated_banner(group);
 
     $edit_container
         .find(".group-assigned-permissions")
@@ -1249,6 +1280,24 @@ export function handle_deleted_group(group_id: number): void {
     redraw_user_group_list();
 }
 
+export function handle_reactivated_group(group_id: number): void {
+    if (!overlays.groups_open()) {
+        return;
+    }
+
+    if (is_editing_group(group_id)) {
+        const user_group = user_groups.get_user_group_from_id(group_id);
+        $("#groups_overlay .deactivated-user-group-icon-right").hide();
+
+        update_group_deactivated_banner(user_group);
+        update_deactivate_and_reactivate_buttons(user_group);
+        update_toggler_for_group_setting(user_group);
+        update_members_panel_ui(user_group);
+        update_group_membership_button(user_group.id);
+    }
+    redraw_user_group_list();
+}
+
 export function show_group_settings(group: UserGroup): void {
     $(".group-row.active").removeClass("active");
     user_group_components.show_user_group_settings_pane.settings(group);
@@ -1427,9 +1476,13 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         $group_row.find(".description").text(group.description);
     }
 
-    if (event.data.deactivated) {
-        $("#user-group-edit-filter-options").show();
-        handle_deleted_group(group.id);
+    if (event.data.deactivated !== undefined) {
+        update_filter_widget_visibility();
+        if (event.data.deactivated) {
+            handle_deleted_group(group.id);
+        } else {
+            handle_reactivated_group(group.id);
+        }
         return;
     }
 
@@ -1732,6 +1785,18 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget.setup();
 }
 
+function update_filter_widget_visibility(): void {
+    if (user_groups.realm_has_deactivated_user_groups()) {
+        $("#user-group-edit-filter-options").show();
+    } else {
+        $("#user-group-edit-filter-options").hide();
+        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
+        if (filters_dropdown_widget) {
+            filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+        }
+    }
+}
+
 export function setup_page(callback: () => void): void {
     function initialize_components(): void {
         group_list_toggler = components.toggle({
@@ -1745,11 +1810,7 @@ export function setup_page(callback: () => void): void {
             },
         });
 
-        if (user_groups.realm_has_deactivated_user_groups()) {
-            $("#user-group-edit-filter-options").show();
-        } else {
-            $("#user-group-edit-filter-options").hide();
-        }
+        update_filter_widget_visibility();
         group_list_toggler.get().prependTo("#groups_overlay_container .list-toggler-container");
         setup_dropdown_filters_widget();
     }
@@ -1990,6 +2051,39 @@ export function initialize(): void {
         },
     );
 
+    $("#groups_overlay_container").on(
+        "click",
+        ".group_settings_header .reactivate-group-button",
+        function (this: HTMLElement) {
+            const active_group_data = get_active_data();
+            const group_id = active_group_data.id;
+            assert(group_id !== undefined);
+            const $button = $(this);
+            buttons.show_button_loading_indicator($button);
+            const data = {deactivated: JSON.stringify(false)};
+            channel.patch({
+                url: "/json/user_groups/" + group_id,
+                data,
+                success() {
+                    buttons.hide_button_loading_indicator($button);
+                },
+                error(xhr) {
+                    const message = channel.xhr_error_message($t({defaultMessage: "Failed"}), xhr);
+                    const context = {
+                        banner_type: compose_banner.ERROR,
+                        classname: "group-reactivation-error",
+                        hide_close_button: false,
+                        banner_text: message,
+                    };
+                    $("#user_group_settings .group-reactivation-error-banner").html(
+                        render_modal_banner(context),
+                    );
+                    buttons.hide_button_loading_indicator($button);
+                },
+            });
+        },
+    );
+
     function save_group_info(e: JQuery.ClickEvent): void {
         assert(e.currentTarget instanceof HTMLElement);
         const group = get_user_group_for_target(e.currentTarget);
@@ -2116,6 +2210,16 @@ export function initialize(): void {
 
             const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_group_settings_subsection_changes($subsection, group);
+        },
+    );
+
+    $("#groups_overlay_container").on(
+        "click",
+        ".group-reactivation-error-banner .main-view-banner-close-button",
+        () => {
+            $(
+                "#user_group_settings .group-reactivation-error-banner .group-reactivation-error",
+            ).remove();
         },
     );
 }
