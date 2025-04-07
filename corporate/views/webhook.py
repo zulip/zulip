@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from corporate.models import Event, Invoice, Session
+from corporate.models.stripe_state import Event, Invoice, Session
 from zproject.config import get_secret
 
 billing_logger = logging.getLogger("corporate.stripe")

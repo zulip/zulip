@@ -32,11 +32,8 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingUserDict,
     get_remote_server_and_user_from_session,
 )
-from corporate.models import (
-    CustomerPlan,
-    get_current_plan_by_customer,
-    get_customer_by_remote_server,
-)
+from corporate.models.customers import get_customer_by_remote_server
+from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,

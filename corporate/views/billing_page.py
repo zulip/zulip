@@ -11,7 +11,8 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
+from corporate.models.customers import get_customer_by_realm
+from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import process_as_post, require_billing_access, zulip_login_required
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success

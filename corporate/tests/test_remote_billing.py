@@ -15,13 +15,9 @@ from corporate.lib.remote_billing_util import (
     RemoteBillingUserDict,
 )
 from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession, add_months
-from corporate.models import (
-    CustomerPlan,
-    LicenseLedger,
-    get_current_plan_by_customer,
-    get_customer_by_remote_realm,
-    get_customer_by_remote_server,
-)
+from corporate.models.customers import get_customer_by_remote_realm, get_customer_by_remote_server
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
 from zerver.lib.exceptions import RemoteRealmServerMismatchError
 from zerver.lib.rate_limiter import RateLimitedIPAddr

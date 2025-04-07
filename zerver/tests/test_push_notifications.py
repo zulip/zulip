@@ -29,7 +29,7 @@ from typing_extensions import override
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount, UserCount
 from corporate.lib.stripe import RemoteRealmBillingSession
-from corporate.models import CustomerPlan
+from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_delete import do_delete_messages

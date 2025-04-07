@@ -27,7 +27,7 @@ from corporate.lib.activity import (
     remote_installation_stats_link,
 )
 from corporate.lib.billing_types import BillingModality
-from corporate.models import CustomerPlan
+from corporate.models.plans import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_change_realm_max_invites,
