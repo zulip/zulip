@@ -953,34 +953,40 @@
     }
 
     &.info {
-        background-color: hsl(204deg 58% 92%);
-        border-color: hsl(204deg 49% 29% / 40%);
         position: relative;
-        color: hsl(204deg 49% 29%);
+        background-color: var(--color-background-info-main-view-banner);
+        border-color: var(--color-border-info-main-view-banner);
+        color: var(--color-info-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(204deg 49% 29% / 50%);
+            color: var(--color-info-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(204deg 49% 29%);
+                color: var(--color-info-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(204deg 49% 29% / 75%);
+                color: var(--color-info-main-view-banner-close-button-active);
             }
         }
 
         .main-view-banner-action-button,
         .upload_banner_cancel_button {
-            background-color: hsl(204deg 49% 29% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-info-main-view-banner-action-button
+            );
+            color: var(--color-info-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(204deg 49% 29% / 12%);
+                background-color: var(
+                    --color-background-info-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(204deg 49% 29% / 15%);
+                background-color: var(
+                    --color-background-info-main-view-banner-action-button-active
+                );
             }
         }
     }
