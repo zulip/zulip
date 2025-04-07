@@ -85,40 +85,6 @@
         .above_compose_banner_action_link {
             color: hsl(200deg 100% 50%);
         }
-
-        &.info {
-            background-color: hsl(204deg 100% 12%);
-            border-color: hsl(205deg 58% 69% / 40%);
-            position: relative;
-            color: hsl(205deg 58% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(205deg 58% 69% / 50%);
-
-                &:hover {
-                    color: hsl(205deg 58% 69%);
-                }
-
-                &:active {
-                    color: hsl(205deg 58% 69% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button,
-            .upload_banner_cancel_button {
-                background-color: hsl(205deg 58% 69% / 10%);
-                border-color: transparent;
-                color: hsl(205deg 58% 69%);
-
-                &:hover {
-                    background-color: hsl(205deg 58% 69% / 15%);
-                }
-
-                &:active {
-                    background-color: hsl(205deg 58% 69% / 20%);
-                }
-            }
-        }
     }
 
     .upload_banner {
