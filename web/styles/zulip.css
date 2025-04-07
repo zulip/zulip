@@ -2348,12 +2348,22 @@ body:not(.spectator-view) {
 
 #personal-menu {
     .header-button-avatar {
+        /* Put styling on div rather than img to gracefully handle
+           uBlock Origin blocking of gravatar, which seems to make
+           the img disappear. */
         width: 1.5em; /* 24px at 16px em */
         height: 1.5em; /* 24px at 16px em */
         background-size: cover;
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
+        overflow: hidden;
+
+        .header-button-avatar-image {
+            /* Overcome `vertical-align: middle`. This prevents the
+               avatar in the navbar from being lower by a pixel. */
+            display: block;
+        }
     }
 }
 
