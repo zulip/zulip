@@ -21,7 +21,9 @@ _Unreleased_
 
 #### Upgrade notes for 11.0
 
-- None yet.
+- PostgreSQL 13 is no longer supported; if you are currently using it, you will
+  need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
+  before upgrading Zulip.
 
 ## Zulip Server 10.x series
 
