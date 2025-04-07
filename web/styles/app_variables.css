@@ -2614,6 +2614,46 @@
         hsl(147deg 57% 25% / 15%),
         hsl(147deg 51% 55% / 20%)
     );
+    --color-warning-main-view-banner: light-dark(
+        hsl(38deg 44% 27%),
+        hsl(50deg 45% 80%)
+    );
+    --color-background-warning-main-view-banner: light-dark(
+        hsl(50deg 75% 92%),
+        hsl(53deg 100% 11%)
+    );
+    --color-border-warning-main-view-banner: light-dark(
+        hsl(38deg 44% 27% / 40%),
+        hsl(38deg 44% 60% / 40%)
+    );
+    --color-warning-main-view-banner-close-button: light-dark(
+        hsl(38deg 44% 27% / 50%),
+        hsl(50deg 45% 61% / 50%)
+    );
+    --color-warning-main-view-banner-close-button-hover: light-dark(
+        hsl(38deg 44% 27%),
+        hsl(50deg 45% 61%)
+    );
+    --color-warning-main-view-banner-close-button-active: light-dark(
+        hsl(38deg 44% 27% / 75%),
+        hsl(50deg 45% 61% / 75%)
+    );
+    --color-warning-main-view-banner-action-button: light-dark(
+        inherit,
+        hsl(50deg 45% 61%)
+    );
+    --color-background-warning-main-view-banner-action-button: light-dark(
+        hsl(38deg 44% 27% / 10%),
+        hsl(50deg 45% 61% / 10%)
+    );
+    --color-background-warning-main-view-banner-action-button-hover: light-dark(
+        hsl(38deg 44% 27% / 12%),
+        hsl(50deg 45% 61% / 15%)
+    );
+    --color-background-warning-main-view-banner-action-button-active: light-dark(
+        hsl(38deg 44% 27% / 15%),
+        hsl(50deg 45% 61% / 20%)
+    );
 
     /* Info density update UI */
     --color-info-density-control-border: light-dark(
