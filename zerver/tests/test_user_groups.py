@@ -1824,6 +1824,118 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 leadership_group, setting_name, moderators_group, acting_user=None
             )
 
+    def test_user_group_reactivation(self) -> None:
+        support_group = self.create_user_group_for_test(
+            "support", acting_user=self.example_user("desdemona")
+        )
+        realm = get_realm("zulip")
+
+        admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            admins_group,
+            acting_user=None,
+        )
+
+        do_deactivate_user_group(support_group, acting_user=None)
+        self.login("othello")
+        params = {"deactivated": orjson.dumps(False).decode()}
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            members_group,
+            acting_user=None,
+        )
+
+        self.login("othello")
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertFalse(support_group.deactivated)
+
+        do_deactivate_user_group(support_group, acting_user=None)
+
+        # Check admins can deactivate groups even if they are not members
+        # of the group.
+        self.login("iago")
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertFalse(support_group.deactivated)
+
+        do_deactivate_user_group(support_group, acting_user=None)
+
+        # Check moderators can deactivate groups if they are allowed by
+        # can_manage_all_groups even when they are not members of the group.
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            admins_group,
+            acting_user=None,
+        )
+        self.login("shiva")
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            moderators_group,
+            acting_user=None,
+        )
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertFalse(support_group.deactivated)
+
+        do_deactivate_user_group(support_group, acting_user=None)
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_manage_all_groups",
+            admins_group,
+            acting_user=None,
+        )
+        do_change_user_group_permission_setting(
+            support_group, "can_manage_group", admins_group, acting_user=None
+        )
+
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_user_group_permission_setting(
+            support_group, "can_manage_group", moderators_group, acting_user=None
+        )
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertFalse(support_group.deactivated)
+
+        do_deactivate_user_group(support_group, acting_user=None)
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("shiva")], [admins_group]
+        )
+        do_change_user_group_permission_setting(
+            support_group, "can_manage_group", setting_group, acting_user=None
+        )
+
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=realm)
+        self.assertFalse(support_group.deactivated)
+
     def test_query_counts(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")

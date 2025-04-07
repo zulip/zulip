@@ -22135,13 +22135,18 @@ paths:
         Update the name, description or any of the permission settings
         of a [user group](/help/user-groups).
 
+        This endpoint is also used to reactivate a user group.
+
         Note that while permissions settings of deactivated groups can
         be edited by this API endpoint, and those permissions settings
         do affect the ability to modify the deactivated group and its
         membership, the deactivated group itself cannot be mentioned
         or used in the value of any permission without first being reactivated.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 340), only the name field
+        **Changes**: Starting with Zulip 11.0 (feature level ZF-61b9bf), this
+        endpoint can be used to reactivate a user group.
+
+        Prior to Zulip 10.0 (feature level 340), only the name field
         of deactivated groups could be modified.
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
@@ -22293,6 +22298,18 @@ paths:
                           "old": 11,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                deactivated:
+                  description: |
+                    A deactivated user group can be reactivated by passing this
+                    parameter as `false`.
+
+                    Passing `true` does nothing as user group is deactivated
+                    using [`POST /user_groups/{user_group_id}/deactivate`](deactivate-user-group)
+                    endpoint.
+
+                    **Changes**: New in Zulip 11.0 (feature level 386).
+                  type: boolean
+                  example: false
             encoding:
               can_add_members_group:
                 contentType: application/json
@@ -22305,6 +22322,8 @@ paths:
               can_mention_group:
                 contentType: application/json
               can_remove_members_group:
+                contentType: application/json
+              deactivated:
                 contentType: application/json
       responses:
         "200":

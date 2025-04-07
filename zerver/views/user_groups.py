@@ -13,6 +13,7 @@ from zerver.actions.user_groups import (
     check_add_user_group,
     do_change_user_group_permission_setting,
     do_deactivate_user_group,
+    do_reactivate_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -139,6 +140,7 @@ def edit_user_group(
     can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_members_group: Json[GroupSettingChangeRequest] | None = None,
+    deactivated: Json[bool] | None = None,
 ) -> HttpResponse:
     if (
         name is None
@@ -149,6 +151,7 @@ def edit_user_group(
         and can_manage_group is None
         and can_mention_group is None
         and can_remove_members_group is None
+        and deactivated is None
     ):
         raise JsonableError(_("No new data supplied"))
 
@@ -162,6 +165,9 @@ def edit_user_group(
 
     if description is not None and description != user_group.description:
         do_update_user_group_description(user_group, description, acting_user=user_profile)
+
+    if deactivated is not None and not deactivated and user_group.deactivated:
+        do_reactivate_user_group(user_group, acting_user=user_profile)
 
     request_settings_dict = locals()
     nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
