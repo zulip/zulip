@@ -877,32 +877,40 @@
     for some of the banners, for which we use the warning-style class. */
     &.warning,
     &.warning-style {
-        background-color: hsl(50deg 75% 92%);
-        border-color: hsl(38deg 44% 27% / 40%);
-        color: hsl(38deg 44% 27%);
+        background-color: var(--color-background-warning-main-view-banner);
+        border-color: var(--color-border-warning-main-view-banner);
+        color: var(--color-warning-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(38deg 44% 27% / 50%);
+            color: var(--color-warning-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(38deg 44% 27%);
+                color: var(--color-warning-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(38deg 44% 27% / 75%);
+                color: var(
+                    --color-warning-main-view-banner-close-button-active
+                );
             }
         }
 
         .main-view-banner-action-button {
-            background-color: hsl(38deg 44% 27% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-warning-main-view-banner-action-button
+            );
+            color: var(--color-warning-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(38deg 44% 27% / 12%);
+                background-color: var(
+                    --color-background-warning-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(38deg 44% 27% / 15%);
+                background-color: var(
+                    --color-background-warning-main-view-banner-action-button-active
+                );
             }
         }
     }
