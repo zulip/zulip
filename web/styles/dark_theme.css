@@ -86,37 +86,6 @@
             color: hsl(200deg 100% 50%);
         }
 
-        &.error {
-            background-color: hsl(0deg 60% 19%);
-            border-color: hsl(3deg 73% 74% / 40%);
-            color: hsl(3deg 73% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(3deg 73% 74% / 50%);
-
-                &:hover {
-                    color: hsl(3deg 73% 74%);
-                }
-
-                &:active {
-                    color: hsl(3deg 73% 74% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button {
-                background-color: hsl(3deg 73% 74% / 10%);
-                color: hsl(3deg 73% 74%);
-
-                &:hover {
-                    background: hsl(3deg 73% 74% / 15%);
-                }
-
-                &:active {
-                    background: hsl(3deg 73% 74% / 20%);
-                }
-            }
-        }
-
         &.info {
             background-color: hsl(204deg 100% 12%);
             border-color: hsl(205deg 58% 69% / 40%);
