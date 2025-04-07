@@ -2654,6 +2654,46 @@
         hsl(38deg 44% 27% / 15%),
         hsl(50deg 45% 61% / 20%)
     );
+    --color-error-main-view-banner: light-dark(
+        hsl(4deg 58% 33%),
+        hsl(3deg 73% 80%)
+    );
+    --color-background-error-main-view-banner: light-dark(
+        hsl(4deg 35% 90%),
+        hsl(0deg 60% 19%)
+    );
+    --color-border-error-main-view-banner: light-dark(
+        hsl(3deg 57% 33% / 40%),
+        hsl(3deg 73% 74% / 40%)
+    );
+    --color-error-main-view-banner-close-button: light-dark(
+        hsl(4deg 58% 33% / 50%),
+        hsl(3deg 73% 74% / 50%)
+    );
+    --color-error-main-view-banner-close-button-hover: light-dark(
+        hsl(4deg 58% 33%),
+        hsl(3deg 73% 74%)
+    );
+    --color-error-main-view-banner-close-button-active: light-dark(
+        hsl(4deg 58% 33% / 75%),
+        hsl(3deg 73% 74% / 75%)
+    );
+    --color-error-main-view-banner-action-button: light-dark(
+        inherit,
+        hsl(3deg 73% 74%)
+    );
+    --color-background-error-main-view-banner-action-button: light-dark(
+        hsl(3deg 57% 33% / 10%),
+        hsl(3deg 73% 74% / 10%)
+    );
+    --color-background-error-main-view-banner-action-button-hover: light-dark(
+        hsl(3deg 57% 33% / 12%),
+        hsl(3deg 73% 74% / 15%)
+    );
+    --color-background-error-main-view-banner-action-button-active: light-dark(
+        hsl(3deg 57% 33% / 15%),
+        hsl(3deg 73% 74% / 20%)
+    );
 
     /* Info density update UI */
     --color-info-density-control-border: light-dark(
