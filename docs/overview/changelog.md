@@ -13,6 +13,12 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+- Added support for using PostgreSQL 17 as the database. See the
+  [PostgreSQL upgrade
+  documentation](../production/upgrade.md#upgrading-postgresql) if
+  you’re interested in upgrading an existing server to newer
+  PostgreSQL.
+
 #### Upgrade notes for 11.0
 
 - None yet.
@@ -918,8 +924,10 @@ _Released 2024-01-24_
   authentication could cause other queue workers to not progress
   properly on low-memory Zulip servers.
 - Added support for using PostgreSQL 16 as the database. See the
-  PostgreSQL upgrade documentation if you’re interested in upgrading
-  an existing server to newer Postgres.
+  [PostgreSQL upgrade
+  documentation](../production/upgrade.md#upgrading-postgresql) if
+  you’re interested in upgrading an existing server to newer
+  PostgreSQL.
 - Added support for explicitly deactivating a mobile push
   notifications registration.
 - Added support for a new class of custom authentication hook.
@@ -1363,7 +1371,7 @@ _Released 2023-05-31_
 - Added additional confirmation dialogs for actions deserving caution,
   including marking all messages as read, removing the last user from a
   private stream, and disabling all notifications for direct messages.
-- Added support for Postgres 15, and removed support for Postgres 11.
+- Added support for PostgreSQL 15, and removed support for PostgreSQL 11.
 - Added new `z` keyboard shortcut to view a message in context.
 - Added new `=` keyboard shortcut to upvote an existing emoji reaction.
 - Changed the `s` keyboard shortcut to be a toggle, replacing the
@@ -1770,8 +1778,8 @@ _Released 2022-11-17_
 #### Upgrade notes for 6.0
 
 - Installations using [docker-zulip][docker-zulip] will need to [upgrade
-  Postgres][docker-zulip-upgrade-database] before upgrading to Zulip
-  6.0, because the previous default of Postgres 10 is no longer
+  PostgreSQL][docker-zulip-upgrade-database] before upgrading to Zulip
+  6.0, because the previous default of PostgreSQL 10 is no longer
   supported by this release.
 - Installations using the AzureAD authentication backend will need to
   update `/etc/zulip/zulip-secrets.conf` after upgrading. The
@@ -2081,7 +2089,8 @@ _Released 2022-03-29_
 - Improved various interaction and performance details in "Recent topics".
 - Improved styling for poll and todo list widgets.
 - Zulip now supports configuring the database name and username when
-  using a remote Postgres server. Previously, these were hardcoded to "zulip".
+  using a remote PostgreSQL server. Previously, these were hardcoded
+  to "zulip".
 - Migrated many tooltips to prettier tooltips powered by TippyJS.
 - Autocomplete is now available when editing topics.
 - Typeahead for choosing a topic now consistently fetches the full set
