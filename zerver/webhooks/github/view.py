@@ -122,70 +122,81 @@ def get_closed_pull_request_body(helper: Helper) -> str:
 
 def get_pull_request_milestoned_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
-    return get_issue_milestoned_or_demilestoned_event_message(
-        user_name=f"**{get_sender_name(payload)}**",
-        action="added" if payload["action"] == "milestoned" else "removed",
-        url=pull_request["html_url"].tame(check_string),
-        number=str(pull_request["number"]).tame(check_int),
-        milestone_name=payload["milestone"]["title"].tame(check_string),
-        milestone_url=payload["milestone"]["html_url"].tame(check_string),
-        user_url=get_sender_url(payload).tame(check_string),
-        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+    pull_request = payload.get("pull_request", {})
+    milestone = payload.get("milestone", {})
+    
+    action = "added" if payload.get("action") == "milestoned" else "removed"
+    return "{sender} {action} milestone [{milestone_name}]({milestone_url}) to [PR #{number}]({pr_url}).".format(
+        sender=f"**{get_sender_name(payload)}**",
+        action=action,
+        milestone_name=milestone.get("title", "").tame(check_string),
+        milestone_url=milestone.get("html_url", "").tame(check_string),
+        number=number_str.tame(check_int),
+        pr_url=pull_request.get("html_url", "").tame(check_string),
     )
 
 
 def get_pull_request_approved_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
-    return get_pull_request_event_message(
-        user_name=f"**{get_sender_name(payload)}**",
+    pull_request = payload.get("pull_request", {})
+    
+    return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'.".format(
+        sender=f"**{get_sender_name(payload)}**",
         action="approved".tame(check_string),
-        url=pull_request["html_url"].tame(check_string),
-        number=str(pull_request["number"]).tame(check_int),
-        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+        number=number_str.tame(check_int),
+        pr_url=pull_request.get("html_url", "").tame(check_string),
+        title=pull_request.get("title", "").tame(check_string) if helper.include_title else None,
     )
 
 
 def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
-    return get_pull_request_event_message(
-        user_name=f"**{get_sender_name(payload)}**",
+    pull_request = payload.get("pull_request", {})
+    
+    return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'.".format(
+        sender=f"**{get_sender_name(payload)}**",
         action="converted to draft".tame(check_string),
-        url=pull_request["html_url"].tame(check_string),
-        number=str(pull_request["number"]).tame(check_int),
-        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+        number=number_str.tame(check_int),
+        pr_url=pull_request.get("html_url", "").tame(check_string),
+        title=pull_request.get("title", "").tame(check_string) if helper.include_title else None,
     )
 
 
 def get_pull_request_labeled_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
-    label_name = payload["label"]["name"].tame(check_string)
-    return get_issue_labeled_or_unlabeled_event_message(
-        user_name=f"**{get_sender_name(payload)}**",
-        action="added" if payload["action"] == "labeled" else "removed",
-        url=pull_request["html_url"].tame(check_string),
-        number=str(pull_request["number"]).tame(check_int),
+    pull_request = payload.get("pull_request", {})
+    label = payload.get("label", {})
+    
+    label_name = label.get("name", "").tame(check_string)
+    
+    action = "added" if payload.get("action") == "labeled" else "removed"
+    return "{sender} {action} label '{label_name}' to [PR #{number}]({pr_url}).".format(
+        sender=f"**{get_sender_name(payload)}**",
+        action=action,
         label_name=label_name,
-        user_url=get_sender_url(payload).tame(check_string),
-        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+        number=number_str.tame(check_int),
+        pr_url=pull_request.get("html_url", "").tame(check_string),
     )
 
 
 def get_pull_request_review_request_removed_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
+    pull_request = payload.get("pull_request", {})
+    reviewers = ""
+
     if "requested_reviewer" in payload:
-        reviewer = payload["requested_reviewer"]
-        reviewers = (
-            f"[{reviewer['login'].tame(check_string)}]({reviewer['html_url'].tame(check_string)})"
-        )
+        reviewer = payload.get("requested_reviewer", {})
+        reviewers = f"[{reviewer.get('login', '')}]({reviewer.get('html_url', '')})"
     else:
-        team_reviewer = payload["requested_team"]
-        reviewers = f"[{team_reviewer['name'].tame(check_string)}]({team_reviewer['html_url'].tame(check_string)})"
-    message = f"**{get_sender_name(payload)}** removed {reviewers} as a reviewer from [PR #{str(pull_request['number']).tame(check_string)}]({pull_request['html_url'].tame(check_string)})"
+        team_reviewer = payload.get("requested_team", {})
+        reviewers = f"[{team_reviewer.get('name', '')}]({team_reviewer.get('html_url', '')})"
+
+    message = "{sender} removed {reviewers} as a reviewer from [PR #{number}]({pr_url})".format(
+        sender=f"**{get_sender_name(payload)}**",
+        reviewers=reviewers,
+        number=number_str.tame(check_int),
+        pr_url=pull_request.get("html_url", "").tame(check_string),
+    )
     return message
 
 
@@ -802,7 +813,11 @@ def get_prior_subscription(payload: WildValue) -> str:
 
 
 def get_repository_name(payload: WildValue) -> str:
-    return payload["repository"]["name"].tame(check_string)
+    if "repository" in payload:
+        return payload["repository"]["name"].tame(check_string)
+    else:
+        return "Repository name not found"
+
 
 
 def get_repository_full_name(payload: WildValue) -> str:
