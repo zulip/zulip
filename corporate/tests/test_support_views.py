@@ -15,16 +15,10 @@ from corporate.lib.stripe import (
     get_configured_fixed_price_plan_offer,
     start_of_next_billing_cycle,
 )
-from corporate.models import (
-    Customer,
-    CustomerPlan,
-    CustomerPlanOffer,
-    LicenseLedger,
-    SponsoredPlanTypes,
-    ZulipSponsorshipRequest,
-    get_current_plan_by_customer,
-    get_customer_by_realm,
-)
+from corporate.models.customers import Customer, get_customer_by_realm
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan, CustomerPlanOffer, get_current_plan_by_customer
+from corporate.models.sponsorships import SponsoredPlanTypes, ZulipSponsorshipRequest
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email

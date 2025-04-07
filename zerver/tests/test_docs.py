@@ -10,7 +10,8 @@ from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from corporate.models import Customer, CustomerPlan
+from corporate.models.customers import Customer
+from corporate.models.plans import CustomerPlan
 from zerver.context_processors import get_apps_page_url
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase

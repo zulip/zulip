@@ -6,7 +6,9 @@ from django.utils.timezone import now as timezone_now
 
 from corporate.lib.activity import get_remote_server_audit_logs
 from corporate.lib.stripe import add_months
-from corporate.models import Customer, CustomerPlan, LicenseLedger
+from corporate.models.customers import Customer
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Client, UserActivity, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType

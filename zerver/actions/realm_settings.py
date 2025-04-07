@@ -283,7 +283,7 @@ def get_realm_authentication_methods_for_page_params_api(
     # The rest of the function is only for the mechanism of restricting
     # certain backends based on the realm's plan type on Zulip Cloud.
 
-    from corporate.models import CustomerPlan
+    from corporate.models.plans import CustomerPlan
 
     for backend_name, backend_result in result_dict.items():
         available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans

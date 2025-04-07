@@ -136,7 +136,7 @@ def has_pending_sponsorship_request(
         user_has_billing_access = user_profile is not None and user_profile.has_billing_access
 
     if settings.CORPORATE_ENABLED and user_profile is not None and user_has_billing_access:
-        from corporate.models import get_customer_by_realm
+        from corporate.models.customers import get_customer_by_realm
 
         customer = get_customer_by_realm(user_profile.realm)
         if customer is not None:

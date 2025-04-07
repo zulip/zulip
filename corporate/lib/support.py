@@ -17,14 +17,10 @@ from corporate.lib.stripe import (
     get_push_status_for_remote_request,
     start_of_next_billing_cycle,
 )
-from corporate.models import (
-    Customer,
-    CustomerPlan,
-    CustomerPlanOffer,
-    LicenseLedger,
-    ZulipSponsorshipRequest,
-    get_current_plan_by_customer,
-)
+from corporate.models.customers import Customer
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan, CustomerPlanOffer, get_current_plan_by_customer
+from corporate.models.sponsorships import ZulipSponsorshipRequest
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm
 from zerver.models.realm_audit_logs import AuditLogEventType

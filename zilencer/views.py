@@ -32,11 +32,8 @@ from analytics.lib.counts import (
     REMOTE_INSTALLATION_COUNT_STATS,
     do_increment_logging_stat,
 )
-from corporate.models import (
-    CustomerPlan,
-    get_current_plan_by_customer,
-    get_customer_by_remote_realm,
-)
+from corporate.models.customers import get_customer_by_remote_realm
+from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
 from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
