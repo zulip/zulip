@@ -2407,6 +2407,12 @@ body:not(.spectator-view) {
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
+        overflow: hidden;
+
+        img {
+            /* Overcome vertical-align: middle */
+            vertical-align: top;
+        }
     }
 }
 
