@@ -1254,7 +1254,8 @@ li.top_left_scheduled_messages {
     overflow: hidden;
 }
 
-#filter-topic-input:placeholder-shown + #clear_search_topic_button {
+#left-sidebar-filter-topic-input:placeholder-shown
+    + #clear_search_topic_button {
     visibility: hidden;
 }
 
