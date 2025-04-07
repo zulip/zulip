@@ -2738,6 +2738,10 @@
         var(--color-text-generic-link),
         hsl(200deg 100% 50%)
     );
+    --color-background-main-view-banner-moving-bar: light-dark(
+        hsl(204deg 63% 85%),
+        hsl(204deg 63% 18%)
+    );
 
     /* Info density update UI */
     --color-info-density-control-border: light-dark(
