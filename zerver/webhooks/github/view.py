@@ -111,6 +111,7 @@ def get_closed_pull_request_body(helper: Helper) -> str:
     include_title = helper.include_title
     pull_request = payload["pull_request"]
     action = "merged" if pull_request["merged"].tame(check_bool) else "closed without merge"
+
     return get_pull_request_event_message(
         user_name=get_sender_name(payload),
         action=action,
@@ -124,8 +125,8 @@ def get_pull_request_milestoned_body(helper: Helper) -> str:
     payload = helper.payload
     pull_request = payload.get("pull_request", {})
     milestone = payload.get("milestone", {})
-    
     action = "added" if payload.get("action") == "milestoned" else "removed"
+
     return "{sender} {action} milestone [{milestone_name}]({milestone_url}) to [PR #{number}]({pr_url}).".format(
         sender=f"**{get_sender_name(payload)}**",
         action=action,
@@ -139,7 +140,7 @@ def get_pull_request_milestoned_body(helper: Helper) -> str:
 def get_pull_request_approved_body(helper: Helper) -> str:
     payload = helper.payload
     pull_request = payload.get("pull_request", {})
-    
+
     return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'.".format(
         sender=f"**{get_sender_name(payload)}**",
         action="approved".tame(check_string),
@@ -152,7 +153,7 @@ def get_pull_request_approved_body(helper: Helper) -> str:
 def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
     payload = helper.payload
     pull_request = payload.get("pull_request", {})
-    
+
     return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'.".format(
         sender=f"**{get_sender_name(payload)}**",
         action="converted to draft".tame(check_string),
@@ -166,10 +167,9 @@ def get_pull_request_labeled_body(helper: Helper) -> str:
     payload = helper.payload
     pull_request = payload.get("pull_request", {})
     label = payload.get("label", {})
-    
     label_name = label.get("name", "").tame(check_string)
-    
     action = "added" if payload.get("action") == "labeled" else "removed"
+
     return "{sender} {action} label '{label_name}' to [PR #{number}]({pr_url}).".format(
         sender=f"**{get_sender_name(payload)}**",
         action=action,
@@ -817,7 +817,6 @@ def get_repository_name(payload: WildValue) -> str:
         return payload["repository"]["name"].tame(check_string)
     else:
         return "Repository name not found"
-
 
 
 def get_repository_full_name(payload: WildValue) -> str:
