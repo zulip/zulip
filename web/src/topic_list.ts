@@ -163,7 +163,7 @@ export class TopicListWidget {
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
             zoomed,
-            get_topic_search_term(),
+            get_left_sidebar_topic_search_term(),
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -351,7 +351,7 @@ export function zoom_in(): void {
     scroll_zoomed_in_topic_into_view();
 }
 
-export function get_topic_search_term(): string {
+export function get_left_sidebar_topic_search_term(): string {
     const $filter = $<HTMLInputElement>("input#filter-topic-input");
     const filter_val = $filter.val();
     if (filter_val === undefined) {
