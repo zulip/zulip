@@ -2734,6 +2734,10 @@
         hsl(204deg 49% 29% / 15%),
         hsl(205deg 58% 69% / 20%)
     );
+    --color-main-view-banner-action-link: light-dark(
+        var(--color-text-generic-link),
+        hsl(200deg 100% 50%)
+    );
 
     /* Info density update UI */
     --color-info-density-control-border: light-dark(
