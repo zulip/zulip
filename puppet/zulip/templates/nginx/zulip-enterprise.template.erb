@@ -5,10 +5,10 @@ server {
 <% else -%>
     listen 127.0.0.1:80;
 <% end -%>
-    location /api/internal/ {
-        include /etc/nginx/zulip-include/api_headers;
-        include uwsgi_params;
+    location /local-static {
+        alias /home/zulip/local-static;
     }
+    include /etc/nginx/zulip-include/app;
     include /etc/nginx/zulip-include/localhost.d/*.conf;
 }
 

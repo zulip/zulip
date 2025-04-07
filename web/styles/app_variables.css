@@ -770,6 +770,14 @@
         hsl(0deg 0% 98%),
         hsl(0deg 0% 0% / 20%)
     );
+    --color-background-overlay: light-dark(
+        hsl(0deg 0% 13% / 80%),
+        hsl(212deg 28% 8% / 75%)
+    );
+    --color-background-non-empty-overlay-indicator: light-dark(
+        hsl(0deg 0% 100% / 90%),
+        hsl(212deg 28% 8% / 75%)
+    );
     --color-background-modal: light-dark(#ededed, #242424);
     --color-background-modal-bar: light-dark(#f5f5f5, #333);
     --color-border-modal: light-dark(
@@ -779,6 +787,15 @@
     --color-border-modal-bar: light-dark(
         color-mix(in srgb, #c2c2c2 80%, transparent),
         color-mix(in srgb, #fff 5%, transparent)
+    );
+    --color-border-modal-footer: light-dark(
+        hsl(0deg 0% 87%),
+        hsl(0deg 0% 100% / 20%)
+    );
+    --color-modal-close-button: light-dark(inherit, hsl(236deg 33% 90%));
+    --color-background-modal-close-button-hover: light-dark(
+        hsl(0deg 0% 90%),
+        hsl(0deg 0% 91% / 10%)
     );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
@@ -1052,6 +1069,10 @@
         hsl(50deg 75% 92%),
         hsl(50deg 75% 12%)
     );
+    --color-border-compose-content: light-dark(
+        hsl(0deg 0% 0% / 10%),
+        hsl(0deg 0% 0% / 40%)
+    );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
     --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
@@ -1292,6 +1313,7 @@
     );
     --color-text-search: light-dark(hsl(0deg 0% 35%), hsl(0deg 0% 100% / 75%));
     --color-text-search-hover: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 100%));
+    --color-text-placeholder: light-dark(hsl(0deg 0% 45%), hsl(0deg 0% 55%));
     --color-text-search-placeholder: light-dark(
         hsl(0deg 0% 50%),
         hsl(0deg 0% 100% / 50%)
@@ -1347,7 +1369,18 @@
         hsl(0deg 0% 0%),
         hsl(0deg 0% 100%)
     );
-
+    --color-text-settings-plus-button: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
+    --color-background-settings-plus-button: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-border-settings-plus-button: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 60%)
+    );
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
     --color-text-link-decoration: light-dark(
@@ -1462,6 +1495,14 @@
     );
 
     /* Settings table colors */
+    --color-background-table-header: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0%)
+    );
+    --color-background-table-header-sortable-hover: light-dark(
+        hsl(0deg 0% 95%),
+        hsl(211deg 29% 14%)
+    );
     --color-border-table-striped: light-dark(
         hsl(0deg 0% 87%),
         hsl(0deg 0% 0% / 20%)

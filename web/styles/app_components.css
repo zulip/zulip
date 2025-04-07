@@ -110,7 +110,7 @@ evidence Edge may have bugs in its handling of placeholder opacity
 CSS: https://github.com/necolas/normalize.css/issues/741
 */
 .placeholder {
-    color: hsl(0deg 0% 45%);
+    color: var(--color-text-placeholder);
     opacity: 1;
 }
 
@@ -355,7 +355,7 @@ div.overlay {
     height: 100%;
     -webkit-overflow-scrolling: touch;
 
-    background-color: hsl(0deg 0% 13% / 80%);
+    background-color: var(--color-background-overlay);
     z-index: 105;
 
     pointer-events: none;
@@ -465,17 +465,6 @@ input.settings_text_input {
 
 .dependent-settings-block {
     margin: 15px 0 -5px 23px;
-}
-
-.stream-selection-header-colorblock {
-    /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
-    box-shadow:
-        inset 0 2px 1px -2px hsl(0deg 0% 20%),
-        inset 2px 0 1px -2px hsl(0deg 0% 20%),
-        inset 0 -2px 1px -2px hsl(0deg 0% 20%);
-    width: 10px;
-    border-radius: 3px 0 0 3px;
-    border-bottom: 0;
 }
 
 .edit-controls .fa-angle-right {
@@ -770,9 +759,18 @@ input.settings_text_input {
         }
     }
 
+    & thead {
+        background-color: var(--color-background-table-header);
+    }
+
     & thead th {
+        /* Prevent headers from collapsing.
+           For headers that sort, this keeps
+           the icon on the same line as the
+           header text. */
+        min-width: max-content;
+        white-space: nowrap;
         color: inherit;
-        background-color: hsl(0deg 0% 100%);
         word-break: normal;
 
         .table-sortable-arrow {
@@ -803,7 +801,9 @@ input.settings_text_input {
 
         &[data-sort]:hover {
             cursor: pointer;
-            background-color: hsl(0deg 0% 95%) !important;
+            background-color: var(
+                --color-background-table-header-sortable-hover
+            );
             transition: background-color 100ms ease-in-out;
         }
     }

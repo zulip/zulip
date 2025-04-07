@@ -146,11 +146,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="add-groups-button-wrapper">
-                                    <button type="button" name="subscribe" class="add-groups-button button small rounded">
-                                        {{t 'Add' }}
-                                    </button>
-                                </div>
+                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
                             </div>
                         {{/if}}
                         <div class="group-list-top-section">

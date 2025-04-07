@@ -764,6 +764,7 @@ export function update_realm_setting_in_permissions_panel(
         setting_name,
         active_group_id,
         can_edit,
+        "realm",
     );
 
     const group_has_permission = assigned_permission_object !== undefined;
@@ -824,6 +825,7 @@ export function update_stream_setting_in_permissions_panel(
         setting_name,
         active_group_id,
         can_edit,
+        "stream",
     );
 
     const group_has_permission = assigned_permission_object !== undefined;
@@ -902,6 +904,7 @@ export function update_group_setting_in_permissions_panel(
         setting_name,
         active_group_id,
         can_edit,
+        "group",
     );
 
     const group_has_permission = assigned_permission_object !== undefined;
@@ -1375,6 +1378,30 @@ export function sync_group_permission_setting(property: string, group: UserGroup
     }
 }
 
+export function update_group_right_panel(group: UserGroup, changed_settings: string[]): void {
+    if (changed_settings.includes("can_manage_group")) {
+        update_group_management_ui();
+        return;
+    }
+
+    if (
+        changed_settings.includes("can_add_members_group") ||
+        changed_settings.includes("can_remove_members_group")
+    ) {
+        update_group_membership_button(group.id);
+        update_members_panel_ui(group);
+        return;
+    }
+
+    if (
+        changed_settings.includes("can_join_group") ||
+        changed_settings.includes("can_leave_group")
+    ) {
+        update_group_membership_button(group.id);
+        return;
+    }
+}
+
 export function update_group(event: UserGroupUpdateEvent, group: UserGroup): void {
     if (!overlays.groups_open()) {
         return;
@@ -1397,6 +1424,10 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         return;
     }
 
+    const changed_group_settings = group_permission_settings
+        .get_group_permission_settings()
+        .filter((setting_name) => event.data[setting_name] !== undefined);
+
     if (get_active_data().id === group.id) {
         // update right side pane
         update_group_details(group);
@@ -1406,36 +1437,16 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
                 .text(user_groups.get_display_group_name(group.name))
                 .addClass("showing-info-title");
         }
-        if (event.data.can_mention_group !== undefined) {
-            sync_group_permission_setting("can_mention_group", group);
-            update_group_management_ui();
-        }
-        if (event.data.can_add_members_group !== undefined) {
-            sync_group_permission_setting("can_add_members_group", group);
-            update_group_management_ui();
-        }
-        if (event.data.can_manage_group !== undefined) {
-            sync_group_permission_setting("can_manage_group", group);
-            update_group_management_ui();
-        }
-        if (event.data.can_join_group !== undefined) {
-            sync_group_permission_setting("can_join_group", group);
-            update_group_membership_button(group.id);
-        }
-        if (event.data.can_leave_group !== undefined) {
-            sync_group_permission_setting("can_leave_group", group);
-            update_group_membership_button(group.id);
-        }
-        if (event.data.can_remove_members_group !== undefined) {
-            sync_group_permission_setting("can_remove_members_group", group);
-            update_group_management_ui();
+
+        if (changed_group_settings.length > 0) {
+            update_group_right_panel(group, changed_group_settings);
         }
     }
 
-    const changed_group_settings = group_permission_settings
-        .get_group_permission_settings()
-        .filter((setting_name) => event.data[setting_name] !== undefined);
     for (const setting_name of changed_group_settings) {
+        if (get_active_data().id === group.id) {
+            sync_group_permission_setting(setting_name, group);
+        }
         update_group_setting_in_permissions_panel(
             setting_name,
             group_setting_value_schema.parse(event.data[setting_name]),
