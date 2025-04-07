@@ -788,3 +788,9 @@ A trivial change that should probably be ignored.
         self.check_webhook(
             "emoji_hook__revoke__merge_request_note", expected_topic_name, expected_message
         )
+
+    def test_emoji_award_in_design_note(self) -> None:
+        expected_topic_name = "sample / design Sample.png"
+        expected_message = "Varun Kolanu added the emoji **heart** to [a comment on design Sample.png](https://gitlab.com/kolanuvarun/sample/-/issues/1/designs/Sample.png#note_2421525600)."
+
+        self.check_webhook("emoji_hook__award__design_note", expected_topic_name, expected_message)
