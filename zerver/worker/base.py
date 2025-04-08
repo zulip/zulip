@@ -173,12 +173,16 @@ class QueueProcessingWorker(ABC):
             name=f"consume {self.queue_name}",
             custom_sampling_context={"queue": self.queue_name},
         ):
-            sentry_sdk.add_breadcrumb(
-                type="debug",
-                category="queue_processor",
-                message=f"Consuming {self.queue_name}",
-                data={"events": events, "local_queue_size": self.get_remaining_local_queue_size()},
-            )
+            if sentry_sdk.is_initialized():
+                sentry_sdk.add_breadcrumb(
+                    type="debug",
+                    category="queue_processor",
+                    message=f"Consuming {self.queue_name}",
+                    data={
+                        "events": events,
+                        "local_queue_size": self.get_remaining_local_queue_size(),
+                    },
+                )
             try:
                 if self.idle:
                     # We're reactivating after having gone idle due to emptying the queue.
