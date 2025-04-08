@@ -661,15 +661,19 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
 }
 
 function register_click_handlers(): void {
-    $("#main_div").on("click", ".sender_name, .message-avatar", function (this: HTMLElement, e) {
-        const $row = $(this).closest(".message_row");
-        e.stopPropagation();
-        assert(message_lists.current !== undefined);
-        const message = message_lists.current.get(rows.id($row));
-        assert(message !== undefined);
-        const user = people.get_by_user_id(message.sender_id);
-        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
-    });
+    $("#main_div").on(
+        "click",
+        ".sender_name, .inline_profile_picture",
+        function (this: HTMLElement, e) {
+            const $row = $(this).closest(".message_row");
+            e.stopPropagation();
+            assert(message_lists.current !== undefined);
+            const message = message_lists.current.get(rows.id($row));
+            assert(message !== undefined);
+            const user = people.get_by_user_id(message.sender_id);
+            toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+        },
+    );
 
     $("#main_div").on("click", ".user-mention", function (this: HTMLElement, e) {
         const id_string = $(this).attr("data-user-id");

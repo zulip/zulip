@@ -14,6 +14,11 @@
                 <span class="move-topic-new-topic-placeholder placeholder">
                     {{> topic_not_mandatory_placeholder_text empty_string_topic_display_name=empty_string_topic_display_name}}
                 </span>
+                {{#unless disable_topic_input}}
+                <button type="button" id="clear_move_topic_new_topic_name" class="clear_search_button">
+                    <i class="zulip-icon zulip-icon-close"></i>
+                </button>
+                {{/unless}}
             </div>
         </div>
         <input name="old_topic_name" type="hidden" value="{{topic_name}}" />

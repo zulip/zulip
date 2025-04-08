@@ -576,7 +576,7 @@
     --overlay-container-max-height: 1000px;
     /* The width of the settings sidebar. */
     --settings-sidebar-width: 18.2142em; /* 255px at 14px/em */
-    /* .subscriptions-header and .settings-header */
+    /* .two-pane-settings-header and .settings-header */
     --settings-overlay-header-height: 3.2143em; /* 45px at 14px/em */
     /* .display-type and .list-toggler-container
        in subscriptions and user group settings overlays */
@@ -2575,6 +2575,172 @@
     --color-background-danger-banner: light-dark(
         hsl(0deg 35% 92%),
         hsl(0deg 52% 18%)
+    );
+
+    /* .main-view-banner colors */
+    --color-success-main-view-banner: light-dark(
+        hsl(147deg 57% 25%),
+        hsl(147deg 51% 80%)
+    );
+    --color-background-success-main-view-banner: light-dark(
+        hsl(147deg 43% 92%),
+        hsl(147deg 100% 8%)
+    );
+    --color-border-success-main-view-banner: light-dark(
+        hsl(147deg 57% 25% / 40%),
+        hsl(149deg 48% 52% / 40%)
+    );
+    --color-success-main-view-banner-close-button: light-dark(
+        hsl(147deg 57% 25% / 50%),
+        hsl(147deg 51% 55% / 50%)
+    );
+    --color-success-main-view-banner-close-button-hover: light-dark(
+        hsl(147deg 57% 25%),
+        hsl(147deg 51% 55%)
+    );
+    --color-success-main-view-banner-close-button-active: light-dark(
+        hsl(147deg 57% 25% / 75%),
+        hsl(147deg 51% 55% / 75%)
+    );
+    --color-background-success-main-view-banner-action-button: light-dark(
+        hsl(147deg 57% 25% / 10%),
+        hsl(147deg 51% 55% / 10%)
+    );
+    --color-background-success-main-view-banner-action-button-hover: light-dark(
+        hsl(147deg 57% 25% / 12%),
+        hsl(147deg 51% 55% / 15%)
+    );
+    --color-background-success-main-view-banner-action-button-active: light-dark(
+        hsl(147deg 57% 25% / 15%),
+        hsl(147deg 51% 55% / 20%)
+    );
+    --color-warning-main-view-banner: light-dark(
+        hsl(38deg 44% 27%),
+        hsl(50deg 45% 80%)
+    );
+    --color-background-warning-main-view-banner: light-dark(
+        hsl(50deg 75% 92%),
+        hsl(53deg 100% 11%)
+    );
+    --color-border-warning-main-view-banner: light-dark(
+        hsl(38deg 44% 27% / 40%),
+        hsl(38deg 44% 60% / 40%)
+    );
+    --color-warning-main-view-banner-close-button: light-dark(
+        hsl(38deg 44% 27% / 50%),
+        hsl(50deg 45% 61% / 50%)
+    );
+    --color-warning-main-view-banner-close-button-hover: light-dark(
+        hsl(38deg 44% 27%),
+        hsl(50deg 45% 61%)
+    );
+    --color-warning-main-view-banner-close-button-active: light-dark(
+        hsl(38deg 44% 27% / 75%),
+        hsl(50deg 45% 61% / 75%)
+    );
+    --color-warning-main-view-banner-action-button: light-dark(
+        inherit,
+        hsl(50deg 45% 61%)
+    );
+    --color-background-warning-main-view-banner-action-button: light-dark(
+        hsl(38deg 44% 27% / 10%),
+        hsl(50deg 45% 61% / 10%)
+    );
+    --color-background-warning-main-view-banner-action-button-hover: light-dark(
+        hsl(38deg 44% 27% / 12%),
+        hsl(50deg 45% 61% / 15%)
+    );
+    --color-background-warning-main-view-banner-action-button-active: light-dark(
+        hsl(38deg 44% 27% / 15%),
+        hsl(50deg 45% 61% / 20%)
+    );
+    --color-error-main-view-banner: light-dark(
+        hsl(4deg 58% 33%),
+        hsl(3deg 73% 80%)
+    );
+    --color-background-error-main-view-banner: light-dark(
+        hsl(4deg 35% 90%),
+        hsl(0deg 60% 19%)
+    );
+    --color-border-error-main-view-banner: light-dark(
+        hsl(3deg 57% 33% / 40%),
+        hsl(3deg 73% 74% / 40%)
+    );
+    --color-error-main-view-banner-close-button: light-dark(
+        hsl(4deg 58% 33% / 50%),
+        hsl(3deg 73% 74% / 50%)
+    );
+    --color-error-main-view-banner-close-button-hover: light-dark(
+        hsl(4deg 58% 33%),
+        hsl(3deg 73% 74%)
+    );
+    --color-error-main-view-banner-close-button-active: light-dark(
+        hsl(4deg 58% 33% / 75%),
+        hsl(3deg 73% 74% / 75%)
+    );
+    --color-error-main-view-banner-action-button: light-dark(
+        inherit,
+        hsl(3deg 73% 74%)
+    );
+    --color-background-error-main-view-banner-action-button: light-dark(
+        hsl(3deg 57% 33% / 10%),
+        hsl(3deg 73% 74% / 10%)
+    );
+    --color-background-error-main-view-banner-action-button-hover: light-dark(
+        hsl(3deg 57% 33% / 12%),
+        hsl(3deg 73% 74% / 15%)
+    );
+    --color-background-error-main-view-banner-action-button-active: light-dark(
+        hsl(3deg 57% 33% / 15%),
+        hsl(3deg 73% 74% / 20%)
+    );
+    --color-info-main-view-banner: light-dark(
+        hsl(204deg 49% 29%),
+        hsl(205deg 58% 80%)
+    );
+    --color-background-info-main-view-banner: light-dark(
+        hsl(204deg 58% 92%),
+        hsl(204deg 100% 12%)
+    );
+    --color-border-info-main-view-banner: light-dark(
+        hsl(204deg 49% 29% / 40%),
+        hsl(205deg 58% 69% / 40%)
+    );
+    --color-info-main-view-banner-close-button: light-dark(
+        hsl(204deg 49% 29% / 50%),
+        hsl(205deg 58% 69% / 50%)
+    );
+    --color-info-main-view-banner-close-button-hover: light-dark(
+        hsl(204deg 49% 29%),
+        hsl(205deg 58% 69%)
+    );
+    --color-info-main-view-banner-close-button-active: light-dark(
+        hsl(204deg 49% 29% / 75%),
+        hsl(205deg 58% 69% / 75%)
+    );
+    --color-info-main-view-banner-action-button: light-dark(
+        inherit,
+        hsl(205deg 58% 69%)
+    );
+    --color-background-info-main-view-banner-action-button: light-dark(
+        hsl(204deg 49% 29% / 10%),
+        hsl(205deg 58% 69% / 10%)
+    );
+    --color-background-info-main-view-banner-action-button-hover: light-dark(
+        hsl(204deg 49% 29% / 12%),
+        hsl(205deg 58% 69% / 15%)
+    );
+    --color-background-info-main-view-banner-action-button-active: light-dark(
+        hsl(204deg 49% 29% / 15%),
+        hsl(205deg 58% 69% / 20%)
+    );
+    --color-main-view-banner-action-link: light-dark(
+        var(--color-text-generic-link),
+        hsl(200deg 100% 50%)
+    );
+    --color-background-main-view-banner-moving-bar: light-dark(
+        hsl(204deg 63% 85%),
+        hsl(204deg 63% 18%)
     );
 
     /* Info density update UI */

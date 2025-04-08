@@ -475,7 +475,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
             "sub_unsub_button",
         )} and normalize-space()="Subscribe"]`,
     );
-    await page.click(".subscriptions-header .exit-sign");
+    await page.click("#subscription_overlay .two-pane-settings-header .exit-sign");
     await page.waitForSelector("#subscription_overlay", {hidden: true});
     await page.goto(`http://zulip.zulipdev.com:9981/#narrow/channel/${stream_id}-Denmark`);
     let message_list_id = await common.get_current_msg_list_id(page, true);

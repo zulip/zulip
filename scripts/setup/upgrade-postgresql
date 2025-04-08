@@ -12,7 +12,7 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 export LANGUAGE=C.UTF-8
 
-LATEST_SUPPORTED_VERSION=16
+LATEST_SUPPORTED_VERSION=17
 UPGRADE_TO=${1:-$LATEST_SUPPORTED_VERSION}
 UPGRADE_FROM=$(crudini --get /etc/zulip/zulip.conf postgresql version)
 ZULIP_PATH="$(dirname "$0")/../.."

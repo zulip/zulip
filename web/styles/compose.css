@@ -695,6 +695,10 @@
     align-items: center;
     line-height: 1.2em; /* 18px at 15px/1em. */
 
+    .above_compose_banner_action_link {
+        color: var(--color-main-view-banner-action-link);
+    }
+
     .main-view-banner-elements-wrapper {
         display: flex;
         align-items: center;
@@ -834,32 +838,40 @@
     }
 
     &.success {
-        background-color: hsl(147deg 43% 92%);
-        border: 1px solid hsl(147deg 57% 25% / 40%);
-        color: hsl(147deg 57% 25%);
+        background-color: var(--color-background-success-main-view-banner);
+        border: 1px solid var(--color-border-success-main-view-banner);
+        color: var(--color-success-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(147deg 57% 25% / 50%);
+            color: var(--color-success-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(147deg 57% 25%);
+                color: var(--color-success-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(147deg 57% 25% / 75%);
+                color: var(
+                    --color-success-main-view-banner-close-button-active
+                );
             }
         }
 
         .main-view-banner-action-button {
-            background-color: hsl(147deg 57% 25% / 10%);
+            background-color: var(
+                --color-background-success-main-view-banner-action-button
+            );
             color: inherit;
 
             &:hover {
-                background-color: hsl(147deg 57% 25% / 12%);
+                background-color: var(
+                    --color-background-success-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(147deg 57% 25% / 15%);
+                background-color: var(
+                    --color-background-success-main-view-banner-action-button-active
+                );
             }
         }
     }
@@ -869,96 +881,116 @@
     for some of the banners, for which we use the warning-style class. */
     &.warning,
     &.warning-style {
-        background-color: hsl(50deg 75% 92%);
-        border-color: hsl(38deg 44% 27% / 40%);
-        color: hsl(38deg 44% 27%);
+        background-color: var(--color-background-warning-main-view-banner);
+        border-color: var(--color-border-warning-main-view-banner);
+        color: var(--color-warning-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(38deg 44% 27% / 50%);
+            color: var(--color-warning-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(38deg 44% 27%);
+                color: var(--color-warning-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(38deg 44% 27% / 75%);
+                color: var(
+                    --color-warning-main-view-banner-close-button-active
+                );
             }
         }
 
         .main-view-banner-action-button {
-            background-color: hsl(38deg 44% 27% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-warning-main-view-banner-action-button
+            );
+            color: var(--color-warning-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(38deg 44% 27% / 12%);
+                background-color: var(
+                    --color-background-warning-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(38deg 44% 27% / 15%);
+                background-color: var(
+                    --color-background-warning-main-view-banner-action-button-active
+                );
             }
         }
     }
 
     &.error {
-        background-color: hsl(4deg 35% 90%);
-        border-color: hsl(3deg 57% 33% / 40%);
-        color: hsl(4deg 58% 33%);
+        background-color: var(--color-background-error-main-view-banner);
+        border-color: var(--color-border-error-main-view-banner);
+        color: var(--color-error-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(4deg 58% 33% / 50%);
+            color: var(--color-error-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(4deg 58% 33%);
+                color: var(--color-error-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(4deg 58% 33% / 75%);
+                color: var(--color-error-main-view-banner-close-button-active);
             }
         }
 
         .main-view-banner-action-button {
-            background-color: hsl(3deg 57% 33% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-error-main-view-banner-action-button
+            );
+            color: var(--color-error-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(3deg 57% 33% / 12%);
+                background-color: var(
+                    --color-background-error-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(3deg 57% 33% / 15%);
+                background-color: var(
+                    --color-background-error-main-view-banner-action-button-active
+                );
             }
         }
     }
 
     &.info {
-        background-color: hsl(204deg 58% 92%);
-        border-color: hsl(204deg 49% 29% / 40%);
         position: relative;
-        color: hsl(204deg 49% 29%);
+        background-color: var(--color-background-info-main-view-banner);
+        border-color: var(--color-border-info-main-view-banner);
+        color: var(--color-info-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(204deg 49% 29% / 50%);
+            color: var(--color-info-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(204deg 49% 29%);
+                color: var(--color-info-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(204deg 49% 29% / 75%);
+                color: var(--color-info-main-view-banner-close-button-active);
             }
         }
 
         .main-view-banner-action-button,
         .upload_banner_cancel_button {
-            background-color: hsl(204deg 49% 29% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-info-main-view-banner-action-button
+            );
+            color: var(--color-info-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(204deg 49% 29% / 12%);
+                background-color: var(
+                    --color-background-info-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(204deg 49% 29% / 15%);
+                background-color: var(
+                    --color-background-info-main-view-banner-action-button-active
+                );
             }
         }
     }
@@ -977,7 +1009,7 @@
         /* The progress updates seem to come every second or so,
         so this is the smoothest it can probably get. */
         transition: width 1s ease-in-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
-        background: hsl(204deg 63% 85%);
+        background: var(--color-background-main-view-banner-moving-bar);
         top: 0;
         bottom: 0;
     }
