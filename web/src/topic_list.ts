@@ -39,6 +39,15 @@ export function update(): void {
     }
 }
 
+function update_widget_for_stream(stream_id: number): void {
+    const widget = active_widgets.get(stream_id);
+    if (widget === undefined) {
+        blueslip.warn("User re-narrowed before topic history was returned.");
+        return;
+    }
+    widget.build();
+}
+
 export function clear(): void {
     popover_menus.get_topic_menu_popover()?.hide();
 
@@ -152,7 +161,10 @@ export function spinner_li(): ListInfoNode {
     };
 }
 
-export function is_full_topic_history_available(stream_id: number): boolean {
+export function is_full_topic_history_available(
+    stream_id: number,
+    num_topics_displayed: number,
+): boolean {
     if (stream_topic_history.has_history_for(stream_id)) {
         return true;
     }
@@ -181,12 +193,32 @@ export function is_full_topic_history_available(stream_id: number): boolean {
             return true;
         }
 
-        // Now, we can just compare the first cached message to the first
-        // message ID in the stream; if it's older, we're good, otherwise,
-        // we might be missing the oldest topics in this stream in our
-        // cache.
         const first_cached_message = all_messages_data.first_including_muted();
-        return first_cached_message!.id <= sub.first_message_id;
+        if (sub.first_message_id < first_cached_message!.id) {
+            // Missing the oldest topics in this stream in our cache.
+            return false;
+        }
+
+        // At this stage, number of topics displayed in the topic list
+        // widget is at max `topic_list_data.max_topics` and
+        // sub.first_message_id >= first_cached_message!.id.
+        //
+        // There's a possibility of a few topics missing for messages
+        // which were sent when the user wasn't subscribed.
+        // Fetch stream history to confirm if all topics are already
+        // displayed otherwise rebuild with updated data.
+        stream_topic_history_util.get_server_history(stream_id, () => {
+            const history = stream_topic_history.find_or_create(stream_id);
+            if (history.topics.size > num_topics_displayed) {
+                update_widget_for_stream(stream_id);
+            }
+        });
+        // We return `false` which leads to visible 'show all topics',
+        // even if all the topics are already displayed.
+        // This is helpful if the API call fails, users will have
+        // the option to make another request. Otherwise there's
+        // a possibility of missing 'show all topics' & not all topics displayed.
+        return false;
     }
 
     const sub = sub_store.get(stream_id);
@@ -230,7 +262,7 @@ export class TopicListWidget {
 
         const is_showing_all_possible_topics =
             list_info.items.length === num_possible_topics &&
-            is_full_topic_history_available(this.my_stream_id);
+            is_full_topic_history_available(this.my_stream_id, num_possible_topics);
 
         const topic_list_classes: [string] = ["topic-list"];
 
