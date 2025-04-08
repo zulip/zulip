@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
+from django.core.exceptions import ValidationError
+
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
