@@ -164,9 +164,6 @@ def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
 def get_pull_request_labeled_topic(helper: Helper) -> str:
     payload = helper.payload
     pull_request = payload["pull_request"]
-    repo_name = payload["repository"]["name"].tame(check_string)
-    pr_number = pull_request["number"].tame(check_int)
-    pr_title = pull_request["title"].tame(check_string)
 
     return "{sender} added the `{label}` label to [PR #{number}]({pr_url})".format(
         sender=f"[{get_sender_name(payload)}](https://github.com/{get_sender_name(payload)})",
