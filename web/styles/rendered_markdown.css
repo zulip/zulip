@@ -460,7 +460,7 @@
             background: hsl(0deg 0% 0% / 15%);
         }
 
-        & a {
+        & .media-anchor-element {
             display: block;
             height: 100%;
             width: 100%;
@@ -522,8 +522,8 @@
         }
 
         p:first-child > .katex-display > .katex,
-        .message_inline_image a,
-        .message_inline_image video {
+        .message_inline_image .media-anchor-element,
+        .message_inline_image .media-video-element {
             /* We explicitly place the containing
                media element in the thumbnail area. */
             grid-area: media;
@@ -575,9 +575,9 @@
         margin-right: 5px;
     }
 
-    .twitter-image img,
-    .message_inline_image img,
-    .message_inline_ref img {
+    .twitter-image .media-image-element,
+    .message_inline_image .media-image-element,
+    .message_inline_ref .media-image-element {
         /* We use `scale-down` so that images smaller than the container are
            neither scaled up nor cropped to fit. This preserves
            their aspect ratio, which is often helpful. */
@@ -595,17 +595,17 @@
         border-radius: inherit;
     }
 
-    .message_inline_image img {
+    .message_inline_image .media-image-element {
         cursor: zoom-in;
     }
 
-    .youtube-video img,
-    .vimeo-video img,
-    .embed-video img {
+    .youtube-video .media-image-element,
+    .vimeo-video .media-image-element,
+    .embed-video .media-image-element {
         cursor: pointer;
     }
 
-    .youtube-video img {
+    .youtube-video .media-image-element {
         /* We do this for the sake of increasing
            the size of older YouTube thumbnail
            previews, but there are no ill effects
@@ -613,21 +613,21 @@
         object-fit: contain;
     }
 
-    &.rtl .twitter-image img,
-    &.rtl .message_inline_image img,
-    &.rtl .message_inline_ref img {
+    &.rtl .twitter-image .media-image-element,
+    &.rtl .message_inline_image .media-image-element,
+    &.rtl .message_inline_ref .media-image-element {
         float: right;
         margin-right: unset;
         margin-left: 10px;
     }
 
-    & li .message_inline_image img {
+    & li .message_inline_image .media-image-element {
         float: none;
     }
 
     .message_inline_video,
     .message_inline_animated_image_still,
-    .youtube-video a[data-id] {
+    .youtube-video .media-anchor-element {
         &:hover {
             &::after {
                 transform: scale(1);
@@ -659,7 +659,7 @@
             transition: transform 0.2s;
         }
 
-        & video {
+        & .media-video-element {
             display: block;
             object-fit: contain;
             height: 100%;

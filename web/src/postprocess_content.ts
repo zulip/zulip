@@ -52,6 +52,26 @@ export function postprocess_content(html: string): string {
             elt.removeAttribute("target");
         }
 
+        if (elt.querySelector("img") || elt.querySelector("video")) {
+            // We want a class to refer to media links
+            elt.classList.add("media-anchor-element");
+            // Add a class to the video, if it exists
+            if (elt.querySelector("video")) {
+                elt.querySelector("video")?.classList.add("media-video-element");
+            }
+            // Add a class to the image, if it exists
+            if (elt.querySelector("img")) {
+                elt.querySelector("img")?.classList.add("media-image-element");
+            }
+        }
+
+        if (elt.querySelector("video")) {
+            // We want a class to refer to media links
+            elt.classList.add("media-anchor-element");
+            // And likewise a class to refer to image elements
+            elt.querySelector("video")?.classList.add("media-image-element");
+        }
+
         // Update older, smaller default.jpg YouTube preview images
         // with higher-quality preview images (320px wide)
         if (elt.parentElement?.classList.contains("youtube-video")) {
