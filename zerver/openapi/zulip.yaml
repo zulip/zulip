@@ -1303,7 +1303,7 @@ paths:
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the channel; just that it exists.
 
-                                **Changes**: Prior to Zulip 11.0 (feature level ZF-960986), this
+                                **Changes**: Prior to Zulip 11.0 (feature level 378), this
                                 event was sent to all the users who could see the channel when it
                                 was unarchived.
 
@@ -1380,7 +1380,7 @@ paths:
                                 to clients that did not declare the `archived_channels` [client
                                 capability][client-capabilities].
 
-                                **Changes**: Prior to Zulip 11.0 (feature level ZF-960986), this
+                                **Changes**: Prior to Zulip 11.0 (feature level 378), this
                                 event was sent to all the users who could see the channel when it
                                 was archived.
 
@@ -1449,7 +1449,7 @@ paths:
                                 but only to the clients that declared the `archived_channels`
                                 [client capability][client-capabilities].
 
-                                **Changes**: Prior to Zulip 11.0 (feature level ZF-960986),
+                                **Changes**: Prior to Zulip 11.0 (feature level 378),
                                 this event was never sent when archiving or unarchiving
                                 a channel.
 
@@ -15769,7 +15769,7 @@ paths:
                           For organization administrators, this will include all private channels
                           in the organization.
 
-                          **Changes**: Before Zulip 11.0 (feature level ZF-5769ba), archived channels
+                          **Changes**: Before Zulip 11.0 (feature level 378), archived channels
                           did not appear in this list, even if the `archived_channels` [client
                           capability][client-capabilities] was declared by the client.
 

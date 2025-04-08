@@ -1,5 +1,0 @@
-* [`GET /events`](/api/get-events): Archiving and unarchiving
-  streams now send `update` events to clients that declared
-  the `archived_channels` client capability. `delete` and `create`
-  events are still sent to clients that did not declare
-  `archived_channels` client capability.
