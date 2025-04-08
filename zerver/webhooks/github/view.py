@@ -123,7 +123,7 @@ def get_closed_pull_request_body(helper: Helper) -> str:
 
 def get_pull_request_milestoned_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
+    pull_request = payload.get("pull_request", {})
     milestone = payload.get("milestone", {})
     action = "added" if payload.get("action") == "milestoned" else "removed"
 
@@ -139,7 +139,7 @@ def get_pull_request_milestoned_body(helper: Helper) -> str:
 
 def get_pull_request_approved_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
+    pull_request = payload.get("pull_request", {})
 
     return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'".format(
         sender=f"**{get_sender_name(payload)}**",
@@ -152,7 +152,7 @@ def get_pull_request_approved_body(helper: Helper) -> str:
 
 def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
+    pull_request = payload.get("pull_request", {})
 
     return "{sender} converted [PR #{number}]({pr_url}) to draft".format(
         sender=f"**{get_sender_name(payload)}**",
@@ -175,7 +175,7 @@ def get_pull_request_labeled_topic(helper: Helper) -> str:
 
 def get_pull_request_review_request_removed_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload["pull_request"]
+    pull_request = payload.get("pull_request", {})
     reviewers = ""
 
     if "requested_reviewer" in payload:
