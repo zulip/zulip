@@ -267,6 +267,21 @@ test("maybe_fetch_stream_subscribers", async () => {
     assert.equal(channel_get_calls, 1);
 
     peer_data.clear_for_testing();
+    const pending_promise = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    peer_data.bulk_add_subscribers({
+        stream_ids: [india.stream_id],
+        user_ids: [7, 9],
+    });
+    peer_data.bulk_remove_subscribers({
+        stream_ids: [india.stream_id],
+        user_ids: [3],
+    });
+    const subscribers_before_fetch_completes = peer_data.get_subscribers(india.stream_id);
+    assert.deepEqual(subscribers_before_fetch_completes, [7, 9]);
+    const subscribers_after_fetch = await pending_promise;
+    assert.deepEqual([...subscribers_after_fetch.keys()], [1, 2, 4, 7, 9]);
+
+    peer_data.clear_for_testing();
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2), true);
     assert.equal(peer_data.has_full_subscriber_data(india.stream_id), true);
 
