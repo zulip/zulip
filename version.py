@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 377  # Last bumped to sending peer_remove on user deactivati
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (323, 1)  # bumped 2025-04-07 to upgrade uv
+PROVISION_VERSION = (323, 2)  # bumped 2025-04-07 to upgrade Python requirements
