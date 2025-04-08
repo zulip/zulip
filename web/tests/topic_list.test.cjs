@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
+const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
@@ -68,5 +69,11 @@ test("is_full_topic_history_available", ({override}) => {
     assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
 
     sub.first_message_id = 2;
-    assert.equal(topic_list.is_full_topic_history_available(stream_id), true);
+    let full_topic_history_fetched_and_widget_updated = false;
+    stream_topic_history_util.get_server_history = (stream_id) => {
+        assert.equal(stream_id, general.stream_id);
+        full_topic_history_fetched_and_widget_updated = true;
+    };
+    assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
+    assert.equal(full_topic_history_fetched_and_widget_updated, true);
 });
