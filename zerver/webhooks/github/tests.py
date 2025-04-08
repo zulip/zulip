@@ -517,15 +517,16 @@ A temporary team so that I can get some webhook fixtures!
         self.verify_post_is_ignored(payload, "check_run")
 
     def test_ignored_pull_request_actions(self) -> None:
-    ignored_actions = [
-        "approved",
-        "converted_to_draft",
-        "labeled",
-        "review_request_removed",
-        "unlabeled",
-        "milestoned",
-        "demilestoned",
-    ]
+        ignored_actions = [
+            "approved",
+            "converted_to_draft",
+            "labeled",
+            "review_request_removed",
+            "unlabeled",
+            "milestoned",
+            "demilestoned",
+        ]
+
     for action in ignored_actions:
         data = {
             "action": action,
@@ -543,7 +544,7 @@ A temporary team so that I can get some webhook fixtures!
                 "html_url": "https://github.com/org/repo/milestone/1",
             },
         }
-        payload = orjson.dumps(data).decode()  # Serializza il payload
+        payload = orjson.dumps(data).decode()
         self.verify_post_is_ignored(payload, "pull_request")
 
     def test_pull_request_review_edited_empty_changes_ignore(self) -> None:
