@@ -957,7 +957,7 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "tier_changed": get_tier_changed_body,
     "pull_request_approved": get_pull_request_approved_body,
     "pull_request_converted_to_draft": get_pull_request_converted_to_draft_body,
-    "pull_request_labeled": get_pull_request_labeled_body,
+    "pull_request_labeled": get_pull_request_labeled_topic,
     "pull_request_review_request_removed": get_pull_request_review_request_removed_body,
     "pull_request_milestoned": get_pull_request_milestoned_body,
 }
