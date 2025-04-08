@@ -141,7 +141,7 @@ def get_pull_request_approved_body(helper: Helper) -> str:
     payload = helper.payload
     pull_request = payload.get("pull_request", {})
 
-    return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'".format(
+    return "{sender} {action} [PR #{number}]({pr_url})".format(
         sender=f"**{get_sender_name(payload)}**",
         action=check_string("approved", "approved"),
         number=pull_request["number"].tame(check_int),
