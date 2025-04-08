@@ -1282,7 +1282,9 @@ Output:
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError(f"{type(items)} is of unexpected size!")
+            raise AssertionError(
+                f"{type(items)} is of unexpected size! Expected count: {count}, actual count: {actual_count}."
+            )
 
     @contextmanager
     def assert_memcached_count(self, count: int) -> Iterator[None]:

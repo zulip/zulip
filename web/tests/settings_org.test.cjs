@@ -16,8 +16,15 @@ mock_esm("../src/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
+mock_esm("../src/buttons", {
+    show_button_loading_indicator: noop,
+    hide_button_loading_indicator: noop,
+    modify_action_button_style: noop,
+});
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
 set_global("document", "document-stub");
+
+set_global("requestAnimationFrame", (func) => func());
 
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
@@ -59,16 +66,16 @@ test("unloaded", () => {
 function createSaveButtons(subsection) {
     const $stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
     const $save_button_controls = $(".save-button-controls");
-    const $stub_save_button = $(".save-discard-widget-button.save-button");
-    const $stub_discard_button = $(".save-discard-widget-button.discard-button");
-    const $stub_save_button_text = $(".save-discard-widget-button-text");
+    const $stub_save_button = $(".save-button");
+    const $stub_discard_button = $(".discard-button");
+    const $stub_save_button_text = $(".action-button-label");
     $stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
         $("<failed-status-stub>"),
     );
     $stub_save_button.closest = () => $stub_save_button_header;
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
-    $stub_save_button.set_find_results(".save-discard-widget-button-text", $stub_save_button_text);
+    $stub_save_button.set_find_results(".action-button-label", $stub_save_button_text);
     $stub_save_button_header.set_find_results(".save-button-controls", $save_button_controls);
     $stub_save_button_header.set_find_results(
         ".subsection-changes-discard button",
@@ -144,7 +151,7 @@ function test_submit_settings_form(override, submit_form) {
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
 
-    submit_form.call({to_$: () => $(".save-discard-widget-button.save-button")}, ev);
+    submit_form.call({to_$: () => $(".save-button")}, ev);
     assert.ok(patched);
 
     const expected_value = {
@@ -178,21 +185,18 @@ function test_change_save_button_state() {
         assert.equal($discard_button.visible(), true);
     }
     {
-        settings_components.change_save_button_state($save_button_controls, "saved");
-        assert.equal($save_button_text.text(), "translated: Save changes");
+        settings_components.change_save_button_state($save_button_controls, "discarded");
         assert.equal(props.hidden, true);
-        assert.equal($save_button.attr("data-status"), "");
     }
     {
         settings_components.change_save_button_state($save_button_controls, "saving");
-        assert.equal($save_button_text.text(), "translated: Saving");
         assert.equal($save_button.attr("data-status"), "saving");
-        assert.equal($save_button.hasClass("saving"), true);
         assert.equal($discard_button.visible(), false);
     }
     {
+        // The "discarded" state should not interfere during the saving stage.
         settings_components.change_save_button_state($save_button_controls, "discarded");
-        assert.equal(props.hidden, true);
+        assert.equal(props.hidden, false);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "succeeded");
@@ -402,7 +406,7 @@ function test_discard_changes_button({override}, discard_changes) {
 
     $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 
-    discard_changes.call({to_$: () => $(".save-discard-widget-button.discard-button")}, ev);
+    discard_changes.call({to_$: () => $(".discard-button")}, ev);
 
     assert.equal(
         $message_edit_history_visibility_policy.val(),

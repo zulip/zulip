@@ -70,8 +70,7 @@
     height: var(--settings-overlay-header-button-height);
 }
 
-.create_user_group_plus_button,
-.create_stream_plus_button {
+.two-pane-settings-plus-button {
     font-weight: 400;
     position: relative;
     border: 1px solid var(--color-border-settings-plus-button);
@@ -122,7 +121,7 @@ h3.user_group_setting_subsection_title {
     font-size: 1.5em;
     font-weight: normal;
     line-height: 1.5;
-    margin: 4px 15px 4px 0;
+    margin: 4px 0;
 }
 
 h4.stream_setting_subsection_title {
@@ -135,8 +134,6 @@ h4.user_group_setting_subsection_title {
     font-size: 1.35em;
     font-weight: normal;
     line-height: 1.5;
-    /* Matches right margin on h3 subsection titles */
-    margin-right: 15px;
 }
 
 .member-list-box,
@@ -257,6 +254,13 @@ h4.user_group_setting_subsection_title {
     display: inline-flex;
     width: 100%;
     align-items: center;
+
+    /* We need on click events to fire on this input for our typeahead.
+       This ensures that the input occupies space in the parent
+       container. */
+    .input {
+        flex-grow: 1;
+    }
 }
 
 .add_subscribers_container .add_subscriber_button_wrapper,
@@ -264,12 +268,16 @@ h4.user_group_setting_subsection_title {
     padding-left: 5px;
 }
 
+.add-subscribers-subtitle,
+.add-members-subtitle {
+    opacity: 0.7;
+}
+
 .choose-subscribers-label {
     display: inline;
 }
 
-.subscriptions-container .subscriptions-header .fa-chevron-left,
-.user-groups-container .user-groups-header .fa-chevron-left {
+.two-pane-settings-container .two-pane-settings-header .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
@@ -279,13 +287,15 @@ h4.user_group_setting_subsection_title {
     padding: 2px 10px;
 
     cursor: pointer;
+    visibility: hidden;
 
     transition: 0.3s ease;
     transition-property: opacity, transform;
 }
 
-.user-groups-container .user-groups-header.slide-left .fa-chevron-left,
-.subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
+.two-pane-settings-container
+    .two-pane-settings-header.slide-left
+    .fa-chevron-left,
 #settings_overlay_container
     .settings-header.mobile.slide-left
     .fa-chevron-left {
@@ -295,8 +305,6 @@ h4.user_group_setting_subsection_title {
 
 .group-assigned-permissions {
     .subsection-header {
-        display: inline;
-
         h3 {
             font-size: 1.5em;
             font-weight: normal;
@@ -330,7 +338,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.subscriptions-container {
+#subscription_overlay .two-pane-settings-container {
     container: subscriptions / inline-size;
 }
 
@@ -347,7 +355,7 @@ h4.user_group_setting_subsection_title {
     ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(80em + 80px)))
     or ((width < $settings_overlay_sidebar_collapse_breakpoint) and (width <= 36em))
 ) {
-    #subscription_overlay .subscriptions-container {
+    #subscription_overlay .two-pane-settings-container {
         .left {
             .list-toggler-container {
                 height: 5em;
@@ -387,8 +395,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.user-groups-container,
-.subscriptions-container {
+.two-pane-settings-container {
     position: relative;
     height: 95%;
     border-radius: 4px;
@@ -408,8 +415,7 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .user-groups-header,
-    .subscriptions-header {
+    .two-pane-settings-header {
         height: var(--settings-overlay-header-height);
         display: flex;
         align-items: center;
@@ -418,10 +424,6 @@ h4.user_group_setting_subsection_title {
         font-weight: 700;
         background-color: var(--color-background-modal-bar);
         border-bottom: 1px solid var(--color-border-modal-bar);
-
-        .fa-chevron-left {
-            visibility: hidden;
-        }
 
         .exit {
             font-weight: 600;
@@ -905,13 +907,11 @@ h4.user_group_setting_subsection_title {
 }
 
 #settings_page,
-#groups_overlay,
-#subscription_overlay {
+.two-pane-settings-overlay {
     container: settings-overlay / inline-size;
 }
 
-#groups_overlay,
-#subscription_overlay {
+.two-pane-settings-overlay {
     .tab-switcher {
         display: flex;
         flex-wrap: nowrap;
@@ -961,16 +961,6 @@ h4.user_group_setting_subsection_title {
             .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
-        }
-
-        .add_all_users_to_user_group {
-            margin-left: 10px;
-        }
-
-        .add_all_users_to_stream {
-            margin-left: 10px;
-            /* same bottom margin as h4.stream_setting_subsection_title */
-            margin-bottom: 5px;
         }
 
         .create_user_group_member_list_header,
@@ -1418,14 +1408,11 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $lg_min) {
-    .user-groups-container,
-    .subscriptions-container {
+    .two-pane-settings-container {
         max-width: 95%;
     }
-}
 
-@media (width < $lg_min) {
-    .subscriptions-container .left .list-toggler-container {
+    .two-pane-settings-container .left .list-toggler-container {
         flex-wrap: wrap;
     }
 
@@ -1440,13 +1427,12 @@ div.settings-radio-input-parent {
 }
 
 /* Note that this block has settings_page CSS as well, and thus needs
-   to match the media queries in settings.css.
+   to match the media queries in settings.css
 
-   Longer-term we should extract this logic two-column-overlay class
-   to read more naturally. */
+   We should eventually consolidate some of these styles with the settings
+   menu, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
-    .user-groups-container,
-    .subscriptions-container {
+    .two-pane-settings-container {
         position: relative;
         overflow: hidden;
 
@@ -1454,16 +1440,13 @@ div.settings-radio-input-parent {
             text-align: left;
         }
 
-        .user-groups-header .fa-chevron-left,
-        .subscriptions-header .fa-chevron-left {
+        .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
         }
     }
 
-    #groups_overlay .left,
-    #groups_overlay .right,
-    #subscription_overlay .left,
-    #subscription_overlay .right,
+    .two-pane-settings-overlay .left,
+    .two-pane-settings-overlay .right,
     #settings_page .content-wrapper.right {
         position: absolute;
         display: block;
@@ -1474,8 +1457,7 @@ div.settings-radio-input-parent {
         border: none;
     }
 
-    #groups_overlay .right,
-    #subscription_overlay .right,
+    .two-pane-settings-overlay .right,
     #settings_page .content-wrapper.right {
         position: absolute;
         left: 101%;
@@ -1492,10 +1474,8 @@ div.settings-radio-input-parent {
         }
     }
 
-    #subscription_overlay,
-    #groups_overlay {
-        .user-groups-container,
-        .subscriptions-container {
+    .two-pane-settings-overlay {
+        .two-pane-settings-container {
             height: 95%;
         }
 
@@ -1536,15 +1516,6 @@ div.settings-radio-input-parent {
             display: block;
             max-width: max-content;
             white-space: nowrap;
-        }
-
-        .save-button-controls {
-            display: block;
-            margin: 0 0 10px;
-
-            &.hide {
-                display: none;
-            }
         }
     }
 }
