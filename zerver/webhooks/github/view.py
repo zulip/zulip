@@ -4,8 +4,6 @@ from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
-from django.core.exceptions import ValidationError
-
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
@@ -860,9 +858,7 @@ def is_pull_request_comment_event(payload: WildValue) -> bool:
 
 
 def get_topic_based_on_type(payload: WildValue, event: str) -> str:
-    if event == "pull_request":
-        if "pull_request" not in payload:
-            raise ValidationError(_("request['pull_request'] is missing"))
+    if "pull_request" in event:
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
             type="PR",
