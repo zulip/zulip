@@ -1479,3 +1479,32 @@ label.label-title {
         text-decoration: underline;
     }
 }
+
+.text-image-in-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .text-image-in-row-image {
+        width: 300px;
+        height: auto;
+    }
+
+    .text-image-in-row-text {
+        align-content: center;
+        max-width: 300px;
+    }
+
+    @media (width <= 700px) {
+        flex-wrap: wrap;
+
+        .text-image-in-row-image {
+            width: 100%;
+            height: auto;
+        }
+
+        .text-image-in-row-text {
+            max-width: 100%;
+        }
+    }
+}
