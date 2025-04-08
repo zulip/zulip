@@ -158,7 +158,6 @@ def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
         sender=f"**{get_sender_name(payload)}**",
         number=pull_request["number"].tame(check_int),
         pr_url=pull_request.get("html_url", "").tame(check_string),
-        title=pull_request.get("title", "").tame(check_string) if helper.include_title else None,
     )
 
 
