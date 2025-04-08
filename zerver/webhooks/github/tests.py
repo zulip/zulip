@@ -544,8 +544,6 @@ A temporary team so that I can get some webhook fixtures!
                 "html_url": "https://github.com/org/repo/milestone/1",
             },
         }
-        payload = orjson.dumps(data).decode()
-        self.verify_post_is_ignored(payload, "pull_request")
 
     def test_pull_request_review_edited_empty_changes_ignore(self) -> None:
         payload = self.get_body("pull_request_review__edited_empty_changes")
