@@ -10,11 +10,8 @@ async function submit_announcements_stream_settings(page: Page): Promise<void> {
     });
 
     const save_button = "#org-notifications .save-button";
-    assert.strictEqual(
-        await common.get_text_from_selector(page, save_button),
-        "Save changes",
-        "Save button has incorrect text.",
-    );
+    const button_text = await common.get_text_from_selector(page, save_button);
+    assert.strictEqual(button_text, "Save changes", "Save button has incorrect text.");
     await page.click(save_button);
 
     await page.waitForSelector('#org-notifications .save-button[data-status="saved"]', {
