@@ -15,7 +15,16 @@ const fetched_stream_ids = new Set<number>();
 export function has_full_subscriber_data(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
-const pending_subscriber_requests = new Map<number, Promise<LazySet>>();
+const pending_subscriber_requests = new Map<
+    number,
+    {
+        subscribers_promise: Promise<LazySet>;
+        pending_peer_events: {
+            type: "peer_add" | "peer_remove";
+            user_ids: number[];
+        }[];
+    }
+>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
@@ -28,9 +37,9 @@ const fetch_stream_subscribers_response_schema = z.object({
 
 export async function maybe_fetch_stream_subscribers(stream_id: number): Promise<LazySet> {
     if (pending_subscriber_requests.has(stream_id)) {
-        return pending_subscriber_requests.get(stream_id)!;
+        return pending_subscriber_requests.get(stream_id)!.subscribers_promise;
     }
-    const promise = (async () => {
+    const subscribers_promise = (async () => {
         let subscribers: number[];
         try {
             const xhr = await channel.get({
@@ -47,12 +56,23 @@ export async function maybe_fetch_stream_subscribers(stream_id: number): Promise
         }
 
         set_subscribers(stream_id, subscribers);
+        const pending_peer_events = pending_subscriber_requests.get(stream_id)!.pending_peer_events;
         pending_subscriber_requests.delete(stream_id);
-        return new LazySet(subscribers);
+        for (const event of pending_peer_events) {
+            if (event.type === "peer_add") {
+                bulk_add_subscribers({stream_ids: [stream_id], user_ids: event.user_ids});
+            } else {
+                bulk_remove_subscribers({stream_ids: [stream_id], user_ids: event.user_ids});
+            }
+        }
+        return get_loaded_subscriber_subset(stream_id);
     })();
 
-    pending_subscriber_requests.set(stream_id, promise);
-    return promise;
+    pending_subscriber_requests.set(stream_id, {
+        subscribers_promise,
+        pending_peer_events: [],
+    });
+    return subscribers_promise;
 }
 
 function get_loaded_subscriber_subset(stream_id: number): LazySet {
@@ -196,6 +216,13 @@ export function bulk_add_subscribers({
         for (const user_id of user_ids) {
             subscribers.add(user_id);
         }
+
+        if (pending_subscriber_requests.has(stream_id)) {
+            pending_subscriber_requests.get(stream_id)!.pending_peer_events.push({
+                type: "peer_add",
+                user_ids,
+            });
+        }
     }
 }
 
@@ -211,6 +238,13 @@ export function bulk_remove_subscribers({
         const subscribers = get_loaded_subscriber_subset(stream_id);
         for (const user_id of user_ids) {
             subscribers.delete(user_id);
+        }
+
+        if (pending_subscriber_requests.has(stream_id)) {
+            pending_subscriber_requests.get(stream_id)!.pending_peer_events.push({
+                type: "peer_remove",
+                user_ids,
+            });
         }
     }
 }
