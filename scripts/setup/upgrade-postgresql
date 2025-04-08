@@ -37,7 +37,12 @@ fi
 # Django actually stores its data in.  We can only do that if the
 # database server is on the same host as the application server.
 if [ -d /home/zulip/deployments/current ]; then
-    DATA_IS_IN=$(su zulip -c '/home/zulip/deployments/current/manage.py shell -c "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))"')
+    DATA_IS_IN=$(
+        su -s /usr/bin/env -- zulip \
+            DJANGO_SETTINGS_MODULE=zproject.settings \
+            uv run --directory=/home/zulip/deployments/current --no-sync \
+            python -c 'from django.db import connection; print(connection.cursor().connection.server_version // 10000)'
+    )
 
     if [ "$UPGRADE_FROM" != "$DATA_IS_IN" ]; then
         cat <<EOF
