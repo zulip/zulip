@@ -6,8 +6,9 @@ requires-python = ">=3.10"
 [dependency-groups]
 prod = [
   # Django itself
-  "django[argon2]==5.1.*",
+  "django[argon2]==5.2.*",
   "asgiref", # https://github.com/django/asgiref/pull/494
+  "django-cte", # https://github.com/dimagi/django-cte/pull/108
 
   # needed for NotRequired, ParamSpec
   "typing-extensions",
@@ -320,6 +321,7 @@ zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zi
 
 # zulip's linting framework - zulint
 zulint = { url = "https://github.com/zulip/zulint/archive/9be0a32bf75a9d8738b005f0b880567fff64e943.zip" }
+django-cte = { git = "https://github.com/dimagi/django-cte.git", rev = "948ec037b612e8ef52af724f05ab8ff3a8946d62" }
 
 [tool.black]
 line-length = 100
