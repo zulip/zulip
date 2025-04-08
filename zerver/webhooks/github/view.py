@@ -128,7 +128,7 @@ def get_pull_request_milestoned_body(helper: Helper) -> str:
     action = "added" if payload.get("action") == "milestoned" else "removed"
 
     return "{sender} {action} milestone [{milestone_name}]({milestone_url}) to [PR #{number}]({pr_url}).".format(
-        sender=f"**{get_sender_name(payload)}**",
+        sender=f"[{get_sender_name(payload)}](https://github.com/{get_sender_name(payload)})",  # Link anziché grassetto
         action=action,
         milestone_name=milestone.get("title", "").tame(check_string),
         milestone_url=milestone.get("html_url", "").tame(check_string),
@@ -143,10 +143,10 @@ def get_pull_request_approved_body(helper: Helper) -> str:
 
     return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'.".format(
         sender=f"**{get_sender_name(payload)}**",
-        action="approved".tame(check_string),
-        number=pull_request["number"].tame(check_int),
-        pr_url=pull_request.get("html_url", "").tame(check_string),
-        title=pull_request.get("title", "").tame(check_string) if helper.include_title else None,
+        action=check_string("approved"),
+        number=check_int(pull_request["number"]),
+        pr_url=check_string(pull_request.get("html_url", "")),
+        title=check_string(pull_request.get("title", "")) if helper.include_title else "",
     )
 
 
@@ -154,48 +154,45 @@ def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
     payload = helper.payload
     pull_request = payload.get("pull_request", {})
 
-    return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'.".format(
+    return "{sender} converted [PR #{number}]({pr_url}) to draft.".format(
         sender=f"**{get_sender_name(payload)}**",
-        action="converted to draft".tame(check_string),
         number=pull_request["number"].tame(check_int),
         pr_url=pull_request.get("html_url", "").tame(check_string),
         title=pull_request.get("title", "").tame(check_string) if helper.include_title else None,
     )
 
 
-def get_pull_request_labeled_body(helper: Helper) -> str:
+def get_pull_request_labeled_topic(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload.get("pull_request", {})
-    label = payload.get("label", {})
-    label_name = label.get("name", "").tame(check_string)
-    action = "added" if payload.get("action") == "labeled" else "removed"
+    pull_request = payload["pull_request"]
+    repo_name = payload["repository"]["name"].tame(check_string)
+    pr_number = pull_request["number"].tame(check_int)
+    pr_title = pull_request["title"].tame(check_string)
 
-    return "{sender} {action} label '{label_name}' to [PR #{number}]({pr_url}).".format(
-        sender=f"**{get_sender_name(payload)}**",
-        action=action,
-        label_name=label_name,
-        number=pull_request["number"].tame(check_int),
-        pr_url=pull_request.get("html_url", "").tame(check_string),
-    )
+    return f"{repo_name} / PR #{pr_number} {pr_title}"
 
 
 def get_pull_request_review_request_removed_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload.get("pull_request", {})
+    pull_request = payload.get("pull_request", WildValue({}))
     reviewers = ""
 
     if "requested_reviewer" in payload:
-        reviewer = payload.get("requested_reviewer", {})
-        reviewers = f"[{reviewer.get('login', '')}]({reviewer.get('html_url', '')})"
+        reviewer = payload.get("requested_reviewer", WildValue({}))
+        login = reviewer.get("login").tame(check_string)
+        html_url = reviewer.get("html_url").tame(check_string)
+        reviewers = f"[{login}]({html_url})"
     else:
-        team_reviewer = payload.get("requested_team", {})
-        reviewers = f"[{team_reviewer.get('name', '')}]({team_reviewer.get('html_url', '')})"
+        team_reviewer = payload.get("requested_team", WildValue({}))
+        name = team_reviewer.get("name").tame(check_string)
+        html_url = team_reviewer.get("html_url").tame(check_string)
+        reviewers = f"[{name}]({html_url})"
 
     message = "{sender} removed {reviewers} as a reviewer from [PR #{number}]({pr_url})".format(
         sender=f"**{get_sender_name(payload)}**",
         reviewers=reviewers,
-        number=pull_request["number"].tame(check_int),
-        pr_url=pull_request.get("html_url", "").tame(check_string),
+        number=pull_request.get("number").tame(check_int),
+        pr_url=pull_request.get("html_url").tame(check_string),
     )
     return message
 
@@ -959,10 +956,10 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "pending_cancellation": get_pending_cancellation_body,
     "pending_tier_change": get_pending_tier_change_body,
     "tier_changed": get_tier_changed_body,
-    "approved_pull_request": get_pull_request_approved_body,
-    "converted_to_draft_body": get_pull_request_converted_to_draft_body,
-    "labeled_body": get_pull_request_labeled_body,
-    "review_request_removed_pull_request": get_pull_request_review_request_removed_body,
+    "pull_request_approved": get_pull_request_approved_body,
+    "pull_request_converted_to_draft": get_pull_request_converted_to_draft_body,
+    "pull_request_labeled": get_pull_request_labeled_body,
+    "pull_request_review_request_removed": get_pull_request_review_request_removed_body,
     "pull_request_milestoned": get_pull_request_milestoned_body,
 }
 
@@ -1095,23 +1092,23 @@ def get_zulip_event_name(
         if action in ("auto_merge_enabled", "auto_merge_disabled"):
             return "pull_request_auto_merge"
         if action == "approved":
-            return "approved_pull_request"
+            return "pull_request_approved"
         if action == "converted_to_draft":
-            return "converted_to_draft_body"
+            return "pull_request_converted_to_draft"
         if action in ("labeled", "unlabeled"):
-            return "labeled_body"
+            return "pull_request_labeled"
         if action == "review_request_removed":
-            return "review_request_removed_pull_request"
+            return "pull_request_review_request_removed"
         if action in ("milestoned", "demilestoned"):
             return "pull_request_milestoned"
-    elif header_event == "pull_request_review":
-        if is_empty_pull_request_review_event(payload):
-            # When submitting a review, GitHub has a bug where it'll
-            # send a duplicate empty "edited" event for the main
-            # review body. Ignore those, to avoid triggering
-            # duplicate notifications.
-            return None
-        return "pull_request_review"
+        elif header_event == "pull_request_review":
+            if is_empty_pull_request_review_event(payload):
+                # When submitting a review, GitHub has a bug where it'll
+                # send a duplicate empty "edited" event for the main
+                # review body. Ignore those, to avoid triggering
+                # duplicate notifications.
+                return None
+            return "pull_request_review"
     elif header_event == "push":
         if is_merge_queue_push_event(payload):
             return None
