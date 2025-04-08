@@ -118,7 +118,9 @@ specifically the `APIHeaderPreprocessor` class defined in
 `zerver/openapi/markdown_extension.py`.
 
 ### Usage examples
+The "Try It" feature lets you test this API live from your browser.
 
+Use the **Try It** button above to experiment with real data.
 We display usage examples in three languages: Python, JavaScript and
 curl; we may add more in the future. Every endpoint should have
 Python and curl documentation; JavaScript is optional as we don't
