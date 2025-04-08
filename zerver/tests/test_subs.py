@@ -1865,6 +1865,42 @@ class StreamAdminTest(ZulipTestCase):
         old_style.save()
         self.assertEqual(set(deactivated_streams_by_old_name(realm, "old_style")), {old_style})
 
+    def test_archived_channel_notice(self) -> None:
+        desdemona = self.example_user("desdemona")
+        channel = get_stream("Denmark", desdemona.realm)
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=channel.realm, is_system_group=True
+        )
+        self.login_user(desdemona)
+        do_deactivate_stream(channel, acting_user=desdemona)
+        self.assertTrue(channel.deactivated)
+
+        param_to_notice_list = [
+            ({"new_name": "New Denmark"}, f"@_**Desdemona|{desdemona.id}** renamed channel"),
+            (
+                {"description": "New description"},
+                f"@_**Desdemona|{desdemona.id}** changed the description",
+            ),
+            (
+                {"message_retention_days": orjson.dumps(2).decode()},
+                f"@_**Desdemona|{desdemona.id}** has changed the [message retention period]",
+            ),
+            (
+                {"can_send_message_group": orjson.dumps({"new": moderators_group.id}).decode()},
+                f"@_**Desdemona|{desdemona.id}** changed the [posting permissions]",
+            ),
+            (
+                {"is_private": orjson.dumps(False).decode()},
+                f"@_**Desdemona|{desdemona.id}** changed the [access permissions]",
+            ),
+        ]
+
+        for param, notice in param_to_notice_list:
+            result = self.client_patch(f"/json/streams/{channel.id}", param)
+            self.assert_json_success(result)
+            message = self.get_last_message()
+            self.assertIn(notice, message.content)
+
     def test_unarchive_stream_active_stream(self) -> None:
         stream = self.make_stream("new_stream")
         with self.assertRaisesRegex(JsonableError, "Channel is not currently deactivated"):
