@@ -1275,7 +1275,14 @@ export function handle_deleted_group(group_id: number): void {
     }
 
     if (is_editing_group(group_id)) {
+        const user_group = user_groups.get_user_group_from_id(group_id);
         $("#groups_overlay .deactivated-user-group-icon-right").show();
+
+        update_group_deactivated_banner(user_group);
+        update_deactivate_and_reactivate_buttons(user_group);
+        update_toggler_for_group_setting(user_group);
+        update_members_panel_ui(user_group);
+        update_group_membership_button(user_group.id);
     }
     redraw_user_group_list();
 }
