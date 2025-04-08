@@ -860,7 +860,7 @@ def is_pull_request_comment_event(payload: WildValue) -> bool:
 
 
 def get_topic_based_on_type(payload: WildValue, event: str) -> str:
-    if "pull_request" in event:
+    if event == "pull_request":
         if "pull_request" not in payload:
             raise ValidationError(_("request['pull_request'] is missing"))
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
