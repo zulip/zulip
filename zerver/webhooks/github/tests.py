@@ -476,51 +476,51 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__review_requested", expected_topic_name, expected_message)
 
     def test_pull_request_labeled_msg(self) -> None:
-        expected_message = "**soheil-star01** labeled the label `documentation` on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        expected_message = "**soheil-star01** labeled the label `documentation` on [PR #1] (https://github.com/soheil-star01/soheil-star01/pull/1)."
         self.check_webhook(
             "pull_request__labeled", "soheil-star01 / PR #1 test webhook", expected_message
         )
 
     def test_pull_request_unlabeled_msg(self) -> None:
-        expected_message = "**soheil-star01** unlabeled the label `documentation` on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        expected_message = "**soheil-star01** unlabeled the label `documentation` on [PR #1] (https://github.com/soheil-star01/soheil-star01/pull/1)."
         self.check_webhook(
             "pull_request__unlabeled", "soheil-star01 / PR #1 test webhook", expected_message
         )
 
     def test_pull_request_review_request_removed_msg(self) -> None:
-        expected_message = "**soheil-star01** removed [redolat](https://github.com/redolat) from reviewers on [PR #1](https://github.com/techpillars-oy/test1/pull/1)."
+        expected_message = "soheil-star01 removed [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1) (assigned reviewers: redolat)."
         self.check_webhook(
             "pull_request__review_request_removed", "test1 / PR #1 Feat/webhook", expected_message
         )
 
     def test_pull_request_milestoned_msg(self) -> None:
-        expected_message = "**soheil-star01** milestoned on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        expected_message = "**soheil-star01** milestoned the milestone `new_ms` on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
         self.check_webhook(
             "pull_request__milestoned", "soheil-star01 / PR #1 test webhook", expected_message
         )
 
     def test_pull_request_demilestoned_msg(self) -> None:
-        expected_message = "**soheil-star01** demilestoned on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        expected_message = "**soheil-star01** demilestoned the milestone `new_ms` on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
         self.check_webhook(
             "pull_request__demilestoned", "soheil-star01 / PR #1 test webhook", expected_message
         )
 
     def test_pull_request_enqueued_msg(self) -> None:
-        expected_message = "**soheil-star01** enqueued [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1) in the merge queue."
+        expected_message = "soheil-star01 enqueued [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1)."
         self.check_webhook("pull_request__enqueued", "test1 / PR #1 Feat/webhook", expected_message)
 
     def test_pull_request_dequeued_msg(self) -> None:
-        expected_message = "**soheil-star01** dequeued [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1) in the merge queue."
+        expected_message = "soheil-star01 dequeued [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1)."
         self.check_webhook("pull_request__dequeued", "test1 / PR #1 Feat/webhook", expected_message)
 
     def test_pull_request_reopened_msg(self) -> None:
-        expected_message = "**soheil-star01** reopened [PR #7 Feat/webhook](https://github.com/soheil-star01/soheil-star01/pull/7)."
+        expected_message = "soheil-star01 reopened [PR #7](https://github.com/soheil-star01/soheil-star01/pull/7) from `soheil-star01:feat/webhook` to `soheil-star01:main`."
         self.check_webhook(
             "pull_request__reopened", "soheil-star01 / PR #7 Feat/webhook", expected_message
         )
 
     def test_pull_request_converted_to_draft_msg(self) -> None:
-        expected_message = "**soheil-star01** has converted [PR #1 test webhook](https://github.com/soheil-star01/soheil-star01/pull/1) to draft."
+        expected_message = "soheil-star01 converted to draft [PR #1 test webhook](https://github.com/soheil-star01/soheil-star01/pull/1)."
         self.check_webhook(
             "pull_request__converted_to_draft",
             "soheil-star01 / PR #1 test webhook",
