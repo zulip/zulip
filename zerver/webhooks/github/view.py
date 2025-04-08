@@ -123,41 +123,41 @@ def get_closed_pull_request_body(helper: Helper) -> str:
 
 def get_pull_request_milestoned_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload.get("pull_request", {})
+    pull_request = payload["pull_request"]
     milestone = payload.get("milestone", {})
     action = "added" if payload.get("action") == "milestoned" else "removed"
 
-    return "{sender} {action} milestone [{milestone_name}]({milestone_url}) to [PR #{number}]({pr_url}).".format(
+    return "{sender} {action} milestone [{milestone_name}]({milestone_url}) to [PR #{number}]({pr_url})".format(
         sender=f"[{get_sender_name(payload)}](https://github.com/{get_sender_name(payload)})",
         action=action,
         milestone_name=milestone.get("title", "").tame(check_string),
         milestone_url=milestone.get("html_url", "").tame(check_string),
         number=pull_request["number"].tame(check_int),
-        pr_url=pull_request.get("html_url", "").tame(check_string),
+        url=pull_request["html_url"].tame(check_string),
     )
 
 
 def get_pull_request_approved_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload.get("pull_request", {})
+    pull_request = payload["pull_request"]
 
-    return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'.".format(
+    return "{sender} {action} [PR #{number}]({pr_url}) titled '{title}'".format(
         sender=f"**{get_sender_name(payload)}**",
         action=check_string("approved", "approved"),
         number=pull_request["number"].tame(check_int),
-        pr_url=check_string(pull_request.get("html_url", "")),
+        url=pull_request["html_url"].tame(check_string),
         title=check_string(pull_request.get("title", "")) if helper.include_title else "",
     )
 
 
 def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload.get("pull_request", {})
+    pull_request = payload["pull_request"]
 
     return "{sender} converted [PR #{number}]({pr_url}) to draft".format(
         sender=f"**{get_sender_name(payload)}**",
         number=pull_request["number"].tame(check_int),
-        pr_url=pull_request.get("html_url", "").tame(check_string),
+        url=pull_request["html_url"].tame(check_string),
     )
 
 
@@ -169,33 +169,31 @@ def get_pull_request_labeled_topic(helper: Helper) -> str:
         sender=f"[{get_sender_name(payload)}](https://github.com/{get_sender_name(payload)})",
         label=payload["label"]["name"].tame(check_string),
         number=pull_request["number"].tame(check_int),
-        pr_url=pull_request.get("html_url", "").tame(check_string),
+        url=pull_request["html_url"].tame(check_string),
     )
 
 
 def get_pull_request_review_request_removed_body(helper: Helper) -> str:
     payload = helper.payload
-    pull_request = payload.get("pull_request", {})
+    pull_request = payload["pull_request"]
     reviewers = ""
 
     if "requested_reviewer" in payload:
-        reviewer_data = payload.get("requested_reviewer", {})
-        reviewer = WildValue(reviewer_data)
-        login = reviewer.get("login").tame(check_string)
-        html_url = reviewer.get("html_url").tame(check_string)
+        reviewer = payload["requested_reviewer"]
+        login = reviewer["login"].tame(check_string)
+        html_url = reviewer["html_url"].tame(check_string)
         reviewers = f"[{login}]({html_url})"
     else:
-        team_reviewer_data = payload.get("requested_team", {})
-        team_reviewer = WildValue(team_reviewer_data)
-        name = team_reviewer.get("name").tame(check_string)
-        html_url = team_reviewer.get("html_url").tame(check_string)
+        team_reviewer = payload["requested_team"]
+        name = team_reviewer["name"].tame(check_string)
+        html_url = team_reviewer["html_url"].tame(check_string)
         reviewers = f"[{name}]({html_url})"
 
     message = "{sender} removed {reviewers} as a reviewer from [PR #{number}]({pr_url})".format(
         sender=f"**{get_sender_name(payload)}**",
         reviewers=reviewers,
-        number=pull_request.get("number").tame(check_int),
-        pr_url=pull_request.get("html_url").tame(check_string),
+        number=pull_request["number"].tame(check_int),
+        url=pull_request["html_url"].tame(check_string),
     )
     return message
 
