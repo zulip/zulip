@@ -1587,7 +1587,7 @@ def check_can_send_direct_message(
 
     system_groups_name_dict = get_realm_system_groups_name_dict(realm.id)
     if realm.direct_message_permission_group_id in system_groups_name_dict:
-        users = [*recipient_users, sender]
+        users = set(recipient_users) | {sender}
         if not check_any_user_has_permission_by_role(
             users, realm.direct_message_permission_group_id, system_groups_name_dict
         ):
@@ -1597,7 +1597,7 @@ def check_can_send_direct_message(
             )
             raise DirectMessagePermissionError(is_nobody_group)
     else:
-        user_ids = [recipient_user.id for recipient_user in recipient_users] + [sender.id]
+        user_ids = {recipient_user.id for recipient_user in recipient_users} | {sender.id}
         if not is_any_user_in_group(realm.direct_message_permission_group_id, user_ids):
             raise DirectMessagePermissionError(is_nobody_group=False)
 
