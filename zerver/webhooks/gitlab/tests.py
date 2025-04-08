@@ -388,6 +388,22 @@ A trivial change that should probably be ignored.
             "merge_request_hook__merge_request_approved", expected_topic_name, expected_message
         )
 
+    def test_merge_request_approval_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / MR #1 Update the README"
+        expected_message = "Sumit Bhanushali added their approval for [MR #1](https://gitlab.com/sumitb16/my-awesome-project/merge_requests/1)."
+
+        self.check_webhook(
+            "merge_request_hook__merge_request_approval", expected_topic_name, expected_message
+        )
+
+    def test_merge_request_unapproval_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / MR #1 Update the README"
+        expected_message = "Sumit Bhanushali removed their approval for [MR #1](https://gitlab.com/sumitb16/my-awesome-project/merge_requests/1)."
+
+        self.check_webhook(
+            "merge_request_hook__merge_request_unapproval", expected_topic_name, expected_message
+        )
+
     def test_merge_request_updated_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / MR #3 New Merge Request"
         expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek):\n\n~~~ quote\nupdated desc\n~~~"
