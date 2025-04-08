@@ -146,7 +146,6 @@ def get_pull_request_approved_body(helper: Helper) -> str:
         action=check_string("approved", "approved"),
         number=pull_request["number"].tame(check_int),
         pr_url=pull_request.get("html_url", "").tame(check_string),
-        title=check_string(pull_request.get("title", "")) if helper.include_title else "",
     )
 
 
