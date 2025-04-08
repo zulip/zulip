@@ -663,7 +663,7 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
 function register_click_handlers(): void {
     $("#main_div").on(
         "click",
-        ".sender_name, .inline_profile_picture",
+        ".sender_name, .inline-profile-picture-wrapper",
         function (this: HTMLElement, e) {
             const $row = $(this).closest(".message_row");
             e.stopPropagation();
