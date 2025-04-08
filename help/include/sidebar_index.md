@@ -5,7 +5,7 @@
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Moving to Zulip](/help/moving-to-zulip)
-* [Moderating open organizations](/help/moderating-open-organizations)
+* [Community moderation toolkit](/help/moderating-open-organizations)
 * [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)
 * [Using Zulip for a class](/help/using-zulip-for-a-class)
 * [Using Zulip via email](/help/using-zulip-via-email)
