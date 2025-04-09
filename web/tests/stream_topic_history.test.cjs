@@ -144,13 +144,15 @@ test("is_complete_for_stream_id", ({override_rewire}) => {
         fetch_status: {
             has_found_newest: () => true,
         },
-        first: () => ({id: 5}),
+        first_including_muted: () => ({id: 5}),
     });
 
     assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
 
     // Now simulate a more recent message id.
-    all_messages_data.all_messages_data.first = () => ({id: sub.first_message_id + 1});
+    all_messages_data.all_messages_data.first_including_muted = () => ({
+        id: sub.first_message_id + 1,
+    });
 
     // Note that we'll return `true` here due to
     // fetched_stream_ids having the stream_id now.
