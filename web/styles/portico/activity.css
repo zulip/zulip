@@ -147,7 +147,7 @@ tr.admin td:first-child {
         transition:
             border-color linear 0.2s,
             box-shadow linear 0.2s;
-        box-shadow: inset 0 1px 1px hsla(0deg 0% 0% / 7.5%);
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
 
         &:focus {
             border-color: hsl(206deg 80% 62% / 80%);
@@ -164,7 +164,7 @@ tr.admin td:first-child {
         font-size: 0.9em;
         font-weight: bold;
         color: hsl(0deg 0% 100%);
-        text-shadow: 0 -1px 0 hsla(0deg 0% 0% / 25%);
+        text-shadow: 0 -1px 0 hsl(0deg 0% 0% / 25%);
         border-radius: 3px;
     }
 
