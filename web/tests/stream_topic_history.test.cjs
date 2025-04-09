@@ -11,8 +11,8 @@ mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
 
-const all_messages_data = zrequire("all_messages_data");
 const echo_state = zrequire("echo_state");
+const topic_list = zrequire("topic_list");
 const unread = zrequire("unread");
 const message_store = zrequire("message_store");
 const {set_realm} = zrequire("state_data");
@@ -131,40 +131,6 @@ test("basics", () => {
     });
 });
 
-test("is_complete_for_stream_id", ({override_rewire}) => {
-    const sub = {
-        name: "devel",
-        stream_id: 444,
-        first_message_id: 1000,
-    };
-    stream_data.add_sub(sub);
-
-    override_rewire(all_messages_data, "all_messages_data", {
-        empty: () => false,
-        fetch_status: {
-            has_found_newest: () => true,
-        },
-        first_including_muted: () => ({id: 5}),
-    });
-
-    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
-
-    // Now simulate a more recent message id.
-    all_messages_data.all_messages_data.first_including_muted = () => ({
-        id: sub.first_message_id + 1,
-    });
-
-    // Note that we'll return `true` here due to
-    // fetched_stream_ids having the stream_id now.
-    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
-
-    // But now clear the data to see what we'd have without
-    // the previous call.
-    stream_topic_history.reset();
-
-    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), false);
-});
-
 test("server_history", () => {
     const sub = {
         name: "devel",
@@ -173,7 +139,7 @@ test("server_history", () => {
     const stream_id = sub.stream_id;
     stream_data.add_sub(sub);
 
-    assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), false);
+    assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
 
     stream_topic_history.add_message({
         stream_id,
@@ -192,8 +158,8 @@ test("server_history", () => {
     add_server_history();
 
     // Since we added history, now subsequent calls
-    // to is_complete_for_stream_id will return true.
-    assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), true);
+    // to is_full_topic_history_available will return true.
+    assert.equal(topic_list.is_full_topic_history_available(stream_id), true);
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["local", "hist2", "hist1"]);
@@ -380,44 +346,6 @@ test("server_history_end_to_end", () => {
         on_success_called = true;
     });
     assert.ok(on_success_called);
-});
-
-test("all_topics_in_cache", ({override}) => {
-    // Add a new stream with first_message_id set.
-    const general = {
-        name: "general",
-        stream_id: 21,
-        first_message_id: null,
-    };
-    const messages = [
-        {id: 1, stream_id: 21},
-        {id: 2, stream_id: 21},
-        {id: 3, stream_id: 21},
-    ];
-    const sub = stream_data.create_sub_from_server_data(general);
-
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
-
-    all_messages_data.all_messages_data.clear();
-    all_messages_data.all_messages_data.add_messages(messages, true);
-
-    let has_found_newest = false;
-
-    override(
-        all_messages_data.all_messages_data.fetch_status,
-        "has_found_newest",
-        () => has_found_newest,
-    );
-
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
-    has_found_newest = true;
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), true);
-
-    sub.first_message_id = 0;
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
-
-    sub.first_message_id = 2;
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), true);
 });
 
 test("ask_server_for_latest_topic_data", () => {

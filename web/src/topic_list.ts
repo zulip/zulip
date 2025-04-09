@@ -6,6 +6,7 @@ import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
+import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
@@ -13,6 +14,8 @@ import * as scroll_util from "./scroll_util.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as sub_store from "./sub_store.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
 import * as vdom from "./vdom.ts";
@@ -149,6 +152,60 @@ export function spinner_li(): ListInfoNode {
     };
 }
 
+export function is_full_topic_history_available(stream_id: number): boolean {
+    if (stream_topic_history.has_history_for(stream_id)) {
+        return true;
+    }
+
+    function all_topics_in_cache(sub: StreamSubscription): boolean {
+        // Checks whether this browser's cache of contiguous messages
+        // (used to locally render narrows) in all_messages_data has all
+        // messages from a given stream. Because all_messages_data is a range,
+        // we just need to compare it to the range of history on the stream.
+
+        // If the cache isn't initialized, it's a clear false.
+        if (all_messages_data === undefined || all_messages_data.empty()) {
+            return false;
+        }
+
+        // If the cache doesn't have the latest messages, we can't be sure
+        // we have all topics.
+        if (!all_messages_data.fetch_status.has_found_newest()) {
+            return false;
+        }
+
+        if (sub.first_message_id === null) {
+            // If the stream has no message history, we have it all
+            // vacuously.  This should be a very rare condition, since
+            // stream creation sends a message.
+            return true;
+        }
+
+        // Now, we can just compare the first cached message to the first
+        // message ID in the stream; if it's older, we're good, otherwise,
+        // we might be missing the oldest topics in this stream in our
+        // cache.
+        const first_cached_message = all_messages_data.first_including_muted();
+        return first_cached_message!.id <= sub.first_message_id;
+    }
+
+    const sub = sub_store.get(stream_id);
+    const in_cache = sub !== undefined && all_topics_in_cache(sub);
+
+    if (in_cache) {
+        /*
+            If the stream is cached, we can add it to
+            fetched_stream_ids.  Note that for the opposite
+            scenario, we don't delete from
+            fetched_stream_ids, because we may just be
+            waiting for the initial message fetch.
+        */
+        stream_topic_history.mark_history_fetched_for(stream_id);
+    }
+
+    return in_cache;
+}
+
 export class TopicListWidget {
     prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
@@ -173,7 +230,7 @@ export class TopicListWidget {
 
         const is_showing_all_possible_topics =
             list_info.items.length === num_possible_topics &&
-            stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
+            is_full_topic_history_available(this.my_stream_id);
 
         const topic_list_classes: [string] = ["topic-list"];
 
