@@ -13,18 +13,24 @@ const stream_topic_history_response_schema = z.object({
     ),
 });
 
+const pending_on_success_callbacks = new Map<number, (() => void)[]>();
+
 export function get_server_history(stream_id: number, on_success: () => void): void {
     if (stream_topic_history.has_history_for(stream_id)) {
         on_success();
         return;
     }
     if (stream_topic_history.is_request_pending_for(stream_id)) {
+        const callbacks = pending_on_success_callbacks.get(stream_id) ?? [];
+        callbacks.push(on_success);
+        pending_on_success_callbacks.set(stream_id, callbacks);
         return;
     }
 
     stream_topic_history.add_request_pending_for(stream_id);
-    const url = "/json/users/me/" + stream_id + "/topics";
+    pending_on_success_callbacks.set(stream_id, [on_success]);
 
+    const url = "/json/users/me/" + stream_id + "/topics";
     void channel.get({
         url,
         data: {allow_empty_topic_name: true},
@@ -33,9 +39,15 @@ export function get_server_history(stream_id: number, on_success: () => void): v
             const server_history = data.topics;
             stream_topic_history.add_history(stream_id, server_history);
             stream_topic_history.remove_request_pending_for(stream_id);
-            on_success();
+            for (const callback of pending_on_success_callbacks.get(stream_id)!) {
+                callback();
+            }
+            pending_on_success_callbacks.delete(stream_id);
         },
         error() {
+            // TODO: Implement some sort of retry logic,
+            // before giving up on the first failure.
+            pending_on_success_callbacks.delete(stream_id);
             stream_topic_history.remove_request_pending_for(stream_id);
         },
     });
