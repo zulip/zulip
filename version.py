@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 377  # Last bumped to sending peer_remove on user deactivation.
+API_FEATURE_LEVEL = 378
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 377  # Last bumped to sending peer_remove on user deactivati
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (323, 0)  # bumped 2025-04-07 for smile emoji changes.
+PROVISION_VERSION = (324, 0)  # bumped 2025-04-07 to upgrade Python requirements

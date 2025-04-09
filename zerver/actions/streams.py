@@ -159,7 +159,17 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     for group in default_stream_groups_for_stream:
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
-    send_stream_deletion_event(stream.realm, affected_user_ids, [stream])
+    event = dict(
+        type="stream",
+        op="update",
+        stream_id=stream.id,
+        name=stream.name,
+        property="is_archived",
+        value=True,
+    )
+    send_event_on_commit(stream.realm, event, affected_user_ids)
+
+    send_stream_deletion_event(stream.realm, affected_user_ids, [stream], for_archiving=True)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -271,9 +281,25 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
     recent_traffic = get_streams_traffic({stream.id}, realm)
 
     notify_user_ids = list(can_access_stream_metadata_user_ids(stream))
+
+    event = dict(
+        type="stream",
+        op="update",
+        stream_id=stream.id,
+        name=stream.name,
+        property="is_archived",
+        value=False,
+    )
+    send_event_on_commit(stream.realm, event, notify_user_ids)
+
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
     send_stream_creation_event(
-        realm, stream, notify_user_ids, recent_traffic, anonymous_group_membership
+        realm,
+        stream,
+        notify_user_ids,
+        recent_traffic,
+        anonymous_group_membership,
+        for_unarchiving=True,
     )
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)

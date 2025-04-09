@@ -48,15 +48,20 @@ async function test_change_new_stream_announcements_stream(page: Page): Promise<
 }
 
 async function test_change_signup_announcements_stream(page: Page): Promise<void> {
-    console.log('Changing signup notifications stream to Verona by filtering with "verona"');
+    await page.click("#realm_signup_announcements_stream_id_widget.dropdown-widget-button");
+    await page.waitForSelector(".dropdown-list-container", {
+        visible: true,
+    });
 
-    await page.click("#realm_signup_announcements_stream_id_widget");
-    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
+    await page.type(".dropdown-list-search-input", "rome");
 
-    await page.type(".dropdown-list-search-input", "verona");
-    await page.waitForSelector(".dropdown-list .list-item", {visible: true});
-    await page.keyboard.press("ArrowDown");
-    await page.keyboard.press("Enter");
+    const rome_in_dropdown = await page.waitForSelector(
+        `xpath///*[${common.has_class_x("list-item")}][normalize-space()="Rome"]`,
+        {visible: true},
+    );
+    assert.ok(rome_in_dropdown);
+    await rome_in_dropdown.click();
+
     await submit_announcements_stream_settings(page);
 }
 

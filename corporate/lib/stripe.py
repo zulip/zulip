@@ -28,21 +28,21 @@ from django.utils.translation import override as override_language
 from typing_extensions import ParamSpec, override
 
 from corporate.lib.billing_types import BillingModality, BillingSchedule, LicenseManagement
-from corporate.models import (
+from corporate.models.customers import (
     Customer,
-    CustomerPlan,
-    CustomerPlanOffer,
-    Invoice,
-    LicenseLedger,
-    Session,
-    SponsoredPlanTypes,
-    ZulipSponsorshipRequest,
-    get_current_plan_by_customer,
-    get_current_plan_by_realm,
     get_customer_by_realm,
     get_customer_by_remote_realm,
     get_customer_by_remote_server,
 )
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import (
+    CustomerPlan,
+    CustomerPlanOffer,
+    get_current_plan_by_customer,
+    get_current_plan_by_realm,
+)
+from corporate.models.sponsorships import SponsoredPlanTypes, ZulipSponsorshipRequest
+from corporate.models.stripe_state import Invoice, Session
 from zerver.lib.cache import cache_with_key, get_realm_seat_count_cache_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file

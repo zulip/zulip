@@ -1242,7 +1242,7 @@ def check_user_has_permission_by_role(
 
 
 def check_any_user_has_permission_by_role(
-    users: list[UserProfile], setting_group_id: int, system_groups_name_dict: dict[int, str]
+    users: set[UserProfile], setting_group_id: int, system_groups_name_dict: dict[int, str]
 ) -> bool:
     for user in users:
         if check_user_has_permission_by_role(user, setting_group_id, system_groups_name_dict):

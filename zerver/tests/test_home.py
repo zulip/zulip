@@ -10,7 +10,8 @@ from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from corporate.models import Customer, CustomerPlan
+from corporate.models.customers import Customer
+from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property

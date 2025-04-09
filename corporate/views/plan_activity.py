@@ -4,7 +4,9 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 from corporate.lib.activity import ActivityHeaderEntry, format_optional_datetime, make_table
-from corporate.models import Customer, CustomerPlan, LicenseLedger
+from corporate.models.customers import Customer
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan
 from zerver.decorator import require_server_admin
 
 

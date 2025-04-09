@@ -136,7 +136,7 @@ def has_pending_sponsorship_request(
         user_has_billing_access = user_profile is not None and user_profile.has_billing_access
 
     if settings.CORPORATE_ENABLED and user_profile is not None and user_has_billing_access:
-        from corporate.models import get_customer_by_realm
+        from corporate.models.customers import get_customer_by_realm
 
         customer = get_customer_by_realm(user_profile.realm)
         if customer is not None:
@@ -784,6 +784,7 @@ def fetch_initial_state_data(
             state["streams"] = do_get_streams(
                 user_profile,
                 include_web_public=True,
+                exclude_archived=not archived_channels,
                 include_all=True,
                 anonymous_group_membership=anonymous_group_membership_data_dict,
             )
@@ -1307,53 +1308,47 @@ def apply_event(
 
         if event["op"] == "delete":
             deleted_stream_ids = {stream["stream_id"] for stream in event["streams"]}
+
+            state["subscriptions"] = [
+                stream
+                for stream in state["subscriptions"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
+            state["unsubscribed"] = [
+                stream
+                for stream in state["unsubscribed"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
+            state["never_subscribed"] = [
+                stream
+                for stream in state["never_subscribed"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
             if "streams" in state:
                 state["streams"] = [
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
 
-            if archived_channels:
-                for stream in state["subscriptions"]:
-                    if stream["stream_id"] in deleted_stream_ids:
-                        stream["is_archived"] = True
-
-                for stream in state["unsubscribed"]:
-                    if stream["stream_id"] in deleted_stream_ids:
-                        stream["is_archived"] = True
-                        stream["first_message_id"] = Stream.objects.get(
-                            id=stream["stream_id"]
-                        ).first_message_id
-
-                for stream in state["never_subscribed"]:
-                    if stream["stream_id"] in deleted_stream_ids:
-                        stream["is_archived"] = True
-                        stream["first_message_id"] = Stream.objects.get(
-                            id=stream["stream_id"]
-                        ).first_message_id
-            else:
-                state["subscriptions"] = [
-                    stream
-                    for stream in state["subscriptions"]
-                    if stream["stream_id"] not in deleted_stream_ids
-                ]
-
-                state["unsubscribed"] = [
-                    stream
-                    for stream in state["unsubscribed"]
-                    if stream["stream_id"] not in deleted_stream_ids
-                ]
-
-                state["never_subscribed"] = [
-                    stream
-                    for stream in state["never_subscribed"]
-                    if stream["stream_id"] not in deleted_stream_ids
-                ]
-
         if event["op"] == "update":
             # For legacy reasons, we call stream data 'subscriptions' in
             # the state var here, for the benefit of the JS code.
+            for obj in state["subscriptions"]:
+                if obj["name"].lower() == event["name"].lower():
+                    obj[event["property"]] = event["value"]
+                    if event["property"] == "description":
+                        obj["rendered_description"] = event["rendered_description"]
+                    if event.get("history_public_to_subscribers") is not None:
+                        obj["history_public_to_subscribers"] = event[
+                            "history_public_to_subscribers"
+                        ]
+                    if event.get("is_web_public") is not None:
+                        obj["is_web_public"] = event["is_web_public"]
+
+            updated_first_message_ids = dict()
             for sub_list in [
-                state["subscriptions"],
                 state["unsubscribed"],
                 state["never_subscribed"],
             ]:
@@ -1368,6 +1363,17 @@ def apply_event(
                             ]
                         if event.get("is_web_public") is not None:
                             obj["is_web_public"] = event["is_web_public"]
+                        if (
+                            event["property"] == "is_archived"
+                            and event["value"]
+                            and obj["first_message_id"] is None
+                        ):
+                            new_first_message_id = Stream.objects.get(
+                                id=obj["stream_id"]
+                            ).first_message_id
+                            assert new_first_message_id is not None
+                            obj["first_message_id"] = new_first_message_id
+                            updated_first_message_ids[obj["stream_id"]] = new_first_message_id
             # Also update the pure streams data
             if "streams" in state:
                 for stream in state["streams"]:
@@ -1383,6 +1389,13 @@ def apply_event(
                                 ]
                             if event.get("is_web_public") is not None:
                                 stream["is_web_public"] = event["is_web_public"]
+                            if (
+                                event["property"] == "is_archived"
+                                and stream["stream_id"] in updated_first_message_ids
+                            ):
+                                stream["first_message_id"] = updated_first_message_ids[
+                                    stream["stream_id"]
+                                ]
 
     elif event["type"] == "default_streams":
         state["realm_default_streams"] = event["default_streams"]

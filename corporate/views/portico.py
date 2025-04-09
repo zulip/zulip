@@ -14,7 +14,8 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
+from corporate.models.customers import get_customer_by_realm
+from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics, zulip_login_required
 from zerver.lib.github import (
