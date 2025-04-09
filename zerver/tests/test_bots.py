@@ -1791,12 +1791,16 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "method": "PATCH",
         }
         email = "hambot-bot@zulip.testserver"
-        # Important: We intentionally use the wrong method, post, here.
-        result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+
+        with self.assertLogs("zulip.rest", "WARN") as m:
+            # Important: We intentionally use the wrong method, post, here.
+            result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
 
         # TODO: The "method" parameter is not currently tracked as a processed parameter
         # by typed_endpoint. Assert it is returned as an ignored parameter.
         response_dict = self.assert_json_success(result, ignored_parameters=["method"])
+
+        self.assertEqual(m.output, ["WARNING:zulip.rest:Overriding method"])
 
         self.assertEqual("Fred", response_dict["full_name"])
 
