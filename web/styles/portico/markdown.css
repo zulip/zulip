@@ -8,7 +8,7 @@
     --color-copy-button-hover: hsl(229deg 9% 36%);
     --color-copy-button-active: color-mix(
         in oklch,
-        hsla(229deg 9% 36%) 70%,
+        hsl(229deg 9% 36%) 70%,
         transparent
     );
     --color-copy-button-success: hsl(146deg 90% 27%);

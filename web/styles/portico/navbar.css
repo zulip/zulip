@@ -20,7 +20,7 @@ details summary::-webkit-details-marker {
     transition: background-color 0.3s ease-out;
 
     &:hover {
-        background: hsla(240deg 100% 10% / 85%);
+        background: hsl(240deg 100% 10% / 85%);
     }
 }
 
