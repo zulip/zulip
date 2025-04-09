@@ -1234,8 +1234,10 @@ def check_user_has_permission_by_role(
     if system_group_name == SystemGroups.ADMINISTRATORS:
         return user.is_realm_admin
 
+    # is_moderator returns False for realm admins and
+    # owners.
     if system_group_name == SystemGroups.MODERATORS:
-        return user.is_moderator
+        return user.is_realm_admin or user.is_moderator
 
     # Handle full members case.
     return user.role != UserProfile.ROLE_MEMBER or not user.is_provisional_member

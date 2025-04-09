@@ -614,6 +614,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertTrue(
             check_user_has_permission_by_role(iago, admins_group.id, system_groups_name_dict)
         )
+        self.assertTrue(
+            check_user_has_permission_by_role(desdemona, admins_group.id, system_groups_name_dict)
+        )
 
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
@@ -623,6 +626,9 @@ class UserGroupTestCase(ZulipTestCase):
         )
         self.assertTrue(
             check_user_has_permission_by_role(shiva, moderators_group.id, system_groups_name_dict)
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(iago, moderators_group.id, system_groups_name_dict)
         )
 
         members_group = NamedUserGroup.objects.get(
