@@ -73,7 +73,7 @@ export function zoom_out(): void {
     assert(widget !== undefined);
     const parent_widget = widget.get_parent();
 
-    rebuild(parent_widget, stream_id);
+    rebuild_left_sidebar(parent_widget, stream_id);
 }
 
 type ListInfoNodeOptions =
@@ -251,7 +251,7 @@ export function clear_topic_search(e: JQuery.Event): void {
         assert(widget !== undefined);
         const parent_widget = widget.get_parent();
 
-        rebuild(parent_widget, stream_id);
+        rebuild_left_sidebar(parent_widget, stream_id);
     }
 }
 
@@ -276,7 +276,7 @@ export function get_stream_li(): JQuery | undefined {
     return $stream_li;
 }
 
-export function rebuild($stream_li: JQuery, stream_id: number): void {
+export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): void {
     const active_widget = active_widgets.get(stream_id);
 
     if (active_widget) {

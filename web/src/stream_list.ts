@@ -759,7 +759,7 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
         clear_topics();
     }
 
-    topic_list.rebuild($stream_li, stream_id);
+    topic_list.rebuild_left_sidebar($stream_li, stream_id);
 
     return $stream_li;
 }
