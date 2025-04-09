@@ -633,9 +633,10 @@ def send_peer_subscriber_events(
                     # to multiple default public streams during
                     # new-user registration.
                     #
-                    # This optimization depends on all public streams
-                    # having the same peers for any single user, which
-                    # isn't the case for private streams.
+                    # This optimization works on web public streams and
+                    # public streams with no guest users since they
+                    # will have the same peers for any single user,
+                    # which isn't the case for private streams.
                     [altered_user_id] = altered_user_ids
                     user_streams[altered_user_id].add(stream_id)
                 else:
@@ -648,18 +649,46 @@ def send_peer_subscriber_events(
                     send_event_on_commit(realm, event, peer_user_ids)
 
         for user_id, stream_ids in user_streams.items():
-            if stream_id in web_public_stream_ids:
-                peer_user_ids = web_public_peer_ids - altered_user_ids
-            else:
-                peer_user_ids = (non_guest_user_ids | subscriber_dict[stream_id]) - altered_user_ids
+            web_public_user_stream_ids = []
+            public_user_stream_ids_without_guest_users = []
+            for stream_id in stream_ids:
+                if stream_id in web_public_stream_ids:
+                    web_public_user_stream_ids.append(stream_id)
+                else:
+                    if (non_guest_user_ids | subscriber_dict[stream_id]) == non_guest_user_ids:
+                        public_user_stream_ids_without_guest_users.append(stream_id)
+                    else:
+                        # If the stream has guest users, we will send
+                        # an event right away.
+                        peer_user_ids = (non_guest_user_ids | subscriber_dict[stream_id]) - {
+                            user_id
+                        }
+                        event = dict(
+                            type="subscription",
+                            op=op,
+                            stream_ids=[stream_id],
+                            user_ids=[user_id],
+                        )
+                        send_event_on_commit(realm, event, peer_user_ids)
 
-            event = dict(
-                type="subscription",
-                op=op,
-                stream_ids=sorted(stream_ids),
-                user_ids=[user_id],
-            )
-            send_event_on_commit(realm, event, peer_user_ids)
+            if len(web_public_user_stream_ids) > 0:
+                web_public_streams_event = dict(
+                    type="subscription",
+                    op=op,
+                    stream_ids=sorted(web_public_user_stream_ids),
+                    user_ids=[user_id],
+                )
+                send_event_on_commit(
+                    realm, web_public_streams_event, web_public_peer_ids - {user_id}
+                )
+            if len(public_user_stream_ids_without_guest_users) > 0:
+                public_streams_event = dict(
+                    type="subscription",
+                    op=op,
+                    stream_ids=sorted(public_user_stream_ids_without_guest_users),
+                    user_ids=[user_id],
+                )
+                send_event_on_commit(realm, public_streams_event, non_guest_user_ids - {user_id})
 
 
 def send_user_creation_events_on_adding_subscriptions(
