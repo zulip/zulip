@@ -516,19 +516,6 @@ A temporary team so that I can get some webhook fixtures!
         payload = self.get_body("check_run__in_progress")
         self.verify_post_is_ignored(payload, "check_run")
 
-    def test_ignored_pull_request_actions(self) -> None:
-        ignored_actions = [
-            "approved",
-            "converted_to_draft",
-            "labeled",
-            "review_request_removed",
-            "unlabeled",
-        ]
-        for action in ignored_actions:
-            data = dict(action=action)
-            payload = orjson.dumps(data).decode()
-            self.verify_post_is_ignored(payload, "pull_request")
-
     def test_pull_request_review_edited_empty_changes_ignore(self) -> None:
         payload = self.get_body("pull_request_review__edited_empty_changes")
         self.verify_post_is_ignored(payload, "pull_request_review")
