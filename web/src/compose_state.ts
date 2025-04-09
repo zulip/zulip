@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as people from "./people.ts";
 import {realm} from "./state_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -10,6 +11,7 @@ let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 let preview_render_count = 0;
+let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -19,6 +21,14 @@ let preview_render_count = 0;
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
 let recipient_guest_ids_for_dm_warning: number[] = [];
+
+export function set_compose_select_recipient_dropdown_widget(val: DropdownWidget): void {
+    compose_select_recipient_dropdown_widget = val;
+}
+
+export function get_compose_select_recipient_dropdown_widget(): DropdownWidget {
+    return compose_select_recipient_dropdown_widget;
+}
 
 export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
