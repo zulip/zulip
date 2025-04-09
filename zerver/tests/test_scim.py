@@ -34,7 +34,7 @@ class SCIMTestCase(ZulipTestCase):
     def generate_user_schema(self, user_profile: UserProfile) -> dict[str, Any]:
         return {
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
-            "id": user_profile.id,
+            "id": str(user_profile.id),
             "userName": user_profile.delivery_email,
             "name": {"formatted": user_profile.full_name},
             "displayName": user_profile.full_name,
