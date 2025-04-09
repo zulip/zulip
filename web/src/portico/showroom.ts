@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_banner from "../../templates/components/banner.hbs";
 import {$t, $t_html} from "../i18n.ts";
@@ -404,7 +405,8 @@ $(window).on("load", () => {
                 return;
             }
             let label = $<HTMLInputElement>("input#primary_button_text").val();
-            if (!label) {
+            assert(label !== undefined);
+            if (label === "") {
                 label = "Primary Button";
             }
             const is_icon_enabled = $("#enable_primary_button_icon").prop("checked") === true;
@@ -498,7 +500,8 @@ $(window).on("load", () => {
                 return;
             }
             let label = $<HTMLInputElement>("input#quiet_button_text").val();
-            if (!label) {
+            assert(label !== undefined);
+            if (label === "") {
                 label = "Quiet Button";
             }
             const is_icon_enabled = $("#enable_quiet_button_icon").prop("checked") === true;
@@ -587,7 +590,8 @@ $(window).on("load", () => {
                 return;
             }
             let label = $<HTMLInputElement>("input#borderless_button_text").val();
-            if (!label) {
+            assert(label !== undefined);
+            if (label === "") {
                 label = "Borderless Button";
             }
             const is_icon_enabled = $("#enable_borderless_button_icon").prop("checked") === true;

@@ -373,17 +373,13 @@ function display_video(payload: Media): void {
 }
 
 export function build_open_media_function(
-    on_close: (() => void) | undefined,
+    on_close = (): void => {
+        remove_video_players();
+        is_open = false;
+        assert(document.activeElement instanceof HTMLElement);
+        document.activeElement.blur();
+    },
 ): ($media: JQuery<HTMLMediaElement | HTMLImageElement>) => void {
-    if (on_close === undefined) {
-        on_close = function () {
-            remove_video_players();
-            is_open = false;
-            assert(document.activeElement instanceof HTMLElement);
-            document.activeElement.blur();
-        };
-    }
-
     return function ($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
         // This is used both for clicking on media in the messagelist, as well as clicking on images
         // in the media list under the lightbox when it is open.

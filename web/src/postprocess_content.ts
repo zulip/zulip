@@ -8,9 +8,7 @@ import * as util from "./util.ts";
 let inertDocument: Document | undefined;
 
 export function postprocess_content(html: string): string {
-    if (inertDocument === undefined) {
-        inertDocument = new DOMParser().parseFromString("", "text/html");
-    }
+    inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 

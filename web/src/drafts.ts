@@ -145,9 +145,7 @@ export const draft_model = (function () {
             // since we expect bugged drafts will have either been run
             // through this code or been deleted by the previous
             // behavior of deleting them after 30 days.
-            if (draft.topic === undefined) {
-                draft.topic = "";
-            }
+            draft.topic ??= "";
 
             valid_drafts[draft_id] = {
                 ...draft,
