@@ -142,7 +142,16 @@ def get_merge_request_event_body(action: str, payload: WildValue, include_title:
     pull_request = payload["object_attributes"]
     target_branch = None
     base_branch = None
+
     if action == "merged":
+        target_branch = pull_request["source_branch"].tame(check_string)
+        base_branch = pull_request["target_branch"].tame(check_string)
+
+    elif action == "approved":
+        target_branch = pull_request["source_branch"].tame(check_string)
+        base_branch = pull_request["target_branch"].tame(check_string)
+
+    elif action == "unapproved":
         target_branch = pull_request["source_branch"].tame(check_string)
         base_branch = pull_request["target_branch"].tame(check_string)
 
