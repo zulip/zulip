@@ -560,6 +560,13 @@ export function change_save_button_state($element: JQuery, state: string): void 
         return;
     }
 
+    if (state === "succeeded" && $save_button.attr("data-status") === "unsaved") {
+        // We don't show the "saved" state if the save button is in the "unsaved"
+        // state, as that would indicate that user has made some other changes
+        // during the saving process.
+        return;
+    }
+
     if (state !== "saving") {
         buttons.hide_button_loading_indicator($save_button);
     }
