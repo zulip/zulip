@@ -48,6 +48,7 @@ import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
+import {Filter} from "./filter.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
@@ -112,6 +113,7 @@ import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
 import * as server_events from "./server_events.js";
 import * as settings from "./settings.ts";
+import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -553,16 +555,25 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
-            message_view.show(
-                [
-                    {
-                        operator: "stream",
-                        operand: sub.stream_id.toString(),
-                    },
-                ],
-                {trigger},
-            );
+
+            const terms = [
+                {
+                    operator: "channel",
+                    operand: sub.stream_id.toString(),
+                },
+            ];
+            if (
+                user_settings.web_channel_default_view ===
+                web_channel_default_view_values.channel_feed.code
+            ) {
+                message_view.show(terms, {trigger});
+            } else {
+                const filter = new Filter(terms);
+                message_view.update_hash_to_match_filter(filter, trigger);
+                inbox_ui.show(filter);
+            }
         },
+        update_inbox_channel_view: inbox_ui.update_channel_view,
     });
     condense.initialize();
     spoilers.initialize();

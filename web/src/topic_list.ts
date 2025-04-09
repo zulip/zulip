@@ -89,7 +89,7 @@ type ListInfoNodeOptions =
           type: "spinner";
       };
 
-type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
+export type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
 
 export function keyed_topic_li(conversation: TopicInfo): ListInfoNode {
     const render = (): string => render_topic_list_item(conversation);

@@ -17,8 +17,10 @@ import * as compose_banner from "./compose_banner.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as inbox_ui from "./inbox_ui.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -106,6 +108,9 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
+    const show_go_to_list_of_topics =
+        user_settings.web_channel_default_view !==
+        web_channel_default_view_values.list_of_topics.code;
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
@@ -116,6 +121,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         },
         has_unread_messages,
         show_go_to_channel_feed,
+        show_go_to_list_of_topics,
     });
 
     popover_menus.toggle_popover_menu(elt, {
@@ -143,11 +149,26 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 message_view.show(
                     [
                         {
-                            operator: "stream",
+                            operator: "channel",
                             operand: sub.stream_id.toString(),
                         },
                     ],
-                    {trigger: "stream-popover"},
+                    {trigger: "stream-popover-go-to-channel-feed", force_rerender: true},
+                );
+            });
+
+            $popper.on("click", ".stream-popover-go-to-list-of-topics", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const sub = stream_popover_sub(e);
+                hide_stream_popover(instance);
+                inbox_ui.show(
+                    new Filter([
+                        {
+                            operator: "channel",
+                            operand: sub.stream_id.toString(),
+                        },
+                    ]),
                 );
             });
 
