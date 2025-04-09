@@ -50,7 +50,7 @@ export function all_topics_in_cache(sub: StreamSubscription): boolean {
     // message ID in the stream; if it's older, we're good, otherwise,
     // we might be missing the oldest topics in this stream in our
     // cache.
-    const first_cached_message = all_messages_data.first();
+    const first_cached_message = all_messages_data.first_including_muted();
     return first_cached_message!.id <= sub.first_message_id;
 }
 
