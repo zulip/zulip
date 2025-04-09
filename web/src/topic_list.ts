@@ -232,6 +232,11 @@ export class TopicListWidget {
 
         this.prior_dom = new_dom;
     }
+
+    is_empty(): boolean {
+        const $topic_list = this.$parent_elem.find(".topic-list");
+        return !$topic_list.hasClass("topic-list-has-topics");
+    }
 }
 
 export function clear_topic_search(e: JQuery.Event): void {
