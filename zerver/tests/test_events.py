@@ -4657,7 +4657,7 @@ class UserDisplayActionTest(BaseAction):
             web_home_view=["all_messages", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
-            web_channel_default_view=[2, 1],
+            web_channel_default_view=[2, 1, 3],
             user_list_style=[1, 2, 3],
             web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=[1, 2, 3],

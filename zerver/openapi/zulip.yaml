@@ -12617,13 +12617,19 @@ paths:
 
                     - 1 - Top topic in the channel
                     - 2 - Channel feed
+                    - 3 - List of topics
 
-                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    **Changes**: The "List of topics" option is new in
+                    Zulip 11.0 (feature level 383).
+
+                    New in Zulip 9.0 (feature level 269). Previously, this
                     was not configurable, and every user had the "Channel feed" behavior.
+
                   type: integer
                   enum:
                     - 1
                     - 2
+                    - 3
                   example: 1
                 web_font_size_px:
                   description: |
@@ -16014,8 +16020,12 @@ paths:
 
                               - 1 - Top topic in the channel
                               - 2 - Channel feed
+                              - 3 - List of topics
 
-                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              **Changes**: The "List of topics" option is new in
+                              Zulip 11.0 (feature level 383).
+
+                              New in Zulip 9.0 (feature level 269). Previously, this
                               was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
@@ -18762,8 +18772,12 @@ paths:
 
                               - 1 - Top topic in the channel
                               - 2 - Channel feed
+                              - 3 - List of topics
 
-                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              **Changes**: In Zulip 11.0 (feature level 383), we added a new option
+                              "List of topics" to this setting.
+
+                              New in Zulip 9.0 (feature level 269). Previously, this
                               was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
@@ -19909,8 +19923,12 @@ paths:
 
                     - 1 - Top topic in the channel
                     - 2 - Channel feed
+                    - 3 - List of topics
 
-                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    **Changes**: The "List of topics" option is new in
+                    Zulip 11.0 (feature level 383).
+
+                    New in Zulip 9.0 (feature level 269). Previously, this
                     was not configurable, and every user had the "Channel feed" behavior.
                   type: integer
                   enum:

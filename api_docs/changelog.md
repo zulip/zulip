@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 383**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new option in user setting `web_channel_default_view`, to show
+  inbox view style list of topics.
+
 **Feature level 382**
 
 * `POST /message/{message_id}/report`: Added a new endpoint for submitting
