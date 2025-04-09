@@ -165,10 +165,14 @@ export class TopicListWidget {
         this.filter_topics = filter_topics;
     }
 
-    build_list(spinner: boolean): vdom.Tag<ListInfoNodeOptions> {
+    build_list(
+        spinner: boolean,
+        formatter: (conversation: TopicInfo) => ListInfoNode,
+        is_zoomed: boolean,
+    ): vdom.Tag<ListInfoNodeOptions> {
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
-            zoomed,
+            is_zoomed,
             this.filter_topics,
         );
 
@@ -189,7 +193,7 @@ export class TopicListWidget {
 
         const attrs: [string, string][] = [["class", topic_list_classes.join(" ")]];
 
-        const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
+        const nodes = list_info.items.map((conversation) => formatter(conversation));
 
         if (spinner) {
             nodes.push(spinner_li());
@@ -224,8 +228,12 @@ export class TopicListWidget {
         this.prior_dom = undefined;
     }
 
-    build(spinner = false): void {
-        const new_dom = this.build_list(spinner);
+    build(
+        spinner = false,
+        formatter: (conversation: TopicInfo) => ListInfoNode,
+        is_zoomed: boolean,
+    ): void {
+        const new_dom = this.build_list(spinner, formatter, is_zoomed);
 
         const replace_content = (html: string): void => {
             this.remove();
@@ -253,6 +261,13 @@ function filter_topics_left_sidebar(topic_names: string[]): string[] {
 export class LeftSidebarTopicListWidget extends TopicListWidget {
     constructor($parent_elem: JQuery, my_stream_id: number) {
         super($parent_elem, my_stream_id, filter_topics_left_sidebar);
+    }
+
+    override build(spinner = false): void {
+        const is_zoomed = zoomed;
+        const formatter = keyed_topic_li;
+
+        super.build(spinner, formatter, is_zoomed);
     }
 }
 
