@@ -161,6 +161,8 @@ const COLUMNS = {
 let col_focus = COLUMNS.COLLAPSE_BUTTON;
 let row_focus = 0;
 
+let hide_other_views_callback: (() => void) | undefined;
+
 const ls_filter_key = "inbox-filters";
 const ls_collapsed_containers_key = "inbox_collapsed_containers";
 
@@ -189,6 +191,8 @@ function save_data_to_ls(): void {
 }
 
 export function show(): void {
+    assert(hide_other_views_callback !== undefined);
+    hide_other_views_callback();
     // Avoid setting col_focus to recipient when moving to inbox from other narrows.
     // We prefer to focus entire row instead of stream name for inbox-header.
     // Since inbox-row doesn't has a collapse button, focus on COLUMNS.COLLAPSE_BUTTON
@@ -231,6 +235,9 @@ export function show(): void {
 }
 
 export function hide(): void {
+    if (!is_visible()) {
+        return;
+    }
     views_util.hide({
         $view: $("#inbox-view"),
         set_visible,
@@ -1502,7 +1509,8 @@ export function is_in_focus(): boolean {
     return is_visible() && views_util.is_in_focus();
 }
 
-export function initialize(): void {
+export function initialize({hide_other_views}: {hide_other_views: () => void}): void {
+    hide_other_views_callback = hide_other_views;
     $(document).on(
         "scroll",
         _.throttle(() => {
