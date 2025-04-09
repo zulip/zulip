@@ -80,18 +80,19 @@
     padding: 0 5px 0 3px;
 
     &:hover .message_controls {
+        opacity: 1;
+        visibility: visible;
+
         .empty-star:hover {
             cursor: pointer;
-        }
-
-        > .message_control_button {
-            opacity: 1;
-            visibility: visible;
         }
     }
 }
 
 .messagebox-content {
+    /* We set a positioning context solely for the
+       sake of hover controls positioning. */
+    position: relative;
     display: grid;
     align-items: baseline;
     padding-left: 10px;
@@ -106,26 +107,21 @@
         in the column. */
     grid-template:
         var(--message-box-sender-line-height) repeat(3, auto) /
-        var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
+        var(--message-box-avatar-column-width) minmax(0, 1fr)
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
        reliably, even if the row or column definitions of the grid change. */
     grid-template-areas:
-        "edited message   controls . time"
-        ".      message   .        . .   "
-        ".      more      .        . .   "
-        ".      reactions .        . .   ";
+        "edited message   . time"
+        ".      message   . .   "
+        ".      more      . .   "
+        ".      reactions . .   ";
 
     &.content_edit_mode {
         cursor: default;
-        /* Set the controls area to 0 to give more space
-           to the edit/source view area. */
         grid-template-columns:
             var(--message-box-avatar-column-width) minmax(0, 1fr)
-            0 8px minmax(
-                var(--message-box-timestamp-column-width),
-                max-content
-            );
+            8px minmax(var(--message-box-timestamp-column-width), max-content);
     }
 
     .message_edit_notice {
@@ -272,10 +268,10 @@
 .messagebox-includes-sender {
     .messagebox-content {
         grid-template-areas:
-            "avatar sender    controls . time"
-            "avatar message   .        . .   "
-            ".      more      .        . .   "
-            ".      reactions .        . .   ";
+            "avatar sender    . time"
+            "avatar message   . .   "
+            ".      more      . .   "
+            ".      reactions . .   ";
 
         .message_edit {
             /* No top margin when there's a sender row */
@@ -284,11 +280,11 @@
 
         &.is-me-message {
             grid-template-areas:
-                ".      .         .        . .   "
-                "avatar sender    controls . time"
-                "avatar sender    .        . .   "
-                ".      more      .        . .   "
-                ".      reactions .        . .   ";
+                ".      .         . .   "
+                "avatar sender    . time"
+                "avatar sender    . .   "
+                ".      more      . .   "
+                ".      reactions . .   ";
             grid-template-rows:
                 var(--message-box-vertical-margin) var(
                     --message-box-avatar-height
@@ -317,6 +313,9 @@
                    available grid row height on me-messages, we
                    align to center here. */
                 align-self: center;
+                /* Me-messages are offset by the avatar height, so this
+                   is the value to offset message controls. */
+                top: var(--message-box-avatar-height);
             }
 
             .message_sender {
@@ -465,7 +464,26 @@
 }
 
 .message_controls {
-    grid-area: controls;
+    position: absolute;
+    /* We bump the z-index to 5 so the controls appear above
+       the message text and the dividers between topics in
+       an interleaved view. */
+    z-index: 5;
+    /* Experiment with pulling the controls below the timestamp,
+       using 75% of the sender line-height. This looks nice on
+       a single-line message that includes a sender, with the
+       focus ring showing. */
+    top: calc(var(--message-box-sender-line-height) * 0.75);
+    /* Let the controls share the righthand edge of the timestamp,
+       which is padded right by 5px. */
+    right: 5px;
+    padding: 0.25em;
+    /* Color the message controls box like a popover. */
+    background-color: var(--color-background-popover-menu);
+    border: 1px solid var(--color-border-popover-menu);
+    border-radius: 6px;
+    box-shadow: var(--box-shadow-popover-menu);
+
     /* Let the controls occupy the entire height
        of the row; inner flexboxes handle the
        centering of the icons. */
@@ -478,27 +496,10 @@
     /* Ensure square icons for better centering. */
     line-height: 1;
 
-    @container message-lists (width < $cq_sm_min) {
-        /* This is intended to target the first message_controls child
-           when there are 3 displayed. */
-        .message_control_button:nth-last-child(3) {
-            display: none;
-        }
-    }
-
-    /* Media-query fallback. Note that because we're treating
-       #message-lists-container as its own container, we can
-       express a much simpler query there. The more complex
-       conditions are necessary only for media queries. */
-    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-        .without-container-query-support {
-            /* This is intended to target the first message_controls child
-            when there are 3 displayed. */
-            .message_control_button:nth-last-child(3) {
-                display: none;
-            }
-        }
-    }
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.2s ease;
+    transition-property: opacity, visibility;
 
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
@@ -506,10 +507,6 @@
        visibility: hidden, but that cannot be animated, so we set
        opacity as well, which can be animated. */
     .message_control_button {
-        opacity: 0;
-        visibility: hidden;
-        transition: 0.2s ease;
-        transition-property: opacity, visibility;
         /* Allow buttons to grow to fill the available space,
            in concord with the column calculated for the
            .messagebox-content grid. */
