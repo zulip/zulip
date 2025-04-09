@@ -73,4 +73,6 @@ class Command(BaseCommand):
                 env_vars["AWS_SECRET_ACCESS_KEY"] = settings.S3_SECRET_KEY
             if settings.S3_REGION is not None:
                 env_vars["AWS_REGION"] = settings.S3_REGION
+            if settings.S3_SKIP_CHECKSUM:
+                env_vars["AWS_REQUEST_CHECKSUM_CALCULATION"] = "when_required"
         os.execvpe("tusd", tusd_args, env_vars)
