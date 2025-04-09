@@ -56,6 +56,9 @@ if settings.S3_SKIP_PROXY is True:  # nocoverage
 def get_bucket(bucket_name: str, authed: bool = True) -> "Bucket":
     import boto3
 
+    checksum: Literal["when_required", "when_supported"] = (
+        "when_required" if settings.S3_SKIP_CHECKSUM else "when_supported"
+    )
     return boto3.resource(
         "s3",
         aws_access_key_id=settings.S3_KEY if authed else None,
@@ -65,6 +68,7 @@ def get_bucket(bucket_name: str, authed: bool = True) -> "Bucket":
         config=Config(
             signature_version=None if authed else botocore.UNSIGNED,
             s3={"addressing_style": settings.S3_ADDRESSING_STYLE},
+            request_checksum_calculation=checksum,
         ),
     ).Bucket(bucket_name)
 
