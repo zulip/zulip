@@ -1101,14 +1101,6 @@ def get_zulip_event_name(
             return "pull_request_review_request_removed"
         if action in ("milestoned", "demilestoned"):
             return "pull_request_milestoned"
-        elif header_event == "pull_request_review":
-            if is_empty_pull_request_review_event(payload):
-                # When submitting a review, GitHub has a bug where it'll
-                # send a duplicate empty "edited" event for the main
-                # review body. Ignore those, to avoid triggering
-                # duplicate notifications.
-                return None
-            return "pull_request_review"
     elif header_event == "push":
         if is_merge_queue_push_event(payload):
             return None
