@@ -209,11 +209,7 @@ export function get_stream_id(name: string): number | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-    let stream_id = stream_ids_by_name.get(name);
-    if (!stream_id) {
-        stream_id = stream_ids_by_old_names.get(name);
-    }
-    return stream_id;
+    return stream_ids_by_name.get(name) ?? stream_ids_by_old_names.get(name);
 }
 
 export function get_stream_name_from_id(stream_id: number): string {
@@ -224,10 +220,7 @@ export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-    let stream_id = stream_ids_by_name.get(name);
-    if (!stream_id) {
-        stream_id = stream_ids_by_old_names.get(name);
-    }
+    const stream_id = stream_ids_by_name.get(name) ?? stream_ids_by_old_names.get(name);
     if (!stream_id) {
         return undefined;
     }

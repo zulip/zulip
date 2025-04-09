@@ -165,9 +165,7 @@ export function update_message(submsg: Submessage): void {
         return;
     }
 
-    if (message.submessages === undefined) {
-        message.submessages = [];
-    }
+    message.submessages ??= [];
 
     const existing = message.submessages.find((sm) => sm.id === submsg.id);
 

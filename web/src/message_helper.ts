@@ -56,10 +56,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
 
     let message: Message;
     if (message_with_booleans.type === "stream") {
-        let topic = message_with_booleans.topic;
-        if (topic === undefined) {
-            topic = message_with_booleans.subject;
-        }
+        const topic = message_with_booleans.topic ?? message_with_booleans.subject;
         assert(topic !== undefined);
 
         // We add fully delivered messages to stream_topic_history,
