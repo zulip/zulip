@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import render_banner from "../../templates/components/banner.hbs";
 import {$t, $t_html} from "../i18n.ts";
+import type {HTMLSelectOneElement} from "../types.ts";
 
 type ComponentIntent = "neutral" | "brand" | "info" | "success" | "warning" | "danger";
 
@@ -308,8 +309,8 @@ $(window).on("load", () => {
         }
     });
 
-    $("#button_text").on("input", function (this: HTMLElement) {
-        const button_text = $(this).val()?.toString() ?? "";
+    $<HTMLInputElement>("input#button_text").on("input", function () {
+        const button_text = this.value;
         $(".action-button-label").text(button_text);
     });
 
@@ -318,8 +319,8 @@ $(window).on("load", () => {
         $(".action-button-label").text($t({defaultMessage: "Button joy"}));
     });
 
-    $("#button_select_icon").on("change", function (this: HTMLElement) {
-        const icon_name = $(this).val()?.toString() ?? "";
+    $<HTMLSelectOneElement>("select:not([multiple])#button_select_icon").on("change", function () {
+        const icon_name = this.value;
         $(".action-button .zulip-icon, .icon-button .zulip-icon").attr(
             "class",
             (_index, className) =>
@@ -327,8 +328,8 @@ $(window).on("load", () => {
         );
     });
 
-    $(".select_background").on("change", function (this: HTMLElement) {
-        const background_var = $(this).val()?.toString() ?? "";
+    $<HTMLSelectOneElement>("select:not([multiple]).select_background").on("change", function () {
+        const background_var = this.value;
         $("body").css("background-color", `var(${background_var})`);
     });
 
@@ -336,7 +337,7 @@ $(window).on("load", () => {
     update_banner();
 
     // Populate banner type select options
-    const $banner_select = $("#banner_select_type");
+    const $banner_select = $<HTMLSelectOneElement>("select:not([multiple])#banner_select_type");
     for (const key of Object.keys(alert_banners)) {
         $banner_select.append($("<option>").val(key).text(key));
     }
@@ -346,31 +347,30 @@ $(window).on("load", () => {
         $banner_intent_select.append($("<option>").val(intent).text(intent));
     }
 
-    $("#showroom_component_banner_select_intent").on("change", function (this: HTMLElement) {
-        const selected_intent = $(this).val()?.toString();
-        if (selected_intent === undefined) {
-            return;
-        }
-        current_banner.intent =
-            component_intents.find((intent) => intent === selected_intent) ?? "neutral";
-        for (const button of current_banner.buttons) {
-            button.intent = current_banner.intent;
-        }
-        if (current_banner.process === "custom-banner") {
-            custom_normal_banner.intent = current_banner.intent;
-            for (const button of custom_normal_banner.buttons) {
-                button.intent = custom_normal_banner.intent;
+    $<HTMLSelectOneElement>("select:not([multiple])#showroom_component_banner_select_intent").on(
+        "change",
+        function () {
+            const selected_intent = this.value;
+            current_banner.intent =
+                component_intents.find((intent) => intent === selected_intent) ?? "neutral";
+            for (const button of current_banner.buttons) {
+                button.intent = current_banner.intent;
             }
-            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
-        }
-        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-    });
+            if (current_banner.process === "custom-banner") {
+                custom_normal_banner.intent = current_banner.intent;
+                for (const button of custom_normal_banner.buttons) {
+                    button.intent = custom_normal_banner.intent;
+                }
+                $("#showroom_component_banner_default_wrapper").html(
+                    banner_html(custom_normal_banner),
+                );
+            }
+            $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+        },
+    );
 
-    $banner_select.on("change", function (this: HTMLElement) {
-        const banner_type = $(this).val()?.toString();
-        if (banner_type === undefined) {
-            return;
-        }
+    $banner_select.on("change", function () {
+        const banner_type = this.value;
         current_banner = alert_banners[banner_type]!;
         update_banner();
     });
@@ -388,8 +388,8 @@ $(window).on("load", () => {
         }
     });
 
-    $("#banner_label").on("input", function (this: HTMLElement) {
-        const banner_label = $(this).val()?.toString() ?? "";
+    $<HTMLInputElement>("input#banner_label").on("input", function () {
+        const banner_label = this.value;
         current_banner.label = banner_label;
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
@@ -403,7 +403,7 @@ $(window).on("load", () => {
             if (current_banner.buttons.some((button) => button.attention === "primary")) {
                 return;
             }
-            let label = $("#primary_button_text").val()?.toString();
+            let label = $<HTMLInputElement>("input#primary_button_text").val();
             if (!label) {
                 label = "Primary Button";
             }
@@ -413,7 +413,9 @@ $(window).on("load", () => {
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
-                    ? $("#primary_button_select_icon").val()?.toString()
+                    ? $<HTMLSelectOneElement>(
+                          "select:not([multiple])#primary_button_select_icon",
+                      ).val()
                     : undefined,
             });
             $("#primary_button_text").val(label);
@@ -438,7 +440,10 @@ $(window).on("load", () => {
             return;
         }
         if ($(e.target).attr("id") === "enable_primary_button_icon") {
-            primary_button.icon = $("#primary_button_select_icon").val()?.toString() ?? "";
+            primary_button.icon =
+                $<HTMLSelectOneElement>(
+                    "select:not([multiple])#primary_button_select_icon",
+                ).val() ?? "";
         } else {
             delete primary_button.icon;
         }
@@ -449,32 +454,37 @@ $(window).on("load", () => {
         }
     });
 
-    $("#primary_button_select_icon").on("change", function (this: HTMLElement) {
-        const primary_button = current_banner.buttons.find(
-            (button) => button.attention === "primary",
-        );
-        if (primary_button === undefined) {
-            return;
-        }
-        if (!primary_button.icon) {
-            return;
-        }
-        primary_button.icon = $(this).val()?.toString() ?? "";
-        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-        if (current_banner.process === "custom-banner") {
-            custom_normal_banner.buttons = current_banner.buttons;
-            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
-        }
-    });
+    $<HTMLSelectOneElement>("select:not([multiple])#primary_button_select_icon").on(
+        "change",
+        function () {
+            const primary_button = current_banner.buttons.find(
+                (button) => button.attention === "primary",
+            );
+            if (primary_button === undefined) {
+                return;
+            }
+            if (!primary_button.icon) {
+                return;
+            }
+            primary_button.icon = this.value;
+            $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+            if (current_banner.process === "custom-banner") {
+                custom_normal_banner.buttons = current_banner.buttons;
+                $("#showroom_component_banner_default_wrapper").html(
+                    banner_html(custom_normal_banner),
+                );
+            }
+        },
+    );
 
-    $("#primary_button_text").on("input", function (this: HTMLElement) {
+    $<HTMLInputElement>("input#primary_button_text").on("input", function () {
         const primary_button = current_banner.buttons.find(
             (button) => button.attention === "primary",
         );
         if (primary_button === undefined) {
             return;
         }
-        primary_button.label = $(this).val()?.toString() ?? "";
+        primary_button.label = this.value;
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
@@ -487,7 +497,7 @@ $(window).on("load", () => {
             if (current_banner.buttons.some((button) => button.attention === "quiet")) {
                 return;
             }
-            let label = $("#quiet_button_text").val()?.toString();
+            let label = $<HTMLInputElement>("input#quiet_button_text").val();
             if (!label) {
                 label = "Quiet Button";
             }
@@ -497,7 +507,9 @@ $(window).on("load", () => {
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
-                    ? $("#quiet_button_select_icon").val()?.toString()
+                    ? $<HTMLSelectOneElement>(
+                          "select:not([multiple])#quiet_button_select_icon",
+                      ).val()
                     : undefined,
             });
             $("#quiet_button_text").val(label);
@@ -520,7 +532,9 @@ $(window).on("load", () => {
             return;
         }
         if ($(e.target).attr("id") === "enable_quiet_button_icon") {
-            quiet_button.icon = $("#quiet_button_select_icon").val()?.toString() ?? "";
+            quiet_button.icon =
+                $<HTMLSelectOneElement>("select:not([multiple])#quiet_button_select_icon").val() ??
+                "";
         } else {
             delete quiet_button.icon;
         }
@@ -531,28 +545,35 @@ $(window).on("load", () => {
         }
     });
 
-    $("#quiet_button_select_icon").on("change", function (this: HTMLElement) {
-        const quiet_button = current_banner.buttons.find((button) => button.attention === "quiet");
-        if (quiet_button === undefined) {
-            return;
-        }
-        if (!quiet_button.icon) {
-            return;
-        }
-        quiet_button.icon = $(this).val()?.toString() ?? "";
-        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-        if (current_banner.process === "custom-banner") {
-            custom_normal_banner.buttons = current_banner.buttons;
-            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
-        }
-    });
+    $<HTMLSelectOneElement>("select:not([multiple])#quiet_button_select_icon").on(
+        "change",
+        function () {
+            const quiet_button = current_banner.buttons.find(
+                (button) => button.attention === "quiet",
+            );
+            if (quiet_button === undefined) {
+                return;
+            }
+            if (!quiet_button.icon) {
+                return;
+            }
+            quiet_button.icon = this.value;
+            $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+            if (current_banner.process === "custom-banner") {
+                custom_normal_banner.buttons = current_banner.buttons;
+                $("#showroom_component_banner_default_wrapper").html(
+                    banner_html(custom_normal_banner),
+                );
+            }
+        },
+    );
 
-    $("#quiet_button_text").on("input", function (this: HTMLElement) {
+    $<HTMLInputElement>("input#quiet_button_text").on("input", function () {
         const quiet_button = current_banner.buttons.find((button) => button.attention === "quiet");
         if (quiet_button === undefined) {
             return;
         }
-        quiet_button.label = $(this).val()?.toString() ?? "";
+        quiet_button.label = this.value;
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
@@ -561,11 +582,11 @@ $(window).on("load", () => {
     });
 
     $("input[name='borderless-button-select']").on("change", function (this: HTMLElement) {
-        if ($(this).attr("id") === "enable_borderless_button") {
+        if (this.id === "enable_borderless_button") {
             if (current_banner.buttons.some((button) => button.attention === "borderless")) {
                 return;
             }
-            let label = $("#borderless_button_text").val()?.toString();
+            let label = $<HTMLInputElement>("input#borderless_button_text").val();
             if (!label) {
                 label = "Borderless Button";
             }
@@ -575,7 +596,9 @@ $(window).on("load", () => {
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
-                    ? $("#borderless_button_select_icon").val()?.toString()
+                    ? $<HTMLSelectOneElement>(
+                          "select:not([multiple])#borderless_button_select_icon",
+                      ).val()
                     : undefined,
             });
             $("#borderless_button_text").val(label);
@@ -592,15 +615,18 @@ $(window).on("load", () => {
         }
     });
 
-    $("input[name='borderless-button-icon-select']").on("change", function (this: HTMLElement) {
+    $("input[name='borderless-button-icon-select']").on("change", function () {
         const borderless_button = current_banner.buttons.find(
             (button) => button.attention === "borderless",
         );
         if (borderless_button === undefined) {
             return;
         }
-        if ($(this).attr("id") === "enable_borderless_button_icon") {
-            borderless_button.icon = $("#borderless_button_select_icon").val()?.toString() ?? "";
+        if (this.id === "enable_borderless_button_icon") {
+            borderless_button.icon =
+                $<HTMLSelectOneElement>(
+                    "select:not([multiple])#borderless_button_select_icon",
+                ).val() ?? "";
         } else {
             delete borderless_button.icon;
         }
@@ -611,32 +637,37 @@ $(window).on("load", () => {
         }
     });
 
-    $("#borderless_button_select_icon").on("change", function (this: HTMLElement) {
-        const borderless_button = current_banner.buttons.find(
-            (button) => button.attention === "borderless",
-        );
-        if (borderless_button === undefined) {
-            return;
-        }
-        if (!borderless_button.icon) {
-            return;
-        }
-        borderless_button.icon = $(this).val()?.toString() ?? "";
-        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-        if (current_banner.process === "custom-banner") {
-            custom_normal_banner.buttons = current_banner.buttons;
-            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
-        }
-    });
+    $<HTMLSelectOneElement>("select:not([multiple])#borderless_button_select_icon").on(
+        "change",
+        function () {
+            const borderless_button = current_banner.buttons.find(
+                (button) => button.attention === "borderless",
+            );
+            if (borderless_button === undefined) {
+                return;
+            }
+            if (!borderless_button.icon) {
+                return;
+            }
+            borderless_button.icon = this.value;
+            $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+            if (current_banner.process === "custom-banner") {
+                custom_normal_banner.buttons = current_banner.buttons;
+                $("#showroom_component_banner_default_wrapper").html(
+                    banner_html(custom_normal_banner),
+                );
+            }
+        },
+    );
 
-    $("#borderless_button_text").on("input", function (this: HTMLElement) {
+    $<HTMLInputElement>("input#borderless_button_text").on("input", function () {
         const borderless_button = current_banner.buttons.find(
             (button) => button.attention === "borderless",
         );
         if (borderless_button === undefined) {
             return;
         }
-        borderless_button.label = $(this).val()?.toString() ?? "";
+        borderless_button.label = this.value;
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
