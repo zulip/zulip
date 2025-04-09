@@ -36,7 +36,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
             self.assert_json_success(result)
 
         stream.deactivated = True
-        stream.save()
+        stream.save(update_fields=["deactivated"])
 
         self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
         self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))
@@ -267,7 +267,7 @@ class MutedTopicsTests(ZulipTestCase):
             self.assert_json_success(result)
 
         stream.deactivated = True
-        stream.save()
+        stream.save(update_fields=["deactivated"])
 
         self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
         self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))

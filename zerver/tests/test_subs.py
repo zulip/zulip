@@ -2127,6 +2127,7 @@ class StreamAdminTest(ZulipTestCase):
                 )
             self.assert_json_success(result)
             event = events[0]["event"]
+            # here !
             self.assertEqual(
                 event,
                 dict(
@@ -6532,7 +6533,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         for stream in streams:
             stream.is_in_zephyr_realm = True
-            stream.save()
+            stream.save(update_fields=["is_in_zephyr_realm"])
 
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
@@ -6571,7 +6572,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = get_realm("zephyr")
         stream = self.make_stream("stream_1", realm=realm)
         stream.is_in_zephyr_realm = True
-        stream.save()
+        stream.save(update_fields=["is_in_zephyr_realm"])
 
         result = self.subscribe_via_post(
             starnine,
