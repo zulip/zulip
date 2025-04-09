@@ -25,7 +25,7 @@ import * as vdom from "./vdom.ts";
     expanded.)
 */
 
-const active_widgets = new Map<number, TopicListWidget>();
+const active_widgets = new Map<number, LeftSidebarTopicListWidget>();
 
 // We know whether we're zoomed or not.
 let zoomed = false;
@@ -153,17 +153,23 @@ export class TopicListWidget {
     prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
     my_stream_id: number;
+    filter_topics: (topic_names: string[]) => string[];
 
-    constructor($parent_elem: JQuery, my_stream_id: number) {
+    constructor(
+        $parent_elem: JQuery,
+        my_stream_id: number,
+        filter_topics: (topic_names: string[]) => string[],
+    ) {
         this.$parent_elem = $parent_elem;
         this.my_stream_id = my_stream_id;
+        this.filter_topics = filter_topics;
     }
 
     build_list(spinner: boolean): vdom.Tag<ListInfoNodeOptions> {
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
             zoomed,
-            get_left_sidebar_topic_search_term(),
+            this.filter_topics,
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -239,6 +245,17 @@ export class TopicListWidget {
     }
 }
 
+function filter_topics_left_sidebar(topic_names: string[]): string[] {
+    const search_term = get_left_sidebar_topic_search_term();
+    return topic_list_data.filter_topics_by_search_term(topic_names, search_term);
+}
+
+export class LeftSidebarTopicListWidget extends TopicListWidget {
+    constructor($parent_elem: JQuery, my_stream_id: number) {
+        super($parent_elem, my_stream_id, filter_topics_left_sidebar);
+    }
+}
+
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
     const $input = $("#filter-topic-input");
@@ -290,7 +307,7 @@ export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): voi
     }
 
     clear();
-    const widget = new TopicListWidget($stream_li, stream_id);
+    const widget = new LeftSidebarTopicListWidget($stream_li, stream_id);
     widget.build();
 
     active_widgets.set(stream_id, widget);

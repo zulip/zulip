@@ -156,7 +156,7 @@ type TopicListInfo = {
     more_topics_unread_count_muted: boolean;
 };
 
-function filter_by_search_term(topic_names: string[], search_term: string): string[] {
+export function filter_topics_by_search_term(topic_names: string[], search_term: string): string[] {
     if (search_term === "") {
         return topic_names;
     }
@@ -174,7 +174,7 @@ function filter_by_search_term(topic_names: string[], search_term: string): stri
 export function get_list_info(
     stream_id: number,
     zoomed: boolean,
-    search_term: string,
+    filter_topics: (topic_names: string[]) => string[],
 ): TopicListInfo {
     const narrowed_topic = narrow_state.topic();
     const topic_choice_state: TopicChoiceState = {
@@ -203,7 +203,7 @@ export function get_list_info(
     }
 
     if (zoomed) {
-        topic_names = filter_by_search_term(topic_names, search_term);
+        topic_names = filter_topics(topic_names);
     }
 
     if (stream_muted && !zoomed) {
