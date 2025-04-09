@@ -465,15 +465,9 @@
     /* We bump the z-index to 4 so the controls appear above
        the message text as well as the recipient row. */
     z-index: 4;
-    /* At 16px/1em, the hover controls are 31px high, and the
-       single-message row is 35.833px high. So we set the top
-       value to half that difference to center the controls
-       in relation to the sender line or a single-line message.
-       4.833/2 = 2.4165px at 16px/1em.
-
-       TODO: Express this with calc and some existing variables,
-       including sender line height. */
-    top: 0.151em;
+    /* Experiment with pulling the controls up a little more
+       than half the sender line-height by dividing by -2.25. */
+    top: calc(var(--message-box-sender-line-height) / -2.25);
     /* This is neat. We can use the calculated timestamp column
        width plus the 8px of negative space between the message
        content and text to nicely offset the controls from the
