@@ -1044,9 +1044,6 @@ def get_accessible_user_ids(
 def get_user_dicts_in_realm(
     realm: Realm, user_profile: UserProfile | None
 ) -> tuple[list[RawUserDict], list[APIUserDict]]:
-    group_allowed_to_access_all_users = realm.can_access_all_users_group
-    assert group_allowed_to_access_all_users is not None
-
     all_user_dicts = get_realm_user_dicts(realm.id)
     if check_user_can_access_all_users(user_profile):
         return (all_user_dicts, [])
