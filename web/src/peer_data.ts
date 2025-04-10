@@ -173,7 +173,11 @@ export function potential_subscribers(stream_id: number): User[] {
         other than typeahead.  (The guest use case
         may be moot now for other reasons.)
     */
-
+    if (!fetched_stream_ids.has(stream_id)) {
+        blueslip.error("Fetching potential subscribers for stream without full subscriber data", {
+            stream_id,
+        });
+    }
     const subscribers = get_loaded_subscriber_subset(stream_id);
 
     function is_potential_subscriber(person: User): boolean {
