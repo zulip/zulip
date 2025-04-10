@@ -581,8 +581,16 @@ def send_peer_subscriber_events(
     private_stream_ids = [
         stream_id for stream_id in altered_user_dict if stream_dict[stream_id].invite_only
     ]
-    private_peer_dict = subscriber_peer_info.private_peer_dict
+    public_stream_ids = [
+        stream_id
+        for stream_id in altered_user_dict
+        if not stream_dict[stream_id].invite_only and not stream_dict[stream_id].is_in_zephyr_realm
+    ]
+    web_public_stream_ids = [
+        stream_id for stream_id in public_stream_ids if stream_dict[stream_id].is_web_public
+    ]
 
+    private_peer_dict = subscriber_peer_info.private_peer_dict
     for stream_id in private_stream_ids:
         altered_user_ids = altered_user_dict[stream_id]
         peer_user_ids = private_peer_dict[stream_id] - altered_user_ids
@@ -596,61 +604,31 @@ def send_peer_subscriber_events(
             )
             send_event_on_commit(realm, event, peer_user_ids)
 
-    public_stream_ids = [
-        stream_id
-        for stream_id in altered_user_dict
-        if not stream_dict[stream_id].invite_only and not stream_dict[stream_id].is_in_zephyr_realm
-    ]
-
-    web_public_stream_ids = [
-        stream_id for stream_id in public_stream_ids if stream_dict[stream_id].is_web_public
-    ]
-
-    subscriber_dict = subscriber_peer_info.subscribed_ids
-
     if public_stream_ids:
-        user_streams: dict[int, set[int]] = defaultdict(set)
-
+        subscriber_dict = subscriber_peer_info.subscribed_ids
+        user_streams: dict[str, set[int]] = defaultdict(set)
         non_guest_user_ids = set(active_non_guest_user_ids(realm.id))
-
-        if web_public_stream_ids:
-            web_public_peer_ids = set(active_user_ids(realm.id))
 
         for stream_id in public_stream_ids:
             altered_user_ids = altered_user_dict[stream_id]
+            if altered_user_ids:
+                altered_user_id_string = ",".join(map(str, sorted(altered_user_ids)))
+                # We will store stream_ids related to each set of
+                # unique user ids.
+                user_streams[altered_user_id_string].add(stream_id)
 
-            if stream_id in web_public_stream_ids:
-                peer_user_ids = web_public_peer_ids - altered_user_ids
-            else:
-                peer_user_ids = (non_guest_user_ids | subscriber_dict[stream_id]) - altered_user_ids
-
-            if peer_user_ids and altered_user_ids:
-                if len(altered_user_ids) == 1:
-                    # If we only have one user, we will try to
-                    # find other streams they have (un)subscribed to
-                    # (where it's just them).  This optimization
-                    # typically works when a single user is subscribed
-                    # to multiple default public streams during
-                    # new-user registration.
-                    #
-                    # This optimization works on web public streams and
-                    # public streams with no guest users since they
-                    # will have the same peers for any single user,
-                    # which isn't the case for private streams.
-                    [altered_user_id] = altered_user_ids
-                    user_streams[altered_user_id].add(stream_id)
-                else:
-                    event = dict(
-                        type="subscription",
-                        op=op,
-                        stream_ids=[stream_id],
-                        user_ids=sorted(altered_user_ids),
-                    )
-                    send_event_on_commit(realm, event, peer_user_ids)
-
-        for user_id, stream_ids in user_streams.items():
+        # For each set of unique user ids, we will send one event for
+        # web public streams, one event for public streams without a
+        # guest user and for each stream apart from that, we will send
+        # one event each.
+        for altered_user_id_string, stream_ids in user_streams.items():
+            altered_user_ids = set(map(int, altered_user_id_string.split(",")))
+            # Both of the lists below will have the same list of peer
+            # user ids each, so we will send a single event for each of
+            # these lists.
             web_public_user_stream_ids = []
             public_user_stream_ids_without_guest_users = []
+
             for stream_id in stream_ids:
                 if stream_id in web_public_stream_ids:
                     web_public_user_stream_ids.append(stream_id)
@@ -658,37 +636,41 @@ def send_peer_subscriber_events(
                     if (non_guest_user_ids | subscriber_dict[stream_id]) == non_guest_user_ids:
                         public_user_stream_ids_without_guest_users.append(stream_id)
                     else:
-                        # If the stream has guest users, we will send
-                        # an event right away.
-                        peer_user_ids = (non_guest_user_ids | subscriber_dict[stream_id]) - {
-                            user_id
-                        }
+                        # This channel likely has a unique set of
+                        # peer_user_ids to notify, so we send the event
+                        # directly for just this channel.
+                        peer_user_ids = (
+                            non_guest_user_ids | subscriber_dict[stream_id]
+                        ) - altered_user_ids
                         event = dict(
                             type="subscription",
                             op=op,
                             stream_ids=[stream_id],
-                            user_ids=[user_id],
+                            user_ids=list(altered_user_ids),
                         )
                         send_event_on_commit(realm, event, peer_user_ids)
 
             if len(web_public_user_stream_ids) > 0:
+                web_public_peer_ids = set(active_user_ids(realm.id))
                 web_public_streams_event = dict(
                     type="subscription",
                     op=op,
                     stream_ids=sorted(web_public_user_stream_ids),
-                    user_ids=[user_id],
+                    user_ids=list(altered_user_ids),
                 )
                 send_event_on_commit(
-                    realm, web_public_streams_event, web_public_peer_ids - {user_id}
+                    realm, web_public_streams_event, web_public_peer_ids - altered_user_ids
                 )
             if len(public_user_stream_ids_without_guest_users) > 0:
                 public_streams_event = dict(
                     type="subscription",
                     op=op,
                     stream_ids=sorted(public_user_stream_ids_without_guest_users),
-                    user_ids=[user_id],
+                    user_ids=list(altered_user_ids),
                 )
-                send_event_on_commit(realm, public_streams_event, non_guest_user_ids - {user_id})
+                send_event_on_commit(
+                    realm, public_streams_event, non_guest_user_ids - altered_user_ids
+                )
 
 
 def send_user_creation_events_on_adding_subscriptions(
