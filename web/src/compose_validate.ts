@@ -230,10 +230,10 @@ function get_stream_id_for_textarea($textarea: JQuery<HTMLTextAreaElement>): num
     return compose_state.stream_id();
 }
 
-export function warn_if_private_stream_is_linked(
+export async function warn_if_private_stream_is_linked(
     linked_stream: StreamSubscription,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): Promise<void> {
     const stream_id = get_stream_id_for_textarea($textarea);
 
     if (!stream_id) {
@@ -267,10 +267,24 @@ export function warn_if_private_stream_is_linked(
     // everyone will be subscribed to the linked stream and so
     // knows it exists.  (But always warn Zephyr users, since
     // we may not know their stream's subscribers.)
+    // Note: `is_subscriber_subset` can return `null` if we encounter
+    // an error fetching subscriber data. In that case, we just show
+    // the banner.
     if (
-        peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id) &&
+        (await peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id)) &&
         !realm.realm_is_zephyr_mirror_realm
     ) {
+        return;
+    }
+
+    // If we've changed streams since fetching subscriber data,
+    // don't update the UI anymore.
+    // Note: The user might have removed the mention of the private
+    // stream during the fetch, and in that case the banner will
+    // still (possibly) show up. If we add logic in the future to
+    // remove banners as the user edits their message, we could use
+    // that here as well.
+    if (stream_id !== get_stream_id_for_textarea($textarea)) {
         return;
     }
 

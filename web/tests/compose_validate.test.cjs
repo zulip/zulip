@@ -591,7 +591,7 @@ test_ui("needs_subscribe_warning", async () => {
     assert.equal(await compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
+test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     const test_sub = {
@@ -618,18 +618,19 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
         return "<banner-stub>";
     });
 
-    function test_noop_case(invite_only) {
+    async function test_noop_case(invite_only) {
         banner_rendered = false;
         compose_state.set_message_type("stream");
         denmark.invite_only = invite_only;
-        compose_validate.warn_if_private_stream_is_linked(denmark, $textarea);
+        await compose_validate.warn_if_private_stream_is_linked(denmark, $textarea);
         assert.ok(!banner_rendered);
     }
 
-    test_noop_case(false);
+    compose_state.set_selected_recipient_id(undefined);
+    void test_noop_case(false);
     // invite_only=true and current compose stream subscribers are a subset
     // of mentioned_stream subscribers.
-    test_noop_case(true);
+    void test_noop_case(true);
 
     $("#compose_private").hide();
     compose_state.set_message_type("stream");
@@ -642,11 +643,12 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
         name: "Denmark",
         stream_id: 22,
     };
+    peer_data.set_subscribers(secret_stream.stream_id, []);
     stream_data.add_sub(secret_stream);
     banner_rendered = false;
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".private_stream_warning", []);
-    compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
+    await compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
     assert.ok(banner_rendered);
 
     // Simulate that the row was added to the DOM.
@@ -659,7 +661,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     // not render.
     banner_rendered = false;
     $banner_container.set_find_results(".private_stream_warning", $warning_row);
-    compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
+    await compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
     assert.ok(!banner_rendered);
 });
 
