@@ -136,6 +136,17 @@ h4.user_group_setting_subsection_title {
     line-height: 1.5;
 }
 
+.subscriber_list_settings_container.no-display {
+    display: none;
+}
+
+.subscriber-list-settings-loading {
+    display: flex;
+    align-items: center;
+    margin: auto;
+    margin-top: 100px;
+}
+
 .member-list-box,
 .subscriber-list-box {
     text-align: center;

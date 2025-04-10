@@ -302,6 +302,19 @@ test("maybe_fetch_stream_subscribers", async () => {
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2, false), true);
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, false), false);
 
+    peer_data.clear_for_testing();
+    assert.deepEqual(await peer_data.get_subscribers(india.stream_id), []);
+    assert.deepEqual(await peer_data.get_all_subscribers(india.stream_id), [1, 2, 3, 4]);
+
+    peer_data.clear_for_testing();
+    channel.get = () => {
+        throw new Error("error");
+    };
+    blueslip.expect("error", "Failure fetching channel subscribers");
+    // retry is false, so we get null because there was an error
+    assert.deepEqual(await peer_data.get_all_subscribers(india.stream_id, false), null);
+    blueslip.reset();
+
     channel.get = () => {
         throw new Error("error");
     };

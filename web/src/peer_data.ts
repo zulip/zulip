@@ -216,6 +216,21 @@ export function get_subscribers(stream_id: number): number[] {
     return [...subscribers.keys()];
 }
 
+export async function get_all_subscribers(
+    stream_id: number,
+    retry_on_failure = true,
+): Promise<number[] | null> {
+    // This function parallels `get_subscribers` but ensures we include all
+    // subscribers, possibly fetching that data from the server.
+    const subscribers = await get_full_subscriber_set(stream_id, retry_on_failure);
+    // This means the request failed, which can only happen if `retry_on_failure`
+    // is false.
+    if (subscribers === null) {
+        return null;
+    }
+    return [...subscribers.keys()];
+}
+
 export function set_subscribers(stream_id: number, user_ids: number[], full_data = true): void {
     const subscribers = new LazySet(user_ids);
     stream_subscribers.set(stream_id, subscribers);
