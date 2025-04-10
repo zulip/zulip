@@ -140,6 +140,14 @@ test("subscribers", async () => {
         return users.map((u) => u.user_id).sort();
     }
 
+    blueslip.expect(
+        "error",
+        "Fetching potential subscribers for stream without full subscriber data",
+    );
+    potential_subscriber_ids();
+    blueslip.reset();
+
+    peer_data.set_subscribers(stream_id, []);
     assert.deepEqual(potential_subscriber_ids(), [
         me.user_id,
         fred.user_id,
