@@ -1062,6 +1062,19 @@ of the base style defined for a read-only textarea in dark mode. */
         color: var(--color-date);
         /* Right padding matches time in message row and date in recipient row. */
         padding: 8px 6px 8px 4px;
+
+        &::before {
+            width: 100%;
+            right: 0.25em;
+            margin-left: -50%;
+        }
+
+        &::after {
+            width: 6px;
+            left: 0.25em;
+            /* Align date with message time and recipient bar date. */
+            margin-right: -1px;
+        }
     }
 }
 
@@ -1096,27 +1109,14 @@ of the base style defined for a read-only textarea in dark mode. */
     padding: 4px;
     overflow: hidden;
 
-    &::after,
     &::before {
-        content: "";
-        display: inline-block;
-        position: relative;
-        vertical-align: middle;
         width: 50%;
-        height: 0;
-        border-bottom: 1px solid
-            light-dark(
-                color-mix(in oklch, hsl(0deg 0% 0%) 15%, transparent),
-                color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
-            );
-    }
-
-    &::before {
         right: 0.25em;
         margin-left: -50%;
     }
 
     &::after {
+        width: 50%;
         left: 0.25em;
         margin-right: -50%;
     }
@@ -1129,4 +1129,21 @@ of the base style defined for a read-only textarea in dark mode. */
 
 .trailing_bookend .bookend-channel-settings-link {
     display: inline;
+}
+
+.bookend-label,
+.date_row .timerender-content {
+    &::after,
+    &::before {
+        content: "";
+        display: inline-block;
+        position: relative;
+        vertical-align: middle;
+        height: 0;
+        border-bottom: 1px solid
+            light-dark(
+                color-mix(in oklch, hsl(0deg 0% 0%) 15%, transparent),
+                color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
+            );
+    }
 }

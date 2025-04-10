@@ -1412,30 +1412,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin-bottom: 0;
 }
 
-.date_row span::before,
-.date_row span::after {
-    display: inline-block;
-    position: relative;
-    content: " ";
-    vertical-align: middle;
-    height: 0;
-    opacity: 0.15;
-    border-bottom: 1px solid hsl(0deg 0% 0%);
-}
-
-.date_row span::before {
-    width: 100%;
-    right: 0.25em;
-    margin-left: -50%;
-}
-
-.date_row span::after {
-    width: 6px;
-    left: 0.25em;
-    /* Align date with message time and recipient bar date. */
-    margin-right: -1px;
-}
-
 .screen {
     position: absolute;
     left: 0;
