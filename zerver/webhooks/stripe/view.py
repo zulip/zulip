@@ -10,7 +10,7 @@ from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, validate_webhook_signature
 from zerver.models import UserProfile
 
 
@@ -55,6 +55,14 @@ def api_stripe_webhook(
     payload: JsonBodyPayload[WildValue],
     stream: str = "test",
 ) -> HttpResponse:
+    # Validate the webhook signature
+    signature_header = request.headers.get("Stripe-Signature")
+    webhook_secret = request.GET.get("webhook_secret")
+    if signature_header and webhook_secret:  # nocoverage
+        signature = signature_header.split(",")[1].split("=")[1]
+        timestamp = signature_header.split(",")[0].split("=")[1]
+        signed_payload = timestamp + "." + str(payload.value)
+        validate_webhook_signature(request, signed_payload, signature)
     try:
         topic_name, body = topic_and_body(payload)
     except SuppressedEventError:  # nocoverage
