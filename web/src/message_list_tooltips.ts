@@ -2,10 +2,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
+import render_external_inline_url_tooltip from "../templates/external_inline_url_tooltip.hbs";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
+import {try_stream_topic_syntax_text} from "./compose_paste.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
@@ -347,6 +349,64 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
         },
+    });
+
+    message_list_tooltip(".message_content > p > a.external_inline_url", {
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const url = $elem.attr("href");
+            instance.setContent(parse_html(render_external_inline_url_tooltip({url})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        placement: "bottom",
+    });
+
+    message_list_tooltip('.message_content > p > a[data-message-link-type="internal_named_link"]', {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            let url = $elem.attr("href");
+            if (url?.startsWith("/user_uploads/")) {
+                // We add the word "download" to make clear what will
+                // happen when clicking the file.  This is particularly
+                // important in the desktop app, where hovering a URL does
+                // not display the URL like it does in the web app.
+                url = $t(
+                    {defaultMessage: "Download {filename}"},
+                    {
+                        filename: decodeURIComponent(url.slice(url.lastIndexOf("/") + 1)),
+                    },
+                );
+            } else {
+                // We show the tooltip in canonical form for the
+                // destination internal link is pointing to.
+                const syntax = (): string => {
+                    const syntaxt_text = try_stream_topic_syntax_text(
+                        window.location.origin + url!,
+                    );
+                    const inputString = syntaxt_text;
+
+                    const regex = /#\*\*([^>]+?)(?:>([^*]*))?\*\*/;
+                    const match = inputString?.match(regex);
+
+                    if (match) {
+                        const channel = match[1]?.trim();
+                        const topic = match[2]?.trim();
+                        return topic ? `# ${channel} > ${topic}` : `# ${channel}`;
+                    }
+                    return syntaxt_text ?? "this";
+                };
+                const format = syntax();
+                url = `Go to ${format}`;
+            }
+            instance.setContent(parse_html(render_external_inline_url_tooltip({url})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        placement: "bottom",
     });
 
     message_list_tooltip(".view_user_card_tooltip", {
