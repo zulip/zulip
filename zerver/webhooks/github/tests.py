@@ -516,7 +516,6 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_pull_request_reopened_msg(self) -> None:
         expected_message = (
             "soheil-star01 reopened [PR #7](https://github.com/soheil-star01/soheil-star01/pull/7)."
-            
         )
         self.check_webhook(
             "pull_request__reopened", "soheil-star01 / PR #7 Feat/webhook", expected_message
