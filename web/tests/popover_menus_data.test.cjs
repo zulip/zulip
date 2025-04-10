@@ -153,8 +153,6 @@ function set_page_params_no_edit_restrictions({override}) {
 function test(label, f) {
     run_test(label, (helpers) => {
         // Stubs for calculate_timestamp_widths()
-        $("<div>").css = noop;
-        $(":root").css = noop;
         $("<div>").width = noop;
         $("<div>").remove = noop;
 

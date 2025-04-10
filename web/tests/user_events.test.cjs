@@ -220,9 +220,6 @@ run_test("updates", ({override}) => {
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
 
-    $("#personal-menu .header-button-avatar").css = noop;
-    $("#personal-menu .header-button-avatar img").css = noop;
-
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);
     assert.equal(person.full_name, "Me V2");
