@@ -33,6 +33,13 @@ const config_option_schema = z.object({
 
 const config_options_schema = z.array(config_option_schema);
 
+
+const PresetConfigOption = {
+    // Keep this in sync with `WebhookConfigOptions.parse_config()`
+    // from `zerver/lib/webhooks/common.py`.
+    BRANCHES: "z_branches",
+};
+
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
@@ -114,7 +121,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             for (const option of validated_config) {
                 let $config_element: JQuery;
 
-                if (option.key === "branches") {
+                if (option.key === PresetConfigOption.BRANCHES) {
                     const filter_branches_html =
                         render_generate_integration_url_filter_branches_modal();
                     $config_element = $(filter_branches_html);
@@ -235,7 +242,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 for (const option of config) {
                     let $input_element;
                     if (
-                        option.key === "branches" &&
+                        option.key === PresetConfigOption.BRANCHES &&
                         !$("#integration-url-all-branches").prop("checked")
                     ) {
                         const $pill_container = $(
