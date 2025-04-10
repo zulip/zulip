@@ -1,5 +1,5 @@
 {
-    "action": "review_request_removed",
+    "action": "enqueued",
     "number": 1,
     "pull_request": {
         "url": "https://api.github.com/repos/techpillars-oy/test1/pulls/1",
@@ -36,7 +36,7 @@
         },
         "body": null,
         "created_at": "2025-03-29T23:18:37Z",
-        "updated_at": "2025-03-30T11:54:01Z",
+        "updated_at": "2025-03-29T23:18:37Z",
         "closed_at": null,
         "merged_at": null,
         "merge_commit_sha": "2644c20151d1a7a46005a23bbb4ef1feb0214e73",
@@ -44,26 +44,7 @@
         "assignees": [],
         "requested_reviewers": [],
         "requested_teams": [],
-        "labels": [
-            {
-                "id": 8373807327,
-                "node_id": "LA_kwDOOQ6XGM8AAAAB8x4o3w",
-                "url": "https://api.github.com/repos/techpillars-oy/test1/labels/bug",
-                "name": "bug",
-                "color": "d73a4a",
-                "default": true,
-                "description": "Something isn't working"
-            },
-            {
-                "id": 8373807333,
-                "node_id": "LA_kwDOOQ6XGM8AAAAB8x4o5Q",
-                "url": "https://api.github.com/repos/techpillars-oy/test1/labels/documentation",
-                "name": "documentation",
-                "color": "0075ca",
-                "default": true,
-                "description": "Improvements or additions to documentation"
-            }
-        ],
+        "labels": [],
         "milestone": null,
         "draft": false,
         "commits_url": "https://api.github.com/repos/techpillars-oy/test1/pulls/1/commits",
@@ -171,7 +152,7 @@
                 "clone_url": "https://github.com/techpillars-oy/test1.git",
                 "svn_url": "https://github.com/techpillars-oy/test1",
                 "homepage": null,
-                "size": 8,
+                "size": 0,
                 "stargazers_count": 0,
                 "watchers_count": 0,
                 "language": null,
@@ -309,7 +290,7 @@
                 "clone_url": "https://github.com/techpillars-oy/test1.git",
                 "svn_url": "https://github.com/techpillars-oy/test1",
                 "homepage": null,
-                "size": 8,
+                "size": 0,
                 "stargazers_count": 0,
                 "watchers_count": 0,
                 "language": null,
@@ -373,7 +354,7 @@
                 "href": "https://api.github.com/repos/techpillars-oy/test1/statuses/493ba2f67d61b69550a9b3bef4348bccf49cde82"
             }
         },
-        "author_association": "COLLABORATOR",
+        "author_association": "CONTRIBUTOR",
         "auto_merge": null,
         "active_lock_reason": null,
         "merged": false,
@@ -388,27 +369,6 @@
         "additions": 2,
         "deletions": 1,
         "changed_files": 1
-    },
-    "requested_reviewer": {
-        "login": "redolat",
-        "id": 29664187,
-        "node_id": "MDQ6VXNlcjI5NjY0MTg3",
-        "avatar_url": "https://avatars.githubusercontent.com/u/29664187?v=4",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/redolat",
-        "html_url": "https://github.com/redolat",
-        "followers_url": "https://api.github.com/users/redolat/followers",
-        "following_url": "https://api.github.com/users/redolat/following{/other_user}",
-        "gists_url": "https://api.github.com/users/redolat/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/redolat/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/redolat/subscriptions",
-        "organizations_url": "https://api.github.com/users/redolat/orgs",
-        "repos_url": "https://api.github.com/users/redolat/repos",
-        "events_url": "https://api.github.com/users/redolat/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/redolat/received_events",
-        "type": "User",
-        "user_view_type": "public",
-        "site_admin": false
     },
     "repository": {
         "id": 957257496,
@@ -485,7 +445,7 @@
         "clone_url": "https://github.com/techpillars-oy/test1.git",
         "svn_url": "https://github.com/techpillars-oy/test1",
         "homepage": null,
-        "size": 8,
+        "size": 0,
         "stargazers_count": 0,
         "watchers_count": 0,
         "language": null,
