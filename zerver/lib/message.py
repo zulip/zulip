@@ -1529,7 +1529,7 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[i
             )
 
         if not user_has_permission_for_group_setting(
-            can_mention_group,
+            can_mention_group.id,
             sender,
             NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
             direct_member_only=False,

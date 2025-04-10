@@ -826,9 +826,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             # the number of database queries by fetching the group
             # setting fields using select_related.
             realm = self.realm
-        allowed_user_group = getattr(realm, policy_name)
+        allowed_user_group_id = getattr(realm, policy_name).id
         setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
-        return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
+        return user_has_permission_for_group_setting(allowed_user_group_id, self, setting_config)
 
     def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_create_public_channel_group", realm)

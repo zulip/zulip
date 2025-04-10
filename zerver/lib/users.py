@@ -186,14 +186,14 @@ def add_service(
 
 def check_can_create_bot(user_profile: UserProfile, bot_type: int) -> None:
     if user_has_permission_for_group_setting(
-        user_profile.realm.can_create_bots_group,
+        user_profile.realm.can_create_bots_group_id,
         user_profile,
         Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_bots_group"],
     ):
         return
 
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and user_has_permission_for_group_setting(
-        user_profile.realm.can_create_write_only_bots_group,
+        user_profile.realm.can_create_write_only_bots_group_id,
         user_profile,
         Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_write_only_bots_group"],
     ):
@@ -692,7 +692,7 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
 
     realm = acting_user.realm
     if user_has_permission_for_group_setting(
-        realm.can_access_all_users_group,
+        realm.can_access_all_users_group_id,
         acting_user,
         Realm.REALM_PERMISSION_GROUP_SETTINGS["can_access_all_users_group"],
     ):
