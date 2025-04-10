@@ -566,10 +566,6 @@ input[type="checkbox"] {
     display: block;
     padding: 6px 9px;
     text-decoration: none;
-
-    &:hover {
-        color: hsl(156deg 41% 40%);
-    }
 }
 
 .remove-alert-word {
@@ -940,10 +936,6 @@ input[type="checkbox"] {
 
         .bootstrap-btn {
             padding: 4px;
-        }
-
-        .sea-green {
-            color: hsl(177deg 70% 46%);
         }
 
         .blue {
