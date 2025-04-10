@@ -1244,7 +1244,7 @@ export function content_typeahead_selected(
                 beginning += "#**" + item.name + ">";
             }
 
-            compose_validate.warn_if_private_stream_is_linked(item, $textbox);
+            void compose_validate.warn_if_private_stream_is_linked(item, $textbox);
             break;
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
