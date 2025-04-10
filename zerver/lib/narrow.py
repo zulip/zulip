@@ -1114,7 +1114,7 @@ def get_base_query_for_search(
         .where(
             or_(
                 # Include direct messages.
-                literal_column("zerver_recipient.type_id", Integer) != Recipient.STREAM,
+                literal_column("zerver_recipient.type", Integer) != Recipient.STREAM,
                 # Include messages where the recipient is a public stream and
                 # the user can access public streams, or the user is a non-guest
                 # belonging to a group granting access to the stream.
