@@ -60,12 +60,25 @@ export function get_stream_name_from_item(item: StreamPill): string {
     return stream.name;
 }
 
-export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
-    let user_ids = pill_widget
-        .items()
-        .flatMap((item) =>
-            item.type === "stream" ? peer_data.get_subscribers(item.stream_id) : [],
-        );
+export async function get_user_ids(
+    pill_widget: StreamPillWidget | CombinedPillContainer,
+): Promise<number[]> {
+    const stream_ids = get_stream_ids(pill_widget);
+    const results = await Promise.all(
+        stream_ids.map(async (stream_id) => peer_data.get_all_subscribers(stream_id, true)),
+    );
+
+    const current_stream_ids_in_widget = get_stream_ids(pill_widget);
+    let user_ids: number[] = [];
+    for (const [index, stream_id] of stream_ids.entries()) {
+        const subscribers = results[index]!;
+        // Double check if the stream pill has been removed from the pill
+        // widget while we were doing fetches.
+        if (current_stream_ids_in_widget.includes(stream_id)) {
+            user_ids = [...user_ids, ...subscribers];
+        }
+    }
+
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
     return user_ids;
