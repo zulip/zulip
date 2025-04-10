@@ -822,8 +822,8 @@
     --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
     --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
     --color-search-dropdown-top-border: light-dark(
-        hsla(0deg 0% 0% / 10%),
-        hsla(0deg 0% 0% / 35%)
+        hsl(0deg 0% 0% / 10%),
+        hsl(0deg 0% 0% / 35%)
     );
     --color-search-icons: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 78%));
     --color-background-image-loader: light-dark(
@@ -1643,13 +1643,13 @@
     --color-copy-button-hover: light-dark(var(--grey-600), var(--grey-300));
     --color-copy-button-square-bg-hover: light-dark(
         /* --grey-600, opacity 0.07 */
-            color-mix(in oklch, hsla(229deg 9% 36%) 7%, transparent),
+            color-mix(in oklch, hsl(229deg 9% 36%) 7%, transparent),
         /* --grey-400, opacity 0.14 */
             color-mix(in oklch, hsl(230deg 9% 60%) 14%, transparent)
     );
     --color-copy-button-active: light-dark(
         /* --grey-600, opacity 0.7 */
-            color-mix(in oklch, hsla(229deg 9% 36%) 70%, transparent),
+            color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent),
         /* --grey-300, opacity 0.7 */
             color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent)
     );
@@ -1732,7 +1732,7 @@
     /* Message collapsing/condensing button colors */
     --color-show-more-less-button-background: light-dark(
         hsl(240deg 44% 56% / 8%),
-        hsla(240deg 44% 56% / 15%)
+        hsl(240deg 44% 56% / 15%)
     );
     --color-show-more-less-button-background-hover: light-dark(
         hsl(240deg 44% 56% / 15%),
@@ -1805,7 +1805,7 @@
         hsl(240deg 50% 74%)
     );
     --color-background-input-pill-exit-hover: light-dark(
-        hsla(240deg 70% 70% / 15%),
+        hsl(240deg 70% 70% / 15%),
         hsl(0deg 0% 100% / 7%)
     );
     --color-background-deactivated-user-pill: light-dark(
@@ -1825,7 +1825,7 @@
         hsl(0deg 0% 100% / 7%)
     );
     --color-background-user-pill: light-dark(
-        hsla(0deg 0% 100% / 85%),
+        hsl(0deg 0% 100% / 85%),
         hsl(0deg 0% 0% / 40%)
     );
     --color-background-compose-direct-recipient-pill-container: light-dark(
@@ -2061,8 +2061,8 @@
     /* Dropdown / Typeahead constants */
     --color-dropdown-item: light-dark(hsl(0deg 0% 20%), hsl(0deg 0% 75%));
     --color-dropdown-item-link-underline: light-dark(
-        hsla(0deg 0% 20% 60%),
-        hsla(0deg 0% 75% 60%)
+        hsl(0deg 0% 20% 60%),
+        hsl(0deg 0% 75% 60%)
     );
     --color-active-dropdown-item: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 90%));
     --background-color-active-dropdown-item: light-dark(

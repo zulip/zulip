@@ -175,13 +175,10 @@ export function current_scroll_offset(): number | undefined {
 
 export function update_current_history_state_data(
     new_data: StateData,
-    url: string | undefined = undefined,
+    url: string = window.location.href,
 ): void {
     // The optional url parameter is for those rare situations where
     // we want to adjust the URL without adding a new history entry.
-    if (url === undefined) {
-        url = window.location.href;
-    }
     const current_state = state_data_schema.nullable().parse(window.history.state);
     const current_state_data = {
         narrow_pointer: current_state?.narrow_pointer,

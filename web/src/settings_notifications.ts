@@ -160,10 +160,7 @@ function stream_notification_setting_changed(target: HTMLInputElement): void {
 
     const $status_element = $(target).closest(".subsection-parent").find(".alert-notification");
     const setting = stream_specific_notification_settings_schema.keyof().parse(target.name);
-    if (sub[setting] === null) {
-        sub[setting] =
-            user_settings[settings_config.generalize_stream_notification_setting[setting]];
-    }
+    sub[setting] ??= user_settings[settings_config.generalize_stream_notification_setting[setting]];
     stream_settings_api.set_stream_property(
         sub,
         {property: setting, value: target.checked},

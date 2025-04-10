@@ -294,3 +294,7 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 0
 KATEX_SERVER = False
 
 ROOT_DOMAIN_LANDING_PAGE = False
+
+# Disable verifying webhook signatures in tests by default.
+# Tests that intend to verify webhook signatures should override this setting.
+VERIFY_WEBHOOK_SIGNATURES = False

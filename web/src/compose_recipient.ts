@@ -344,13 +344,7 @@ export function update_topic_inputbox_on_mandatory_topics_change(): void {
     update_topic_displayed_text(compose_state.topic());
 }
 
-export function update_topic_displayed_text(
-    topic_name: string | undefined,
-    has_topic_focus = false,
-): void {
-    if (topic_name === undefined) {
-        topic_name = "";
-    }
+export function update_topic_displayed_text(topic_name = "", has_topic_focus = false): void {
     compose_state.topic(topic_name);
 
     // When topics are mandatory, no additional adjustments are needed.

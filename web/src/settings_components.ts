@@ -1361,10 +1361,7 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
     );
     const $custom_input_elem = $<HTMLInputElement>("input#id_realm_jitsi_server_url_custom_input");
 
-    return (
-        $dropdown_elem.val()!.toString() === "custom" &&
-        !util.is_valid_url($custom_input_elem.val()!, true)
-    );
+    return $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val()!, true);
 }
 
 function should_disable_save_button_for_time_limit_settings(

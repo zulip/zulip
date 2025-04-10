@@ -66,19 +66,17 @@ export const window_size = {
 };
 
 export async function ensure_browser(): Promise<Browser> {
-    if (browser === null) {
-        browser = await puppeteer.launch({
-            args: [
-                `--window-size=${window_size.width},${window_size.height}`,
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-            ],
-            // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
-            // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
-            defaultViewport: null,
-            headless: true,
-        });
-    }
+    browser ??= await puppeteer.launch({
+        args: [
+            `--window-size=${window_size.width},${window_size.height}`,
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+        ],
+        // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
+        // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
+        defaultViewport: null,
+        headless: true,
+    });
     return browser;
 }
 
@@ -256,14 +254,11 @@ export async function get_internal_email_from_name(
 
 export async function log_in(
     page: Page,
-    credentials: {username: string; password: string} | null = null,
+    credentials: {username: string; password: string} = test_credentials.default_user,
 ): Promise<void> {
     console.log("Logging in");
     await page.goto(realm_url + "login/");
     assert.equal(realm_url + "login/", page.url());
-    if (credentials === null) {
-        credentials = test_credentials.default_user;
-    }
     // fill login form
     const params = {
         username: credentials.username,

@@ -10,20 +10,26 @@ async function submit_announcements_stream_settings(page: Page): Promise<void> {
     });
 
     const save_button = "#org-notifications .save-button";
-    assert.strictEqual(
-        await common.get_text_from_selector(page, save_button),
-        "Save changes",
-        "Save button has incorrect text.",
+    await page.waitForFunction(
+        (save_button: string) => {
+            const button = document.querySelector(save_button);
+            return button && button.textContent?.trim() === "Save changes";
+        },
+        {},
+        save_button,
     );
     await page.click(save_button);
 
     await page.waitForSelector('#org-notifications .save-button[data-status="saved"]', {
         visible: true,
     });
-    assert.strictEqual(
-        await common.get_text_from_selector(page, "#org-notifications .save-button"),
-        "Saved",
-        "Saved text didn't appear after saving new stream notifications setting",
+    await page.waitForFunction(
+        (save_button: string) => {
+            const button = document.querySelector(save_button);
+            return button && button.textContent?.trim() === "Saved";
+        },
+        {},
+        save_button,
     );
 
     await page.waitForSelector("#org-notifications .save-button", {hidden: true});
