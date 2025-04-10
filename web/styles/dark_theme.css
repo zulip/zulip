@@ -424,8 +424,6 @@
         background-color: hsl(51deg 100% 23%);
     }
 
-    .sub-unsub-message span::before,
-    .sub-unsub-message span::after,
     .date_row span::before,
     .date_row span::after {
         opacity: 0.15;
