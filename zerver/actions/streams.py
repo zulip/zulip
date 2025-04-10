@@ -33,6 +33,7 @@ from zerver.lib.stream_subscription import (
     get_used_colors_for_user_ids,
     get_user_ids_for_streams,
     get_users_for_streams,
+    update_streams_subscriber_count,
 )
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
@@ -813,9 +814,12 @@ def bulk_add_subscriptions(
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     altered_guests: set[int] = set()
     altered_streams_dict: dict[UserProfile, set[int]] = defaultdict(set)
+    subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     for sub_info in subs_to_add + subs_to_activate:
         altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
         altered_streams_dict[sub_info.user].add(sub_info.stream.id)
+        if sub_info.user.is_active:
+            subscriber_count_changes[sub_info.stream.id].add(sub_info.user.id)
         if sub_info.user.is_guest:
             altered_guests.add(sub_info.user.id)
 
@@ -831,6 +835,8 @@ def bulk_add_subscriptions(
         subs_to_add=subs_to_add,
         subs_to_activate=subs_to_activate,
     )
+    # print(f"\n\nsubscriber_count_changes: {subscriber_count_changes}\n\n")
+    update_streams_subscriber_count(direction=1, streams=subscriber_count_changes)
 
     stream_dict = {stream.id: stream for stream in streams}
 
@@ -1080,12 +1086,19 @@ def bulk_remove_subscriptions(
         return ([], not_subscribed)
 
     sub_ids_to_deactivate = [sub_info.sub.id for sub_info in subs_to_deactivate]
+
+    subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
+    for sub_info in subs_to_deactivate:
+        if sub_info.user.is_active:
+            subscriber_count_changes[sub_info.stream.id].add(sub_info.user.id)
+
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic(savepoint=False):
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
+        update_streams_subscriber_count(direction=-1, streams=subscriber_count_changes)
 
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()

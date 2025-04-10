@@ -3575,6 +3575,7 @@ class NormalActionsTest(BaseAction):
         self.make_stream("Test new stream")
         self.subscribe(user_profile, "Test new stream")
         self.subscribe(self.user_profile, "Test new stream")
+        # this test fails
         with self.verify_action(num_events=6) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_subscription_peer_remove("events[0]", events[0])
