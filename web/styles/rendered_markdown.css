@@ -413,6 +413,61 @@
         }
     }
 
+    /* setup for icons before links of common file types */
+    a::before {
+        font-family: FontAwesome;
+        margin-left: 5px;
+        margin-right: 3px;
+    }
+
+    /* external link icon */
+    a[target="_blank"]::before {
+        content: "\f08e";
+    }
+
+    /* pdf file icon */
+    a[href$=".pdf"]::before {
+        content: "\f1c1";
+    }
+
+    /* image file icon */
+    a[href$=".png"]::before,
+    a[href$=".jpeg"]::before,
+    a[href$=".jpg"]::before,
+    a[href$=".gif"]::before {
+        content: "\f03e";
+    }
+
+    /* video file icon */
+    a[href$=".mp4"]::before,
+    a[href$=".mov"]::before {
+        content: "\f1c8";
+    }
+
+    /* audio file icon */
+    a[href$=".mp3"]::before {
+        content: "\f1c7";
+    }
+
+    /* text file icon */
+    a[href$=".txt"]::before,
+    a[href$=".doc"]::before,
+    a[href$=".docx"]::before {
+        content: "\f1c2";
+    }
+
+    /* ppt file icon */
+    a[href$=".ppt"]::before,
+    a[href$=".pptx"]::before {
+        content: "\f1c4";
+    }
+
+    /* compressed file icon */
+    a[href$=".zip"]::before,
+    a[href$=".tar"]::before {
+        content: "\f1c6";
+    }
+
     /* embedded link previews */
     .message_inline_image_title {
         font-weight: bold;
@@ -468,6 +523,11 @@
             display: block;
             height: 100%;
             width: 100%;
+
+            /* do not show icon in preview */
+            &::before {
+                display: none;
+            }
         }
 
         img.image-loading-placeholder {
