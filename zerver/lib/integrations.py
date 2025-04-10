@@ -12,8 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
-from zerver.lib.validator import check_bool, check_string
-from zerver.lib.webhooks.common import WebhookConfigOption, WebhookUrlOption
+from zerver.lib.validator import check_bool
+from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -414,7 +414,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "azuredevops",
         ["version-control"],
         display_name="AzureDevOps",
-        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
     WebhookIntegration("basecamp", ["project-management"]),
@@ -425,7 +425,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket Server",
         stream_name="bitbucket",
-        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
         "bitbucket2",
@@ -433,7 +433,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket",
         stream_name="bitbucket",
-        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
         "bitbucket",
@@ -462,7 +462,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "gitea",
         ["version-control"],
         stream_name="commits",
-        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
         "github",
@@ -471,7 +471,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         function="zerver.webhooks.github.view.api_github_webhook",
         stream_name="github",
         url_options=[
-            WebhookUrlOption(name="branches", label="", validator=check_string),
+            WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption(
                 name="ignore_private_repositories",
                 label="Exclude notifications from private repositories",
@@ -493,14 +493,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "gitlab",
         ["version-control"],
         display_name="GitLab",
-        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration("gocd", ["continuous-integration"], display_name="GoCD"),
     WebhookIntegration(
         "gogs",
         ["version-control"],
         stream_name="commits",
-        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration("gosquared", ["marketing"], display_name="GoSquared"),
     WebhookIntegration("grafana", ["monitoring"]),
@@ -555,7 +555,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "rhodecode",
         ["version-control"],
         display_name="RhodeCode",
-        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration("rundeck", ["deployment"]),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),

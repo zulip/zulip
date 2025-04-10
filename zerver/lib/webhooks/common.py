@@ -5,6 +5,7 @@ import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
@@ -31,6 +32,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.validator import check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -54,6 +56,10 @@ SETUP_MESSAGE_USER_PART = " by {user_name}"
 OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
 
 
+class PresetUrlOption(str, Enum):
+    BRANCHES = "branches"
+
+
 @dataclass
 class WebhookConfigOption:
     name: str
@@ -66,6 +72,25 @@ class WebhookUrlOption:
     name: str
     label: str
     validator: Callable[[str, str], str | bool | None]
+
+    @classmethod
+    def build_preset_config(cls, config: PresetUrlOption) -> "WebhookUrlOption":
+        """
+        This creates a pre-configured WebhookUrlOption object to be used
+        in various incoming webhook integrations.
+
+        See https://zulip.com/api/incoming-webhooks-walkthrough#webhookurloption-presets
+        for more details on this system and what each option does.
+        """
+        match config:
+            case PresetUrlOption.BRANCHES:
+                return cls(
+                    name=config.value,
+                    label="",
+                    validator=check_string,
+                )
+
+        raise AssertionError(_("Unknown 'PresetUrlOption': {config}").format(config=config))
 
 
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
