@@ -478,11 +478,10 @@
        which is padded right by 5px. */
     right: 5px;
     padding: 0.25em;
-    /* Color the message controls box like a popover. */
-    background-color: var(--color-background-popover-menu);
-    border: 1px solid var(--color-border-popover-menu);
+    background-color: var(--color-background-message-controls);
+    border: 1px solid var(--color-border-message-controls);
     border-radius: 6px;
-    box-shadow: var(--box-shadow-popover-menu);
+    box-shadow: var(--box-shadow-message-controls);
 
     /* Let the controls occupy the entire height
        of the row; inner flexboxes handle the

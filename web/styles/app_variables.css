@@ -857,6 +857,15 @@
         hsl(0deg 0% 0% / 40%),
         hsl(0deg 0% 0%)
     );
+    --color-border-message-controls: light-dark(
+        hsl(0deg 0% 0% / 35%),
+        hsl(0deg 0% 0% / 40%)
+    );
+    --color-background-message-controls: light-dark(
+        hsl(0deg 0% 97%),
+        hsl(0deg 0% 17%)
+    );
+    --box-shadow-message-controls: 0 0.25em 0.5em 0 hsl(0deg 0% 0% / 10%);
     --color-border-personal-menu-avatar: light-dark(
         hsl(0deg 0% 0% / 10%),
         hsl(0deg 0% 100% / 20%)
