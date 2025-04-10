@@ -231,6 +231,53 @@ configure:
 
 Common validators are available in `zerver/lib/validators.py`.
 
+### Configuration option presets
+
+Config options presets are `WebhookConfigOption` objects with pre-configured fields.
+They primarily serve two purposes:
+
+- To construct unique `WebhookConfigOption` objects with special logic. These presets
+construct configuration options that come with custom UI elements and additional logic
+unique to each setting, and are usually tailored for a category of integration.
+
+- To construct commonly used `WebhookConfigOption` settings. These presets construct
+normal configuration options, they are abstracted as presets mainly to be easily reusable.
+
+Using configuration option preset:
+
+```python
+# zerver/lib/integrations.py
+from zerver.lib.webhooks.common import PresetConfigOption, WebhookConfigOption
+  # -- snip --
+    WebhookIntegration(
+        "github",
+        # -- snip --
+        config_options=[
+            WebhookConfigOption.build_preset_config(PresetConfigOption.BRANCHES),
+        ],
+    ),
+```
+
+Here are the details of each `PresetConfigOption`:
+
+  1. **`BRANCHES`**: Adds a new check box field to the modal called "Send
+    notifications for all branches?", which is checked by default. This setting
+    is meant to be used by "version-control" integrations such as GitHub. It
+    lets the user configure which branches of their repository will trigger
+    notifications.
+
+    If unchecked, an input pill field called "Which branches should notifications
+    be sent for?" will appear. The user can then specify which branches to receive
+    notifications from. It will be added to the integration URL as the `&branches=`
+    variable, like this:
+
+    ```
+    {{zulip_url}}/api/v1/external/github?api_key=kT2KTUBJVv0kAyrwY3povICtTaczHQwl&branches=main%2Cdev
+    ```
+
+    Integrations using this: AzureDevOps, Bitbucket, Bitbucket Server, Gitea, GitHub,
+    GitLab, Gogs, RhodeCode.
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an
