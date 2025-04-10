@@ -36,7 +36,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
@@ -670,12 +670,19 @@ def format_user_row(
     return result
 
 
+def all_users_accessible_by_everyone_in_realm(realm: Realm) -> bool:
+    system_groups_name_dict = get_realm_system_groups_name_dict(realm.id)
+    if system_groups_name_dict[realm.can_access_all_users_group_id] == SystemGroups.EVERYONE:
+        return True
+
+    return False
+
+
 def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
     if target_user.is_bot:
         return False
 
-    realm = target_user.realm
-    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
+    if all_users_accessible_by_everyone_in_realm(target_user.realm):
         return False
 
     return True
