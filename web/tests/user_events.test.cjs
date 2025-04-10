@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
 
 const message_live_update = mock_esm("../src/message_live_update");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
@@ -222,8 +221,6 @@ run_test("updates", ({override}) => {
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
-
-    $("#personal-menu .header-button-avatar").css = noop;
 
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);
