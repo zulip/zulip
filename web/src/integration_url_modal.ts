@@ -33,6 +33,10 @@ const url_option_schema = z.object({
 
 const url_options_schema = z.array(url_option_schema);
 
+const PresetUrlOption = {
+    BRANCHES: "branches",
+};
+
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
@@ -114,7 +118,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             for (const option of validated_config) {
                 let $config_element: JQuery;
 
-                if (option.key === "branches") {
+                if (option.key === PresetUrlOption.BRANCHES) {
                     const filter_branches_html =
                         render_generate_integration_url_filter_branches_modal();
                     $config_element = $(filter_branches_html);
@@ -238,7 +242,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 for (const option of url_options) {
                     let $input_element;
                     if (
-                        option.key === "branches" &&
+                        option.key === PresetUrlOption.BRANCHES &&
                         !$("#integration-url-all-branches").prop("checked")
                     ) {
                         const $pill_container = $(
