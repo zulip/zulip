@@ -108,20 +108,26 @@
     grid-template:
         minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr)
-        8px minmax(var(--message-box-timestamp-column-width), max-content);
+        var(--message-box-star-marker-column-width) minmax(
+            var(--message-box-timestamp-column-width),
+            max-content
+        );
     /* Named grid areas provide flexibility for positioning grid items
        reliably, even if the row or column definitions of the grid change. */
     grid-template-areas:
-        "edited message   . time"
-        ".      message   . .   "
-        ".      more      . .   "
-        ".      reactions . .   ";
+        "edited message   star-marker time"
+        ".      message   .           .   "
+        ".      more      .           .   "
+        ".      reactions .           .   ";
 
     &.content_edit_mode {
         cursor: default;
         grid-template-columns:
             var(--message-box-avatar-column-width) minmax(0, 1fr)
-            8px minmax(var(--message-box-timestamp-column-width), max-content);
+            var(--message-box-star-marker-column-width) minmax(
+                var(--message-box-timestamp-column-width),
+                max-content
+            );
     }
 
     .message_edit_notice {
@@ -268,10 +274,10 @@
 .messagebox-includes-sender {
     .messagebox-content {
         grid-template-areas:
-            "avatar sender    . time"
-            "avatar message   . .   "
-            ".      more      . .   "
-            ".      reactions . .   ";
+            "avatar sender    star-marker time"
+            "avatar message   .           .   "
+            ".      more      .           .   "
+            ".      reactions .           .   ";
 
         .message_edit {
             /* No top margin when there's a sender row */
@@ -280,11 +286,11 @@
 
         &.is-me-message {
             grid-template-areas:
-                ".      .         . .   "
-                "avatar sender    . time"
-                "avatar sender    . .   "
-                ".      more      . .   "
-                ".      reactions . .   ";
+                ".      .         .           .   "
+                "avatar sender    star-marker time"
+                "avatar sender    .           .   "
+                ".      more      .           .   "
+                ".      reactions .           .   ";
             grid-template-rows:
                 var(--message-box-vertical-margin) var(
                     --message-box-avatar-height
@@ -469,13 +475,8 @@
        than half the sender line-height by dividing by -2.25. */
     top: calc(var(--message-box-sender-line-height) / -2.25);
     /* This is neat. We can use the calculated timestamp column
-       width plus the 8px of negative space between the message
-       content and text to nicely offset the controls from the
-       right.
-
-       TODO: Probably express the 8px value both here and in the
-       grid definition as a variable. */
-    right: calc(var(--message-box-timestamp-column-width) + 8px);
+       width to nicely offset the controls from the right. */
+    right: var(--message-box-timestamp-column-width);
     padding: 0.25em;
     background-color: var(--color-background-message-controls);
     border: 1px solid var(--color-border-message-controls);
@@ -617,6 +618,21 @@
             opacity: 1;
             visibility: visible !important;
         }
+    }
+}
+
+.starred-marker {
+    grid-area: star-marker;
+    place-self: start center;
+    height: var(--message-box-sender-line-height);
+    display: flex;
+    place-items: center center;
+    font-size: 0.75em;
+    color: var(--color-message-star-action);
+    visibility: hidden;
+
+    &.starred {
+        visibility: visible;
     }
 }
 
