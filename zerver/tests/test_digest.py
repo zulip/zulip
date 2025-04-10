@@ -500,7 +500,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         stream = create_stream_if_needed(cordelia.realm, "New stream")[0]
         stream.date_created = timezone_now()
-        stream.save()
+        stream.save(update_fields=["date_created"])
 
         realm = cordelia.realm
 
@@ -521,7 +521,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # but they do if we make it web-public
         stream.is_web_public = True
-        stream.save()
+        stream.save(update_fields=["is_web_public"])
 
         recently_created_streams = get_recently_created_streams(realm, cutoff)
         stream_count, stream_info = gather_new_streams(
@@ -531,7 +531,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Make the stream appear to be older.
         stream.date_created = timezone_now() - timedelta(days=7)
-        stream.save()
+        stream.save(update_fields=["date_created"])
 
         recently_created_streams = get_recently_created_streams(realm, cutoff)
         stream_count, stream_info = gather_new_streams(

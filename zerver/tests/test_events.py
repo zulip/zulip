@@ -3575,6 +3575,7 @@ class NormalActionsTest(BaseAction):
         self.make_stream("Test new stream")
         self.subscribe(user_profile, "Test new stream")
         self.subscribe(self.user_profile, "Test new stream")
+        # this test fails
         with self.verify_action(num_events=6) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_subscription_peer_remove("events[0]", events[0])
@@ -5028,7 +5029,7 @@ class SubscribeActionTest(BaseAction):
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
         stream.message_retention_days = 10
-        stream.save()
+        stream.save(update_fields=["message_retention_days"])
 
         user_profile = self.example_user("hamlet")
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
@@ -5052,7 +5053,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_delete("events[1]", events[1])
 
         stream.invite_only = False
-        stream.save()
+        stream.save(update_fields=["invite_only"])
 
         # Test events for guest user.
         self.user_profile = self.example_user("polonius")

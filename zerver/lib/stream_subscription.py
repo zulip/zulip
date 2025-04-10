@@ -3,9 +3,11 @@ from collections import defaultdict
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import Any
+from typing import Any, Literal
 
-from django.db.models import Q, QuerySet
+from django.db import connection, transaction
+from django.db.models import F, Q, QuerySet
+from psycopg2 import sql
 
 from zerver.models import AlertWord, Recipient, Stream, Subscription, UserProfile, UserTopic
 
@@ -313,3 +315,94 @@ def get_subscriptions_for_send_message(
         )
     )
     return query
+
+
+def update_user_streams_subscriber_count(activate: bool, user_profile: UserProfile) -> None:
+    """
+    increment/decrement streams subscriber_count for a reactivated/deactivated user.
+    """
+    user_subscribed_streams = Stream.objects.filter(
+        recipient_id__in=get_stream_subscriptions_for_user(user_profile)
+        .filter(is_user_active=activate)
+        .values("recipient_id")
+    )
+    direction = 1 if activate else -1
+    user_subscribed_streams.update(subscriber_count=F("subscriber_count") + direction)
+
+
+def update_streams_subscriber_count(
+    direction: Literal[1, -1],
+    streams: dict[int, set[int]],
+) -> None:
+    """increment/decrement streams subscriber_count for multiple users.
+
+    direction -> 1=increment, -1=decrement
+    """
+    if len(streams) == 0:
+        return
+
+    # construct a string of tuples (stream_id, n_subscribers)
+    # to be used as the columns of the temporary table delta_table.
+    stream_delta_values = sql.SQL(", ").join(
+        [
+            sql.SQL("({}, {})").format(
+                sql.Literal(stream_id), sql.Literal(len(subscribers) * direction)
+            )
+            for stream_id, subscribers in streams.items()
+        ]
+    )
+
+    # The goal here is to update subscriber_count in a bulk efficient way
+    # letting the database handle the deltas to avoid some race conditions.
+    # But unlike update_user_streams_subscriber_count which uses F() for a single delta value, we can't
+    # use F() to apply different deltas per row in a single update using ORM,
+    # so we use a raw SQL.
+    query = sql.SQL(
+        """UPDATE {stream_table}
+            SET subscriber_count = {stream_table}.subscriber_count + delta_table.delta
+            FROM (VALUES {stream_delta_values}) AS delta_table(id, delta)
+            WHERE {stream_table}.id = delta_table.id;
+        """
+    ).format(
+        stream_table=sql.Identifier(Stream._meta.db_table),
+        stream_delta_values=stream_delta_values,
+    )
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+
+@transaction.atomic(savepoint=False)
+def create_stream_subscription(
+    user_profile: UserProfile,
+    recipient: Recipient,
+    stream: Stream,
+    color: str = Subscription.DEFAULT_STREAM_COLOR,
+) -> None:
+    """
+    Create a stream Subscription object, updating stream.subscriber_count
+    if user is active, in the same transaction.
+    """
+
+    Subscription.objects.create(
+        recipient=recipient,
+        user_profile=user_profile,
+        is_user_active=user_profile.is_active,
+        color=color,
+    )
+
+    if recipient.type != Recipient.STREAM or not user_profile.is_active:
+        return
+
+    Stream.objects.filter(id=stream.id).update(subscriber_count=F("subscriber_count") + 1)
+
+
+@transaction.atomic(savepoint=False)
+def bulk_create_stream_subscriptions(
+    subs: list[Subscription], streams: dict[int, set[int]]
+) -> None:
+    """
+    Bulk create subscripions for streams, updating stream.subscriber_count in the same transaction.
+    """
+    Subscription.objects.bulk_create(subs)
+    update_streams_subscriber_count(direction=1, streams=streams)
