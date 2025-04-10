@@ -126,10 +126,9 @@ def get_pull_request_reopened_body(helper: Helper) -> str:
 
     sender = get_sender_name(payload)
     pr_number = payload["pull_request"]["number"].tame(check_int)
-    title = payload["pull_request"]["title"].tame(check_string)
     pr_url = payload["pull_request"]["html_url"].tame(check_string)
 
-    message = f"**{sender}** reopened [PR #{pr_number} {title}]({pr_url})."
+    message = f"{sender} reopened [PR #{pr_number}]({pr_url})."
     return message
 
 
