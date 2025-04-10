@@ -4923,7 +4923,7 @@ msgstr "Los mensajes directos están deshabilitados para esta organización"
 
 #: zerver/lib/exceptions.py:543
 msgid "This conversation does not include any users who can authorize it."
-msgstr ""
+msgstr "Esta conversación no incluye ningún usuario que pueda autorizarla."
 
 #: zerver/lib/exceptions.py:556
 msgid "Access denied"

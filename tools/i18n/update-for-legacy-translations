@@ -216,11 +216,13 @@ def update_for_legacy_stream_translations(
         # If the string has a legacy string mapped and see if it's
         # not currently translated (e.g. an empty string), then use
         # the legacy translated string (which might be an empty string).
-        if line in LEGACY_STRINGS_MAP and translation == "":
-            legacy_string = LEGACY_STRINGS_MAP[line]
-            if legacy_string in legacy:
-                updated_translations[line] = legacy[legacy_string]
-                number_of_updates += 1
+        if (
+            line in LEGACY_STRINGS_MAP
+            and translation == ""
+            and (legacy_string := LEGACY_STRINGS_MAP[line]) in legacy
+        ):
+            updated_translations[line] = legacy[legacy_string]
+            number_of_updates += 1
         else:
             updated_translations[line] = translation
 

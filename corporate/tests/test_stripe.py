@@ -65,19 +65,16 @@ from corporate.lib.stripe import (
     stripe_get_customer,
     unsign_string,
 )
-from corporate.models import (
-    Customer,
+from corporate.models.customers import Customer, get_customer_by_realm, get_customer_by_remote_realm
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import (
     CustomerPlan,
     CustomerPlanOffer,
-    Event,
-    Invoice,
-    LicenseLedger,
-    ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
-    get_customer_by_realm,
-    get_customer_by_remote_realm,
 )
+from corporate.models.sponsorships import ZulipSponsorshipRequest
+from corporate.models.stripe_state import Event, Invoice
 from corporate.tests.test_remote_billing import RemoteRealmBillingTestCase, RemoteServerTestCase
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
 from zerver.actions.create_realm import do_create_realm

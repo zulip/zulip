@@ -1008,9 +1008,7 @@ export class Filter {
     }
 
     predicate(): (message: Message) => boolean {
-        if (this._predicate === undefined) {
-            this._predicate = this._build_predicate();
-        }
+        this._predicate ??= this._build_predicate();
         return this._predicate;
     }
 
@@ -1154,9 +1152,7 @@ export class Filter {
     }
 
     can_mark_messages_read(): boolean {
-        if (this._can_mark_messages_read === undefined) {
-            this._can_mark_messages_read = this.calc_can_mark_messages_read();
-        }
+        this._can_mark_messages_read ??= this.calc_can_mark_messages_read();
         return this._can_mark_messages_read;
     }
 

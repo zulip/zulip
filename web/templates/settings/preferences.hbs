@@ -1,5 +1,7 @@
 <form class="preferences-settings-form">
     {{>preferences_general .}}
+    {{!-- user_has_email_set is passed as true here, because we don't disable the dropdown in organization panel also there's no need to show tooltip here. --}}
+    {{#if for_realm_settings}}{{> privacy_settings . prefix="realm_" read_receipts_help_icon_tooltip_text="" hide_read_receipts_tooltip=true user_has_email_set=true}}{{/if}}
 
     {{>preferences_emoji .}}
 

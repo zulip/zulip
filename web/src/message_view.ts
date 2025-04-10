@@ -1202,10 +1202,7 @@ export function render_message_list_with_selected_message(opts: {
     const id_info = opts.id_info;
     const select_offset = opts.select_offset;
 
-    let msg_id = id_info.final_select_id;
-    if (msg_id === undefined) {
-        msg_id = message_lists.current.first_unread_message_id();
-    }
+    const msg_id = id_info.final_select_id ?? message_lists.current.first_unread_message_id();
     // There should be something since it's not visibly empty.
     assert(msg_id !== undefined);
 

@@ -112,6 +112,7 @@ from zerver.actions.streams import (
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
+    do_unarchive_stream,
 )
 from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import (
@@ -363,6 +364,7 @@ class BaseAction(ZulipTestCase):
                 linkifier_url_template=linkifier_url_template,
                 user_list_incomplete=user_list_incomplete,
                 include_deactivated_groups=include_deactivated_groups,
+                archived_channels=archived_channels,
             )
         )
 
@@ -3569,6 +3571,10 @@ class NormalActionsTest(BaseAction):
         # Guest loses access to deactivated user if the user
         # was not involved in DMs.
         user_profile = self.example_user("hamlet")
+        # User is in the same channel as guest, but not in DMs.
+        self.make_stream("Test new stream")
+        self.subscribe(user_profile, "Test new stream")
+        self.subscribe(self.user_profile, "Test new stream")
         with self.verify_action(num_events=6) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_subscription_peer_remove("events[0]", events[0])
@@ -3767,7 +3773,19 @@ class NormalActionsTest(BaseAction):
                 include_streams=include_streams, archived_channels=True
             ) as events:
                 do_deactivate_stream(stream, acting_user=None)
+            check_stream_update("events[0]", events[0])
+            self.assertEqual(events[0]["stream_id"], stream.id)
+            self.assertEqual(events[0]["property"], "is_archived")
+            self.assertEqual(events[0]["value"], True)
+
+            do_unarchive_stream(stream, stream.name, acting_user=None)
+
+            with self.verify_action(
+                include_streams=include_streams, archived_channels=False
+            ) as events:
+                do_deactivate_stream(stream, acting_user=None)
             check_stream_delete("events[0]", events[0])
+            self.assertEqual(events[0]["stream_ids"], [stream.id])
 
     def test_admin_deactivate_unsubscribed_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -3784,7 +3802,37 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=1, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["stream_id"], stream.id)
+        self.assertEqual(events[0]["property"], "is_archived")
+        self.assertEqual(events[0]["value"], True)
+
+        do_unarchive_stream(stream, stream.name, acting_user=iago)
+
+        with self.verify_action(num_events=1, archived_channels=False) as events:
+            do_deactivate_stream(stream, acting_user=iago)
         check_stream_delete("events[0]", events[0])
+        self.assertEqual(events[0]["stream_ids"], [stream.id])
+
+    def test_unarchiving_stream(self) -> None:
+        iago = self.example_user("iago")
+        stream = self.make_stream("test_stream")
+        do_deactivate_stream(stream, acting_user=iago)
+
+        with self.verify_action(num_events=1, archived_channels=False) as events:
+            do_unarchive_stream(stream, stream.name, acting_user=iago)
+        check_stream_create("events[0]", events[0])
+        self.assert_length(events[0]["streams"], 1)
+        self.assertEqual(events[0]["streams"][0]["stream_id"], stream.id)
+
+        do_deactivate_stream(stream, acting_user=iago)
+
+        with self.verify_action(num_events=1, archived_channels=True) as events:
+            do_unarchive_stream(stream, stream.name, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["stream_id"], stream.id)
+        self.assertEqual(events[0]["property"], "is_archived")
+        self.assertEqual(events[0]["value"], False)
 
     def test_user_losing_access_on_deactivating_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -3800,7 +3848,7 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
-        check_stream_delete("events[0]", events[0])
+        check_stream_update("events[0]", events[0])
 
         # Test that if the subscribers of deactivated stream are involved in
         # DMs with guest, then the guest does not get "remove" event for them.
@@ -3814,7 +3862,7 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
-        check_stream_delete("events[0]", events[0])
+        check_stream_update("events[0]", events[0])
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
@@ -4934,6 +4982,38 @@ class SubscribeActionTest(BaseAction):
                 is_web_public=False,
                 acting_user=iago,
             )
+
+        # Check updating description, stream permission for an unsubscribed streams.
+        self.user_profile = self.example_user("hamlet")
+        self.unsubscribe(self.example_user("hamlet"), stream.name)
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_description(
+                stream, "description", acting_user=self.example_user("hamlet")
+            )
+        check_stream_update("events[0]", events[0])
+
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_permission(
+                stream,
+                invite_only=False,
+                history_public_to_subscribers=True,
+                is_web_public=True,
+                acting_user=iago,
+            )
+        check_stream_update("events[0]", events[0])
+
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_permission(
+                stream,
+                invite_only=True,
+                history_public_to_subscribers=False,
+                is_web_public=False,
+                acting_user=iago,
+            )
+        check_stream_update("events[0]", events[0])
+
+        # Subscribe the user again for further tests.
+        self.subscribe(self.example_user("hamlet"), stream.name)
 
         self.user_profile = self.example_user("hamlet")
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:

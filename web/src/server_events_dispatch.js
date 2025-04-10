@@ -30,7 +30,6 @@ import * as message_events from "./message_events.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view from "./message_view.ts";
-import * as message_view_header from "./message_view_header.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as narrow_title from "./narrow_title.ts";
@@ -227,7 +226,7 @@ export function dispatch_normal_event(event) {
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
                 can_invite_users_group: noop,
-                can_manage_all_groups: noop,
+                can_manage_all_groups: user_group_edit.update_group_management_ui,
                 can_manage_billing_group: noop,
                 can_mention_many_users_group: noop,
                 can_move_messages_between_channels_group: noop,
@@ -310,6 +309,7 @@ export function dispatch_normal_event(event) {
 
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
+                                    realm_settings[key]();
                                 }
 
                                 if (
@@ -646,13 +646,11 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream_id of event.stream_ids) {
-                        const sub = sub_store.get(stream_id);
-                        const is_subscribed = sub.subscribed;
+                        const was_subscribed = sub_store.get(stream_id).subscribed;
                         const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
                         stream_data.delete_sub(stream_id);
-                        stream_settings_ui.update_settings_for_archived(sub);
-                        message_view_header.maybe_rerender_title_area_for_stream(stream_id);
-                        if (is_subscribed) {
+                        stream_settings_ui.remove_stream(stream_id);
+                        if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream_id);
                             if (stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");
@@ -662,15 +660,12 @@ export function dispatch_normal_event(event) {
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream_id);
                         if (realm.realm_new_stream_announcements_stream_id === stream_id) {
-                            realm.realm_new_stream_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }
                         if (realm.realm_signup_announcements_stream_id === stream_id) {
-                            realm.realm_signup_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("signup_announcements_stream_id");
                         }
                         if (realm.realm_zulip_update_announcements_stream_id === stream_id) {
-                            realm.realm_zulip_update_announcements_stream_id = -1;
                             settings_org.sync_realm_settings(
                                 "zulip_update_announcements_stream_id",
                             );
@@ -680,7 +675,6 @@ export function dispatch_normal_event(event) {
                             message_lists.current.update_trailing_bookend(true);
                         }
                     }
-                    message_live_update.rerender_messages_view();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:

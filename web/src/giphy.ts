@@ -61,9 +61,7 @@ async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => vo
     const {renderGrid} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-components");
     const {GiphyFetch} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-fetch-api");
 
-    if (giphy_fetch === undefined) {
-        giphy_fetch = new GiphyFetch(realm.giphy_api_key);
-    }
+    giphy_fetch ??= new GiphyFetch(realm.giphy_api_key);
 
     async function fetchGifs(offset: number): Promise<GifsResult> {
         assert(giphy_fetch !== undefined);

@@ -7,6 +7,7 @@ import {z} from "zod";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import * as buttons from "./buttons.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
@@ -538,50 +539,59 @@ export function change_save_button_state($element: JQuery, state: string): void 
     }
 
     const $save_button = $element.find(".save-button");
-    const $textEl = $save_button.find(".save-discard-widget-button-text");
-
-    if (state !== "saving") {
-        $save_button.removeClass("saving");
-    }
+    const $textEl = $save_button.find(".action-button-label");
 
     if (state === "discarded") {
-        let hide_delay = 0;
-        if ($save_button.attr("data-status") === "saved") {
-            // Keep saved button displayed a little longer.
-            hide_delay = 500;
+        if (
+            // When the save button is in the "saving" or "saved" state,
+            // we don't want the realm sync settings logic to hide the
+            // save discard widget before the success callback could show the
+            // "saved" state in the button.  Moreover, the visibility of the
+            // save discard widget will be handled by either the "succeeded"
+            // or the "failed" state after the request is complete.
+            $save_button.attr("data-status") === "saved" ||
+            $save_button.attr("data-status") === "saving"
+        ) {
+            return;
         }
-        show_hide_element($element, false, hide_delay, () => {
+        show_hide_element($element, false, 0, () => {
             enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
         });
         return;
     }
 
-    let button_text;
+    if (state === "succeeded" && $save_button.attr("data-status") === "unsaved") {
+        // We don't show the "saved" state if the save button is in the "unsaved"
+        // state, as that would indicate that user has made some other changes
+        // during the saving process.
+        return;
+    }
+
+    if (state !== "saving") {
+        buttons.hide_button_loading_indicator($save_button);
+    }
+
+    let button_text = $t({defaultMessage: "Save changes"});
     let data_status;
     let is_show;
     switch (state) {
         case "unsaved":
-            button_text = $t({defaultMessage: "Save changes"});
             data_status = "unsaved";
             is_show = true;
 
             $element.find(".discard-button").show();
             break;
-        case "saved":
-            button_text = $t({defaultMessage: "Save changes"});
-            data_status = "";
-            is_show = false;
-            break;
         case "saving":
-            button_text = $t({defaultMessage: "Saving"});
+            // We don't change the button text on the saving
+            // state to avoid changing the button size while
+            // we show the loading indicator.
             data_status = "saving";
             is_show = true;
 
             $element.find(".discard-button").hide();
-            $save_button.addClass("saving");
+            buttons.show_button_loading_indicator($save_button);
             break;
         case "failed":
-            button_text = $t({defaultMessage: "Save changes"});
             data_status = "failed";
             is_show = true;
             break;
@@ -592,8 +602,23 @@ export function change_save_button_state($element: JQuery, state: string): void 
             break;
     }
 
-    assert(button_text !== undefined);
-    $textEl.text(button_text);
+    requestAnimationFrame(() => {
+        // We need to use requestAnimationFrame to ensure that the
+        // button text and style are updated in the same frame.
+        $textEl.text(button_text);
+        if (state === "succeeded") {
+            buttons.modify_action_button_style($save_button, {
+                attention: "borderless",
+                intent: "success",
+            });
+        } else {
+            buttons.modify_action_button_style($save_button, {
+                attention: "primary",
+                intent: "brand",
+            });
+        }
+    });
+
     assert(data_status !== undefined);
     $save_button.attr("data-status", data_status);
     if (state === "unsaved") {
@@ -1336,10 +1361,7 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
     );
     const $custom_input_elem = $<HTMLInputElement>("input#id_realm_jitsi_server_url_custom_input");
 
-    return (
-        $dropdown_elem.val()!.toString() === "custom" &&
-        !util.is_valid_url($custom_input_elem.val()!, true)
-    );
+    return $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val()!, true);
 }
 
 function should_disable_save_button_for_time_limit_settings(
@@ -1811,6 +1833,7 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
                     setting_name,
                     group.id,
                     can_edit,
+                    "realm",
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);
@@ -1854,6 +1877,7 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
                     setting_name,
                     group.id,
                     can_edit_settings,
+                    "stream",
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);
@@ -1892,6 +1916,7 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
                     setting_name,
                     group.id,
                     can_edit_settings,
+                    "group",
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);

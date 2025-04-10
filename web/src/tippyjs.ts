@@ -573,7 +573,7 @@ export function initialize(): void {
             is inserted dynamically after handlebar got rendered. So we append the
             tooltip element to the body itself with target as the + button.
         */
-        target: "#groups_overlay .create_user_group_plus_button",
+        target: "#groups_overlay .two-pane-settings-plus-button",
         content: $t({
             defaultMessage: "Create new user group",
         }),

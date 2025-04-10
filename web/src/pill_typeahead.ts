@@ -264,6 +264,7 @@ export function set_up_combined(
         user_group_source?: () => UserGroup[];
         exclude_bots?: boolean;
         update_func?: () => void;
+        is_stream_subscriber_input?: boolean;
     },
 ): void {
     if (!opts.user && !opts.user_group && !opts.stream) {
@@ -282,6 +283,8 @@ export function set_up_combined(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        helpOnEmptyStrings: true,
+        hideOnEmptyAfterBackspace: true,
         source(query: string): TypeaheadItem[] {
             let source: TypeaheadItem[] = [];
             if (include_streams(query)) {
@@ -380,6 +383,13 @@ export function set_up_combined(
                 }
             }
 
+            if (opts.is_stream_subscriber_input) {
+                return typeahead_helper.sort_stream_setting_options({
+                    users,
+                    query,
+                    groups,
+                });
+            }
             return typeahead_helper.sort_recipients({
                 users,
                 query,

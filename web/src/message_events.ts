@@ -449,12 +449,9 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     // Add message's edit_history in message dict
                     // For messages that are edited, edit_history needs to
                     // be added to message in frontend.
-                    if (anchor_message.edit_history === undefined) {
-                        anchor_message.edit_history = [];
-                    }
                     anchor_message.edit_history = [
                         edit_history_entry,
-                        ...anchor_message.edit_history,
+                        ...(anchor_message.edit_history ?? []),
                     ];
                 }
                 any_message_content_edited = true;
@@ -587,12 +584,9 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         edit_history_entry.topic = new_topic;
                         edit_history_entry.prev_topic = orig_topic;
                     }
-                    if (moved_message.edit_history === undefined) {
-                        moved_message.edit_history = [];
-                    }
                     moved_message.edit_history = [
                         edit_history_entry,
-                        ...moved_message.edit_history,
+                        ...(moved_message.edit_history ?? []),
                     ];
                 }
 

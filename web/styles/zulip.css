@@ -1025,7 +1025,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 }
 
 .topic_edit_save {
-    border-color: light-dark(hsla(0deg 0% 0% / 10%), hsla(0deg 0% 0% / 60%));
+    border-color: light-dark(hsl(0deg 0% 0% / 10%), hsl(0deg 0% 0% / 60%));
     border-width: 1px;
     border-style: solid;
     background-clip: padding-box;

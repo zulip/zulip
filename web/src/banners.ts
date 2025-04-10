@@ -3,15 +3,8 @@ import $ from "jquery";
 
 import render_banner from "../templates/components/banner.hbs";
 
-type ComponentIntent = "neutral" | "brand" | "info" | "success" | "warning" | "danger";
-
-type ActionButton = {
-    attention: "primary" | "quiet" | "borderless";
-    intent?: ComponentIntent;
-    label: string;
-    icon?: string;
-    custom_classes?: string;
-};
+import type {ActionButton} from "./buttons.ts";
+import type {ComponentIntent} from "./types.ts";
 
 export type Banner = {
     intent: ComponentIntent;

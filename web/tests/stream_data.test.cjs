@@ -709,6 +709,28 @@ test("default_stream_names", () => {
 
 test("delete_sub", () => {
     const canada = {
+        stream_id: 101,
+        name: "Canada",
+        subscribed: true,
+    };
+
+    stream_data.add_sub(canada);
+
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
+    assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
+    assert.equal(sub_store.get(canada.stream_id).name, "Canada");
+
+    stream_data.delete_sub(canada.stream_id);
+    assert.ok(!stream_data.is_subscribed(canada.stream_id));
+    assert.ok(!stream_data.get_sub("Canada"));
+    assert.ok(!sub_store.get(canada.stream_id));
+
+    blueslip.expect("warn", "Failed to archive stream 99999");
+    stream_data.delete_sub(99999);
+});
+
+test("mark_archived", () => {
+    const canada = {
         is_archived: false,
         stream_id: 101,
         name: "Canada",
@@ -724,7 +746,7 @@ test("delete_sub", () => {
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
     assert.equal(stream_data.is_stream_archived(canada.stream_id), false);
 
-    stream_data.delete_sub(canada.stream_id);
+    stream_data.mark_archived(canada.stream_id);
     assert.ok(stream_data.is_stream_archived(canada.stream_id));
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.ok(stream_data.get_sub("Canada"));
@@ -733,7 +755,7 @@ test("delete_sub", () => {
     assert.equal(stream_data.get_archived_subs().length, archived_subs.length + 1);
 
     blueslip.expect("warn", "Failed to archive stream 99999");
-    stream_data.delete_sub(99999);
+    stream_data.mark_archived(99999);
 });
 
 test("notifications", ({override}) => {
@@ -1005,6 +1027,7 @@ test("create_sub", () => {
         name: "Antarctica",
         subscribed: true,
         color: "#76ce90",
+        partial_subscribers: [1, 2, 3],
     };
 
     const india_sub = stream_data.create_sub_from_server_data(india);
@@ -1024,6 +1047,7 @@ test("create_sub", () => {
     const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
     assert.ok(antarctica_sub);
     assert.equal(antarctica_sub.color, "#76ce90");
+    assert.deepEqual(antarctica_sub.partial_subscribers, [1, 2, 3]);
 });
 
 test("creator_id", ({override}) => {

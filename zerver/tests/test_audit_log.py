@@ -283,20 +283,20 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_email(self) -> None:
         now = timezone_now()
         user = self.example_user("hamlet")
+        original_email = user.delivery_email
         new_email = "test@example.com"
         do_change_user_delivery_email(user, new_email, acting_user=user)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.USER_EMAIL_CHANGED, event_time__gte=now
-            ).count(),
-            1,
-        )
         self.assertEqual(new_email, user.delivery_email)
 
-        # Test the RealmAuditLog stringification
         audit_entry = RealmAuditLog.objects.get(
             event_type=AuditLogEventType.USER_EMAIL_CHANGED, event_time__gte=now
         )
+        self.assertEqual(audit_entry.modified_user, user)
+        self.assertEqual(
+            audit_entry.extra_data,
+            {RealmAuditLog.OLD_VALUE: original_email, RealmAuditLog.NEW_VALUE: new_email},
+        )
+        # Test the RealmAuditLog stringification
         self.assertTrue(
             repr(audit_entry).startswith(
                 f"<RealmAuditLog: {AuditLogEventType.USER_EMAIL_CHANGED.name} "

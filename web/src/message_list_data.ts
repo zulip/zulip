@@ -206,9 +206,7 @@ export class MessageListData {
     }
     _get_predicate(): (message: Message) => boolean {
         // We cache this.
-        if (!this.predicate) {
-            this.predicate = this.filter.predicate();
-        }
+        this.predicate ??= this.filter.predicate();
         return this.predicate;
     }
 

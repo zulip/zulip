@@ -24,7 +24,7 @@
     --color-link-underline: hsl(210deg 94% 42% / 30%);
     --color-link-underline-hover: hsl(210deg 100% 50%);
     --color-link-underline-alternate: hsl(210deg 94% 100% / 40%);
-    --color-link-underline-alternate-hover: hsla(210deg 94% 100% / 80%);
+    --color-link-underline-alternate-hover: hsl(210deg 94% 100% / 80%);
     --icon-left-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M0 16h16V0c0 8.837-7.163 16-16 16Z'/%3e%3c/svg%3e");
     --icon-right-outward-tab-curve: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='white' d='M16 16H0V0c0 8.837 7.163 16 16 16Z'/%3e%3c/svg%3e");
     --icon-question-header-swoosh: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='33' height='56' fill='none' viewBox='0 0 33 56'%3e%3cpath fill='%23E2EBF4' d='M33 37 1 56C1 35-3.5 0 33 0 7.5 3 7.776 37 33 37Z'/%3e%3c/svg%3e");
@@ -675,7 +675,7 @@
         &:hover {
             text-decoration: none;
             color: hsl(147deg 57% 25%);
-            background-color: hsla(146deg 92% 24% / 15%);
+            background-color: hsl(146deg 92% 24% / 15%);
         }
     }
 

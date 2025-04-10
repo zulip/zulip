@@ -1,7 +1,7 @@
-<div id="subscription_overlay" class="overlay" data-overlay="subscriptions">
+<div id="subscription_overlay" class="overlay two-pane-settings-overlay" data-overlay="subscriptions">
     <div class="flex overlay-content">
-        <div class="subscriptions-container overlay-container">
-            <div class="subscriptions-header">
+        <div class="two-pane-settings-container overlay-container">
+            <div class="two-pane-settings-header">
                 <div class="fa fa-chevron-left"></div>
                 <span class="subscriptions-title">{{t 'Channels' }}</span>
                 <div class="exit">
@@ -12,7 +12,7 @@
                 <div class="list-toggler-container">
                     <div id="add_new_subscription">
                         {{#if can_create_streams}}
-                        <button class="create_stream_button create_stream_plus_button tippy-zulip-delayed-tooltip" data-tooltip-template-id="create-new-stream-tooltip-template" data-tippy-placement="bottom">
+                        <button class="create_stream_button two-pane-settings-plus-button tippy-zulip-delayed-tooltip" data-tooltip-template-id="create-new-stream-tooltip-template" data-tippy-placement="bottom">
                             <i class="create_button_plus_sign zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                         </button>
                         {{/if}}

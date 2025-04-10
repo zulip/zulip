@@ -1237,9 +1237,7 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
         let full_name = user.full_name;
         // Only ignore diacritics if the query is plain ascii
         if (is_ascii) {
-            if (user.name_with_diacritics_removed === undefined) {
-                user.name_with_diacritics_removed = typeahead.remove_diacritics(full_name);
-            }
+            user.name_with_diacritics_removed ??= typeahead.remove_diacritics(full_name);
             full_name = user.name_with_diacritics_removed;
         }
         const names = full_name.toLowerCase().split(" ");
@@ -1576,11 +1574,7 @@ export function get_user_by_id_assert_valid(
         return get_by_user_id(user_id);
     }
 
-    let person = maybe_get_user_by_id(user_id, true);
-    if (person === undefined) {
-        person = add_inaccessible_user(user_id);
-    }
-    return person;
+    return maybe_get_user_by_id(user_id, true) ?? add_inaccessible_user(user_id);
 }
 
 function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {

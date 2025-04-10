@@ -1024,7 +1024,6 @@ export function save_organization_settings(
     data: Record<string, string | number | boolean>,
     $save_button: JQuery,
     patch_url: string,
-    success_continuation: (() => void) | undefined = undefined,
 ): void {
     const $subsection_parent = $save_button.closest(".settings-subsection-parent");
     const $save_button_container = $subsection_parent.find(".save-button-controls");
@@ -1036,9 +1035,6 @@ export function save_organization_settings(
         success() {
             $failed_alert_elem.hide();
             settings_components.change_save_button_state($save_button_container, "succeeded");
-            if (success_continuation !== undefined) {
-                success_continuation();
-            }
         },
         error(xhr) {
             settings_components.change_save_button_state($save_button_container, "failed");
@@ -1262,7 +1258,6 @@ export function register_save_discard_widget_handlers(
             const $save_button = $(this);
             const $subsection_elem = $save_button.closest(".settings-subsection-parent");
             let data: Record<string, string | number | boolean>;
-            let success_continuation;
             if (!for_realm_default_settings) {
                 data =
                     settings_components.populate_data_for_realm_settings_request($subsection_elem);
@@ -1272,7 +1267,7 @@ export function register_save_discard_widget_handlers(
                         $subsection_elem,
                     );
             }
-            save_organization_settings(data, $save_button, patch_url, success_continuation);
+            save_organization_settings(data, $save_button, patch_url);
         },
     );
 

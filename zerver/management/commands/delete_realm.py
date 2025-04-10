@@ -37,7 +37,8 @@ realms used for testing; consider using deactivate_realm instead."""
             # Deleting a Realm object also deletes associating billing
             # metadata in an invariant-violating way, so we should
             # never use this tool for a realm with billing set up.
-            from corporate.models import CustomerPlan, get_customer_by_realm
+            from corporate.models.customers import get_customer_by_realm
+            from corporate.models.plans import CustomerPlan
 
             customer = get_customer_by_realm(realm)
             if customer and (
