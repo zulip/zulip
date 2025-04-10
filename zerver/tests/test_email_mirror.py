@@ -1364,7 +1364,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(18):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message

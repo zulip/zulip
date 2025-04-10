@@ -926,11 +926,7 @@ def base_bulk_get_user_queryset() -> QuerySet[UserProfile]:
     prefetches can_access_all_users_group, which is often necessary
     for calculations of where events should be sent.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-    )
+    return UserProfile.objects.select_related("realm")
 
 
 def base_get_user_queryset() -> QuerySet[UserProfile]:
@@ -938,12 +934,7 @@ def base_get_user_queryset() -> QuerySet[UserProfile]:
     In contrast with base_bulk_get_user_queryset, additionally fetches
     fields that are relevant for this user sending a message.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "bot_owner",
-    )
+    return UserProfile.objects.select_related("realm", "bot_owner")
 
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)

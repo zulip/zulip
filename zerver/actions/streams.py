@@ -57,6 +57,7 @@ from zerver.lib.user_groups import (
     update_or_create_user_group_for_setting,
 )
 from zerver.lib.users import (
+    all_users_accessible_by_everyone_in_realm,
     get_subscribers_of_target_user_subscriptions,
     get_users_involved_in_dms_with_target_users,
 )
@@ -74,7 +75,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
-from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroup
+from zerver.models.groups import NamedUserGroup, UserGroup
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm_by_id
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
@@ -830,7 +831,7 @@ def bulk_add_subscriptions(
         if sub_info.user.is_guest:
             altered_guests.add(sub_info.user.id)
 
-    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
+    if not all_users_accessible_by_everyone_in_realm(realm):
         altered_users = list(altered_streams_dict.keys())
         subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
             altered_users
@@ -881,7 +882,7 @@ def bulk_add_subscriptions(
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
 
-    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
+    if not all_users_accessible_by_everyone_in_realm(realm):
         send_user_creation_events_on_adding_subscriptions(
             realm,
             altered_user_dict,
@@ -1120,7 +1121,7 @@ def bulk_remove_subscriptions(
     removed_sub_tuples = [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate]
     send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
 
-    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
+    if not all_users_accessible_by_everyone_in_realm(realm):
         altered_user_dict: dict[UserProfile, set[int]] = defaultdict(set)
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
