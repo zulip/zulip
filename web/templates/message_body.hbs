@@ -26,6 +26,12 @@
     {{/if}}
 </span>
 
+{{#unless msg/locally_echoed}}
+<div class="starred-marker {{#if msg/starred}}starred{{/if}}">
+    <i class="starred-marker-icon zulip-icon zulip-icon-starred-marker"></i>
+</div>
+{{/unless}}
+
 <a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message-time">
     {{#unless include_sender}}
     <span class="copy-paste-text">&nbsp;</span>
