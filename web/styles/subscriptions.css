@@ -147,6 +147,19 @@ h4.user_group_setting_subsection_title {
     margin-top: 100px;
 }
 
+#people_to_add_in_group,
+#people_to_add,
+.member_list_settings_container,
+.subscriber_list_settings_container {
+    display: flex;
+    flex-direction: column;
+}
+
+.add-group-member-loading-spinner,
+.add-subscriber-loading-spinner {
+    align-self: center;
+}
+
 .member-list-box,
 .subscriber-list-box {
     text-align: center;
