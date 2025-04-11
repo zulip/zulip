@@ -49,7 +49,7 @@ export function clear(): void {
 export function focus_topic_search_filter(): void {
     popovers.hide_all();
     sidebar_ui.show_left_sidebar();
-    const $filter = $("#filter-topic-input").expectOne();
+    const $filter = $("#left-sidebar-filter-topic-input").expectOne();
     $filter.trigger("focus");
 }
 
@@ -273,7 +273,7 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
 
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
-    const $input = $("#filter-topic-input");
+    const $input = $("#left-sidebar-filter-topic-input");
     if ($input.length > 0) {
         $input.val("");
         $input.trigger("blur");
@@ -389,7 +389,7 @@ export function zoom_in(): void {
 }
 
 export function get_left_sidebar_topic_search_term(): string {
-    const $filter = $<HTMLInputElement>("input#filter-topic-input");
+    const $filter = $<HTMLInputElement>("input#left-sidebar-filter-topic-input");
     const filter_val = $filter.val();
     if (filter_val === undefined) {
         return "";
@@ -429,7 +429,7 @@ export function initialize({
         },
     );
 
-    $("body").on("input", "#filter-topic-input", (): void => {
+    $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();
