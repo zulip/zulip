@@ -66,6 +66,25 @@ uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
 
+### Google Cloud Platform
+
+In addition to configuring `settings.py` as suggested above:
+
+```python
+S3_AUTH_UPLOADS_BUCKET = "..."
+S3_AVATAR_BUCKET = "..."
+S3_ENDPOINT_URL = "https://storage.googleapis.com"
+S3_SKIP_CHECKSUM = True
+```
+
+...and adding `s3_key` and `s3_secret_key` in `/etc/zulip/zulip-secrets.conf`,
+you will need to also add a `/etc/zulip/gcp_key.json` which contains a [service
+account key][gcp-key] with "Storage Object Admin" permissions on the uploads
+bucket. This is used by the `tusd` chunked upload service when receiving file
+uploads from clients.
+
+[gcp-key]: https://cloud.google.com/iam/docs/keys-create-delete
+
 ## S3 local caching
 
 For performance reasons, Zulip stores a cache of recently served user

@@ -63,6 +63,12 @@ class Command(BaseCommand):
         if settings.LOCAL_UPLOADS_DIR is not None:
             assert settings.LOCAL_FILES_DIR is not None
             tusd_args.append(f"-upload-dir={settings.LOCAL_FILES_DIR}")
+        elif settings.S3_ENDPOINT_URL in (
+            "https://storage.googleapis.com",
+            "https://storage.googleapis.com/",
+        ):
+            tusd_args.append(f"-gcs-bucket={settings.S3_AUTH_UPLOADS_BUCKET}")
+            env_vars["GCS_SERVICE_ACCOUNT_FILE"] = "/etc/zulip/gcp_key.json"
         else:
             tusd_args.append(f"-s3-bucket={settings.S3_AUTH_UPLOADS_BUCKET}")
             if settings.S3_ENDPOINT_URL is not None:
