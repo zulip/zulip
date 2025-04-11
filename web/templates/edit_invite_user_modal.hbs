@@ -1,0 +1,6 @@
+<form id="edit-invite-form">
+    {{> user_roles_dropdown invite_as_options=invite_as_options is_admin=is_admin is_owner=is_owner }}
+    {{#if can_subscribe_other_users}}
+    {{> streams_to_add show_select_default_streams_option=show_select_default_streams_option}}
+    {{/if}}
+</form>
