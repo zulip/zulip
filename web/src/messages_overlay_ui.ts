@@ -1,6 +1,9 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import * as tippy from "tippy.js";
 
+import {LONG_HOVER_DELAY} from "./tippyjs.ts";
+import {parse_html} from "./ui_util.ts";
 import * as util from "./util.ts";
 
 export type Context = {
@@ -182,4 +185,33 @@ function scroll_to_element($element: JQuery, context: Context): void {
 
 function get_element_by_id(id: string, context: Context): JQuery {
     return $(`.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id)}']`);
+}
+
+export function initialize_restore_overlay_message_tooltip(): void {
+    tippy.default(".message_content.restore-overlay-message", {
+        delay: LONG_HOVER_DELAY,
+        placement: "top",
+        content(reference) {
+            const template_id = $(reference).attr("data-tooltip-template-id");
+            assert(template_id !== undefined);
+            const $template = $(`#${CSS.escape(template_id)}`);
+            return parse_html($template.html());
+        },
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "preventOverflow",
+                    options: {
+                        // Prevent tooltip from overflowing the message list boundary.
+                        // If it overflows, tooltip uses bottom placement.
+                        // If it overflows from both top and bottom, tooltip is placed
+                        // at the top overlapping with message content.
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        boundary: document.querySelector(".overlay-messages-list")!,
+                        altAxis: true,
+                    },
+                },
+            ],
+        },
+    });
 }
