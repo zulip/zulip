@@ -1362,7 +1362,7 @@ export class Filter {
                 break;
             }
             case "is-dm":
-                zulip_icon = "user";
+                zulip_icon = "send-dm";
                 break;
             case "is-starred":
                 zulip_icon = "star";
@@ -1371,7 +1371,7 @@ export class Filter {
                 zulip_icon = "at-sign";
                 break;
             case "dm":
-                zulip_icon = "user";
+                zulip_icon = "send-dm";
                 break;
             case "is-resolved":
                 icon = "check";
