@@ -1,11 +1,11 @@
 {{! Client-side Handlebars template for rendering the trailing bookend. }}
-<div class="{{#if is_trailing_bookend}}trailing_bookend {{/if}}bookend sub-unsub-message">
+<div class="{{#if is_trailing_bookend}}trailing_bookend {{/if}}bookend">
     {{#if is_spectator}}
-        <span class="recent-topics-link">
+        <span class="recent-topics-link bookend-label">
             <a href="#recent">{{t "Browse recent conversations" }}</a>
         </span>
     {{else}}
-        <span class="stream-status">
+        <span class="stream-status bookend-label">
             {{#if deactivated}}
                 {{t "This channel has been archived." }}
             {{else if subscribed }}
