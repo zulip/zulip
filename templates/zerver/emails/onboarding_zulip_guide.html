@@ -6,7 +6,11 @@
 
 {% block content %}
 
-<p>{{ _("As you are getting started with Zulip, we'd love to help you discover how it can work best for your needs. Check out this guide to key Zulip features for organizations like yours!") }}</p>
+{% if organization_type in ["government", "political_group", "personal", "other"] %}
+    <p>{{ _("As you are getting started with Zulip, we'd love to help you discover how it can work best for your needs. Check out our guides to key Zulip features!") }}</p>
+{% else %}
+    <p>{{ _("As you are getting started with Zulip, we'd love to help you discover how it can work best for your needs. Check out this guide to key Zulip features.") }}</p>
+{% endif %}
 
 
 {% if organization_type == "business" %}
@@ -23,6 +27,16 @@
 <a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for non-profits") }}</a>
 {% elif organization_type == "community" %}
 <a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for communities") }}</a>
+{% elif organization_type == "unspecified" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide") }}</a>
+{% elif organization_type == "government" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide") }}</a>
+{% elif organization_type == "political_group" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide") }}</a>
+{% elif organization_type == "personal" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide") }}</a>
+{% elif organization_type == "other" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide") }}</a>
 {% endif %}
 
 <p>
