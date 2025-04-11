@@ -1465,13 +1465,13 @@ li.top_left_scheduled_messages {
     }
 }
 
-#streams_list ul.topic-list {
+ul.topic-list {
     line-height: var(--line-height-sidebar-row-prominent);
     list-style-type: none;
     font-weight: normal;
 }
 
-#streams_list ul.topic-list.topic-list-has-topics::before {
+ul.topic-list.topic-list-has-topics::before {
     content: " ";
     display: block;
     position: absolute;
@@ -1486,7 +1486,7 @@ li.top_left_scheduled_messages {
     pointer-events: none;
 }
 
-#streams_list ul.topic-list.topic-list-has-topics::after {
+ul.topic-list.topic-list-has-topics::after {
     content: " ";
     display: block;
     position: absolute;
@@ -1500,7 +1500,7 @@ li.top_left_scheduled_messages {
     pointer-events: none;
 }
 
-#streams_list ul.topic-list:has(.show-more-topics)::after {
+ul.topic-list:has(.show-more-topics)::after {
     /* When the show all topics control is displayed,
        extend the bottom bracket. */
     width: 18px;
