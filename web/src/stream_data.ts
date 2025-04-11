@@ -14,7 +14,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, GroupSettingValue, RealmTopicsPolicy, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {StreamPermissionGroupSetting} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
     ApiStreamSubscription,
@@ -432,6 +432,13 @@ export function update_message_retention_setting(
     message_retention_days: number | null,
 ): void {
     sub.message_retention_days = message_retention_days;
+}
+
+export function update_topics_policy_setting(
+    sub: StreamSubscription,
+    topics_policy: StreamTopicsPolicy,
+): void {
+    sub.topics_policy = topics_policy;
 }
 
 export function update_stream_permission_group_setting(
@@ -967,7 +974,14 @@ export function get_stream_topics_policy(
     if (stream_id === undefined) {
         return undefined;
     }
-    return realm.realm_topics_policy;
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    if (sub.topics_policy === settings_config.stream_topics_policy_values.inherit.code) {
+        return realm.realm_topics_policy;
+    }
+    assert(sub.topics_policy !== "inherit");
+    return sub.topics_policy;
 }
 
 export function can_use_general_chat(stream_id: number | undefined): boolean {

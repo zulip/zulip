@@ -284,6 +284,14 @@ export const realm_topics_policy_values = {
     },
 };
 
+export const stream_topics_policy_values = {
+    ...realm_topics_policy_values,
+    inherit: {
+        code: "inherit",
+        description: $t({defaultMessage: "Automatic"}),
+    },
+};
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),

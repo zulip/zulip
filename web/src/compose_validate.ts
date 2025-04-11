@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import _ from "lodash";
 import type {ReferenceElement} from "tippy.js";
@@ -17,7 +18,7 @@ import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
-import {$t} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -53,8 +54,14 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
+export const TOPICS_REQUIRED_ERROR_MESSAGE_HTML = new Handlebars.SafeString(
+    $t_html({
+        defaultMessage:
+            "Sending messages to the <i>general chat</i> topic is not allowed in this channel.",
+    }),
+);
 export const TOPICS_REQUIRED_ERROR_MESSAGE = $t({
-    defaultMessage: "Topics are required in this organization.",
+    defaultMessage: "Sending messages to the general chat topic is not allowed in this channel.",
 });
 export const get_message_too_long_for_compose_error = (): string =>
     $t(
@@ -762,7 +769,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         const missing_topic = util.is_topic_name_considered_empty(topic);
         if (missing_topic) {
             report_validation_error(
-                TOPICS_REQUIRED_ERROR_MESSAGE,
+                TOPICS_REQUIRED_ERROR_MESSAGE_HTML,
                 compose_banner.CLASSNAMES.topic_missing,
                 $banner_container,
                 $("input#stream_message_recipient_topic"),
@@ -1029,7 +1036,7 @@ export function validate_message_length($container: JQuery, trigger_flash = true
 }
 
 function report_validation_error(
-    message: string,
+    message: string | Handlebars.SafeString,
     classname: string,
     $container: JQuery,
     $bad_input: JQuery,
