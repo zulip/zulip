@@ -1078,3 +1078,10 @@ of the base style defined for a read-only textarea in dark mode. */
 .trailing_bookend .bookend-channel-settings-link {
     display: inline;
 }
+
+.message-hidden-avatar {
+    .inline_profile_picture {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
