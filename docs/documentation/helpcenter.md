@@ -320,47 +320,9 @@ spaces to be formatted correctly.
 
 ### Icons
 
-You can refer to features in the Zulip UI by referencing their names
-and their [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) text
-icons within parentheses. **Note:** We have completed migrating away from older
-base class `icon-vector` and have dropped support for it. We now only support
-icons from [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) which
-make use of `fa` as a base class.
-
-- **cog** (<i class="fa fa-cog"></i>) icon:
-  `**cog** (<i class="fa fa-cog"></i>) icon`
-- **down chevron** (<i class="fa fa-chevron-down"></i>) icon:
-  `**down chevron** (<i class="fa fa-chevron-down"></i>) icon`
-- **eye** (<i class="fa fa-eye"></i>) icon:
-  `**eye** (<i class="fa fa-eye"></i>) icon`
-- **file** (<i class="fa fa-file-code-o"></i>) icon:
-  `**file** (<i class="fa fa-file-code-o"></i>) icon`
-- **filled star** (<i class="fa fa-star"></i>) icon:
-  `**filled star** (<i class="fa fa-star"></i>) icon`
-- **formatting** (<i class="fa fa-font"></i>) icon:
-  `**formatting** (<i class="fa fa-font"></i>) icon`
-- **menu** (<i class="fa fa-bars"></i>) icon:
-  `**menu** (<i class="fa fa-bars"></i>) icon`
-- **verflow** ( <i class="fa fa-ellipsis-v"></i> ) icon:
-  `**overflow** ( <i class="fa fa-ellipsis-v"></i> ) icon`
-- **paperclip** (<i class="fa fa-paperclip"></i>) icon:
-  `**paperclip** (<i class="fa fa-paperclip"></i>) icon`
-- **pencil** (<i class="fa fa-pencil"></i>) icon:
-  `**pencil** (<i class="fa fa-pencil"></i>) icon`
-- **pencil and paper** (<i class="fa fa-pencil-square-o"></i>) icon:
-  `**pencil and paper** (<i class="fa fa-pencil-square-o"></i>) icon`
-- **plus** (<i class="fa fa-plus"></i>) icon:
-  `**plus** (<i class="fa fa-plus"></i>) icon`
-- **smiley face** (<i class="fa fa-smile-o"></i>) icon:
-  `**smiley face** (<i class="fa fa-smile-o"></i>) icon`
-- **star** (<i class="fa fa-star-o"></i>) icon:
-  `**star** (<i class="fa fa-star-o"></i>) icon`
-- **trash** (<i class="fa fa-trash-o"></i>) icon:
-  `**trash** (<i class="fa fa-trash-o"></i>) icon`
-- **video-camera** (<i class="fa fa-video-camera"></i>) icon:
-  `**video-camera** (<i class="fa fa-video-camera"></i>) icon`
-- **x** (<i class="fa fa-times"></i>) icon:
-  `**x** (<i class="fa fa-times"></i>) icon`
+See [icons documentation](../subsystems/icons.md). Icons should always be named
+with their in-app tooltip or brief action name, _not_ the name of the icon in
+the code.
 
 ### Macros
 
