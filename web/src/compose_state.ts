@@ -18,6 +18,7 @@ let preview_render_count = 0;
 // the narrow and the user should still be able to see the banner once after
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
+let recipient_viewed_topic_moved_banner = false;
 let recipient_guest_ids_for_dm_warning: number[] = [];
 
 export function set_recipient_edited_manually(flag: boolean): void {
@@ -58,6 +59,14 @@ export function set_recipient_viewed_topic_resolved_banner(flag: boolean): void 
 
 export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
+}
+
+export function set_recipient_viewed_topic_moved_banner(flag: boolean): void {
+    recipient_viewed_topic_moved_banner = flag;
+}
+
+export function has_recipient_viewed_topic_moved_banner(): boolean {
+    return recipient_viewed_topic_moved_banner;
 }
 
 export function set_recipient_guest_ids_for_dm_warning(guest_ids: number[]): void {
