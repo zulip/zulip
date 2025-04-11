@@ -2420,8 +2420,8 @@ msgstr "\n    Antworte nicht auf diese E-Mail. Dieser Zulip-Server ist nicht daf
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(huddle_display_name)s"
-msgstr "Gruppen-DMs mit %(huddle_display_name)s"
+msgid "Group DMs with %(direct_message_group_display_name)s"
+msgstr "Gruppen-DMs mit %(direct_message_group_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
