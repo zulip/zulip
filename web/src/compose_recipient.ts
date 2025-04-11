@@ -3,7 +3,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
@@ -19,11 +19,14 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
+import {parse_html} from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
+import {the} from "./util.ts";
 
 type MessageType = "stream" | "private";
 
@@ -296,6 +299,43 @@ export function handle_middle_pane_transition(): void {
     if (compose_state.composing()) {
         update_narrow_to_recipient_visibility();
     }
+}
+
+export function maybe_show_go_to_conversation_button_intro_tooltip(): void {
+    // The tooltip is shown only if:
+    // The tooltip hasn't been shown before.
+    // The user has confirmed a recipient change to a topic/DM that
+    // is not in the current view.
+    // The "Go to conversation" button is active.
+    // There are no compose banners currently visible.
+
+    if (
+        !onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_button_tooltip")
+    ) {
+        return;
+    }
+
+    if (
+        !$(".conversation-arrow").hasClass("narrow_to_compose_recipients") ||
+        $("#compose_banners .main-view-banner").length > 0
+    ) {
+        return;
+    }
+
+    tippy.default(the($(".narrow_to_compose_recipients")), {
+        trigger: "manual",
+        appendTo: document.body,
+        showOnCreate: true,
+        content: parse_html(
+            $("#onboarding_compose_go_to_conversation_button_tootltip_template").html(),
+        ),
+        onHidden(instance) {
+            instance.destroy();
+            onboarding_steps.post_onboarding_step_as_read(
+                "intro_go_to_conversation_button_tooltip",
+            );
+        },
+    });
 }
 
 export function initialize(): void {
