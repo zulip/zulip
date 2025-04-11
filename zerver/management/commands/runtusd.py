@@ -71,10 +71,8 @@ class Command(BaseCommand):
                 env_vars["AWS_ACCESS_KEY_ID"] = settings.S3_KEY
             if settings.S3_SECRET_KEY is not None:
                 env_vars["AWS_SECRET_ACCESS_KEY"] = settings.S3_SECRET_KEY
-            if settings.S3_REGION is None:
-                import boto3
-
-                env_vars["AWS_REGION"] = boto3.client("s3").meta.region_name
-            else:
+            if settings.S3_REGION is not None:
                 env_vars["AWS_REGION"] = settings.S3_REGION
+            if settings.S3_SKIP_CHECKSUM:
+                env_vars["AWS_REQUEST_CHECKSUM_CALCULATION"] = "when_required"
         os.execvpe("tusd", tusd_args, env_vars)

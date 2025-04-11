@@ -555,21 +555,6 @@ input[type="checkbox"] {
 .edit-attachment-buttons {
     display: inline-block;
     vertical-align: middle;
-    height: 32px;
-}
-
-.edit-attachment-buttons .remove-attachment {
-    margin-left: 5px;
-}
-
-.edit-attachment-buttons .download-attachment {
-    display: block;
-    padding: 6px 9px;
-    text-decoration: none;
-
-    &:hover {
-        color: hsl(156deg 41% 40%);
-    }
 }
 
 .remove-alert-word {
@@ -1310,14 +1295,6 @@ label.preferences-radio-choice-label {
     margin-right: 1px;
 }
 
-.manage-user-button,
-.deactivate-user-button,
-.reactivate-user-button {
-    display: inline-flex;
-    align-items: center;
-    min-height: 35px;
-}
-
 .download_bot_zuliprc,
 .copy_zuliprc,
 .open_bots_subscribed_streams,
@@ -1325,26 +1302,6 @@ label.preferences-radio-choice-label {
 .deactivate-bot-button {
     display: inline-flex;
     align-items: center;
-}
-
-.invite-user-link {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    width: fit-content;
-    align-items: center;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: none;
-    }
-
-    .zulip-icon-user-plus {
-        margin-right: 5px;
-    }
-
-    &:hover .user-settings-invite-user-label {
-        text-decoration: underline;
-    }
 }
 
 /* -- new settings overlay -- */
@@ -2281,6 +2238,22 @@ label.preferences-radio-choice-label {
     width: 110px;
 }
 
+#admin-user-list .tab-switcher {
+    margin-left: 0;
+}
+
 #data-exports .tab-switcher .ind-tab {
     width: 160px;
+}
+
+#admin_invites_table {
+    .check:disabled {
+        opacity: 1;
+    }
+
+    .check {
+        &.hide {
+            display: none;
+        }
+    }
 }

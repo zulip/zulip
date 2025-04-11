@@ -5,6 +5,7 @@ import {z} from "zod";
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
+import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
@@ -32,6 +33,22 @@ import {
 import * as util from "./util.ts";
 
 export let user_settings_panel: SettingsPanel | undefined;
+
+const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
+    intent: "warning",
+    label: $t({
+        defaultMessage: "Zulip needs your permission to enable desktop notifications.",
+    }),
+    buttons: [
+        {
+            label: $t({defaultMessage: "Enable notifications"}),
+            custom_classes: "request-desktop-notifications",
+            attention: "primary",
+        },
+    ],
+    close_button: true,
+    custom_classes: "desktop-setting-notifications",
+};
 
 function rerender_ui(): void {
     const $unmatched_streams_table = $("#stream-specific-notify-table");
@@ -67,6 +84,18 @@ function rerender_ui(): void {
         $unmatched_streams_table.css("display", "none");
     } else {
         $unmatched_streams_table.css("display", "table-row-group");
+    }
+    update_notification_banner();
+}
+
+function update_notification_banner(): void {
+    const permission = Notification.permission;
+    if (permission === "granted") {
+        banners.close($(".desktop-notification-settings-banners .desktop-setting-notifications"));
+        $(".send_test_notification").show();
+    } else {
+        banners.append(DESKTOP_NOTIFICATIONS_BANNER, $(".desktop-notification-settings-banners"));
+        $(".send_test_notification").hide();
     }
 }
 
@@ -334,6 +363,26 @@ export function set_up(settings_panel: SettingsPanel): void {
         message_notifications.send_test_notification(
             $t({defaultMessage: "This is a test notification from Zulip."}),
         );
+    });
+
+    $("#settings_content").on("click", ".request-desktop-notifications", (e) => {
+        e.preventDefault();
+        void Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+                update_notification_banner();
+            } else if (permission === "denied") {
+                window.open(
+                    "/help/desktop-notifications#check-platform-settings",
+                    "_blank",
+                    "noopener noreferrer",
+                );
+            }
+        });
+    });
+
+    $("#settings_content").on("click", ".banner-close-button", (e) => {
+        e.preventDefault();
+        $(".banner-wrapper").remove();
     });
 
     set_enable_marketing_emails_visibility();

@@ -93,7 +93,8 @@ function build_page(): void {
         e.stopPropagation();
         const $button = $(this);
         const url =
-            "/json/realm/playgrounds/" + encodeURIComponent($button.attr("data-playground-id")!);
+            "/json/realm/playgrounds/" +
+            encodeURIComponent($button.closest("tr").attr("data-playground-id")!);
         const html_body = render_confirm_delete_playground();
 
         confirm_dialog.launch({

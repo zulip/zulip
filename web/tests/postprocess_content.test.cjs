@@ -10,7 +10,7 @@ const thumbnail = mock_esm("../src/thumbnail");
 const {postprocess_content} = zrequire("postprocess_content");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const user_settings = {};
+const user_settings = {web_font_size_px: 16};
 initialize_user_settings({user_settings});
 
 run_test("postprocess_content", () => {
@@ -24,6 +24,11 @@ run_test("postprocess_content", () => {
                 '<div class="message_inline_image">' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" title="inline image">upload</a> ' +
                 '<a role="button">button</a> ' +
+                "</div>" +
+                '<div class="message_inline_image message_inline_video">' +
+                '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4">' +
+                '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4"></video>' +
+                "</a>" +
                 "</div>" +
                 '<div class="youtube-video message_inline_image">' +
                 '<a class="" href="https://www.youtube.com/watch?v=tyKJueEk0XM">' +
@@ -40,9 +45,14 @@ run_test("postprocess_content", () => {
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
             '<a role="button">button</a> ' +
             "</div>" +
+            '<div class="message_inline_image message_inline_video">' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" target="_blank" rel="noopener noreferrer" class="media-anchor-element">' +
+            '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" class="media-video-element media-image-element"></video>' +
+            "</a>" +
+            "</div>" +
             '<div class="youtube-video message_inline_image">' +
-            '<a class="" href="https://www.youtube.com/watch?v=tyKJueEk0XM" target="_blank" rel="noopener noreferrer">' +
-            '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" loading="lazy">' +
+            '<a class="media-anchor-element" href="https://www.youtube.com/watch?v=tyKJueEk0XM" target="_blank" rel="noopener noreferrer">' +
+            '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" class="media-image-element" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -97,6 +107,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
     override(thumbnail, "preferred_format", thumbnail_formats[3]);
     override(thumbnail, "animated_format", thumbnail_formats[2]);
 
+    // Test for landscape thumbnails
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image">' +
@@ -106,8 +117,40 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" loading="lazy">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
+            "</a>" +
+            "</div>",
+    );
+
+    // Test for portrait thumbnails
+    assert.equal(
+        postprocess_content(
+            '<div class="message_inline_image">' +
+                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
+                '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                "</a>" +
+                "</div>",
+        ),
+        '<div class="message_inline_image">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element portrait-thumbnail" width="100" height="200" loading="lazy">' +
+            "</a>" +
+            "</div>",
+    );
+
+    // Test for dinky thumbnails
+    assert.equal(
+        postprocess_content(
+            '<div class="message_inline_image">' +
+                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
+                '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                "</a>" +
+                "</div>",
+        ),
+        '<div class="message_inline_image">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" width="1" height="10" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -123,8 +166,8 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -140,8 +183,8 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>",
     );
@@ -156,8 +199,8 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" loading="lazy">' +
             "</a>" +
             "</div>",
     );

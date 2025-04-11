@@ -818,6 +818,7 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_ADDRESSING_STYLE = "auto"
 # S3_SKIP_PROXY = True
 # S3_UPLOADS_STORAGE_CLASS = "STANDARD"
+# S3_SKIP_CHECKSUM = False
 
 ## Maximum allowed size of uploaded files, in megabytes. Set
 ## MAX_FILE_UPLOAD_SIZE to 0 to disable file uploads completely

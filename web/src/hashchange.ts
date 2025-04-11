@@ -9,7 +9,6 @@ import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
-import * as inbox_util from "./inbox_util.ts";
 import * as info_overlay from "./info_overlay.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_view from "./message_view.ts";
@@ -20,7 +19,6 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
-import * as recent_view_util from "./recent_view_util.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as settings from "./settings.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -51,22 +49,6 @@ declare global {
             hashchange: JQueryHashChangeEvent<TDelegateTarget, TData, TCurrentTarget, TTarget>;
         }
     }
-}
-
-function maybe_hide_recent_view(): boolean {
-    if (recent_view_util.is_visible()) {
-        recent_view_ui.hide();
-        return true;
-    }
-    return false;
-}
-
-function maybe_hide_inbox(): boolean {
-    if (inbox_util.is_visible()) {
-        inbox_ui.hide();
-        return true;
-    }
-    return false;
 }
 
 function show_all_message_view(): void {
@@ -143,7 +125,6 @@ function show_home_view(): void {
     // rendered without a hash.
     switch (user_settings.web_home_view) {
         case "recent_topics": {
-            maybe_hide_inbox();
             recent_view_ui.show();
             break;
         }
@@ -153,7 +134,6 @@ function show_home_view(): void {
             break;
         }
         case "inbox": {
-            maybe_hide_recent_view();
             inbox_ui.show();
             break;
         }
@@ -241,11 +221,9 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             window.location.replace("#recent");
             break;
         case "#recent":
-            maybe_hide_inbox();
             recent_view_ui.show();
             break;
         case "#inbox":
-            maybe_hide_recent_view();
             inbox_ui.show();
             break;
         case "#all_messages":

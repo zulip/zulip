@@ -582,8 +582,6 @@
        in subscriptions and user group settings overlays */
     --settings-overlay-subheader-height: 3.1429em; /* 44px at 14px/em */
     --settings-overlay-header-button-height: 2em;
-    /* .settings-sticky-footer */
-    --subscriptions-overlay-sticky-footer-height: 60px;
     /* Informational overlay */
     --informational-overlay-max-width: 43.75em;
     --modal-input-width: 23.2142em;
@@ -1553,6 +1551,22 @@
         var(--color-text-generic-link-interactive)
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
+    --color-background-image-thumbnail: light-dark(
+        hsl(0deg 0% 0% / 8%),
+        hsl(0deg 0% 100% / 13%)
+    );
+    --color-background-image-thumbnail-hover: light-dark(
+        hsl(0deg 0% 0% / 30%),
+        hsl(0deg 0% 100% / 45%)
+    );
+    --color-background-image-thumbnail-dinky: light-dark(
+        hsl(0deg 0% 0% / 3%),
+        hsl(0deg 0% 100% / 3%)
+    );
+    --color-background-image-thumbnail-dinky-hover: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 100% / 15%)
+    );
 
     /* Icon colors */
     --color-icon-bot: light-dark(
@@ -2022,6 +2036,9 @@
     );
     /* The SVG must be adjusted when changing the border color above. */
     --svg-url-rendered-checkbox: url("../images/checkbox.svg");
+
+    /* Theme-dependent SVGs */
+    --svg-url-thumbnail-loader: url("../images/loading/loader-black.svg");
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: light-dark(
@@ -2807,6 +2824,9 @@
     /* Zulip-style checkbox values. */
     /* The SVG must be adjusted when changing the border color above. */
     --svg-url-rendered-checkbox: url("../images/checkbox-dark-mode.svg");
+
+    /* Theme-dependent SVGs */
+    --svg-url-thumbnail-loader: url("../images/loading/loader-white.svg");
 }
 
 @media screen {

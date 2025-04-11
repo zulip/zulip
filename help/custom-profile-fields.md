@@ -38,7 +38,7 @@ methods][authentication-production] documentation for details.
 
 {settings_tab|profile-field-settings}
 
-1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+1. In the **Actions** column, click the **edit** (<i class="zulip-icon zulip-icon-edit"></i>)
    icon for the profile field you want to edit.
 
 1. Edit profile field information as desired, and click **Save changes**.
@@ -60,7 +60,7 @@ checkboxes will be disabled.
 
 {settings_tab|profile-field-settings}
 
-1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+1. In the **Actions** column, click the **edit** (<i class="zulip-icon zulip-icon-edit"></i>)
    icon for the profile field you want to edit.
 
 1. Toggle **Display on user card**.
@@ -84,7 +84,7 @@ it out.
 
 {settings_tab|profile-field-settings}
 
-1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+1. In the **Actions** column, click the **edit** (<i class="zulip-icon zulip-icon-edit"></i>)
    icon for the profile field you want to edit.
 
 1. Toggle **Required field**.
@@ -110,7 +110,7 @@ syncing profile fields from an employee directory.
 
 {settings_tab|profile-field-settings}
 
-1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+1. In the **Actions** column, click the **edit** (<i class="zulip-icon zulip-icon-edit"></i>)
    icon for the profile field you want to configure.
 
 1. Toggle **Users can edit this field for their own account**.

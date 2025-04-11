@@ -924,22 +924,6 @@ h4.user_group_setting_subsection_title {
         outline: none;
         -webkit-overflow-scrolling: touch;
 
-        .stream-creation-simplebar-container,
-        .user-group-creation-simplebar-container {
-            height: calc(
-                var(--overlay-container-height) -
-                    var(--settings-overlay-header-height) -
-                    var(--settings-overlay-subheader-height) -
-                    var(--subscriptions-overlay-sticky-footer-height)
-            );
-            max-height: calc(
-                var(--overlay-container-max-height) -
-                    var(--settings-overlay-header-height) -
-                    var(--settings-overlay-subheader-height) -
-                    var(--subscriptions-overlay-sticky-footer-height)
-            );
-        }
-
         .user-group-creation-body,
         .stream-creation-body {
             padding: 15px 15px 0;

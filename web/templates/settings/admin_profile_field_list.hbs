@@ -35,12 +35,19 @@
     </td>
     {{#if ../can_modify}}
     <td class="actions">
-        <button class="button rounded small button-warning open-edit-form-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edit' }}" data-profile-field-id="{{id}}">
-            <i class="fa fa-pencil" aria-hidden="true"></i>
-        </button>
-        <button class="button rounded small delete button-danger tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Delete' }}" data-profile-field-id="{{id}}">
-            <i class="fa fa-trash-o" aria-hidden="true"></i>
-        </button>
+        {{> ../components/icon_button
+          icon="edit"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip open-edit-form-modal"
+          data-tippy-content=(t "Edit")
+          }}
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip delete"
+          data-tippy-content=(t "Delete")
+          aria-label=(t "Delete")
+          }}
     </td>
     {{/if}}
 </tr>

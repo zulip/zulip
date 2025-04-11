@@ -113,6 +113,11 @@ let is_waiting_for_revive_current_focus = true;
 // Used to store the last scroll position of the recent view before
 // it is hidden to avoid scroll jumping when it is shown again.
 let last_scroll_offset: number | undefined;
+let hide_other_views_callback: (() => void) | undefined;
+
+export function set_hide_other_views(callback: () => void): void {
+    hide_other_views_callback = callback;
+}
 
 export function set_initial_message_fetch_status(value: boolean): void {
     is_initial_message_fetch_pending = value;
@@ -1405,6 +1410,8 @@ export function update_recent_view_rendered_time(): void {
 }
 
 export function show(): void {
+    assert(hide_other_views_callback !== undefined);
+    hide_other_views_callback();
     // We remove event handler before hiding, so they need to
     // be attached again, checking for topics_widget to be defined
     // is a reliable solution to check if recent view was displayed earlier.
@@ -1457,6 +1464,9 @@ function filter_buttons(): JQuery {
 }
 
 export function hide(): void {
+    if (!recent_view_util.is_visible()) {
+        return;
+    }
     // Since we have events attached to element (window) which are present in
     // views others than recent view, it is important to clear events here.
     topics_widget?.clear_event_handlers();
@@ -1839,12 +1849,15 @@ export function initialize({
     on_mark_pm_as_read,
     on_mark_topic_as_read,
     maybe_load_older_messages,
+    hide_other_views,
 }: {
     on_click_participant: (avatar_element: Element, participant_user_id: number) => void;
     on_mark_pm_as_read: (user_ids_string: string) => void;
     on_mark_topic_as_read: (stream_id: number, topic: string) => void;
     maybe_load_older_messages: (first_unread_unmuted_message_id: number) => void;
+    hide_other_views: () => void;
 }): void {
+    hide_other_views_callback = hide_other_views;
     load_filters();
 
     $("body").on(

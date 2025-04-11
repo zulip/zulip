@@ -208,6 +208,7 @@ const {buddy_list} = zrequire("buddy_list");
 const activity_ui = zrequire("activity_ui");
 const people = zrequire("people");
 const rt = zrequire("recent_view_ui");
+rt.set_hide_other_views(noop);
 const recent_view_util = zrequire("recent_view_util");
 const rt_data = zrequire("recent_view_data");
 const muted_users = zrequire("muted_users");
