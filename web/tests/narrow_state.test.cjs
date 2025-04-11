@@ -11,6 +11,7 @@ const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const narrow_state = zrequire("narrow_state");
 const message_lists = zrequire("message_lists");
+const inbox_util = zrequire("inbox_util");
 
 function set_filter(raw_terms) {
     const terms = raw_terms.map((op) => ({
@@ -372,4 +373,16 @@ test("pm_ids_string", () => {
     set_filter([["dm", "bob@foo.com,alice@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), "444,555");
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set([444, 555]));
+});
+
+test("inbox_view_visible", () => {
+    const filter = new Filter([
+        {
+            operator: "channel",
+            operand: 10,
+        },
+    ]);
+    inbox_util.set_filter(filter);
+    inbox_util.set_visible(true);
+    assert.ok(narrow_state.filter() === filter);
 });

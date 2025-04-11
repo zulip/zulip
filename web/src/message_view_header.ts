@@ -47,7 +47,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
-    if (inbox_util.is_visible()) {
+    if (inbox_util.is_visible() && !inbox_util.is_channel_view()) {
         return {
             title: $t({defaultMessage: "Inbox"}),
             description: $t({

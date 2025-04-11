@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import {Filter} from "./filter.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -10,7 +11,11 @@ import type {StreamSubscription} from "./sub_store.ts";
 import * as unread from "./unread.ts";
 
 export function filter(): Filter | undefined {
-    // `Recent Conversations` and `Inbox` return undefined;
+    if (inbox_util.is_visible()) {
+        return inbox_util.filter;
+    }
+
+    // `Recent Conversations` returns undefined;
     return message_lists.current?.data.filter;
 }
 
