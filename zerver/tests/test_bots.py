@@ -19,6 +19,7 @@ from zerver.actions.users import do_change_can_create_users, do_change_user_role
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
+from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.utils import assert_is_not_none
@@ -1791,12 +1792,24 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "method": "PATCH",
         }
         email = "hambot-bot@zulip.testserver"
-        # Important: We intentionally use the wrong method, post, here.
-        result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+
+        with self.assertLogs(level="WARN") as m:
+            # Important: We intentionally use the wrong method, post, here.
+            result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
 
         # TODO: The "method" parameter is not currently tracked as a processed parameter
         # by typed_endpoint. Assert it is returned as an ignored parameter.
         response_dict = self.assert_json_success(result, ignored_parameters=["method"])
+
+        request_notes = RequestNotes.get_notes(result.wsgi_request)
+
+        self.assertEqual(
+            m.output,
+            [
+                "WARNING:root:Overriding HTTP method via 'method' parameter: "
+                f"original={result.request['REQUEST_METHOD']}, override={bot_info['method']}, client={request_notes.client_name}"
+            ],
+        )
 
         self.assertEqual("Fred", response_dict["full_name"])
 
