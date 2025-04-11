@@ -180,6 +180,7 @@
 
         min-width: 2px;
         overflow-wrap: anywhere;
+        flex-grow: 1;
 
         outline: none;
 
