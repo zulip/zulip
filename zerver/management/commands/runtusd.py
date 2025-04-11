@@ -55,7 +55,7 @@ class Command(BaseCommand):
             "-behind-proxy",
             f"-hooks-http={hooks_http}",
             "-hooks-http-forward-headers=Cookie,Authorization",
-            "--hooks-enabled-events=pre-create,pre-finish",
+            "--hooks-enabled-events=pre-create,pre-finish,pre-terminate",
             "-disable-download",
             "--show-startup-logs=false",
         ]
