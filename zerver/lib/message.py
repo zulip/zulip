@@ -480,7 +480,6 @@ def access_web_public_message(
     # These should all have been enforced by the code in
     # get_web_public_streams_queryset
     assert stream.is_web_public
-    assert not stream.deactivated
     assert not stream.invite_only
     assert stream.history_public_to_subscribers
 
