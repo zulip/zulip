@@ -9,10 +9,12 @@
 const assert = require("node:assert/strict");
 
 const example_settings = require("./lib/example_settings.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
+
+const channel = mock_esm("../src/channel");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -82,7 +84,7 @@ function test(label, f) {
             example_settings.server_supported_permission_settings,
         );
 
-        f({override});
+        return f({override});
     });
 }
 
@@ -231,6 +233,62 @@ test("subscribers", () => {
     blueslip.expect("warn", "We tried to add invalid subscriber: 88888");
     peer_data.add_subscriber(stream_id, 88888);
     blueslip.reset();
+});
+
+test("maybe_fetch_stream_subscribers", async () => {
+    const india = {
+        stream_id: 102,
+        name: "India",
+        subscribed: true,
+    };
+    stream_data.add_sub(india);
+    let channel_get_calls = 0;
+    channel.get = (opts) => {
+        assert.equal(opts.url, `/json/streams/${india.stream_id}/members`);
+        channel_get_calls += 1;
+        return {
+            subscribers: [1, 2, 3, 4],
+        };
+    };
+
+    // Only one of these will do the fetch, and the other will wait
+    // for the first fetch to complete.
+    const promise1 = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    const promise2 = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    await promise1;
+    await promise2;
+    assert.equal(channel_get_calls, 1);
+
+    peer_data.clear_for_testing();
+    const pending_promise = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    peer_data.bulk_add_subscribers({
+        stream_ids: [india.stream_id],
+        user_ids: [7, 9],
+    });
+    peer_data.bulk_remove_subscribers({
+        stream_ids: [india.stream_id],
+        user_ids: [3],
+    });
+    const subscribers_before_fetch_completes = peer_data.get_subscribers(india.stream_id);
+    assert.deepEqual(subscribers_before_fetch_completes, [7, 9]);
+    const subscribers_after_fetch = await pending_promise;
+    assert.deepEqual([...subscribers_after_fetch.keys()], [1, 2, 4, 7, 9]);
+
+    peer_data.clear_for_testing();
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2), true);
+    assert.equal(peer_data.has_full_subscriber_data(india.stream_id), true);
+
+    peer_data.clear_for_testing();
+    assert.equal(peer_data.has_full_subscriber_data(india.stream_id), false);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2), true);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5), false);
+
+    channel.get = () => {
+        throw new Error("error");
+    };
+    peer_data.clear_for_testing();
+    blueslip.expect("error", "Failure fetching channel subscribers");
+    peer_data.maybe_fetch_stream_subscribers(india.stream_id);
 });
 
 test("get_subscriber_count", () => {
