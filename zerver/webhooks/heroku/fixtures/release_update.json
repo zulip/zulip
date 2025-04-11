@@ -1,0 +1,64 @@
+{
+    "id": "d5d2fb1d-f086-41bf-b054-1d349d4c4ce2",
+    "data": {
+        "id": "6be9012f-1c42-4f2d-bb99-af152aad07d8",
+        "app": {
+            "id": "4335bcdb-5f6f-41f8-a31b-84697ec96475",
+            "name": "vedant-test",
+            "process_tier": "basic"
+        },
+        "slug": {
+            "id": "e7cb552a-e840-48cb-9164-081d1e6da274",
+            "commit": "1a5f89db9a6a62f29689b6eeea65e6b6eb0879cd",
+            "commit_description": ""
+        },
+        "user": {
+            "id": "9126ad9a-9950-46df-857f-6970ebf8a480",
+            "email": "vedant.messi101@gmail.com"
+        },
+        "stack": "heroku-24",
+        "status": "succeeded",
+        "current": true,
+        "pstable": {},
+        "version": 3,
+        "artifacts": [
+            {
+                "id": "e7cb552a-e840-48cb-9164-081d1e6da274",
+                "type": "slug"
+            }
+        ],
+        "created_at": "2025-05-17T11:37:58Z",
+        "updated_at": "2025-05-17T11:37:58Z",
+        "description": "Deploy 1a5f89db",
+        "addon_plan_names": [],
+        "output_stream_url": null,
+        "eligible_for_rollback": true
+    },
+    "actor": {
+        "id": "9126ad9a-9950-46df-857f-6970ebf8a480",
+        "email": "vedant.messi101@gmail.com"
+    },
+    "action": "update",
+    "version": "application/vnd.heroku+json; version=3",
+    "resource": "release",
+    "sequence": null,
+    "created_at": "2025-05-17T11:37:58.562518Z",
+    "updated_at": "2025-05-17T11:37:58.562524Z",
+    "published_at": "2025-05-17T11:37:58Z",
+    "previous_data": {},
+    "webhook_metadata": {
+        "attempt": {
+            "id": "6085f041-b991-4610-bc7f-0af82e04667f"
+        },
+        "delivery": {
+            "id": "09f411b3-fefa-44d1-9508-e3c43e0fd46e"
+        },
+        "event": {
+            "id": "d5d2fb1d-f086-41bf-b054-1d349d4c4ce2",
+            "include": "api:release"
+        },
+        "webhook": {
+            "id": "e1020099-2147-45d9-b7a1-bf1422851eea"
+        }
+    }
+}
