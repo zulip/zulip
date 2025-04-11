@@ -520,6 +520,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     replaced = false;
 
     override(compose_ui, "insert_and_scroll_into_view", noop);
+    override_rewire(compose_state, "is_compose_select_recipient_item_clicked", noop);
 
     quote_message(opts);
 

@@ -404,6 +404,17 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     // Pass topic_changed=true if this function was called in response
     // to a topic being edited.
 
+    if (
+        compose_state.get_is_processing_forward_message() &&
+        !compose_state.is_compose_select_recipient_item_clicked()
+    ) {
+        // When the "Forward message" option is clicked, the channel picker is
+        // opened. Sometimes, if the topic is a resolved one, a warning banner
+        // is also shown. We want to prevent the banner from appearing while
+        // the channel picker is active.
+        return;
+    }
+
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
         return;
