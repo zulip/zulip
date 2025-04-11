@@ -237,7 +237,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     compose_state.set_selected_recipient_id(recipient_id);
     compose_state.set_recipient_edited_manually(true);
     on_compose_select_recipient_update();
-    compose_state.get_compose_select_recipient_dropdown_widget().item_clicked = true;
+    compose_state.set_is_compose_select_recipient_item_clicked(true);
     dropdown.hide();
     event.preventDefault();
     event.stopPropagation();
@@ -291,7 +291,7 @@ function on_hidden_callback(): void {
             $("textarea#compose-textarea").trigger("focus");
         }
     }
-    compose_state.get_compose_select_recipient_dropdown_widget().item_clicked = false;
+    compose_state.set_is_compose_select_recipient_item_clicked(false);
 }
 
 export function handle_middle_pane_transition(): void {

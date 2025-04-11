@@ -104,6 +104,10 @@ export function rewire_is_compose_select_recipient_item_clicked(
     is_compose_select_recipient_item_clicked = value;
 }
 
+export function set_is_compose_select_recipient_item_clicked(val: boolean): void {
+    compose_select_recipient_dropdown_widget.item_clicked = val;
+}
+
 export function composing(): boolean {
     // This is very similar to get_message_type(), but it returns
     // a boolean.
