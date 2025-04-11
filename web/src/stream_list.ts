@@ -419,6 +419,9 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
             // Add search box for topics list.
             $elt.children("div.bottom_left_row").append($(render_filter_topics()));
             $("#left-sidebar-filter-topic-input").trigger("focus");
+            if (stream_topic_history.stream_has_resolved_topics(stream_id)) {
+                topic_list.setup_topic_search_typeahead();
+            }
         } else {
             $elt.hide();
         }
@@ -760,6 +763,7 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     }
 
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    topic_list.update_topic_typeahead_source(stream_id);
 
     return $stream_li;
 }
