@@ -20,7 +20,7 @@ import {realm} from "./state_data.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
-function restore_draft(draft_id: string): void {
+export function restore_draft(draft_id: string): void {
     const draft = drafts.draft_model.getDraft(draft_id);
     if (!draft) {
         return;
@@ -59,7 +59,7 @@ function restore_draft(draft_id: string): void {
     });
 }
 
-function remove_draft($draft_row: JQuery): void {
+export function remove_draft($draft_row: JQuery): void {
     // Deletes the draft and removes it from the list
     const draft_id = $draft_row.attr("data-draft-id")!;
 
@@ -76,10 +76,14 @@ function remove_draft($draft_row: JQuery): void {
     );
 }
 
-function update_rendered_drafts(
+export function rewire_update_rendered_drafts(value: typeof update_rendered_drafts): void {
+    update_rendered_drafts = value;
+}
+
+export let update_rendered_drafts = (
     has_drafts_from_conversation: boolean,
     has_other_drafts: boolean,
-): void {
+): void => {
     if (has_drafts_from_conversation) {
         $("#drafts-from-conversation").show();
     } else {
@@ -91,7 +95,7 @@ function update_rendered_drafts(
     if (!has_other_drafts) {
         $("#other-drafts").hide();
     }
-}
+};
 
 const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
