@@ -1140,10 +1140,6 @@ of the base style defined for a read-only textarea in dark mode. */
         position: relative;
         vertical-align: middle;
         height: 0;
-        border-bottom: 1px solid
-            light-dark(
-                color-mix(in oklch, hsl(0deg 0% 0%) 15%, transparent),
-                color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
-            );
+        border-bottom: 1px solid var(--color-border-mesaage-group-spacer-line);
     }
 }
