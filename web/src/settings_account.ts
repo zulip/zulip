@@ -202,7 +202,23 @@ function settings_change_error(message_html: string, xhr?: JQuery.jqXHR): void {
     dialog_widget.hide_dialog_spinner();
 }
 
-function update_custom_profile_field(
+function is_valid_date_format(value: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+function parse_to_iso_date_format(dateStr: string): string | null {
+    const parsed = new Date(dateStr);
+    if (Number.isNaN(parsed.getTime())) {
+        return null;
+    }
+
+    // Format as YYYY-MM-DD
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+export function update_custom_profile_field(
     field: CustomProfileFieldData,
     method: channel.AjaxRequestHandler,
 ): void {
@@ -751,12 +767,20 @@ export function set_up(): void {
 
     $("#profile-settings").on("change", ".custom_user_field_value", function (this: HTMLElement) {
         const fields: CustomProfileFieldData[] = [];
-        const value = $(this).val()!;
+        let value = $(this).val()!;
         assert(typeof value === "string");
         const field_id = Number.parseInt(
             $(this).closest(".custom_user_field").attr("data-field-id")!,
             10,
         );
+        if ($(this).hasClass("date-field") && !is_valid_date_format(value)) {
+            const converted = parse_to_iso_date_format(value);
+            if (converted) {
+                value = converted;
+            } else {
+                value = "";
+            }
+        }
         if (value) {
             fields.push({id: field_id, value});
             update_user_custom_profile_fields(fields, channel.patch);
