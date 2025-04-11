@@ -54,12 +54,15 @@ export function update_starred_view(message_id: number, new_value: boolean): voi
     update_message_in_all_views(message_id, ($row) => {
         const $elt = $row.find(".star");
         const $star_container = $row.find(".star_container");
+        const $star_marker = $row.find(".starred-marker");
         if (starred) {
             $elt.addClass("zulip-icon-star-filled").removeClass("zulip-icon-star");
             $star_container.removeClass("empty-star");
+            $star_marker.addClass("starred");
         } else {
             $elt.removeClass("zulip-icon-star-filled").addClass("zulip-icon-star");
             $star_container.addClass("empty-star");
+            $star_marker.removeClass("starred");
         }
         const data_template_id = starred
             ? "unstar-message-tooltip-template"
