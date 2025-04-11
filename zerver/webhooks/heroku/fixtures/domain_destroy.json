@@ -1,0 +1,43 @@
+{
+    "action": "destroy",
+    "actor": {
+        "email": "user-0220@example.com",
+        "id": "e2c26fa6-e403-421d-8525-e211bcf2800e"
+    },
+    "created_at": "2016-10-26T22:49:05Z",
+    "id": "5acede55-f305-4218-8543-e14c5f22d9be",
+    "data": {
+        "app": {
+            "id": "45018f0a-1ede-4164-855b-044cc5757794",
+            "name": "new-app-name"
+        },
+        "cname": null,
+        "created_at": "2016-10-26T22:49:05Z",
+        "hostname": "sample-app-0125.herokuapp.com",
+        "id": "bd5202e6-cbbf-46c4-ada4-d9df845dd06b",
+        "kind": "heroku",
+        "status": "none",
+        "updated_at": "2016-10-26T22:49:05Z"
+    },
+    "previous_data": {},
+    "published_at": null,
+    "resource": "domain",
+    "sequence": null,
+    "updated_at": "2016-10-26T22:49:05Z",
+    "version": "application/vnd.heroku+json; version=3",
+    "webhook_metadata": {
+        "attempt": {
+            "id": "8a44f820-2354-489d-9a11-a793cbf49979"
+        },
+        "delivery": {
+            "id": "d244009a-670f-4340-88e9-789a4f9002d5"
+        },
+        "event": {
+            "id": "5acede55-f305-4218-8543-e14c5f22d9be",
+            "include": "api:domain"
+        },
+        "webhook": {
+            "id": "b54e6a7e-d162-4bd7-ab42-1011582c19cc"
+        }
+    }
+}
