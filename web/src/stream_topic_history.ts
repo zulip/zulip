@@ -1,5 +1,7 @@
 import assert from "minimalistic-assert";
 
+import * as resolved_topics from "../shared/src/resolved_topic.ts";
+
 import * as echo_state from "./echo_state.ts";
 import {FoldDict} from "./fold_dict.ts";
 import * as message_util from "./message_util.ts";
@@ -29,6 +31,17 @@ export function stream_has_topics(stream_id: number): boolean {
     assert(history !== undefined);
 
     return history.has_topics();
+}
+
+export function stream_has_locally_available_resolved_topics(stream_id: number): boolean {
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(stream_id);
+    assert(history !== undefined);
+
+    return history.has_resolved_topics();
 }
 
 export type TopicHistoryEntry = {
@@ -65,6 +78,10 @@ export class PerStreamHistory {
 
     constructor(stream_id: number) {
         this.stream_id = stream_id;
+    }
+
+    has_resolved_topics(): boolean {
+        return [...this.topics.keys()].some((topic) => resolved_topics.is_resolved(topic));
     }
 
     has_topics(): boolean {
