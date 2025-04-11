@@ -25,8 +25,6 @@ from zerver.lib.sessions import narrow_request_user
 ParamT = ParamSpec("ParamT")
 METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH")
 
-logger = logging.getLogger("zulip.rest")
-
 
 def default_never_cache_responses(
     view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
@@ -95,7 +93,12 @@ def get_target_view_function_or_response(
     # Override requested method if magic method=??? parameter exists
     method_to_use = request.method
     if request.POST and "method" in request.POST:
-        logger.warning("Overriding method")  # %s with %s", request.method, request.POST["method"])
+        logging.warning(
+            "Overriding HTTP method via 'method' parameter: original=%s, override=%s, client=%s",
+            request.method,
+            request.POST["method"],
+            request_notes.client_name,
+        )
         method_to_use = request.POST["method"]
 
     if method_to_use in supported_methods:
