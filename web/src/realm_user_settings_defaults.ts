@@ -40,6 +40,11 @@ export const realm_default_settings_schema = z.object({
     hide_ai_features: z.boolean(),
     high_contrast_mode: z.boolean(),
     left_side_userlist: z.boolean(),
+    mark_resolved_topic_notifications_as_read_policy: z.enum([
+        "always",
+        "unfollowed_topics",
+        "never",
+    ]),
     message_content_in_email_notifications: z.boolean(),
     notification_sound: z.string(),
     pm_content_in_desktop_notifications: z.boolean(),

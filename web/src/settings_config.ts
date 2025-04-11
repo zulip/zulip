@@ -115,6 +115,21 @@ export const web_animate_image_previews_values = {
     },
 };
 
+export const mark_resolved_topic_notifications_as_read_policy_values = {
+    always: {
+        code: "always",
+        description: $t({defaultMessage: "Always"}),
+    },
+    unfollowed_topics: {
+        code: "unfollowed_topics",
+        description: $t({defaultMessage: "In topics I'm not following"}),
+    },
+    never: {
+        code: "never",
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
 export const web_stream_unreads_count_display_policy_values = {
     all_streams: {
         code: 1,

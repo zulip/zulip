@@ -104,6 +104,7 @@ from zerver.models.realms import (
     get_realm_domains,
 )
 from zerver.models.streams import get_default_stream_groups
+from zerver.models.users import MarkResolvedTopicNotificationsAsReadPolicyEnum
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
@@ -594,6 +595,11 @@ def fetch_initial_state_data(
         state["realm_user_settings_defaults"]["available_notification_sounds"] = (
             get_available_notification_sounds()
         )
+        state["realm_user_settings_defaults"][
+            "mark_resolved_topic_notifications_as_read_policy"
+        ] = MarkResolvedTopicNotificationsAsReadPolicyEnum(
+            realm_user_default.mark_resolved_topic_notifications_as_read_policy
+        ).name
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -837,6 +843,11 @@ def fetch_initial_state_data(
         state["user_settings"]["timezone"] = canonicalize_timezone(settings_user.timezone)
         state["user_settings"]["available_notification_sounds"] = (
             get_available_notification_sounds()
+        )
+        state["user_settings"]["mark_resolved_topic_notifications_as_read_policy"] = (
+            MarkResolvedTopicNotificationsAsReadPolicyEnum(
+                settings_user.mark_resolved_topic_notifications_as_read_policy
+            ).name
         )
 
     if want("user_status"):
