@@ -639,7 +639,7 @@ export function initialize_everything(state_data) {
     about_zulip.initialize();
 
     initialize_unread_ui();
-    activity.initialize();
+    activity_ui.initialize_activity();
     activity.register_on_new_user_input_hook(() => {
         // Instead of marking new messages as read immediately when bottom
         // of feed is visible, we wait for user input to mark them as read.
