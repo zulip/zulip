@@ -1000,8 +1000,8 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(86),
-            self.assert_memcached_count(20),
+            self.assert_database_query_count(85),
+            self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
             fred = do_create_user(
@@ -1724,7 +1724,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Subscribe to the stream.
         self.subscribe(iago, stream.name)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(8):
             result = orjson.loads(
                 self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
             )

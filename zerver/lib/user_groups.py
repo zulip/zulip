@@ -171,7 +171,7 @@ def access_user_group_for_update(
         return user_group
 
     user_has_permission = user_has_permission_for_group_setting(
-        user_group.can_manage_group,
+        user_group.can_manage_group_id,
         user_profile,
         NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_manage_group"],
     )
@@ -181,7 +181,7 @@ def access_user_group_for_update(
     if permission_setting != "can_manage_group":
         assert permission_setting in NamedUserGroup.GROUP_PERMISSION_SETTINGS
         user_has_permission = user_has_permission_for_group_setting(
-            getattr(user_group, permission_setting),
+            getattr(user_group, permission_setting).id,
             user_profile,
             NamedUserGroup.GROUP_PERMISSION_SETTINGS[permission_setting],
         )
@@ -836,7 +836,7 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserG
 
 
 def user_has_permission_for_group_setting(
-    user_group: UserGroup,
+    user_group_id: int,
     user: UserProfile,
     setting_config: GroupPermissionSetting,
     *,
@@ -845,7 +845,7 @@ def user_has_permission_for_group_setting(
     if not setting_config.allow_everyone_group and user.is_guest:
         return False
 
-    return is_user_in_group(user_group.id, user, direct_member_only=direct_member_only)
+    return is_user_in_group(user_group_id, user, direct_member_only=direct_member_only)
 
 
 def is_any_user_direct_member(user_group_id: int, user_ids: Iterable[int]) -> bool:

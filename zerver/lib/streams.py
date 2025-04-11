@@ -471,7 +471,7 @@ def check_stream_access_based_on_can_send_message_group(
             raise JsonableError(_("You do not have permission to post in this channel."))
 
     if not user_has_permission_for_group_setting(
-        stream.can_send_message_group,
+        stream.can_send_message_group_id,
         sender,
         Stream.stream_permission_group_settings["can_send_message_group"],
         direct_member_only=False,
@@ -1165,10 +1165,10 @@ def get_streams_to_which_user_cannot_add_subscribers(
 def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile) -> bool:
     # IMPORTANT: This function expects its callers to have already
     # checked that the user can access the provided channel.
-    group_allowed_to_administer_channel = channel.can_administer_channel_group
-    assert group_allowed_to_administer_channel is not None
+    group_id_allowed_to_administer_channel = channel.can_administer_channel_group_id
+    assert group_id_allowed_to_administer_channel is not None
     return user_has_permission_for_group_setting(
-        group_allowed_to_administer_channel,
+        group_id_allowed_to_administer_channel,
         user_profile,
         Stream.stream_permission_group_settings["can_administer_channel_group"],
     )
