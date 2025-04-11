@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -21,12 +21,26 @@ const inbox_util = zrequire("inbox_util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const {MessageList} = zrequire("message_list");
+const {MessageListData} = zrequire("message_list_data");
 
 set_current_user({});
 const realm = {};
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
+set_global("document", "document-stub");
+const message_lists = mock_esm("../src/message_lists");
+function MessageListView() {
+    return {
+        maybe_rerender: noop,
+        append: noop,
+        prepend: noop,
+    };
+}
+mock_esm("../src/message_list_view", {
+    MessageListView,
+});
 mock_esm("../src/compose_banner", {
     clear_errors() {},
     clear_search_view_banner() {},
@@ -573,8 +587,28 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     };
     stream_data.add_sub(my_stream);
     stream_data.subscribe_myself(my_stream);
-
     current_filter = set_filter([["stream", my_stream_id.toString()]]);
+    const list = new MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: current_filter,
+        }),
+    });
+    message_lists.current = list;
+    message_lists.current.visibly_empty = () => true;
+
+    // There are muted topics in the channel.
+    message_lists.current.empty = () => false;
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have muted all the topics in this channel.",
+            'translated HTML: To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">Learn more</a>',
+        ),
+    );
+    // There are no muted topics in the channel.
+    message_lists.current.empty = () => true;
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -583,7 +617,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
-
+    // The channel does not exist.
     current_filter = set_filter([["stream", ""]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(

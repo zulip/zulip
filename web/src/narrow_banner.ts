@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import * as compose_validate from "./compose_validate.ts";
 import type {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
 import type {NarrowBannerData, SearchData} from "./narrow_error.ts";
 import {narrow_error} from "./narrow_error.ts";
 import {page_params} from "./page_params.ts";
@@ -58,6 +59,22 @@ const STARRED_MESSAGES_VIEW_EMPTY_BANNER = {
                 `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
                     "",
                 )}</a>`,
+        },
+    ),
+};
+
+const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
+    title: $t({
+        defaultMessage: "You have muted all the topics in this channel.",
+    }),
+    html: $t_html(
+        {
+            defaultMessage:
+                "To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <z-link>Learn more</z-link>",
+        },
+        {
+            "z-link": (content_html) =>
+                `<a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">${content_html.join("")}</a>`,
         },
     ),
 };
@@ -315,6 +332,12 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                             "This channel doesn't exist, or you are not allowed to view it.",
                     }),
                 };
+            }
+            assert(message_lists.current !== undefined);
+            if (message_lists.current.visibly_empty() && !message_lists.current.empty()) {
+                // The current message list appears empty, but there are
+                // messages in muted topics.
+                return MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER;
             }
             // else fallthrough to default case
             break;
