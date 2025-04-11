@@ -12,6 +12,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
 import {localstorage} from "./localstorage.ts";
 import * as markdown from "./markdown.ts";
+import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import {realm} from "./state_data.ts";
@@ -46,6 +47,7 @@ const draft_schema = z.intersection(
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -73,6 +75,7 @@ const possibly_buggy_draft_schema = z.intersection(
         updatedAt: z.number(),
         is_sending_saving: z.boolean().default(false),
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -335,6 +338,10 @@ export function snapshot_message(): LocalStorageDraft | undefined {
     };
 }
 
+export function rewire_restore_message(value: typeof restore_message): void {
+    restore_message = value;
+}
+
 type ComposeArguments =
     | {
           type: "stream";
@@ -348,7 +355,7 @@ type ComposeArguments =
           content: string;
       };
 
-export function restore_message(draft: LocalStorageDraft): ComposeArguments {
+export let restore_message = (draft: LocalStorageDraft): ComposeArguments => {
     // This is kinda the inverse of snapshot_message, and
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
@@ -372,7 +379,7 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
         private_message_recipient: sorted_recipient_emails.join(","),
         content: draft.content,
     };
-}
+};
 
 function draft_notify(): void {
     // Display a tooltip to notify the user about the saved draft.
