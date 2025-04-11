@@ -42,6 +42,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     get_test_image_file,
+    get_user_sent_messages,
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
@@ -1851,6 +1852,79 @@ class ActivateTest(ZulipTestCase):
         self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], "noreply@testserver")
         self.assertIn("Dear Hamlet,", msg.body)
+
+    def test_api_with_message_delete_action(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("cordelia")
+
+        self.send_personal_message(user, admin, content="private message 1")
+        self.send_personal_message(user, admin, content="private message 2")
+        self.send_stream_message(user, "Verona", topic_name="topic1", content="stream message 1")
+        self.send_stream_message(user, "Verona", topic_name="topic1", content="stream message 2")
+        self.send_stream_message(user, "Verona", topic_name="topic2")
+        self.send_stream_message(user, "Verona")
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 6)
+
+        # Case 1: NO_DELETE_ACTION
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {"message_delete_action": orjson.dumps(Message.NO_DELETE_ACTION).decode()},
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 6)  # No messages should be deleted
+
+        do_reactivate_user(user, acting_user=None)
+
+        # Case 2: DELETE_PUBLIC_STREAM_MESSAGE
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {"message_delete_action": orjson.dumps(Message.DELETE_PUBLIC_STREAM_MESSAGE).decode()},
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 2)
+        self.assertTrue(all(message.is_stream_message for message in user_messages))
+
+        do_reactivate_user(user, acting_user=None)
+
+        # Case 3: DELETE_ALL_MESSAGE
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {"message_delete_action": orjson.dumps(Message.DELETE_ALL_MESSAGE).decode()},
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 0)
+
+    def test_avatar_replaced_with_gravatar_on_deactivation(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("cordelia")
+
+        user.avatar_source = UserProfile.AVATAR_FROM_USER
+        user.save(update_fields=["avatar_source"])
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        result = self.client_delete(
+            f"/json/users/{user.id}", {"is_spammer": orjson.dumps(True).decode()}
+        )
+        self.assert_json_success(result)
+
+        user.refresh_from_db()
+
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertGreater(user.avatar_version, 0)
 
     def test_api_with_nonexistent_user(self) -> None:
         self.login("iago")
