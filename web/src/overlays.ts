@@ -14,6 +14,7 @@ type OverlayOptions = {
 type Overlay = {
     $element: JQuery;
     close_handler: () => void;
+    remove_focus_trap: () => void;
 };
 
 let active_overlay: Overlay | undefined;
@@ -23,6 +24,9 @@ const pre_open_hooks: Hook[] = [];
 const pre_close_hooks: Hook[] = [];
 
 function reset_state(): void {
+    if (active_overlay) {
+        active_overlay.remove_focus_trap();
+    }
     active_overlay = undefined;
     open_overlay_name = undefined;
 }
@@ -110,7 +114,9 @@ export function open_overlay(opts: OverlayOptions): void {
             opts.on_close();
             reset_state();
         },
+        remove_focus_trap: overlay_util.trap_focus(opts.$overlay),
     };
+
     if (document.activeElement) {
         $(document.activeElement).trigger("blur");
     }
@@ -140,6 +146,9 @@ export function close_overlay(name: string): void {
     }
 
     blueslip.debug("close overlay: " + name);
+
+    active_overlay.remove_focus_trap();
+
     active_overlay.$element.removeClass("show");
 
     active_overlay.$element.attr("aria-hidden", "true");
