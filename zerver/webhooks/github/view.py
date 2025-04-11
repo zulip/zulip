@@ -111,6 +111,7 @@ def get_closed_pull_request_body(helper: Helper) -> str:
     include_title = helper.include_title
     pull_request = payload["pull_request"]
     action = "merged" if pull_request["merged"].tame(check_bool) else "closed without merge"
+
     return get_pull_request_event_message(
         user_name=get_sender_name(payload),
         action=action,
@@ -118,6 +119,80 @@ def get_closed_pull_request_body(helper: Helper) -> str:
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
     )
+
+
+def get_pull_request_reopened_body(helper: Helper) -> str:
+    payload = helper.payload
+
+    sender = get_sender_name(payload)
+    pr_number = payload["pull_request"]["number"].tame(check_int)
+    pr_url = payload["pull_request"]["html_url"].tame(check_string)
+
+    message = f"{sender} reopened [PR #{pr_number}]({pr_url})."
+    return message
+
+
+def get_pull_request_review_request_removed_body(helper: Helper) -> str:
+    payload = helper.payload
+    reviewer = payload["requested_reviewer"]
+    reviewer_text = (
+        f"[{reviewer['login'].tame(check_string)}]({reviewer['html_url'].tame(check_string)})"
+    )
+
+    message = (
+        f"**{get_sender_name(payload)}** removed {reviewer_text} from reviewers "
+        f"on [PR #{payload['pull_request']['number'].tame(check_int)}]"
+        f"({payload['pull_request']['html_url'].tame(check_string)})."
+    )
+    return message
+
+
+def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
+    payload = helper.payload
+    pr_number = payload["pull_request"]["number"].tame(check_int)
+    pr_title = payload["pull_request"]["title"].tame(check_string)
+    pr_url = payload["pull_request"]["html_url"].tame(check_string)
+    sender = get_sender_name(payload)
+
+    return f"**{sender}** has converted [PR #{pr_number} {pr_title}]({pr_url}) to draft."
+
+
+def get_pull_request_labeled_or_unlabeled_body(helper: Helper) -> str:
+    payload = helper.payload
+    label_name = payload["label"]["name"].tame(check_string)
+    action = payload["action"].tame(check_string)
+
+    message = (
+        f"**{get_sender_name(payload)}** {action} the label `{label_name}` "
+        f"on [PR #{payload['pull_request']['number'].tame(check_int)}]"
+        f"({payload['pull_request']['html_url'].tame(check_string)})."
+    )
+    return message
+
+
+def get_pull_request_milestoned_or_demilestoned_body(helper: Helper) -> str:
+    payload = helper.payload
+    # milestone_title = payload["pull_request"]["milestone"]["title"].tame(check_string)
+    action = payload["action"].tame(check_string)
+
+    message = (
+        f"**{get_sender_name(payload)}** {action} "
+        f"on [PR #{payload['pull_request']['number'].tame(check_int)}]"
+        f"({payload['pull_request']['html_url'].tame(check_string)})."
+    )
+    return message
+
+
+def get_pull_request_enqueued_or_dequeued_body(helper: Helper) -> str:
+    payload = helper.payload
+    action = payload["action"].tame(check_string)
+    sender = get_sender_name(payload)
+    pr_number = payload["pull_request"]["number"].tame(check_int)
+    pr_url = payload["pull_request"]["html_url"].tame(check_string)
+    title = payload["pull_request"]["title"].tame(check_string)
+
+    message = f"**{sender}** {action} [PR #{pr_number} {title}]({pr_url}) in the merge queue."
+    return message
 
 
 def get_membership_body(helper: Helper) -> str:
@@ -733,7 +808,10 @@ def get_prior_subscription(payload: WildValue) -> str:
 
 
 def get_repository_name(payload: WildValue) -> str:
-    return payload["repository"]["name"].tame(check_string)
+    if "repository" in payload:
+        return payload["repository"]["name"].tame(check_string)
+    else:
+        return "Repository name not found"
 
 
 def get_repository_full_name(payload: WildValue) -> str:
@@ -876,6 +954,12 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "pending_cancellation": get_pending_cancellation_body,
     "pending_tier_change": get_pending_tier_change_body,
     "tier_changed": get_tier_changed_body,
+    "pull_request_milestoned_or_demilestoned": get_pull_request_milestoned_or_demilestoned_body,
+    "pull_request_enqueued_or_dequeued": get_pull_request_enqueued_or_dequeued_body,
+    "pull_request_labeled_or_unlabeled": get_pull_request_labeled_or_unlabeled_body,
+    "pull_request_converted_to_draft": get_pull_request_converted_to_draft_body,
+    "pull_request_review_request_removed": get_pull_request_review_request_removed_body,
+    "pull_request_reopened": get_pull_request_reopened_body,
 }
 
 SPONSORS_EVENT_TYPES = [
@@ -891,19 +975,10 @@ IGNORED_EVENTS = [
     "check_suite",
     "label",
     "meta",
-    "milestone",
     "organization",
     "project_card",
     "push__merge_queue",
     "repository_vulnerability_alert",
-]
-
-IGNORED_PULL_REQUEST_ACTIONS = [
-    "approved",
-    "converted_to_draft",
-    "labeled",
-    "review_request_removed",
-    "unlabeled",
 ]
 
 IGNORED_TEAM_ACTIONS = [
@@ -1015,16 +1090,19 @@ def get_zulip_event_name(
             return "locked_or_unlocked_pull_request"
         if action in ("auto_merge_enabled", "auto_merge_disabled"):
             return "pull_request_auto_merge"
-        if action in IGNORED_PULL_REQUEST_ACTIONS:
-            return None
-    elif header_event == "pull_request_review":
-        if is_empty_pull_request_review_event(payload):
-            # When submitting a review, GitHub has a bug where it'll
-            # send a duplicate empty "edited" event for the main
-            # review body. Ignore those, to avoid triggering
-            # duplicate notifications.
-            return None
-        return "pull_request_review"
+        if action in ("milestoned", "demilestoned"):
+            return "pull_request_milestoned_or_demilestoned"
+        if action in ("enqueued", "dequeued"):
+            return "pull_request_enqueued_or_dequeued"
+        if action in ("labeled", "unlabeled"):
+            return "pull_request_labeled_or_unlabeled"
+        if action == "converted_to_draft":
+            return "pull_request_converted_to_draft"
+        if action == "reopened":
+            return "pull_request_reopened"
+        if action == "review_request_removed":
+            return "pull_request_review_request_removed"
+
     elif header_event == "push":
         if is_merge_queue_push_event(payload):
             return None
@@ -1067,7 +1145,6 @@ def get_zulip_event_name(
         return header_event
     elif header_event in IGNORED_EVENTS:
         return None
-
     complete_event = "{}:{}".format(
         header_event, payload.get("action", "???").tame(check_string)
     )  # nocoverage
