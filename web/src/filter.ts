@@ -1768,6 +1768,14 @@ export class Filter {
         return false;
     }
 
+    is_channel_view(): boolean {
+        return (
+            this._terms.length === 1 &&
+            this._terms[0] !== undefined &&
+            Filter.term_type(this._terms[0]) === "channel"
+        );
+    }
+
     may_contain_multiple_conversations(): boolean {
         return !(
             (this.has_operator("channel") && this.has_operator("topic")) ||

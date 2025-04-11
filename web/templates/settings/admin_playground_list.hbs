@@ -1,5 +1,5 @@
 {{#with playground}}
-<tr class="playground_row">
+<tr class="playground_row" data-playground-id="{{id}}">
     <td>
         <span class="playground_pygments_language">{{pygments_language}}</span>
     </td>
@@ -11,9 +11,13 @@
     </td>
     {{#if ../can_modify}}
     <td class="no-select actions">
-        <button class="button small delete button-danger tippy-zulip-tooltip" data-playground-id="{{id}}" data-tippy-content="{{t 'Delete' }} {{ playground_name }}" aria-label="{{t 'Delete' }} {{ playground_name }}">
-            <i class="fa fa-trash-o"></i>
-        </button>
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="delete-code-playground delete"
+          data-tippy-content=(t "Delete")
+          aria-label=(t "Delete")
+          }}
     </td>
     {{/if}}
 </tr>

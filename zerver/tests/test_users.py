@@ -1002,7 +1002,7 @@ class QueryCountTest(ZulipTestCase):
         with (
             self.assert_database_query_count(86),
             self.assert_memcached_count(20),
-            self.capture_send_event_calls(expected_num_events=10) as events,
+            self.capture_send_event_calls(expected_num_events=11) as events,
         ):
             fred = do_create_user(
                 email="fred@zulip.com",
@@ -1023,7 +1023,7 @@ class QueryCountTest(ZulipTestCase):
             notifications.add(",".join(stream_names))
 
         self.assertEqual(
-            notifications, {"Denmark,Scotland,Verona", "private_stream1", "private_stream2"}
+            notifications, {"private_stream1", "private_stream2", "Verona", "Denmark,Scotland"}
         )
 
 

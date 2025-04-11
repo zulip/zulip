@@ -94,16 +94,37 @@ Organization owners can revoke or resend any invitation or reusable
 invitation link. Organization administrators can do the same except
 for invitations for the organization owners role.
 
+### Revoke an invitation
+
 {start_tabs}
 
 {settings_tab|invitations}
 
 1. Select the **Invitations** tab.
 
-1. From there, you can view pending invitations, **Revoke** email
-   invitations and invitation links, or **Resend** email invitations.
+2. Find the invitation you want to revoke.
+
+3. Click the **Revoke** (<i class="zulip-icon zulip-icon-trash"></i>) icon next to the invitation.
 
 {end_tabs}
+
+### Resend an invitation
+
+{start_tabs}
+
+{settings_tab|invitations}
+
+1. Select the **Invitations** tab.
+
+2. Find the invitation you want to resend.
+
+3. Click the **Resend** (<i class="zulip-icon zulip-icon-send-dm"></i>) icon next to the invitation.
+
+{end_tabs}
+
+!!! warn ""
+    **Note:** You can **revoke** both email invitations and invitation links,
+    but you can **resend** only email invitations.
 
 ## Related articles
 

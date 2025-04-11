@@ -52,6 +52,10 @@ backend. To enable this backend, you need to do the following:
    For certain AWS regions, you may need to set the `S3_REGION`
    setting to your default AWS region's code (e.g., `"eu-central-1"`).
 
+1. Non-AWS block storage providers may need `S3_SKIP_CHECKSUM = True`; you
+   should try without this at first, but enable it if you see exceptions
+   involving `XAmzContentSHA256Mismatch`.
+
 1. Finally, restart the Zulip server so that your settings changes
    take effect
    (`/home/zulip/deployments/current/scripts/restart-server`).

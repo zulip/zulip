@@ -40,6 +40,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_components from "./settings_components.ts";
@@ -1465,6 +1466,7 @@ export function change_state(
     if (section === "new") {
         do_open_create_user_group();
         redraw_user_group_list();
+        resize.resize_settings_creation_overlay();
         return;
     }
 

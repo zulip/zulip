@@ -6402,14 +6402,25 @@ class SubscriptionAPITest(ZulipTestCase):
         stream1 = self.make_stream("stream1")
         stream2 = self.make_stream("stream2")
         stream3 = self.make_stream("stream3")
+        stream4 = self.make_stream("stream4")
+        stream5 = self.make_stream("stream5", is_web_public=True)
+        stream6 = self.make_stream("stream6", is_web_public=True)
+        stream7 = self.make_stream("stream7")
         private = self.make_stream("private_stream", invite_only=True)
 
         self.subscribe(user1, "stream1")
+        self.subscribe(user1, "stream7")
         self.subscribe(user2, "stream1")
         self.subscribe(user3, "stream1")
 
         self.subscribe(user2, "stream2")
         self.subscribe(user2, "stream3")
+        self.subscribe(user2, "stream4")
+        self.subscribe(user2, "stream5")
+        self.subscribe(user2, "stream6")
+        self.subscribe(user2, "stream7")
+
+        self.subscribe(guest, "stream4")
 
         self.subscribe(user1, "private_stream")
         self.subscribe(user2, "private_stream")
@@ -6439,17 +6450,17 @@ class SubscriptionAPITest(ZulipTestCase):
             private, "can_subscribe_group", user8_group_member_dict, acting_user=user8
         )
 
-        # Sends 3 peer-remove events, 2 unsubscribe events
+        # Sends 5 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(19),
-            self.assert_memcached_count(3),
-            self.capture_send_event_calls(expected_num_events=7) as events,
+            self.assert_database_query_count(25),
+            self.assert_memcached_count(4),
+            self.capture_send_event_calls(expected_num_events=9) as events,
         ):
             bulk_remove_subscriptions(
                 realm,
                 [user1, user2],
-                [stream1, stream2, stream3, private],
+                [stream1, stream2, stream3, stream4, stream5, stream6, stream7, private],
                 acting_user=None,
             )
 
@@ -6496,15 +6507,62 @@ class SubscriptionAPITest(ZulipTestCase):
                     {user1.id, user2.id},
                     {user3.id, user4.id, user6.id, user7.id, user8.id},
                 ),
+                # stream1 and stream7 are non-guest public streams,
+                # remove peer events for them will be sent together as
+                # a separate event since they will have the same peer
+                # user ids. This is not sent along with the stream2
+                # and stream3 event as user1 is not subscribed to
+                # stream2 and stream3 and thus peer_ids will be different.
                 (
-                    "stream1",
+                    "stream1,stream7",
                     {user1.id, user2.id},
                     {user3.id, user4.id, user5.id, user6.id, user7.id, user8.id},
                 ),
+                # stream2 and stream3 are non-guest public streams,
+                # remove peer events for them will be sent together as
+                # a separate event since they will have the same peer
+                # user ids. This is not sent along with the stream1
+                # and stream7 event as user1 is not subscribed to
+                # stream2 and stream3 and thus peer_ids will be different.
                 (
                     "stream2,stream3",
                     {user2.id},
                     {user1.id, user3.id, user4.id, user5.id, user6.id, user7.id, user8.id},
+                ),
+                # stream4 has a guest user and a different set of peer
+                # user ids than a non-guest public channel and it thus
+                # gets its own event.
+                (
+                    "stream4",
+                    {user2.id},
+                    {
+                        user1.id,
+                        user3.id,
+                        user4.id,
+                        user5.id,
+                        user6.id,
+                        user7.id,
+                        user8.id,
+                        guest.id,
+                    },
+                ),
+                # stream5 and stream6 are web public streams, remove
+                # peer events for them will be sent together as a
+                # separate event since they will have the same peer
+                # user ids.
+                (
+                    "stream5,stream6",
+                    {user2.id},
+                    {
+                        user1.id,
+                        user3.id,
+                        user4.id,
+                        user5.id,
+                        user6.id,
+                        user7.id,
+                        user8.id,
+                        guest.id,
+                    },
                 ),
             ],
         )

@@ -4708,7 +4708,7 @@ AND NOT (recipient_id = %(recipient_id_4)s AND upper(subject) = upper(%(param_3)
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4721,7 +4721,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4734,7 +4734,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4748,7 +4748,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4762,7 +4762,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4776,14 +4776,14 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM ((SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
 WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND message_id <= 99 ORDER BY message_id DESC \n\
  LIMIT 10) UNION ALL (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4804,7 +4804,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4825,7 +4825,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4846,7 +4846,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4868,7 +4868,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4884,7 +4884,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4932,7 +4932,7 @@ WHERE realm_id = 2 AND recipient_id IN ({public_channels_recipients}) ORDER BY z
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4954,7 +4954,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -4989,7 +4989,7 @@ WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = 
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -5011,7 +5011,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -5041,7 +5041,7 @@ FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_cont
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
@@ -5083,7 +5083,7 @@ FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_cont
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
