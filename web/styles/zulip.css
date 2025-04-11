@@ -2415,6 +2415,10 @@ body:not(.spectator-view) {
     font-style: italic;
 }
 
+.default-language-display {
+    font-style: italic;
+}
+
 .popover-menu-user-avatar-container.deactivated,
 .inline_profile_picture.deactivated {
     position: relative;
