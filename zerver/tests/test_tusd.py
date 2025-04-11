@@ -8,7 +8,12 @@ from typing_extensions import ParamSpec
 from zerver.lib.cache import cache_delete, get_realm_used_upload_space_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import create_s3_buckets, find_key_by_email, use_s3_backend
-from zerver.lib.upload import sanitize_name, upload_backend, upload_message_attachment
+from zerver.lib.upload import (
+    create_attachment,
+    sanitize_name,
+    upload_backend,
+    upload_message_attachment,
+)
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, PreregistrationRealm, Realm
@@ -662,3 +667,76 @@ class TusdPreFinishTest(ZulipTestCase):
 
         response = bucket.Object(f"{path_id}.info").get()
         self.assertEqual(response["ContentType"], "binary/octet-stream")
+
+
+class TusdPreTerminateTest(ZulipTestCase):
+    def request(self, info: TusUpload) -> TusHook:
+        return TusHook(
+            type="pre-terminate",
+            event=TusEvent(
+                upload=info,
+                http_request=TusHTTPRequest(
+                    method="PATCH",
+                    uri=f"/api/v1/tus/{info.id}",
+                    remote_addr="12.34.56.78",
+                    header={},
+                ),
+            ),
+        )
+
+    def test_tusd_pre_terminate_hook(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        # Act like tusd does -- put the file and its .info in place
+        path_id = upload_backend.generate_message_upload_path(
+            str(hamlet.realm.id), sanitize_name("zulip.txt")
+        )
+        upload_backend.upload_message_attachment(
+            path_id, "zulip.txt", "text/plain", b"zulip!", hamlet
+        )
+
+        info = TusUpload(
+            id=path_id,
+            size=len("zulip!"),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": "zulip.txt",
+                "filetype": "text/plain",
+                "name": "zulip.txt",
+                "type": "text/plain",
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+
+        # Try to terminate the upload before it's in Attachments
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(info).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), {})
+
+        # Make the attachment
+        create_attachment(
+            "zulip.txt",
+            path_id,
+            "text/plain",
+            b"zulip!",
+            hamlet,
+            hamlet.realm,
+        )
+
+        # The terminate should get rejected now
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(info).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), {"RejectTermination": True})
