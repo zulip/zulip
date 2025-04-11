@@ -498,7 +498,7 @@ run_test("realm settings", ({override}) => {
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
     override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
-    override(compose_recipient, "update_topic_inputbox_on_mandatory_topics_change", noop);
+    override(compose_recipient, "update_topic_inputbox_on_topics_policy_change", noop);
     override(compose_recipient, "update_compose_area_placeholder_text", noop);
     override(compose_recipient, "check_posting_policy_for_compose_box", noop);
 
@@ -536,8 +536,8 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(realm.realm_name, "new_realm_name");
 
-    event = event_fixtures.realm__update__mandatory_topics;
-    test_realm_boolean(event, "realm_mandatory_topics");
+    event = event_fixtures.realm__update__topics_policy;
+    test_realm_boolean(event, "realm_topics_policy");
 
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
