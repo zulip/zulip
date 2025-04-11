@@ -155,3 +155,41 @@ run_test("all_notifications", ({override}) => {
         },
     ]);
 });
+
+run_test("customize_stream_notifications_table_row_data", () => {
+    const customize_stream_notifications_table_row_data =
+        settings_config.get_custom_stream_specific_notifications_table_row_data();
+
+    assert.deepEqual(customize_stream_notifications_table_row_data, [
+        {
+            is_checked: false,
+            is_disabled: true,
+            is_mobile_checkbox: false,
+            setting_name: "desktop_notifications",
+        },
+        {
+            is_checked: false,
+            is_disabled: true,
+            is_mobile_checkbox: false,
+            setting_name: "audible_notifications",
+        },
+        {
+            is_checked: false,
+            is_disabled: true,
+            is_mobile_checkbox: true,
+            setting_name: "push_notifications",
+        },
+        {
+            is_checked: false,
+            is_disabled: true,
+            is_mobile_checkbox: false,
+            setting_name: "email_notifications",
+        },
+        {
+            is_checked: false,
+            is_disabled: true,
+            is_mobile_checkbox: false,
+            setting_name: "wildcard_mentions_notify",
+        },
+    ]);
+});
