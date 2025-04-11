@@ -5,7 +5,7 @@ import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated, Any, TypeAlias
+from typing import Annotated, Any, Literal, TypeAlias
 from urllib.parse import unquote
 
 from django.conf import settings
@@ -31,6 +31,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -59,6 +60,38 @@ class WebhookConfigOption:
     name: str
     description: str
     validator: Callable[[str, str], str | bool | None]
+
+    @classmethod
+    def preset_config(
+        cls, config: Literal["branches", "mapping"], description: str = ""
+    ) -> "WebhookConfigOption":
+        """
+        This WebhookConfigOptions comes with a custom UI and logic in the
+        "Generate integration URL" modal in the frontend. When the integrations
+        that uses these settings are selected, the custom behavior will take
+        effect.
+        """
+        CONFIG_OPTIONS_ENCODING = "z_{config}"
+        match config:
+            case "branches":
+                return cls(
+                    name=CONFIG_OPTIONS_ENCODING.format(config=config),
+                    description=description,
+                    validator=check_bool,
+                )
+            case "mapping":
+                return cls(
+                    name=CONFIG_OPTIONS_ENCODING.format(config),
+                    description=description,
+                    validator=check_string,
+                )
+
+        raise AssertionError(
+            _(
+                "Please configure how to build the '{}' option in WebhookConfigOption.preset_config.",
+                config,
+            )
+        )
 
 
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
