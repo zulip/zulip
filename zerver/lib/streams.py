@@ -90,24 +90,24 @@ class StreamDict(TypedDict, total=False):
     can_subscribe_group: UserGroup | None
 
 
-def get_stream_permission_policy_name(
+def get_stream_permission_policy_key(
     *,
     invite_only: bool | None = None,
     history_public_to_subscribers: bool | None = None,
     is_web_public: bool | None = None,
 ) -> str:
-    policy_name = None
-    for permission_dict in Stream.PERMISSION_POLICIES.values():
+    policy_key = None
+    for permission_key, permission_dict in Stream.PERMISSION_POLICIES.items():
         if (
             permission_dict["invite_only"] == invite_only
             and permission_dict["history_public_to_subscribers"] == history_public_to_subscribers
             and permission_dict["is_web_public"] == is_web_public
         ):
-            policy_name = permission_dict["policy_name"]
+            policy_key = permission_key
             break
 
-    assert policy_name is not None
-    return policy_name
+    assert policy_key is not None
+    return policy_key
 
 
 def get_default_value_for_history_public_to_subscribers(
