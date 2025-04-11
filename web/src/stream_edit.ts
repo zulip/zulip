@@ -688,7 +688,13 @@ export function initialize(): void {
                     sub.stream_id.toString(),
                 )}']`,
             );
-            stream_settings_components.sub_or_unsub(sub, $stream_row);
+            // If subscribe button on right-side panel is clicked, prevent
+            // displaying loading spinner in the stream row.
+            if ($(this).hasClass("subscribe-button")) {
+                stream_settings_components.sub_or_unsub(sub);
+            } else {
+                stream_settings_components.sub_or_unsub(sub, $stream_row);
+            }
 
             if (!sub.subscribed) {
                 open_edit_panel_for_row(util.the($stream_row));
