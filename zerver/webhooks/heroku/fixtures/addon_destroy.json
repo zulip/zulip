@@ -1,0 +1,53 @@
+{
+    "action": "destroy",
+    "actor": {
+        "email": "slowdb@addons.heroku.com",
+        "id": "03d3c927-9a36-4001-9fca-ac30c646a117"
+    },
+    "created_at": "2016-10-26T22:50:01Z",
+    "id": "c00ffe68-c39d-4d20-9666-73e8ba601455",
+    "data": {
+        "actions": [],
+        "config_vars": [],
+        "created_at": "2016-10-26T22:50:01Z",
+        "id": "1ecadf4a-0775-4868-8103-3f5fb689631d",
+        "name": "slowdb-infinite-52190",
+        "addon_service": {
+            "id": "a4d9fe8b-6200-4de1-9132-2d9f7654f784",
+            "name": "slowdb"
+        },
+        "plan": {
+            "id": "52b7a016-7dd0-49bc-84ad-638574565f70",
+            "name": "slowdb:basic"
+        },
+        "app": {
+            "id": "1cf9ea2a-22d7-43e1-83f7-a1aabc3bd39a",
+            "name": "sample-app-0273"
+        },
+        "provider_id": "provider-id-123",
+        "state": "provisioning",
+        "updated_at": "2016-10-26T22:50:01Z",
+        "web_url": null
+    },
+    "previous_data": {},
+    "published_at": null,
+    "resource": "addon",
+    "sequence": null,
+    "updated_at": "2016-10-26T22:50:01Z",
+    "version": "application/vnd.heroku+json; version=3",
+    "webhook_metadata": {
+        "attempt": {
+            "id": "8a44f820-2354-489d-9a11-a793cbf49979"
+        },
+        "delivery": {
+            "id": "d244009a-670f-4340-88e9-789a4f9002d5"
+        },
+        "event": {
+            "id": "c00ffe68-c39d-4d20-9666-73e8ba601455",
+            "include": "api:addon"
+        },
+        "webhook": {
+            "id": "b54e6a7e-d162-4bd7-ab42-1011582c19cc"
+        }
+    }
+}
