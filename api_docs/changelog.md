@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 379**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Added
+ optional parameter `prev_content_sha256` which is the client's
+ calculation sha256 hash of the present message content, used to
+ prevent races.
+
 **Feature level 378**
 
 * [`GET /events`](/api/get-events): Archiving and unarchiving

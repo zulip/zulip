@@ -333,11 +333,21 @@ add_example("update_message", "/messages/{message_id}:patch", 200, async (client
     const result = await client.messages.send(request);
     const message_id = result.id;
 
+    async function sha256_hash(text) {
+        const msgUint8 = new TextEncoder().encode(text);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+        const hashArray = new Uint8Array(hashBuffer);
+        return hashArray.toString();
+    }
+
     // {code_example|start}
     // Update a message with the given "message_id"
     const params = {
         message_id,
         content: "New Content",
+        // Optional: Setting this protects against race conditions when multiple
+        // users edit the same message.
+        prev_content: sha256_hash("I come not, friends, to steal away your hearts."),
     };
 
     console.log(await client.messages.update(params));
