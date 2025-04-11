@@ -106,6 +106,7 @@ function set_message_too_long_for_compose(status: boolean): void {
 function set_message_too_long_for_edit(status: boolean, $container: JQuery): void {
     const message_too_long = status;
     const $message_edit_save_container = $container.find(".message_edit_save_container");
+    $message_edit_save_container.toggleClass("message-too-long-for-edit", message_too_long);
     const save_is_disabled =
         message_too_long ||
         $message_edit_save_container.hasClass("message-edit-time-limit-expired");
@@ -131,12 +132,14 @@ export function get_disabled_send_tooltip(): string {
 
 export function get_disabled_save_tooltip($container: JQuery): string {
     const $button_wrapper = $container.find(".message_edit_save_container");
+    // The time limit expiry tooltip takes precedence over the message
+    // length exceeded tooltip.
     if ($button_wrapper.hasClass("message-edit-time-limit-expired")) {
         return $t({
             defaultMessage: "You can no longer save changes to this message.",
         });
     }
-    if (message_too_long) {
+    if ($button_wrapper.hasClass("message-too-long-for-edit")) {
         return get_message_too_long_for_compose_error();
     }
     return "";
