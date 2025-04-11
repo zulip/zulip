@@ -1979,8 +1979,14 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(hamlet, stream.name)
         self.subscribe(cordelia, stream.name)
         do_deactivate_stream(stream, acting_user=None)
+        do_change_user_role(hamlet, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+
+        self.login_user(hamlet)
         with self.capture_send_event_calls(expected_num_events=3) as events:
-            do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
+            result = self.client_patch(
+                f"/json/streams/{stream.id}", {"is_archived": orjson.dumps(False).decode()}
+            )
+            self.assert_json_success(result)
 
         # Clients will get this event only if they support
         # archived_channels client capability.
