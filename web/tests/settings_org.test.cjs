@@ -95,6 +95,10 @@ function createSaveButtons(subsection) {
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
     $stub_save_button_header.set_find_results(".pill-container", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
+    $stub_save_button_header.set_find_results(
+        "#id_realm_default_welcome_bot_custom_message",
+        $("#id_realm_default_welcome_bot_custom_message"),
+    );
 
     return {
         props,
@@ -560,6 +564,9 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_waiting_period_threshold").set_parent($waiting_period_parent_elem);
     $("#id_realm_can_create_web_public_channel_group").set_parent(
         $.create("<stub-can-create-web-public-channel-group-parent>"),
+    );
+    $("#id_realm_default_welcome_bot_custom_message").set_parent(
+        $.create("<stub welcome bot custom message>"),
     );
 
     // Make our plan not limited so we don't have to stub all the
