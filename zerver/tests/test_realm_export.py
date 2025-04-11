@@ -217,11 +217,8 @@ class RealmExportTest(ZulipTestCase):
         )
 
         result = self.client_post("/json/export/realm")
-        self.assert_json_error_contains(
-            result,
-            "Make sure at least one Organization Owner allows "
-            "other Administrators to see their email address",
-        )
+        self.assert_json_success(result)
+        self.assertIn("warnings", result.json())
         do_change_user_setting(
             owner,
             "email_address_visibility",
@@ -383,3 +380,27 @@ class RealmExportTest(ZulipTestCase):
                 self.assertTrue(export_consent["consented"])
                 continue
             self.assertFalse(export_consent["consented"])
+
+    def test_standard_export_with_missing_consents(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        owner = self.example_user("desdemona")
+        do_change_user_setting(owner, "allow_private_data_export", False, acting_user=None)
+
+        hamlet = self.example_user("hamlet")
+        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(
+            hamlet,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+
+        result = self.client_post(
+            "/json/export/realm", {"export_type": RealmExport.EXPORT_FULL_WITH_CONSENT}
+        )
+        response_data = result.json()
+        self.assert_json_success(result)
+        self.assertIn("warnings", response_data)
+        self.assertTrue(any("consented" in warning for warning in response_data["warnings"]))
