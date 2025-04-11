@@ -30,6 +30,7 @@ VALID_EMOJI_CONTENT_TYPE = frozenset(
         "image/jpeg",
         "image/png",
         "image/webp",
+        "image/svg+xml",
     ]
 )
 
