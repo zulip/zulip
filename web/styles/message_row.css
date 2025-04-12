@@ -576,8 +576,6 @@
     }
 
     .edit_content {
-        width: var(--message-box-icon-width);
-
         &:hover {
             cursor: pointer;
         }
@@ -1016,12 +1014,6 @@ of the base style defined for a read-only textarea in dark mode. */
         .message_controls
         .message_control_button:not(.failed_message_action) {
         visibility: hidden;
-    }
-    /* The actual star icon is not added to the DOM when a
-       message is locally echoed, so we set the equivalent
-       width on its container. */
-    .star_container {
-        width: var(--message-box-icon-width);
     }
 }
 
