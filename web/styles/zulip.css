@@ -1415,19 +1415,19 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin-bottom: 0;
 }
 
-.sub-unsub-message {
+.bookend {
     padding-bottom: 10px;
     text-align: center;
 }
 
-.sub-unsub-message span {
+.bookend-label {
     font-size: 1em;
     display: block;
     padding: 4px;
     overflow: hidden;
 }
 
-.sub-unsub-message .stream-status {
+.bookend .stream-status {
     opacity: 0.6;
 
     & i {
@@ -1445,8 +1445,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-.sub-unsub-message span::before,
-.sub-unsub-message span::after,
+.bookend-label::before,
+.bookend-label::after,
 .date_row span::before,
 .date_row span::after {
     display: inline-block;
@@ -1458,8 +1458,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     border-bottom: 1px solid hsl(0deg 0% 0%);
 }
 
-.sub-unsub-message span::before,
-.sub-unsub-message span::after {
+.bookend-label::before,
+.bookend-label::after {
     width: 50%;
 }
 
@@ -1474,13 +1474,13 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin-right: -1px;
 }
 
-.sub-unsub-message span::before,
+.bookend-label::before,
 .date_row span::before {
     right: 0.25em;
     margin-left: -50%;
 }
 
-.sub-unsub-message span::after {
+.bookend-label::after {
     left: 0.25em;
     margin-right: -50%;
 }
