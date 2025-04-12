@@ -13,7 +13,7 @@ if __name__ == "__main__":
     os.makedirs(dir_path, exist_ok=True)
 
     random_hex_value = f"{random.randint(0, 0xFFFFFF):06x}"
-    file_path = f"{dir_path}/ZF-{random_hex_value}"
+    file_path = f"{dir_path}/ZF-{random_hex_value}.md"
 
     with open(file_path, "w") as f:
         f.write("")
