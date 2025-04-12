@@ -1447,8 +1447,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 
 .bookend-label::before,
 .bookend-label::after,
-.date_row span::before,
-.date_row span::after {
+.date_row .timerender-content::before,
+.date_row .timerender-content::after {
     display: inline-block;
     position: relative;
     content: " ";
@@ -1463,11 +1463,11 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 50%;
 }
 
-.date_row span::before {
+.date_row .timerender-content::before {
     width: 100%;
 }
 
-.date_row span::after {
+.date_row .timerender-content::after {
     width: 6px;
     left: 0.25em;
     /* Align date with message time and recipient bar date. */
@@ -1475,7 +1475,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .bookend-label::before,
-.date_row span::before {
+.date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
 }
