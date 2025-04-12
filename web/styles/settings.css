@@ -582,6 +582,11 @@ input[type="checkbox"] {
     margin: 0 2px;
 }
 
+.overlay-keyboard-shortcuts .popover-menu-hotkey-hints {
+    display: inline-flex;
+    padding-left: 0;
+}
+
 .edit-attachment-buttons {
     display: inline-block;
     vertical-align: middle;
