@@ -992,6 +992,14 @@ export function get_streams_for_admin(): StreamSubscription[] {
     return subs;
 }
 
+export function can_use_general_chat(stream_id: number | undefined): boolean {
+    if (stream_id === undefined) {
+        return false;
+    }
+
+    return !realm.realm_mandatory_topics;
+}
+
 /*
   This module provides a common helper for finding the notification
   stream, but we don't own the data.  The `realm` structure
