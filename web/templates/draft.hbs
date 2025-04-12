@@ -50,14 +50,13 @@
                             <span class="copy-button copy-overlay-message tippy-zulip-delayed-tooltip" data-draft-id="{{draft_id}}" data-tippy-content="{{t 'Copy draft' }}" aria-label="{{t 'Copy draft' }}" role="button">
                                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                             </span>
-                            <i class="fa fa-pencil fa-lg restore-overlay-message tippy-zulip-delayed-tooltip" aria-hidden="true" data-tooltip-template-id="restore-draft-tooltip-template"></i>
                             {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-draft-tooltip-template" aria-label=(t "Delete") }}
                             <div class="draft-selection-tooltip">
                                 <i class="fa fa-square-o fa-lg draft-selection-checkbox" aria-hidden="true"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="message_content rendered_markdown restore-overlay-message" data-tooltip-template-id="restore-draft-tooltip-template">{{rendered_markdown content}}</div>
+                    <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown content}}</div>
                 </div>
             </div>
         </div>
