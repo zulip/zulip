@@ -11787,7 +11787,7 @@ snapshots:
 
   '@types/concat-stream@1.6.1':
     dependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.14.0
 
   '@types/confusing-browser-globals@1.0.3': {}
 
@@ -11858,7 +11858,7 @@ snapshots:
 
   '@types/form-data@0.0.33':
     dependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.14.0
 
   '@types/geojson-vt@3.2.5':
     dependencies:
