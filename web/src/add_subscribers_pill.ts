@@ -146,7 +146,8 @@ export function create({
     }
 
     function get_groups(): UserGroup[] {
-        const groups = get_user_groups();
+        let groups = get_user_groups();
+        groups = groups.filter((item) => item.name !== "role:nobody");
         return user_group_pill.filter_taken_groups(groups, pill_widget);
     }
 
@@ -184,7 +185,8 @@ export function create_without_add_button({
     }
 
     function get_groups(): UserGroup[] {
-        const user_groups = get_user_groups();
+        let user_groups = get_user_groups();
+        user_groups = user_groups.filter((item) => item.name !== "role:nobody");
         return user_group_pill.filter_taken_groups(user_groups, pill_widget);
     }
 
