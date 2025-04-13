@@ -516,6 +516,15 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         is_sending_saving: false,
         drafts_version: 1,
     };
+    const draft_7 = {
+        private_message_recipient: "",
+        reply_to: "",
+        type: "private",
+        content: "Test direct message 4",
+        updatedAt: date(-12),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
 
     const expected = [
         {
@@ -536,6 +545,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             draft_id: "id2",
             is_dm_with_self: true,
             is_stream: false,
+            has_recipient_data: true,
             recipients: "Aaron",
             raw_content: "Test direct message",
             time_stamp: "Jan 30",
@@ -545,6 +555,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             is_dm_with_self: false,
             is_stream: false,
             recipients: "Iago, Zoe",
+            has_recipient_data: true,
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
         },
@@ -553,6 +564,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             is_dm_with_self: false,
             is_stream: false,
             recipients: "Iago",
+            has_recipient_data: true,
             raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
         },
@@ -584,6 +596,14 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             invite_only: false,
             is_web_public: false,
         },
+        {
+            draft_id: "id7",
+            is_stream: false,
+            has_recipient_data: false,
+            recipients: "",
+            raw_content: "Test direct message 4",
+            time_stamp: "Jan 19",
+        },
     ];
 
     $("#drafts_table").append = noop;
@@ -597,6 +617,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         id4: draft_4,
         id5: draft_5,
         id6: draft_6,
+        id7: draft_7,
     };
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
@@ -720,6 +741,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
             draft_id: "id2",
             is_dm_with_self: true,
             is_stream: false,
+            has_recipient_data: true,
             recipients: "Aaron",
             raw_content: "Test direct message",
             time_stamp: "Jan 30",
@@ -728,6 +750,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
             draft_id: "id5",
             is_dm_with_self: true,
             is_stream: false,
+            has_recipient_data: true,
             recipients: "Aaron",
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
@@ -736,6 +759,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
             draft_id: "id4",
             is_dm_with_self: true,
             is_stream: false,
+            has_recipient_data: true,
             recipients: "Aaron",
             raw_content: "Test direct message 2",
             time_stamp: "Jan 26",

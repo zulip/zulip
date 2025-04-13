@@ -31,7 +31,11 @@
                     {{#if is_dm_with_self}}
                     <span class="private_message_header_name">{{t "You" }}</span>
                     {{else}}
+                    {{#if has_recipient_data}}
                     <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
+                    {{else}}
+                    <em>{{t "No DM recipients" }}</em>
+                    {{/if}}
                     {{/if}}
                 </div>
                 <div class="recipient_row_date">{{ time_stamp }}</div>
