@@ -36,7 +36,7 @@ from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum
-from zerver.models.streams import Stream
+from zerver.models.streams import Stream, StreamTopicsPolicyEnum
 
 
 class MessageMoveTopicTest(ZulipTestCase):
@@ -122,6 +122,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.login_user(admin_user)
 
         stream = self.make_stream("new_stream")
+        stream_mandatory_topics = self.make_stream(
+            "topics_required", topics_policy=StreamTopicsPolicyEnum.disable_empty_topic.value
+        )
         self.subscribe(admin_user, stream.name)
         self.subscribe(hamlet, stream.name)
 
@@ -149,7 +152,9 @@ class MessageMoveTopicTest(ZulipTestCase):
                     "topic": topic_name,
                 },
             )
-            self.assert_json_error(result, "Topics are required in this organization.")
+            self.assert_json_error(
+                result, "Sending messages to the empty topic is not allowed in this channel."
+            )
             self.check_topic(message_id, topic_name=original_topic_name)
 
         new_topic_name = "new valid topic"
@@ -178,6 +183,18 @@ class MessageMoveTopicTest(ZulipTestCase):
             )
             self.assert_json_success(result)
             self.check_topic(message_id, topic_name)
+
+        # Test that message cannot be moved to empty topic in stream with
+        # `topics_policy=disable_empty_topic`.
+        for topic_name in ["(no topic)", ""]:
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {"topic": topic_name, "stream_id": stream_mandatory_topics.id},
+            )
+            self.assert_json_error(
+                result, "Sending messages to the empty topic is not allowed in this channel."
+            )
+            self.check_topic(message_id, topic_name="non-empty topic")
 
     def test_edit_message_invalid_topic(self) -> None:
         self.login("hamlet")
