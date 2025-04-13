@@ -64,6 +64,22 @@
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
                 </div>
+
+                {{> settings_checkbox
+                  setting_name="realm_send_invite_welcome_bot_custom_message"
+                  prefix="id_"
+                  is_checked=realm_send_invite_welcome_bot_custom_message
+                  label=admin_settings_label.realm_send_invite_welcome_bot_custom_message}}
+                <div class="input-group" id="welcome_bot_custom_message_container">
+                    <label for="id_realm_default_welcome_bot_custom_message" class="settings-field-label">{{t "Message text" }}</label>
+                    <textarea id="id_realm_default_welcome_bot_custom_message" name="default_welcome_bot_custom_message"
+                      class="admin-realm-default-welcome-bot-custom-message setting-widget prop-element settings_textarea display-block" maxlength="1000"
+                      data-setting-widget-type="string" rows="3">{{ realm_default_welcome_bot_custom_message }}</textarea>
+                    <div id="welome_bot_custom_message_buttons_container">
+                        {{> ../components/action_button attention="quiet" intent="neutral" label=(t "Send me a test message") id="send_test_welcome_bot_custom_message"}}
+                    </div>
+                </div>
+
             </div>
         </div>
 
