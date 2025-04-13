@@ -2070,3 +2070,8 @@ textarea.new_message_textarea {
 .split_message_content blockquote:last-child {
     margin-bottom: 1px;
 }
+
+#split_messages_menu_item {
+    padding: 0.2em 0.6666em;
+    color: var(--color-text-popover-menu);
+}
