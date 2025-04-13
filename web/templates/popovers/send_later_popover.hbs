@@ -40,6 +40,16 @@
         </li>
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="link-item popover-menu-list-item">
+            <div id="split_messages_menu_item">
+                <label role="menuitem" class="checkbox" tabindex="0">
+                    <input class="popover-menu-icon inline-block setting-widget" id="split_messages_checkbox" type="checkbox" {{#if split_messages_enabled}}checked{{/if}} />
+                    <span class="rendered-checkbox popover-menu-icon"></span>
+                    <span class="popover-menu-label">{{t "Send as multiple messages" }}</span>
+                </label>
+            </div>
+        </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="open_send_later_modal popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-calendar" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Schedule message" }}</span>
