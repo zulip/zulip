@@ -578,9 +578,10 @@ export type FormattedDraft =
       }
     | {
           is_stream: false;
-          is_dm_with_self: boolean;
+          is_dm_with_self?: boolean;
           draft_id: string;
           recipients: string;
+          has_recipient_data: boolean;
           raw_content: string;
           time_stamp: string;
       };
@@ -654,6 +655,19 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         };
     }
 
+    if (draft.private_message_recipient === "") {
+        // No users were set as DM recipients when the draft was created.
+        return {
+            draft_id: draft.id,
+            is_stream: false,
+            has_recipient_data: false,
+            recipients: "",
+            raw_content: draft.content,
+            time_stamp,
+            ...markdown_data,
+        };
+    }
+
     let is_dm_with_self = false;
     const emails = util.extract_pm_recipients(draft.private_message_recipient);
     if (emails.length === 1) {
@@ -670,6 +684,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         recipients,
         raw_content: draft.content,
         time_stamp,
+        has_recipient_data: true,
         ...markdown_data,
     };
 }
