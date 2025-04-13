@@ -515,10 +515,6 @@ input[type="checkbox"] {
     }
 }
 
-.organization-settings-parent {
-    padding-top: 10px;
-}
-
 #id_org_profile_preview {
     width: max-content;
     display: flex;

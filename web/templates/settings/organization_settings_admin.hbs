@@ -6,7 +6,7 @@
                 <h3>{{t "Automated messages and emails" }}</h3>
                 {{> settings_save_discard_widget section_name="notifications" }}
             </div>
-            <div class="inline-block organization-settings-parent">
+            <div class="inline-block">
                 <div class="realm_default_language">
                     {{> language_selection_widget
                       section_name="realm_default_language"
@@ -72,7 +72,7 @@
                 <h3>{{t "Compose settings"}}</h3>
                 {{> settings_save_discard_widget section_name="compose-settings"}}
             </div>
-            <div class="inline-block organization-settings-parent">
+            <div class="inline-block">
                 <div class="input-group">
                     <label for="id_realm_video_chat_provider" class="settings-field-label">
                         {{t 'Call provider' }}
@@ -136,7 +136,7 @@
                 <h3>{{t "Message feed settings"}}</h3>
                 {{> settings_save_discard_widget section_name="msg-feed-settings"}}
             </div>
-            <div class="inline-block organization-settings-parent">
+            <div class="inline-block">
                 {{> ../dropdown_widget_with_label
                   widget_name="realm_default_code_block_language"
                   label=admin_settings_label.realm_default_code_block_language
@@ -179,7 +179,7 @@
 
             {{> upgrade_tip_widget . }}
 
-            <div class="inline-block organization-settings-parent">
+            <div class="inline-block">
                 <div class="input-group time-limit-setting">
                     <label for="id_realm_message_retention_days" class="settings-field-label">{{t "Message retention period" }}
                     </label>
