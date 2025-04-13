@@ -70,14 +70,13 @@
     height: var(--settings-overlay-header-button-height);
 }
 
-.create_user_group_plus_button,
-.create_stream_plus_button {
+.two-pane-settings-plus-button {
     font-weight: 400;
     position: relative;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-border-settings-plus-button);
     border-radius: 5px;
-    background-color: hsl(0deg 0% 100%);
-    color: hsl(0deg 0% 0%);
+    background-color: var(--color-background-settings-plus-button);
+    color: var(--color-text-settings-plus-button);
     margin: 0 0 0 5px;
     height: 100%;
     width: var(--settings-overlay-header-button-height);
@@ -122,7 +121,7 @@ h3.user_group_setting_subsection_title {
     font-size: 1.5em;
     font-weight: normal;
     line-height: 1.5;
-    margin: 4px 15px 4px 0;
+    margin: 4px 0;
 }
 
 h4.stream_setting_subsection_title {
@@ -135,8 +134,6 @@ h4.user_group_setting_subsection_title {
     font-size: 1.35em;
     font-weight: normal;
     line-height: 1.5;
-    /* Matches right margin on h3 subsection titles */
-    margin-right: 15px;
 }
 
 .member-list-box,
@@ -176,12 +173,6 @@ h4.user_group_setting_subsection_title {
                         padding-left: 10px;
                     }
                 }
-            }
-
-            .subscriber_list_remove,
-            .subgroup-list-remove {
-                padding-right: 16px;
-                display: inline-block;
             }
 
             & thead th {
@@ -263,6 +254,13 @@ h4.user_group_setting_subsection_title {
     display: inline-flex;
     width: 100%;
     align-items: center;
+
+    /* We need on click events to fire on this input for our typeahead.
+       This ensures that the input occupies space in the parent
+       container. */
+    .input {
+        flex-grow: 1;
+    }
 }
 
 .add_subscribers_container .add_subscriber_button_wrapper,
@@ -270,17 +268,16 @@ h4.user_group_setting_subsection_title {
     padding-left: 5px;
 }
 
+.add-subscribers-subtitle,
+.add-members-subtitle {
+    opacity: 0.7;
+}
+
 .choose-subscribers-label {
     display: inline;
 }
 
-.remove-subscriber-form,
-.remove-subgroup-form {
-    margin: 0;
-}
-
-.subscriptions-container .subscriptions-header .fa-chevron-left,
-.user-groups-container .user-groups-header .fa-chevron-left {
+.two-pane-settings-container .two-pane-settings-header .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
@@ -290,13 +287,15 @@ h4.user_group_setting_subsection_title {
     padding: 2px 10px;
 
     cursor: pointer;
+    visibility: hidden;
 
     transition: 0.3s ease;
     transition-property: opacity, transform;
 }
 
-.user-groups-container .user-groups-header.slide-left .fa-chevron-left,
-.subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
+.two-pane-settings-container
+    .two-pane-settings-header.slide-left
+    .fa-chevron-left,
 #settings_overlay_container
     .settings-header.mobile.slide-left
     .fa-chevron-left {
@@ -306,8 +305,6 @@ h4.user_group_setting_subsection_title {
 
 .group-assigned-permissions {
     .subsection-header {
-        display: inline;
-
         h3 {
             font-size: 1.5em;
             font-weight: normal;
@@ -341,7 +338,81 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.subscriptions-container {
+/* Subheader styles. These aren't in a separate subheader div yet,
+   so we add `.overlay-container` for now to apppease the linter in
+   differentiating from the main container styles below. */
+.two-pane-settings-container.overlay-container {
+    .list-toggler-container {
+        align-items: center;
+        padding: 0 8px;
+        border-bottom: 1px solid var(--color-border-modal-bar);
+        display: flex;
+        justify-content: space-between;
+        height: var(--settings-overlay-subheader-height);
+    }
+
+    .stream_sorter_toggle {
+        margin-left: auto;
+    }
+
+    #add_new_subscription {
+        height: var(--settings-overlay-header-button-height);
+    }
+
+    .display-type {
+        height: var(--settings-overlay-subheader-height);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+        border-bottom: 1px solid var(--color-border-modal-bar);
+
+        & a {
+            color: inherit;
+
+            &:hover {
+                color: inherit;
+                text-decoration: none;
+            }
+        }
+
+        &.preview::after {
+            content: "Preview";
+        }
+
+        &.preferences::after {
+            content: "Preferences";
+        }
+
+        .stream-info-title,
+        .user-group-info-title {
+            display: none;
+            font-size: 1.5em; /* 21px at 14px/em */
+            line-height: 1.25;
+            font-weight: 600;
+            overflow-wrap: break-word;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+
+            &.showing-info-title {
+                display: -webkit-box;
+            }
+
+            .large-icon {
+                display: inline-block;
+                margin-left: 5px;
+
+                .zulip-icon {
+                    font-size: 0.75em; /* 18px at 24px/em */
+                }
+            }
+        }
+    }
+}
+
+#subscription_overlay .two-pane-settings-container {
     container: subscriptions / inline-size;
 }
 
@@ -358,7 +429,7 @@ h4.user_group_setting_subsection_title {
     ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(80em + 80px)))
     or ((width < $settings_overlay_sidebar_collapse_breakpoint) and (width <= 36em))
 ) {
-    #subscription_overlay .subscriptions-container {
+    #subscription_overlay .two-pane-settings-container {
         .left {
             .list-toggler-container {
                 height: 5em;
@@ -398,8 +469,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.user-groups-container,
-.subscriptions-container {
+.two-pane-settings-container {
     position: relative;
     height: 95%;
     border-radius: 4px;
@@ -419,8 +489,7 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .user-groups-header,
-    .subscriptions-header {
+    .two-pane-settings-header {
         height: var(--settings-overlay-header-height);
         display: flex;
         align-items: center;
@@ -429,10 +498,6 @@ h4.user_group_setting_subsection_title {
         font-weight: 700;
         background-color: var(--color-background-modal-bar);
         border-bottom: 1px solid var(--color-border-modal-bar);
-
-        .fa-chevron-left {
-            visibility: hidden;
-        }
 
         .exit {
             font-weight: 600;
@@ -453,7 +518,6 @@ h4.user_group_setting_subsection_title {
         position: relative;
         display: inline-block;
         vertical-align: top;
-        width: 40%;
         height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
@@ -507,20 +571,8 @@ h4.user_group_setting_subsection_title {
     }
 
     .left {
+        width: 40%;
         border-right: 1px solid var(--color-border-modal-bar);
-
-        .list-toggler-container {
-            align-items: center;
-            padding: 0 8px;
-            border-bottom: 1px solid var(--color-border-modal-bar);
-            display: flex;
-            justify-content: space-between;
-            height: var(--settings-overlay-subheader-height);
-
-            #add_new_subscription {
-                height: var(--settings-overlay-header-button-height);
-            }
-        }
     }
 
     .right {
@@ -535,59 +587,6 @@ h4.user_group_setting_subsection_title {
 
         .main-view-banner.group_deactivated {
             margin-bottom: 10px;
-        }
-
-        .display-type {
-            height: var(--settings-overlay-subheader-height);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 600;
-            border-bottom: 1px solid var(--color-border-modal-bar);
-
-            & a {
-                color: inherit;
-
-                &:hover {
-                    color: inherit;
-                    text-decoration: none;
-                }
-            }
-
-            &.preview::after {
-                content: "Preview";
-            }
-
-            &.preferences::after {
-                content: "Preferences";
-            }
-
-            .stream-info-title,
-            .user-group-info-title {
-                display: none;
-                font-size: 1.5em; /* 21px at 14px/em */
-                line-height: 1.25;
-                font-weight: 600;
-                overflow-wrap: break-word;
-                line-clamp: 2;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                margin: 20px 10px 0;
-
-                &.showing-info-title {
-                    display: -webkit-box;
-                }
-
-                .large-icon {
-                    display: inline-block;
-                    margin-left: 5px;
-
-                    .zulip-icon {
-                        font-size: 0.75em; /* 18px at 24px/em */
-                    }
-                }
-            }
         }
     }
 
@@ -916,13 +915,11 @@ h4.user_group_setting_subsection_title {
 }
 
 #settings_page,
-#groups_overlay,
-#subscription_overlay {
+.two-pane-settings-overlay {
     container: settings-overlay / inline-size;
 }
 
-#groups_overlay,
-#subscription_overlay {
+.two-pane-settings-overlay {
     .tab-switcher {
         display: flex;
         flex-wrap: nowrap;
@@ -934,22 +931,6 @@ h4.user_group_setting_subsection_title {
         overflow: auto;
         outline: none;
         -webkit-overflow-scrolling: touch;
-
-        .stream-creation-simplebar-container,
-        .user-group-creation-simplebar-container {
-            height: calc(
-                var(--overlay-container-height) -
-                    var(--settings-overlay-header-height) -
-                    var(--settings-overlay-subheader-height) -
-                    var(--subscriptions-overlay-sticky-footer-height)
-            );
-            max-height: calc(
-                var(--overlay-container-max-height) -
-                    var(--settings-overlay-header-height) -
-                    var(--settings-overlay-subheader-height) -
-                    var(--subscriptions-overlay-sticky-footer-height)
-            );
-        }
 
         .user-group-creation-body,
         .stream-creation-body {
@@ -972,16 +953,6 @@ h4.user_group_setting_subsection_title {
             .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
-        }
-
-        .add_all_users_to_user_group {
-            margin-left: 10px;
-        }
-
-        .add_all_users_to_stream {
-            margin-left: 10px;
-            /* same bottom margin as h4.stream_setting_subsection_title */
-            margin-bottom: 5px;
         }
 
         .create_user_group_member_list_header,
@@ -1016,7 +987,9 @@ h4.user_group_setting_subsection_title {
                     display: flex !important;
                     justify-content: center;
                     align-items: center;
-                    background-color: hsl(0deg 0% 100% / 90%);
+                    background-color: var(
+                        --color-background-non-empty-overlay-indicator
+                    );
                     z-index: 1;
                 }
 
@@ -1427,14 +1400,11 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $lg_min) {
-    .user-groups-container,
-    .subscriptions-container {
+    .two-pane-settings-container {
         max-width: 95%;
     }
-}
 
-@media (width < $lg_min) {
-    .subscriptions-container .left .list-toggler-container {
+    .two-pane-settings-container .left .list-toggler-container {
         flex-wrap: wrap;
     }
 
@@ -1449,13 +1419,12 @@ div.settings-radio-input-parent {
 }
 
 /* Note that this block has settings_page CSS as well, and thus needs
-   to match the media queries in settings.css.
+   to match the media queries in settings.css
 
-   Longer-term we should extract this logic two-column-overlay class
-   to read more naturally. */
+   We should eventually consolidate some of these styles with the settings
+   menu, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
-    .user-groups-container,
-    .subscriptions-container {
+    .two-pane-settings-container {
         position: relative;
         overflow: hidden;
 
@@ -1463,17 +1432,13 @@ div.settings-radio-input-parent {
             text-align: left;
         }
 
-        .user-groups-header .fa-chevron-left,
-        .subscriptions-header .fa-chevron-left {
+        .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
         }
     }
 
-    #groups_overlay .left,
-    #groups_overlay .right,
-    #subscription_overlay .left,
-    #subscription_overlay .right,
-    #settings_page .content-wrapper.right {
+    .two-pane-settings-overlay .left,
+    .two-pane-settings-overlay .right {
         position: absolute;
         display: block;
         margin: 0;
@@ -1483,9 +1448,7 @@ div.settings-radio-input-parent {
         border: none;
     }
 
-    #groups_overlay .right,
-    #subscription_overlay .right,
-    #settings_page .content-wrapper.right {
+    .two-pane-settings-overlay .right {
         position: absolute;
         left: 101%;
 
@@ -1501,10 +1464,28 @@ div.settings-radio-input-parent {
         }
     }
 
-    #subscription_overlay,
-    #groups_overlay {
-        .user-groups-container,
-        .subscriptions-container {
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        display: block;
+        left: 101%;
+        margin: 0;
+        width: 100%;
+        height: calc(100% - var(--settings-overlay-header-height));
+
+        top: var(--settings-overlay-header-height);
+        background-color: var(--color-background-modal);
+        border: none;
+
+        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        z-index: 10;
+
+        &.show {
+            left: 0%;
+        }
+    }
+
+    .two-pane-settings-overlay {
+        .two-pane-settings-container {
             height: 95%;
         }
 
@@ -1545,15 +1526,6 @@ div.settings-radio-input-parent {
             display: block;
             max-width: max-content;
             white-space: nowrap;
-        }
-
-        .save-button-controls {
-            display: block;
-            margin: 0 0 10px;
-
-            &.hide {
-                display: none;
-            }
         }
     }
 }

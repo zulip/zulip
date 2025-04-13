@@ -16,7 +16,8 @@ from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
 from psycopg2.sql import Composable
 
-from corporate.models import CustomerPlan, LicenseLedger
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import Realm

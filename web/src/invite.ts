@@ -432,12 +432,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $(e.target).parent().remove();
         });
 
-        function toggle_invite_submit_button(selected_tab?: string): void {
-            if (selected_tab === undefined) {
-                selected_tab = $(".invite_users_option_tabs")
-                    .find(".selected")
-                    .attr("data-tab-key");
-            }
+        function toggle_invite_submit_button(
+            selected_tab: string | undefined = $(".invite_users_option_tabs")
+                .find(".selected")
+                .attr("data-tab-key"),
+        ): void {
             const valid_custom_time = util.validate_custom_time_input(
                 custom_expiration_time_input,
                 false,

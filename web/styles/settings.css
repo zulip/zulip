@@ -238,7 +238,7 @@ h3,
         }
     }
 
-    .table-sticky-headers th {
+    .table-sticky-headers {
         position: sticky;
         top: 0;
         z-index: 1;
@@ -255,18 +255,10 @@ h3,
         font-size: 0.8571em; /* 12px at 14px/em */
         font-weight: 400;
         vertical-align: middle;
-        line-height: 1.6667em; /* 20px at 12px/em */
+        line-height: inherit;
         display: inline-block;
         float: none;
         margin-top: 9px;
-    }
-
-    .loading_indicator_spinner {
-        width: 30%;
-        height: 1.4286em; /* 20px at 14px/em */
-        margin-top: 7px;
-        vertical-align: middle;
-        display: inline-block;
     }
 
     .inline {
@@ -470,6 +462,7 @@ input[type="checkbox"] {
 .information-density-settings {
     display: flex;
     gap: 2em;
+    margin: 0 0 20px;
 
     &.disabled-setting .display-value {
         opacity: 0.4;
@@ -504,13 +497,10 @@ input[type="checkbox"] {
 
 .advanced-configurations-container {
     .advance-config-title-container {
-        display: flex;
-        align-items: center;
         cursor: pointer;
-        flex-wrap: wrap;
 
         .stream_setting_subsection_title {
-            margin: 4px 8px;
+            margin: 4px 0;
         }
 
         .toggle-advanced-configurations-icon {
@@ -565,21 +555,6 @@ input[type="checkbox"] {
 .edit-attachment-buttons {
     display: inline-block;
     vertical-align: middle;
-    height: 32px;
-}
-
-.edit-attachment-buttons .remove-attachment {
-    margin-left: 5px;
-}
-
-.edit-attachment-buttons .download-attachment {
-    display: block;
-    padding: 6px 9px;
-    text-decoration: none;
-
-    &:hover {
-        color: hsl(156deg 41% 40%);
-    }
 }
 
 .remove-alert-word {
@@ -601,8 +576,6 @@ input[type="checkbox"] {
     overflow-wrap: anywhere;
     background-color: transparent;
     border-radius: 4px;
-    margin-top: 14px;
-    margin-left: 10px;
     color: hsl(156deg 30% 50%);
     padding: 3px 10px;
 
@@ -639,8 +612,6 @@ input[type="checkbox"] {
 
     & img {
         margin-right: 6px;
-        vertical-align: middle;
-        margin-top: -2px;
     }
 
     .settings-save-checkmark {
@@ -1324,14 +1295,6 @@ label.preferences-radio-choice-label {
     margin-right: 1px;
 }
 
-.manage-user-button,
-.deactivate-user-button,
-.reactivate-user-button {
-    display: inline-flex;
-    align-items: center;
-    min-height: 35px;
-}
-
 .download_bot_zuliprc,
 .copy_zuliprc,
 .open_bots_subscribed_streams,
@@ -1339,26 +1302,6 @@ label.preferences-radio-choice-label {
 .deactivate-bot-button {
     display: inline-flex;
     align-items: center;
-}
-
-.invite-user-link {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    width: fit-content;
-    align-items: center;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: none;
-    }
-
-    .zulip-icon-user-plus {
-        margin-right: 5px;
-    }
-
-    &:hover .user-settings-invite-user-label {
-        text-decoration: underline;
-    }
 }
 
 /* -- new settings overlay -- */
@@ -2133,8 +2076,7 @@ label.preferences-radio-choice-label {
     }
 
     .alert-notification {
-        margin-top: auto;
-        margin-bottom: 12px;
+        margin-left: 10px;
         margin-right: auto;
     }
 
@@ -2296,6 +2238,22 @@ label.preferences-radio-choice-label {
     width: 110px;
 }
 
+#admin-user-list .tab-switcher {
+    margin-left: 0;
+}
+
 #data-exports .tab-switcher .ind-tab {
     width: 160px;
+}
+
+#admin_invites_table {
+    .check:disabled {
+        opacity: 1;
+    }
+
+    .check {
+        &.hide {
+            display: none;
+        }
+    }
 }

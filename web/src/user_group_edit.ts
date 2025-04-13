@@ -40,6 +40,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_components from "./settings_components.ts";
@@ -1216,7 +1217,7 @@ function empty_right_panel(): void {
 
 function open_right_panel_empty(): void {
     empty_right_panel();
-    const tab_key = $(".user-groups-container")
+    const tab_key = $("#groups_overlay .two-pane-settings-container")
         .find("div.ind-tab.selected")
         .first()
         .attr("data-tab-key");
@@ -1302,7 +1303,9 @@ export function is_group_already_present(group: UserGroup): boolean {
 }
 
 export function get_active_data(): ActiveData {
-    const $active_tabs = $(".user-groups-container").find("div.ind-tab.selected");
+    const $active_tabs = $("#groups_overlay .two-pane-settings-container").find(
+        "div.ind-tab.selected",
+    );
     const active_group_id = user_group_components.active_group_id;
     let $row;
     if (active_group_id !== undefined) {
@@ -1342,7 +1345,7 @@ export function switch_to_group_row(group: UserGroup): void {
 
 function show_right_section(): void {
     $(".right").addClass("show");
-    $(".user-groups-header").addClass("slide-left");
+    $("#groups_overlay .two-pane-settings-header").addClass("slide-left");
 }
 
 export function add_group_to_table(group: UserGroup): void {
@@ -1463,6 +1466,7 @@ export function change_state(
     if (section === "new") {
         do_open_create_user_group();
         redraw_user_group_list();
+        resize.resize_settings_creation_overlay();
         return;
     }
 
@@ -2015,7 +2019,7 @@ export function initialize(): void {
 
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
-        $(".user-groups-header").removeClass("slide-left");
+        $("#groups_overlay_container .two-pane-settings-header").removeClass("slide-left");
     });
 
     $("#groups_overlay_container").on("click", ".join_leave_button", function (this: HTMLElement) {

@@ -10,20 +10,26 @@ async function submit_announcements_stream_settings(page: Page): Promise<void> {
     });
 
     const save_button = "#org-notifications .save-button";
-    assert.strictEqual(
-        await common.get_text_from_selector(page, save_button),
-        "Save changes",
-        "Save button has incorrect text.",
+    await page.waitForFunction(
+        (save_button: string) => {
+            const button = document.querySelector(save_button);
+            return button && button.textContent?.trim() === "Save changes";
+        },
+        {},
+        save_button,
     );
     await page.click(save_button);
 
     await page.waitForSelector('#org-notifications .save-button[data-status="saved"]', {
         visible: true,
     });
-    assert.strictEqual(
-        await common.get_text_from_selector(page, "#org-notifications .save-button"),
-        "Saved",
-        "Saved text didn't appear after saving new stream notifications setting",
+    await page.waitForFunction(
+        (save_button: string) => {
+            const button = document.querySelector(save_button);
+            return button && button.textContent?.trim() === "Saved";
+        },
+        {},
+        save_button,
     );
 
     await page.waitForSelector("#org-notifications .save-button", {hidden: true});
@@ -48,15 +54,20 @@ async function test_change_new_stream_announcements_stream(page: Page): Promise<
 }
 
 async function test_change_signup_announcements_stream(page: Page): Promise<void> {
-    console.log('Changing signup notifications stream to Verona by filtering with "verona"');
+    await page.click("#realm_signup_announcements_stream_id_widget.dropdown-widget-button");
+    await page.waitForSelector(".dropdown-list-container", {
+        visible: true,
+    });
 
-    await page.click("#realm_signup_announcements_stream_id_widget");
-    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
+    await page.type(".dropdown-list-search-input", "rome");
 
-    await page.type(".dropdown-list-search-input", "verona");
-    await page.waitForSelector(".dropdown-list .list-item", {visible: true});
-    await page.keyboard.press("ArrowDown");
-    await page.keyboard.press("Enter");
+    const rome_in_dropdown = await page.waitForSelector(
+        `xpath///*[${common.has_class_x("list-item")}][normalize-space()="Rome"]`,
+        {visible: true},
+    );
+    assert.ok(rome_in_dropdown);
+    await rome_in_dropdown.click();
+
     await submit_announcements_stream_settings(page);
 }
 

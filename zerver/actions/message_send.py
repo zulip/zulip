@@ -76,7 +76,12 @@ from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_i
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
-from zerver.lib.user_groups import is_any_user_in_group, is_user_in_group
+from zerver.lib.user_groups import (
+    check_any_user_has_permission_by_role,
+    check_user_has_permission_by_role,
+    is_any_user_in_group,
+    is_user_in_group,
+)
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
     check_can_access_user,
@@ -100,7 +105,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.clients import get_client
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
@@ -157,6 +162,7 @@ def render_incoming_message(
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     email_gateway: bool = False,
     acting_user: UserProfile | None = None,
+    no_previews: bool = False,
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
@@ -168,6 +174,7 @@ def render_incoming_message(
             mention_data=mention_data,
             url_embed_data=url_embed_data,
             email_gateway=email_gateway,
+            no_previews=no_previews,
             acting_user=acting_user,
         )
     except MarkdownRenderingError:
@@ -579,6 +586,7 @@ def build_message_send_dict(
     disable_external_notifications: bool = False,
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
+    no_previews: bool = False,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -624,6 +632,7 @@ def build_message_send_dict(
         mention_data=mention_data,
         email_gateway=email_gateway,
         acting_user=acting_user,
+        no_previews=no_previews,
     )
     message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version
@@ -1365,9 +1374,10 @@ def check_send_stream_message(
     *,
     realm: Realm | None = None,
     read_by_sender: bool = False,
+    no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic_name)
-    message = check_message(sender, client, addressee, body, realm)
+    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
     sent_message_result = do_send_messages(
         [message], mark_as_read=[sender.id] if read_by_sender else []
     )[0]
@@ -1381,18 +1391,23 @@ def check_send_stream_message_by_id(
     topic_name: str,
     body: str,
     realm: Realm | None = None,
+    no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic_name)
-    message = check_message(sender, client, addressee, body, realm)
+    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
 
 
 def check_send_private_message(
-    sender: UserProfile, client: Client, receiving_user: UserProfile, body: str
+    sender: UserProfile,
+    client: Client,
+    receiving_user: UserProfile,
+    body: str,
+    no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
-    message = check_message(sender, client, addressee, body)
+    message = check_message(sender, client, addressee, body, no_previews=no_previews)
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
 
@@ -1570,53 +1585,56 @@ def check_can_send_direct_message(
     if all(user_profile.is_bot or user_profile.id == sender.id for user_profile in recipient_users):
         return
 
-    direct_message_permission_group = realm.direct_message_permission_group
-
-    if (
-        not hasattr(direct_message_permission_group, "named_user_group")
-        or direct_message_permission_group.named_user_group.name != SystemGroups.EVERYONE
-    ):
-        user_ids = [recipient_user.id for recipient_user in recipient_users] + [sender.id]
-        if not is_any_user_in_group(direct_message_permission_group, user_ids):
+    system_groups_name_dict = get_realm_system_groups_name_dict(realm.id)
+    if realm.direct_message_permission_group_id in system_groups_name_dict:
+        users = set(recipient_users) | {sender}
+        if not check_any_user_has_permission_by_role(
+            users, realm.direct_message_permission_group_id, system_groups_name_dict
+        ):
             is_nobody_group = (
-                hasattr(direct_message_permission_group, "named_user_group")
-                and direct_message_permission_group.named_user_group.name == SystemGroups.NOBODY
+                system_groups_name_dict[realm.direct_message_permission_group_id]
+                == SystemGroups.NOBODY
             )
             raise DirectMessagePermissionError(is_nobody_group)
+    else:
+        user_ids = {recipient_user.id for recipient_user in recipient_users} | {sender.id}
+        if not is_any_user_in_group(realm.direct_message_permission_group_id, user_ids):
+            raise DirectMessagePermissionError(is_nobody_group=False)
 
-    direct_message_initiator_group = realm.direct_message_initiator_group
-    if (
-        not hasattr(direct_message_initiator_group, "named_user_group")
-        or direct_message_initiator_group.named_user_group.name != SystemGroups.EVERYONE
-    ):
-        if is_user_in_group(direct_message_initiator_group, sender):
+    if realm.direct_message_initiator_group_id in system_groups_name_dict:
+        if check_user_has_permission_by_role(
+            sender, realm.direct_message_initiator_group_id, system_groups_name_dict
+        ):
+            return
+    else:
+        if is_user_in_group(realm.direct_message_initiator_group_id, sender):
             return
 
-        # TODO: This check is inefficient; we should in the future be able to cache
-        # on the Huddle object whether the conversation already exists, likely in the
-        # form of a `first_message_id` field, and be able to save doing this check in the
-        # common case that this is not the first message in a conversation.
-        if recipient.type == Recipient.PERSONAL:
-            recipient_user_profile = recipient_users[0]
-            previous_messages_exist = (
-                Message.objects.filter(
-                    realm=realm,
-                    recipient__type=Recipient.PERSONAL,
-                )
-                .filter(
-                    Q(sender=sender, recipient=recipient)
-                    | Q(sender=recipient_user_profile, recipient_id=sender.recipient_id)
-                )
-                .exists()
-            )
-        else:
-            assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
-            previous_messages_exist = Message.objects.filter(
+    # TODO: This check is inefficient; we should in the future be able to cache
+    # on the Huddle object whether the conversation already exists, likely in the
+    # form of a `first_message_id` field, and be able to save doing this check in the
+    # common case that this is not the first message in a conversation.
+    if recipient.type == Recipient.PERSONAL:
+        recipient_user_profile = recipient_users[0]
+        previous_messages_exist = (
+            Message.objects.filter(
                 realm=realm,
-                recipient=recipient,
-            ).exists()
-        if not previous_messages_exist:
-            raise DirectMessageInitiationError
+                recipient__type=Recipient.PERSONAL,
+            )
+            .filter(
+                Q(sender=sender, recipient=recipient)
+                | Q(sender=recipient_user_profile, recipient_id=sender.recipient_id)
+            )
+            .exists()
+        )
+    else:
+        assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        previous_messages_exist = Message.objects.filter(
+            realm=realm,
+            recipient=recipient,
+        ).exists()
+    if not previous_messages_exist:
+        raise DirectMessageInitiationError
 
 
 def check_sender_can_access_recipients(
@@ -1648,7 +1666,7 @@ def get_recipients_for_user_creation_events(
     if len(guest_recipients) == 0:
         return recipients_for_user_creation_events
 
-    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
+    if not user_access_restricted_in_realm(sender):
         return recipients_for_user_creation_events
 
     if len(user_profiles) == 1:
@@ -1704,6 +1722,7 @@ def check_message(
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     archived_channel_notice: bool = False,
+    no_previews: bool = False,
     acting_user: UserProfile | None = None,
 ) -> SendMessageRequest:
     """See
@@ -1852,6 +1871,7 @@ def check_message(
         disable_external_notifications=disable_external_notifications,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
+        no_previews=no_previews,
     )
 
     if (

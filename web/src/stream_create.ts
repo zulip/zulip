@@ -12,6 +12,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
+import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -458,6 +459,7 @@ export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
     stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
+    resize.resize_settings_creation_overlay();
 
     stream_create_subscribers.build_widgets();
 

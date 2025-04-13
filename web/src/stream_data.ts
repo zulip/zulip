@@ -110,6 +110,11 @@ class BinaryDict<T> {
         this.trues.delete(k);
         this.falses.set(k, v);
     }
+
+    delete(k: number): void {
+        this.trues.delete(k);
+        this.falses.delete(k);
+    }
 }
 
 // The stream_info variable maps stream ids to stream properties objects
@@ -204,11 +209,7 @@ export function get_stream_id(name: string): number | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-    let stream_id = stream_ids_by_name.get(name);
-    if (!stream_id) {
-        stream_id = stream_ids_by_old_names.get(name);
-    }
-    return stream_id;
+    return stream_ids_by_name.get(name) ?? stream_ids_by_old_names.get(name);
 }
 
 export function get_stream_name_from_id(stream_id: number): string {
@@ -219,10 +220,7 @@ export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-    let stream_id = stream_ids_by_name.get(name);
-    if (!stream_id) {
-        stream_id = stream_ids_by_old_names.get(name);
-    }
+    const stream_id = stream_ids_by_name.get(name) ?? stream_ids_by_old_names.get(name);
     if (!stream_id) {
         return undefined;
     }
@@ -303,13 +301,23 @@ export function slug_to_stream_id(slug: string): number | undefined {
     return undefined;
 }
 
-export function delete_sub(stream_id: number): void {
+export function mark_archived(stream_id: number): void {
     const sub = get_sub_by_id(stream_id);
     if (sub === undefined || !stream_info.get(stream_id)) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
         return;
     }
     sub.is_archived = true;
+}
+
+export function delete_sub(stream_id: number): void {
+    if (!stream_info.get(stream_id)) {
+        blueslip.warn("Failed to archive stream " + stream_id.toString());
+        return;
+    }
+
+    sub_store.delete_sub(stream_id);
+    stream_info.delete(stream_id);
 }
 
 export function get_non_default_stream_names(): {name: string; unique_id: number}[] {

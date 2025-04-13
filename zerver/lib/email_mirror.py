@@ -122,14 +122,6 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
         mm_address = MissedMessageEmailAddress.objects.select_related(
             "user_profile",
             "user_profile__realm",
-            # Fetch group settings that are needed to determine whether a user
-            # can send a direct message to a given recipient.
-            "user_profile__realm__can_access_all_users_group",
-            "user_profile__realm__can_access_all_users_group__named_user_group",
-            "user_profile__realm__direct_message_initiator_group",
-            "user_profile__realm__direct_message_initiator_group__named_user_group",
-            "user_profile__realm__direct_message_permission_group",
-            "user_profile__realm__direct_message_permission_group__named_user_group",
             "message",
             "message__sender",
             "message__recipient",

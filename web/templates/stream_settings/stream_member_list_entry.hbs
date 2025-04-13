@@ -9,17 +9,11 @@
     {{/if}}
     {{#if can_remove_subscribers}}
     <td class="unsubscribe">
-        <div class="subscriber_list_remove">
-            <form class="remove-subscriber-form">
-                <button type="submit" name="unsubscribe" class="remove-subscriber-button button small rounded button-danger">
-                    {{#if for_user_group_members}}
-                    {{t 'Remove'}}
-                    {{else}}
-                    {{t 'Unsubscribe' }}
-                    {{/if}}
-                </button>
-            </form>
-        </div>
+        {{#if for_user_group_members}}
+            {{> ../components/action_button label=(t "Remove") custom_classes="remove-subscriber-button" attention="quiet" intent="danger" aria-label=(t "Remove") }}
+        {{else}}
+            {{> ../components/action_button label=(t "Unsubscribe") custom_classes="remove-subscriber-button" attention="quiet" intent="danger" aria-label=(t "Unsubscribe") }}
+        {{/if}}
     </td>
     {{/if}}
 </tr>

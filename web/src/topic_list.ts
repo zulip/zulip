@@ -25,7 +25,7 @@ import * as vdom from "./vdom.ts";
     expanded.)
 */
 
-const active_widgets = new Map<number, TopicListWidget>();
+const active_widgets = new Map<number, LeftSidebarTopicListWidget>();
 
 // We know whether we're zoomed or not.
 let zoomed = false;
@@ -49,7 +49,7 @@ export function clear(): void {
 export function focus_topic_search_filter(): void {
     popovers.hide_all();
     sidebar_ui.show_left_sidebar();
-    const $filter = $("#filter-topic-input").expectOne();
+    const $filter = $("#left-sidebar-filter-topic-input").expectOne();
     $filter.trigger("focus");
 }
 
@@ -73,7 +73,7 @@ export function zoom_out(): void {
     assert(widget !== undefined);
     const parent_widget = widget.get_parent();
 
-    rebuild(parent_widget, stream_id);
+    rebuild_left_sidebar(parent_widget, stream_id);
 }
 
 type ListInfoNodeOptions =
@@ -153,17 +153,27 @@ export class TopicListWidget {
     prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
     my_stream_id: number;
+    filter_topics: (topic_names: string[]) => string[];
 
-    constructor($parent_elem: JQuery, my_stream_id: number) {
+    constructor(
+        $parent_elem: JQuery,
+        my_stream_id: number,
+        filter_topics: (topic_names: string[]) => string[],
+    ) {
         this.$parent_elem = $parent_elem;
         this.my_stream_id = my_stream_id;
+        this.filter_topics = filter_topics;
     }
 
-    build_list(spinner: boolean): vdom.Tag<ListInfoNodeOptions> {
+    build_list(
+        spinner: boolean,
+        formatter: (conversation: TopicInfo) => ListInfoNode,
+        is_zoomed: boolean,
+    ): vdom.Tag<ListInfoNodeOptions> {
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
-            zoomed,
-            get_topic_search_term(),
+            is_zoomed,
+            this.filter_topics,
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -183,7 +193,7 @@ export class TopicListWidget {
 
         const attrs: [string, string][] = [["class", topic_list_classes.join(" ")]];
 
-        const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
+        const nodes = list_info.items.map((conversation) => formatter(conversation));
 
         if (spinner) {
             nodes.push(spinner_li());
@@ -218,8 +228,12 @@ export class TopicListWidget {
         this.prior_dom = undefined;
     }
 
-    build(spinner = false): void {
-        const new_dom = this.build_list(spinner);
+    build(
+        spinner = false,
+        formatter: (conversation: TopicInfo) => ListInfoNode,
+        is_zoomed: boolean,
+    ): void {
+        const new_dom = this.build_list(spinner, formatter, is_zoomed);
 
         const replace_content = (html: string): void => {
             this.remove();
@@ -232,11 +246,34 @@ export class TopicListWidget {
 
         this.prior_dom = new_dom;
     }
+
+    is_empty(): boolean {
+        const $topic_list = this.$parent_elem.find(".topic-list");
+        return !$topic_list.hasClass("topic-list-has-topics");
+    }
+}
+
+function filter_topics_left_sidebar(topic_names: string[]): string[] {
+    const search_term = get_left_sidebar_topic_search_term();
+    return topic_list_data.filter_topics_by_search_term(topic_names, search_term);
+}
+
+export class LeftSidebarTopicListWidget extends TopicListWidget {
+    constructor($parent_elem: JQuery, my_stream_id: number) {
+        super($parent_elem, my_stream_id, filter_topics_left_sidebar);
+    }
+
+    override build(spinner = false): void {
+        const is_zoomed = zoomed;
+        const formatter = keyed_topic_li;
+
+        super.build(spinner, formatter, is_zoomed);
+    }
 }
 
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
-    const $input = $("#filter-topic-input");
+    const $input = $("#left-sidebar-filter-topic-input");
     if ($input.length > 0) {
         $input.val("");
         $input.trigger("blur");
@@ -251,7 +288,7 @@ export function clear_topic_search(e: JQuery.Event): void {
         assert(widget !== undefined);
         const parent_widget = widget.get_parent();
 
-        rebuild(parent_widget, stream_id);
+        rebuild_left_sidebar(parent_widget, stream_id);
     }
 }
 
@@ -276,7 +313,7 @@ export function get_stream_li(): JQuery | undefined {
     return $stream_li;
 }
 
-export function rebuild($stream_li: JQuery, stream_id: number): void {
+export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): void {
     const active_widget = active_widgets.get(stream_id);
 
     if (active_widget) {
@@ -285,7 +322,7 @@ export function rebuild($stream_li: JQuery, stream_id: number): void {
     }
 
     clear();
-    const widget = new TopicListWidget($stream_li, stream_id);
+    const widget = new LeftSidebarTopicListWidget($stream_li, stream_id);
     widget.build();
 
     active_widgets.set(stream_id, widget);
@@ -351,8 +388,8 @@ export function zoom_in(): void {
     scroll_zoomed_in_topic_into_view();
 }
 
-export function get_topic_search_term(): string {
-    const $filter = $<HTMLInputElement>("input#filter-topic-input");
+export function get_left_sidebar_topic_search_term(): string {
+    const $filter = $<HTMLInputElement>("input#left-sidebar-filter-topic-input");
     const filter_val = $filter.val();
     if (filter_val === undefined) {
         return "";
@@ -392,7 +429,7 @@ export function initialize({
         },
     );
 
-    $("body").on("input", "#filter-topic-input", (): void => {
+    $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();

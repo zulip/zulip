@@ -1,6 +1,6 @@
 <form class="notification-settings-form">
     <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Notification triggers" }}</h3>
             {{> settings_save_discard_widget section_name="general-notify-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
@@ -55,7 +55,7 @@
 
     <div class="topic_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Topic notifications" }}
                 {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
@@ -100,12 +100,14 @@
 
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Desktop message notifications" }}
                 {{> ../help_link_widget link="/help/desktop-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
+
+        <div class="desktop-notification-settings-banners"></div>
 
         {{#unless for_realm_settings}}
         <p><a class="send_test_notification">{{t "Send a test notification" }}</a></p>
@@ -148,7 +150,7 @@
 
     <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Mobile message notifications" }}
                 {{> ../help_link_widget link="/help/mobile-notifications" }}
             </h3>
@@ -175,7 +177,7 @@
 
     <div class="email_message_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Email message notifications" }}
                 {{> ../help_link_widget link="/help/email-notifications" }}
             </h3>
@@ -224,7 +226,7 @@
 
     <div class="other_email_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Other emails" }}</h3>
             {{> settings_save_discard_widget section_name="other-emails-settings" show_only_indicator=(not for_realm_settings) }}
         </div>

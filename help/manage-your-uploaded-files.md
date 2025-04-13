@@ -41,8 +41,8 @@ You can sort your uploaded files by name, upload date, message ID, and size.
 
 {settings_tab|uploaded-files}
 
-1. In the **Actions** column, click the **download file**
-   (<i class="fa fa-download"></i>) icon for the file you want to download.
+1. In the **Actions** column, click the **download**
+   (<i class="zulip-icon zulip-icon-download"></i>) icon for the file you want to download.
 
 {end_tabs}
 
@@ -52,8 +52,8 @@ You can sort your uploaded files by name, upload date, message ID, and size.
 
 {settings_tab|uploaded-files}
 
-1. In the **Actions** column, click the **delete file**
-   (<i class="fa fa-trash-o"></i>) icon for the file you want to remove.
+1. In the **Actions** column, click the **delete**
+   (<i class="zulip-icon zulip-icon-trash"></i>) icon for the file you want to remove.
 
 1. Approve by clicking **Delete**. If you delete a file, your message will still
    contain a file link, but the link will no longer work.

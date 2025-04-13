@@ -37,14 +37,14 @@ export function append_custom_profile_fields(element_id: string, user_id: number
     ]);
 
     for (const field of all_custom_fields) {
-        let field_value = people.get_custom_profile_data(user_id, field.id);
+        const field_value = people.get_custom_profile_data(user_id, field.id) ?? {
+            value: "",
+            rendered_value: "",
+        };
         const editable_by_user = current_user.is_admin || field.editable_by_user;
         const is_select_field = field.type === all_field_types.SELECT.id;
         const field_choices = [];
 
-        if (field_value === undefined || field_value === null) {
-            field_value = {value: "", rendered_value: ""};
-        }
         if (is_select_field) {
             const field_choice_dict = settings_components.select_field_data_schema.parse(
                 JSON.parse(field.field_data),

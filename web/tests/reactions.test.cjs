@@ -14,8 +14,8 @@ const alice_user_id = 5;
 const sample_message = {
     id: 1001,
     reactions: [
-        {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
-        {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+        {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
+        {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f604"},
         {emoji_name: "frown", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
 
         {emoji_name: "tada", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f389"},
@@ -136,7 +136,7 @@ test("basics", () => {
     settings_data.user_can_access_all_other_users = () => true;
     const message = sample_message_with_clean_reactions();
     const result = reactions.get_message_reactions(message);
-    assert.ok(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
+    assert.ok(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f604"));
     assert.ok(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
 
     result.sort((a, b) => a.count - b.count);
@@ -173,8 +173,8 @@ test("basics", () => {
         {
             emoji_name: "smile",
             reaction_type: "unicode_emoji",
-            emoji_code: "1f642",
-            local_id: "unicode_emoji,1f642",
+            emoji_code: "1f604",
+            local_id: "unicode_emoji,1f604",
             count: 2,
             vote_text: "2",
             user_ids: [5, 6],
@@ -232,8 +232,8 @@ test("reactions from unknown users", () => {
     const message = {
         id: 1001,
         reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
-            {emoji_name: "smile", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
+            {emoji_name: "smile", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f604"},
             {emoji_name: "frown", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f641"},
 
             {emoji_name: "tada", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f389"},
@@ -262,8 +262,8 @@ test("reactions from unknown users", () => {
         {
             emoji_name: "smile",
             reaction_type: "unicode_emoji",
-            emoji_code: "1f642",
-            local_id: "unicode_emoji,1f642",
+            emoji_code: "1f604",
+            local_id: "unicode_emoji,1f604",
             count: 2,
             vote_text: "2",
             user_ids: [5, 9],
@@ -350,7 +350,7 @@ test("sending", ({override, override_rewire}) => {
         assert.deepEqual(args.data, {
             reaction_type: "unicode_emoji",
             emoji_name: "smile",
-            emoji_code: "1f642",
+            emoji_code: "1f604",
         });
         // args.success() does nothing; just make sure it doesn't crash
         args.success();
@@ -573,7 +573,7 @@ test("get_reaction_sections", () => {
 test("emoji_reaction_title", ({override}) => {
     const message = sample_message_with_clean_reactions();
     override(message_store, "get", () => message);
-    const local_id = "unicode_emoji,1f642";
+    const local_id = "unicode_emoji,1f604";
 
     assert.equal(
         reactions.get_reaction_title_data(message.id, local_id),
@@ -1402,21 +1402,21 @@ test("process_reaction_click", ({override, override_rewire}) => {
     const expected_reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_name: "smile",
-        emoji_code: "1f642",
+        emoji_code: "1f604",
     };
 
     // Test spectator cannot react.
     page_params.is_spectator = true;
     let stub = make_stub();
     spectators.login_to_access = stub.f;
-    reactions.process_reaction_click(message.id, "unicode_emoji,1f642");
+    reactions.process_reaction_click(message.id, "unicode_emoji,1f604");
     let args = stub.get_args("args").args;
     assert.equal(args, undefined);
 
     page_params.is_spectator = false;
     stub = make_stub();
     channel.del = stub.f;
-    reactions.process_reaction_click(message.id, "unicode_emoji,1f642");
+    reactions.process_reaction_click(message.id, "unicode_emoji,1f604");
     assert.equal(stub.num_calls, 1);
     args = stub.get_args("args").args;
     assert.equal(args.url, "/json/messages/1001/reactions");
@@ -1449,8 +1449,8 @@ test("duplicates", () => {
     const dup_reaction_message = {
         id: 1001,
         reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
         ],
     };
 

@@ -2909,6 +2909,7 @@ def render_message_markdown(
     mention_data: MentionData | None = None,
     email_gateway: bool = False,
     acting_user: UserProfile | None = None,
+    no_previews: bool = False,
 ) -> MessageRenderingResult:
     """
     This is basically just a wrapper for do_render_markdown.
@@ -2931,6 +2932,7 @@ def render_message_markdown(
         url_embed_data=url_embed_data,
         mention_data=mention_data,
         email_gateway=email_gateway,
+        no_previews=no_previews,
         acting_user=acting_user,
     )
 

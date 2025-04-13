@@ -1,5 +1,5 @@
 {{#with invite}}
-<tr class="invite_row">
+<tr class="invite_row" data-invite-id="{{id}}" data-is-multiuse="{{#unless is_multiuse}}false{{else}}true{{/unless}}">
     <td>
         {{#if is_multiuse}}
         <span class="email">
@@ -32,14 +32,28 @@
         <span>{{invited_as_text}}</span>
     </td>
     <td class="actions">
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="revoke tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t "Revoke")
+          disabled=disable_buttons
+          }}
         {{#unless is_multiuse}}
-        <button class="button rounded small resend button-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}">
-            {{t "Resend" }}
-        </button>
+        {{> ../components/icon_button
+          icon="check"
+          intent="success"
+          custom_classes="check hide"
+          disabled=true
+          }}
+        {{> ../components/icon_button
+          icon="send-dm"
+          intent="neutral"
+          custom_classes="resend tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t "Resend")
+          disabled=disable_buttons
+          }}
         {{/unless}}
-        <button class="button rounded small revoke button-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
-            {{t "Revoke" }}
-        </button>
     </td>
 </tr>
 {{/with}}

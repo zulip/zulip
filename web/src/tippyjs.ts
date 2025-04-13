@@ -276,6 +276,7 @@ export function initialize(): void {
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",
             "#copy_generated_invite_link",
+            ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
     });
@@ -507,16 +508,16 @@ export function initialize(): void {
         target: ".user_row .actions button",
         trigger: "mouseenter",
         onShow(instance) {
-            if ($(instance.reference).hasClass("deactivate-user-tooltip")) {
+            if ($(instance.reference).closest("span").hasClass("deactivate-user-tooltip")) {
                 instance.setContent($t({defaultMessage: "Deactivate user"}));
                 return undefined;
-            } else if ($(instance.reference).hasClass("reactivate-user-tooltip")) {
+            } else if ($(instance.reference).closest("span").hasClass("reactivate-user-tooltip")) {
                 instance.setContent($t({defaultMessage: "Reactivate user"}));
                 return undefined;
-            } else if ($(instance.reference).hasClass("deactivate-bot-tooltip")) {
+            } else if ($(instance.reference).closest("span").hasClass("deactivate-bot-tooltip")) {
                 instance.setContent($t({defaultMessage: "Deactivate bot"}));
                 return undefined;
-            } else if ($(instance.reference).hasClass("reactivate-bot-tooltip")) {
+            } else if ($(instance.reference).closest("span").hasClass("reactivate-bot-tooltip")) {
                 instance.setContent($t({defaultMessage: "Reactivate bot"}));
                 return undefined;
             }
@@ -573,7 +574,7 @@ export function initialize(): void {
             is inserted dynamically after handlebar got rendered. So we append the
             tooltip element to the body itself with target as the + button.
         */
-        target: "#groups_overlay .create_user_group_plus_button",
+        target: "#groups_overlay .two-pane-settings-plus-button",
         content: $t({
             defaultMessage: "Create new user group",
         }),

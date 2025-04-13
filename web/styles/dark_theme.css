@@ -3,34 +3,11 @@
 %dark-theme {
     color-scheme: dark;
 
-    .placeholder {
-        color: hsl(0deg 0% 55%);
-        opacity: 1;
-    }
-
-    & textarea::placeholder,
-    input::placeholder {
-        @extend .placeholder;
-    }
-
     kbd {
         text-shadow: none;
     }
 
     /************************* MODAL DARK THEME *******************/
-    .modal__content.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 100% / 20%);
-    }
-
-    .modal__close {
-        &::before {
-            color: hsl(236deg 33% 90%);
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 91% / 10%);
-        }
-    }
 
     #message-formatting,
     #keyboard-shortcuts {
@@ -104,160 +81,6 @@
         }
     }
 
-    #navbar-middle .column-middle-inner,
-    .header,
-    #message_view_header {
-        background-color: var(--color-background-navbar);
-    }
-
-    #scroll-to-bottom-button-container {
-        background: transparent;
-    }
-
-    .main-view-banner {
-        .above_compose_banner_action_link {
-            color: hsl(200deg 100% 50%);
-        }
-
-        &.success {
-            background-color: hsl(147deg 100% 8%);
-            border-color: hsl(149deg 48% 52% / 40%);
-            color: hsl(147deg 51% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(147deg 51% 55% / 50%);
-
-                &:hover {
-                    color: hsl(147deg 51% 55%);
-                }
-
-                &:active {
-                    color: hsl(147deg 51% 55% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button {
-                background-color: hsl(147deg 51% 55% / 10%);
-                color: inherit;
-
-                &:hover {
-                    background-color: hsl(147deg 51% 55% / 15%);
-                }
-
-                &:active {
-                    background-color: hsl(147deg 51% 55% / 20%);
-                }
-            }
-        }
-
-        &.warning,
-        &.warning-style {
-            background-color: hsl(53deg 100% 11%);
-            border-color: hsl(38deg 44% 60% / 40%);
-            color: hsl(50deg 45% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(50deg 45% 61% / 50%);
-
-                &:hover {
-                    color: hsl(50deg 45% 61%);
-                }
-
-                &:active {
-                    color: hsl(50deg 45% 61% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button {
-                background-color: hsl(50deg 45% 61% / 10%);
-                color: hsl(50deg 45% 61%);
-
-                &:hover {
-                    background-color: hsl(50deg 45% 61% / 15%);
-                }
-
-                &:active {
-                    background-color: hsl(50deg 45% 61% / 20%);
-                }
-            }
-        }
-
-        &.error {
-            background-color: hsl(0deg 60% 19%);
-            border-color: hsl(3deg 73% 74% / 40%);
-            color: hsl(3deg 73% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(3deg 73% 74% / 50%);
-
-                &:hover {
-                    color: hsl(3deg 73% 74%);
-                }
-
-                &:active {
-                    color: hsl(3deg 73% 74% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button {
-                background-color: hsl(3deg 73% 74% / 10%);
-                color: hsl(3deg 73% 74%);
-
-                &:hover {
-                    background: hsl(3deg 73% 74% / 15%);
-                }
-
-                &:active {
-                    background: hsl(3deg 73% 74% / 20%);
-                }
-            }
-        }
-
-        &.info {
-            background-color: hsl(204deg 100% 12%);
-            border-color: hsl(205deg 58% 69% / 40%);
-            position: relative;
-            color: hsl(205deg 58% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(205deg 58% 69% / 50%);
-
-                &:hover {
-                    color: hsl(205deg 58% 69%);
-                }
-
-                &:active {
-                    color: hsl(205deg 58% 69% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button,
-            .upload_banner_cancel_button {
-                background-color: hsl(205deg 58% 69% / 10%);
-                border-color: transparent;
-                color: hsl(205deg 58% 69%);
-
-                &:hover {
-                    background-color: hsl(205deg 58% 69% / 15%);
-                }
-
-                &:active {
-                    background-color: hsl(205deg 58% 69% / 20%);
-                }
-            }
-        }
-    }
-
-    .upload_banner {
-        .moving_bar {
-            background: hsl(204deg 63% 18%);
-        }
-    }
-
-    .stream_header_colorblock.disabled {
-        filter: brightness(50%);
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
@@ -282,18 +105,6 @@
     button.info-density-button:disabled {
         color: inherit;
         opacity: 0.4;
-    }
-
-    .rendered_markdown .message_inline_image {
-        background: hsl(0deg 0% 100% / 3%);
-
-        img.image-loading-placeholder {
-            content: url("../images/loading/loader-white.svg");
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 100% / 15%);
-        }
     }
 
     & input[type="text"],
@@ -326,17 +137,8 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .pill-container {
-        border-style: solid;
-        border-width: 1px;
-
-        &.not-editable-by-user {
-            opacity: 0.5;
-        }
-    }
-
-    .settings-profile-user-field {
-        border-color: hsl(3deg 73% 74%);
+    .pill-container.not-editable-by-user {
+        opacity: 0.5;
     }
 
     #searchbox {
@@ -350,13 +152,6 @@
         }
     }
 
-    .create_user_group_plus_button,
-    .create_stream_plus_button {
-        color: hsl(0deg 0% 100%);
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
     & input[type="text"]:focus,
     input[type="email"]:focus,
     input[type="number"]:focus,
@@ -366,37 +161,12 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose_control_button:hover {
-        color: inherit;
-    }
-
-    #compose-content {
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .compose_table .stream-selection-header-colorblock {
-        border-color: hsl(240deg 11% 5%);
-    }
-
     /* Not that .message_row (below) needs to be more contrast on dark theme */
-    #compose-content,
     .message-feed .recipient_row,
     .message_row,
     .overlay-message-row .overlay-message-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    & div.overlay,
-    #subscription_overlay
-        #stream-creation
-        #stream_creation_form
-        #stream_creating_indicator:not(:empty),
-    #groups_overlay
-        #user-group-creation
-        #user_group_creation_form
-        #user_group_creating_indicator:not(:empty) {
-        background-color: hsl(212deg 28% 8% / 75%);
     }
 
     & div.overlay .flex.overlay-content > .overlay-container,
@@ -413,18 +183,11 @@
         }
     }
 
-    /* Undo default dropdown background color for dark mode. */
-    #searchbox_form .dropdown-menu ul {
-        background-color: unset;
-    }
-
     .popover hr,
     hr {
-        color: hsl(212deg 28% 18%);
         opacity: 0.2;
     }
 
-    .narrow_to_compose_recipients,
     .close {
         color: hsl(236deg 33% 80%);
     }
@@ -775,20 +538,6 @@
         &:active,
         &:focus {
             background-color: hsl(0deg 0% 100% / 10%);
-        }
-    }
-
-    #settings_page,
-    #stream_settings,
-    #user_group_settings {
-        .save-button-controls .discard-button {
-            color: hsl(0deg 0% 80%);
-
-            &:hover {
-                .save-discard-widget-button-text {
-                    color: hsl(0deg 0% 100%);
-                }
-            }
         }
     }
 

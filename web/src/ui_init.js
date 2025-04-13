@@ -515,8 +515,11 @@ export function initialize_everything(state_data) {
                 first_unread_message_id,
             });
         },
+        hide_other_views: inbox_ui.hide,
     });
-    inbox_ui.initialize();
+    inbox_ui.initialize({
+        hide_other_views: recent_view_ui.hide,
+    });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize();

@@ -105,12 +105,13 @@
 .modal__close {
     &::before {
         content: "\2715";
+        color: var(--color-modal-close-button);
     }
     background: transparent;
     border: 0;
 
     &:hover {
-        background: hsl(0deg 0% 90%);
+        background: var(--color-background-modal-close-button-hover);
     }
 }
 
@@ -130,7 +131,7 @@
     max-width: calc(100% - 48px);
 
     &.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid var(--color-border-modal-footer);
     }
 }
 

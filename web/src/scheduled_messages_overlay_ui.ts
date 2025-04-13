@@ -146,6 +146,7 @@ export function launch(): void {
 
     const first_element_id = keyboard_handling_context.get_items_ids()[0];
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    messages_overlay_ui.initialize_restore_overlay_message_tooltip();
 }
 
 export function rerender(): void {

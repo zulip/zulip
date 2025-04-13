@@ -285,11 +285,9 @@ export function analyze_selection(selection: Selection): {
             // Skip any selection sections that don't intersect a message.
             continue;
         }
-        if (start_id === undefined) {
-            // start_id is the Zulip message ID of the first message
-            // touched by the selection.
-            start_id = start_data[0];
-        }
+        // start_id is the Zulip message ID of the first message
+        // touched by the selection.
+        start_id ??= start_data[0];
 
         $endc = $(range.endContainer);
         $initial_end_tr = get_end_tr_from_endc($endc);

@@ -335,12 +335,12 @@ class EditMessageTest(ZulipTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
-        # Verify deactivated streams are rejected.  This may change in the future.
+        # Verify success with deactivated streams.
         do_deactivate_stream(web_public_stream, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", 401
-        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
     def test_fetch_raw_message_stream_wrong_realm(self) -> None:
         user_profile = self.example_user("hamlet")

@@ -63,11 +63,13 @@ export function set_up_pill_typeahead({
         user_group: boolean;
         user: boolean;
         user_group_source?: () => UserGroup[];
+        is_stream_subscriber_input: boolean;
     } = {
         user_source: get_users,
         stream: true,
         user_group: true,
         user: true,
+        is_stream_subscriber_input: true,
     };
     if (get_user_groups !== undefined) {
         opts.user_group_source = get_user_groups;

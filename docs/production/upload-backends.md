@@ -52,6 +52,10 @@ backend. To enable this backend, you need to do the following:
    For certain AWS regions, you may need to set the `S3_REGION`
    setting to your default AWS region's code (e.g., `"eu-central-1"`).
 
+1. Non-AWS block storage providers may need `S3_SKIP_CHECKSUM = True`; you
+   should try without this at first, but enable it if you see exceptions
+   involving `XAmzContentSHA256Mismatch`.
+
 1. Finally, restart the Zulip server so that your settings changes
    take effect
    (`/home/zulip/deployments/current/scripts/restart-server`).
@@ -61,6 +65,25 @@ server for production usage. Note that if you had any existing
 uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
+
+### Google Cloud Platform
+
+In addition to configuring `settings.py` as suggested above:
+
+```python
+S3_AUTH_UPLOADS_BUCKET = "..."
+S3_AVATAR_BUCKET = "..."
+S3_ENDPOINT_URL = "https://storage.googleapis.com"
+S3_SKIP_CHECKSUM = True
+```
+
+...and adding `s3_key` and `s3_secret_key` in `/etc/zulip/zulip-secrets.conf`,
+you will need to also add a `/etc/zulip/gcp_key.json` which contains a [service
+account key][gcp-key] with "Storage Object Admin" permissions on the uploads
+bucket. This is used by the `tusd` chunked upload service when receiving file
+uploads from clients.
+
+[gcp-key]: https://cloud.google.com/iam/docs/keys-create-delete
 
 ## S3 local caching
 

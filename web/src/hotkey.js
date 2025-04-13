@@ -355,7 +355,7 @@ export function process_escape_key(e) {
 
         // When the input is focused, we blur and clear the input. A second "Esc"
         // will zoom out, handled below.
-        if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
+        if (stream_list.is_zoomed_in() && $("#left-sidebar-filter-topic-input").is(":focus")) {
             topic_list.clear_topic_search(e);
             return true;
         }

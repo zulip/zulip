@@ -1,8 +1,6 @@
-# Moderating open organizations
+# Community moderation toolkit
 
-An **open organization** is one where
-[anyone can join without an invitation](/help/restrict-account-creation#set-whether-invitations-are-required-to-join).
-Moderation is a big part of making an open community work.
+Zulip offers a comprehensive toolkit for moderating communities.
 
 ## Prevention
 
@@ -11,6 +9,9 @@ problematic behavior.
 
 ### Manage new users
 
+* Decide whether to [allow anyone to create an
+  account](/help/restrict-account-creation#set-whether-invitations-are-required-to-join),
+  or require invitations to join.
 * Link to a code of conduct in your
   [organization description](/help/create-your-organization-profile)
   (displayed on the registration page).
@@ -72,7 +73,8 @@ organization's policy choices.
   their account is reactivated by an administrator.
 * Investigate behavior by [viewing messages sent by a
   user](/help/view-messages-sent-by-a-user).
-* Delete messages, [archive channels](/help/archive-a-channel), and
+* [Delete messages](/help/delete-a-message#delete-a-message-completely),
+  [archive channels](/help/archive-a-channel), and
   [unsubscribe users from channels](/help/unsubscribe-users-from-a-channel).
 * [Move topics](/help/rename-a-topic), including between channels, when
   users start conversations in the wrong place.

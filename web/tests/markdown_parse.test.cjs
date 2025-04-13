@@ -89,7 +89,7 @@ function get_emoticon_translations() {
 }
 
 const emoji_map = new Map();
-emoji_map.set("smile", "1f642");
+emoji_map.set("smile", "1f604");
 emoji_map.set("alien", "1f47d");
 
 function get_emoji_codepoint(emoji_name) {
@@ -203,7 +203,7 @@ run_test("stream links", () => {
 run_test("emojis", () => {
     assert_parse(
         "yup :)",
-        '<p>yup <span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
+        '<p>yup <span aria-label="smile" class="emoji emoji-1f604" role="img" title="smile">:smile:</span></p>',
     );
     assert_parse(
         "I <3 JavaScript",

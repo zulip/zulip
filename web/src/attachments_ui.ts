@@ -196,6 +196,10 @@ export function set_up_attachments(): void {
         text: $t({defaultMessage: "Loading…"}),
     });
 
+    $("#uploaded_files_table").on("click", ".download-attachment", function () {
+        $(this).siblings(".hidden-attachment-download")[0]?.click();
+    });
+
     $("#uploaded_files_table").on("click", ".remove-attachment", (e) => {
         const file_name = $(e.target).closest(".uploaded_file_row").attr("data-attachment-name");
         delete_attachments(

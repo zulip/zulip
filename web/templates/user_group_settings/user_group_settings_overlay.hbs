@@ -1,7 +1,7 @@
-<div id="groups_overlay" class="overlay" data-overlay="group_subscriptions">
+<div id="groups_overlay" class="two-pane-settings-overlay overlay" data-overlay="group_subscriptions">
     <div class="flex overlay-content">
-        <div class="user-groups-container overlay-container">
-            <div class="user-groups-header">
+        <div class="two-pane-settings-container overlay-container">
+            <div class="two-pane-settings-header">
                 <div class="fa fa-chevron-left"></div>
                 <span class="user-groups-title">{{t 'User groups' }}</span>
                 <div class="exit">
@@ -12,7 +12,7 @@
                 <div class="list-toggler-container">
                     <div id="add_new_user_group">
                         {{#if can_create_user_groups}}
-                        <button class="create_user_group_button create_user_group_plus_button" {{#if (not zulip_plan_is_not_limited)}}disabled{{/if}}>
+                        <button class="create_user_group_button two-pane-settings-plus-button" {{#if (not zulip_plan_is_not_limited)}}disabled{{/if}}>
                             <i class="create_button_plus_sign zulip-icon zulip-icon-user-group-plus" aria-hidden="true"></i>
                         </button>
                         {{/if}}

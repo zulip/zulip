@@ -475,7 +475,7 @@ test_ui("narrowing", ({mock_template}) => {
     initialize_stream_data();
 
     topic_list.close = noop;
-    topic_list.rebuild = noop;
+    topic_list.rebuild_left_sidebar = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
     $("#streams_header").outerHeight = () => 0;

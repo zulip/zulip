@@ -39,7 +39,9 @@ from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
 from typing_extensions import override
 
-from corporate.models import Customer, CustomerPlan, LicenseLedger
+from corporate.models.customers import Customer
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
@@ -1282,7 +1284,9 @@ Output:
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError(f"{type(items)} is of unexpected size!")
+            raise AssertionError(
+                f"{type(items)} is of unexpected size! Expected count: {count}, actual count: {actual_count}."
+            )
 
     @contextmanager
     def assert_memcached_count(self, count: int) -> Iterator[None]:

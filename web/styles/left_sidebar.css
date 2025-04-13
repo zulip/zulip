@@ -425,7 +425,8 @@
 #direct-messages-list .bottom_left_row {
     a.stream-name:focus,
     a.sidebar-topic-name:focus,
-    a.conversation-partners:focus {
+    a.conversation-partners:focus,
+    a.sidebar-topic-action-heading:focus {
         outline: none;
         text-decoration: none;
     }
@@ -519,6 +520,12 @@ ul.filters {
 
         &:focus {
             text-decoration: none;
+        }
+    }
+
+    .sidebar-topic-action-heading {
+        &:focus {
+            color: var(--color-text-sidebar-action-heading);
         }
     }
 
@@ -1192,10 +1199,14 @@ li.top_left_scheduled_messages {
 
 .left-sidebar-filter-row {
     display: grid;
+    /* The final 2px column keeps the filter box from going
+       to the edge of the highlighted channel box, and also
+       matches the right edge to the right edge of the vdots
+       on the channel row. (The vdots take a 2px right margin.) */
     grid-template-columns:
         [filter-box-start] minmax(0, 1fr)
         [clear-button-start] var(--line-height-sidebar-row-prominent)
-        [clear-button-end filter-box-end];
+        [clear-button-end filter-box-end] 2px;
     grid-template-rows: [filter-box-start clear-button-start] auto [clear-button-end filter-box-end];
     align-content: center;
 
@@ -1305,7 +1316,8 @@ li.top_left_scheduled_messages {
     overflow: hidden;
 }
 
-#filter-topic-input:placeholder-shown + #clear_search_topic_button {
+#left-sidebar-filter-topic-input:placeholder-shown
+    + #clear_search_topic_button {
     visibility: hidden;
 }
 
@@ -1547,6 +1559,15 @@ ul.topic-list:has(.show-more-topics)::after {
     /* When the show all topics control is displayed,
        extend the bottom bracket. */
     width: 18px;
+}
+
+#stream_filters
+    .narrow-filter
+    .topic-list
+    .bottom_left_row:has(a.sidebar-topic-action-heading:focus-visible) {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+    background-color: var(--color-background-hover-narrow-filter);
 }
 
 /* The grouping border should not be shown

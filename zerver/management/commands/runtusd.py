@@ -55,7 +55,7 @@ class Command(BaseCommand):
             "-behind-proxy",
             f"-hooks-http={hooks_http}",
             "-hooks-http-forward-headers=Cookie,Authorization",
-            "--hooks-enabled-events=pre-create,pre-finish",
+            "--hooks-enabled-events=pre-create,pre-finish,pre-terminate",
             "-disable-download",
             "--show-startup-logs=false",
         ]
@@ -63,6 +63,12 @@ class Command(BaseCommand):
         if settings.LOCAL_UPLOADS_DIR is not None:
             assert settings.LOCAL_FILES_DIR is not None
             tusd_args.append(f"-upload-dir={settings.LOCAL_FILES_DIR}")
+        elif settings.S3_ENDPOINT_URL in (
+            "https://storage.googleapis.com",
+            "https://storage.googleapis.com/",
+        ):
+            tusd_args.append(f"-gcs-bucket={settings.S3_AUTH_UPLOADS_BUCKET}")
+            env_vars["GCS_SERVICE_ACCOUNT_FILE"] = "/etc/zulip/gcp_key.json"
         else:
             tusd_args.append(f"-s3-bucket={settings.S3_AUTH_UPLOADS_BUCKET}")
             if settings.S3_ENDPOINT_URL is not None:
@@ -71,10 +77,8 @@ class Command(BaseCommand):
                 env_vars["AWS_ACCESS_KEY_ID"] = settings.S3_KEY
             if settings.S3_SECRET_KEY is not None:
                 env_vars["AWS_SECRET_ACCESS_KEY"] = settings.S3_SECRET_KEY
-            if settings.S3_REGION is None:
-                import boto3
-
-                env_vars["AWS_REGION"] = boto3.client("s3").meta.region_name
-            else:
+            if settings.S3_REGION is not None:
                 env_vars["AWS_REGION"] = settings.S3_REGION
+            if settings.S3_SKIP_CHECKSUM:
+                env_vars["AWS_REQUEST_CHECKSUM_CALCULATION"] = "when_required"
         os.execvpe("tusd", tusd_args, env_vars)

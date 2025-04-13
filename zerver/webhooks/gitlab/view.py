@@ -31,6 +31,11 @@ from zerver.lib.webhooks.git import (
 )
 from zerver.models import UserProfile
 
+TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
+DESIGN_COMMENT_MESSAGE_TEMPLATE = (
+    "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
+)
+
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name.startswith("build"):
@@ -209,6 +214,23 @@ def replace_assignees_username_with_name(
     return formatted_assignees
 
 
+def parse_design_comment(comment: WildValue, repository_url: str) -> tuple[str, str, str]:
+    note_id = comment["id"].tame(check_int)
+
+    # As there is no issue field in the payloads related to designs,
+    # we need to parse the issue number from the new_path field.
+    design_path = comment["position"]["new_path"].tame(check_string)
+
+    # Sample design_path: "designs/issue-1/Screenshot_20250302_230445.png"
+    _, issue_subpath, design_name = design_path.split("/")
+
+    issue_number = issue_subpath.split("-")[-1]
+    design_url = f"{repository_url}/-/issues/{issue_number}/designs/{design_name}"
+    comment_url = f"{design_url}#note_{note_id}"
+
+    return comment_url, design_url, design_name
+
+
 def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({})".format(comment["url"].tame(check_string))
@@ -250,6 +272,23 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
         message=comment["note"].tame(check_string),
         type="issue",
         title=payload["issue"]["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_commented_design_event_body(payload: WildValue, include_title: bool) -> str:
+    comment = payload["object_attributes"]
+    repository_url = payload["repository"]["homepage"].tame(check_string)
+
+    comment_url, design_url, design_name = parse_design_comment(comment, repository_url)
+    action = f"[commented]({comment_url})"
+    content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
+
+    return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
+        user_name=get_issue_user_name(payload),
+        action=action,
+        design_name=design_name,
+        design_url=design_url,
+        content_message=content_message,
     )
 
 
@@ -405,6 +444,17 @@ def get_object_url(payload: WildValue) -> str:
     return payload["object_attributes"]["url"].tame(check_string)
 
 
+def skip_previews(event: str) -> bool:
+    # Add event names to this array for which previews should be skipped.
+    return event in [
+        # Design events link to images, but the images cannot be
+        # accessed without authentication, so trying to preview them
+        # doesn't work.
+        "Note Hook DesignManagement::Design",
+        "Confidential Note Hook DesignManagement::Design",
+    ]
+
+
 class EventFunction(Protocol):
     def __call__(self, payload: WildValue, include_title: bool) -> str: ...
 
@@ -425,6 +475,8 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
     "Confidential Note Hook Issue": get_commented_issue_event_body,
+    "Note Hook DesignManagement::Design": get_commented_design_event_body,
+    "Confidential Note Hook DesignManagement::Design": get_commented_design_event_body,
     "Note Hook Snippet": get_commented_snippet_event_body,
     "Merge Request Hook approved": partial(get_merge_request_event_body, "approved"),
     "Merge Request Hook unapproved": partial(get_merge_request_event_body, "unapproved"),
@@ -469,7 +521,9 @@ def api_gitlab_webhook(
             body = f"[{project_url}] {body}"
 
         topic_name = get_topic_based_on_event(event, payload, use_merge_request_title)
-        check_send_webhook_message(request, user_profile, topic_name, body, event)
+        check_send_webhook_message(
+            request, user_profile, topic_name, body, event, no_previews=skip_previews(event)
+        )
     return json_success(request)
 
 
@@ -513,6 +567,18 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             type="issue",
             id=payload["issue"]["iid"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
+        )
+    elif event in (
+        "Note Hook DesignManagement::Design",
+        "Confidential Note Hook DesignManagement::Design",
+    ):
+        design_path = payload["object_attributes"]["position"]["new_path"].tame(check_string)
+        design_name = design_path.split("/")[-1]
+
+        return TOPIC_WITH_DESIGN_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type="design",
+            design_name=design_name,
         )
     elif event == "Note Hook MergeRequest":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(

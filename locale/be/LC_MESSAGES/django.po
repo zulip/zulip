@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-20 17:08+0000\n"
+"POT-Creation-Date: 2025-04-04 19:11+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Iван М., 2023\n"
 "Language-Team: Belarusian (http://app.transifex.com/zulip/zulip/language/"
@@ -300,9 +300,9 @@ msgid "Session not found"
 msgstr ""
 
 #: corporate/lib/stripe.py:3410 zerver/decorator.py:209 zerver/decorator.py:708
-#: zerver/lib/streams.py:1327 zerver/lib/streams.py:1353
-#: zerver/lib/streams.py:1355 zerver/lib/streams.py:1357
-#: zerver/lib/streams.py:1376 zerver/lib/user_groups.py:166
+#: zerver/lib/streams.py:1340 zerver/lib/streams.py:1366
+#: zerver/lib/streams.py:1368 zerver/lib/streams.py:1370
+#: zerver/lib/streams.py:1389 zerver/lib/user_groups.py:166
 #: zerver/lib/user_groups.py:192 zerver/lib/user_groups.py:356
 #: zerver/lib/user_groups.py:452 zerver/lib/users.py:202
 #: zerver/lib/users.py:265 zerver/lib/users.py:294 zerver/lib/users.py:298
@@ -429,41 +429,45 @@ msgstr ""
 msgid "Internal server error"
 msgstr ""
 
-#: templates/500.html:18
+#: templates/500.html:20
 msgid ""
 "\n"
-"            Your Zulip chat cannot be loaded because the server is "
-"experiencing technical difficulties.\n"
-"            "
-msgstr ""
-
-#: templates/500.html:23
-msgid ""
-"\n"
-"            This page will reload automatically when service is restored.\n"
-"            "
+"                Something went wrong. Sorry about that! We're aware of\n"
+"                the problem and are working to fix it.\n"
+"                Zulip will load automatically once it is working again.\n"
+"                "
 msgstr ""
 
 #: templates/500.html:27
 #, python-format
 msgid ""
 "\n"
-"                In the meantime, you can <a href=\"mailto:"
-"%(support_email)s\">contact Zulip support</a>.\n"
+"                Please check <a href=\"%(status_url)s\">Zulip Cloud status</"
+"a> for\n"
+"                more information, and <a href=\"mailto:"
+"%(support_email)s\">contact\n"
+"                Zulip support</a> with any questions.\n"
 "                "
 msgstr ""
 
-#: templates/500.html:31
+#: templates/500.html:36
+msgid ""
+"\n"
+"                Something went wrong. Sorry about that!\n"
+"                Zulip will load automatically once it is working again.\n"
+"                "
+msgstr ""
+
+#: templates/500.html:42
 #, python-format
 msgid ""
 "\n"
-"                In the meantime, you can <a href=\"mailto:"
-"%(support_email)s\">contact\n"
-"                this server's administrators</a> for support.\n"
+"                <a href=\"mailto:%(support_email)s\">Contact this server's "
+"administrators</a> for support.\n"
 "                "
 msgstr ""
 
-#: templates/500.html:39
+#: templates/500.html:47
 #, python-format
 msgid ""
 "\n"
@@ -1449,10 +1453,6 @@ msgstr ""
 msgid "Avatar"
 msgstr ""
 
-#: templates/corporate/try-zulip.html:36
-msgid "Try Zulip now"
-msgstr ""
-
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
 "\n"
@@ -1575,26 +1575,26 @@ msgid ""
 "Browse the publicly accessible channels in {org_name} without logging in."
 msgstr ""
 
-#: templates/zerver/app/index.html:140
+#: templates/zerver/app/index.html:143
 msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
 "the page."
 msgstr ""
 
-#: templates/zerver/app/index.html:143
+#: templates/zerver/app/index.html:146
 msgid ""
 "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgstr ""
 
-#: templates/zerver/app/index.html:242
+#: templates/zerver/app/index.html:245
 msgid "No conversations match your filters."
 msgstr ""
 
-#: templates/zerver/app/index.html:255
+#: templates/zerver/app/index.html:258
 msgid "This view is still loading messages."
 msgstr ""
 
-#: templates/zerver/app/index.html:258
+#: templates/zerver/app/index.html:261
 msgid "Load more"
 msgstr ""
 
@@ -4323,9 +4323,9 @@ msgstr ""
 msgid "Invalid message flag operation: '{operation}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:355 zerver/lib/message.py:399
-#: zerver/lib/message.py:414 zerver/lib/message.py:433
-#: zerver/lib/message.py:447
+#: zerver/actions/message_flags.py:355 zerver/lib/message.py:400
+#: zerver/lib/message.py:415 zerver/lib/message.py:434
+#: zerver/lib/message.py:448
 msgid "Invalid message(s)"
 msgstr ""
 
@@ -4566,7 +4566,7 @@ msgstr ""
 msgid "Invalid user ID {user_id}"
 msgstr ""
 
-#: zerver/actions/user_groups.py:226 zerver/actions/user_groups.py:262
+#: zerver/actions/user_groups.py:239 zerver/actions/user_groups.py:275
 #, python-brace-format
 msgid "User group '{group_name}' already exists."
 msgstr ""
@@ -4715,7 +4715,7 @@ msgid "Invalid email '{email}'"
 msgstr ""
 
 #: zerver/lib/addressee.py:64 zerver/lib/addressee.py:131
-#: zerver/views/typing.py:47
+#: zerver/views/typing.py:50
 msgid "Missing topic"
 msgstr ""
 
@@ -5163,15 +5163,15 @@ msgstr ""
 msgid "Version control"
 msgstr ""
 
-#: zerver/lib/message.py:207
+#: zerver/lib/message.py:208
 msgid "Message must not be empty"
 msgstr ""
 
-#: zerver/lib/message.py:209
+#: zerver/lib/message.py:210
 msgid "Message must not contain null bytes"
 msgstr ""
 
-#: zerver/lib/message.py:1483 zerver/lib/message.py:1495
+#: zerver/lib/message.py:1527 zerver/lib/message.py:1539
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
 msgstr ""
@@ -5556,20 +5556,20 @@ msgstr ""
 msgid "{full_name} mentioned everyone:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1465
+#: zerver/lib/push_notifications.py:1456
 msgid "Test notification"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1466
+#: zerver/lib/push_notifications.py:1457
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1518
+#: zerver/lib/push_notifications.py:1509
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1530
+#: zerver/lib/push_notifications.py:1521
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -5577,8 +5577,8 @@ msgstr ""
 msgid "Invalid data type for channel ID"
 msgstr ""
 
-#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:505
-#: zerver/lib/streams.py:521 zerver/tornado/views.py:225
+#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:506
+#: zerver/lib/streams.py:522 zerver/tornado/views.py:225
 #: zerver/views/events_register.py:72 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
@@ -5603,7 +5603,7 @@ msgstr ""
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr ""
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:566 zerver/views/typing.py:44
+#: zerver/lib/request.py:83 zerver/lib/streams.py:567 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr ""
@@ -5622,45 +5622,45 @@ msgstr ""
 msgid "{service_name} account security"
 msgstr ""
 
-#: zerver/lib/streams.py:468 zerver/lib/streams.py:476
+#: zerver/lib/streams.py:469 zerver/lib/streams.py:477
 msgid "You do not have permission to post in this channel."
 msgstr ""
 
-#: zerver/lib/streams.py:512 zerver/lib/streams.py:558
+#: zerver/lib/streams.py:513 zerver/lib/streams.py:559
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:654 zerver/lib/streams.py:689
-#: zerver/lib/streams.py:818 zerver/lib/streams.py:845
-#: zerver/lib/streams.py:916 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:655 zerver/lib/streams.py:690
+#: zerver/lib/streams.py:819 zerver/lib/streams.py:846
+#: zerver/lib/streams.py:917 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr ""
 
-#: zerver/lib/streams.py:887
+#: zerver/lib/streams.py:888
 msgid "Channel name is already in use."
 msgstr ""
 
-#: zerver/lib/streams.py:899 zerver/lib/streams.py:1024
+#: zerver/lib/streams.py:900 zerver/lib/streams.py:1037
 #, fuzzy, python-brace-format
 #| msgid "Unknown chart name: {chart_name}"
 msgid "Invalid channel name '{channel_name}'"
 msgstr "Невядомая назва дыяграмы: {chart_name}"
 
-#: zerver/lib/streams.py:1359 zerver/views/streams.py:333
+#: zerver/lib/streams.py:1372 zerver/views/streams.py:333
 msgid "A default channel cannot be private."
 msgstr ""
 
-#: zerver/lib/streams.py:1363
+#: zerver/lib/streams.py:1376
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:1372 zerver/views/streams.py:355
+#: zerver/lib/streams.py:1385 zerver/views/streams.py:355
 msgid "Web-public channels are not enabled."
 msgstr ""
 
-#: zerver/lib/streams.py:1405
+#: zerver/lib/streams.py:1418
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr ""
@@ -6067,7 +6067,7 @@ msgstr ""
 msgid "No such command: {command}"
 msgstr ""
 
-#: zerver/lib/zulip_update_announcements.py:542
+#: zerver/lib/zulip_update_announcements.py:561
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
@@ -6313,20 +6313,20 @@ msgstr ""
 msgid "An unknown browser"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:735
+#: zerver/tornado/event_queue.py:736
 msgid "Missing 'queue_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:738
+#: zerver/tornado/event_queue.py:739
 msgid "Missing 'last_event_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:745
+#: zerver/tornado/event_queue.py:746
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:755
+#: zerver/tornado/event_queue.py:756
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr ""
@@ -6664,28 +6664,42 @@ msgstr ""
 msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
 msgstr ""
 
-#: zerver/views/realm_export.py:58
+#: zerver/views/realm_export.py:62
 msgid "Exceeded rate limit."
 msgstr ""
 
-#: zerver/views/realm_export.py:80
+#: zerver/views/realm_export.py:84
 #, python-brace-format
 msgid "Please request a manual export from {email}."
 msgstr ""
 
-#: zerver/views/realm_export.py:118
+#: zerver/views/realm_export.py:95
+#, python-brace-format
+msgid ""
+"Make sure at least one Organization Owner is consenting to the export or "
+"contact {email} for help."
+msgstr ""
+
+#: zerver/views/realm_export.py:102
+#, python-brace-format
+msgid ""
+"Make sure at least one Organization Owner allows other Administrators to see "
+"their email address or contact {email} for help"
+msgstr ""
+
+#: zerver/views/realm_export.py:141
 msgid "Invalid data export ID"
 msgstr ""
 
-#: zerver/views/realm_export.py:121
+#: zerver/views/realm_export.py:144
 msgid "Export already deleted"
 msgstr ""
 
-#: zerver/views/realm_export.py:123
+#: zerver/views/realm_export.py:146
 msgid "Export failed, nothing to delete"
 msgstr ""
 
-#: zerver/views/realm_export.py:125
+#: zerver/views/realm_export.py:148
 msgid "Export still in progress"
 msgstr ""
 
@@ -6826,19 +6840,19 @@ msgstr ""
 msgid "Uploaded file is larger than the allowed limit of {max_file_size} MiB"
 msgstr ""
 
-#: zerver/views/typing.py:50 zerver/views/typing.py:92
+#: zerver/views/typing.py:53 zerver/views/typing.py:96
 msgid "User has disabled typing notifications for channel messages"
 msgstr ""
 
-#: zerver/views/typing.py:60
+#: zerver/views/typing.py:64
 msgid "Missing 'to' argument"
 msgstr ""
 
-#: zerver/views/typing.py:65
+#: zerver/views/typing.py:69
 msgid "Empty 'to' list"
 msgstr ""
 
-#: zerver/views/typing.py:68 zerver/views/typing.py:102
+#: zerver/views/typing.py:72 zerver/views/typing.py:106
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 
@@ -7262,19 +7276,19 @@ msgstr ""
 msgid "Malformed audit log data"
 msgstr ""
 
-#: zproject/backends.py:554
+#: zproject/backends.py:557
 msgid "You need to reset your password."
 msgstr ""
 
-#: zproject/backends.py:2446
+#: zproject/backends.py:2449
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:3166
+#: zproject/backends.py:3169
 msgid "Invalid OTP"
 msgstr ""
 
-#: zproject/backends.py:3169
+#: zproject/backends.py:3172
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 
