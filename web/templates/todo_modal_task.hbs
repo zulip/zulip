@@ -4,7 +4,5 @@
     <div class="todo-description-container">
         <input type="text" class="todo-description-input modal_text_input" disabled="true" placeholder="{{t 'Task description (optional)'}}" />
     </div>
-    <button type="button" class="button rounded small btn-secondary delete-option" title="{{t 'Delete' }}">
-        <i class="fa fa-trash-o" aria-hidden="true"></i>
-    </button>
+    {{> ./components/icon_button intent="danger" custom_classes="delete-option" icon="trash" aria-label=(t "Delete") }}
 </li>

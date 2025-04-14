@@ -462,6 +462,25 @@
     }
 }
 
+.edit_profile_field_choices_container,
+#profile_field_choices {
+    .modal_text_input {
+        margin-bottom: 0;
+    }
+
+    .choice-row {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.choice-row,
+.option-row {
+    .icon-button {
+        font-size: 1.1em;
+    }
+}
+
 #create_bot_short_name {
     /* A shorter dropdown width (~200px at 14px em)
        to ensure the email all fits on one line. */

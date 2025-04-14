@@ -51,7 +51,7 @@
                                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                             </span>
                             <i class="fa fa-pencil fa-lg restore-overlay-message tippy-zulip-delayed-tooltip" aria-hidden="true" data-tooltip-template-id="restore-draft-tooltip-template"></i>
-                            <i class="fa fa-trash-o fa-lg delete-overlay-message tippy-zulip-delayed-tooltip" aria-hidden="true" data-tooltip-template-id="delete-draft-tooltip-template"></i>
+                            {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-draft-tooltip-template" aria-label=(t "Delete") }}
                             <div class="draft-selection-tooltip">
                                 <i class="fa fa-square-o fa-lg draft-selection-checkbox" aria-hidden="true"></i>
                             </div>
