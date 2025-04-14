@@ -1,4 +1,4 @@
-import {parseOneAddress} from "email-addresses";
+import {parseAddressList, parseOneAddress} from "email-addresses";
 
 import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
@@ -49,6 +49,20 @@ export function get_current_email(
     return null;
 }
 
+export function split_text_to_form_email_pills(raw_emails: string): string[] {
+    const parsed_emails = parseAddressList(raw_emails);
+
+    // If the input string cannot be parsed into valid email addresses,
+    // return the string so that the pill code can handle the invalid case.
+    if (!parsed_emails) {
+        return [raw_emails];
+    }
+
+    return parsed_emails
+        .filter((email) => email.type === "mailbox")
+        .map((email) => (email.name ? `"${email.name}" <${email.address}>` : email.address));
+}
+
 export function create_pills(
     $pill_container: JQuery,
     pill_config?: InputPillConfig,
@@ -59,6 +73,8 @@ export function create_pills(
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
         get_display_value_from_item: get_email_from_item,
+        split_text_on_comma: false,
+        split_text_to_form_pills: split_text_to_form_email_pills,
     });
     return pill_container;
 }
