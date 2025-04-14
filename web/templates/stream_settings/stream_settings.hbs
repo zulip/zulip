@@ -11,7 +11,7 @@
                     {{/tr}}
                 </span>
             </template>
-            <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
+            <button class="action-button action-button-quiet-brand subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
                 {{#if subscribed }}
                     {{t "Unsubscribe" }}
                 {{else}}
@@ -19,13 +19,22 @@
                 {{/if}}
             </button>
         </div>
-        <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
+        {{> ../components/action_button
+          icon="eye"
+          attention="quiet"
+          intent="info"
+          custom_classes="tippy-zulip-delayed-tooltip"
+          data-tooltip-template-id="view-stream-tooltip-template"
+          id="preview-stream-button"
+          hidden=(not should_display_preview_button)
+          }}
         {{#if can_archive_stream}}
-        <button class="button small rounded button-danger deactivate tippy-zulip-delayed-tooltip" type="button" data-tippy-content="{{t 'Archive channel'}}">
-            <span class="icon-container">
-                <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
-            </span>
-        </button>
+        {{> ../components/icon_button
+          icon="archive"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip deactivate"
+          data-tippy-content=(t 'Archive channel')
+          }}
         {{/if}}
     </div>
     {{/with}}
@@ -48,9 +57,13 @@
                 </div>
                 <div class="stream_change_property_info alert-notification"></div>
                 <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
-                    <button id="open_stream_info_modal" class="button rounded small button-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edit channel name and description' }}">
-                        <i class="fa fa-pencil" aria-hidden="true"></i>
-                    </button>
+                    {{> ../components/icon_button
+                      icon="edit"
+                      intent="neutral"
+                      custom_classes="tippy-zulip-delayed-tooltip"
+                      id="open_stream_info_modal"
+                      data-tippy-content=(t 'Edit channel name and description' )
+                      }}
                 </div>
             </div>
             <div class="stream-description">
@@ -95,9 +108,15 @@
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
                     </p>
                     <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
-                        <button class="button small rounded copy_email_button" {{#unless can_access_stream_email}}disabled="disabled"{{/unless}} id="copy_stream_email_button" type="button">
-                            <span class="copy_button">{{t "Generate email address" }}</span>
-                        </button>
+                        {{> ../components/action_button
+                          label=(t "Generate email address")
+                          attention="quiet"
+                          intent="neutral"
+                          type="button"
+                          custom_classes="copy_email_button"
+                          id="copy_stream_email_button"
+                          disabled=(not can_access_stream_email)
+                          }}
                     </span>
                 </div>
             </div>
@@ -137,7 +156,13 @@
                 </div>
                 <p>{{t "In muted channels, channel notification settings apply only to unmuted topics." }}</p>
                 <div class="input-group">
-                    <button class="button small rounded reset-stream-notifications-button" type="button">{{t "Reset to default notifications" }}</button>
+                    {{> ../components/action_button
+                      label=(t "Reset to default notifications")
+                      attention="quiet"
+                      intent="neutral"
+                      custom_classes="reset-stream-notifications-button"
+                      type="button"
+                      }}
                 </div>
                 {{#each notification_settings}}
                     <div class="input-group">

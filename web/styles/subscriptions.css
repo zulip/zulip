@@ -1003,7 +1003,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .inner-box {
-        margin: 20px;
+        margin: 18px;
     }
 
     .group_settings_header,
@@ -1034,23 +1034,9 @@ h4.user_group_setting_subsection_title {
 
             .subscribe-button,
             .join_leave_button,
-            #preview-stream-button,
-            .deactivate {
-                margin-right: 3px;
-                text-decoration: none;
-                padding: 0 10px;
+            #preview-stream-button {
                 height: 100%;
-                display: flex;
-                align-items: center;
-                box-sizing: border-box;
-            }
-
-            .deactivate {
-                height: 100%;
-
-                .icon-container {
-                    display: flex;
-                }
+                margin-left: 3px;
             }
         }
     }
@@ -1086,8 +1072,6 @@ h4.user_group_setting_subsection_title {
         #open_group_info_modal {
             display: flex;
             align-items: center;
-            padding: 7px 10px;
-            font-size: 1.1em;
         }
 
         .button-group {
@@ -1220,6 +1204,10 @@ h4.user_group_setting_subsection_title {
         .inline {
             display: inline !important;
         }
+    }
+
+    .icon-button {
+        font-size: 1.2em;
     }
 }
 
