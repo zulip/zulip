@@ -834,6 +834,16 @@ export class Typeahead<ItemType extends string | object> {
             // when the user clicks anywhere on the input element.
             return;
         }
+
+        if (
+            this.input_element.type === "contenteditable" &&
+            this.input_element.$element.prop("contenteditable") === "false"
+        ) {
+            // We do not want to show the typeahead if user cannot type in
+            // the input, for cases like user not having required permission.
+            return;
+        }
+
         // Update / hide the typeahead menu if the user clicks anywhere
         // inside the typing area. This is important in textarea elements
         // such as the compose box where multiple typeahead can exist,
