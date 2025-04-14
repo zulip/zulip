@@ -5,11 +5,15 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_user, make_bot} = require("./lib/example_user.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const people = zrequire("people");
 const {ConversationParticipants} = zrequire("../src/conversation_participants.ts");
+
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 
 const user1 = make_user();
 const user2 = make_user();

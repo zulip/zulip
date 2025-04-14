@@ -79,6 +79,7 @@ test("create_item", ({override}) => {
     }
 
     override(realm, "realm_is_zephyr_mirror_realm", true);
+    settings_data.user_can_access_all_other_users = () => false;
 
     test_create_item("bogus@example.com", [], bogus_item);
     test_create_item("bogus@example.com", [bogus_item], undefined);
@@ -92,7 +93,6 @@ test("create_item", ({override}) => {
     test_create_item("isaac@example.com", [], isaac_item);
     test_create_item("isaac@example.com", [isaac_item], undefined);
 
-    settings_data.user_can_access_all_other_users = () => false;
     override(realm, "realm_bot_domain", "example.com");
     people.add_inaccessible_user(inaccessible_user_id);
 
