@@ -1418,6 +1418,24 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 .bookend {
     padding-bottom: 10px;
     text-align: center;
+
+    .stream-status {
+        opacity: 0.6;
+
+        & i {
+            font-size: 0.7143em; /* 10px at 14px / em */
+            /* TODO: Don't use relative positioning here. */
+            position: relative;
+            top: 0.1em; /* 1px at 10px / em */
+            margin-left: 0.2em; /* 2px at 10px / em */
+        }
+
+        .zulip-icon.zulip-icon-lock {
+            font-size: 0.8571em; /* 12px at 14px / em */
+            top: 0.0833em; /* 1px at 12px / em */
+            margin-left: 0.1667em; /* 2px at 12px / em */
+        }
+    }
 }
 
 .bookend-label {
@@ -1425,23 +1443,15 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     display: block;
     padding: 4px;
     overflow: hidden;
-}
 
-.bookend .stream-status {
-    opacity: 0.6;
-
-    & i {
-        font-size: 0.7143em; /* 10px at 14px / em */
-        /* TODO: Don't use relative positioning here. */
-        position: relative;
-        top: 0.1em; /* 1px at 10px / em */
-        margin-left: 0.2em; /* 2px at 10px / em */
+    &::before,
+    &::after {
+        width: 50%;
     }
 
-    .zulip-icon.zulip-icon-lock {
-        font-size: 0.8571em; /* 12px at 14px / em */
-        top: 0.0833em; /* 1px at 12px / em */
-        margin-left: 0.1667em; /* 2px at 12px / em */
+    &::after {
+        left: 0.25em;
+        margin-right: -50%;
     }
 }
 
@@ -1456,11 +1466,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     height: 0;
     opacity: 0.15;
     border-bottom: 1px solid hsl(0deg 0% 0%);
-}
-
-.bookend-label::before,
-.bookend-label::after {
-    width: 50%;
 }
 
 .date_row .timerender-content::before {
@@ -1478,11 +1483,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 .date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
-}
-
-.bookend-label::after {
-    left: 0.25em;
-    margin-right: -50%;
 }
 
 .screen {
