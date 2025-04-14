@@ -1908,70 +1908,81 @@ export function initialize(): void {
         },
     );
 
-    $("#groups_overlay_container").on("click", ".group_settings_header .button-danger", () => {
-        const active_group_data = get_active_data();
-        const group_id = active_group_data.id;
-        assert(group_id !== undefined);
-        const user_group = user_groups.get_user_group_from_id(group_id);
+    $("#groups_overlay_container").on(
+        "click",
+        ".group_settings_header .deactivate-group-button",
+        () => {
+            const active_group_data = get_active_data();
+            const group_id = active_group_data.id;
+            assert(group_id !== undefined);
+            const user_group = user_groups.get_user_group_from_id(group_id);
 
-        if (!user_group || !settings_data.can_manage_user_group(group_id)) {
-            return;
-        }
-        function deactivate_user_group(): void {
-            channel.post({
-                url: "/json/user_groups/" + group_id + "/deactivate",
-                data: {},
-                success() {
-                    dialog_widget.close();
-                    active_group_data.$row?.remove();
-                },
-                error(xhr) {
-                    dialog_widget.hide_dialog_spinner();
-                    const parsed = z
-                        .object({
-                            code: z.string(),
-                            msg: z.string(),
-                            objections: z.array(z.record(z.string(), z.unknown())),
-                            result: z.string(),
-                        })
-                        .safeParse(xhr.responseJSON);
-                    if (parsed.success && parsed.data.code === "CANNOT_DEACTIVATE_GROUP_IN_USE") {
-                        $("#deactivation-confirm-modal .dialog_submit_button").prop(
-                            "disabled",
-                            true,
-                        );
-                        const rendered_error_banner = render_cannot_deactivate_group_banner();
-                        $("#dialog_error")
-                            .html(rendered_error_banner)
-                            .addClass("alert-error")
-                            .show();
+            if (!user_group || !settings_data.can_manage_user_group(group_id)) {
+                return;
+            }
+            function deactivate_user_group(): void {
+                channel.post({
+                    url: "/json/user_groups/" + group_id + "/deactivate",
+                    data: {},
+                    success() {
+                        dialog_widget.close();
+                        active_group_data.$row?.remove();
+                    },
+                    error(xhr) {
+                        dialog_widget.hide_dialog_spinner();
+                        const parsed = z
+                            .object({
+                                code: z.string(),
+                                msg: z.string(),
+                                objections: z.array(z.record(z.string(), z.unknown())),
+                                result: z.string(),
+                            })
+                            .safeParse(xhr.responseJSON);
+                        if (
+                            parsed.success &&
+                            parsed.data.code === "CANNOT_DEACTIVATE_GROUP_IN_USE"
+                        ) {
+                            $("#deactivation-confirm-modal .dialog_submit_button").prop(
+                                "disabled",
+                                true,
+                            );
+                            const rendered_error_banner = render_cannot_deactivate_group_banner();
+                            $("#dialog_error")
+                                .html(rendered_error_banner)
+                                .addClass("alert-error")
+                                .show();
 
-                        $("#dialog_error .permissions-button").on("click", () => {
-                            select_tab = "permissions";
-                            update_toggler_for_group_setting(user_group);
-                            dialog_widget.close();
-                        });
-                    } else {
-                        ui_report.error($t({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                    }
-                },
+                            $("#dialog_error .permissions-button").on("click", () => {
+                                select_tab = "permissions";
+                                update_toggler_for_group_setting(user_group);
+                                dialog_widget.close();
+                            });
+                        } else {
+                            ui_report.error(
+                                $t({defaultMessage: "Failed"}),
+                                xhr,
+                                $("#dialog_error"),
+                            );
+                        }
+                    },
+                });
+            }
+
+            const group_name = user_groups.get_display_group_name(user_group.name);
+            const html_body = render_confirm_delete_user({
+                group_name,
             });
-        }
 
-        const group_name = user_groups.get_display_group_name(user_group.name);
-        const html_body = render_confirm_delete_user({
-            group_name,
-        });
-
-        confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Deactivate {group_name}?"}, {group_name}),
-            html_body,
-            on_click: deactivate_user_group,
-            close_on_submit: false,
-            loading_spinner: true,
-            id: "deactivation-confirm-modal",
-        });
-    });
+            confirm_dialog.launch({
+                html_heading: $t_html({defaultMessage: "Deactivate {group_name}?"}, {group_name}),
+                html_body,
+                on_click: deactivate_user_group,
+                close_on_submit: false,
+                loading_spinner: true,
+                id: "deactivation-confirm-modal",
+            });
+        },
+    );
 
     function save_group_info(e: JQuery.ClickEvent): void {
         assert(e.currentTarget instanceof HTMLElement);
