@@ -305,6 +305,19 @@ export function is_setting_group_empty(setting_group: GroupSettingValue): boolea
     return true;
 }
 
+export function is_setting_group_set_to_nobody_group(setting_group: GroupSettingValue): boolean {
+    if (typeof setting_group === "number") {
+        const user_group = get_user_group_from_id(setting_group);
+        if (user_group.name === "role:nobody") {
+            return true;
+        }
+
+        return false;
+    }
+
+    return setting_group.direct_subgroups.length === 0 && setting_group.direct_members.length === 0;
+}
+
 export function get_user_groups_of_user(
     user_id: number,
     include_deactivated_groups = false,

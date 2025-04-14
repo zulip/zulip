@@ -352,7 +352,10 @@ function remove_subscriber({
 
         const html_body = render_unsubscribe_private_stream_modal({
             unsubscribing_other_user,
-            display_stream_archive_warning: sub_count === 1,
+            organization_will_lose_content_access:
+                sub_count === 1 &&
+                user_groups.is_setting_group_set_to_nobody_group(sub.can_subscribe_group) &&
+                user_groups.is_setting_group_set_to_nobody_group(sub.can_add_subscribers_group),
         });
 
         let html_heading;
