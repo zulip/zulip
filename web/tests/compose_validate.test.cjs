@@ -175,12 +175,14 @@ function initialize_pm_pill(mock_template) {
     mock_banners();
 }
 
-test_ui("validate_stream_message_address_info", ({mock_template}) => {
+test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
     // For this test we basically only use FakeComposeBox
     // to set up the DOM environment. We don't assert about
     // any side effects on the DOM, since the scope of this
     // test is mostly to make sure the template gets rendered.
     new FakeComposeBox();
+
+    override(realm, "realm_can_access_all_users_group", everyone.id);
 
     const party_sub = {
         stream_id: 101,
@@ -217,6 +219,8 @@ test_ui("validate", ({mock_template, override}) => {
     function add_content_to_compose_box() {
         $("textarea#compose-textarea").val("foobarfoobar");
     }
+
+    override(realm, "realm_can_access_all_users_group", everyone.id);
 
     // test validating direct messages
     compose_state.set_message_type("private");
@@ -834,8 +838,10 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     assert.ok(!error_shown);
 });
 
-test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template}) => {
+test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     let is_active = false;
+
+    override(realm, "realm_can_access_all_users_group", everyone.id);
 
     mock_template("compose_banner/guest_in_dm_recipient_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.guest_in_dm_recipient_warning);

@@ -23,6 +23,9 @@ const fake_buddy_list = {
 mock_esm("../src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 
 function mock_setTimeout() {
     set_global("setTimeout", (func) => {
