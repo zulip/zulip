@@ -1415,6 +1415,21 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin-bottom: 0;
 }
 
+.date_row {
+    .timerender-content {
+        &::before {
+            width: 100%;
+        }
+
+        &::after {
+            width: 6px;
+            left: 0.25em;
+            /* Align date with message time and recipient bar date. */
+            margin-right: -1px;
+        }
+    }
+}
+
 .bookend {
     padding-bottom: 10px;
     text-align: center;
@@ -1466,17 +1481,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     height: 0;
     opacity: 0.15;
     border-bottom: 1px solid hsl(0deg 0% 0%);
-}
-
-.date_row .timerender-content::before {
-    width: 100%;
-}
-
-.date_row .timerender-content::after {
-    width: 6px;
-    left: 0.25em;
-    /* Align date with message time and recipient bar date. */
-    margin-right: -1px;
 }
 
 .bookend-label::before,
