@@ -13,6 +13,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 *.mdx
+*.md
 
 
 # environment variables
