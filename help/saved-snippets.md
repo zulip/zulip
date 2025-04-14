@@ -89,7 +89,7 @@ message you're composing.
    open the saved snippets menu.
 
 1. Hover over the saved snippet you'd like to delete, and click the **Delete
-   snippet** (<i class="fa fa-trash-o"></i>) icon on the right.
+   snippet** (<i class="zulip-icon zulip-icon-trash"></i>) icon on the right.
 
 !!! keyboard_tip ""
 

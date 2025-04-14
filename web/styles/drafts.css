@@ -69,7 +69,7 @@
     }
 
     .draft-selection-checkbox {
-        margin-top: 5px;
+        margin-top: 0.25em;
         /* Required to make sure that the checkbox icon stays inside
            the grid. Any value greater than 13px (original width of
            the checkbox icon) will work. */

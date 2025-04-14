@@ -722,6 +722,14 @@ input[type="checkbox"] {
     text-align: right;
 }
 
+.delete-choice {
+    display: inline-flex;
+
+    &.hide {
+        display: none;
+    }
+}
+
 #add-default-stream-modal {
     .dropdown-widget-button {
         display: inline-flex;
