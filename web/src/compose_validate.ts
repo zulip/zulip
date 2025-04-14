@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import _ from "lodash";
 import type {ReferenceElement} from "tippy.js";
@@ -17,7 +18,7 @@ import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
-import {$t} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -53,9 +54,12 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
-export const TOPICS_REQUIRED_ERROR_MESSAGE = $t({
-    defaultMessage: "Topics are required in this organization.",
-});
+export const TOPICS_REQUIRED_ERROR_MESSAGE = new Handlebars.SafeString(
+    $t_html({
+        defaultMessage:
+            "Sending messages to the <i>general chat</i> topic is not allowed in this channel.",
+    }),
+);
 export const get_message_too_long_for_compose_error = (): string =>
     $t(
         {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
@@ -757,7 +761,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         return false;
     }
 
-    if (realm.realm_mandatory_topics) {
+    if (!stream_data.can_use_general_chat(compose_state.stream_id())) {
         const topic = compose_state.topic();
         const missing_topic = util.is_topic_name_considered_empty(topic);
         if (missing_topic) {
@@ -769,7 +773,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
                 show_banner,
             );
             if (is_validating_compose_box) {
-                disabled_send_tooltip_message = TOPICS_REQUIRED_ERROR_MESSAGE;
+                disabled_send_tooltip_message = TOPICS_REQUIRED_ERROR_MESSAGE.toString();
             }
             return false;
         }
@@ -1029,7 +1033,7 @@ export function validate_message_length($container: JQuery, trigger_flash = true
 }
 
 function report_validation_error(
-    message: string,
+    message: string | Handlebars.SafeString,
     classname: string,
     $container: JQuery,
     $bad_input: JQuery,
