@@ -81,6 +81,7 @@ function test(label, f) {
             "server_supported_permission_settings",
             example_settings.server_supported_permission_settings,
         );
+        override(realm, "realm_can_access_all_users_group", nobody_group.id);
 
         f({override});
     });
