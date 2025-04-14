@@ -36,12 +36,6 @@ class ZulipUserFilterQuery(UserFilterQuery):
         ("active", None, None): "zerver_userprofile.is_active",
     }
 
-    # joins tells django-scim2 to always add the specified JOINS
-    # to the formed SQL queries. We need to JOIN the Realm table
-    # because we need to limit the results to the realm (subdomain)
-    # of the request.
-    joins = ("INNER JOIN zerver_realm ON zerver_realm.id = realm_id",)
-
     @classmethod
     def get_extras(cls, q: str, request: HttpRequest | None = None) -> tuple[str, list[object]]:
         """
@@ -58,6 +52,6 @@ class ZulipUserFilterQuery(UserFilterQuery):
         assert realm is not None
 
         return (
-            "AND zerver_realm.id = %s AND zerver_userprofile.is_bot = False ORDER BY zerver_userprofile.id",
+            "AND zerver_userprofile.realm_id = %s AND zerver_userprofile.is_bot = False ORDER BY zerver_userprofile.id",
             [realm.id],
         )
