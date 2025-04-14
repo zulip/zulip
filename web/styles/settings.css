@@ -719,6 +719,14 @@ input[type="checkbox"] {
     text-align: right;
 }
 
+.delete-choice {
+    display: inline-flex;
+
+    &.hide {
+        display: none;
+    }
+}
+
 #add-default-stream-modal {
     .dropdown-widget-button {
         display: inline-flex;
@@ -1715,6 +1723,13 @@ label.preferences-radio-choice-label {
 
     > .choice-row:first-of-type {
         margin-top: 0;
+    }
+}
+
+.choice-row,
+.option-row {
+    .icon-button {
+        font-size: 1.1em;
     }
 }
 
