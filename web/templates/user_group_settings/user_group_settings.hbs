@@ -2,16 +2,17 @@
     <div class="tab-container"></div>
     <div class="button-group">
         <div class="join_leave_button_wrapper inline-block">
-            <button class="button small rounded join_leave_button" type="button" name="button">
-                {{#if is_direct_member}}
-                    {{t "Leave group" }}
-                {{else}}
-                    {{t "Join group" }}
-                {{/if}}
-            </button>
+            {{#if is_direct_member}}
+            {{> ../components/action_button label=(t "Leave group") custom_classes="join_leave_button" type="button"
+              attention="quiet" intent="brand" }}
+            {{else}}
+            {{> ../components/action_button label=(t "Join group") custom_classes="join_leave_button" type="button"
+              attention="quiet" intent="brand" }}
+            {{/if}}
         </div>
         {{#unless group.deactivated}}
-        <button class="button small rounded button-danger deactivate deactivate-group-button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate group'}}" type="button"> <i class="zulip-icon zulip-icon-user-group-x" aria-hidden="true"></i></button>
+        {{> ../components/icon_button icon="user-group-x" intent="danger" custom_classes="deactivate-group-button deactivate tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t 'Deactivate group') }}
         {{/unless}}
     </div>
 </div>
@@ -26,9 +27,8 @@
                 </div>
                 <div class="group_change_property_info alert-notification"></div>
                 <div class="button-group">
-                    <button id="open_group_info_modal" class="button rounded small button-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change group info' }}">
-                        <i class="zulip-icon zulip-icon-user-group-edit" aria-hidden="true"></i>
-                    </button>
+                    {{> ../components/icon_button icon="user-group-edit" intent="neutral" custom_classes="tippy-zulip-delayed-tooltip"
+                      data-tippy-content=(t 'Change group info') id="open_group_info_modal" }}
                 </div>
             </div>
             <div class="group-description-wrapper">

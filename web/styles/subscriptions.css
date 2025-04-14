@@ -1034,20 +1034,19 @@ h4.user_group_setting_subsection_title {
             .join_leave_button,
             #preview-stream-button,
             .deactivate {
-                margin-right: 3px;
-                text-decoration: none;
-                padding: 0 10px;
                 height: 100%;
-                display: flex;
-                align-items: center;
-                box-sizing: border-box;
+                margin-left: 3px;
             }
 
-            .deactivate {
-                height: 100%;
+            .join_leave_button,
+            .deactivate-group-button {
+                margin-right: 3px;
+                padding: 0 10px;
+            }
 
-                .icon-container {
-                    display: flex;
+            .deactivate-group-button {
+                .zulip-icon {
+                    font-size: 1.2em;
                 }
             }
         }
@@ -1085,7 +1084,7 @@ h4.user_group_setting_subsection_title {
             display: flex;
             align-items: center;
             padding: 7px 10px;
-            font-size: 1.1em;
+            font-size: 1.2em;
         }
 
         .button-group {
