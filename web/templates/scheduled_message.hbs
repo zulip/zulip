@@ -37,7 +37,7 @@
                         <div class="message_top_line">
                             <div class="overlay_message_controls">
                                 <i class="fa fa-pencil fa-lg restore-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="restore-scheduled-message-tooltip-template"></i>
-                                <i class="fa fa-trash-o fa-lg delete-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="delete-scheduled-message-tooltip-template"></i>
+                                {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-tooltip" icon="trash" data-tooltip-template-id="delete-scheduled-message-tooltip-template" aria-label=(t "Delete") }}
                             </div>
                         </div>
                         <div class="message_content rendered_markdown restore-overlay-message" data-tooltip-template-id="restore-scheduled-message-tooltip-template">{{rendered_markdown rendered_content}}</div>
