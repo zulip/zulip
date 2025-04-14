@@ -37,6 +37,7 @@ type InputPillCreateOptions<ItemType> = {
         remove_pill: (pill: HTMLElement) => void,
     ) => void;
     show_outline_on_invalid_input?: boolean;
+    split_text_to_form_pills?: (pills: string) => string[];
 };
 
 export type InputPill<ItemType> = {
@@ -63,6 +64,7 @@ type InputPillStore<ItemType> = {
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
+    split_text_to_form_pills: InputPillCreateOptions<ItemType>["split_text_to_form_pills"];
 };
 
 // These are the functions that are exposed to other modules.
@@ -109,6 +111,7 @@ export function create<ItemType extends {type: string}>(
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
         show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
+        split_text_to_form_pills: opts.split_text_to_form_pills,
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -264,8 +267,14 @@ export function create<ItemType extends {type: string}>(
         },
 
         insertManyPills(pills: string | string[]) {
+            let copied_text;
             if (typeof pills === "string") {
-                pills = pills.split(/,/g).map((pill) => pill.trim());
+                if (!store.split_text_on_comma && store.split_text_to_form_pills) {
+                    copied_text = pills;
+                    pills = store.split_text_to_form_pills(pills) ?? [pills];
+                } else {
+                    pills = pills.split(/,/g).map((pill) => pill.trim());
+                }
             }
 
             // this is an array to push all the errored values to, so it's drafts
@@ -278,6 +287,11 @@ export function create<ItemType extends {type: string}>(
             );
 
             store.$input.text(drafts.join(", "));
+            // If nothing was successfully converted to pills, paste the original copied_text with shake effect.
+            if (copied_text && drafts.length === pills.length) {
+                store.$input.text(copied_text);
+                store.$input.addClass("shake");
+            }
             // when using the `text` insertion feature with jQuery the caret is
             // placed at the beginning of the input field, so this moves it to
             // the end.
@@ -370,7 +384,7 @@ export function create<ItemType extends {type: string}>(
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (e.key === ",") {
+            if (e.key === "," && store.split_text_on_comma) {
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim())) {
