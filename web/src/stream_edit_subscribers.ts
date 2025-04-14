@@ -346,6 +346,17 @@ function remove_subscriber({
             return;
         }
 
+        if (
+            people.is_my_user_id(target_user_id) &&
+            stream_data.has_content_access_via_group_permissions(sub)
+        ) {
+            // We do not show any confirmation modal if user is unsubscribing
+            // themseleves and also has the permission to subscribe to the
+            // stream again.
+            remove_user_from_private_stream();
+            return;
+        }
+
         const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({
             stream: sub,
         });
