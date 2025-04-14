@@ -19,6 +19,10 @@ const $ = require("./lib/zjquery.cjs");
 const padded_widget = mock_esm("../src/padded_widget");
 const message_viewport = mock_esm("../src/message_viewport");
 
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
+
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
 const people = zrequire("people");

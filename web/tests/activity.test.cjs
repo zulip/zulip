@@ -251,6 +251,8 @@ test("presence_list_full_update", ({override, mock_template}) => {
         return "<presence-rows-stub>";
     });
 
+    settings_data.user_can_access_all_other_users = () => true;
+
     $("input.user-list-filter").trigger("focus");
 
     const user_ids = activity_ui.build_user_sidebar();
