@@ -19,6 +19,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
+import * as user_groups from "./user_groups.ts";
 
 export let filter_dropdown_widget: DropdownWidget;
 
@@ -226,7 +227,11 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
 
     const html_body = render_unsubscribe_private_stream_modal({
         unsubscribing_other_user: false,
-        display_stream_archive_warning: sub_count === 1 && invite_only,
+        organization_will_lose_content_access:
+            sub_count === 1 &&
+            invite_only &&
+            user_groups.is_setting_group_set_to_nobody_group(sub.can_subscribe_group) &&
+            user_groups.is_setting_group_set_to_nobody_group(sub.can_add_subscribers_group),
     });
 
     function unsubscribe_from_stream(): void {
