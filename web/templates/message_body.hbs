@@ -26,6 +26,12 @@
     {{/if}}
 </span>
 
+<div class="star_container message_control_button {{#if msg/starred}}{{else}}empty-star{{/if}}" data-tooltip-template-id="{{#if msg/starred}}unstar{{else}}star{{/if}}-message-tooltip-template">
+    {{#unless msg/locally_echoed}}
+    <i role="button" tabindex="0" class="message-controls-icon star zulip-icon {{#if msg/starred}}zulip-icon-star-filled{{else}}zulip-icon-star{{/if}}"></i>
+    {{/unless}}
+</div>
+
 <a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message-time">
     {{#unless include_sender}}
     <span class="copy-paste-text">&nbsp;</span>
