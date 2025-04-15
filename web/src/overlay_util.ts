@@ -18,38 +18,38 @@ export function enable_scrolling(): void {
  * Trap keyboard focus within an overlay container with visible focus indicators
  */
 export function trap_focus($container: JQuery): () => void {
-    const $focusableElements = $container
+    const $focusable_elements = $container
         .find('a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])')
         .filter(":visible");
-    const $firstFocusable = $focusableElements.first();
-    const $lastFocusable = $focusableElements.last();
+    const $first_focusable = $focusable_elements.first();
+    const $last_focusable = $focusable_elements.last();
 
-    const $startSentinel = $(document.createElement("div"))
+    const $start_sentinel = $(document.createElement("div"))
         .attr("tabindex", "0")
         .attr("aria-hidden", "true")
         .addClass("focus-sentinel");
-    const $endSentinel = $(document.createElement("div"))
+    const $end_sentinel = $(document.createElement("div"))
         .attr("tabindex", "0")
         .attr("aria-hidden", "true")
         .addClass("focus-sentinel");
 
-    $container.prepend($startSentinel);
-    $container.append($endSentinel);
+    $container.prepend($start_sentinel);
+    $container.append($end_sentinel);
 
-    const handleFocus = (e: JQuery.TriggeredEvent): void => {
-        if (e.target === $startSentinel[0] && $lastFocusable.length > 0) {
-            $lastFocusable[0]!.focus();
-        } else if (e.target === $endSentinel[0] && $firstFocusable.length > 0) {
-            $firstFocusable[0]!.focus();
+    const handle_focus = (e: JQuery.TriggeredEvent): void => {
+        if (e.target === $start_sentinel[0] && $last_focusable.length > 0) {
+            $last_focusable[0]!.focus();
+        } else if (e.target === $end_sentinel[0] && $first_focusable.length > 0) {
+            $first_focusable[0]!.focus();
         }
     };
 
-    $startSentinel.on("focus", handleFocus);
-    $endSentinel.on("focus", handleFocus);
+    $start_sentinel.on("focus", handle_focus);
+    $end_sentinel.on("focus", handle_focus);
 
     setTimeout(() => {
-        if ($firstFocusable.length > 0) {
-            $firstFocusable[0]!.focus({preventScroll: true});
+        if ($first_focusable.length > 0) {
+            $first_focusable[0]!.focus({preventScroll: true});
         } else {
             $container.attr("tabindex", "0");
             $container[0]!.focus({preventScroll: true});
@@ -57,7 +57,7 @@ export function trap_focus($container: JQuery): () => void {
     }, 0);
 
     return () => {
-        $startSentinel.off("focus", handleFocus).remove();
-        $endSentinel.off("focus", handleFocus).remove();
+        $start_sentinel.off("focus", handle_focus).remove();
+        $end_sentinel.off("focus", handle_focus).remove();
     };
 }
