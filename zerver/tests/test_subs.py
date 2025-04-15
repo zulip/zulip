@@ -7873,7 +7873,7 @@ class GetSubscribersTest(ZulipTestCase):
                 + f"""<li><a class="stream" data-stream-id="{stream.id}" href="/#narrow/channel/{stream.id}-{stream.name}">#{stream.name}</a></li>\n"""
             )
         msg = f"""
-            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the following channels:</p>
+            <p><span class="user-mention silent" data-user-id="{hamlet.id}">King Hamlet</span> subscribed you to the following channels:</p>
             <ul>
             {rendered_stream_list}
             </ul>
@@ -7901,7 +7901,7 @@ class GetSubscribersTest(ZulipTestCase):
 
         stream_invite_only_1 = get_stream("stream_invite_only_1", realm)
         msg = f"""
-            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the channel <a class="stream" data-stream-id="{stream_invite_only_1.id}" href="/#narrow/channel/{stream_invite_only_1.id}-{stream_invite_only_1.name}">#{stream_invite_only_1.name}</a>.</p>
+            <p><span class="user-mention silent" data-user-id="{hamlet.id}">King Hamlet</span> subscribed you to <a class="stream" data-stream-id="{stream_invite_only_1.id}" href="/#narrow/channel/{stream_invite_only_1.id}-{stream_invite_only_1.name}">#{stream_invite_only_1.name}</a>.</p>
             """
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
