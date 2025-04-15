@@ -5032,7 +5032,7 @@ class SubscribeActionTest(BaseAction):
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
         stream.message_retention_days = 10
-        stream.save()
+        stream.save(update_fields=["message_retention_days"])
 
         user_profile = self.example_user("hamlet")
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
@@ -5056,7 +5056,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_delete("events[1]", events[1])
 
         stream.invite_only = False
-        stream.save()
+        stream.save(update_fields=["invite_only"])
 
         # Test events for guest user.
         self.user_profile = self.example_user("polonius")

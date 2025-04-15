@@ -1409,7 +1409,7 @@ class RealmImportExportTest(ExportFile):
 
         denmark_stream = get_stream("Denmark", original_realm)
         denmark_stream.creator = hamlet
-        denmark_stream.save()
+        denmark_stream.save(update_fields=["creator"])
 
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
