@@ -29,6 +29,7 @@ import * as subscriber_api from "./subscriber_api.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_groups from "./user_groups.ts";
 import * as user_sort from "./user_sort.ts";
+import * as util from "./util.ts";
 
 const remove_user_id_api_response_schema = z.object({
     removed: z.array(z.string()),
@@ -81,13 +82,37 @@ function show_stream_subscription_request_result({
     already_subscribed_users?: User[];
     ignored_deactivated_users?: User[];
 }): void {
+    const subscribed_users_count = subscribed_users?.length;
+    const already_subscribed_users_count = already_subscribed_users?.length;
+    const is_total_subscriber_more_than_five =
+        (subscribed_users_count ?? 0) + (already_subscribed_users_count ?? 0) > 5;
+
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
     ).expectOne();
+    let subscribed_users_formatted;
+    if (subscribed_users?.length) {
+        const names = subscribed_users.map((user) => user.full_name);
+        subscribed_users_formatted = util.format_array_as_list(names, "long", "conjunction");
+    }
+    let already_subscribed_users_formatted;
+    if (already_subscribed_users?.length) {
+        const names = already_subscribed_users.map((user) => user.full_name);
+        already_subscribed_users_formatted = util.format_array_as_list(
+            names,
+            "long",
+            "conjunction",
+        );
+    }
     const html = render_stream_subscription_request_result({
         message,
         subscribed_users,
         already_subscribed_users,
+        subscribed_users_count,
+        already_subscribed_users_count,
+        subscribed_users_formatted,
+        already_subscribed_users_formatted,
+        is_total_subscriber_more_than_five,
         ignored_deactivated_users,
     });
     scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
