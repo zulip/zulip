@@ -90,11 +90,14 @@ function rerender_ui(): void {
 
 function update_notification_banner(): void {
     const permission = Notification.permission;
+    const $banner_container = $(".desktop-notification-settings-banners");
     if (permission === "granted") {
         banners.close($(".desktop-notification-settings-banners .desktop-setting-notifications"));
         $(".send_test_notification").show();
     } else {
-        banners.append(DESKTOP_NOTIFICATIONS_BANNER, $(".desktop-notification-settings-banners"));
+        if ($banner_container.find(".desktop-setting-notifications").length === 0) {
+            banners.append(DESKTOP_NOTIFICATIONS_BANNER, $banner_container);
+        }
         $(".send_test_notification").hide();
     }
 }
