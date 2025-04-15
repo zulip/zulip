@@ -6,6 +6,7 @@ import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -35,8 +36,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
             result = self.api_patch(user, url, data)
             self.assert_json_success(result)
 
-        stream.deactivated = True
-        stream.save()
+        do_deactivate_stream(stream, acting_user=None)
 
         self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
         self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))
@@ -266,8 +266,7 @@ class MutedTopicsTests(ZulipTestCase):
             result = self.api_post(user, url, data)
             self.assert_json_success(result)
 
-        stream.deactivated = True
-        stream.save()
+        do_deactivate_stream(stream, acting_user=None)
 
         self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
         self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))

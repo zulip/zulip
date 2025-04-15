@@ -2512,8 +2512,7 @@ class StreamMessagesTest(ZulipTestCase):
         # Mark a stream as inactive
         stream = self.make_stream("inactive_stream")
         stream.is_recently_active = False
-        stream.save()
-        self.assertEqual(stream.is_recently_active, False)
+        stream.save(update_fields=["is_recently_active"])
 
         # Send a message to the stream
         sender = self.example_user("hamlet")

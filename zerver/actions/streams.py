@@ -1695,7 +1695,7 @@ def do_change_stream_group_based_setting(
         )
 
     setattr(stream, setting_name, user_group)
-    stream.save()
+    stream.save(update_fields=[setting_name, "name"])
 
     new_setting_api_value = get_group_setting_value_for_api(user_group)
     RealmAuditLog.objects.create(
