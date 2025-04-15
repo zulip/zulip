@@ -27,6 +27,9 @@
                 <i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> <span class="decorated-dm-name">{{name}}</span>
             {{else if is_setting_disabled}}
                 <span class="setting-disabled-option"><i class="setting-disabled-option-icon fa fa-ban" aria-hidden="true"></i>{{t "Disable" }}</span>
+            {{else if (eq unique_id -2)}}
+                {{!-- This is the option for PresetConfigOption.MAPPING --}}
+                <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon"></i> {{name}}
             {{else}}
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-bold-selected">{{name}}</span>
