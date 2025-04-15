@@ -81,13 +81,22 @@ function show_stream_subscription_request_result({
     already_subscribed_users?: User[];
     ignored_deactivated_users?: User[];
 }): void {
+    const subscribed_users_count = subscribed_users?.length;
+    const already_subscribed_users_count = already_subscribed_users?.length;
+    const is_total_subscriber_more_than_five =
+        (subscribed_users_count ?? 0) + (already_subscribed_users_count ?? 0) > 5;
+
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
     ).expectOne();
+
     const html = render_stream_subscription_request_result({
         message,
         subscribed_users,
         already_subscribed_users,
+        subscribed_users_count,
+        already_subscribed_users_count,
+        is_total_subscriber_more_than_five,
         ignored_deactivated_users,
     });
     scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
