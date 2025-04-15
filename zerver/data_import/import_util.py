@@ -352,7 +352,7 @@ def build_realm(
 ) -> ZerverFieldsT:
     realm = dict(
         zerver_client=[
-            {"name": "populate_db", "id": 1},
+            {"name": "ZulipDataImport", "id": 1},
             {"name": "website", "id": 2},
             {"name": "API", "id": 3},
         ],
