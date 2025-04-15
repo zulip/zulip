@@ -79,12 +79,18 @@
       padding on either side of the message box. */
     padding: 0 5px 0 3px;
 
-    &:hover .message_controls {
-        opacity: 1;
-        visibility: visible;
+    &:hover {
+        .star_container {
+            opacity: 1;
+        }
 
-        .empty-star:hover {
-            cursor: pointer;
+        .message_controls {
+            opacity: 1;
+            visibility: visible;
+
+            .empty-star:hover {
+                cursor: pointer;
+            }
         }
     }
 }
@@ -108,20 +114,26 @@
     grid-template:
         var(--message-box-sender-line-height) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr)
-        8px minmax(var(--message-box-timestamp-column-width), max-content);
+        var(--message-box-star-marker-column-width) minmax(
+            var(--message-box-timestamp-column-width),
+            max-content
+        );
     /* Named grid areas provide flexibility for positioning grid items
        reliably, even if the row or column definitions of the grid change. */
     grid-template-areas:
-        "edited message   . time"
-        ".      message   . .   "
-        ".      more      . .   "
-        ".      reactions . .   ";
+        "edited message   star-marker time"
+        ".      message   .           .   "
+        ".      more      .           .   "
+        ".      reactions .           .   ";
 
     &.content_edit_mode {
         cursor: default;
         grid-template-columns:
             var(--message-box-avatar-column-width) minmax(0, 1fr)
-            8px minmax(var(--message-box-timestamp-column-width), max-content);
+            var(--message-box-star-marker-column-width) minmax(
+                var(--message-box-timestamp-column-width),
+                max-content
+            );
     }
 
     .message_edit_notice {
@@ -268,10 +280,10 @@
 .messagebox-includes-sender {
     .messagebox-content {
         grid-template-areas:
-            "avatar sender    . time"
-            "avatar message   . .   "
-            ".      more      . .   "
-            ".      reactions . .   ";
+            "avatar sender    star-marker time"
+            "avatar message   .           .   "
+            ".      more      .           .   "
+            ".      reactions .           .   ";
 
         .message_edit {
             /* No top margin when there's a sender row */
@@ -280,11 +292,11 @@
 
         &.is-me-message {
             grid-template-areas:
-                ".      .         . .   "
-                "avatar sender    . time"
-                "avatar sender    . .   "
-                ".      more      . .   "
-                ".      reactions . .   ";
+                ".      .         .           .   "
+                "avatar sender    star-marker time"
+                "avatar sender    .           .   "
+                ".      more      .           .   "
+                ".      reactions .           .   ";
             grid-template-rows:
                 var(--message-box-vertical-margin) var(
                     --message-box-avatar-height
@@ -608,14 +620,38 @@
             animation: rotate 1s infinite linear;
         }
     }
+}
 
-    .star_container {
-        &:not(.empty-star) {
-            /* Color, opacity, and visibility, as though the message is hovered. */
-            color: var(--color-message-star-action);
-            opacity: 1;
-            visibility: visible !important;
-        }
+.star_container {
+    grid-area: star-marker;
+    place-self: center center;
+    /* We introduce a slight manual offset here
+       to lift stars a bit higher relative to
+       the timestamp.
+       2px at 16px/1em */
+    margin-top: -0.125em;
+    height: var(--message-box-sender-line-height);
+    display: flex;
+    place-items: center center;
+    color: var(--color-message-action-visible);
+    opacity: 0;
+    transform: scale(0.75);
+    transition: 0.2s ease;
+    transition-property: opacity, transform;
+
+    .star:focus {
+        outline: 0 !important;
+    }
+
+    &:hover {
+        opacity: 1;
+        transform: scale(1.25);
+    }
+
+    &:not(.empty-star) {
+        /* Color, opacity, and visibility, as though the message is hovered. */
+        color: var(--color-message-star-action);
+        opacity: 1;
     }
 }
 

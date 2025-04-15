@@ -427,6 +427,7 @@
     --message-box-avatar-height: var(--message-box-avatar-width);
     /* 46px at 14px/1em */
     --message-box-avatar-column-width: 3.2857em;
+    --message-box-star-marker-column-width: 1.5em;
     /* Increase the margin here to account for the
        focus ring, which is offset by -1px, as well
        as the vertical height between the hover icons
