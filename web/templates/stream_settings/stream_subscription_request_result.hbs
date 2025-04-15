@@ -1,26 +1,43 @@
-{{#if message}}
-{{message}}
-<br />
-{{/if}}
-{{#if subscribed_users}}
-    {{#if subscribed_users.[1]}}
-    {{t "Successfully subscribed users:" }}
-    {{else}}
-    {{t "Successfully subscribed user:" }}
-    {{/if}}
-    {{#each subscribed_users}}
-        <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
-    {{/each}}
-    <br />
-{{/if}}
-{{#if already_subscribed_users}}
-    {{#each already_subscribed_users}}
-        {{#if @first}}
-        {{t "Already subscribed users:" }}
-        {{/if}}
-        <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
-    {{/each}}
-    <br />
+{{#if error_message}}
+    <div class="banner-wrapper">
+        <div class="banner banner-danger">
+            <span class="banner-label">
+                {{error_message}}
+            </span>
+        </div>
+    </div>
+{{else}}
+    <div class="banner-wrapper">
+        <div class="banner banner-success">
+            <span class="banner-label">
+                {{#if (eq subscribed_users_count 0)}}
+                    {{t "All users were already subscribed."}}
+                {{else}}
+                    {{#if (not is_total_subscriber_more_than_five) }}
+                        {{#if subscribed_users}}
+                            {{t "Subscribed:" }} {{{subscribe_success_messages.subscribed_users_message}}}.
+                        {{/if}}
+                        {{#if already_subscribed_users}}
+                            {{t "Already a subscriber:" }} {{{subscribe_success_messages.already_subscribed_users_message}}}.
+                        {{/if}}
+                    {{else}}
+                        {{#if subscribed_users}}
+                            {{t "{subscribed_users_count, plural,
+                              one {Subscribed: {subscribed_users_count} user.}
+                            other {Subscribed: {subscribed_users_count} users.}
+                        }"}}
+                        {{/if}}
+                        {{#if already_subscribed_users}}
+                            {{t "{already_subscribed_users_count, plural,
+                              one {Already subscribed: {already_subscribed_users_count} user.}
+                                other {Already subscribed: {already_subscribed_users_count} users.}
+                        }"}}
+                        {{/if}}
+                    {{/if}}
+                {{/if}}
+            </span>
+        </div>
+    </div>
 {{/if}}
 {{#if ignored_deactivated_users}}
     {{#each ignored_deactivated_users}}
