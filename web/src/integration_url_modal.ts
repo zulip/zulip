@@ -39,6 +39,12 @@ const PresetConfigOption = {
     BRANCHES: "branches",
 };
 
+function is_preset_config_option(key: string): boolean {
+    // If it's a preset config option, the option has
+    // a unique key declared in PresetConfigOption.
+    return Object.values(PresetConfigOption).includes(key);
+}
+
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
@@ -120,37 +126,57 @@ export function show_generate_integration_url_modal(api_key: string): void {
             for (const option of validated_config) {
                 let $config_element: JQuery;
 
-                if (option.key === PresetConfigOption.BRANCHES) {
-                    const filter_branches_html =
-                        render_generate_integration_url_filter_branches_modal();
-                    $config_element = $(filter_branches_html);
-                    $config_element.find("#integration-url-all-branches").on("change", () => {
-                        show_branch_filtering_ui();
-                    });
-                } else if (option.validator === "check_bool") {
-                    const config_html = render_generate_integration_url_config_checkbox_modal({
-                        key: option.key,
-                        label: option.label,
-                    });
-                    $config_element = $(config_html);
-                    $config_element
-                        .find(`#integration-url-${option.key}-checkbox`)
-                        .on("change", () => {
-                            update_url();
-                        });
-                } else if (option.validator === "check_string") {
-                    const config_html = render_generate_integration_url_config_text_modal({
-                        key: option.key,
-                        label: option.label,
-                    });
-                    $config_element = $(config_html);
-                    $config_element.find(`#integration-url-${option.key}-text`).on("input", () => {
-                        update_url();
-                    });
+                if (is_preset_config_option(option.key)) {
+                    switch (option.key) {
+                        case PresetConfigOption.BRANCHES: {
+                            const filter_branches_html =
+                                render_generate_integration_url_filter_branches_modal();
+                            $config_element = $(filter_branches_html);
+                            $config_element
+                                .find("#integration-url-all-branches")
+                                .on("change", () => {
+                                    show_branch_filtering_ui();
+                                });
+                            break;
+                        }
+                        default:
+                            continue;
+                    }
+                    $config_container.append($config_element);
                 } else {
-                    continue;
+                    switch (option.validator) {
+                        case "check_bool": {
+                            const config_html =
+                                render_generate_integration_url_config_checkbox_modal({
+                                    key: option.key,
+                                    label: option.label,
+                                });
+                            $config_element = $(config_html);
+                            $config_element
+                                .find(`#integration-url-${option.key}-checkbox`)
+                                .on("change", () => {
+                                    update_url();
+                                });
+                            break;
+                        }
+                        case "check_string": {
+                            const config_html = render_generate_integration_url_config_text_modal({
+                                key: option.key,
+                                label: option.label,
+                            });
+                            $config_element = $(config_html);
+                            $config_element
+                                .find(`#integration-url-${option.key}-text`)
+                                .on("input", () => {
+                                    update_url();
+                                });
+                            break;
+                        }
+                        default:
+                            continue;
+                    }
+                    $config_container.append($config_element);
                 }
-                $config_container.append($config_element);
             }
         }
 
