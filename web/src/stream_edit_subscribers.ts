@@ -232,7 +232,6 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         });
         return;
     }
-
     const user_ids = [...user_id_set];
 
     function invite_success(raw_data: unknown): void {
@@ -244,6 +243,23 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         const already_subscribed_users = Object.keys(data.already_subscribed).map((user_id) =>
             people.get_by_user_id(Number(user_id)),
         );
+        
+        const $pill_widget_button = $("button.add-subscriber-button")
+        const original_text = $pill_widget_button.text();
+        const original_width = $pill_widget_button.outerWidth();
+        const original_height = $pill_widget_button.outerHeight();
+        if (original_width !== undefined && original_height !== undefined) {
+            $pill_widget_button
+                .css("width", original_width)
+                .css("height", original_height);
+        }
+        
+        const $check_icon = $("<i>").addClass("zulip-icon zulip-icon-check")
+        $pill_widget_button.empty().append($check_icon).addClass("text-success");
+        setTimeout(() => {
+            $pill_widget_button.text(original_text).removeClass("text-success");
+        }, 2000);
+        
 
         const subscribed_users_count = subscribed_users.length;
         const already_subscribed_users_count = already_subscribed_users.length;
