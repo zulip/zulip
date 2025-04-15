@@ -30,7 +30,7 @@
         {% block webpack %}
             {% for filename in webpack_entry(entrypoint) -%}
                 {% if filename.endswith(".css") -%}
-                    <link href="{{ filename }}" rel="stylesheet" crossorigin="anonymous" {% if csp_nonce %}nonce="{{ csp_nonce }}"{% endif %} />
+                    <link href="{{ filename }}" rel="stylesheet" {% if csp_nonce %}nonce="{{ csp_nonce }}"{% endif %} />
                 {% elif filename.endswith(".js") -%}
                     <script src="{{ filename }}" defer crossorigin="anonymous" {% if csp_nonce %}nonce="{{ csp_nonce }}"{% endif %}></script>
                 {% endif -%}
