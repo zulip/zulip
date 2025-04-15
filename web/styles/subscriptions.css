@@ -274,6 +274,17 @@ h4.user_group_setting_subsection_title {
     .input {
         flex-grow: 1;
     }
+
+    .check:disabled {
+        height: 1.75em;
+        opacity: 1;
+    }
+
+    .check {
+        &.hide {
+            display: none;
+        }
+    }
 }
 
 .add_subscribers_container .add_subscriber_button_wrapper,
