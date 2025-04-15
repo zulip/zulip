@@ -836,7 +836,7 @@ class Command(ZulipBaseCommand):
             # cURL example to delete an existing scheduled message.
             check_schedule_message(
                 sender=iago,
-                client=get_client("populate_db"),
+                client=get_client("ZulipDataImport"),
                 recipient_type_name="stream",
                 message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
                 topic_name="test-api",
@@ -846,7 +846,7 @@ class Command(ZulipBaseCommand):
             )
             check_schedule_message(
                 sender=iago,
-                client=get_client("populate_db"),
+                client=get_client("ZulipDataImport"),
                 recipient_type_name="private",
                 message_to=[iago.id],
                 topic_name=None,
@@ -1242,7 +1242,7 @@ def generate_and_send_messages(
     while num_messages < tot_messages:
         saved_data: dict[str, Any] = {}
         message = Message(realm=realm)
-        message.sending_client = get_client("populate_db")
+        message.sending_client = get_client("ZulipDataImport")
 
         message.content = next(texts)
 

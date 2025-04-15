@@ -1017,6 +1017,7 @@ class SlackImporter(ZulipTestCase):
         ) = slack_workspace_to_realm(
             "testdomain", realm_id, user_list, "test-realm", "./random_path", {}
         )
+
         test_zerver_realmdomain = [
             {"realm": realm_id, "allow_subdomains": False, "domain": "testdomain", "id": realm_id}
         ]

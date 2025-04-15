@@ -56,6 +56,8 @@ def create_internal_realm() -> None:
     # just ensures these get low IDs in production, and in development
     # avoids an extra database write for the first HTTP request in
     # most tests.
+    #
+    # These are currently also present in DATA_IMPORT_CLIENTS.
     get_client("Internal")
     get_client("website")
     get_client("ZulipMobile")
