@@ -503,9 +503,18 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.33.0
         version: 0.33.0(astro@5.6.1(@types/node@22.14.0)(jiti@1.21.7)(rollup@4.39.0)(sass@1.86.3)(terser@5.39.0)(typescript@5.8.3)(yaml@2.7.1))
+      '@types/hast':
+        specifier: ^3.0.4
+        version: 3.0.4
       astro:
         specifier: ^5.1.2
         version: 5.6.1(@types/node@22.14.0)(jiti@1.21.7)(rollup@4.39.0)(sass@1.86.3)(terser@5.39.0)(typescript@5.8.3)(yaml@2.7.1)
+      hast-util-from-html:
+        specifier: ^2.0.3
+        version: 2.0.3
+      hast-util-to-html:
+        specifier: ^9.0.5
+        version: 9.0.5
       sharp:
         specifier: ^0.34.1
         version: 0.34.1

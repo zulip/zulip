@@ -176,6 +176,10 @@ def run() -> None:
     include_source_dir = os.path.join(BASE_DIR, "help/include")
     include_destination_dir = os.path.join(BASE_DIR, "help-beta/src/content/docs/include")
     shutil.copytree(include_source_dir, include_destination_dir)
+
+    # We do not want Astro to render these include files as standalone
+    # files, prefixing them with an underscore accomplishes that.
+    # https://docs.astro.build/en/guides/routing/#excluding-pages
     for name in os.listdir(include_destination_dir):
         os.rename(
             os.path.join(include_destination_dir, name),
