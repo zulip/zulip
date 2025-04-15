@@ -245,6 +245,25 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             people.get_by_user_id(Number(user_id)),
         );
 
+        const $pill_widget_button = $("button.add-subscriber-button");
+        const $pill_widget_button_text = $pill_widget_button.find("span");
+        const $check_icon = $pill_widget_button.find("i");
+
+        const original_width = $pill_widget_button.outerWidth();
+        const original_height = $pill_widget_button.outerHeight();
+        if (original_width !== undefined && original_height !== undefined) {
+            $pill_widget_button.css("width", original_width).css("height", original_height);
+        }
+
+        $pill_widget_button.addClass("text-success");
+        $pill_widget_button_text.hide();
+        $check_icon.show();
+        setTimeout(() => {
+            $check_icon.hide();
+            $pill_widget_button_text.show();
+            $pill_widget_button.removeClass("text-success");
+        }, 1000);
+
         show_stream_subscription_request_result({
             add_class: "text-success",
             remove_class: "text-error",
