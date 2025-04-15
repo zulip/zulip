@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -31,6 +32,7 @@ import * as subscriber_api from "./subscriber_api.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_groups from "./user_groups.ts";
 import * as user_sort from "./user_sort.ts";
+import * as util from "./util.ts";
 
 const remove_user_id_api_response_schema = z.object({
     removed: z.array(z.string()),
@@ -68,37 +70,81 @@ function get_sub(stream_id: number): StreamSubscription | undefined {
     return sub;
 }
 
-function show_stream_subscription_request_result({
-    message,
-    add_class,
-    remove_class,
-    subscribed_users,
-    already_subscribed_users,
-    ignored_deactivated_users,
-}: {
-    message?: string;
-    add_class: string;
-    remove_class: string;
-    subscribed_users?: User[];
-    already_subscribed_users?: User[];
-    ignored_deactivated_users?: User[];
-}): void {
+function generate_subscribe_success_messages(
+    subscribed_users: User[],
+    already_subscribed_users: User[],
+): {
+    subscribed_users_message: string;
+    already_subscribed_users_message: string;
+} {
+    const subscribed_user_links = subscribed_users.map(
+        (user) =>
+            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
+    );
+    const already_subscribed_user_links = already_subscribed_users.map(
+        (user) =>
+            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
+    );
+
+    const subscribed_users_message = util.format_array_as_list_with_conjunction(
+        subscribed_user_links,
+        "long",
+    );
+    const already_subscribed_users_message = util.format_array_as_list_with_conjunction(
+        already_subscribed_user_links,
+        "long",
+    );
+    return {
+        subscribed_users_message,
+        already_subscribed_users_message,
+    };
+}
+
+function show_stream_subscription_request_error_result(error_message: string): void {
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
     ).expectOne();
     const html = render_stream_subscription_request_result({
-        message,
+        error_message,
+    });
+    scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
+}
+
+function show_stream_subscription_request_success_result({
+    subscribed_users,
+    already_subscribed_users,
+    ignored_deactivated_users,
+}: {
+    subscribed_users: User[];
+    already_subscribed_users: User[];
+    ignored_deactivated_users: User[];
+}): void {
+    const subscribed_users_count = subscribed_users.length;
+    const already_subscribed_users_count = already_subscribed_users.length;
+    const is_total_subscriber_more_than_five =
+        subscribed_users_count + already_subscribed_users_count > 5;
+
+    const $stream_subscription_req_result_elem = $(
+        ".stream_subscription_request_result",
+    ).expectOne();
+
+    let subscribe_success_messages;
+    if (!is_total_subscriber_more_than_five) {
+        subscribe_success_messages = generate_subscribe_success_messages(
+            subscribed_users,
+            already_subscribed_users,
+        );
+    }
+    const html = render_stream_subscription_request_result({
+        subscribe_success_messages,
         subscribed_users,
         already_subscribed_users,
+        subscribed_users_count,
+        already_subscribed_users_count,
+        is_total_subscriber_more_than_five,
         ignored_deactivated_users,
     });
     scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
-    if (add_class) {
-        $stream_subscription_req_result_elem.addClass(add_class);
-    }
-    if (remove_class) {
-        $stream_subscription_req_result_elem.removeClass(remove_class);
-    }
 }
 
 function update_notification_choice_checkbox(added_user_count: number): void {
@@ -265,17 +311,19 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             people.get_by_user_id(user_id),
         );
     }
-    if (user_id_set.size === 0) {
-        show_stream_subscription_request_result({
-            message: $t({defaultMessage: "No user to subscribe."}),
-            add_class: "text-error",
-            remove_class: "text-success",
+
+    const user_ids = [...user_id_set];
+    if (user_ids.length === 0) {
+        // No need to make a network call in this case.
+        // This will show "All users were already subscribed."
+        pill_widget.clear();
+        show_stream_subscription_request_success_result({
+            subscribed_users: [],
+            already_subscribed_users: [],
             ignored_deactivated_users,
         });
         return;
     }
-
-    const user_ids = [...user_id_set];
 
     function invite_success(raw_data: unknown): void {
         const data = add_user_ids_api_response_schema.parse(raw_data);
@@ -287,9 +335,7 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             people.get_by_user_id(Number(user_id)),
         );
 
-        show_stream_subscription_request_result({
-            add_class: "text-success",
-            remove_class: "text-error",
+        show_stream_subscription_request_success_result({
             subscribed_users,
             already_subscribed_users,
             ignored_deactivated_users,
@@ -297,7 +343,7 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     }
 
     function invite_failure(xhr: JQuery.jqXHR): void {
-        let message = "Failed to subscribe user!";
+        let error_message = "Failed to subscribe user!";
 
         const parsed = z
             .object({
@@ -308,13 +354,9 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             .safeParse(xhr.responseJSON);
 
         if (parsed.success) {
-            message = parsed.data.msg;
+            error_message = parsed.data.msg;
         }
-        show_stream_subscription_request_result({
-            message,
-            add_class: "text-error",
-            remove_class: "text-success",
-        });
+        show_stream_subscription_request_error_result(error_message);
     }
 
     subscriber_api.add_user_ids_to_stream(
@@ -359,11 +401,8 @@ function remove_subscriber({
 
     function removal_failure(): void {
         buttons.hide_button_loading_indicator($remove_button);
-        show_stream_subscription_request_result({
-            message: $t({defaultMessage: "Error removing user from this channel."}),
-            add_class: "text-error",
-            remove_class: "text-success",
-        });
+        const error_message = $t({defaultMessage: "Error removing user from this channel."});
+        show_stream_subscription_request_error_result(error_message);
     }
 
     function remove_user_from_private_stream(): void {
