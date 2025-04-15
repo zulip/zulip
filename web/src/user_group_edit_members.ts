@@ -351,6 +351,17 @@ function add_new_members({
     const subgroup_ids = [...subgroup_id_set];
 
     function invite_success(): void {
+        const $pill_widget_button_wrapper = $(".add_member_button_wrapper");
+        const $check_icon = $pill_widget_button_wrapper.find(".check");
+        const $add_member_button = $pill_widget_button_wrapper.find(".add-member-button");
+
+        $check_icon.removeClass("hidden-below");
+        $add_member_button.addClass("hidden-below");
+        setTimeout(() => {
+            $check_icon.addClass("hidden-below");
+            $add_member_button.removeClass("hidden-below");
+        }, 1000);
+
         pill_widget.clear();
         show_user_group_membership_request_result({
             message: $t({defaultMessage: "Added successfully."}),
