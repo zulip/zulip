@@ -116,7 +116,6 @@ export function open_overlay(opts: OverlayOptions): void {
         },
         remove_focus_trap: overlay_util.trap_focus(opts.$overlay),
     };
-
     if (document.activeElement) {
         $(document.activeElement).trigger("blur");
     }
