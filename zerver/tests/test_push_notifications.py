@@ -3415,9 +3415,9 @@ class TestSendToPushBouncer(ZulipTestCase):
         )
 
 
-class TestPushApi(BouncerTestCase):
+class TestAddRemoveDeviceTokenAPI(BouncerTestCase):
     @responses.activate
-    def test_push_api_error_handling(self) -> None:
+    def test_add_and_remove_device_tokens_api_error_handling(self) -> None:
         user = self.example_user("cordelia")
         self.login_user(user)
 
@@ -3467,7 +3467,7 @@ class TestPushApi(BouncerTestCase):
                 self.assertTrue(resp.assert_call_count(URL, 1))
 
     @responses.activate
-    def test_push_api_add_and_remove_device_tokens(self) -> None:
+    def test_add_and_remove_device_tokens_api(self) -> None:
         user = self.example_user("cordelia")
         self.login_user(user)
 
