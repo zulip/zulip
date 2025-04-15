@@ -65,6 +65,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
     const map_channels_option: Option = {
         name: $t_html({defaultMessage: "Matching Zulip channel"}),
         unique_id: -2,
+        is_preset_config_option: true,
     };
 
     function generate_integration_url_post_render(): void {

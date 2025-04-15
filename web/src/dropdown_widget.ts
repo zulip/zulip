@@ -31,6 +31,7 @@ export type Option = {
     description?: string;
     is_direct_message?: boolean;
     is_setting_disabled?: boolean;
+    is_preset_config_option?: boolean;
     stream?: StreamSubscription;
     bold_current_selection?: boolean;
     has_delete_icon?: boolean;
