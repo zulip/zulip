@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 378
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (325, 0)  # bumped 2025-04-09 to upgrade JavaScript dependencies
+PROVISION_VERSION = (325, 1)  # bumped 2025-04-16 to add hast dependencies to help-beta
