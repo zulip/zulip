@@ -72,6 +72,9 @@ function show_stream_subscription_request_result({
     remove_class,
     subscribed_users,
     already_subscribed_users,
+    subscribed_users_count,
+    is_more_than_five,
+    already_subscribed_users_count,
     ignored_deactivated_users,
 }: {
     message?: string;
@@ -79,6 +82,9 @@ function show_stream_subscription_request_result({
     remove_class: string;
     subscribed_users?: User[];
     already_subscribed_users?: User[];
+    subscribed_users_count?: number;
+    already_subscribed_users_count?: number;
+    is_more_than_five?: boolean;
     ignored_deactivated_users?: User[];
 }): void {
     const $stream_subscription_req_result_elem = $(
@@ -88,6 +94,9 @@ function show_stream_subscription_request_result({
         message,
         subscribed_users,
         already_subscribed_users,
+        subscribed_users_count,
+        already_subscribed_users_count,
+        is_more_than_five,
         ignored_deactivated_users,
     });
     scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
@@ -236,11 +245,17 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             people.get_by_user_id(Number(user_id)),
         );
 
+        const subscribed_users_count = subscribed_users.length;
+        const already_subscribed_users_count = already_subscribed_users.length;
+
         show_stream_subscription_request_result({
             add_class: "text-success",
             remove_class: "text-error",
             subscribed_users,
             already_subscribed_users,
+            subscribed_users_count,
+            already_subscribed_users_count,
+            is_more_than_five: subscribed_users_count + already_subscribed_users_count > 5,
             ignored_deactivated_users,
         });
     }
