@@ -36,6 +36,14 @@
                     </div>
                     <div class="input-box">
                         <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
+                        {% if has_captcha %}
+                            {% if form.captcha.errors %}
+                                {% for error in form.captcha.errors %}
+                                <p class="help-inline text-error">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+                            {{ form.captcha }}
+                        {% endif %}
                     </div>
                 </form>
             </div>

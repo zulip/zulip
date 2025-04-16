@@ -194,6 +194,9 @@ prod = [
 
   # Used for monitoring memcached
   "prometheus-client",
+
+  # For captchas on unauth'd pages which can generate emails
+  "altcha",
 ]
 docs = [
   # Needed to build RTD docs

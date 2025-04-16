@@ -259,6 +259,7 @@ RATE_LIMIT_TOR_TOGETHER = False
 SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
 
+USING_CAPTCHA = False
 DEFAULT_RATE_LIMITING_RULES = {
     # Limits total number of API requests per unit time by each user.
     # Rate limiting general API access protects the server against

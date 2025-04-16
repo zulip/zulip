@@ -10,6 +10,9 @@ import * as settings_config from "../settings_config.ts";
 
 import * as portico_modals from "./portico_modals.ts";
 
+/* global AltchaWidgetMethods, AltchaStateChangeEvent */
+import "altcha";
+
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
@@ -360,4 +363,23 @@ $(() => {
             showElement(selected_element);
         }
     });
+
+    // Configure altcha
+    const altcha = document.querySelector<AltchaWidgetMethods & HTMLElement>("altcha-widget");
+    if (altcha) {
+        altcha.configure({
+            auto: "onload",
+            async customfetch(url: string, init?: RequestInit) {
+                return fetch(url, {...init, credentials: "include"});
+            },
+        });
+        const $submit = $(altcha).closest("form").find("button[type=submit]");
+        $submit.prop("disabled", true);
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        altcha.addEventListener("statechange", ((ev: AltchaStateChangeEvent) => {
+            if (ev.detail.state === "verified") {
+                $submit.prop("disabled", false);
+            }
+        }) as EventListener);
+    }
 });

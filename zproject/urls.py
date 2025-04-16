@@ -26,6 +26,7 @@ from zerver.tornado.views import (
     web_reload_clients,
 )
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
+from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
     api_fetch_api_key,
@@ -640,6 +641,7 @@ i18n_urls = [
     # Go to organization subdomain
     path("accounts/go/", realm_redirect, name="realm_redirect"),
     # Realm creation
+    path("json/antispam_challenge", get_challenge),
     path("new/", create_realm),
     path("new/<creation_key>", create_realm, name="create_realm"),
     # Realm reactivation

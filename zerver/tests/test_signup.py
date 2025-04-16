@@ -1,3 +1,4 @@
+import base64
 import re
 import time
 from collections.abc import Sequence
@@ -2218,6 +2219,89 @@ class RealmCreationTest(ZulipTestCase):
             with self.assertRaises(ValidationError):
                 check_subdomain_available("we-are-zulip-team")
             check_subdomain_available("we-are-zulip-team", allow_reserved_subdomain=True)
+
+    @override_settings(OPEN_REALM_CREATION=True, USING_CAPTCHA=True, ALTCHA_HMAC_KEY="secret")
+    def test_create_realm_with_captcha(self) -> None:
+        string_id = "custom-test"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        # Make sure the realm does not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        result = self.client_get("/new/")
+        self.assert_not_in_success_response(["Validation failed"], result)
+
+        # Without the CAPTCHA value, we get an error
+        result = self.submit_realm_creation_form(
+            email, realm_subdomain=string_id, realm_name=realm_name
+        )
+        self.assert_in_success_response(["Validation failed, please try again."], result)
+
+        # With an invalid value, we also get an error
+        with self.assertLogs(level="WARNING") as logs:
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain=string_id, realm_name=realm_name, captcha="moose"
+            )
+            self.assert_in_success_response(["Validation failed, please try again."], result)
+            self.assert_length(logs.output, 1)
+            self.assertIn("Invalid altcha solution: Invalid altcha payload", logs.output[0])
+
+        # With something which raises an exception, we also get the same error
+        with self.assertLogs(level="WARNING") as logs:
+            result = self.submit_realm_creation_form(
+                email,
+                realm_subdomain=string_id,
+                realm_name=realm_name,
+                captcha=base64.b64encode(
+                    orjson.dumps(["algorithm", "challenge", "number", "salt", "signature"])
+                ).decode(),
+            )
+            self.assert_in_success_response(["Validation failed, please try again."], result)
+            self.assert_length(logs.output, 1)
+            self.assertIn(
+                "TypeError: list indices must be integers or slices, not str", logs.output[0]
+            )
+
+        # If we override the validation, we get an error because it's not in the session
+        payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
+        with (
+            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            self.assertLogs(level="WARNING") as logs,
+        ):
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain=string_id, realm_name=realm_name, captcha=payload
+            )
+            self.assert_in_success_response(["Validation failed, please try again."], result)
+            verify.assert_called_once_with(payload, "secret", check_expires=True)
+            self.assert_length(logs.output, 1)
+            self.assertIn("Expired or replayed altcha solution", logs.output[0])
+
+        self.assertEqual(self.client.session.get("altcha_challenges"), None)
+        result = self.client_get("/json/antispam_challenge")
+        data = self.assert_json_success(result)
+        self.assertEqual(data["algorithm"], "SHA-256")
+        self.assertEqual(data["maxnumber"], 500000)
+        self.assertIn("signature", data)
+        self.assertIn("challenge", data)
+        self.assertIn("salt", data)
+
+        self.assert_length(self.client.session["altcha_challenges"], 1)
+        self.assertEqual(self.client.session["altcha_challenges"][0][0], data["challenge"])
+
+        # Update the payload so the challenge matches what is in the
+        # session.  The real payload would have other keys.
+        payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
+        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain=string_id, realm_name=realm_name, captcha=payload
+            )
+            self.assertEqual(result.status_code, 302)
+            verify.assert_called_once_with(payload, "secret", check_expires=True)
+
+        # And the challenge has been stripped out of the session
+        self.assertEqual(self.client.session["altcha_challenges"], [])
 
 
 class UserSignUpTest(ZulipTestCase):
