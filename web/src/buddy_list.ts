@@ -305,6 +305,7 @@ export class BuddyList extends BuddyListConf {
             const is_subscribed = await peer_data.maybe_fetch_is_user_subscribed(
                 current_sub.stream_id,
                 user_id,
+                false,
             );
             // This means a request failed and we don't know the count.
             if (is_subscribed === null) {
