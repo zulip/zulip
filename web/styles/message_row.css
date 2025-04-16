@@ -1136,7 +1136,6 @@ of the base style defined for a read-only textarea in dark mode. */
     content: " ";
     vertical-align: middle;
     height: 0;
-    opacity: 0.15;
     border-bottom: 1px solid var(--color-border-message-group-spacer-line);
 }
 
