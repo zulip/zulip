@@ -280,7 +280,7 @@ async function test_your_bots_section(page: Page): Promise<void> {
     await test_invalid_edit_bot_form(page);
 }
 
-const alert_word_status_selector = "#alert_word_status";
+const alert_word_status_banner_selector = ".alert-word-status-banner";
 
 async function add_alert_word(page: Page, word: string): Promise<void> {
     await page.click("#open-add-alert-word-modal");
@@ -298,15 +298,18 @@ async function check_alert_word_added(page: Page, word: string): Promise<void> {
 }
 
 async function get_alert_words_status_text(page: Page): Promise<string> {
-    await page.waitForSelector(alert_word_status_selector, {visible: true});
-    const status_text = await common.get_text_from_selector(page, ".alert_word_status_text");
+    await page.waitForSelector(alert_word_status_banner_selector, {visible: true});
+    const status_text = await common.get_text_from_selector(
+        page,
+        ".alert-word-status-banner .banner-label",
+    );
     return status_text;
 }
 
 async function close_alert_words_status(page: Page): Promise<void> {
-    const status_close_button = ".close-alert-word-status";
+    const status_close_button = ".alert-word-status-banner .banner-close-button";
     await page.click(status_close_button);
-    await page.waitForSelector(alert_word_status_selector, {hidden: true});
+    assert.ok((await page.$(alert_word_status_banner_selector)) === null);
 }
 
 async function test_duplicate_alert_words_cannot_be_added(
