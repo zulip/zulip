@@ -505,6 +505,64 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".add_member_button_wrapper",
+        onShow(instance) {
+            const $wrapper = $(instance.reference);
+            const $button = $wrapper.find("button");
+            const $container = $wrapper.closest(".add_members_container");
+
+            const button_is_disabled = Boolean($button.prop("disabled"));
+            const container_is_enabled = !$container.hasClass("add_members_disabled");
+
+            if (button_is_disabled && container_is_enabled) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Please add a valid member.",
+                    }),
+                );
+                return undefined;
+            }
+
+            return false;
+        },
+        appendTo: () => document.body,
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".add_subscriber_button_wrapper",
+        onShow(instance) {
+            const $wrapper = $(instance.reference);
+            const $button = $wrapper.find("button");
+            const $container = $wrapper.closest(".add_subscribers_container");
+
+            const button_is_disabled = Boolean($button.prop("disabled"));
+            const container_is_enabled = !$container.hasClass("add_subscribers_disabled");
+
+            if (button_is_disabled && container_is_enabled) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Please add a valid subscriber.",
+                    }),
+                );
+                return undefined;
+            }
+
+            return false;
+        },
+        appendTo: () => document.body,
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".user_row .actions button",
         trigger: "mouseenter",
         onShow(instance) {
