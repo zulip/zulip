@@ -370,7 +370,8 @@ input[name="licenses"] {
     }
 
     #server-login-page,
-    .sponsorship-status-page {
+    .sponsorship-status-page,
+    .demo-organization-warning {
         transform: scale(0.6);
         margin: -50px -150px -100px;
     }
@@ -434,6 +435,13 @@ input[name="licenses"] {
 #billing-page .number-input-with-label {
     display: flex;
     align-items: flex-end;
+}
+
+.demo-organization-warning {
+    width: 450px;
+    display: block;
+    text-align: center;
+    font-weight: 450;
 }
 
 #upgrade-page #manual_license_count,
