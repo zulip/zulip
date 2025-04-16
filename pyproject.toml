@@ -194,6 +194,7 @@ prod = [
 
   # Used for monitoring memcached
   "prometheus-client",
+  "django-altcha>=0.1.3",
 ]
 docs = [
   # Needed to build RTD docs
@@ -380,6 +381,7 @@ module = [
     "bmemcached.*",
     "circuitbreaker.*",
     "digitalocean.*",
+    "django_altcha.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",
     "django_cte.*",
