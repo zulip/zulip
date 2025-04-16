@@ -175,18 +175,20 @@ h4.user_group_setting_subsection_title {
                 }
             }
 
-            & thead th {
-                &:first-of-type {
-                    border-top-left-radius: 4px;
-                }
-
-                &:last-of-type {
-                    border-top-right-radius: 4px;
-                }
-
+            & thead {
                 position: sticky;
                 top: 0;
                 z-index: 1;
+
+                th {
+                    &:first-of-type {
+                        border-top-left-radius: 4px;
+                    }
+
+                    &:last-of-type {
+                        border-top-right-radius: 4px;
+                    }
+                }
             }
 
             .hidden-subscriber-email {
