@@ -172,7 +172,7 @@ export class BuddyList extends BuddyListConf {
     current_filter: Filter | undefined | "unset" = "unset";
 
     initialize_tooltips(): void {
-        const non_participant_users_matching_view_count = async (): Promise<number> =>
+        const non_participant_users_matching_view_count = async (): Promise<number | null> =>
             await this.non_participant_users_matching_view_count();
         const total_human_subscribers_count = (): number =>
             this.render_data.total_human_subscribers_count;
@@ -241,6 +241,11 @@ export class BuddyList extends BuddyListConf {
                                     }
                                     const users_matching_view_count =
                                         await non_participant_users_matching_view_count();
+                                    // This means a request failed and we don't know the count. So we can
+                                    // leave the text as the total subscriber count.
+                                    if (users_matching_view_count === null) {
+                                        return;
+                                    }
                                     tooltip_text = $t(
                                         {
                                             defaultMessage:
@@ -253,6 +258,7 @@ export class BuddyList extends BuddyListConf {
                                     // to fetch subscriber data.
                                     const users_matching_view_count =
                                         await non_participant_users_matching_view_count();
+                                    assert(users_matching_view_count !== null);
                                     tooltip_text = $t(
                                         {
                                             defaultMessage:
@@ -285,7 +291,7 @@ export class BuddyList extends BuddyListConf {
         );
     }
 
-    async non_participant_users_matching_view_count(): Promise<number> {
+    async non_participant_users_matching_view_count(): Promise<number | null> {
         const {current_sub, get_all_participant_ids} = this.render_data;
         // We don't show "participants" for DMs, we just show the
         // "in this narrow" section (i.e. everyone in the conversation).
@@ -300,6 +306,10 @@ export class BuddyList extends BuddyListConf {
                 current_sub.stream_id,
                 user_id,
             );
+            // This means a request failed and we don't know the count.
+            if (is_subscribed === null) {
+                return null;
+            }
             if (is_subscribed && !people.is_valid_bot_user(user_id)) {
                 subscribed_human_participant_ids.push(user_id);
             }
@@ -410,8 +420,14 @@ export class BuddyList extends BuddyListConf {
 
         const {current_sub, get_all_participant_ids} = this.render_data;
         $("#buddy-list-users-matching-view .empty-list-message").remove();
-        if ((await this.non_participant_users_matching_view_count()) > 0) {
-            // There are more subscribers, so we don't need an empty list message.
+        const non_participant_users_matching_view_count =
+            await this.non_participant_users_matching_view_count();
+        if (
+            non_participant_users_matching_view_count === null ||
+            non_participant_users_matching_view_count > 0
+        ) {
+            // There are more subscribers (or we don't know how many subscribers there are)
+            // so we don't need an empty list message.
             return;
         }
         // After the `await`, we might have changed to a different channel view.
@@ -447,6 +463,10 @@ export class BuddyList extends BuddyListConf {
         const formatted_participants_count = get_formatted_user_count(all_participant_ids.size);
         const non_participant_users_matching_view_count =
             await this.non_participant_users_matching_view_count();
+        // This means a request failed and we can't calculate the counts.
+        if (non_participant_users_matching_view_count === null) {
+            return;
+        }
         const formatted_matching_users_count = get_formatted_user_count(
             non_participant_users_matching_view_count,
         );
@@ -689,9 +709,15 @@ export class BuddyList extends BuddyListConf {
 
     async render_view_user_list_links(): Promise<void> {
         const {current_sub, other_users_count} = this.render_data;
+        const non_participant_users_matching_view_count =
+            await this.non_participant_users_matching_view_count();
+        // This means a request failed and we can't calculate the counts. We choose
+        // not to render the links in that case.
+        if (non_participant_users_matching_view_count === null) {
+            return;
+        }
         const has_inactive_users_matching_view =
-            (await this.non_participant_users_matching_view_count()) >
-            this.users_matching_view_ids.length;
+            non_participant_users_matching_view_count > this.users_matching_view_ids.length;
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
 
         // After the `await`, we might have changed to a different channel view.

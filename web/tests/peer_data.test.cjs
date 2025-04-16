@@ -295,7 +295,14 @@ test("maybe_fetch_stream_subscribers", async () => {
     };
     peer_data.clear_for_testing();
     blueslip.expect("error", "Failure fetching channel subscribers");
-    peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5), null);
+    // If we know they're subscribed, we return `true` even though we don't have complete
+    // data.
+    peer_data.bulk_add_subscribers({
+        stream_ids: [india.stream_id],
+        user_ids: [5],
+    });
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5), true);
 });
 
 test("get_subscriber_count", () => {
