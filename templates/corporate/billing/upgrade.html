@@ -84,16 +84,6 @@
                             {% endif %}
                         </div>
                         {% endif %}
-
-                        {% if is_demo_organization %}
-                        <div class="demo-organization-warning">
-                            Demo organizations cannot be directly upgraded to a paid plan. Please start by
-                            <a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization">
-                            converting your demo organization
-                            </a>
-                            to a permanent organization.
-                        </div>
-                        {% endif %}
                     </div>
 
                     {% if page_params.free_trial_days and not page_params.setup_payment_by_invoice %}
@@ -236,7 +226,6 @@
                     </div>
                     {% endif %}
 
-                    {% if not is_demo_organization %}
                     <div {% if page_params.setup_payment_by_invoice %} id="update-invoice-billing-info" {% elif payment_method %} id="upgrade-payment-info"{% endif %}>
                         {% if page_params.setup_payment_by_invoice %}
                         {% elif payment_method %}
@@ -281,10 +270,8 @@
                         {% endif %}
                         <div id="upgrade-cardchange-error" class="alert alert-danger upgrade-page-error"></div>
                     </div>
-                    {% endif %}
-                    <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
-                    <div class="upgrade-button-container input-box upgrade-page-field" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
-                        <button id="org-upgrade-button{% if is_demo_organization %} permanent-disabled{% endif %}" {% if not page_params.setup_payment_by_invoice and not payment_method %}disabled{% endif %}>
+                    <div class="upgrade-button-container input-box upgrade-page-field" >
+                        <button id="org-upgrade-button" {% if not page_params.setup_payment_by_invoice and not payment_method %}disabled{% endif %}>
                             <span id="org-upgrade-button-text">
                                 {% if complimentary_access_plan_end_date %}
                                     <span id="org-future-upgrade-button-text-remote-server">
