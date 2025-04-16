@@ -181,7 +181,10 @@ test("subscribers", () => {
 
     // Verify noop for bad stream when removing subscriber
     const bad_stream_id = 999999;
-    blueslip.expect("warn", "We called get_user_set for an untracked stream: " + bad_stream_id);
+    blueslip.expect(
+        "warn",
+        "We called get_loaded_subscriber_subset for an untracked stream: " + bad_stream_id,
+    );
     blueslip.expect("warn", "We tried to remove invalid subscriber: 104");
     ok = peer_data.remove_subscriber(bad_stream_id, brutus.user_id);
     assert.ok(!ok);
@@ -223,7 +226,10 @@ test("subscribers", () => {
     blueslip.reset();
 
     // Verify that we don't crash for a bad stream.
-    blueslip.expect("warn", "We called get_user_set for an untracked stream: 9999999");
+    blueslip.expect(
+        "warn",
+        "We called get_loaded_subscriber_subset for an untracked stream: 9999999",
+    );
     peer_data.add_subscriber(9999999, brutus.user_id);
     blueslip.reset();
 
@@ -253,7 +259,7 @@ test("get_subscriber_count", () => {
     };
     stream_data.clear_subscriptions();
 
-    blueslip.expect("warn", "We called get_user_set for an untracked stream: 102");
+    blueslip.expect("warn", "We called get_loaded_subscriber_subset for an untracked stream: 102");
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
     stream_data.add_sub(india);
@@ -305,13 +311,22 @@ test("is_subscriber_subset", () => {
     }
 
     // Two untracked streams should never be passed into us.
-    blueslip.expect("warn", "We called get_user_set for an untracked stream: 88888");
-    blueslip.expect("warn", "We called get_user_set for an untracked stream: 99999");
+    blueslip.expect(
+        "warn",
+        "We called get_loaded_subscriber_subset for an untracked stream: 88888",
+    );
+    blueslip.expect(
+        "warn",
+        "We called get_loaded_subscriber_subset for an untracked stream: 99999",
+    );
     peer_data.is_subscriber_subset(99999, 88888);
     blueslip.reset();
 
     // Warn about hypothetical undefined stream_ids.
-    blueslip.expect("warn", "We called get_user_set for an untracked stream: undefined");
+    blueslip.expect(
+        "warn",
+        "We called get_loaded_subscriber_subset for an untracked stream: undefined",
+    );
     peer_data.is_subscriber_subset(undefined, sub_a.stream_id);
     blueslip.reset();
 });
