@@ -2219,6 +2219,37 @@ class RealmCreationTest(ZulipTestCase):
                 check_subdomain_available("we-are-zulip-team")
             check_subdomain_available("we-are-zulip-team", allow_reserved_subdomain=True)
 
+    @override_settings(OPEN_REALM_CREATION=True, USING_CAPTCHA=True)
+    @patch("django_altcha.ALTCHA_HMAC_KEY", "secret")
+    def test_create_realm_with_captcha(self) -> None:
+        string_id = "custom-test"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        # Make sure the realm does not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        # Without the CAPTCHA value, we get a 403
+        result = self.submit_realm_creation_form(
+            email, realm_subdomain=string_id, realm_name=realm_name
+        )
+        self.assertEqual(result.status_code, 403)
+
+        # With an invalid value, we also get a 403
+        result = self.submit_realm_creation_form(
+            email, realm_subdomain=string_id, realm_name=realm_name, captcha="moose"
+        )
+        self.assertEqual(result.status_code, 403)
+
+        # If we override the validation, we get 302
+        with patch("django_altcha.altcha.verify_solution", return_value=(True, None)) as verify:
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain=string_id, realm_name=realm_name, captcha="moose"
+            )
+            self.assertEqual(result.status_code, 302)
+            verify.assert_called_once_with(payload="moose", hmac_key="secret", check_expires=False)
+
 
 class UserSignUpTest(ZulipTestCase):
     def verify_signup(

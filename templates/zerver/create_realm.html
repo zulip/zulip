@@ -36,6 +36,7 @@
                     </div>
                     <div class="input-box">
                         <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
+                        {% if has_captcha %}{{ form.captcha }}{% endif %}
                     </div>
                 </form>
             </div>

@@ -4,6 +4,7 @@ from email.headerregistry import Address
 from typing import Any
 
 import dns.resolver
+import orjson
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation
@@ -14,6 +15,7 @@ from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from django_altcha import AltchaField
 from markupsafe import Markup
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
@@ -331,6 +333,23 @@ class RealmCreationForm(RealmDetailsForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs["realm_creation"] = True
         super().__init__(*args, **kwargs)
+
+
+class CaptchaRealmCreationForm(RealmCreationForm):
+    captcha = AltchaField(
+        auto="onload",
+        hidelogo=True,
+        hidefooter=True,
+        maxnumber=300000,
+        floating="bottom",
+        strings=orjson.dumps(
+            {
+                "verified": "Verified you're not a robot!",
+                "verifying": "Verifying you're not a bot...",
+                "waitAlert": "Verifying you're not a bot... please wait.",
+            }
+        ).decode(),
+    )
 
 
 class LoggingSetPasswordForm(SetPasswordForm):

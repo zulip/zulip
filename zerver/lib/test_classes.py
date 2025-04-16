@@ -891,6 +891,7 @@ Output:
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
         realm_in_root_domain: str | None = None,
+        captcha: str | None = None,
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
@@ -899,6 +900,8 @@ Output:
             "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
         }
+        if captcha is not None:
+            payload["captcha"] = captcha
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
         return self.client_post(
