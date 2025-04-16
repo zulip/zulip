@@ -2845,7 +2845,20 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         response = self.client_get("/billing/", follow=True)
-        self.assert_in_success_response(["cannot be directly upgraded"], response)
+        self.assert_in_success_response(
+            ["Demo organizations cannot be directly upgraded to a paid plan."], response
+        )
+
+    def test_sponsorship_page_for_demo_organizations(self) -> None:
+        user = self.example_user("hamlet")
+        user.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
+        user.realm.save()
+        self.login_user(user)
+
+        response = self.client_get("/sponsorship/", follow=True)
+        self.assert_in_success_response(
+            ["Demo organizations cannot apply for sponsorship."], response
+        )
 
     def test_redirect_for_upgrade_page(self) -> None:
         user = self.example_user("iago")

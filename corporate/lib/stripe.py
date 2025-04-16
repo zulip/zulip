@@ -643,7 +643,6 @@ class UpgradePageParams(TypedDict):
 class UpgradePageSessionTypeSpecificContext(TypedDict):
     customer_name: str
     email: str
-    is_demo_organization: bool
     is_self_hosting: bool
 
 
@@ -666,7 +665,6 @@ class UpgradePageContext(TypedDict):
     stripe_email: str
     exempt_from_license_number_check: bool
     free_trial_end_date: str | None
-    is_demo_organization: bool
     manual_license_management: bool
     using_min_licenses_for_plan: bool
     min_licenses_for_plan: int
@@ -2823,7 +2821,6 @@ class BillingSession(ABC):
             "stripe_email": stripe_email,
             "exempt_from_license_number_check": exempt_from_license_number_check,
             "free_trial_end_date": free_trial_end_date,
-            "is_demo_organization": customer_specific_context["is_demo_organization"],
             "complimentary_access_plan_end_date": complimentary_access_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "page_params": {
@@ -4192,7 +4189,6 @@ class RealmBillingSession(BillingSession):
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.realm.name,
             email=self.get_email(),
-            is_demo_organization=self.realm.demo_organization_scheduled_deletion_date is not None,
             is_self_hosting=False,
         )
 
@@ -4590,7 +4586,6 @@ class RemoteRealmBillingSession(BillingSession):
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.remote_realm.host,
             email=self.get_email(),
-            is_demo_organization=False,
             is_self_hosting=True,
         )
 
@@ -5056,7 +5051,6 @@ class RemoteServerBillingSession(BillingSession):
         return UpgradePageSessionTypeSpecificContext(
             customer_name=self.remote_server.hostname,
             email=self.get_email(),
-            is_demo_organization=False,
             is_self_hosting=True,
         )
 
