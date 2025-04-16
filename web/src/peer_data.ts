@@ -18,7 +18,7 @@ export function has_full_subscriber_data(stream_id: number): boolean {
 const pending_subscriber_requests = new Map<
     number,
     {
-        subscribers_promise: Promise<LazySet>;
+        subscribers_promise: Promise<LazySet | null>;
         pending_peer_events: {
             type: "peer_add" | "peer_remove";
             user_ids: number[];
@@ -35,7 +35,7 @@ const fetch_stream_subscribers_response_schema = z.object({
     subscribers: z.array(z.number()),
 });
 
-export async function maybe_fetch_stream_subscribers(stream_id: number): Promise<LazySet> {
+export async function maybe_fetch_stream_subscribers(stream_id: number): Promise<LazySet | null> {
     if (pending_subscriber_requests.has(stream_id)) {
         return pending_subscriber_requests.get(stream_id)!.subscribers_promise;
     }
@@ -51,8 +51,7 @@ export async function maybe_fetch_stream_subscribers(stream_id: number): Promise
                 stream_id,
             });
             pending_subscriber_requests.delete(stream_id);
-            // Fall back to what we already have.
-            return get_loaded_subscriber_subset(stream_id);
+            return null;
         }
 
         set_subscribers(stream_id, subscribers);
@@ -94,12 +93,16 @@ function get_loaded_subscriber_subset(stream_id: number): LazySet {
     return subscribers;
 }
 
-async function get_full_subscriber_set(stream_id: number): Promise<LazySet> {
+async function get_full_subscriber_set(stream_id: number): Promise<LazySet | null> {
     assert(!page_params.is_spectator);
     // This function parallels `get_loaded_subscriber_subset` but ensures we include all
     // subscribers, possibly fetching that data from the server.
     if (!fetched_stream_ids.has(stream_id) && sub_store.get(stream_id)) {
         const fetched_subscribers = await maybe_fetch_stream_subscribers(stream_id);
+        // This means a request failed and we don't know who the subscribers are.
+        if (fetched_subscribers === null) {
+            return null;
+        }
         stream_subscribers.set(stream_id, fetched_subscribers);
     }
     return get_loaded_subscriber_subset(stream_id);
@@ -263,8 +266,17 @@ export function is_user_subscribed(stream_id: number, user_id: number): boolean 
 export async function maybe_fetch_is_user_subscribed(
     stream_id: number,
     user_id: number,
-): Promise<boolean> {
+): Promise<boolean | null> {
     const subscribers = await get_full_subscriber_set(stream_id);
+    // This means the request failed. We will return `null` here if
+    // we can't determine if this user is subscribed or not.
+    if (subscribers === null) {
+        const subscribers = get_loaded_subscriber_subset(stream_id);
+        if (subscribers.has(user_id)) {
+            return true;
+        }
+        return null;
+    }
     return subscribers.has(user_id);
 }
 
