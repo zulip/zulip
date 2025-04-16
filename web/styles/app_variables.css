@@ -465,7 +465,7 @@
     --scale-message-reaction-active: 0.96;
 
     /* Message group bookend and date row UI */
-    --color-border-mesaage-group-spacer-line: light-dark(
+    --color-border-message-group-spacer-line: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 15%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
     );
