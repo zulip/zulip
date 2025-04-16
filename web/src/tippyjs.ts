@@ -505,6 +505,36 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".add-users-button-wrapper",
+        onShow(instance) {
+            const $wrapper = $(instance.reference);
+            const $button = $wrapper.find("button");
+            const $container = $wrapper.closest(".add-button-container").find(".pill-container");
+
+            const button_is_disabled = Boolean($button.prop("disabled"));
+            const container_is_enabled =
+                $container.find(".input").prop("contenteditable") === "true";
+
+            if (button_is_disabled && container_is_enabled) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Enter who should be added.",
+                    }),
+                );
+                return undefined;
+            }
+
+            return false;
+        },
+        appendTo: () => document.body,
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".user_row .actions button",
         trigger: "mouseenter",
         onShow(instance) {
