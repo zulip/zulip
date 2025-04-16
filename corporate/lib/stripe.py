@@ -627,7 +627,6 @@ class BillingSessionAuditLogEventError(Exception):
 class UpgradePageParams(TypedDict):
     page_type: Literal["upgrade"]
     annual_price: int
-    demo_organization_scheduled_deletion_date: datetime | None
     monthly_price: int
     seat_count: int
     billing_base_url: str
@@ -645,7 +644,6 @@ class UpgradePageSessionTypeSpecificContext(TypedDict):
     customer_name: str
     email: str
     is_demo_organization: bool
-    demo_organization_scheduled_deletion_date: datetime | None
     is_self_hosting: bool
 
 
@@ -2831,9 +2829,6 @@ class BillingSession(ABC):
             "page_params": {
                 "page_type": "upgrade",
                 "annual_price": annual_price,
-                "demo_organization_scheduled_deletion_date": customer_specific_context[
-                    "demo_organization_scheduled_deletion_date"
-                ],
                 "monthly_price": monthly_price,
                 "seat_count": seat_count,
                 "billing_base_url": self.billing_base_url,
@@ -4198,7 +4193,6 @@ class RealmBillingSession(BillingSession):
             customer_name=self.realm.name,
             email=self.get_email(),
             is_demo_organization=self.realm.demo_organization_scheduled_deletion_date is not None,
-            demo_organization_scheduled_deletion_date=self.realm.demo_organization_scheduled_deletion_date,
             is_self_hosting=False,
         )
 
@@ -4597,7 +4591,6 @@ class RemoteRealmBillingSession(BillingSession):
             customer_name=self.remote_realm.host,
             email=self.get_email(),
             is_demo_organization=False,
-            demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
         )
 
@@ -5064,7 +5057,6 @@ class RemoteServerBillingSession(BillingSession):
             customer_name=self.remote_server.hostname,
             email=self.get_email(),
             is_demo_organization=False,
-            demo_organization_scheduled_deletion_date=None,
             is_self_hosting=True,
         )
 
