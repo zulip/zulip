@@ -90,10 +90,6 @@ export function last_prefix_match(prefix: string, words: string[]): number | nul
     return null;
 }
 
-// This function attempts to match a query in order with a source text.
-// * query is the user-entered search query
-// * source_str is the string we're matching in, e.g. a user's name
-// * split_char is the separator for this syntax (e.g. ' ').
 export function query_matches_string_in_order(
     query: string,
     source_str: string,
@@ -104,18 +100,34 @@ export function query_matches_string_in_order(
 
     query = query.toLowerCase();
     query = remove_diacritics(query);
+    return match_query_with_source(query, source_str, split_char);
+}
 
-    if (!query.includes(split_char)) {
+// This function attempts to match a query in order with a source text.
+// * query is the user-entered search query
+// * source_str is the string we're matching in, e.g. a user's name
+// * split_char is the separator for this syntax (e.g. ' ').
+// Precondition: `query` and `source_str` must have diacritics removed
+// before calling this function.
+export function match_query_with_source(
+    query_with_diacritics_removed: string,
+    source_str_with_diacritics_removed: string,
+    split_char: string,
+): boolean {
+    if (!query_with_diacritics_removed.includes(split_char)) {
         // If query is a single token (doesn't contain a separator),
         // the match can be anywhere in the string.
-        return source_str.includes(query);
+        return source_str_with_diacritics_removed.includes(query_with_diacritics_removed);
     }
 
     // If there is a separator character in the query, then we
     // require the match to start at the start of a token.
     // (E.g. for 'ab cd ef', query could be 'ab c' or 'cd ef',
     // but not 'b cd ef'.)
-    return source_str.startsWith(query) || source_str.includes(split_char + query);
+    return (
+        source_str_with_diacritics_removed.startsWith(query_with_diacritics_removed) ||
+        source_str_with_diacritics_removed.includes(split_char + query_with_diacritics_removed)
+    );
 }
 
 // Match the words in the query to the words in the source text, in any order.

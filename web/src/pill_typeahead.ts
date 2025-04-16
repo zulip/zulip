@@ -1,5 +1,7 @@
 import assert from "minimalistic-assert";
 
+import * as typeahead from "../shared/src/typeahead.ts";
+
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
@@ -16,9 +18,10 @@ import * as user_pill from "./user_pill.ts";
 import type {UserPillData, UserPillWidget} from "./user_pill.ts";
 
 function person_matcher(query: string, item: UserPillData): boolean {
+    const query_with_diacritics_removed = typeahead.remove_diacritics(query.toLowerCase());
     return (
         people.is_known_user_id(item.user.user_id) &&
-        typeahead_helper.query_matches_person(query, item)
+        typeahead_helper.query_matches_person(query_with_diacritics_removed, item)
     );
 }
 

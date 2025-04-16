@@ -1030,19 +1030,43 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
     sort_user_groups = value;
 }
 
+// This expects the caller to remove diacritics
+// from the query beforehand.
 export function query_matches_person(
-    query: string,
+    query_with_diacritics_removed: string,
     person: UserPillData | UserOrMentionPillData,
 ): boolean {
-    if (typeahead.query_matches_string_in_order(query, person.user.full_name, " ")) {
+    if (
+        person.type === "broadcast" &&
+        typeahead.match_query_with_source(
+            query_with_diacritics_removed,
+            typeahead.remove_diacritics(person.user.full_name.toLowerCase()),
+            " ",
+        )
+    ) {
         return true;
     }
-    if (person.type === "user" && Boolean(person.user.delivery_email)) {
-        return typeahead.query_matches_string_in_order(
-            query,
-            people.get_visible_email(person.user),
-            " ",
+    if (person.type === "user") {
+        person.user.name_with_diacritics_removed ??= typeahead.remove_diacritics(
+            person.user.full_name.toLowerCase(),
         );
+
+        if (
+            typeahead.match_query_with_source(
+                query_with_diacritics_removed,
+                person.user.name_with_diacritics_removed,
+                " ",
+            )
+        ) {
+            return true;
+        }
+        if (person.user.delivery_email) {
+            return typeahead.match_query_with_source(
+                query_with_diacritics_removed,
+                typeahead.remove_diacritics(people.get_visible_email(person.user).toLowerCase()),
+                " ",
+            );
+        }
     }
     return false;
 }
