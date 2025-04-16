@@ -2343,6 +2343,7 @@ body:not(.spectator-view) {
     }
 }
 
+.default-language-display,
 .empty-topic-display,
 .empty-topic-placeholder-display::placeholder {
     font-style: italic;

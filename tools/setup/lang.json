@@ -1,5 +1,6 @@
 {
     "default": {
+        "text": 31,
         "javascript": 27,
         "python": 26,
         "java": 25,
@@ -30,9 +31,9 @@
     },
     "custom": {
         "latex": 10,
-        "math": 5,
-        "quote": 5,
-        "spoiler": 5
+        "math": 28,
+        "quote": 30,
+        "spoiler": 29
     },
     "aliases": {
         "js": 27,
