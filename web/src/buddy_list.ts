@@ -408,12 +408,19 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        const {get_all_participant_ids} = this.render_data;
+        const {current_sub, get_all_participant_ids} = this.render_data;
         $("#buddy-list-users-matching-view .empty-list-message").remove();
         if ((await this.non_participant_users_matching_view_count()) > 0) {
             // There are more subscribers, so we don't need an empty list message.
             return;
-        } else if (get_all_participant_ids().size > 0) {
+        }
+        // After the `await`, we might have changed to a different channel view.
+        // If so, we shouldn't update the DOM anymore, and should let the newer `populate`
+        // call set things up with fresh data.
+        if (current_sub !== this.render_data.current_sub) {
+            return;
+        }
+        if (get_all_participant_ids().size > 0) {
             add_or_update_empty_list_placeholder(
                 "#buddy-list-users-matching-view",
                 $t({defaultMessage: "No other subscribers."}),
@@ -444,6 +451,13 @@ export class BuddyList extends BuddyListConf {
             non_participant_users_matching_view_count,
         );
         const formatted_other_users_count = get_formatted_user_count(other_users_count);
+
+        // After the `await`, we might have changed to a different channel view.
+        // If so, we shouldn't update the DOM anymore, and should let the newer `populate`
+        // call set things up with fresh data.
+        if (current_sub !== this.render_data.current_sub) {
+            return;
+        }
 
         $("#buddy-list-participants-container .buddy-list-heading-user-count").text(
             formatted_participants_count,
@@ -679,6 +693,13 @@ export class BuddyList extends BuddyListConf {
             (await this.non_participant_users_matching_view_count()) >
             this.users_matching_view_ids.length;
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
+
+        // After the `await`, we might have changed to a different channel view.
+        // If so, we shouldn't update the DOM anymore, and should let the newer `populate`
+        // call set things up with fresh data.
+        if (current_sub !== this.render_data.current_sub) {
+            return;
+        }
 
         // For stream views, we show a link at the bottom of the list of subscribed users that
         // lets a user find the full list of subscribed users and information about them.
