@@ -469,8 +469,10 @@ export function activate({
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".widget-error").text("");
+    }
 
-        $elem.find("input.task").on("click", (e) => {
+    function register_click_handlers(): void {
+        $elem.find("ul.todo-widget").on("click", "input.task", (e) => {
             e.stopPropagation();
 
             if (page_params.is_spectator) {
@@ -501,6 +503,7 @@ export function activate({
     };
 
     build_widget();
+    register_click_handlers();
     render_task_list_title();
     render_results();
 
