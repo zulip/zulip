@@ -27,6 +27,53 @@ _Unreleased_
 
 ## Zulip Server 10.x series
 
+### Zulip Server 10.2
+
+_Released 2025-04-15_
+
+- CVE-2025-31478: Authentication backend configuration bypass in Zulip Server.
+- Fixed several compatibility issues between the new `tusd`-based file upload
+  support and some S3-compatible storage services. In particular:
+  - The new `S3_SKIP_CHECKSUM`
+    [setting](../production/upload-backends.md#s3-backend-configuration)
+    is required to prevent AWS’s S3 client libraries from refusing to make
+    requests to some third-party S3 implementations — specifically, those that
+    don’t yet support AWS’s new checksum algorithm. (Zulip 9.x used older
+    versions of these libraries that did not attempt to enforce AWS's new
+    checksum algorithm).
+  - Google Cloud Storage requires some additional configuration; see the
+    [documentation](../production/upload-backends.md#google-cloud-platform).
+  - Fixed support for automatically accessing S3 secrets from EC2 instance
+    profiles.
+- Fixed compatibility issues between the new `tusd` -based file upload backend
+  and using a non-default port for the Zulip server.
+- Added support for PostgreSQL 17.
+- Direct message conversations are now allowed to wrap to two lines in the left
+  sidebar using a 2-line format, just like topics.
+- Fixed an important server availability bug involving thumbnails for large
+  video files.
+- Fixed several web application bugs involving displaying group-based
+  permissions.
+- Fixed several visual glitches.
+- Fixed a few bugs in the move conversation modal.
+- Fixed a bug that prevented new hardening of content access from being
+  enforced.
+- Fixed a bug preventing showing archived channels that remain marked as
+  web-public channels in the public access option. (Prior to Zulip 10.0,
+  archiving a channel irreversibly made it private, so this bug only impacted
+  channels archived after the upgrade to Zulip 10.0).
+- Fixed a subtle issue involving file upload error handling with `tusd`.
+- Moved the Prometheus metrics port for Smokescreen to 4760, to not conflict
+  with the ports Zulip uses with more than 10 Tornado processes.
+- Improved scroll position when selecting a very tall message using the `Up`
+  keyboard shortcut.
+- Improved integration URL construction interface for Git integrations.
+- Improved behavior when viewing a channel feed in channels containing very old
+  unread messages.
+- Documented the new LaTeX copy/paste functionality.
+- Upgraded Python dependencies.
+- Updated translations.
+
 ### Zulip Server 10.1
 
 _Released 2025-03-28_
