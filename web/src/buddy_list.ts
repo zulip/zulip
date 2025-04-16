@@ -224,9 +224,23 @@ export class BuddyList extends BuddyListConf {
                         } else if (elem_id === "buddy-list-users-matching-view-section-heading") {
                             void (async () => {
                                 let tooltip_text;
-                                const users_matching_view_count =
-                                    await non_participant_users_matching_view_count();
-                                if (narrow_state.stream_sub()) {
+                                const stream_sub = narrow_state.stream_sub();
+                                if (stream_sub) {
+                                    // If we need to fetch the full data, show the total subscriber
+                                    // count in the meantime.
+                                    if (!peer_data.has_full_subscriber_data(stream_sub.stream_id)) {
+                                        instance.setContent(
+                                            $t(
+                                                {
+                                                    defaultMessage:
+                                                        "{N, plural, one {# total subscriber} other {# total subscribers}}",
+                                                },
+                                                {N: total_human_subscribers_count()},
+                                            ),
+                                        );
+                                    }
+                                    const users_matching_view_count =
+                                        await non_participant_users_matching_view_count();
                                     tooltip_text = $t(
                                         {
                                             defaultMessage:
@@ -235,6 +249,10 @@ export class BuddyList extends BuddyListConf {
                                         {N: users_matching_view_count},
                                     );
                                 } else {
+                                    // This will happen immediately because we don't need
+                                    // to fetch subscriber data.
+                                    const users_matching_view_count =
+                                        await non_participant_users_matching_view_count();
                                     tooltip_text = $t(
                                         {
                                             defaultMessage:
