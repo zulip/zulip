@@ -16,7 +16,7 @@
 
 .banner-link {
     color: var(--color-text-link);
-    text-decoration: underline;
+    text-decoration: none;
     text-decoration-color: var(--color-text-link-decoration);
 
     &:hover {
