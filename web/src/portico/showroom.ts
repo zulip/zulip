@@ -124,16 +124,10 @@ const alert_banners: Record<string, AlertBanner> = {
         process: "notifications",
         intent: "brand",
         label: new Handlebars.SafeString(
-            $t_html(
-                {
-                    defaultMessage:
-                        "Zulip needs your permission to enable desktop notifications for messages you receive. You can <z-link>customize</z-link> what kinds of messages trigger notifications.",
-                },
-                {
-                    "z-link": (content_html) =>
-                        `<a class="banner-link" href="https://zulip.com/help/desktop-notifications#desktop-notifications" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
-                },
-            ),
+            $t_html({
+                defaultMessage:
+                    "Zulip needs your permission to enable desktop notifications for important messages.",
+            }),
         ),
         buttons: [
             {
