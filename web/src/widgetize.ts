@@ -43,7 +43,10 @@ type WidgetValue = Record<string, unknown> & {
 };
 
 export const widgets = new Map<string, WidgetValue>();
-export const widget_event_handlers = new Map<number, (events: Event[]) => void>();
+export const widget_event_handlers = new Map<
+    number,
+    (events: Event[], new_event?: boolean) => void
+>();
 
 export function clear_for_testing(): void {
     widget_event_handlers.clear();
@@ -117,6 +120,7 @@ export function handle_event(widget_event: Event & {message_id: number}): void {
     }
 
     const events = [widget_event];
+    const new_event = true;
 
-    event_handler(events);
+    event_handler(events, new_event);
 }

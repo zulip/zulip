@@ -67,6 +67,11 @@ type Task = {
     completed: boolean;
 };
 
+type LastEvent = {
+    type: string;
+    key: string | undefined;
+};
+
 export type TodoWidgetOutboundData =
     | NewTaskTitleOutboundData
     | NewTaskOutboundData
@@ -81,6 +86,7 @@ export class TaskData {
     task_list_title: string;
     task_map = new Map<string, Task>();
     my_idx = 1;
+    last_event: LastEvent | undefined;
 
     handle = {
         new_task_list_title: {
@@ -119,6 +125,10 @@ export class TaskData {
                 }
 
                 this.set_task_list_title(data.title);
+                this.last_event = {
+                    type: "new_task_list_title",
+                    key: undefined,
+                };
             },
         },
 
@@ -175,6 +185,10 @@ export class TaskData {
                 if (sender_id === this.me && this.my_idx <= idx) {
                     this.my_idx = idx + 1;
                 }
+                this.last_event = {
+                    type: "new_task",
+                    key,
+                };
             },
         },
 
@@ -211,6 +225,10 @@ export class TaskData {
                 }
 
                 item.completed = !item.completed;
+                this.last_event = {
+                    type: "strike",
+                    key,
+                };
             },
         },
     };
@@ -286,6 +304,11 @@ export class TaskData {
         return widget_data;
     }
 
+    get_task_item(key: string): Task | undefined {
+        const task_item = this.task_map.get(key);
+        return task_item;
+    }
+
     name_in_use(name: string): boolean {
         for (const item of this.task_map.values()) {
             if (item.task === name) {
@@ -322,7 +345,7 @@ export function activate({
     callback: (data: TodoWidgetOutboundData | undefined) => void;
     extra_data: unknown;
     message: Message;
-}): (events: Event[]) => void {
+}): (events: Event[], new_event?: boolean) => void {
     const parse_result = todo_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.warn("invalid todo extra data", {issues: parse_result.error.issues});
@@ -471,6 +494,34 @@ export function activate({
         $elem.find(".widget-error").text("");
     }
 
+    function update_todo_widget(): void {
+        const last_event = task_data.last_event;
+        if (!last_event || last_event.type === "new_task_list_title") {
+            render_task_list_title();
+            return;
+        }
+
+        const key = last_event.key;
+        const task = task_data.get_task_item(key!);
+        if (!task) {
+            return;
+        }
+
+        switch (last_event.type) {
+            case "new_task":
+                $elem
+                    .find("ul.todo-widget")
+                    .append($(render_widgets_todo_widget_tasks({all_tasks: [task]})));
+                break;
+            case "strike":
+                $elem
+                    .find(`input.task[data-key="${key}"`)
+                    .closest("li")
+                    .replaceWith($(render_widgets_todo_widget_tasks({all_tasks: [task]})));
+                break;
+        }
+    }
+
     function register_click_handlers(): void {
         $elem.find("ul.todo-widget").on("click", "input.task", (e) => {
             e.stopPropagation();
@@ -493,11 +544,15 @@ export function activate({
         });
     }
 
-    const handle_events = function (events: Event[]): void {
+    const handle_events = function (events: Event[], new_event = false): void {
         for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
         }
 
+        if (new_event) {
+            update_todo_widget();
+            return;
+        }
         render_task_list_title();
         render_results();
     };
