@@ -66,6 +66,10 @@ export const web_channel_default_view_values = {
         code: 1,
         description: $t({defaultMessage: "Top topic in the channel"}),
     },
+    list_of_topics: {
+        code: 3,
+        description: $t({defaultMessage: "List of topics"}),
+    },
     channel_feed: {
         code: 2,
         description: $t({defaultMessage: "Channel feed"}),

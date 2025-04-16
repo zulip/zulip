@@ -41,6 +41,11 @@ import {user_settings} from "./user_settings.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
+let update_inbox_channel_view_callback: (channel_id: number) => void;
+
+export function set_update_inbox_channel_view_callback(value: (channel_id: number) => void): void {
+    update_inbox_channel_view_callback = value;
+}
 
 export let stream_cursor: ListCursor<number>;
 
@@ -759,6 +764,9 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
         clear_topics();
     }
 
+    // We want to update channel view for inbox for the same reasons
+    // we want to the topics list here.
+    update_inbox_channel_view_callback(stream_id);
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
 
     return $stream_li;
@@ -824,9 +832,12 @@ export function initialize_stream_cursor(): void {
 
 export function initialize({
     on_stream_click,
+    update_inbox_channel_view,
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
+    update_inbox_channel_view: (channel_id: number) => void;
 }): void {
+    update_inbox_channel_view_callback = update_inbox_channel_view;
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -908,8 +919,9 @@ export function set_event_handlers({
         }
 
         if (
-            user_settings.web_channel_default_view ===
-            web_channel_default_view_values.channel_feed.code
+            // We expect `on_stream_click` to handle other values of `web_channel_default_view`.
+            user_settings.web_channel_default_view !==
+            web_channel_default_view_values.top_topic_in_channel.code
         ) {
             on_stream_click(stream_id, "sidebar");
             return;

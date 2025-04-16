@@ -54,6 +54,7 @@ import * as resize from "./resize.ts";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
 import {
     message_edit_history_visibility_policy_values,
+    web_channel_default_view_values,
     web_mark_read_on_scroll_policy_values,
 } from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
@@ -295,6 +296,10 @@ export function try_rendering_locally_for_same_narrow(
     filter: Filter,
     opts: ShowMessageViewOpts,
 ): boolean {
+    if (!narrow_state.is_message_feed_visible) {
+        return false;
+    }
+
     const current_filter = narrow_state.filter();
     let target_scroll_offset;
     if (!current_filter) {
@@ -467,6 +472,16 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         then_select_id: show_opts.then_select_id ?? -1,
     };
 
+    if (
+        opts.trigger !== "stream-popover-go-to-channel-feed" &&
+        user_settings.web_channel_default_view ===
+            web_channel_default_view_values.list_of_topics.code &&
+        filter.is_channel_view()
+    ) {
+        update_hash_to_match_filter(filter, opts.trigger);
+        inbox_ui.show(filter);
+        return;
+    }
     const span_data = {
         op: "function",
         data: {raw_terms, trigger: opts.trigger},

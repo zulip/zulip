@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as activity_ui from "./activity_ui.ts";
@@ -7,6 +8,7 @@ import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import type * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -109,6 +111,39 @@ export function show(opts: {
     if (opts.is_recent_view) {
         resize.update_recent_view();
     }
+}
+
+export function show_inbox_style_channel_view(opts: {
+    channel_id: number;
+    $view: JQuery;
+    update_compose: () => void;
+    set_visible: (value: boolean) => void;
+    complete_rerender: () => void;
+}): void {
+    // Hide "middle-column" which has html for rendering
+    // a messages narrow. We hide it and show the view.
+    $("#message_feed_container").hide();
+    opts.$view.show();
+    message_lists.update_current_message_list(undefined);
+    opts.set_visible(true);
+
+    const filter = narrow_state.filter();
+    assert(filter !== undefined);
+    left_sidebar_navigation_area.handle_narrow_activated(filter);
+    stream_list.handle_narrow_activated(filter, false, false);
+    pm_list.handle_narrow_activated(filter);
+
+    unread_ui.hide_unread_banner();
+    opts.update_compose();
+    narrow_title.update_narrow_title(filter);
+    message_view_header.render_title_area();
+    compose_recipient.handle_middle_pane_transition();
+    opts.complete_rerender();
+    compose_actions.on_show_navigation_view();
+
+    // This has to happen after resetting the current narrow filter, so
+    // that the buddy list is rendered with the correct narrow state.
+    activity_ui.build_user_sidebar();
 }
 
 export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void}): void {
