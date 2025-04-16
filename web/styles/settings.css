@@ -554,8 +554,8 @@ input[type="checkbox"] {
     margin-top: 1px;
 }
 
-.alert_word_status_text {
-    overflow-wrap: anywhere;
+.alert-word-status-banner {
+    margin-bottom: 20px;
 }
 
 .alert-notification {
