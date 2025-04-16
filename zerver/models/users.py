@@ -922,10 +922,7 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 
 
 def base_bulk_get_user_queryset() -> QuerySet[UserProfile]:
-    """Base select_related options for UserProfile for general user;
-    prefetches can_access_all_users_group, which is often necessary
-    for calculations of where events should be sent.
-    """
+    # Base select_related options for UserProfile for general user.
     return UserProfile.objects.select_related("realm")
 
 
