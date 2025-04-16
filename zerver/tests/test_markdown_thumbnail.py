@@ -5,6 +5,7 @@ import pyvips
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import re_thumbnail
 from zerver.actions.message_send import check_message, do_send_messages
 from zerver.lib.addressee import Addressee
 from zerver.lib.camo import get_camo_url
@@ -22,6 +23,7 @@ from zerver.models import (
     Message,
 )
 from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
 from zerver.worker.thumbnail import ensure_thumbnails
 
 
@@ -478,3 +480,189 @@ class MarkdownThumbnailTest(ZulipTestCase):
             f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assert_message_content_is(message_id, expected)
+
+    def test_re_thumbnail_stuck(self) -> None:
+        # For the case when we generated a thumbnail, but there was a
+        # race condition in updating the message, which left it with a
+        # permanent spinner.  No new thumbnailing is enqueued.
+        with self.captureOnCommitCallbacks(execute=True):
+            path_id = self.upload_image("img.png")
+            content = f"[image](/user_uploads/{path_id})"
+            expected = (
+                f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+                f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+                '<img class="image-loading-placeholder"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                ' src="/static/images/loading/loader-black.svg"></a></div>'
+            )
+
+            message_id = self.send_message_content(content)
+            self.assert_message_content_is(message_id, expected)
+
+            # Exit the block and run thumbnailing
+
+        # Set the rendered content back to the spinner version, so
+        # simulate one of the race condition bugs we have had in the
+        # past
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id=get_realm("zulip").id,
+                has_image=True,
+                rendered_content__contains='class="image-loading-placeholder"',
+            ).count(),
+            0,
+        )
+        message = Message.objects.get(id=message_id)
+        message.rendered_content = expected
+        message.save()
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id=get_realm("zulip").id,
+                has_image=True,
+                rendered_content__contains='class="image-loading-placeholder"',
+            ).count(),
+            1,
+        )
+
+        # Trigger the re-thumbnailing codepath
+        re_thumbnail(Message, message_id, enqueue=False)
+
+        expected = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assert_message_content_is(message_id, expected)
+
+    def test_re_thumbnail_historical(self) -> None:
+        # Note that this is all outside the captureOnCommitCallbacks,
+        # so we don't actually run thumbnailing for it.  This results
+        # in a ImageAttachment row but no thumbnails, which matches
+        # the state of backfilled previously-uploaded images.
+        path_id = self.upload_image("img.png")
+
+        # We don't execute callbacks at all, to drop thumbnailing
+        # which would have been done
+        content = f"[image](/user_uploads/{path_id})"
+        expected = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            '<img class="image-loading-placeholder"'
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            ' src="/static/images/loading/loader-black.svg"></a></div>'
+        )
+
+        message_id = self.send_message_content(content)
+        self.assert_message_content_is(message_id, expected)
+
+        # Force-update to the version without thumbnails
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id=get_realm("zulip").id,
+                has_image=True,
+                rendered_content__contains='<img src="/user_uploads/',
+            )
+            .exclude(rendered_content__contains='<img src="/user_uploads/thumbnail/')
+            .count(),
+            0,
+        )
+        message = Message.objects.get(id=message_id)
+        message.rendered_content = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            f'<img src="/user_uploads/{path_id}"></a></div>'
+        )
+        message.save()
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id=get_realm("zulip").id,
+                has_image=True,
+                rendered_content__contains='<img src="/user_uploads/',
+            )
+            .exclude(rendered_content__contains='<img src="/user_uploads/thumbnail/')
+            .count(),
+            1,
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            # Trigger the re-thumbnailing codepath
+            re_thumbnail(Message, message_id, enqueue=True)
+
+            # It should have a spinner
+            self.assert_message_content_is(message_id, expected)
+
+            # ...and exiting the block should trigger the thumbnailing worker
+
+        expected = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assert_message_content_is(message_id, expected)
+
+        # Calling re_thumbnail on the message does nothing if it has a thumbnail
+        with self.captureOnCommitCallbacks(execute=True):
+            re_thumbnail(Message, message_id, enqueue=True)
+            self.assert_message_content_is(message_id, expected)
+        self.assert_message_content_is(message_id, expected)
+
+    def test_re_thumbnail_historical_archivedmessage(self) -> None:
+        # As above, no worker is run, so we get no thumbnails.
+        path_id = self.upload_image("img.png")
+        message_id = self.send_message_content(f"[image](/user_uploads/{path_id})")
+
+        # Force-update to the version without thumbnails
+        sender_user_profile = self.example_user("othello")
+        message = Message.objects.get(id=message_id)
+        message.rendered_content = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            f'<img src="/user_uploads/{path_id}"></a></div>'
+        )
+        message.save()
+
+        # Delete the message
+        do_delete_messages(
+            sender_user_profile.realm, [Message.objects.get(id=message_id)], acting_user=None
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            # Trigger the re-thumbnailing codepath
+            re_thumbnail(ArchivedMessage, message_id, enqueue=True)
+
+            # It should have a spinner
+            expected = (
+                f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+                f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+                '<img class="image-loading-placeholder"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                ' src="/static/images/loading/loader-black.svg"></a></div>'
+            )
+            self.assertEqual(
+                ArchivedMessage.objects.get(id=message_id).rendered_content,
+                expected,
+            )
+
+            # ...and exiting the block should trigger the thumbnailing worker
+
+        expected = (
+            f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
+            f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+        )
+        self.assertEqual(
+            ArchivedMessage.objects.get(id=message_id).rendered_content,
+            expected,
+        )
