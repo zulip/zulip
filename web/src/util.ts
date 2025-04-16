@@ -567,7 +567,7 @@ export function is_topic_name_considered_empty(topic: string): boolean {
 }
 
 export function get_retry_backoff_seconds(
-    xhr: JQuery.jqXHR<unknown>,
+    xhr: JQuery.jqXHR<unknown> | undefined,
     attempts: number,
     tighter_backoff = false,
 ): number {
@@ -592,8 +592,8 @@ export function get_retry_backoff_seconds(
         "retry-after": z.number(),
         code: z.literal("RATE_LIMIT_HIT"),
     });
-    const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-    if (xhr.status === 429 && parsed?.success && parsed?.data) {
+    const parsed = rate_limited_error_schema.safeParse(xhr?.responseJSON);
+    if (xhr?.status === 429 && parsed?.success && parsed?.data) {
         // Add a bit of jitter to the required delay suggested by the
         // server, because we may be racing with other copies of the web
         // app.
