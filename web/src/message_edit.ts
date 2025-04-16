@@ -1142,7 +1142,6 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
     }
 
     const request = {
-        message_id: message.id,
         topic: new_topic,
         propagate_mode: "change_all",
         send_notification_to_old_thread: false,
@@ -1265,10 +1264,10 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     }
 
     const request = {
-        message_id: message.id,
         content: new_content,
         prev_content_sha256: await util.sha256_hash(old_content),
     };
+
     if (!markdown.contains_backend_only_syntax(new_content ?? "")) {
         // If the new message content could have been locally echoed,
         // than we can locally echo the edit.
