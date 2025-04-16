@@ -105,7 +105,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
+        var(--message-box-sender-line-height) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
