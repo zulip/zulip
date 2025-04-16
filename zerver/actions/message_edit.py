@@ -56,6 +56,7 @@ from zerver.lib.streams import (
     notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
+from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     ORIG_TOPIC,
@@ -76,6 +77,7 @@ from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
+    ArchivedMessage,
     Attachment,
     Message,
     Reaction,
@@ -1562,3 +1564,31 @@ def check_update_message(
             notify_stream_is_recently_active_update(new_stream, is_stream_active)
 
     return updated_message_result
+
+
+@transaction.atomic(durable=True)
+def re_thumbnail(
+    message_class: type[Message] | type[ArchivedMessage], message_id: int, enqueue: bool
+) -> None:
+    message = message_class.objects.select_for_update().get(id=message_id)
+    assert message.rendered_content is not None
+    image_metadata = get_user_upload_previews(
+        message.realm_id,
+        message.rendered_content,
+        enqueue=enqueue,
+        lock=True,
+    )
+
+    new_content, _ = rewrite_thumbnailed_images(
+        message.rendered_content,
+        image_metadata,
+    )
+
+    if new_content is None:
+        pass
+    elif isinstance(message, Message):
+        do_update_embedded_data(message.sender, message, new_content)
+    else:
+        assert isinstance(message, ArchivedMessage)
+        message.rendered_content = new_content
+        message.save(update_fields=["rendered_content"])
