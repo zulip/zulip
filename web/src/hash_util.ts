@@ -319,6 +319,29 @@ export function validate_group_settings_hash(hash: string): string {
     return hash;
 }
 
+export function decode_dm_recipients_user_ids_from_url(url_str: string): number[] | null {
+    try {
+        const url = new URL(url_str);
+        if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
+            return null;
+        }
+        const terms = parse_narrow(url.hash.split(/\//));
+        if (!terms?.[0]) {
+            return null;
+        }
+        if (terms[0].operator !== "dm" && terms[0].operator !== "dm-including") {
+            return null;
+        }
+        const user_ids = people.emails_strings_to_user_ids_array(terms[0].operand);
+        if (!user_ids) {
+            return null;
+        }
+        return user_ids;
+    } catch {
+        return null;
+    }
+}
+
 export function decode_stream_topic_from_url(
     url_str: string,
 ): {stream_id: number; topic_name?: string; message_id?: string} | null {

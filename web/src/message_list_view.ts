@@ -122,6 +122,7 @@ export type MessageGroup = {
           pm_with_url: string;
           recipient_users: RecipientRowUser[];
           always_display_date: boolean;
+          is_current_user: boolean | undefined;
       }
 );
 
@@ -249,6 +250,7 @@ function get_topic_edit_properties(message: Message): {
 type RecipientRowUser = {
     full_name: string;
     should_add_guest_user_indicator: boolean;
+    is_current_user: boolean;
 };
 function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
     const user_ids = people.pm_with_user_ids(message);
@@ -265,6 +267,7 @@ function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
             full_name,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             is_bot,
+            is_current_user: people.is_my_user_id(user_id),
         };
     });
 
@@ -441,6 +444,8 @@ function populate_group_from_message(
     assert(typeof display_recipient !== "string");
     const user_ids = people.pm_with_user_ids(message);
     assert(user_ids !== undefined);
+    const recipient_users = get_users_for_recipient_row(message);
+    const is_current_user = recipient_users[0]?.is_current_user;
     return {
         message_group_id,
         message_containers: [],
@@ -451,9 +456,10 @@ function populate_group_from_message(
         date_unchanged,
         display_recipient,
         pm_with_url: message.pm_with_url,
-        recipient_users: get_users_for_recipient_row(message),
+        recipient_users,
         display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
         always_display_date,
+        is_current_user,
     };
 }
 

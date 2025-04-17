@@ -2341,6 +2341,7 @@ test("navbar_helpers", ({override}) => {
         {operator: "dm", operand: "joe@example.com"},
         {operator: "with", operand: "12"},
     ];
+    const dm_with_self = [{operator: "dm", operand: "me@example.com"}];
     const dm_group = [{operator: "dm", operand: "joe@example.com,STEVE@foo.com"}];
     const dm_with_guest = [{operator: "dm", operand: "alice@example.com"}];
     const dm_with_muted_user = [{operator: "dm", operand: "jeff@foo.com"}];
@@ -2620,6 +2621,13 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "user",
             title: properly_separated_names([joe.full_name]),
             redirect_url_with_search: "#",
+        },
+        {
+            terms: dm_with_self,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "translated: Messages with yourself",
+            redirect_url_with_search: "/#narrow/dm/30-Me-Myself",
         },
     ];
 
