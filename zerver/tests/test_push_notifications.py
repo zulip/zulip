@@ -1,8 +1,6 @@
-import asyncio
 import base64
 import uuid
-from collections.abc import Iterator, Mapping
-from contextlib import contextmanager
+from collections.abc import Mapping
 from datetime import timedelta
 from typing import Any
 from unittest import mock, skipUnless
@@ -34,7 +32,6 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
-    APNsContext,
     DeviceToken,
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
@@ -65,7 +62,7 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.response import json_response_from_error
 from zerver.lib.send_email import FromAddress
-from zerver.lib.test_classes import BouncerTestCase, ZulipTestCase
+from zerver.lib.test_classes import BouncerTestCase, PushNotificationTestCase, ZulipTestCase
 from zerver.lib.test_helpers import (
     activate_push_notification_service,
     mock_queue_publish,
@@ -1352,132 +1349,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assertEqual(remote_realm.last_request_datetime, time_sent)
 
 
-class PushNotificationTest(BouncerTestCase):
-    @override
-    def setUp(self) -> None:
-        super().setUp()
-        self.user_profile = self.example_user("hamlet")
-        self.sending_client = get_client("test")
-        self.sender = self.example_user("hamlet")
-        self.personal_recipient_user = self.example_user("othello")
-
-    def get_message(self, type: int, type_id: int, realm_id: int) -> Message:
-        recipient, _ = Recipient.objects.get_or_create(
-            type_id=type_id,
-            type=type,
-        )
-
-        message = Message(
-            sender=self.sender,
-            recipient=recipient,
-            realm_id=realm_id,
-            content="This is test content",
-            rendered_content="This is test content",
-            date_sent=now(),
-            sending_client=self.sending_client,
-        )
-        message.set_topic_name("Test topic")
-        message.save()
-
-        return message
-
-    @contextmanager
-    def mock_apns(self) -> Iterator[tuple[APNsContext, mock.AsyncMock]]:
-        apns = mock.Mock(spec=aioapns.APNs)
-        apns.send_notification = mock.AsyncMock()
-        apns_context = APNsContext(
-            apns=apns,
-            loop=asyncio.new_event_loop(),
-        )
-        try:
-            with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
-                mock_get.return_value = apns_context
-                yield apns_context, apns.send_notification
-        finally:
-            apns_context.loop.close()
-
-    def setup_apns_tokens(self) -> None:
-        self.tokens = [("aaaa", "org.zulip.Zulip"), ("bbbb", "com.zulip.flutter")]
-        for token, appid in self.tokens:
-            PushDeviceToken.objects.create(
-                kind=PushDeviceToken.APNS,
-                token=hex_to_b64(token),
-                user=self.user_profile,
-                ios_app_id=appid,
-            )
-
-        self.remote_tokens = [
-            ("cccc", "dddd", "org.zulip.Zulip"),
-            ("eeee", "ffff", "com.zulip.flutter"),
-        ]
-        for id_token, uuid_token, appid in self.remote_tokens:
-            # We want to set up both types of RemotePushDeviceToken here:
-            # the legacy one with user_id and the new with user_uuid.
-            # This allows tests to work with either, without needing to
-            # do their own setup.
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(id_token),
-                ios_app_id=appid,
-                user_id=self.user_profile.id,
-                server=self.server,
-            )
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(uuid_token),
-                ios_app_id=appid,
-                user_uuid=self.user_profile.uuid,
-                server=self.server,
-            )
-
-    @contextmanager
-    def mock_fcm(self) -> Iterator[tuple[mock.MagicMock, mock.MagicMock]]:
-        with (
-            mock.patch("zerver.lib.push_notifications.fcm_app") as mock_fcm_app,
-            mock.patch("zerver.lib.push_notifications.firebase_messaging") as mock_fcm_messaging,
-        ):
-            yield mock_fcm_app, mock_fcm_messaging
-
-    def setup_fcm_tokens(self) -> None:
-        self.fcm_tokens = ["1111", "2222"]
-        for token in self.fcm_tokens:
-            PushDeviceToken.objects.create(
-                kind=PushDeviceToken.FCM,
-                token=hex_to_b64(token),
-                user=self.user_profile,
-                ios_app_id=None,
-            )
-
-        self.remote_fcm_tokens = [("dddd", "eeee")]
-        for id_token, uuid_token in self.remote_fcm_tokens:
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.FCM,
-                token=hex_to_b64(id_token),
-                user_id=self.user_profile.id,
-                server=self.server,
-            )
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.FCM,
-                token=hex_to_b64(uuid_token),
-                user_uuid=self.user_profile.uuid,
-                server=self.server,
-            )
-
-    def make_fcm_success_response(self, tokens: list[str]) -> firebase_messaging.BatchResponse:
-        responses = [
-            firebase_messaging.SendResponse(exception=None, resp=dict(name=str(idx)))
-            for idx, _ in enumerate(tokens)
-        ]
-        return firebase_messaging.BatchResponse(responses)
-
-    def make_fcm_error_response(
-        self, token: str, exception: firebase_exceptions.FirebaseError
-    ) -> firebase_messaging.BatchResponse:
-        error_response = firebase_messaging.SendResponse(exception=exception, resp=None)
-        return firebase_messaging.BatchResponse([error_response])
-
-
-class HandlePushNotificationTest(PushNotificationTest):
+class HandlePushNotificationTest(PushNotificationTestCase):
     DEFAULT_SUBDOMAIN = ""
 
     def soft_deactivate_main_user(self) -> None:
@@ -2500,7 +2372,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         mock_info.assert_not_called()
 
 
-class TestAPNs(PushNotificationTest):
+class TestAPNs(PushNotificationTestCase):
     def devices(self) -> list[DeviceToken]:
         return list(
             PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.APNS)
@@ -2689,7 +2561,7 @@ class TestAPNs(PushNotificationTest):
         mock_push_notifications.assert_called()
 
 
-class TestGetAPNsPayload(PushNotificationTest):
+class TestGetAPNsPayload(PushNotificationTestCase):
     def test_get_message_payload_apns_personal_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_personal_message(
@@ -3053,7 +2925,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
 
 
-class TestGetGCMPayload(PushNotificationTest):
+class TestGetGCMPayload(PushNotificationTestCase):
     def _test_get_message_payload_gcm_stream_message(
         self,
         truncate_content: bool = False,
@@ -3259,7 +3131,7 @@ class TestGetGCMPayload(PushNotificationTest):
         )
 
 
-class TestSendNotificationsToBouncer(PushNotificationTest):
+class TestSendNotificationsToBouncer(PushNotificationTestCase):
     def test_send_notifications_to_bouncer_when_no_devices(self) -> None:
         user = self.example_user("hamlet")
 
@@ -3572,7 +3444,7 @@ class GCMParseOptionsTest(ZulipTestCase):
 
 @mock.patch("zerver.lib.push_notifications.fcm_app")
 @mock.patch("zerver.lib.push_notifications.firebase_messaging")
-class FCMSendTest(PushNotificationTest):
+class FCMSendTest(PushNotificationTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
