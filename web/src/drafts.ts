@@ -12,6 +12,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
 import {localstorage} from "./localstorage.ts";
 import * as markdown from "./markdown.ts";
+import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import {realm} from "./state_data.ts";
@@ -46,6 +47,7 @@ const draft_schema = z.intersection(
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -73,6 +75,7 @@ const possibly_buggy_draft_schema = z.intersection(
         updatedAt: z.number(),
         is_sending_saving: z.boolean().default(false),
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -335,6 +338,10 @@ export function snapshot_message(): LocalStorageDraft | undefined {
     };
 }
 
+export function rewire_restore_message(value: typeof restore_message): void {
+    restore_message = value;
+}
+
 type ComposeArguments =
     | {
           type: "stream";
@@ -348,7 +355,7 @@ type ComposeArguments =
           content: string;
       };
 
-export function restore_message(draft: LocalStorageDraft): ComposeArguments {
+export let restore_message = (draft: LocalStorageDraft): ComposeArguments => {
     // This is kinda the inverse of snapshot_message, and
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
@@ -372,7 +379,7 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
         private_message_recipient: sorted_recipient_emails.join(","),
         content: draft.content,
     };
-}
+};
 
 function draft_notify(): void {
     // Display a tooltip to notify the user about the saved draft.
@@ -390,9 +397,33 @@ function draft_notify(): void {
     setTimeout(remove_instance, 3000);
 }
 
-function maybe_notify(no_notify: boolean): void {
+function outbox_notify(): void {
+    // Display a tooltip to notify the user about the saved outbox.
+    const instance = util.the(
+        tippy.default(".top_left_drafts .unread_count", {
+            content: $t({defaultMessage: "Saved as outbox"}),
+            arrow: true,
+            placement: "right",
+        }),
+    );
+    instance.show();
+    function remove_instance(): void {
+        instance.destroy();
+    }
+    setTimeout(remove_instance, 3000);
+}
+
+function maybe_notify(no_notify: boolean, outbox: boolean | undefined): void {
     if (!no_notify) {
-        draft_notify();
+        if (outbox) {
+            outbox_notify();
+        } else {
+            draft_notify();
+        }
+    } else {
+        if (outbox) {
+            outbox_notify();
+        }
     }
 }
 
@@ -439,7 +470,7 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
         // just update the existing draft.
         const changed = draft_model.editDraft(draft_id, draft);
         if (changed) {
-            maybe_notify(no_notify);
+            maybe_notify(no_notify, opts.is_sending_saving);
         }
         return draft_id;
     }
@@ -448,7 +479,7 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     const update_count = opts.update_count ?? true;
     const new_draft_id = draft_model.addDraft(draft, update_count);
     compose_draft_id = new_draft_id;
-    maybe_notify(no_notify);
+    maybe_notify(no_notify, opts.is_sending_saving);
 
     return new_draft_id;
 };
