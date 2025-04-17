@@ -1706,7 +1706,9 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(attachment.is_realm_public)
 
         # Verify moving a message to a private stream
-        private_stream = self.make_stream("private_stream", realm=realm, invite_only=True)
+        private_stream = self.make_stream(
+            "private_stream", realm=realm, invite_only=True, history_public_to_subscribers=True
+        )
         self.subscribe(owner, "private_stream")
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -1742,6 +1744,135 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
         attachment.refresh_from_db()
         self.assertTrue(attachment.is_web_public)
+
+    def test_stream_group_permission_changes_updates_updates_attachments(self) -> None:
+        self.login("desdemona")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        owner = self.example_user("desdemona")
+        realm = owner.realm
+        cordelia = self.example_user("cordelia")
+        private_stream_public_history = self.make_stream(
+            "private_stream_public_history",
+            realm=realm,
+            invite_only=True,
+            history_public_to_subscribers=True,
+        )
+        self.subscribe(owner, "private_stream_public_history")
+        body = f"First message ...[zulip.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "private_stream_public_history", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+
+        self.assertFalse(private_stream_public_history.is_web_public)
+        self.assertFalse(attachment.is_web_public)
+        self.assertTrue(private_stream_public_history.invite_only)
+        self.assertFalse(attachment.is_realm_public)
+
+        # User should be able to see the attachment if they have
+        # content access to a channel with public history.
+        for setting_name in Stream.stream_permission_group_settings_requiring_content_access:
+            self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+            do_change_stream_group_based_setting(
+                private_stream_public_history,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            self.assertFalse(check_subscriptions_exists(cordelia, private_stream_public_history))
+            self.assertTrue(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+            attachment.refresh_from_db()
+            self.assertFalse(attachment.is_realm_public)
+            nobody_group = NamedUserGroup.objects.get(
+                name="role:nobody", is_system_group=True, realm=realm
+            )
+            do_change_stream_group_based_setting(
+                private_stream_public_history, setting_name, nobody_group, acting_user=cordelia
+            )
+
+        fp = StringIO("zulip2!")
+        fp.name = "zulip2.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        private_stream_protected_history = self.make_stream(
+            "private_stream_protected_history",
+            realm=realm,
+            invite_only=True,
+            history_public_to_subscribers=False,
+        )
+        self.subscribe(owner, "private_stream_protected_history")
+        body = f"First message ...[zulip2.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "private_stream_protected_history", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+
+        # User should not be able to see the attachment if they have
+        # content access to a private channel with protected history
+        # but were not subscribed to the channel when the upload was
+        # sent.
+        for setting_name in Stream.stream_permission_group_settings_requiring_content_access:
+            self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+            do_change_stream_group_based_setting(
+                private_stream_protected_history,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            self.assertFalse(check_subscriptions_exists(cordelia, private_stream_protected_history))
+            self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+
+            # They should not have access to the upload if they are
+            # subscribed to the channel but they were not subscribed at
+            # the time of upload.
+            self.subscribe(cordelia, "private_stream_protected_history")
+            self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+            self.unsubscribe(cordelia, "private_stream_protected_history")
+            attachment.refresh_from_db()
+
+            nobody_group = NamedUserGroup.objects.get(
+                name="role:nobody", is_system_group=True, realm=realm
+            )
+            do_change_stream_group_based_setting(
+                private_stream_protected_history, setting_name, nobody_group, acting_user=cordelia
+            )
+
+        # User should be able to see the attachment if they have
+        # content access to a private channel with protected history
+        # and were subscribed to the channel when the upload was sent.
+        self.subscribe(cordelia, "private_stream_protected_history")
+        body = f"Second message ...[zulip2.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "private_stream_protected_history", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.unsubscribe(cordelia, "private_stream_protected_history")
+        for setting_name in Stream.stream_permission_group_settings_requiring_content_access:
+            self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+            do_change_stream_group_based_setting(
+                private_stream_protected_history,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            self.assertFalse(check_subscriptions_exists(cordelia, private_stream_protected_history))
+            self.assertTrue(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+            attachment.refresh_from_db()
+            self.assertFalse(attachment.is_realm_public)
+            nobody_group = NamedUserGroup.objects.get(
+                name="role:nobody", is_system_group=True, realm=realm
+            )
+            do_change_stream_group_based_setting(
+                private_stream_protected_history, setting_name, nobody_group, acting_user=cordelia
+            )
 
     def test_try_make_stream_public_with_private_history(self) -> None:
         # We only support public streams with private history if
