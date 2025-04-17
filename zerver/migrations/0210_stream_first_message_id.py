@@ -17,7 +17,7 @@ def backfill_first_message_id(apps: StateApps, schema_editor: BaseDatabaseSchema
             continue
 
         stream.first_message_id = first_message.id
-        stream.save()
+        stream.save(update_fields=["first_message_id"])
 
 
 class Migration(migrations.Migration):

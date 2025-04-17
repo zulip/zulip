@@ -826,9 +826,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             # the number of database queries by fetching the group
             # setting fields using select_related.
             realm = self.realm
-        allowed_user_group = getattr(realm, policy_name)
+        allowed_user_group_id = getattr(realm, policy_name).id
         setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
-        return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
+        return user_has_permission_for_group_setting(allowed_user_group_id, self, setting_config)
 
     def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_create_public_channel_group", realm)
@@ -922,15 +922,8 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 
 
 def base_bulk_get_user_queryset() -> QuerySet[UserProfile]:
-    """Base select_related options for UserProfile for general user;
-    prefetches can_access_all_users_group, which is often necessary
-    for calculations of where events should be sent.
-    """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-    )
+    # Base select_related options for UserProfile for general user.
+    return UserProfile.objects.select_related("realm")
 
 
 def base_get_user_queryset() -> QuerySet[UserProfile]:
@@ -938,12 +931,7 @@ def base_get_user_queryset() -> QuerySet[UserProfile]:
     In contrast with base_bulk_get_user_queryset, additionally fetches
     fields that are relevant for this user sending a message.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "bot_owner",
-    )
+    return UserProfile.objects.select_related("realm", "bot_owner")
 
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)

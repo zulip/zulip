@@ -72,7 +72,7 @@ from zerver.lib.streams import (
     filter_stream_authorization_for_adding_subscribers,
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_default_group,
-    get_stream_permission_policy_name,
+    get_stream_permission_policy_key,
     list_to_streams,
     stream_to_dict,
     user_has_content_access,
@@ -572,14 +572,14 @@ def you_were_just_subscribed_message(
     subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
-            return _("{user_full_name} subscribed you to the channel {channel_name}.").format(
-                user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
+            return _("{user_full_name} subscribed you to {channel_name}.").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
                 channel_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
         message = _("{user_full_name} subscribed you to the following channels:").format(
-            user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
+            user_full_name=silent_mention_syntax_for_user(acting_user),
         )
     message += "\n\n"
     for channel_name in subscriptions:
@@ -879,20 +879,41 @@ def send_messages_for_new_subscribers(
                     stream_description = "*" + _("No description.") + "*"
                 else:
                     stream_description = stream.description
+
+                policy_key = get_stream_permission_policy_key(
+                    invite_only=stream.invite_only,
+                    history_public_to_subscribers=stream.history_public_to_subscribers,
+                    is_web_public=stream.is_web_public,
+                )
+                new_channel_message = None
+
+                # Policy `public_protected_history` is missing here as those channels don't get
+                # channel creation notification.
+                if policy_key == "web_public":
+                    new_channel_message = _(
+                        "**Web-public** channel created by {user_name}. **Description:**"
+                    )
+                elif policy_key == "public":
+                    new_channel_message = _(
+                        "**Public** channel created by {user_name}. **Description:**"
+                    )
+                elif policy_key == "private_shared_history":
+                    new_channel_message = _(
+                        "**Private, shared history** channel created by {user_name}. **Description:**"
+                    )
+                elif policy_key == "private_protected_history":
+                    new_channel_message = _(
+                        "**Private, protected history** channel created by {user_name}. **Description:**"
+                    )
+
+                assert new_channel_message is not None
                 notifications.append(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
                         topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-                        content=_(
-                            "**{policy}** channel created by {user_name}. **Description:**"
-                        ).format(
+                        content=new_channel_message.format(
                             user_name=silent_mention_syntax_for_user(user_profile),
-                            policy=get_stream_permission_policy_name(
-                                invite_only=stream.invite_only,
-                                history_public_to_subscribers=stream.history_public_to_subscribers,
-                                is_web_public=stream.is_web_public,
-                            ),
                         )
                         + f"\n```` quote\n{stream_description}\n````",
                     ),

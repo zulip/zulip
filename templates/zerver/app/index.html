@@ -15,7 +15,7 @@ where the compose box is hidden under keyboard. To fix it, we rollback
 to resizing content when keyboard is shown on Firefox Android.
 TODO: Remove this when Firefox Android fixes the bug -
 https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no {% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no{% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
 {% endblock %}
 
 {% block customhead %}

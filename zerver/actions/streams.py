@@ -39,7 +39,7 @@ from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
     check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
-    get_stream_permission_policy_name,
+    get_stream_permission_policy_key,
     get_stream_post_policy_value_based_on_group_setting,
     get_user_ids_with_metadata_access_via_permission_groups,
     get_users_dict_with_metadata_access_to_streams_via_permission_groups,
@@ -57,6 +57,7 @@ from zerver.lib.user_groups import (
     update_or_create_user_group_for_setting,
 )
 from zerver.lib.users import (
+    all_users_accessible_by_everyone_in_realm,
     get_subscribers_of_target_user_subscriptions,
     get_users_involved_in_dms_with_target_users,
 )
@@ -74,7 +75,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
-from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroup
+from zerver.models.groups import NamedUserGroup, UserGroup
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm_by_id
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
@@ -830,7 +831,7 @@ def bulk_add_subscriptions(
         if sub_info.user.is_guest:
             altered_guests.add(sub_info.user.id)
 
-    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
+    if not all_users_accessible_by_everyone_in_realm(realm):
         altered_users = list(altered_streams_dict.keys())
         subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
             altered_users
@@ -881,7 +882,7 @@ def bulk_add_subscriptions(
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
 
-    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
+    if not all_users_accessible_by_everyone_in_realm(realm):
         send_user_creation_events_on_adding_subscriptions(
             realm,
             altered_user_dict,
@@ -1120,7 +1121,7 @@ def bulk_remove_subscriptions(
     removed_sub_tuples = [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate]
     send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
 
-    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
+    if not all_users_accessible_by_everyone_in_realm(realm):
         altered_user_dict: dict[UserProfile, set[int]] = defaultdict(set)
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
@@ -1376,16 +1377,18 @@ def do_change_stream_permission(
     )
     send_event_on_commit(stream.realm, event, notify_stream_update_ids)
 
-    old_policy_name = get_stream_permission_policy_name(
+    old_policy_key = get_stream_permission_policy_key(
         invite_only=old_invite_only_value,
         history_public_to_subscribers=old_history_public_to_subscribers_value,
         is_web_public=old_is_web_public_value,
     )
-    new_policy_name = get_stream_permission_policy_name(
+    old_policy_name = Stream.PERMISSION_POLICIES[old_policy_key]["policy_name"]
+    new_policy_key = get_stream_permission_policy_key(
         invite_only=stream.invite_only,
         history_public_to_subscribers=stream.history_public_to_subscribers,
         is_web_public=stream.is_web_public,
     )
+    new_policy_name = Stream.PERMISSION_POLICIES[new_policy_key]["policy_name"]
     send_change_stream_permission_notification(
         stream,
         old_policy_name=old_policy_name,
@@ -1694,7 +1697,7 @@ def do_change_stream_group_based_setting(
         )
 
     setattr(stream, setting_name, user_group)
-    stream.save()
+    stream.save(update_fields=[setting_name, "name"])
 
     new_setting_api_value = get_group_setting_value_for_api(user_group)
     RealmAuditLog.objects.create(

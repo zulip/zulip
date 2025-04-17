@@ -1,6 +1,7 @@
 {% extends "zerver/emails/email_base_messages.html" %}
 
 {% block content %}
+    {% if show_message_content %}
     {% if hot_conversations %}
         {% for convo in hot_conversations %}
         <div class='messages'>
@@ -28,10 +29,25 @@
 
     <p class="digest_paragraph">{{ new_channels.html|display_list(1000)|safe }}.</p>
     {% endif %}
-
-    <br />
-
-    <p class="digest_paragraph"><a href="{{ realm_url }}">{% trans %}Click here to log in to Zulip and catch up.{% endtrans %}</a></p>
+    {% else %}
+    <p class="digest_paragraph">
+        {% if new_messages_count > 0 and new_streams_count > 0 %}
+            {% trans %}You have {{ new_messages_count }} new messages, and there are {{ new_streams_count }} new channels in <a href="{{ realm_url }}">{{ realm_name }}</a>.{% endtrans %}
+        {% elif new_messages_count > 0 and new_streams_count == 0 %}
+            {% trans %}You have {{ new_messages_count }} new messages in <a href="{{ realm_url }}">{{ realm_name }}</a>.{% endtrans %}
+        {% else  %}
+            {% trans %}There are {{ new_streams_count }} new channels in <a href="{{ realm_url }}">{{ realm_name }}</a>.{% endtrans %}
+        {% endif %}
+    </p>
+    <p class="digest_paragraph">
+        {% if message_content_disabled_by_realm %}
+        {% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}This email does not include message content because your organization <a class="content_disabled_help_link" href="{{ help_url }}">hides message content</a> in email notifications.{% endtrans %}
+        {% elif message_content_disabled_by_user %}
+        {% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}This email does not include message content because you have chosen to <a class="content_disabled_help_link" href="{{ help_url }}">hide message content</a> in email notifications.{% endtrans %}
+        {% endif %}
+    </p>
+    {% endif %}
+    <p class="digest_paragraph">{% trans %}<a href="{{ realm_url }}">Log in</a> to Zulip to catch up.{% endtrans %}</p>
 {% endblock %}
 
 {% block manage_preferences %}

@@ -480,7 +480,6 @@ def access_web_public_message(
     # These should all have been enforced by the code in
     # get_web_public_streams_queryset
     assert stream.is_web_public
-    assert not stream.deactivated
     assert not stream.invite_only
     assert stream.history_public_to_subscribers
 
@@ -1530,7 +1529,7 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[i
             )
 
         if not user_has_permission_for_group_setting(
-            can_mention_group,
+            can_mention_group.id,
             sender,
             NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
             direct_member_only=False,

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 import os
+import re
+import shutil
 import sys
 
 import django
 from django.template import engines
 from django.template.backends.jinja2 import Jinja2
+from pydantic.alias_generators import to_pascal
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -48,6 +51,37 @@ def replace_image_path(markdown_string: str) -> str:
     return result.replace('="/static/images/help-beta', '="../../../../static/images/help')
 
 
+def fix_file_imports(markdown_string: str) -> str:
+    def convert_to_pascal(text: str) -> str:
+        return to_pascal(text).replace("-", "").replace(".Md", "")
+
+    def convert_to_astro_tag(match: re.Match[str]) -> str:
+        return "<" + convert_to_pascal(match.group(1)) + " />"
+
+    def append_str_to_line(text: str, destination_str: str, n: int) -> str:
+        lines = destination_str.splitlines()
+        if 1 <= n <= len(lines):
+            lines[n - 1] += "\n" + text + "\n"
+
+        return "\n".join(lines)
+
+    RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
+    result = RE.sub(convert_to_astro_tag, markdown_string)
+    matches = RE.findall(markdown_string)
+
+    import_statement_set = {
+        f'import {convert_to_pascal(match)} from "./include/_{match}"' for match in matches
+    }
+    for import_statement in import_statement_set:
+        # First line of the file is always the heading/title of the
+        # file. We rely on the heading being the first line later
+        # in the function inserting frontmatter and thus we add
+        # this to the second line.
+        result = append_str_to_line(import_statement, result, 2)
+
+    return result
+
+
 def escape_curly_braces(markdown_string: str) -> str:
     """
     MDX will treat curly braces as a JS expression,
@@ -82,11 +116,14 @@ def insert_frontmatter(markdown_string: str) -> str:
 
 
 def convert_string_to_mdx(markdown_string: str) -> str:
-    result = escape_curly_braces(markdown_string)
+    result = markdown_string
+    result = fix_file_imports(result)
+    result = escape_curly_braces(result)
     result = fix_relative_path(result)
     result = replace_emoticon_translation_table(result)
     result = replace_image_path(result)
-    return insert_frontmatter(result)
+    result = insert_frontmatter(result)
+    return result
 
 
 def convert_file_to_mdx(
@@ -113,6 +150,10 @@ def run() -> None:
 
     converted_count = 0
 
+    # We delete the directory first to remove any stale files
+    # that might have been deleted in the `help` folder but
+    # their converted mdx files stay around
+    shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     for name in os.listdir(input_dir):
         if os.path.isfile(os.path.join(input_dir, name)):
@@ -128,6 +169,22 @@ def run() -> None:
             ) as mdx_file:
                 mdx_file.write(mdx)
     print(f"Converted {converted_count} files. Conversion completed.")
+
+    # All files in the `include` folder will only be imports and not
+    # standalone files. Therefore we do not do any manipulation or
+    # them to mdx.
+    include_source_dir = os.path.join(BASE_DIR, "help/include")
+    include_destination_dir = os.path.join(BASE_DIR, "help-beta/src/content/docs/include")
+    shutil.copytree(include_source_dir, include_destination_dir)
+
+    # We do not want Astro to render these include files as standalone
+    # files, prefixing them with an underscore accomplishes that.
+    # https://docs.astro.build/en/guides/routing/#excluding-pages
+    for name in os.listdir(include_destination_dir):
+        os.rename(
+            os.path.join(include_destination_dir, name),
+            os.path.join(include_destination_dir, "_" + name),
+        )
 
 
 run()

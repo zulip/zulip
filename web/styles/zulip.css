@@ -241,9 +241,9 @@ p.n-margin {
 .alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
-    width: 24px;
-    height: 24px;
-    margin: 0 auto 12px;
+    width: 1.7143em; /* 24px at 14px/em */
+    height: 1.7143em;
+    margin: 0 auto 0.8571em; /* 12px at 14px/em */
 
     & svg {
         & circle {
@@ -267,10 +267,6 @@ p.n-margin {
     /* Since padding under message header is not transparent
        we need to position it below the padding. */
     padding-top: var(--header-padding-bottom);
-    margin-bottom: 0;
-    /* To fit the logo inside the spinner. */
-    position: relative;
-    top: -2px;
 }
 
 /* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
@@ -1229,13 +1225,20 @@ nav {
 #loading_newer_messages_indicator_box_container {
     position: absolute;
     left: 50%;
+
+    /* Override the base rules in app_components.css, which would require
+       coordination with loading.make_indicator */
+    .loading_indicator_spinner {
+        height: 2.7143em; /* 38px at 14px/em */
+        width: 2.7143em; /* 38px at 14px/em */
+    }
 }
 
 #loading_older_messages_indicator_box,
 #loading_newer_messages_indicator_box {
     position: relative;
-    left: -50%;
-    top: -43px;
+    left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
+    top: -3.0714em; /* -43px at 14px/em */
     z-index: 1;
     border-radius: 6px;
 }
@@ -1410,76 +1413,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 100%;
     height: 10px;
     margin-bottom: 0;
-}
-
-.sub-unsub-message {
-    padding-bottom: 10px;
-    text-align: center;
-}
-
-.sub-unsub-message span {
-    font-size: 1em;
-    display: block;
-    padding: 4px;
-    overflow: hidden;
-}
-
-.sub-unsub-message .stream-status {
-    opacity: 0.6;
-
-    & i {
-        font-size: 0.7143em; /* 10px at 14px / em */
-        /* TODO: Don't use relative positioning here. */
-        position: relative;
-        top: 0.1em; /* 1px at 10px / em */
-        margin-left: 0.2em; /* 2px at 10px / em */
-    }
-
-    .zulip-icon.zulip-icon-lock {
-        font-size: 0.8571em; /* 12px at 14px / em */
-        top: 0.0833em; /* 1px at 12px / em */
-        margin-left: 0.1667em; /* 2px at 12px / em */
-    }
-}
-
-.sub-unsub-message span::before,
-.sub-unsub-message span::after,
-.date_row span::before,
-.date_row span::after {
-    display: inline-block;
-    position: relative;
-    content: " ";
-    vertical-align: middle;
-    height: 0;
-    opacity: 0.15;
-    border-bottom: 1px solid hsl(0deg 0% 0%);
-}
-
-.sub-unsub-message span::before,
-.sub-unsub-message span::after {
-    width: 50%;
-}
-
-.date_row span::before {
-    width: 100%;
-}
-
-.date_row span::after {
-    width: 6px;
-    left: 0.25em;
-    /* Align date with message time and recipient bar date. */
-    margin-right: -1px;
-}
-
-.sub-unsub-message span::before,
-.date_row span::before {
-    right: 0.25em;
-    margin-left: -50%;
-}
-
-.sub-unsub-message span::after {
-    left: 0.25em;
-    margin-right: -50%;
 }
 
 .screen {
