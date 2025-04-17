@@ -91,7 +91,7 @@ run_test("remove_alert_word", ({override_rewire}) => {
     assert.ok($alert_word_status_banner.hasClass("banner-danger"));
     assert.equal(
         $alert_word_status_banner_label.text(),
-        "translated: Error removing alert word!",
+        `translated HTML: Error removing alert word <b>translated: zot</b>!`,
     );
 
     // test success
@@ -99,6 +99,6 @@ run_test("remove_alert_word", ({override_rewire}) => {
     assert.ok($alert_word_status_banner.hasClass("banner-success"));
     assert.equal(
         $alert_word_status_banner_label.text(),
-        `translated: Alert word "translated: zot" removed successfully!`,
+        `translated HTML: Alert word <b>translated: zot</b> removed successfully!`,
     );
 });
