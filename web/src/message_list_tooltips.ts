@@ -2,11 +2,13 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
+import render_external_inline_url_tooltip from "../templates/external_inline_url_tooltip.hbs";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
+import {decode_stream_topic_from_url} from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -14,6 +16,7 @@ import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
+import {get_stream_name_from_id} from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
@@ -347,6 +350,60 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
         },
+    });
+
+    message_list_tooltip(".message_content > p > a[data-message-link-type='external_inline_url']", {
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const url = $elem.attr("href");
+            instance.setContent(parse_html(render_external_inline_url_tooltip({url})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        placement: "bottom",
+    });
+
+    message_list_tooltip('.message_content > p > a[data-message-link-type="internal_named_link"]', {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            let url = $elem.attr("href");
+            if (url?.startsWith("/user_uploads/")) {
+                // We add the word "download" to make clear what will
+                // happen when clicking the file.  This is particularly
+                // important in the desktop app, where hovering a URL does
+                // not display the URL like it does in the web app.
+                url = $t(
+                    {defaultMessage: "Download {filename}"},
+                    {
+                        filename: decodeURIComponent(url.slice(url.lastIndexOf("/") + 1)),
+                    },
+                );
+            } else {
+                // We show the tooltip in canonical form for the
+                // destination internal link is pointing to.
+                const syntax = (): string => {
+                    const stream_topic_name = decode_stream_topic_from_url(
+                        window.location.origin + url!,
+                    );
+
+                    if (stream_topic_name !== null) {
+                        const channel = get_stream_name_from_id(stream_topic_name.stream_id);
+                        const topic = stream_topic_name.topic_name;
+                        return topic ? `# ${channel} > ${topic}` : `# ${channel}`;
+                    }
+                    return "this";
+                };
+                const format = syntax();
+                url = `Go to ${format}`;
+            }
+            instance.setContent(parse_html(render_external_inline_url_tooltip({url})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        placement: "bottom",
     });
 
     message_list_tooltip(".view_user_card_tooltip", {
