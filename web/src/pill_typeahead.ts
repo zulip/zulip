@@ -382,7 +382,7 @@ export function set_up_combined(
                 }
             }
 
-            return typeahead_helper.sort_stream_setting_options({
+            return typeahead_helper.sort_stream_or_group_members_options({
                 users,
                 query,
                 groups,
