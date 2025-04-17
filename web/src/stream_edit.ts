@@ -75,7 +75,7 @@ const realm_labels_schema = z.enum([
 const notification_labels_schema = stream_specific_notification_settings_schema.keyof();
 
 export function setup_subscriptions_tab_hash(tab_key_value: string): void {
-    if ($("#subscription_overlay .right").hasClass("show")) {
+    if ($("#channels_overlay_container .two-pane-settings-container").hasClass("right-pane-open")) {
         return;
     }
     switch (tab_key_value) {
