@@ -10,6 +10,8 @@ const $ = require("./lib/zjquery.cjs");
 
 const user_groups = zrequire("user_groups");
 
+set_global("requestAnimationFrame", (func) => func());
+
 const nobody = {
     name: "role:nobody",
     id: 1,
