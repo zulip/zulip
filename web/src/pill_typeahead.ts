@@ -264,6 +264,7 @@ export function set_up_combined(
         user_group_source?: () => UserGroup[];
         exclude_bots?: boolean;
         update_func?: () => void;
+        for_stream_subscribers: boolean;
     },
 ): void {
     if (!opts.user && !opts.user_group && !opts.stream) {
@@ -386,6 +387,7 @@ export function set_up_combined(
                 users,
                 query,
                 groups,
+                for_stream_subscribers: opts.for_stream_subscribers,
             });
         },
         updater(item: TypeaheadItem, query: string): undefined {

@@ -93,6 +93,7 @@ export function create({
         $pill_container,
         get_users,
         get_user_groups,
+        for_stream_subscribers: false,
     });
 
     add_subscribers_pill.set_up_handlers_for_add_button_state(pill_widget, $pill_container);
@@ -140,6 +141,7 @@ export function create_without_add_button({
         $pill_container,
         get_users,
         get_user_groups,
+        for_stream_subscribers: false,
     });
 
     return pill_widget;

@@ -1292,6 +1292,7 @@ test("sort_stream_or_group_members_options", ({override_rewire}) => {
             users,
             query,
             groups,
+            for_stream_subscribers: true,
         });
         return result.map((item) => {
             if (item.type === "user") {
@@ -1398,53 +1399,255 @@ test("sort_stream_or_group_members_options", ({override_rewire}) => {
 });
 
 test("compare_stream_or_group_members_options", () => {
-    // Non system user group has higher priority than user.
-    assert.equal(th.compare_stream_or_group_members_options(a_user_item, bob_group_item), 1);
-    assert.equal(th.compare_stream_or_group_members_options(bob_group_item, a_user_item), -1);
-    // User has higher priority than non `role:members` system user group.
+    // Non system user group has higher priority than user for both streams and groups UI.
     assert.equal(
-        th.compare_stream_or_group_members_options(a_user_item, bob_system_group_item),
+        th.compare_stream_or_group_members_options(a_user_item, bob_group_item, undefined, true),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(a_user_item, bob_group_item, undefined, false),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(bob_group_item, a_user_item, undefined, true),
         -1,
     );
-    assert.equal(th.compare_stream_or_group_members_options(bob_system_group_item, a_user_item), 1);
+    assert.equal(
+        th.compare_stream_or_group_members_options(bob_group_item, a_user_item, undefined, false),
+        -1,
+    );
+    // User has higher priority than non `role:members` system user group for streams UI.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            a_user_item,
+            bob_system_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_system_group_item,
+            a_user_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    // System user group has lower priority than other user groups for both streams and groups UI.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            bob_system_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            bob_system_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_system_group_item,
+            bob_group_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_system_group_item,
+            bob_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_system_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_system_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
 
-    // System user group has lower priority than other user groups.
+    // Members group always takes priority against any other group for stream subscribers UI.
     assert.equal(
-        th.compare_stream_or_group_members_options(bob_group_item, bob_system_group_item),
-        -1,
-    );
-    assert.equal(
-        th.compare_stream_or_group_members_options(bob_system_group_item, bob_group_item),
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            members_group_item,
+            undefined,
+            true,
+        ),
         1,
     );
     assert.equal(
-        th.compare_stream_or_group_members_options(admins_group_item, bob_system_group_item),
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            bob_group_item,
+            undefined,
+            true,
+        ),
         -1,
     );
-    // Members group always takes priority against any other group.
-    assert.equal(th.compare_stream_or_group_members_options(bob_group_item, members_group_item), 1);
     assert.equal(
-        th.compare_stream_or_group_members_options(members_group_item, bob_group_item),
-        -1,
-    );
-    assert.equal(
-        th.compare_stream_or_group_members_options(admins_group_item, members_group_item),
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            members_group_item,
+            undefined,
+            true,
+        ),
         1,
     );
     assert.equal(
-        th.compare_stream_or_group_members_options(members_group_item, admins_group_item),
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            admins_group_item,
+            undefined,
+            true,
+        ),
         -1,
+    );
+    // For group members UI, members group does not take priority.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            members_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            bob_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            members_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            admins_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            a_user_item,
+            members_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            a_user_item,
+            undefined,
+            false,
+        ),
+        1,
     );
 
     // In case both groups are not system groups, alphabetical order is used to decide priority.
-    assert.equal(th.compare_stream_or_group_members_options(bob_group_item, admins_group_item), 1);
-    assert.equal(th.compare_stream_or_group_members_options(admins_group_item, bob_group_item), -1);
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            admins_group_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            admins_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
 
     // Use alphabetical order to compare two users.
-    assert.equal(th.compare_stream_or_group_members_options(b_user_1_item, b_user_2_item), -1);
-    assert.equal(th.compare_stream_or_group_members_options(b_user_2_item, b_user_1_item), 1);
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_2_item, undefined, true),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_2_item, undefined, false),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_2_item, b_user_1_item, undefined, true),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_2_item, b_user_1_item, undefined, false),
+        1,
+    );
 
     // Get coverage for case where two users have same names. Original order is preserved
     // in such cases.
-    assert.equal(th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item), 0);
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item, undefined, true),
+        0,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item, undefined, false),
+        0,
+    );
 });

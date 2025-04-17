@@ -51,11 +51,13 @@ export function set_up_pill_typeahead({
     $pill_container,
     get_users,
     get_user_groups,
+    for_stream_subscribers,
 }: {
     pill_widget: CombinedPillContainer;
     $pill_container: JQuery;
     get_users: () => User[];
     get_user_groups?: () => UserGroup[];
+    for_stream_subscribers: boolean;
 }): void {
     const opts: {
         user_source: () => User[];
@@ -63,11 +65,13 @@ export function set_up_pill_typeahead({
         user_group: boolean;
         user: boolean;
         user_group_source?: () => UserGroup[];
+        for_stream_subscribers: boolean;
     } = {
         user_source: get_users,
         stream: true,
         user_group: true,
         user: true,
+        for_stream_subscribers,
     };
     if (get_user_groups !== undefined) {
         opts.user_group_source = get_user_groups;
@@ -149,7 +153,13 @@ export function create({
         return user_group_pill.filter_taken_groups(groups, pill_widget);
     }
 
-    set_up_pill_typeahead({pill_widget, $pill_container, get_users, get_user_groups: get_groups});
+    set_up_pill_typeahead({
+        pill_widget,
+        $pill_container,
+        get_users,
+        get_user_groups: get_groups,
+        for_stream_subscribers: true,
+    });
 
     set_up_handlers_for_add_button_state(pill_widget, $pill_container);
 
@@ -195,7 +205,13 @@ export function create_without_add_button({
         onPillRemoveAction(get_pill_user_ids(pill_widget));
     });
 
-    set_up_pill_typeahead({pill_widget, $pill_container, get_users, get_user_groups: get_groups});
+    set_up_pill_typeahead({
+        pill_widget,
+        $pill_container,
+        get_users,
+        get_user_groups: get_groups,
+        for_stream_subscribers: true,
+    });
 
     return pill_widget;
 }
