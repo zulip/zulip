@@ -42,10 +42,6 @@ function override_typeahead_helper(override_rewire) {
     override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
     });
-    override_rewire(typeahead_helper, "sort_recipients", ({users}) => {
-        sort_recipients_called = true;
-        return users;
-    });
     override_rewire(typeahead_helper, "sort_stream_setting_options", ({users}) => {
         sort_stream_setting_options_called = true;
         return users;
@@ -530,26 +526,14 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 config.sorter([denmark_item], stream_query);
                 assert.ok(sort_streams_called);
             }
-            if (opts.user_group && !opts.is_stream_subscriber_input) {
-                sort_recipients_called = false;
-                sort_stream_setting_options_called = false;
-                config.sorter([testers_item], group_query);
-                assert.ok(sort_recipients_called);
-                assert.ok(!sort_stream_setting_options_called);
-            } else if (opts.user_group && opts.is_stream_subscriber_input) {
+            if (opts.user_group) {
                 sort_recipients_called = false;
                 sort_stream_setting_options_called = false;
                 config.sorter([testers_item], group_query);
                 assert.ok(!sort_recipients_called);
                 assert.ok(sort_stream_setting_options_called);
             }
-            if (opts.user && !opts.is_stream_subscriber_input) {
-                sort_recipients_called = false;
-                sort_stream_setting_options_called = false;
-                config.sorter([me_item], person_query);
-                assert.ok(sort_recipients_called);
-                assert.ok(!sort_stream_setting_options_called);
-            } else if (opts.user && opts.is_stream_subscriber_input) {
+            if (opts.user) {
                 sort_recipients_called = false;
                 sort_stream_setting_options_called = false;
                 config.sorter([me_item], person_query);
@@ -666,8 +650,6 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     for (const config of all_possible_opts) {
         opts = config;
         test_pill_typeahead(config);
-        opts = {...config, is_stream_subscriber_input: true};
-        test_pill_typeahead({...config, is_stream_subscriber_input: true});
     }
 
     // Special case to test coverage and to test

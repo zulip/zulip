@@ -264,7 +264,6 @@ export function set_up_combined(
         user_group_source?: () => UserGroup[];
         exclude_bots?: boolean;
         update_func?: () => void;
-        is_stream_subscriber_input?: boolean;
     },
 ): void {
     if (!opts.user && !opts.user_group && !opts.stream) {
@@ -383,20 +382,10 @@ export function set_up_combined(
                 }
             }
 
-            if (opts.is_stream_subscriber_input) {
-                return typeahead_helper.sort_stream_setting_options({
-                    users,
-                    query,
-                    groups,
-                });
-            }
-            return typeahead_helper.sort_recipients({
+            return typeahead_helper.sort_stream_setting_options({
                 users,
                 query,
-                current_stream_id: undefined,
-                current_topic: undefined,
                 groups,
-                max_num_items: undefined,
             });
         },
         updater(item: TypeaheadItem, query: string): undefined {
