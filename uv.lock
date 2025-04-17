@@ -146,6 +146,15 @@ wheels = [
 ]
 
 [[package]]
+name = "altcha"
+version = "0.1.9"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/44/c9911a6b96e7f62d7a68eb71d2b2f53bcc6d08561a05d6024f2b40df1f20/altcha-0.1.9.tar.gz", hash = "sha256:24833796af620c0f056a59435a1d3015ee3ebf5c52de7be12c74ea95d697a20d", size = 8797 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cf/a8/8327d1b64e4961b2c762788efacd3a91d7f38d5bbb59a3393aa316aa95e2/altcha-0.1.9-py3-none-any.whl", hash = "sha256:b93480349859dd5207bb32da7ba43d42257e5f55577bda904b6aab1c86fe1d27", size = 7911 },
+]
+
+[[package]]
 name = "annotated-types"
 version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -818,6 +827,19 @@ wheels = [
 [package.optional-dependencies]
 argon2 = [
     { name = "argon2-cffi" },
+]
+
+[[package]]
+name = "django-altcha"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "altcha" },
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e2/40/8c07c4dc93edcfd0f881ac2d89b140aac8182bb05500de97a82c8952b351/django_altcha-0.1.3.tar.gz", hash = "sha256:7a3700509d2015fc9577591dfc814fb9e1f84b2eafb47d633a00addf2bc5ba58", size = 31058 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1a/e0/c9cb285252c3e334ede342a239081cf38daf96e42f7a6762a787cbe1f52d/django_altcha-0.1.3-py3-none-any.whl", hash = "sha256:69ed29f48f45f6355f67d5ef8051528a1306df16fe9351454d2f1448068505e4", size = 26071 },
 ]
 
 [[package]]
@@ -2725,6 +2747,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pkgconfig"
+version = "1.5.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/e0/e05fee8b5425db6f83237128742e7e5ef26219b687ab8f0d41ed0422125e/pkgconfig-1.5.5.tar.gz", hash = "sha256:deb4163ef11f75b520d822d9505c1f462761b4309b1bb713d08689759ea8b899", size = 6082 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/af/89487c7bbf433f4079044f3dc32f9a9f887597fe04614a37a292e373e16b/pkgconfig-1.5.5-py3-none-any.whl", hash = "sha256:d20023bbeb42ee6d428a0fac6e0904631f545985a10cdd71a20aa58bc47a4209", size = 6732 },
+]
+
+[[package]]
 name = "platformdirs"
 version = "4.3.7"
 source = { registry = "https://pypi.org/simple" }
@@ -3368,6 +3399,7 @@ version = "2.2.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cffi" },
+    { name = "pkgconfig" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7b/88/f73dae807ec68b228fba72507105e3ba80a561dc0bade0004ce24fd118fc/pyvips-2.2.3.tar.gz", hash = "sha256:43bceced0db492654c93008246a58a508e0373ae1621116b87b322f2ac72212f", size = 56626 }
 
@@ -5105,6 +5137,7 @@ dev = [
     { name = "defusedxml" },
     { name = "disposable-email-domains" },
     { name = "django", extra = ["argon2"] },
+    { name = "django-altcha" },
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
@@ -5232,6 +5265,7 @@ prod = [
     { name = "defusedxml" },
     { name = "disposable-email-domains" },
     { name = "django", extra = ["argon2"] },
+    { name = "django-altcha" },
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
@@ -5319,6 +5353,7 @@ dev = [
     { name = "defusedxml" },
     { name = "disposable-email-domains" },
     { name = "django", extras = ["argon2"], specifier = "==5.1.*" },
+    { name = "django-altcha", specifier = ">=0.1.3" },
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
@@ -5447,6 +5482,7 @@ prod = [
     { name = "defusedxml" },
     { name = "disposable-email-domains" },
     { name = "django", extras = ["argon2"], specifier = "==5.1.*" },
+    { name = "django-altcha", specifier = ">=0.1.3" },
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },

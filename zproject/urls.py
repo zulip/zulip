@@ -26,6 +26,7 @@ from zerver.tornado.views import (
     web_reload_clients,
 )
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
+from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
     api_fetch_api_key,
@@ -543,6 +544,7 @@ v1_api_and_json_patterns = [
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+    # For unauth'd users
 ]
 
 integrations_view = IntegrationView.as_view()
@@ -640,6 +642,7 @@ i18n_urls = [
     # Go to organization subdomain
     path("accounts/go/", realm_redirect, name="realm_redirect"),
     # Realm creation
+    path("json/antispam_challenge", get_challenge),
     path("new/", create_realm),
     path("new/<creation_key>", create_realm, name="create_realm"),
     # Realm reactivation

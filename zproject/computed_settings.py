@@ -68,6 +68,7 @@ from .configured_settings import (
     STATIC_URL,
     SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
+    USING_CAPTCHA,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
     ZULIP_SERVICE_PUSH_NOTIFICATIONS,
@@ -280,6 +281,8 @@ INSTALLED_APPS = [
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ["pgroonga"]
+if USING_CAPTCHA:
+    INSTALLED_APPS += ["django_altcha"]
 INSTALLED_APPS += EXTRA_INSTALLED_APPS
 
 ZILENCER_ENABLED = "zilencer" in INSTALLED_APPS
@@ -461,6 +464,11 @@ if DEVELOPMENT:
     TOR_EXIT_NODE_FILE_PATH = os.path.join(DEPLOY_ROOT, "var/tor-exit-nodes.json")
 else:
     TOR_EXIT_NODE_FILE_PATH = "/var/lib/zulip/tor-exit-nodes.json"
+
+if USING_CAPTCHA:
+    ALTCHA_HMAC_KEY = get_mandatory_secret("altcha_hmac")
+else:
+    ALTCHA_HMAC_KEY = ""
 
 ########################################################################
 # SECURITY SETTINGS

@@ -46,6 +46,7 @@ from zerver.context_processors import (
 )
 from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
+    CaptchaRealmCreationForm,
     FindMyTeamForm,
     HomepageForm,
     RealmCreationForm,
@@ -906,7 +907,10 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # with a few restrictions on their email address.
     if request.method == "POST":
-        form = RealmCreationForm(request.POST)
+        if settings.USING_CAPTCHA:
+            form: RealmCreationForm = CaptchaRealmCreationForm(data=request.POST, request=request)
+        else:
+            form = RealmCreationForm(request.POST)
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
@@ -976,11 +980,15 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
         initial_data = {
             "realm_default_language": default_language_code,
         }
-        form = RealmCreationForm(initial=initial_data)
+        if settings.USING_CAPTCHA:
+            form = CaptchaRealmCreationForm(request=request, initial=initial_data)
+        else:
+            form = RealmCreationForm(initial=initial_data)
 
     context = get_realm_create_form_context()
     context.update(
         {
+            "has_captcha": settings.USING_CAPTCHA,
             "form": form,
             "current_url": request.get_full_path,
         }

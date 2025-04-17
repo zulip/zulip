@@ -1,9 +1,12 @@
+import base64
 import logging
 import re
 from email.headerregistry import Address
 from typing import Any
 
 import dns.resolver
+import orjson
+from altcha import verify_solution
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation
@@ -11,7 +14,10 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, Set
 from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.forms.renderers import BaseRenderer
 from django.http import HttpRequest
+from django.utils.html import format_html
+from django.utils.safestring import SafeString, mark_safe
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from markupsafe import Markup
@@ -331,6 +337,79 @@ class RealmCreationForm(RealmDetailsForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs["realm_creation"] = True
         super().__init__(*args, **kwargs)
+
+
+class AltchaWidget(forms.TextInput):
+    @override
+    def render(
+        self,
+        name: str,
+        value: Any,
+        attrs: dict[str, Any] | None = None,
+        renderer: BaseRenderer | None = None,
+    ) -> SafeString:
+        return format_html(
+            '<script async defer src="{}" type="module"></script>',
+            "/static/altcha/altcha.min.js",
+        ) + mark_safe(
+            '<script>function altchaCustomFetch(url, init) {return fetch(url, {...init, credentials: "include"});}</script>',
+        ) + format_html(
+            (
+                "<altcha-widget"
+                '  challengeurl="/json/antispam_challenge"'
+                '  auto="onload"'
+                "  hidelogo"
+                "  hidefooter"
+                '  floating="bottom"'
+                "  expire=500000"
+                "  refetchonexpire"
+                "  customfetch=altchaCustomFetch"
+                '  strings="{}"'
+                ">"
+            ),
+            orjson.dumps(
+                {
+                    "verified": _("Verified you're not a robot!"),
+                    "verifying": _("Verifying you're not a bot..."),
+                    "waitAlert": _("Verifying you're not a bot... please wait."),
+                }
+            ).decode(),
+        )
+
+
+class CaptchaRealmCreationForm(RealmCreationForm):
+    captcha = forms.CharField(required=True, widget=AltchaWidget)
+
+    def __init__(
+        self,
+        *,
+        request: HttpRequest,
+        data: dict[str, Any] | None = None,
+        initial: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(data=data, initial=initial)
+        self.request = request
+
+    def clean_captcha(self) -> None:
+        payload = self.data.get("captcha", "")
+
+        # Validate payload
+        try:
+            ok, err = verify_solution(payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
+            if not ok:
+                logging.error("Invalid altcha solution: %s", err)
+                raise forms.ValidationError(_("Validation failed, please try again."))
+        except Exception:
+            raise forms.ValidationError(_("Validation failed, please try again."))
+
+        payload = orjson.loads(base64.b64decode(payload))
+        challenge = payload["challenge"]
+        if challenge not in self.request.session.get("altcha_challenges", []):
+            logging.error("Outdated altcha solution")
+            raise forms.ValidationError(_("Validation failed, please try again."))
+        self.request.session["altcha_challenges"] = [
+            c != challenge for c in self.request.session.get("altcha_challenges", [])
+        ]
 
 
 class LoggingSetPasswordForm(SetPasswordForm):
