@@ -216,6 +216,10 @@ def is_administrator_role(role: int) -> bool:
     return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
 
 
+def is_moderator_role(role: int) -> bool:
+    return is_administrator_role(role) or role == UserProfile.ROLE_MODERATOR
+
+
 def bulk_get_cross_realm_bots() -> dict[str, UserProfile]:
     emails = list(settings.CROSS_REALM_BOT_EMAILS)
 

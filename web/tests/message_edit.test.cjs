@@ -95,7 +95,7 @@ run_test("is_topic_editable", ({override}) => {
     };
     override(realm, "realm_allow_message_editing", true);
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
-    override(current_user, "is_admin", true);
+    override(current_user, "is_moderator", true);
 
     assert.equal(message_edit.is_topic_editable(message), false);
 
@@ -112,7 +112,7 @@ run_test("is_topic_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    override(current_user, "is_admin", false);
+    override(current_user, "is_moderator", false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "translated: (no topic)";
@@ -149,7 +149,7 @@ run_test("is_stream_editable", ({override}) => {
     };
     override(realm, "realm_allow_message_editing", true);
     override(settings_data, "user_can_move_messages_between_streams", () => true);
-    override(current_user, "is_admin", true);
+    override(current_user, "is_moderator", true);
 
     assert.equal(message_edit.is_stream_editable(message), false);
 
@@ -166,7 +166,7 @@ run_test("is_stream_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_between_streams", () => false);
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    override(current_user, "is_admin", false);
+    override(current_user, "is_moderator", false);
     assert.equal(message_edit.is_stream_editable(message), false);
 
     override(realm, "realm_move_messages_between_streams_limit_seconds", 259200);

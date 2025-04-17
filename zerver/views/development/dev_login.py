@@ -58,10 +58,8 @@ def add_dev_login_context(realm: Realm | None, context: dict[str, Any]) -> None:
     context["direct_owners"] = sort([u for u in users if u.is_realm_owner])
     context["direct_admins"] = sort([u for u in users if u.is_realm_admin and not u.is_realm_owner])
     context["guest_users"] = sort([u for u in users if u.is_guest])
-    context["direct_moderators"] = sort([u for u in users if u.is_moderator])
-    context["direct_users"] = sort(
-        [u for u in users if not (u.is_realm_admin or u.is_guest or u.is_moderator)]
-    )
+    context["direct_moderators"] = sort([u for u in users if u.role == UserProfile.ROLE_MODERATOR])
+    context["direct_users"] = sort([u for u in users if not (u.is_guest or u.is_moderator)])
 
 
 @csrf_exempt
