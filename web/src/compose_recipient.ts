@@ -16,7 +16,7 @@ import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import type {DropdownWidget, Option} from "./dropdown_widget.ts";
+import type {Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
@@ -26,8 +26,6 @@ import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 type MessageType = "stream" | "private";
-
-let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 function composing_to_current_topic_narrow(): boolean {
     return (
@@ -243,7 +241,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     compose_state.set_selected_recipient_id(recipient_id);
     compose_state.set_recipient_edited_manually(true);
     on_compose_select_recipient_update();
-    compose_select_recipient_dropdown_widget.item_clicked = true;
+    compose_state.set_is_compose_select_recipient_item_clicked(true);
     dropdown.hide();
     event.preventDefault();
     event.stopPropagation();
@@ -276,10 +274,14 @@ function focus_compose_recipient(): void {
 
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
-    if (!compose_select_recipient_dropdown_widget.item_clicked) {
+    if (!compose_state.is_compose_select_recipient_item_clicked()) {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
         return;
+    }
+    if (compose_state.is_compose_select_recipient_item_clicked()) {
+        compose_state.set_is_processing_forward_message(false);
+        compose_validate.warn_if_topic_resolved(false);
     }
     if (compose_state.get_message_type() === "stream") {
         // Always move focus to the topic input even if it's not empty,
@@ -293,7 +295,7 @@ function on_hidden_callback(): void {
             $("textarea#compose-textarea").trigger("focus");
         }
     }
-    compose_select_recipient_dropdown_widget.item_clicked = false;
+    compose_state.set_is_compose_select_recipient_item_clicked(false);
 }
 
 export function handle_middle_pane_transition(): void {
@@ -303,7 +305,7 @@ export function handle_middle_pane_transition(): void {
 }
 
 export function initialize(): void {
-    compose_select_recipient_dropdown_widget = new dropdown_widget.DropdownWidget({
+    const compose_select_recipient_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "compose_select_recipient",
         get_options: get_options_for_recipient_widget,
         item_click_callback,
@@ -318,7 +320,10 @@ export function initialize(): void {
             offset: [-10, 5],
         },
     });
-    compose_select_recipient_dropdown_widget.setup();
+    compose_state.set_compose_select_recipient_dropdown_widget(
+        compose_select_recipient_dropdown_widget,
+    );
+    compose_state.get_compose_select_recipient_dropdown_widget().setup();
 
     // `input` isn't relevant for streams since it registers as a change only
     // when an item in the dropdown is selected.
