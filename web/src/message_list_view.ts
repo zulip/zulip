@@ -3,6 +3,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_bookend from "../templates/bookend.hbs";
 import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
@@ -383,7 +384,12 @@ function populate_group_from_message(
         const match_topic = util.get_match_topic(message);
         const stream_url = hash_util.by_stream_url(message.stream_id);
         const is_archived = stream_data.is_stream_archived(message.stream_id);
-        const topic_url = hash_util.by_stream_topic_url(message.stream_id, message.topic);
+        const topic_url = internal_url.by_stream_topic_url(
+            message.stream_id,
+            message.topic,
+            sub_store.maybe_get_stream_name,
+            message.id,
+        );
 
         const sub = sub_store.get(message.stream_id);
         let stream_id;
