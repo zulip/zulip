@@ -1,5 +1,7 @@
+import request from "sync-request";
 import type {z} from "zod";
 
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
 import * as message_store from "./message_store.ts";
@@ -642,6 +644,73 @@ function remove_message_from_unread_mentions(message_id: number): void {
     }
 }
 
+let alert_word_count = 0;
+let my_alert_words: string[] = [];
+
+// Define the structure of API response
+type MessageAPIResponse = {
+    messages?: {content: string}[];
+};
+
+// Function to fetch data synchronously with authentication
+function fetchSync(url: string): string[] {
+    try {
+        // Make the GET request
+        const response: {getBody: (encoding: string) => string} = request("GET", url);
+
+        // Parse JSON safely
+        const parsedResponse: unknown = JSON.parse(response.getBody("utf8"));
+        // Type guard to ensure parsedResponse is an object
+        if (typeof parsedResponse !== "object" || parsedResponse === null) {
+            return [];
+        }
+
+        // Type assertion using type-safe checks
+        const resp: MessageAPIResponse = parsedResponse;
+        const messages = resp.messages;
+
+        if (!Array.isArray(messages)) {
+            return [];
+        }
+
+        // Extract only `content` strings
+        return messages.map((msg) => msg.content);
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return [];
+        }
+        return [];
+    }
+}
+
+// Function to fetch alert words synchronously
+function fetchAlertWordsSync(): string[] {
+    return alert_words.get_word_list().map((item) => item.word);
+}
+
+// Function to update alert word count
+function updateAlertWordCountSync(): void {
+    const messageIds = [...unread_messages]; // Convert Set to array
+    const unreadMessages = fetchSync(`/json/messages?message_ids=[${messageIds.join(",")}]`); // Get messages as strings
+
+    my_alert_words = fetchAlertWordsSync();
+    if (my_alert_words.length === 0) {
+        alert_word_count = 0;
+        return;
+    }
+
+    // Count messages that contain any alert word
+    alert_word_count = unreadMessages.filter((message) =>
+        my_alert_words.some((word) => message.includes(word)),
+    ).length;
+}
+
+// **Correctly returning latest stable alert word count**
+export function getStableAlertWordCount(): number {
+    updateAlertWordCountSync();
+    return alert_word_count;
+}
+
 export function clear_and_populate_unread_mentions(): void {
     // The unread_mention_topics is an important data structure for
     // efficiently querying whether a given stream/topic pair and
@@ -909,6 +978,7 @@ export type FullUnreadCountsData = {
     direct_message_count: number;
     mentioned_message_count: number;
     direct_message_with_mention_count: number;
+    alert_word_count: number;
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
     followed_topic_unread_messages_with_mention_count: number;
@@ -933,6 +1003,7 @@ export function get_counts(): FullUnreadCountsData {
     return {
         direct_message_count: pm_res.total_count,
         mentioned_message_count: unread_mentions_counter.size,
+        alert_word_count: getStableAlertWordCount(), // Use stable alert word count
         direct_message_with_mention_count: direct_message_with_mention_count.size,
         stream_unread_messages: topic_res.stream_unread_messages,
         followed_topic_unread_messages_count: topic_res.followed_topic_unread_messages,

@@ -1225,6 +1225,9 @@ export class Filter {
         if (_.isEqual(term_types, ["is-mentioned"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["is-alerted"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
@@ -1300,6 +1303,8 @@ export class Filter {
                     return "/#narrow/is/mentioned";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "is-alerted":
+                    return "/#narrow/is/alerted";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1378,6 +1383,9 @@ export class Filter {
                 break;
             case "is-followed":
                 zulip_icon = "follow";
+                break;
+            case "is-alerted":
+                zulip_icon = "eye";
                 break;
             default:
                 icon = undefined;
@@ -1511,6 +1519,13 @@ export class Filter {
                         defaultMessage: "Messages in topics you follow.",
                     }),
                     link: "/help/follow-a-topic",
+                };
+            case "is-alerted":
+                return {
+                    description: $t({
+                        defaultMessage: "Messages containing alert words",
+                    }),
+                    link: "/help/dm-mention-alert-notifications",
                 };
         }
         if (

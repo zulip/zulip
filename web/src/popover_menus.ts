@@ -20,6 +20,7 @@ type PopoverName =
     | "left_sidebar_inbox_popover"
     | "left_sidebar_all_messages_popover"
     | "left_sidebar_recent_view_popover"
+    | "left_sidebar_alert_words_popover"
     | "top_left_sidebar"
     | "message_actions"
     | "stream_card_popover"
@@ -41,6 +42,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     left_sidebar_inbox_popover: null,
     left_sidebar_all_messages_popover: null,
     left_sidebar_recent_view_popover: null,
+    left_sidebar_alert_words_popover: null,
     top_left_sidebar: null,
     message_actions: null,
     stream_card_popover: null,
@@ -192,14 +194,14 @@ export const default_popover_props: Partial<tippy.Props> = {
     interactive: true,
     hideOnClick: true,
     /* The light-border TippyJS theme is a bit of a misnomer; it
-       is a popover styling similar to Bootstrap.  We've also customized
-       its CSS to support Zulip's dark theme. */
+          is a popover styling similar to Bootstrap.  We've also customized
+          its CSS to support Zulip's dark theme. */
     theme: "light-border",
     // The maxWidth has been set to "none" to avoid the default value of 300px.
     maxWidth: "none",
     touch: true,
     /* Don't use allow-HTML here since it is unsafe. Instead, use `parse_html`
-       to generate the required html */
+          to generate the required html */
     popperOptions: {
         modifiers: [
             {
