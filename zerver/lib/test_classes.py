@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import os
 import re
@@ -10,6 +11,8 @@ from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
 
+import aioapns
+import firebase_admin.messaging as firebase_messaging
 import lxml.html
 import orjson
 import responses
@@ -34,6 +37,7 @@ from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
+from firebase_admin import exceptions as firebase_exceptions
 from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
 from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
@@ -53,6 +57,7 @@ from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.push_notifications import APNsContext, hex_to_b64
 from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.response import MutableJsonResponse
 from zerver.lib.sessions import get_session_dict_user
@@ -103,6 +108,7 @@ from zerver.models import (
     UserProfile,
     UserStatus,
 )
+from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.streams import get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
@@ -110,7 +116,7 @@ from zerver.openapi.openapi import validate_test_request, validate_test_response
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
+    from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, get_remote_server_by_uuid
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -2578,3 +2584,128 @@ class BouncerTestCase(ZulipTestCase):
         token_kind = PushDeviceToken.FCM
 
         return {"user_id": user_id, "token": token, "token_kind": token_kind}
+
+
+class PushNotificationTestCase(BouncerTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_profile = self.example_user("hamlet")
+        self.sending_client = get_client("test")
+        self.sender = self.example_user("hamlet")
+        self.personal_recipient_user = self.example_user("othello")
+
+    def get_message(self, type: int, type_id: int, realm_id: int) -> Message:
+        recipient, _ = Recipient.objects.get_or_create(
+            type_id=type_id,
+            type=type,
+        )
+
+        message = Message(
+            sender=self.sender,
+            recipient=recipient,
+            realm_id=realm_id,
+            content="This is test content",
+            rendered_content="This is test content",
+            date_sent=timezone_now(),
+            sending_client=self.sending_client,
+        )
+        message.set_topic_name("Test topic")
+        message.save()
+
+        return message
+
+    @contextmanager
+    def mock_apns(self) -> Iterator[tuple[APNsContext, mock.AsyncMock]]:
+        apns = mock.Mock(spec=aioapns.APNs)
+        apns.send_notification = mock.AsyncMock()
+        apns_context = APNsContext(
+            apns=apns,
+            loop=asyncio.new_event_loop(),
+        )
+        try:
+            with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
+                mock_get.return_value = apns_context
+                yield apns_context, apns.send_notification
+        finally:
+            apns_context.loop.close()
+
+    def setup_apns_tokens(self) -> None:
+        self.tokens = [("aaaa", "org.zulip.Zulip"), ("bbbb", "com.zulip.flutter")]
+        for token, appid in self.tokens:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.APNS,
+                token=hex_to_b64(token),
+                user=self.user_profile,
+                ios_app_id=appid,
+            )
+
+        self.remote_tokens = [
+            ("cccc", "dddd", "org.zulip.Zulip"),
+            ("eeee", "ffff", "com.zulip.flutter"),
+        ]
+        for id_token, uuid_token, appid in self.remote_tokens:
+            # We want to set up both types of RemotePushDeviceToken here:
+            # the legacy one with user_id and the new with user_uuid.
+            # This allows tests to work with either, without needing to
+            # do their own setup.
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                token=hex_to_b64(id_token),
+                ios_app_id=appid,
+                user_id=self.user_profile.id,
+                server=self.server,
+            )
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                token=hex_to_b64(uuid_token),
+                ios_app_id=appid,
+                user_uuid=self.user_profile.uuid,
+                server=self.server,
+            )
+
+    @contextmanager
+    def mock_fcm(self) -> Iterator[tuple[mock.MagicMock, mock.MagicMock]]:
+        with (
+            mock.patch("zerver.lib.push_notifications.fcm_app") as mock_fcm_app,
+            mock.patch("zerver.lib.push_notifications.firebase_messaging") as mock_fcm_messaging,
+        ):
+            yield mock_fcm_app, mock_fcm_messaging
+
+    def setup_fcm_tokens(self) -> None:
+        self.fcm_tokens = ["1111", "2222"]
+        for token in self.fcm_tokens:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.FCM,
+                token=hex_to_b64(token),
+                user=self.user_profile,
+                ios_app_id=None,
+            )
+
+        self.remote_fcm_tokens = [("dddd", "eeee")]
+        for id_token, uuid_token in self.remote_fcm_tokens:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                token=hex_to_b64(id_token),
+                user_id=self.user_profile.id,
+                server=self.server,
+            )
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                token=hex_to_b64(uuid_token),
+                user_uuid=self.user_profile.uuid,
+                server=self.server,
+            )
+
+    def make_fcm_success_response(self, tokens: list[str]) -> firebase_messaging.BatchResponse:
+        responses = [
+            firebase_messaging.SendResponse(exception=None, resp=dict(name=str(idx)))
+            for idx, _ in enumerate(tokens)
+        ]
+        return firebase_messaging.BatchResponse(responses)
+
+    def make_fcm_error_response(
+        self, token: str, exception: firebase_exceptions.FirebaseError
+    ) -> firebase_messaging.BatchResponse:
+        error_response = firebase_messaging.SendResponse(exception=exception, resp=None)
+        return firebase_messaging.BatchResponse([error_response])
