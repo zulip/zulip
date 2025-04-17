@@ -1,9 +1,12 @@
+import Handlebars from "handlebars";
 import $ from "jquery";
 
 import render_add_alert_word from "../templates/settings/add_alert_word.hbs";
 import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.hbs";
 
 import * as alert_words from "./alert_words.ts";
+import * as banners from "./banners.ts";
+import type {Banner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -39,16 +42,34 @@ export function rewire_rerender_alert_words_ui(value: typeof rerender_alert_word
     rerender_alert_words_ui = value;
 }
 
-function update_alert_word_status(status_text: string, is_error: boolean): void {
-    const $alert_word_status = $("#alert_word_status");
+const alert_word_status_banner = (alert_word: string, is_error: boolean): Banner => {
+    let label: Banner["label"];
+    let intent: Banner["intent"];
     if (is_error) {
-        $alert_word_status.removeClass("alert-success").addClass("alert-danger");
+        label = new Handlebars.SafeString(
+            $t_html(
+                {defaultMessage: "Error removing <z-alert-word></z-alert-word> alert word!"},
+                {"z-alert-word": () => `<b>${alert_word}</b>`},
+            ),
+        );
+        intent = "danger";
     } else {
-        $alert_word_status.removeClass("alert-danger").addClass("alert-success");
+        label = new Handlebars.SafeString(
+            $t_html(
+                {defaultMessage: "Alert word <z-alert-word></z-alert-word> removed successfully!"},
+                {"z-alert-word": () => `<b>${alert_word}</b>`},
+            ),
+        );
+        intent = "success";
     }
-    $alert_word_status.find(".alert_word_status_text").text(status_text);
-    $alert_word_status.show();
-}
+    return {
+        intent,
+        label,
+        buttons: [],
+        close_button: true,
+        custom_classes: "alert-word-status-banner",
+    };
+};
 
 function add_alert_word(): void {
     const alert_word = $<HTMLInputElement>("input#add-alert-word-name").val()!.trim();
@@ -74,16 +95,10 @@ function remove_alert_word(alert_word: string): void {
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
-            update_alert_word_status(
-                $t(
-                    {defaultMessage: `Alert word "{alert_word}" removed successfully!`},
-                    {alert_word},
-                ),
-                false,
-            );
+            banners.open(alert_word_status_banner(alert_word, false), $("#alert_word_status"));
         },
         error() {
-            update_alert_word_status($t({defaultMessage: "Error removing alert word!"}), true);
+            banners.open(alert_word_status_banner(alert_word, true), $("#alert_word_status"));
         },
     });
 }
@@ -130,12 +145,6 @@ export function set_up_alert_words(): void {
     $("#alert-words-table").on("click", ".remove-alert-word", (event) => {
         const word = $(event.currentTarget).parents("tr").find(".value").text().trim();
         remove_alert_word(word);
-    });
-
-    $("#alert-word-settings").on("click", ".close-alert-word-status", (event) => {
-        event.preventDefault();
-        const $alert = $(event.currentTarget).parents(".alert");
-        $alert.hide();
     });
 }
 
