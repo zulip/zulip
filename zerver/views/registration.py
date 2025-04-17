@@ -13,12 +13,11 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.db.utils import IntegrityError
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
-from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
 
@@ -909,7 +908,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
     # with a few restrictions on their email address.
     if request.method == "POST":
         if settings.USING_CAPTCHA:
-            form: RealmCreationForm = CaptchaRealmCreationForm(request.POST)
+            form: RealmCreationForm = CaptchaRealmCreationForm(data=request.POST, request=request)
         else:
             form = RealmCreationForm(request.POST)
         if form.is_valid():
@@ -973,8 +972,6 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             )
             url = append_url_query_string(new_realm_send_confirm_url, query)
             return HttpResponseRedirect(url)
-        elif form.errors.get("captcha"):
-            return HttpResponseForbidden(_("<p>You have failed verification as human user.<p>"))
     else:
         default_language_code = get_browser_language_code(request)
         if default_language_code is None:
@@ -984,7 +981,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             "realm_default_language": default_language_code,
         }
         if settings.USING_CAPTCHA:
-            form = CaptchaRealmCreationForm(initial=initial_data)
+            form = CaptchaRealmCreationForm(request=request, initial=initial_data)
         else:
             form = RealmCreationForm(initial=initial_data)
 
