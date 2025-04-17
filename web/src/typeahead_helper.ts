@@ -709,6 +709,7 @@ export const sort_users_and_groups_options = ({
     groups,
     compare_options,
     target_group,
+    for_stream_subscribers = false,
 }: {
     users: UserPillData[];
     query: string;
@@ -717,13 +718,17 @@ export const sort_users_and_groups_options = ({
         option_a: UserPillData | UserGroupPillData,
         option_b: UserPillData | UserGroupPillData,
         target_group: UserGroup | undefined,
+        for_stream_subscribers?: boolean,
     ) => number;
     target_group: UserGroup | undefined;
+    for_stream_subscribers?: boolean;
 }): (UserPillData | UserGroupPillData)[] => {
     function sort_items(
         objs: (UserPillData | UserGroupPillData)[],
     ): (UserPillData | UserGroupPillData)[] {
-        objs.sort((option_a, option_b) => compare_options(option_a, option_b, target_group));
+        objs.sort((option_a, option_b) =>
+            compare_options(option_a, option_b, target_group, for_stream_subscribers),
+        );
         return objs;
     }
 
@@ -823,17 +828,23 @@ export function rewire_sort_group_setting_options(value: typeof sort_group_setti
 export function compare_stream_or_group_members_options(
     option_a: UserPillData | UserGroupPillData,
     option_b: UserPillData | UserGroupPillData,
+    _target_group?: UserGroup,
+    for_stream_subscribers?: boolean,
 ): number {
-    if (option_a.type === "user_group") {
-        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
-        if (user_group_a.name === "role:members") {
-            return -1;
+    if (for_stream_subscribers) {
+        // "role:members" group is shown at the top only for stream
+        // subscribers typeahead and not for group members typeahead.
+        if (option_a.type === "user_group") {
+            const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+            if (user_group_a.name === "role:members") {
+                return -1;
+            }
         }
-    }
-    if (option_b.type === "user_group") {
-        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
-        if (user_group_b.name === "role:members") {
-            return 1;
+        if (option_b.type === "user_group") {
+            const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+            if (user_group_b.name === "role:members") {
+                return 1;
+            }
         }
     }
 
@@ -889,10 +900,12 @@ export let sort_stream_or_group_members_options = ({
     users,
     query,
     groups,
+    for_stream_subscribers,
 }: {
     users: UserPillData[];
     query: string;
     groups: UserGroupPillData[];
+    for_stream_subscribers: boolean;
 }): (UserPillData | UserGroupPillData)[] =>
     sort_users_and_groups_options({
         users,
@@ -900,6 +913,7 @@ export let sort_stream_or_group_members_options = ({
         groups,
         compare_options: compare_stream_or_group_members_options,
         target_group: undefined,
+        for_stream_subscribers,
     });
 
 export function rewire_sort_stream_or_group_members_options(
