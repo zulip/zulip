@@ -1,0 +1,95 @@
+{
+  "timestamp": 1734246496661,
+  "webhookEvent": "comment_created",
+  "comment": {
+    "self": "https://harshmeena.atlassian.net/rest/api/2/issue/10011/comment/10036",
+    "id": "10036",
+    "author": {
+      "self": "https://harshmeena.atlassian.net/rest/api/2/user?accountId=6420c1740152b5f4f9f28a08",
+      "accountId": "6420c1740152b5f4f9f28a08",
+      "avatarUrls": {
+        "48x48": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png",
+        "24x24": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png",
+        "16x16": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png",
+        "32x32": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png"
+      },
+      "displayName": "Harsh Meena",
+      "active": true,
+      "timeZone": "Asia/Calcutta",
+      "accountType": "atlassian"
+    },
+    "body": "This should work ~ [~accountid:6420c1740152b5f4f9f28a08]",
+    "updateAuthor": {
+      "self": "https://harshmeena.atlassian.net/rest/api/2/user?accountId=6420c1740152b5f4f9f28a08",
+      "accountId": "6420c1740152b5f4f9f28a08",
+      "avatarUrls": {
+        "48x48": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png",
+        "24x24": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png",
+        "16x16": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png",
+        "32x32": "https://secure.gravatar.com/avatar/0e5de317a36e0d57b59acac30f64ad80?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHM-1.png"
+      },
+      "displayName": "Harsh Meena",
+      "active": true,
+      "timeZone": "Asia/Calcutta",
+      "accountType": "atlassian"
+    },
+    "created": "2024-12-15T12:38:16.661+0530",
+    "updated": "2024-12-15T12:38:16.661+0530",
+    "jsdPublic": true
+  },
+  "issue": {
+    "id": "10011",
+    "self": "https://harshmeena.atlassian.net/rest/api/2/10011",
+    "key": "CPG-12",
+    "fields": {
+      "summary": "Test for zulip.",
+      "issuetype": {
+        "self": "https://harshmeena.atlassian.net/rest/api/2/issuetype/10001",
+        "id": "10001",
+        "description": "A small, distinct piece of work.",
+        "iconUrl": "https://harshmeena.atlassian.net/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+        "name": "Task",
+        "subtask": false,
+        "avatarId": 10318,
+        "entityId": "a7a1956c-9ef0-481b-bc21-d6a24a46081b",
+        "hierarchyLevel": 0
+      },
+      "project": {
+        "self": "https://harshmeena.atlassian.net/rest/api/2/project/10000",
+        "id": "10000",
+        "key": "CPG",
+        "name": "zulip",
+        "projectTypeKey": "software",
+        "simplified": true,
+        "avatarUrls": {
+          "48x48": "https://harshmeena.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10404",
+          "24x24": "https://harshmeena.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10404?size=small",
+          "16x16": "https://harshmeena.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10404?size=xsmall",
+          "32x32": "https://harshmeena.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10404?size=medium"
+        }
+      },
+      "assignee": null,
+      "priority": {
+        "self": "https://harshmeena.atlassian.net/rest/api/2/priority/3",
+        "iconUrl": "https://harshmeena.atlassian.net/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "3"
+      },
+      "status": {
+        "self": "https://harshmeena.atlassian.net/rest/api/2/status/10000",
+        "description": "",
+        "iconUrl": "https://harshmeena.atlassian.net/",
+        "name": "To Do",
+        "id": "10000",
+        "statusCategory": {
+          "self": "https://harshmeena.atlassian.net/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "blue-gray",
+          "name": "To Do"
+        }
+      }
+    }
+  },
+  "eventType": "primaryAction"
+}
