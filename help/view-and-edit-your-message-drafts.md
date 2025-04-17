@@ -97,7 +97,7 @@ counter next to the **Drafts** button in the compose box shows how many there ar
 
 {!go-to-draft-messages.md!}
 
-1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the draft you
+1. Click the **delete** (<i class="zulip-icon zulip-icon-trash"></i>) icon on the draft you
    want to delete.
 
 !!! keyboard_tip ""
@@ -111,7 +111,7 @@ counter next to the **Drafts** button in the compose box shows how many there ar
 
 1. Click the **Drafts** button on the right side of the compose box.
 
-1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the draft you
+1. Click the **delete** (<i class="zulip-icon zulip-icon-trash"></i>) icon on the draft you
    want to delete.
 
 !!! keyboard_tip ""
@@ -133,7 +133,7 @@ counter next to the **Drafts** button in the compose box shows how many there ar
    the drafts view, or select the drafts you want to delete
    by toggling the checkboxes on the right.
 
-1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon in the
+1. Click the **delete** (<i class="zulip-icon zulip-icon-trash"></i>) icon in the
    upper right corner of the drafts view to delete all selected drafts.
 
 !!! keyboard_tip ""
@@ -150,7 +150,7 @@ counter next to the **Drafts** button in the compose box shows how many there ar
    the drafts view, or select the drafts you want to delete
    by toggling the checkboxes on the right.
 
-1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon in the
+1. Click the **delete** (<i class="zulip-icon zulip-icon-trash"></i>) icon in the
    upper right corner of the drafts view to delete all selected drafts.
 
 !!! keyboard_tip ""
