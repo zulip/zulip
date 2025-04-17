@@ -56,7 +56,6 @@ type TopicPopoverContext = {
     is_empty_string_topic: boolean;
     topic_unmuted: boolean;
     is_spectator: boolean;
-    is_moderator: boolean;
     is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
@@ -284,7 +283,6 @@ export function get_topic_popover_content_context({
         can_move_topic,
         can_rename_topic,
         can_resolve_topic,
-        is_moderator: current_user.is_moderator,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,
