@@ -77,10 +77,10 @@ class zulip::common {
     # https://github.com/tus/tusd/releases
     # Keep in sync with tools/setup/install-tusd
     'tusd' => {
-      'version' => '2.6.0',
+      'version' => '2.8.0',
       'sha256'  => {
-        'amd64'   => '8616b1985a7494da91b019972ad8f7be5a2238f802eed7d097917af20e6f8186',
-        'aarch64' => '474c46502c19fb633b9fa4e518e4dfcce9f445b119663757332a9485b525b599',
+        'amd64'   => 'e13c8adc9bed4c993a72f60140f688736058d2c3f4a18fb6e59ca26e829fb93b',
+        'aarch64' => '089eb6d144df7cc5e10ac611a18f407308aedb3f9024a78fa01cb60ba99005a9',
       },
     },
 

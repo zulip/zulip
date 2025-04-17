@@ -122,7 +122,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         self, stream: Stream, retention_period: int | None
     ) -> None:
         stream.message_retention_days = retention_period
-        stream.save()
+        stream.save(update_fields=["message_retention_days"])
 
     def _change_messages_date_sent(self, msgs_ids: list[int], date_sent: datetime) -> None:
         Message.objects.filter(id__in=msgs_ids).update(date_sent=date_sent)
@@ -1044,11 +1044,11 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
 
         archiving_blocked_zephyr_stream = self.make_stream("no archiving", realm=zephyr_realm)
         archiving_blocked_zephyr_stream.message_retention_days = -1
-        archiving_blocked_zephyr_stream.save()
+        archiving_blocked_zephyr_stream.save(update_fields=["message_retention_days"])
 
         archiving_enabled_zephyr_stream = self.make_stream("with archiving", realm=zephyr_realm)
         archiving_enabled_zephyr_stream.message_retention_days = 1
-        archiving_enabled_zephyr_stream.save()
+        archiving_enabled_zephyr_stream.save(update_fields=["message_retention_days"])
 
         no_archiving_realm = do_create_realm(string_id="no_archiving", name="no_archiving")
         do_set_realm_property(no_archiving_realm, "invite_required", False, acting_user=None)

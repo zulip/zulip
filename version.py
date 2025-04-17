@@ -14,7 +14,7 @@ ZULIP_VERSION = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "10.0"
-LATEST_RELEASE_VERSION = "10.1"
+LATEST_RELEASE_VERSION = "10.2"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/zulip-server-10-0"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 378
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (325, 0)  # bumped 2025-04-09 to upgrade JavaScript dependencies
+PROVISION_VERSION = (325, 1)  # bumped 2025-04-16 to add hast dependencies to help-beta

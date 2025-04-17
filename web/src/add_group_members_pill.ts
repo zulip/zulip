@@ -83,7 +83,8 @@ export function create({
     }
 
     function get_user_groups(): UserGroup[] {
-        const potential_groups = get_potential_groups();
+        let potential_groups = get_potential_groups();
+        potential_groups = potential_groups.filter((item) => item.name !== "role:nobody");
         return user_group_pill.filter_taken_groups(potential_groups, pill_widget);
     }
 
@@ -122,7 +123,8 @@ export function create_without_add_button({
     }
 
     function get_user_groups(): UserGroup[] {
-        const potential_subgroups = user_group_create_members_data.get_potential_subgroups();
+        let potential_subgroups = user_group_create_members_data.get_potential_subgroups();
+        potential_subgroups = potential_subgroups.filter((item) => item.name !== "role:nobody");
         return user_group_pill.filter_taken_groups(potential_subgroups, pill_widget);
     }
 

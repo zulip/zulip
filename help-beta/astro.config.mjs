@@ -304,7 +304,6 @@ export default defineConfig({
                         "restrict-wildcard-mentions",
                         "restrict-moving-messages",
                         "restrict-message-editing-and-deletion",
-                        "disable-message-edit-history",
                         "image-video-and-website-previews",
                         "hide-message-content-in-emails",
                         "message-retention-policy",

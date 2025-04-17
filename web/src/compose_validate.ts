@@ -9,6 +9,7 @@ import render_guest_in_dm_recipient_warning from "../templates/compose_banner/gu
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
+import render_topic_moved_banner from "../templates/compose_banner/topic_moved_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
@@ -17,6 +18,7 @@ import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
@@ -451,6 +453,63 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
         }
     } else {
         clear_topic_resolved_warning();
+    }
+}
+
+export function clear_topic_moved_info(): void {
+    compose_state.set_recipient_viewed_topic_moved_banner(false);
+    $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_is_moved)}`).remove();
+}
+
+export function inform_if_topic_is_moved(orig_topic: string, old_stream_id: number): void {
+    const stream_id = compose_state.stream_id();
+    if (stream_id === undefined) {
+        return;
+    }
+    const message_content = compose_state.message_content();
+    const sub = stream_data.get_sub_by_id(stream_id);
+    const topic_name = compose_state.topic();
+    if (sub && message_content !== "") {
+        const old_stream = stream_data.get_sub_by_id(old_stream_id);
+        if (!old_stream) {
+            return;
+        }
+
+        let is_empty_string_topic;
+        if (orig_topic !== "") {
+            is_empty_string_topic = false;
+        } else {
+            is_empty_string_topic = true;
+        }
+        const narrow_url = hash_util.by_stream_topic_url(old_stream_id, orig_topic);
+        const context = {
+            banner_type: compose_banner.INFO,
+            stream_id: sub.stream_id,
+            topic_name,
+            narrow_url,
+            orig_topic,
+            old_stream: old_stream.name,
+            classname: compose_banner.CLASSNAMES.topic_is_moved,
+            show_colored_icon: false,
+            is_empty_string_topic,
+        };
+        const new_row_html = render_topic_moved_banner(context);
+
+        if (compose_state.has_recipient_viewed_topic_moved_banner()) {
+            // Replace any existing banner of this type to avoid showing
+            // two banners if a conversation is moved twice in quick succession.
+            clear_topic_moved_info();
+        }
+
+        const appended = compose_banner.append_compose_banner_to_banner_list(
+            $(new_row_html),
+            $("#compose_banners"),
+        );
+        if (appended) {
+            compose_state.set_recipient_viewed_topic_moved_banner(true);
+        }
+    } else {
+        clear_topic_moved_info();
     }
 }
 

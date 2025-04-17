@@ -90,24 +90,24 @@ class StreamDict(TypedDict, total=False):
     can_subscribe_group: UserGroup | None
 
 
-def get_stream_permission_policy_name(
+def get_stream_permission_policy_key(
     *,
     invite_only: bool | None = None,
     history_public_to_subscribers: bool | None = None,
     is_web_public: bool | None = None,
 ) -> str:
-    policy_name = None
-    for permission_dict in Stream.PERMISSION_POLICIES.values():
+    policy_key = None
+    for permission_key, permission_dict in Stream.PERMISSION_POLICIES.items():
         if (
             permission_dict["invite_only"] == invite_only
             and permission_dict["history_public_to_subscribers"] == history_public_to_subscribers
             and permission_dict["is_web_public"] == is_web_public
         ):
-            policy_name = permission_dict["policy_name"]
+            policy_key = permission_key
             break
 
-    assert policy_name is not None
-    return policy_name
+    assert policy_key is not None
+    return policy_key
 
 
 def get_default_value_for_history_public_to_subscribers(
@@ -471,7 +471,7 @@ def check_stream_access_based_on_can_send_message_group(
             raise JsonableError(_("You do not have permission to post in this channel."))
 
     if not user_has_permission_for_group_setting(
-        stream.can_send_message_group,
+        stream.can_send_message_group_id,
         sender,
         Stream.stream_permission_group_settings["can_send_message_group"],
         direct_member_only=False,
@@ -870,11 +870,6 @@ def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     return Stream.objects.filter(
         realm=realm,
         is_web_public=True,
-        # In theory, nothing conflicts with allowing web-public access
-        # to deactivated streams.  However, we should offer a way to
-        # review archived streams and adjust their settings before
-        # allowing that configuration to exist.
-        deactivated=False,
         # In theory, is_web_public=True implies invite_only=False and
         # history_public_to_subscribers=True, but it's safer to include
         # these in the query.
@@ -1170,10 +1165,10 @@ def get_streams_to_which_user_cannot_add_subscribers(
 def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile) -> bool:
     # IMPORTANT: This function expects its callers to have already
     # checked that the user can access the provided channel.
-    group_allowed_to_administer_channel = channel.can_administer_channel_group
-    assert group_allowed_to_administer_channel is not None
+    group_id_allowed_to_administer_channel = channel.can_administer_channel_group_id
+    assert group_id_allowed_to_administer_channel is not None
     return user_has_permission_for_group_setting(
-        group_allowed_to_administer_channel,
+        group_id_allowed_to_administer_channel,
         user_profile,
         Stream.stream_permission_group_settings["can_administer_channel_group"],
     )

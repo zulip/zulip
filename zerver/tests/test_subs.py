@@ -894,6 +894,54 @@ class TestCreateStreams(ZulipTestCase):
         created_stream = new_streams[0]
         self.assertEqual(created_stream.creator_id, hamlet.id)
 
+    def test_channel_create_message_exists_for_all_policy_types(self) -> None:
+        """
+        Create a channel for each policy type to ensure they all have a "new channel" message.
+        """
+        # this is to check if the appropriate channel name is present in the "new channel" message
+        policy_key_map: dict[str, str] = {
+            "web_public": "**Web-public**",
+            "public": "**Public**",
+            "private_shared_history": "**Private, shared history**",
+            "private_protected_history": "**Private, protected history**",
+        }
+        for policy_key, policy_dict in Stream.PERMISSION_POLICIES.items():
+            channel_creator = self.example_user("desdemona")
+            subdomain = "zulip"
+
+            if policy_key == "public_protected_history":
+                # This is a special channel policy only available in Zephyr realms.
+                channel_creator = self.mit_user("starnine")
+                subdomain = "zephyr"
+
+            self.login_user(channel_creator)
+            new_channel_name = f"New {policy_key} channel"
+            result = self.api_post(
+                channel_creator,
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([{"name": new_channel_name}]).decode(),
+                    "is_web_public": orjson.dumps(policy_dict["is_web_public"]).decode(),
+                    "invite_only": orjson.dumps(policy_dict["invite_only"]).decode(),
+                    "history_public_to_subscribers": orjson.dumps(
+                        policy_dict["history_public_to_subscribers"]
+                    ).decode(),
+                },
+                subdomain=subdomain,
+            )
+            self.assert_json_success(result)
+            new_channel = get_stream(new_channel_name, channel_creator.realm)
+            channel_events_messages = get_topic_messages(
+                channel_creator, new_channel, "channel events"
+            )
+            if policy_key == "public_protected_history":
+                # These do not get channel creation notification.
+                self.assert_length(channel_events_messages, 0)
+                continue
+
+            self.assert_length(channel_events_messages, 1)
+            self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
+
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
@@ -3436,7 +3484,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams except your own bots.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=7,
+            query_count=8,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_subbed=True,
@@ -3451,7 +3499,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=13,
+            query_count=14,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3478,8 +3526,8 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=20,
-            cache_count=8,
+            query_count=21,
+            cache_count=13,
             target_users=target_users,
             is_realm_admin=True,
             is_subbed=True,
@@ -3496,7 +3544,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3513,7 +3561,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -3527,7 +3575,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=7,
+            query_count=8,
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
@@ -3539,7 +3587,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=13,
+            query_count=14,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3553,7 +3601,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=16,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3567,7 +3615,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_remove_unsubbed_user_along_with_subbed(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=12,
+            query_count=13,
             target_users=[self.example_user("cordelia"), self.example_user("iago")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3584,7 +3632,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=6,
+            query_count=7,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -3600,7 +3648,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=13,
+            query_count=14,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
@@ -6081,7 +6129,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(42),
+            self.assert_database_query_count(43),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -6107,7 +6155,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now add ourselves
         with (
             self.capture_send_event_calls(expected_num_events=2) as events,
-            self.assert_database_query_count(18),
+            self.assert_database_query_count(19),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -6453,8 +6501,8 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 5 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(25),
-            self.assert_memcached_count(4),
+            self.assert_database_query_count(26),
+            self.assert_memcached_count(5),
             self.capture_send_event_calls(expected_num_events=9) as events,
         ):
             bulk_remove_subscriptions(
@@ -6590,12 +6638,12 @@ class SubscriptionAPITest(ZulipTestCase):
 
         for stream in streams:
             stream.is_in_zephyr_realm = True
-            stream.save()
+            stream.save(update_fields=["is_in_zephyr_realm"])
 
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 17):
+        with self.assert_database_query_count(num_streams + 18):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.subscribe_via_post(
                     mit_user,
@@ -6629,7 +6677,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = get_realm("zephyr")
         stream = self.make_stream("stream_1", realm=realm)
         stream.is_in_zephyr_realm = True
-        stream.save()
+        stream.save(update_fields=["is_in_zephyr_realm"])
 
         result = self.subscribe_via_post(
             starnine,
@@ -6676,8 +6724,8 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with (
-            self.assert_database_query_count(21),
-            self.assert_memcached_count(3),
+            self.assert_database_query_count(22),
+            self.assert_memcached_count(11),
             mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
         ):
             self.subscribe_via_post(
@@ -7054,7 +7102,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(42):
+        with self.assert_database_query_count(43):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[0]],
@@ -7062,7 +7110,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(50):
+        with self.assert_database_query_count(51):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
@@ -7074,7 +7122,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(54):
+        with self.assert_database_query_count(55):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[2]],
@@ -7859,7 +7907,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(50):
+        with self.assert_database_query_count(51):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,
@@ -7873,7 +7921,7 @@ class GetSubscribersTest(ZulipTestCase):
                 + f"""<li><a class="stream" data-stream-id="{stream.id}" href="/#narrow/channel/{stream.id}-{stream.name}">#{stream.name}</a></li>\n"""
             )
         msg = f"""
-            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the following channels:</p>
+            <p><span class="user-mention silent" data-user-id="{hamlet.id}">King Hamlet</span> subscribed you to the following channels:</p>
             <ul>
             {rendered_stream_list}
             </ul>
@@ -7901,7 +7949,7 @@ class GetSubscribersTest(ZulipTestCase):
 
         stream_invite_only_1 = get_stream("stream_invite_only_1", realm)
         msg = f"""
-            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the channel <a class="stream" data-stream-id="{stream_invite_only_1.id}" href="/#narrow/channel/{stream_invite_only_1.id}-{stream_invite_only_1.name}">#{stream_invite_only_1.name}</a>.</p>
+            <p><span class="user-mention silent" data-user-id="{hamlet.id}">King Hamlet</span> subscribed you to <a class="stream" data-stream-id="{stream_invite_only_1.id}" href="/#narrow/channel/{stream_invite_only_1.id}-{stream_invite_only_1.name}">#{stream_invite_only_1.name}</a>.</p>
             """
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)

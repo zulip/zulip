@@ -1148,10 +1148,14 @@ li.top_left_scheduled_messages {
 
 .left-sidebar-filter-row {
     display: grid;
+    /* The final 2px column keeps the filter box from going
+       to the edge of the highlighted channel box, and also
+       matches the right edge to the right edge of the vdots
+       on the channel row. (The vdots take a 2px right margin.) */
     grid-template-columns:
         [filter-box-start] minmax(0, 1fr)
         [clear-button-start] var(--line-height-sidebar-row-prominent)
-        [clear-button-end filter-box-end];
+        [clear-button-end filter-box-end] 2px;
     grid-template-rows: [filter-box-start clear-button-start] auto [clear-button-end filter-box-end];
     align-content: center;
 
@@ -1465,13 +1469,13 @@ li.top_left_scheduled_messages {
     }
 }
 
-#streams_list ul.topic-list {
+ul.topic-list {
     line-height: var(--line-height-sidebar-row-prominent);
     list-style-type: none;
     font-weight: normal;
 }
 
-#streams_list ul.topic-list.topic-list-has-topics::before {
+ul.topic-list.topic-list-has-topics::before {
     content: " ";
     display: block;
     position: absolute;
@@ -1486,7 +1490,7 @@ li.top_left_scheduled_messages {
     pointer-events: none;
 }
 
-#streams_list ul.topic-list.topic-list-has-topics::after {
+ul.topic-list.topic-list-has-topics::after {
     content: " ";
     display: block;
     position: absolute;
@@ -1500,7 +1504,7 @@ li.top_left_scheduled_messages {
     pointer-events: none;
 }
 
-#streams_list ul.topic-list:has(.show-more-topics)::after {
+ul.topic-list:has(.show-more-topics)::after {
     /* When the show all topics control is displayed,
        extend the bottom bracket. */
     width: 18px;

@@ -2,12 +2,16 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const people = zrequire("people");
+
+mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 
 const user1 = {
     user_id: 10,

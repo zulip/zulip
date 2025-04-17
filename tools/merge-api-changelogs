@@ -10,7 +10,7 @@ from pathlib import Path
 def get_changelog_files_list() -> list[str]:
     dir_path = Path("api_docs/unmerged.d")
     if os.path.exists(dir_path):
-        return [os.path.basename(path) for path in glob.glob(f"{dir_path}/ZF-??????")]
+        return [os.path.basename(path) for path in glob.glob(f"{dir_path}/ZF-??????.md")]
 
     return []
 

@@ -36,7 +36,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
@@ -186,14 +186,14 @@ def add_service(
 
 def check_can_create_bot(user_profile: UserProfile, bot_type: int) -> None:
     if user_has_permission_for_group_setting(
-        user_profile.realm.can_create_bots_group,
+        user_profile.realm.can_create_bots_group_id,
         user_profile,
         Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_bots_group"],
     ):
         return
 
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and user_has_permission_for_group_setting(
-        user_profile.realm.can_create_write_only_bots_group,
+        user_profile.realm.can_create_write_only_bots_group_id,
         user_profile,
         Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_write_only_bots_group"],
     ):
@@ -670,12 +670,19 @@ def format_user_row(
     return result
 
 
+def all_users_accessible_by_everyone_in_realm(realm: Realm) -> bool:
+    system_groups_name_dict = get_realm_system_groups_name_dict(realm.id)
+    if system_groups_name_dict[realm.can_access_all_users_group_id] == SystemGroups.EVERYONE:
+        return True
+
+    return False
+
+
 def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
     if target_user.is_bot:
         return False
 
-    realm = target_user.realm
-    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
+    if all_users_accessible_by_everyone_in_realm(target_user.realm):
         return False
 
     return True
@@ -692,7 +699,7 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
 
     realm = acting_user.realm
     if user_has_permission_for_group_setting(
-        realm.can_access_all_users_group,
+        realm.can_access_all_users_group_id,
         acting_user,
         Realm.REALM_PERMISSION_GROUP_SETTINGS["can_access_all_users_group"],
     ):
@@ -1044,9 +1051,6 @@ def get_accessible_user_ids(
 def get_user_dicts_in_realm(
     realm: Realm, user_profile: UserProfile | None
 ) -> tuple[list[RawUserDict], list[APIUserDict]]:
-    group_allowed_to_access_all_users = realm.can_access_all_users_group
-    assert group_allowed_to_access_all_users is not None
-
     all_user_dicts = get_realm_user_dicts(realm.id)
     if check_user_can_access_all_users(user_profile):
         return (all_user_dicts, [])

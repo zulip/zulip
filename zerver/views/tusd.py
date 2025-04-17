@@ -26,7 +26,7 @@ from zerver.lib.upload import (
     sanitize_name,
     upload_backend,
 )
-from zerver.models import PreregistrationRealm, Realm, UserProfile
+from zerver.models import ArchivedAttachment, Attachment, PreregistrationRealm, Realm, UserProfile
 
 
 # See https://tus.github.io/tusd/advanced-topics/hooks/ for the spec
@@ -219,6 +219,22 @@ def handle_upload_pre_finish_hook(
     )
 
 
+def handle_upload_pre_terminate_hook(
+    request: HttpRequest, user_profile: UserProfile, data: TusUpload
+) -> HttpResponse:
+    path_id = data.id.partition("+")[0]
+
+    if (
+        Attachment.objects.filter(path_id=path_id).exists()
+        or ArchivedAttachment.objects.filter(path_id=path_id).exists()
+    ):
+        # Once we have it in our Attachments table (i.e. the
+        # pre-upload-finished hook has run), it is ours to manage and
+        # we no longer accept terminations.
+        return tusd_json_response({"RejectTermination": True})
+    return tusd_json_response({})
+
+
 def authenticate_user(request: HttpRequest) -> UserProfile | AnonymousUser:
     # This acts like the authenticated_rest_api_view wrapper, while
     # allowing fallback to session-based request.user
@@ -291,6 +307,8 @@ def handle_tusd_hook(
             return handle_upload_pre_create_hook(request, maybe_user, payload.event.upload)
         elif hook_name == "pre-finish":
             return handle_upload_pre_finish_hook(request, maybe_user, payload.event.upload)
+        elif hook_name == "pre-terminate":
+            return handle_upload_pre_terminate_hook(request, maybe_user, payload.event.upload)
         else:
             return HttpResponseNotFound()
 

@@ -15,6 +15,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib import utils
 from zerver.lib.message import messages_for_ids
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
@@ -335,12 +336,12 @@ class EditMessageTest(ZulipTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
-        # Verify deactivated streams are rejected.  This may change in the future.
+        # Verify success with deactivated streams.
         do_deactivate_stream(web_public_stream, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", 401
-        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
     def test_fetch_raw_message_stream_wrong_realm(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -2257,3 +2258,43 @@ class EditMessageTest(ZulipTestCase):
         result_content = orjson.loads(result.content)
         self.assertEqual(result_content["result"], "success")
         self.assert_length(result_content["detached_uploads"], 0)
+
+    def test_edit_message_race_condition(self) -> None:
+        # If two users try to edit the same message at the same time,
+        # one of them should get an error message, as the `prev_content`
+        # parameter passed to the PATCH call would be outdated and not
+        # match.
+
+        # If `prev_content` does not match the expected value, this means
+        # the edit request is stale and should be rejected. We simulate
+        # that here.
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Denmark",
+            topic_name="editing",
+            content="Init message",
+        )
+        init_msg = utils.sha256_hash("Init message")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "First user edit",
+                "prev_content_sha256": init_msg,
+            },
+        )
+        self.assert_json_success(result)
+        self.check_message(msg_id, topic_name="editing", content="First user edit")
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "Second user edit",
+                "prev_content_sha256": init_msg,
+            },
+        )
+        self.assert_json_error(
+            result,
+            "'prev_content_sha256' value does not match the expected value.",
+        )
+        self.check_message(msg_id, topic_name="editing", content="First user edit")

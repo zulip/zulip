@@ -193,12 +193,18 @@ def send_bot_payload_message(
         extra_args = {"data": data}
 
     elif not json_fixture and data:
-        # We overwrite any params in fixture with our params. stream name, for
-        # example, may be defined in the fixture.
         assert isinstance(data, str)
-        parsed_params = dict(parse_qsl(data))
-        parsed_params.update(params)
-        params = parsed_params
+
+        # fixtures with url parameters
+        if "&" in data:
+            # Overwrite the fixture params, in case of overlap.
+            parsed_params = dict(parse_qsl(data))
+            parsed_params.update(params)
+            params = parsed_params
+
+        # fixtures with plain/text payload
+        else:
+            extra_args = {"data": data}
 
     elif config.payload_as_query_param:
         params[config.payload_param_name] = orjson.dumps(data).decode()

@@ -1028,8 +1028,8 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(94),
-            self.assert_memcached_count(15),
+            self.assert_database_query_count(95),
+            self.assert_memcached_count(18),
             self.captureOnCommitCallbacks(execute=True),
         ):
             self.register(self.nonreg_email("test"), "test")
@@ -1466,6 +1466,21 @@ class RealmCreationTest(ZulipTestCase):
 
         with self.settings(OPEN_REALM_CREATION=False):
             # Create new realm with the email, but no creation key.
+            result = self.submit_realm_creation_form(
+                email, realm_subdomain="custom-test", realm_name="Zulip test"
+            )
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response("Organization creation link required", result)
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_realm_without_password_backend_enabled(self) -> None:
+        email = "user@example.com"
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.ZulipDummyBackend",
+            )
+        ):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
@@ -3146,6 +3161,39 @@ class UserSignUpTest(ZulipTestCase):
     def test_access_signup_page_in_root_domain_without_realm(self) -> None:
         result = self.client_get("/register", subdomain="", follow=True)
         self.assert_in_success_response(["Find your Zulip accounts"], result)
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.SAMLAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_cant_obtain_confirmation_email_when_email_backend_disabled(self) -> None:
+        """
+        When a realm disables EmailAuthBackend while keeping invite_required set to False,
+        users must not be allowed to generate a confirmation email to themselves by POSTing
+        it to the registration endpoints - as that would allow them to sign up and obtain
+        a logged in session in the realm without actually having to go through the
+        allowed authentication methods.
+        """
+        realm = get_realm("zulip")
+        self.assertEqual(realm.invite_required, False)
+
+        from django.core.mail import outbox
+
+        email = "newuser@zulip.com"
+        original_outbox_length = len(outbox)
+        result = self.client_post("/register/", {"email": email})
+        self.assert_not_in_success_response(["check your email"], result)
+        self.assert_in_success_response(["Sign up with"], result)
+
+        self.assertEqual(original_outbox_length, len(outbox))
+
+        result = self.client_post("/accounts/home/", {"email": email})
+        self.assert_not_in_success_response(["check your email"], result)
+        self.assert_in_success_response(["Sign up with"], result)
+
+        self.assertEqual(original_outbox_length, len(outbox))
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(

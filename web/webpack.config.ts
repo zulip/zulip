@@ -255,6 +255,8 @@ const config = (
                 "Access-Control-Allow-Origin": "*",
                 "Timing-Allow-Origin": "*",
             },
+            setupMiddlewares: (middlewares) =>
+                middlewares.filter((middleware) => middleware.name !== "cross-origin-header-check"),
         },
         infrastructureLogging: {
             level: "warn",

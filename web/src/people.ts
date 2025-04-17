@@ -1458,8 +1458,15 @@ export function add_active_user(person: User): void {
     non_active_user_dict.delete(person.user_id);
 }
 
-export const is_person_active = (user_id: number): boolean => {
+export const is_person_active = (
+    user_id: number,
+    allow_missing_user = !settings_data.user_can_access_all_other_users(),
+): boolean => {
     if (!people_by_user_id_dict.has(user_id)) {
+        if (allow_missing_user) {
+            // We consider all inaccessible users as active.
+            return true;
+        }
         blueslip.error("No user found", {user_id});
     }
 

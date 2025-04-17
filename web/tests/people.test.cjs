@@ -473,7 +473,7 @@ test_people("sort_but_pin_current_user_on_top without me", () => {
     assert.deepEqual(users, [maria, steven]);
 });
 
-test_people("check_active_non_active_users", () => {
+test_people("check_active_non_active_users", ({override}) => {
     people.add_active_user(bot_botson);
     people.add_active_user(isaac);
 
@@ -507,6 +507,10 @@ test_people("check_active_non_active_users", () => {
     assert.equal(active_users.length, 4);
     assert.equal(people.is_person_active(maria.user_id), true);
     assert.equal(people.is_person_active(linus.user_id), false);
+
+    // If user cannot access a user, that user will be treated as active.
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    assert.equal(people.is_person_active(99), true);
 });
 
 test_people("pm_lookup_key", () => {

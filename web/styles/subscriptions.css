@@ -175,18 +175,20 @@ h4.user_group_setting_subsection_title {
                 }
             }
 
-            & thead th {
-                &:first-of-type {
-                    border-top-left-radius: 4px;
-                }
-
-                &:last-of-type {
-                    border-top-right-radius: 4px;
-                }
-
+            & thead {
                 position: sticky;
                 top: 0;
                 z-index: 1;
+
+                th {
+                    &:first-of-type {
+                        border-top-left-radius: 4px;
+                    }
+
+                    &:last-of-type {
+                        border-top-right-radius: 4px;
+                    }
+                }
             }
 
             .hidden-subscriber-email {
@@ -338,6 +340,80 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+/* Subheader styles. These aren't in a separate subheader div yet,
+   so we add `.overlay-container` for now to apppease the linter in
+   differentiating from the main container styles below. */
+.two-pane-settings-container.overlay-container {
+    .list-toggler-container {
+        align-items: center;
+        padding: 0 8px;
+        border-bottom: 1px solid var(--color-border-modal-bar);
+        display: flex;
+        justify-content: space-between;
+        height: var(--settings-overlay-subheader-height);
+    }
+
+    .stream_sorter_toggle {
+        margin-left: auto;
+    }
+
+    #add_new_subscription {
+        height: var(--settings-overlay-header-button-height);
+    }
+
+    .display-type {
+        height: var(--settings-overlay-subheader-height);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+        border-bottom: 1px solid var(--color-border-modal-bar);
+
+        & a {
+            color: inherit;
+
+            &:hover {
+                color: inherit;
+                text-decoration: none;
+            }
+        }
+
+        &.preview::after {
+            content: "Preview";
+        }
+
+        &.preferences::after {
+            content: "Preferences";
+        }
+
+        .stream-info-title,
+        .user-group-info-title {
+            display: none;
+            font-size: 1.5em; /* 21px at 14px/em */
+            line-height: 1.25;
+            font-weight: 600;
+            overflow-wrap: break-word;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+
+            &.showing-info-title {
+                display: -webkit-box;
+            }
+
+            .large-icon {
+                display: inline-block;
+                margin-left: 5px;
+
+                .zulip-icon {
+                    font-size: 0.75em; /* 18px at 24px/em */
+                }
+            }
+        }
+    }
+}
+
 #subscription_overlay .two-pane-settings-container {
     container: subscriptions / inline-size;
 }
@@ -444,7 +520,6 @@ h4.user_group_setting_subsection_title {
         position: relative;
         display: inline-block;
         vertical-align: top;
-        width: 40%;
         height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
@@ -498,20 +573,8 @@ h4.user_group_setting_subsection_title {
     }
 
     .left {
+        width: 40%;
         border-right: 1px solid var(--color-border-modal-bar);
-
-        .list-toggler-container {
-            align-items: center;
-            padding: 0 8px;
-            border-bottom: 1px solid var(--color-border-modal-bar);
-            display: flex;
-            justify-content: space-between;
-            height: var(--settings-overlay-subheader-height);
-
-            #add_new_subscription {
-                height: var(--settings-overlay-header-button-height);
-            }
-        }
     }
 
     .right {
@@ -526,59 +589,6 @@ h4.user_group_setting_subsection_title {
 
         .main-view-banner.group_deactivated {
             margin-bottom: 10px;
-        }
-
-        .display-type {
-            height: var(--settings-overlay-subheader-height);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 600;
-            border-bottom: 1px solid var(--color-border-modal-bar);
-
-            & a {
-                color: inherit;
-
-                &:hover {
-                    color: inherit;
-                    text-decoration: none;
-                }
-            }
-
-            &.preview::after {
-                content: "Preview";
-            }
-
-            &.preferences::after {
-                content: "Preferences";
-            }
-
-            .stream-info-title,
-            .user-group-info-title {
-                display: none;
-                font-size: 1.5em; /* 21px at 14px/em */
-                line-height: 1.25;
-                font-weight: 600;
-                overflow-wrap: break-word;
-                line-clamp: 2;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                margin: 20px 10px 0;
-
-                &.showing-info-title {
-                    display: -webkit-box;
-                }
-
-                .large-icon {
-                    display: inline-block;
-                    margin-left: 5px;
-
-                    .zulip-icon {
-                        font-size: 0.75em; /* 18px at 24px/em */
-                    }
-                }
-            }
         }
     }
 
@@ -1430,8 +1440,7 @@ div.settings-radio-input-parent {
     }
 
     .two-pane-settings-overlay .left,
-    .two-pane-settings-overlay .right,
-    #settings_page .content-wrapper.right {
+    .two-pane-settings-overlay .right {
         position: absolute;
         display: block;
         margin: 0;
@@ -1441,14 +1450,33 @@ div.settings-radio-input-parent {
         border: none;
     }
 
-    .two-pane-settings-overlay .right,
-    #settings_page .content-wrapper.right {
+    .two-pane-settings-overlay .right {
         position: absolute;
         left: 101%;
 
         top: var(--settings-overlay-header-height);
         background-color: var(--color-background-modal);
         border-top: none;
+
+        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        z-index: 10;
+
+        &.show {
+            left: 0%;
+        }
+    }
+
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        display: block;
+        left: 101%;
+        margin: 0;
+        width: 100%;
+        height: calc(100% - var(--settings-overlay-header-height));
+
+        top: var(--settings-overlay-header-height);
+        background-color: var(--color-background-modal);
+        border: none;
 
         transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         z-index: 10;
