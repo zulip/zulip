@@ -911,7 +911,7 @@ strong {
 
 /* Make the action icon on the message row
    always visible while the popover is open */
-.has_actions_popover .actions_hover {
+.has_actions_popover .message_controls {
     visibility: visible !important;
     pointer-events: all !important;
     opacity: 1 !important;
