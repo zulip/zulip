@@ -9,14 +9,13 @@ is pushed to Heroku using the Zulip Heroku plugin!
 
 1. {!generate-webhook-url-basic.md!}
 
-1. In your project on Heroku, go to the **Resources** tab.
+1. Go to the Dashboard page for your app and to the dropdown menu below “More”.
 
-1. Add the **Deploy Hooks** add-on. Select the **HTTP Post Hook** plan,
-   and click **Provision**. Click on the **Deploy Hooks** add-on you
-   just added.
+1. Click on View Webhooks.
 
-1. Set **URL** to the URL generated above. Click **Save and Send Test**
-   to send a test message to your Zulip organization.
+1. Click on Create Webhook and set the Payload URL to the URL generated above.
+
+1. Select Event Types that you want to receive alerts for and click Add Webhook.
 
 {end_tabs}
 

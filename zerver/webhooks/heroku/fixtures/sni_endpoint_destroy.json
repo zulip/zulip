@@ -1,0 +1,42 @@
+{
+    "action": "destroy",
+    "actor": {
+        "email": "user-0007@example.com",
+        "id": "7230a411-034f-4af6-aed9-e89a931c7fa1"
+    },
+    "created_at": "2016-06-30T23:13:32Z",
+    "id": "5e36b4ce-5d82-4d09-b00f-da1c09ee5b72",
+    "data": {
+        "certificate_chain": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n",
+        "cname": null,
+        "created_at": "2016-06-30T23:13:32Z",
+        "id": "f7d3f525-b29c-4e83-9f08-bd0dafbc529b",
+        "name": "tokyo-0007",
+        "updated_at": "2016-06-30T23:13:32Z",
+        "app": {
+            "id": "803b4081-9fc0-4bdb-9a6b-3a87672fba39",
+            "name": "sample-app-0224"
+        }
+    },
+    "previous_data": {},
+    "published_at": null,
+    "resource": "sni-endpoint",
+    "sequence": null,
+    "updated_at": "2016-06-30T23:13:32Z",
+    "version": "application/vnd.heroku+json; version=3",
+    "webhook_metadata": {
+        "attempt": {
+            "id": "8a44f820-2354-489d-9a11-a793cbf49979"
+        },
+        "delivery": {
+            "id": "d244009a-670f-4340-88e9-789a4f9002d5"
+        },
+        "event": {
+            "id": "5e36b4ce-5d82-4d09-b00f-da1c09ee5b72",
+            "include": "api:sni-endpoint"
+        },
+        "webhook": {
+            "id": "b54e6a7e-d162-4bd7-ab42-1011582c19cc"
+        }
+    }
+}
