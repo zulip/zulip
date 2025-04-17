@@ -283,6 +283,11 @@ Source: https://lucide.dev/icons/plus
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
 
+Files: web/shared/icons/expand-both-diagonals.svg
+Source: https://lucide.dev/icons/expand
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
 Files: web/third/bootstrap/css/bootstrap.app.css
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0

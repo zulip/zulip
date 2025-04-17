@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as input_pill from "./input_pill.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as stream_pill from "./stream_pill.ts";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
@@ -24,6 +25,30 @@ function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     return group_user_ids;
 }
 
+function expand_group_pill($pill_elem: JQuery, pill_widget: CombinedPillContainer): void {
+    const group_id = Number.parseInt($pill_elem.attr("data-user-group-id")!, 10);
+    const group = user_groups.get_user_group_from_id(group_id);
+    const direct_subgroup_ids = group.direct_subgroup_ids;
+    const direct_member_ids = group.members;
+
+    const taken_group_ids = user_group_pill.get_group_ids(pill_widget);
+    const taken_user_ids = user_pill.get_user_ids(pill_widget);
+
+    for (const member_id of direct_member_ids) {
+        if (!taken_user_ids.includes(member_id)) {
+            const user = people.get_by_user_id(member_id);
+            user_pill.append_user(user, pill_widget, false);
+        }
+    }
+
+    for (const group_id of direct_subgroup_ids) {
+        if (!taken_group_ids.includes(group_id)) {
+            const subgroup = user_groups.get_user_group_from_id(group_id);
+            user_group_pill.append_user_group(subgroup, pill_widget, false, true);
+        }
+    }
+}
+
 export function create_item_from_text(
     text: string,
     current_items: CombinedPill[],
@@ -42,6 +67,8 @@ export function create_item_from_text(
     const group_item = user_group_pill.create_item_from_group_name(text, current_items);
     if (group_item) {
         const subgroup = user_groups.get_user_group_from_id(group_item.group_id);
+        group_item.show_expand_button =
+            subgroup.members.size > 0 || subgroup.direct_subgroup_ids.size > 0;
         const current_group_id = user_group_components.active_group_id;
         assert(current_group_id !== undefined);
         const current_group = user_groups.get_user_group_from_id(current_group_id);
@@ -87,6 +114,10 @@ export function create({
         potential_groups = potential_groups.filter((item) => item.name !== "role:nobody");
         return user_group_pill.filter_taken_groups(potential_groups, pill_widget);
     }
+
+    pill_widget.onPillExpand((pill) => {
+        expand_group_pill(pill, pill_widget);
+    });
 
     add_subscribers_pill.set_up_pill_typeahead({
         pill_widget,
@@ -134,6 +165,10 @@ export function create_without_add_button({
     });
     pill_widget.onPillRemove(() => {
         onPillRemoveAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
+    });
+
+    pill_widget.onPillExpand((pill) => {
+        expand_group_pill(pill, pill_widget);
     });
 
     add_subscribers_pill.set_up_pill_typeahead({

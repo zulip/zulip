@@ -70,7 +70,8 @@
             line-height: 1.5;
         }
 
-        .pill-close-button {
+        .pill-close-button,
+        .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */
             text-decoration: none;
             /* Let the close button's box stretch,
@@ -92,20 +93,22 @@
             opacity: 0.7;
         }
 
-        .exit {
+        .exit,
+        .expand {
             width: var(--length-input-pill-exit);
             height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
             margin-right: 2px;
             border-radius: 2px;
-        }
 
-        .exit:hover {
-            background: var(--color-background-input-pill-exit-hover);
+            &:hover {
+                background: var(--color-background-input-pill-exit-hover);
 
-            .pill-close-button {
-                opacity: 1;
+                .pill-close-button,
+                .pill-expand-button {
+                    opacity: 1;
+                }
             }
         }
 

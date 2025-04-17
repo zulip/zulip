@@ -394,7 +394,10 @@ export function set_up_combined(
             if (include_streams(query) && item.type === "stream") {
                 stream_pill.append_stream(item, pills);
             } else if (include_user_groups && item.type === "user_group") {
-                user_group_pill.append_user_group(item, pills);
+                const show_expand_button =
+                    !opts.for_stream_subscribers &&
+                    (item.members.size > 0 || item.direct_subgroup_ids.size > 0);
+                user_group_pill.append_user_group(item, pills, true, show_expand_button);
             } else if (
                 include_users &&
                 item.type === "user" &&
