@@ -257,7 +257,7 @@ class NoEmailArgumentError(CommandError):
 
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
-def send_email(
+def send_immediate_email(
     template_prefix: str,
     to_user_ids: list[int] | None = None,
     to_emails: list[str] | None = None,
@@ -326,6 +326,55 @@ def send_email(
         raise EmailNotDeliveredError
 
 
+def send_email(
+    template_prefix: str,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    reply_to_email: str | None = None,
+    language: str | None = None,
+    date: str | None = None,
+    context: Mapping[str, Any] = {},
+    realm: Realm | None = None,
+    connection: BaseEmailBackend | None = None,
+    dry_run: bool = False,
+    request: HttpRequest | None = None,
+) -> None:
+    if settings.EMAIL_ALWAYS_ENQUEUED and not dry_run:
+        queue_event_on_commit(
+            "email_senders",
+            dict(
+                template_prefix=template_prefix,
+                to_user_ids=to_user_ids,
+                to_emails=to_emails,
+                from_name=from_name,
+                from_address=from_address,
+                reply_to_email=reply_to_email,
+                language=language,
+                date=date,
+                context=context,
+                realm_id=realm.id if realm is not None else None,
+            ),
+        )
+    else:
+        send_immediate_email(
+            template_prefix,
+            to_user_ids,
+            to_emails,
+            from_name,
+            from_address,
+            reply_to_email,
+            language,
+            date,
+            context,
+            realm,
+            connection,
+            dry_run,
+            request,
+        )
+
+
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
 def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEmailBackend:
     if not connection:
@@ -382,7 +431,7 @@ def send_future_email(
     }
 
     if settings.DEVELOPMENT_LOG_EMAILS:
-        send_email(
+        send_immediate_email(
             template_prefix,
             to_user_ids=to_user_ids,
             to_emails=to_emails,
@@ -603,7 +652,7 @@ def custom_email_sender(
     ) -> None:
         assert to_user_id is not None or to_email is not None
         with suppress(EmailNotDeliveredError):
-            send_email(
+            send_immediate_email(
                 email_id,
                 to_user_ids=[to_user_id] if to_user_id is not None else None,
                 to_emails=[to_email] if to_email is not None else None,

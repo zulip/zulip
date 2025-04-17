@@ -449,6 +449,13 @@ EMAIL_BACKEND: str | None = None
 # Set in settings.py when email isn't configured.
 WARN_NO_EMAIL = False
 
+# If enabled, all email-sending will happen in the worker.  This means
+# that the UI cannot display configuration errors which prevented
+# email sending, so this is usually left off except in
+# well-established deployments which know the configuration is
+# correct.
+EMAIL_ALWAYS_ENQUEUED = False
+
 # If True, disable rate-limiting and other filters on sending error messages
 # to admins, and enable logging on the error-reporting itself.  Useful
 # mainly in development.
