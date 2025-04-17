@@ -67,6 +67,11 @@ class zulip::postgresql_base {
   $pgroonga = zulipconf('machine', 'pgroonga', false)
   if $pgroonga {
     # Needed for optional our full text search system
+    $setup_apt_repo_file = "${facts['zulip_scripts_path']}/lib/setup-apt-repo"
+    exec { 'setup-apt-repo-pgroonga':
+      command => "${setup_apt_repo_file} --list pgroonga",
+      unless  => "${setup_apt_repo_file} --list pgroonga --verify",
+    }
     package{"${postgresql}-pgdg-pgroonga":
       ensure  => latest,
       require => [
