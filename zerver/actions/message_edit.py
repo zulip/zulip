@@ -1424,7 +1424,6 @@ def check_update_message(
             # and the time limit for editing topics is passed, raise an error.
             if (
                 user_profile.realm.move_messages_within_stream_limit_seconds is not None
-                and not user_profile.is_realm_admin
                 and not user_profile.is_moderator
             ):
                 deadline_seconds = (
@@ -1490,7 +1489,6 @@ def check_update_message(
 
             if (
                 user_profile.realm.move_messages_between_streams_limit_seconds is not None
-                and not user_profile.is_realm_admin
                 and not user_profile.is_moderator
             ):
                 deadline_seconds = (
@@ -1504,7 +1502,6 @@ def check_update_message(
 
         if (
             propagate_mode == "change_all"
-            and not user_profile.is_realm_admin
             and not user_profile.is_moderator
             and message_edit_request.is_message_moved
             and not message_edit_request.topic_resolved

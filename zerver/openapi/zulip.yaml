@@ -19137,7 +19137,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is an [organization administrator](/api/roles-and-permissions).
+                          Whether the current user is at least an [organization administrator](/api/roles-and-permissions).
                       is_owner:
                         type: boolean
                         description: |
@@ -19151,7 +19151,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is an [organization moderator](/api/roles-and-permissions).
+                          Whether the current user is at least an [organization moderator](/api/roles-and-permissions).
 
                           **Changes**: New in Zulip 4.0 (feature level 60).
                       is_guest:
