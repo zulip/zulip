@@ -94,14 +94,14 @@ const admins = {
     name: "Admins",
     description: "foo",
     id: 1,
-    members: [jill.user_id, mark.user_id, me.user_id],
+    members: new Set([jill.user_id, mark.user_id, me.user_id]),
 };
 const admins_item = user_group_item(admins);
 const testers = {
     name: "Testers",
     description: "bar",
     id: 2,
-    members: [mark.user_id, fred.user_id, me.user_id],
+    members: new Set([mark.user_id, fred.user_id, me.user_id]),
 };
 const testers_item = user_group_item(testers);
 
