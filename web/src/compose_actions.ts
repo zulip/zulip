@@ -92,6 +92,8 @@ function hide_box(): void {
     compose_fade.clear_compose();
     $(".message_comp").hide();
     $("#compose_controls").show();
+    $("#compose").removeClass("compose-box-open");
+    $("#compose-recipient").addClass("muted-recipient-row");
 }
 
 function show_compose_box(opts: ComposeActionsOpts): void {
@@ -111,10 +113,17 @@ function show_compose_box(opts: ComposeActionsOpts): void {
         };
     }
     compose_recipient.update_compose_for_message_type(opts_by_message_type);
-    $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
     compose_ui.set_focus(opts_by_message_type);
+
+    // We rely on .compose-box-open for setting transitions in the
+    // compose box (e.g., the muted recipient row), so we defer
+    // adding the class to avoid any transitions when the compose
+    // box opens.
+    requestAnimationFrame(() => {
+        $("#compose").addClass("compose-box-open");
+    });
 }
 
 export let clear_textarea = (): void => {
