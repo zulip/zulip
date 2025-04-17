@@ -22,7 +22,7 @@ def update_dm_and_gdm_topic_name(apps: StateApps, schema_editor: BaseDatabaseSch
     Client = apps.get_model("zerver", "Client")
 
     try:
-        third_party_import_client = Client.objects.get(name="populate_db")
+        third_party_import_client = Client.objects.get(name="ZulipDataImport")
     except (Client.DoesNotExist, Client.MultipleObjectsReturned):
         return
 
