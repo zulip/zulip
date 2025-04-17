@@ -776,7 +776,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def is_moderator(self) -> bool:
-        return self.role == UserProfile.ROLE_MODERATOR
+        return self.is_realm_admin or self.role == UserProfile.ROLE_MODERATOR
 
     @is_moderator.setter
     def is_moderator(self, value: bool) -> None:

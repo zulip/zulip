@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 380**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events): The `is_moderator` convenience field now
+  is true for organization administrators, matching how `is_admin`
+  works for organization owners.
+
 **Feature level 379**
 
 * [`PATCH /messages/{message_id}`](/api/update-message): Added

@@ -109,7 +109,8 @@ export const update_person = function update(event: UserUpdate): void {
         user.is_owner = event.role === settings_config.user_role_values.owner.code;
         user.is_admin = event.role === settings_config.user_role_values.admin.code || user.is_owner;
         user.is_guest = event.role === settings_config.user_role_values.guest.code;
-        user.is_moderator = event.role === settings_config.user_role_values.moderator.code;
+        user.is_moderator =
+            user.is_admin || event.role === settings_config.user_role_values.moderator.code;
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
 

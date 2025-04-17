@@ -75,6 +75,7 @@ from zerver.lib.users import (
     get_data_for_inaccessible_user,
     get_users_for_api,
     is_administrator_role,
+    is_moderator_role,
     max_message_id_for_user,
 )
 from zerver.lib.utils import optional_bytes_to_mib
@@ -1096,7 +1097,7 @@ def apply_event(
                 if "role" in person:
                     state["is_admin"] = is_administrator_role(person["role"])
                     state["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
-                    state["is_moderator"] = person["role"] == UserProfile.ROLE_MODERATOR
+                    state["is_moderator"] = is_moderator_role(person["role"])
                     state["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_private_streams"] = user_profile.can_create_private_streams()
