@@ -703,29 +703,27 @@ export function compare_group_setting_options(
     return 1;
 }
 
-export const sort_setting_options = ({
+export const sort_users_and_groups_options = ({
     users,
     query,
     groups,
-    compare_setting_options,
+    compare_options,
     target_group,
 }: {
     users: UserPillData[];
     query: string;
     groups: UserGroupPillData[];
-    compare_setting_options: (
+    compare_options: (
         option_a: UserPillData | UserGroupPillData,
         option_b: UserPillData | UserGroupPillData,
         target_group: UserGroup | undefined,
     ) => number;
     target_group: UserGroup | undefined;
 }): (UserPillData | UserGroupPillData)[] => {
-    function sort_setting_items(
+    function sort_items(
         objs: (UserPillData | UserGroupPillData)[],
     ): (UserPillData | UserGroupPillData)[] {
-        objs.sort((option_a, option_b) =>
-            compare_setting_options(option_a, option_b, target_group),
-        );
+        objs.sort((option_a, option_b) => compare_options(option_a, option_b, target_group));
         return objs;
     }
 
@@ -745,13 +743,13 @@ export const sort_setting_options = ({
         return [user_groups.get_display_group_name(g.name)];
     });
 
-    const exact_matches = sort_setting_items([
+    const exact_matches = sort_items([
         ...groups_results.exact_matches,
         ...users_name_results.exact_matches,
         ...email_results.exact_matches,
     ]);
 
-    const prefix_matches = sort_setting_items([
+    const prefix_matches = sort_items([
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -760,16 +758,13 @@ export const sort_setting_options = ({
         ...email_results.begins_with_case_insensitive_matches,
     ]);
 
-    const word_boundary_matches = sort_setting_items([
+    const word_boundary_matches = sort_items([
         ...groups_results.word_boundary_matches,
         ...users_name_results.word_boundary_matches,
         ...email_results.word_boundary_matches,
     ]);
 
-    const no_matches = sort_setting_items([
-        ...groups_results.no_matches,
-        ...email_results.no_matches,
-    ]);
+    const no_matches = sort_items([...groups_results.no_matches, ...email_results.no_matches]);
 
     const getters: {
         getter: (UserPillData | UserGroupPillData)[];
@@ -788,18 +783,18 @@ export const sort_setting_options = ({
         },
     ];
 
-    const setting_options: (UserPillData | UserGroupPillData)[] = [];
+    const options: (UserPillData | UserGroupPillData)[] = [];
 
     for (const getter of getters) {
-        if (setting_options.length >= MAX_ITEMS) {
+        if (options.length >= MAX_ITEMS) {
             break;
         }
         for (const item of getter.getter) {
-            setting_options.push(item);
+            options.push(item);
         }
     }
 
-    return setting_options.slice(0, MAX_ITEMS);
+    return options.slice(0, MAX_ITEMS);
 };
 
 export let sort_group_setting_options = ({
@@ -813,11 +808,11 @@ export let sort_group_setting_options = ({
     groups: UserGroupPillData[];
     target_group: UserGroup | undefined;
 }): (UserPillData | UserGroupPillData)[] =>
-    sort_setting_options({
+    sort_users_and_groups_options({
         users,
         query,
         groups,
-        compare_setting_options: compare_group_setting_options,
+        compare_options: compare_group_setting_options,
         target_group,
     });
 
@@ -825,7 +820,7 @@ export function rewire_sort_group_setting_options(value: typeof sort_group_setti
     sort_group_setting_options = value;
 }
 
-export function compare_stream_setting_options(
+export function compare_stream_or_group_members_options(
     option_a: UserPillData | UserGroupPillData,
     option_b: UserPillData | UserGroupPillData,
 ): number {
@@ -890,7 +885,7 @@ export function compare_stream_setting_options(
     return 1;
 }
 
-export let sort_stream_setting_options = ({
+export let sort_stream_or_group_members_options = ({
     users,
     query,
     groups,
@@ -899,18 +894,18 @@ export let sort_stream_setting_options = ({
     query: string;
     groups: UserGroupPillData[];
 }): (UserPillData | UserGroupPillData)[] =>
-    sort_setting_options({
+    sort_users_and_groups_options({
         users,
         query,
         groups,
-        compare_setting_options: compare_stream_setting_options,
+        compare_options: compare_stream_or_group_members_options,
         target_group: undefined,
     });
 
-export function rewire_sort_stream_setting_options(
-    value: typeof sort_stream_setting_options,
+export function rewire_sort_stream_or_group_members_options(
+    value: typeof sort_stream_or_group_members_options,
 ): void {
-    sort_stream_setting_options = value;
+    sort_stream_or_group_members_options = value;
 }
 
 type SlashCommand = {

@@ -30,7 +30,7 @@ set_realm(realm);
 let sort_recipients_called = false;
 let sort_streams_called = false;
 let sort_group_setting_options_called = false;
-let sort_stream_setting_options_called = false;
+let sort_stream_or_group_members_options_called = false;
 const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
@@ -42,8 +42,8 @@ function override_typeahead_helper(override_rewire) {
     override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
     });
-    override_rewire(typeahead_helper, "sort_stream_setting_options", ({users}) => {
-        sort_stream_setting_options_called = true;
+    override_rewire(typeahead_helper, "sort_stream_or_group_members_options", ({users}) => {
+        sort_stream_or_group_members_options_called = true;
         return users;
     });
 }
@@ -528,17 +528,17 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             }
             if (opts.user_group) {
                 sort_recipients_called = false;
-                sort_stream_setting_options_called = false;
+                sort_stream_or_group_members_options_called = false;
                 config.sorter([testers_item], group_query);
                 assert.ok(!sort_recipients_called);
-                assert.ok(sort_stream_setting_options_called);
+                assert.ok(sort_stream_or_group_members_options_called);
             }
             if (opts.user) {
                 sort_recipients_called = false;
-                sort_stream_setting_options_called = false;
+                sort_stream_or_group_members_options_called = false;
                 config.sorter([me_item], person_query);
                 assert.ok(!sort_recipients_called);
-                assert.ok(sort_stream_setting_options_called);
+                assert.ok(sort_stream_or_group_members_options_called);
             }
         })();
 
