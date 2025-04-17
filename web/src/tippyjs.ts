@@ -167,6 +167,22 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".add-subscriber-button",
+        trigger: "mouseenter",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            let template = "show-unsubscribe-tooltip-template";
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#subscription_overlay .subscription_settings .sub-stream-name",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
