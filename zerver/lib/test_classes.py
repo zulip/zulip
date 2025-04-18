@@ -1264,6 +1264,22 @@ Output:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]
 
+    def get_user_ids_for_whom_message_read(self, message_id: int) -> set[int]:
+        user_ids = set(
+            UserMessage.objects.filter(message_id=message_id)
+            .extra(where=[UserMessage.where_read()])  # noqa: S610
+            .values_list("user_profile_id", flat=True)
+        )
+        return user_ids
+
+    def get_user_ids_for_whom_message_unread(self, message_id: int) -> set[int]:
+        user_ids = set(
+            UserMessage.objects.filter(message_id=message_id)
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
+            .values_list("user_profile_id", flat=True)
+        )
+        return user_ids
+
     def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> list[UserProfile]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
