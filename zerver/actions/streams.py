@@ -886,6 +886,25 @@ def bulk_add_subscriptions(
         subscriber_peer_info=subscriber_peer_info,
     )
 
+    # Send notifications when users leave private channels
+    # Part of the implementation for issue #2746 (https://github.com/zulip/zulip/issues/2746)
+    # These notifications appear in the "channel events" topic with a consistent format
+    # to provide channel members visibility into membership changes
+    bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    for sub_info in subs_to_add + subs_to_activate:
+        if sub_info.stream.invite_only:
+            with override_language(realm.default_language):
+                if acting_user and acting_user.id != sub_info.user.id:
+                    internal_send_stream_message(
+                        bot,
+                        sub_info.stream,
+                        "channel events",
+                        _("@_**{added_by}** added @_**{user}** to this channel.").format(
+                            added_by=acting_user.full_name,
+                            user=sub_info.user.full_name,
+                        ),
+                    )
+
     return (
         subs_to_add + subs_to_activate,
         already_subscribed,
@@ -1114,6 +1133,24 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    # Send notifications when users leave private channels
+    # Part of the implementation for issue #2746 (https://github.com/zulip/zulip/issues/2746)
+    # These notifications appear in the "channel events" topic with a consistent format
+    # to provide channel members visibility into membership changes
+    if acting_user:
+        bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        for user, stream in removed_sub_tuples:
+            if stream.invite_only:
+                with override_language(realm.default_language):
+                    internal_send_stream_message(
+                        bot,
+                        stream,
+                        "channel events",
+                        _("@_**{user}** left this channel.").format(
+                            user=user.full_name,
+                        ),
+                    )
 
     return (
         removed_sub_tuples,
