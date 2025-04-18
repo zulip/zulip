@@ -5,7 +5,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_fade from "./compose_fade.ts";
@@ -167,7 +167,7 @@ function update_recipient_label(stream_id?: number): void {
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
-            render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+            render_inline_decorated_channel_name({stream, show_colored_icon: true}),
         );
     }
 }

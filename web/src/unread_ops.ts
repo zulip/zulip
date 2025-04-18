@@ -5,7 +5,7 @@ import {z} from "zod";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 import render_confirm_mark_as_unread_from_here from "../templates/confirm_dialog/confirm_mark_as_unread_from_here.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -102,8 +102,8 @@ function handle_skipped_unsubscribed_streams(
         const stream_names_with_privacy_symbol_html = ignored_because_not_subscribed_channels.map(
             (stream_id) => {
                 const stream = sub_store.get(stream_id);
-                const decorated_stream_name = render_inline_decorated_stream_name({stream});
-                return `<span class="white-space-nowrap">${decorated_stream_name}</span>`;
+                const decorated_channel_name = render_inline_decorated_channel_name({stream});
+                return `<span class="white-space-nowrap">${decorated_channel_name}</span>`;
             },
         );
 

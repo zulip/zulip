@@ -8,7 +8,7 @@
                 <span>
                     {{#tr}}
                         Unsubscribe from <z-stream></z-stream>
-                        {{#*inline "z-stream"}}{{> ../inline_decorated_stream_name stream=this}}{{/inline}}
+                        {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=this}}{{/inline}}
                     {{/tr}}
                 </span>
             </template>
@@ -26,7 +26,7 @@
                 <span>
                     {{#tr}}
                         Subscribe to <z-stream></z-stream>
-                        {{#*inline "z-stream"}}{{> ../inline_decorated_stream_name stream=this}}{{/inline}}
+                        {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=this}}{{/inline}}
                     {{/tr}}
                 </span>
             </template>
@@ -35,7 +35,7 @@
                 <span>
                     {{#tr}}
                         Cannot subscribe to <z-stream></z-stream>
-                        {{#*inline "z-stream"}}{{> ../inline_decorated_stream_name stream=this}}{{/inline}}
+                        {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=this}}{{/inline}}
                     {{/tr}}
                 </span>
             </template>

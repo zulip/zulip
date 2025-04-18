@@ -162,7 +162,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
-    mock_template("inline_decorated_stream_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -311,7 +311,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_private_message_recipient({override});
-    mock_template("inline_decorated_stream_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
@@ -375,7 +375,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 
     override_private_message_recipient({override});
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
-    mock_template("inline_decorated_stream_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     const denmark = {
         subscribed: true,
