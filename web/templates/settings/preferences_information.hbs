@@ -57,6 +57,13 @@
     </div>
 
     <div class="input-group">
+        <label for="{{prefix}}resolved_topic_notice_unread_policy" class="settings-field-label">{{t "Keep resolved-topic notices as unread" }}</label>
+        <select name="resolved_topic_notice_unread_policy" class="setting_resolved_topic_notice_unread_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}resolved_topic_notice_unread_policy" data-setting-widget-type="string">
+            {{> dropdown_options_widget option_values=resolved_topic_notice_unread_policy_values}}
+        </select>
+    </div>
+
+    <div class="input-group">
         <label for="{{prefix}}web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
         <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
             {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}

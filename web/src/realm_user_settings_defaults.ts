@@ -46,6 +46,7 @@ export const realm_default_settings_schema = z.object({
     presence_enabled: z.boolean(),
     realm_name_in_email_notifications_policy: z.number(),
     receives_typing_notifications: z.boolean(),
+    resolved_topic_notice_unread_policy: z.enum(["always", "when_following", "never"]),
     send_private_typing_notifications: z.boolean(),
     send_read_receipts: z.boolean(),
     send_stream_typing_notifications: z.boolean(),
