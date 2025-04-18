@@ -1228,20 +1228,39 @@ export function get_people_for_search_bar(query: string): User[] {
     return filter_all_persons(pred);
 }
 
-export function build_termlet_matcher(termlet: string): (user: User) => boolean {
-    termlet = termlet.trim();
+export function should_remove_diacritics_for_query(query_lower_case: string): boolean {
+    // We only do diacritic-sensitive matching for queries that do not
+    // contain diacritics themselves.
+    //
+    // TODO: This check is too strict; ideally we'd check for presence
+    // of diacritics; punctuation should not be relevant.
+    return /^[a-z]+$/.test(query_lower_case);
+}
 
-    const is_ascii = /^[a-z]+$/.test(termlet);
+export function maybe_remove_diacritics_from_name(
+    user: User,
+    should_remove_diacritics: boolean,
+): string {
+    // Callers should compute should_remove_diacritics using
+    // should_remove_diacritics_for_query. It's fastest if the caller
+    // computes that once outside the loop over all users.
+    if (should_remove_diacritics) {
+        // Reuse removed diacritics version of the `full_name` if
+        // present, since it's expensive to compute.
+        user.name_with_diacritics_removed ??= typeahead.remove_diacritics(user.full_name);
+        return user.name_with_diacritics_removed;
+    }
+    return user.full_name;
+}
+
+export function build_termlet_matcher(termlet: string): (user: User) => boolean {
+    // Note: termlets are required to be lower case.
+    termlet = termlet.trim();
+    const should_remove_diacritics = should_remove_diacritics_for_query(termlet);
 
     return function (user: User): boolean {
-        let full_name = user.full_name;
-        // Only ignore diacritics if the query is plain ascii
-        if (is_ascii) {
-            if (user.name_with_diacritics_removed === undefined) {
-                user.name_with_diacritics_removed = typeahead.remove_diacritics(full_name);
-            }
-            full_name = user.name_with_diacritics_removed;
-        }
+        const full_name = maybe_remove_diacritics_from_name(user, should_remove_diacritics);
+
         const names = full_name.toLowerCase().split(" ");
 
         return names.some((name) => name.startsWith(termlet));
