@@ -27,6 +27,8 @@
                 <i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> {{name}}
             {{else if is_setting_disabled}}
                 <span class="setting-disabled-option"><i class="setting-disabled-option-icon fa fa-ban" aria-hidden="true"></i>{{t "Disable" }}</span>
+            {{else if is_preset_config_option}}
+                <i class="zulip-icon zulip-icon-equal stream-privacy-type-icon"></i> {{name}}
             {{else}}
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-bold-selected">{{name}}</span>

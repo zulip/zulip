@@ -231,6 +231,10 @@ configure:
 
 Common validators are available in `zerver/lib/validators.py`.
 
+If the integration requires a more elaborate UI for configuring
+specific settings, you could also consider using [preset configuration
+options](/api/incoming-webhooks-walkthrough#preset-configuration-options).
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an
@@ -654,6 +658,61 @@ with a string describing the unsupported event type, like so:
 ```
 raise UnsupportedWebhookEventTypeError(event_type)
 ```
+
+
+### Preset configuration options
+
+Preset config options are unique `WebhookConfigOption` values that come
+with pre-built user interface elements -- new field, validation, etc --
+in the "Generate integration URL" modal. These are useful if the integration
+requires a more elaborate UI in the frontend then what plain `config_options`
+can offer, or if the setting could be used by many integrations.
+
+Using preset config option:
+```python
+# zerver/lib/integrations.py
+from zerver.lib.webhooks.common import PresetConfigOption, WebhookConfigOption
+  # ...
+    WebhookIntegration(
+        "github",
+        ["version-control"],
+        display_name="GitHub",
+        function="zerver.webhooks.github.view.api_github_webhook",
+        stream_name="github",
+        config_options=[
+            # This includes the "branches" preset config option to the
+            # integration!
+            WebhookConfigOption.preset_config(PresetConfigOption.BRANCHES),
+        ],
+    ),
+```
+
+Here are the preset config options and their behavior when the integration(s)
+that uses them is selected:
+
+  1. **BRANCHES**: Adds a new field to the "Generate integration URL" modal
+    called "Filter events that will trigger notifications?". If the selected,
+    it will show a list of all the integrations' supported events. The user
+    can then filter which events can trigger a notification.
+
+    Some integrations that uses this are: GitHub, Gitea, GOGS.
+
+  2. **MAPPING**: Adds a new option to the "Where to send notification?" drop
+    down field called "Matching Zulip channel". This setting is meant to be
+    used by chat-app integrations like Slack. It lets the user choose whether
+    messages from the third-party app should be sent to Zulip channels that
+    match the messages' original channel name or not.
+
+    If selected, this will disable the  "Send all notification to a single topic"
+    field and adds `&z_mapping=channels` variable to the integration URL, like so:
+
+    ```
+    {{zulip_url}}/api/v1/external/github?api_key=kT2KTUBJVv0kAyrwY3povICtTaczHQwl&z_mapping=channels
+    ```
+
+    The integration endpoint can check for this variable to determine whether the
+    user has selected this option or not.
+
 
 ## Related articles
 
