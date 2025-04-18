@@ -2,7 +2,7 @@ import $ from "jquery";
 import {z} from "zod";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
 import * as channel from "./channel.ts";
@@ -225,7 +225,9 @@ function ajaxUnsubscribe(sub: StreamSubscription, $stream_row: JQuery | undefine
 export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     const invite_only = sub.invite_only;
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-    const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream: sub});
+    const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
+        stream: sub,
+    });
 
     const html_body = render_unsubscribe_private_stream_modal({
         unsubscribing_other_user: false,

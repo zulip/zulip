@@ -6,7 +6,7 @@ import render_dropdown_current_value_not_in_options from "../templates/dropdown_
 import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.hbs";
 import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as ListWidget from "./list_widget.ts";
@@ -591,7 +591,7 @@ export class DropdownWidget {
             $(this.widget_value_selector).html(render_dropdown_disabled_state({name: option.name}));
         } else if (option.stream) {
             $(this.widget_value_selector).html(
-                render_inline_decorated_stream_name({
+                render_inline_decorated_channel_name({
                     stream: option.stream,
                     show_colored_icon: true,
                 }),

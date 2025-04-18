@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
@@ -357,7 +357,7 @@ function remove_subscriber({
             return;
         }
 
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
             stream: sub,
         });
 

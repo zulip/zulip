@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
 
 import * as activity_ui from "./activity_ui.ts";
@@ -222,7 +222,7 @@ function show_first_stream_created_modal(stream: StreamSubscription): void {
         html_heading: $t_html(
             {defaultMessage: "Channel <b><z-stream></z-stream></b> created!"},
             {
-                "z-stream": () => render_inline_decorated_stream_name({stream}),
+                "z-stream": () => render_inline_decorated_channel_name({stream}),
             },
         ),
         html_body: render_first_stream_created_modal({stream}),

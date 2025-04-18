@@ -22,7 +22,7 @@
         {{else}}
         <a class="dropdown-list-item-common-styles">
             {{#if stream}}
-                {{> inline_decorated_stream_name stream=stream show_colored_icon=true}}
+                {{> inline_decorated_channel_name stream=stream show_colored_icon=true}}
             {{else if is_direct_message}}
                 <i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> {{name}}
             {{else if is_setting_disabled}}

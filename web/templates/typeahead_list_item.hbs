@@ -28,7 +28,7 @@
 <div class="typeahead-text-container{{#if has_secondary_html}} has_secondary_html{{/if}}">
     <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}">
         {{~#if stream~}}
-            {{~> inline_decorated_stream_name stream=stream ~}}
+            {{~> inline_decorated_channel_name stream=stream ~}}
             {{~else~}}
             {{~ primary ~}}
         {{~/if~}}

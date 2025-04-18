@@ -5,7 +5,7 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
@@ -712,7 +712,7 @@ export function initialize(): void {
         const stream_id = get_stream_id(this);
         const stream = sub_store.get(stream_id);
 
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
 
         const is_new_stream_announcements_stream =
             stream_id === realm.realm_new_stream_announcements_stream_id;
