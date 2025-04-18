@@ -59,7 +59,7 @@
     overflow: hidden;
     word-wrap: break-word;
 
-    .stream-privacy-type-icon {
+    .channel-privacy-type-icon {
         /* This pushes back on suspect styles
            in app_components.css. A fuller fix
            will require tracking down other

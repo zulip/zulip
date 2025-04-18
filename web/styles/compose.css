@@ -1541,7 +1541,7 @@ textarea.new_message_textarea {
         white-space: nowrap;
         color: var(--color-text-default);
 
-        .stream-privacy-type-icon {
+        .channel-privacy-type-icon {
             font-size: 0.9286em; /* 13px at 14px em */
             width: 1em;
             height: 1em;

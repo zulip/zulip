@@ -2172,7 +2172,7 @@ body:not(.spectator-view) {
            vertically centered properly. */
         line-height: 1.214;
 
-        .stream-privacy-type-icon {
+        .channel-privacy-type-icon {
             line-height: 1.214;
             font-size: 0.93em;
             /* We set only the width so that flexbox

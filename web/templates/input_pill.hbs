@@ -9,11 +9,11 @@
         <span class="pill-value">
             {{#if has_stream}}
                 {{~#if stream.invite_only ~}}
-                <i class="zulip-icon zulip-icon-lock stream-privacy-type-icon" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-lock channel-privacy-type-icon" aria-hidden="true"></i>
                 {{~ else if stream.is_web_public ~}}
-                <i class="zulip-icon zulip-icon-globe stream-privacy-type-icon" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-globe channel-privacy-type-icon" aria-hidden="true"></i>
                 {{~ else ~}}
-                <i class="zulip-icon zulip-icon-hashtag stream-privacy-type-icon" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>
                 {{~/if~}}
             {{/if}}
             {{#if is_empty_string_topic}}

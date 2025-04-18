@@ -817,7 +817,7 @@ ul.popover-group-menu-member-list {
         /* Grid defined in modal.css */
         grid-area: heading;
 
-        .stream-privacy-type-icon {
+        .channel-privacy-type-icon {
             padding-left: 3px;
             padding-right: 5px;
         }
@@ -841,7 +841,7 @@ ul.popover-group-menu-member-list {
             white-space: nowrap;
             color: var(--color-text-default);
 
-            .stream-privacy-type-icon {
+            .channel-privacy-type-icon {
                 /* 13px at 16px/1em */
                 font-size: 0.8125em;
                 /* 13px at 13px/1em */
