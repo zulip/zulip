@@ -84,6 +84,11 @@
       "name": "italic_and_strike_conversion",
       "input": "_~italic~_ and ~_strike_~",
       "conversion_output": "*~~italic~~* and ~~*strike*~~"
+    },
+    {
+      "name": "unicode_quotes",
+      "input": "«~strike~» 「*bold*」 ❰_italic_❱",
+      "conversion_output": "«~~strike~~» 「**bold**」 ❰*italic*❱"
     }
   ]
 }
