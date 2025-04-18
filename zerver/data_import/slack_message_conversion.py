@@ -50,21 +50,39 @@ SLACK_USERMENTION_REGEX = r"""
 # Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
 SLACK_STRIKETHROUGH_REGEX = r"""
-                             (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
+                             (
+                                # Capture punctuation (\p{P}), white space (\p{Zs}),
+                                # symbols (\p{S}) or newline.
+                                # Skip ~ to not reformat the same string twice
+                                # Skip @ and \
+                                # Skip closing brackets & closing quote (\p{Pf}\p{Pe})
+                                (?![~`@\\\p{Pf}\p{Pe}])
+                                [\p{P}\p{Zs}\p{S}]|^
+                             )
                              (\~)                                  # followed by a ~
                                  ([ -)+-}—]*)([ -}]+)              # any character except ~
                              (\~)                                  # followed by a ~
                              ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
-                      (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
+                    # Same as `SLACK_STRIKETHROUGH_REGEX`s. The difference
+                    # being, this skips _ instead of ~
+                      (
+                        (?![_`@\\\p{Pf}\p{Pe}])
+                        [\p{P}\p{Zs}\p{S}]|^
+                      )
                       (\_)
                           ([ -^`~—]*)([ -^`-~]+)                  # any character except _
                       (\_)
                       ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
-                    (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
+                    # Same as `SLACK_STRIKETHROUGH_REGEX`s. The difference
+                    # being, this skips * instead of ~
+                    (
+                        (?![*`@\\\p{Pf}\p{Pe}])
+                        [\p{P}\p{Zs}\p{S}]|^
+                    )
                     (\*)
                         ([ -)+-~—]*)([ -)+-~]+)                   # any character except *
                     (\*)
