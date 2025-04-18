@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from datetime import timedelta
+from enum import Enum
 
 from django.conf import settings
 from django.db import transaction
@@ -433,19 +434,32 @@ def update_scheduled_email_notifications_time(
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
-    setting_value: bool | str | int,
+    raw_setting_value: bool | str | int | Enum,
     *,
     acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(user_profile, setting_name)
     event_time = timezone_now()
 
+    if isinstance(raw_setting_value, Enum):
+        setting_value = raw_setting_value.value
+        event_value = raw_setting_value.name
+    else:
+        setting_value = raw_setting_value
+        event_value = setting_value
+
     if setting_name == "timezone":
         assert isinstance(setting_value, str)
+        assert isinstance(event_value, str)
         setting_value = canonicalize_timezone(setting_value)
     else:
         property_type = UserProfile.property_types[setting_name]
-        assert isinstance(setting_value, property_type)
+        if isinstance(raw_setting_value, Enum):
+            assert isinstance(raw_setting_value, property_type)
+            assert isinstance(event_value, str)
+        else:
+            assert isinstance(setting_value, property_type)
+            assert isinstance(event_value, property_type)
     setattr(user_profile, setting_name, setting_value)
 
     # TODO: Move these database actions into a transaction.atomic block.
@@ -477,8 +491,9 @@ def do_change_user_setting(
         "type": "user_settings",
         "op": "update",
         "property": setting_name,
-        "value": setting_value,
+        "value": event_value,
     }
+
     if setting_name == "default_language":
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
@@ -495,7 +510,7 @@ def do_change_user_setting(
             "type": "update_global_notifications",
             "user": user_profile.email,
             "notification_name": setting_name,
-            "setting": setting_value,
+            "setting": event_value,
         }
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
@@ -507,7 +522,7 @@ def do_change_user_setting(
             "type": "update_display_settings",
             "user": user_profile.email,
             "setting_name": setting_name,
-            "setting": setting_value,
+            "setting": event_value,
         }
         if setting_name == "default_language":
             assert isinstance(setting_value, str)
@@ -516,14 +531,14 @@ def do_change_user_setting(
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     if setting_name == "allow_private_data_export":
-        event = {
+        realm_export_event = {
             "type": "realm_export_consent",
             "user_id": user_profile.id,
-            "consented": setting_value,
+            "consented": event_value,
         }
         send_event_on_commit(
             user_profile.realm,
-            event,
+            realm_export_event,
             list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
         )
 
