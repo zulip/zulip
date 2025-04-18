@@ -62,7 +62,15 @@ SLACK_STRIKETHROUGH_REGEX = r"""
                              (\~)                                  # followed by a ~
                                  ([ -)+-}—]*)([ -}]+)              # any character except ~
                              (\~)                                  # followed by a ~
-                             ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
+                            (
+                                # Capture punctuation, white space, symbols or end of
+                                # line.
+                                # Skip ~ to not reformat the same string twice
+                                # Skip @ and \
+                                # Skip opening brackets & closing quote (\p{Pi}\p{Ps})
+                                (?![~`@\\\p{Pi}\p{Ps}])
+                                [\p{P}\p{Zs}\p{S}]|$
+                             )
                              """
 SLACK_ITALIC_REGEX = r"""
                     # Same as `SLACK_STRIKETHROUGH_REGEX`s. The difference
@@ -74,7 +82,10 @@ SLACK_ITALIC_REGEX = r"""
                       (\_)
                           ([ -^`~—]*)([ -^`-~]+)                  # any character except _
                       (\_)
-                      ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
+                      (
+                        (?![_`@\\\p{Pi}\p{Ps}])
+                        [\p{P}\p{Zs}\p{S}]|$
+                      )
                       """
 SLACK_BOLD_REGEX = r"""
                     # Same as `SLACK_STRIKETHROUGH_REGEX`s. The difference
@@ -86,7 +97,10 @@ SLACK_BOLD_REGEX = r"""
                     (\*)
                         ([ -)+-~—]*)([ -)+-~]+)                   # any character except *
                     (\*)
-                    ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
+                    (
+                        (?![*`@\\\p{Pi}\p{Ps}])
+                        [\p{P}\p{Zs}\p{S}]|$
+                    )
                     """
 
 
