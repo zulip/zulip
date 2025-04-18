@@ -36,7 +36,11 @@ from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_string_in_validator
+from zerver.lib.typed_endpoint_validators import (
+    check_int_in_validator,
+    check_string_in_validator,
+    parse_enum_from_string_value,
+)
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     access_user_group_for_setting,
@@ -80,17 +84,6 @@ def check_jitsi_url(value: str) -> str:
         raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
 
 
-def parse_message_edit_history_visibility_policy(
-    policy_name: str,
-) -> MessageEditHistoryVisibilityPolicyEnum:
-    try:
-        return MessageEditHistoryVisibilityPolicyEnum[policy_name]
-    except KeyError:
-        raise JsonableError(
-            _("Invalid {var_name}").format(var_name="message_edit_history_visibility_policy")
-        )
-
-
 @require_realm_admin
 @typed_endpoint
 def update_realm(
@@ -125,7 +118,14 @@ def update_realm(
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
     message_edit_history_visibility_policy: Annotated[
-        str | None, AfterValidator(lambda val: parse_message_edit_history_visibility_policy(val))
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "message_edit_history_visibility_policy",
+                MessageEditHistoryVisibilityPolicyEnum,
+            )
+        ),
     ] = None,
     default_language: str | None = None,
     waiting_period_threshold: Json[NonNegativeInt] | None = None,
