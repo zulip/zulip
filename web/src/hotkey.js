@@ -1150,7 +1150,12 @@ export function process_hotkey(e, hotkey) {
     if (
         // Allow UI only features for spectators which they can perform.
         page_params.is_spectator &&
-        !["toggle_conversation_view", "show_lightbox", "toggle_sender_info"].includes(event_name)
+        ![
+            "toggle_conversation_view",
+            "show_lightbox",
+            "toggle_sender_info",
+            "edit_message",
+        ].includes(event_name)
     ) {
         spectators.login_to_access();
         return true;
