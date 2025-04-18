@@ -2,6 +2,8 @@ import re
 from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
 
+import regex
+
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
     WildValue,
@@ -48,25 +50,57 @@ SLACK_USERMENTION_REGEX = r"""
 # Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
 SLACK_STRIKETHROUGH_REGEX = r"""
-                             (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
-                             (\~)                                  # followed by an asterisk
-                                 ([ -)+-}—]*)([ -}]+)              # any character except asterisk
-                             (\~)                                  # followed by an asterisk
-                             ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
+                             (
+                                # Capture punctuation (\p{P}), white space (\p{Zs}),
+                                # symbols (\p{S}) or newline.
+                                # Skip ~ to not reformat the same string twice
+                                # Skip @ and \
+                                # Skip closing brackets & closing quote (\p{Pf}\p{Pe})
+                                (?![~`@\\\p{Pf}\p{Pe}])
+                                [\p{P}\p{Zs}\p{S}]|^
+                             )
+                             (\~)                                  # followed by a ~
+                                 ([^~]+)                           # any character except ~
+                             (\~)                                  # followed by a ~
+                            (
+                                # Capture punctuation, white space, symbols or end of
+                                # line.
+                                # Skip ~ to not reformat the same string twice
+                                # Skip @ and \
+                                # Skip opening brackets & closing quote (\p{Pi}\p{Ps})
+                                (?![~`@\\\p{Pi}\p{Ps}])
+                                (?=[\p{P}\p{Zs}\p{S}]|$)
+                             )
                              """
 SLACK_ITALIC_REGEX = r"""
-                      (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
+                    # Same as `SLACK_STRIKETHROUGH_REGEX`s. The difference
+                    # being, this skips _ instead of ~
+                      (
+                        (?![_`@\\\p{Pf}\p{Pe}])
+                        [\p{P}\p{Zs}\p{S}]|^
+                      )
                       (\_)
-                          ([ -^`~—]*)([ -^`-~]+)                  # any character
+                          ([^_]+)                    # any character except _
                       (\_)
-                      ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
+                      (
+                        (?![_`@\\\p{Pi}\p{Ps}])
+                        (?=[\p{P}\p{Zs}\p{S}]|$)
+                      )
                       """
 SLACK_BOLD_REGEX = r"""
-                    (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
+                    # Same as `SLACK_STRIKETHROUGH_REGEX`s. The difference
+                    # being, this skips * instead of ~
+                    (
+                        (?![*`@\\\p{Pf}\p{Pe}])
+                        [\p{P}\p{Zs}\p{S}]|^
+                    )
                     (\*)
-                        ([ -)+-~—]*)([ -)+-~]+)                   # any character
+                        ([^*]+)                       # any character except *
                     (\*)
-                    ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
+                    (
+                        (?![*`@\\\p{Pi}\p{Ps}])
+                        (?=[\p{P}\p{Zs}\p{S}]|$)
+                    )
                     """
 
 
@@ -131,24 +165,18 @@ def convert_mailto_format(text: str) -> tuple[str, bool]:
 
 
 # Map italic, bold and strikethrough Markdown
-def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
+def convert_markdown_syntax(text: str, pattern: str, zulip_keyword: str) -> str:
     """
     Returns:
     1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
     2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
     3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
     """
-    for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
-            match.group(1)
-            + zulip_keyword
-            + match.group(3)
-            + match.group(4)
-            + zulip_keyword
-            + match.group(6)
-        )
-        text = text.replace(match.group(0), converted_token)
-    return text
+
+    def replace_slack_format(match: regex.Match[str]) -> str:
+        return match.group(1) + zulip_keyword + match.group(3) + zulip_keyword
+
+    return regex.sub(pattern, replace_slack_format, text, flags=re.VERBOSE | re.MULTILINE)
 
 
 def convert_slack_workspace_mentions(text: str) -> str:
@@ -355,3 +383,9 @@ def render_attachment(attachment: WildValue) -> str:
         pieces.append(f"<time:{time}>")
 
     return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+
+
+def replace_links(text: str) -> str:
+    text, _ = convert_link_format(text)
+    text, _ = convert_mailto_format(text)
+    return text
