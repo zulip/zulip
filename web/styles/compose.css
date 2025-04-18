@@ -2038,3 +2038,35 @@ textarea.new_message_textarea {
         overflow: hidden;
     }
 }
+
+.split_message_fragment:not(:first-child) {
+    padding-top: 12px;
+}
+
+.split_message_enumerated {
+    padding-left: 5px;
+    padding-top: 2px;
+    color: hsl(0deg 0% 50%);
+}
+
+.split_message_content {
+    padding: 5px;
+    border: 1px solid hsl(0deg 0% 50%);
+    border-radius: 8px;
+}
+
+.split_message_content p:last-child {
+    margin: 0;
+}
+
+.split_message_content .zulip-code-block:last-child pre {
+    margin-bottom: 1px;
+}
+
+.split_message_content .spoiler-block:last-child {
+    margin-bottom: 1px;
+}
+
+.split_message_content blockquote:last-child {
+    margin-bottom: 1px;
+}
