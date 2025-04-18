@@ -1,5 +1,5 @@
 {{#unless (eq render_only false)}}
-<div class="input-group setting-next-is-related {{#if is_disabled}}control-label-disabled{{/if}}">
+<div class="input-group {{#if is_disabled}}control-label-disabled{{/if}}">
     <label for="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" class="{{setting_name}}_label" id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}_label">
         {{label}}
         {{#if label_parens_text}}
