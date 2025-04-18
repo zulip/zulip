@@ -16,6 +16,7 @@
         "moduleResolution": "bundler",
         "paths": {
             "*": ["./web/src/types/*"],
+            "zod": ["./node_modules/zod/"], // https://github.com/web-infra-dev/rspack/issues/9816
         },
         "resolveJsonModule": true,
         "types": ["@types/jquery.validation"],
