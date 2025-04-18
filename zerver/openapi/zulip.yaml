@@ -14970,6 +14970,8 @@ paths:
                       realm_date_created:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           The UNIX timestamp (UTC) for when the organization was
                           created.
 
@@ -14977,7 +14979,8 @@ paths:
                       demo_organization_scheduled_deletion_date:
                         type: integer
                         description: |
-                          Present if the realm is a demo organization.
+                          Present if `realm` is present in `fetch_event_types`,
+                          and the realm is a demo organization.
 
                           The UNIX timestamp (UTC) when the demo organization will be
                           automatically deleted. Clients should use this to display a
@@ -15104,6 +15107,8 @@ paths:
                       server_presence_ping_interval_seconds:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           For clients implementing the [presence](/api/get-presence) system,
                           the time interval the client should use for sending presence requests
                           to the server (and thus receive presence updates from the server).
@@ -15119,6 +15124,8 @@ paths:
                       server_presence_offline_threshold_seconds:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           How old a presence timestamp for a given user can be before the user
                           should be displayed as offline by clients displaying Zulip presence
                           data. See the related `server_presence_ping_interval_seconds` for details.
@@ -15129,6 +15136,8 @@ paths:
                       server_typing_started_expiry_period_milliseconds:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           For clients implementing [typing notifications](/api/set-typing-status)
                           protocol, the time interval in milliseconds that the client should wait
                           for additional [typing start](/api/get-events#typing-start) events from
@@ -15140,6 +15149,8 @@ paths:
                       server_typing_stopped_wait_period_milliseconds:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           For clients implementing [typing notifications](/api/set-typing-status)
                           protocol, the time interval in milliseconds that the client should wait
                           when a user stops interacting with the compose UI before sending a stop
@@ -15151,6 +15162,8 @@ paths:
                       server_typing_started_wait_period_milliseconds:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           For clients implementing [typing notifications](/api/set-typing-status)
                           protocol, the time interval in milliseconds that the client should use
                           to send regular start notifications to the server to indicate that the
@@ -17077,6 +17090,8 @@ paths:
                       realm_message_edit_history_visibility_policy:
                         type: string
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           What typesof message edit history are accessible to users via
                           [message edit history](/help/view-a-messages-edit-history).
 
@@ -17122,6 +17137,8 @@ paths:
                       realm_can_add_subscribers_group:
                         allOf:
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining the set of
                               users who have permission to add subscribers to channels in the organization.
 
@@ -17224,6 +17241,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create user
                               groups in this organization.
@@ -17235,6 +17254,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create all types of bot users
                               in the organization. See also `can_create_write_only_bots_group`.
@@ -17246,6 +17267,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create bot users that
                               can only send messages in the organization, i.e. incoming webhooks,
@@ -17258,6 +17281,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values)
                               defining the set of users who have permission to
                               administer all existing groups in this organization.
@@ -17283,6 +17308,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining the set of
                               users who have permission to manage plans and billing in the organization.
 
@@ -17293,6 +17320,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create public
                               channels in this organization.
@@ -17304,6 +17333,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create private
                               channels in this organization.
@@ -17315,6 +17346,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to create web-public
                               channels in this organization.
@@ -17330,6 +17363,8 @@ paths:
                       realm_can_resolve_topics_group:
                         allOf:
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining
                               the set of users who have permission to [resolve topics](/help/resolve-a-topic)
                               in the organization.
@@ -17505,6 +17540,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining the
                               set of users who are allowed to create [reusable invitation
                               links](/help/invite-new-users#create-a-reusable-invitation-link)
@@ -17557,6 +17594,8 @@ paths:
                       realm_require_unique_names:
                         type: boolean
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           Indicates whether the organization is configured to require users
                           to have unique full names. If true, the server will reject attempts
                           to create a new user, or change the name of an existing user, where
@@ -17642,6 +17681,8 @@ paths:
                       realm_video_chat_provider:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           The configured [video call provider](/help/configure-call-provider) for the
                           organization.
 
@@ -17665,6 +17706,8 @@ paths:
                         type: string
                         nullable: true
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           The URL of the custom Jitsi Meet server configured in this organization's
                           settings.
 
@@ -17704,6 +17747,8 @@ paths:
                       realm_direct_message_initiator_group:
                         allOf:
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining the set of
                               users who have permission to start a new direct message conversation
                               involving other non-bot users. Users who are outside this group and attempt
@@ -17719,6 +17764,8 @@ paths:
                       realm_direct_message_permission_group:
                         allOf:
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining the set of
                               users who have permission to fully use direct messages. Users outside
                               this group can only send direct messages to conversations where all the
@@ -18133,6 +18180,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining the
                               set of users who are allowed to access all users in the
                               organization.
@@ -18145,6 +18194,8 @@ paths:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
                           - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
                               A [group-setting value](/api/group-setting-values) defining the
                               set of users who are allowed to use AI summarization.
 
@@ -18322,6 +18373,8 @@ paths:
                           that feature.
                       server_thumbnail_formats:
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           A list describing the image formats that uploaded
                           images will be thumbnailed into. Any image with a
                           source starting with `/user_uploads/thumbnail/` can
@@ -18422,6 +18475,8 @@ paths:
                         type: string
                         nullable: true
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           The URL of the Jitsi server that the Zulip server is configured to use by
                           default; the organization-level setting `realm_jitsi_server_url` takes
                           precedence over this setting when both are set.
@@ -18471,6 +18526,8 @@ paths:
                       realm_moderation_request_channel_id:
                         type: integer
                         description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
                           The ID of the private channel to which messages flagged by users for
                           moderation are sent. Moderators can use this channel to review and
                           act on reported content.
