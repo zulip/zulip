@@ -116,7 +116,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         user_profile.is_moderator = False
-        self.assertEqual(user_profile.is_moderator, False)
+        self.assertEqual(user_profile.is_moderator, True)
         self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         user_profile.is_realm_admin = False
@@ -593,21 +593,16 @@ class PermissionTest(ZulipTestCase):
                 user_profile.is_realm_admin
                 and not user_profile.is_guest
                 and not user_profile.is_realm_owner
-                and not user_profile.is_moderator
             )
         elif role == UserProfile.ROLE_REALM_OWNER:
             return (
                 user_profile.is_realm_owner
                 and user_profile.is_realm_admin
-                and not user_profile.is_moderator
                 and not user_profile.is_guest
             )
         elif role == UserProfile.ROLE_MODERATOR:
-            return (
-                user_profile.is_moderator
-                and not user_profile.is_realm_owner
-                and not user_profile.is_realm_admin
-                and not user_profile.is_guest
+            return user_profile.is_moderator or (
+                user_profile.is_realm_admin and not user_profile.is_guest
             )
 
         if role == UserProfile.ROLE_MEMBER:

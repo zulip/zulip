@@ -1432,7 +1432,13 @@ export function _add_user(person: User): void {
         our realm (like cross-realm bots).
     */
     person.is_moderator = false;
-    if (person.role === settings_config.user_role_values.moderator.code) {
+    if (
+        [
+            settings_config.user_role_values.moderator.code,
+            settings_config.user_role_values.admin.code,
+            settings_config.user_role_values.owner.code,
+        ].includes(person.role)
+    ) {
         person.is_moderator = true;
     }
     if (person.user_id) {

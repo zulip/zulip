@@ -122,7 +122,7 @@ const realm_admin = {
     is_owner: false,
     is_admin: true,
     is_guest: false,
-    is_moderator: false,
+    is_moderator: true,
     is_bot: false,
     role: 200,
 };
@@ -146,7 +146,7 @@ const realm_owner = {
     is_owner: true,
     is_admin: true,
     is_guest: false,
-    is_moderator: false,
+    is_moderator: true,
     is_bot: false,
     role: 100,
 };
@@ -686,7 +686,9 @@ test_people("user_type", () => {
     people.add_active_user(realm_admin);
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
+    console.log("AAAaaAAAAAAAAA");
     people.add_active_user(moderator);
+    console.log("BABSDBSDBSDBBDSBSDB");
     people.add_active_user(bot_botson);
     assert.equal(people.get_user_type(me.user_id), $t({defaultMessage: "Member"}));
     assert.equal(people.get_user_type(realm_admin.user_id), $t({defaultMessage: "Administrator"}));

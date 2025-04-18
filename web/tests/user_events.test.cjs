@@ -133,7 +133,7 @@ run_test("updates", ({override}) => {
     });
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, "Isaac Newton");
-    assert.equal(person.is_moderator, false);
+    assert.equal(person.is_moderator, true);
     assert.equal(person.is_admin, true);
     assert.equal(person.role, settings_config.user_role_values.admin.code);
 
