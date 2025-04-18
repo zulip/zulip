@@ -3453,10 +3453,15 @@ class BillingSession(ABC):
         is_remotely_hosted = isinstance(
             self, RemoteRealmBillingSession | RemoteServerBillingSession
         )
+        is_demo_organization = False
+        if not is_remotely_hosted:
+            assert isinstance(self, RealmBillingSession)
+            is_demo_organization = self.realm.demo_organization_scheduled_deletion_date is not None
         plan_name = "Free" if is_remotely_hosted else "Zulip Cloud Free"
 
         context: dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
+            "is_demo_organization": is_demo_organization,
             "is_remotely_hosted": is_remotely_hosted,
             "sponsorship_plan_name": self.get_sponsorship_plan_name(customer, is_remotely_hosted),
             "plan_name": plan_name,

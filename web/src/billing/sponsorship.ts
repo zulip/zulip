@@ -99,6 +99,11 @@ export function initialize(): void {
         return;
     }
 
+    if ($(".demo-organization-warning").length > 0) {
+        // Sponsorship form is not present for demo organizations.
+        return;
+    }
+
     $("#sponsorship-button").on("click", (e) => {
         if (!helpers.is_valid_input($("#sponsorship-form"))) {
             return;
