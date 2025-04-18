@@ -95,11 +95,13 @@ export function query_matches_string_in_order(
     source_str: string,
     split_char: string,
 ): boolean {
-    source_str = source_str.toLowerCase();
-    source_str = remove_diacritics(source_str);
-
     query = query.toLowerCase();
-    query = remove_diacritics(query);
+    source_str = source_str.toLowerCase();
+
+    const should_remove_diacritics = /^[a-z]+$/.test(query);
+    if (should_remove_diacritics) {
+        source_str = remove_diacritics(source_str);
+    }
 
     return query_matches_string_in_order_assume_canonicalized(query, source_str, split_char);
 }
