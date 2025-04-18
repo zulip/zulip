@@ -2,6 +2,8 @@ import re
 from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
 
+import regex
+
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
     WildValue,
@@ -131,14 +133,14 @@ def convert_mailto_format(text: str) -> tuple[str, bool]:
 
 
 # Map italic, bold and strikethrough Markdown
-def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
+def convert_markdown_syntax(text: str, pattern: str, zulip_keyword: str) -> str:
     """
     Returns:
     1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
     2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
     3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
     """
-    for match in re.finditer(regex, text, re.VERBOSE):
+    for match in regex.finditer(pattern, text, re.VERBOSE):
         converted_token = (
             match.group(1)
             + zulip_keyword
