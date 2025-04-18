@@ -120,7 +120,7 @@ def validate_attachment_request(
         )
         attachment.refresh_from_db()
 
-    if user_profile == attachment.owner:
+    if user_profile.id == attachment.owner_id:
         # If you own the file, you can access it.
         return True, attachment
     if (
