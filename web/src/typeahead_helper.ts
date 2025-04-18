@@ -1064,15 +1064,33 @@ export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
 ): boolean {
-    if (typeahead.query_matches_string_in_order(query, person.user.full_name, " ")) {
+    if (
+        person.type === "broadcast" &&
+        typeahead.query_matches_string_in_order(query, person.user.full_name, " ")
+    ) {
         return true;
     }
-    if (person.type === "user" && Boolean(person.user.delivery_email)) {
-        return typeahead.query_matches_string_in_order(
-            query,
-            people.get_visible_email(person.user),
-            " ",
-        );
+    if (person.type === "user") {
+        query = query.toLowerCase();
+
+        const full_name = people.maybe_remove_diacritics_from_name(query, person.user);
+        if (
+            typeahead.query_matches_string_in_order_assume_canonicalized(
+                query,
+                full_name.toLowerCase(),
+                " ",
+            )
+        ) {
+            return true;
+        }
+
+        if (person.user.delivery_email) {
+            return typeahead.query_matches_string_in_order(
+                query,
+                people.get_visible_email(person.user),
+                " ",
+            );
+        }
     }
     return false;
 }
