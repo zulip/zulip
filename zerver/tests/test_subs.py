@@ -1696,7 +1696,9 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(attachment.is_realm_public)
 
         # Verify moving a message to a private stream
-        private_stream = self.make_stream("private_stream", realm=realm, invite_only=True)
+        private_stream = self.make_stream(
+            "private_stream", realm=realm, invite_only=True, history_public_to_subscribers=True
+        )
         self.subscribe(owner, "private_stream")
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -1714,6 +1716,26 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
         attachment.refresh_from_db()
         self.assertFalse(attachment.is_realm_public)
+
+        # User should be able to see the attachment if they have
+        # content access to the channel.
+        for setting_name in Stream.stream_permission_group_settings_requiring_content_access:
+            do_change_stream_group_based_setting(
+                private_stream,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            self.assertTrue(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
+            attachment.refresh_from_db()
+            self.assertFalse(attachment.is_realm_public)
+            nobody_group = NamedUserGroup.objects.get(
+                name="role:nobody", is_system_group=True, realm=realm
+            )
+            do_change_stream_group_based_setting(
+                private_stream, setting_name, nobody_group, acting_user=cordelia
+            )
 
         # Verify moving a message to a web-public stream
         web_public_stream = self.make_stream("web_public_stream", realm=realm, is_web_public=True)
