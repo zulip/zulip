@@ -1666,20 +1666,11 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
 
         # Check topic resolved notification message is only unread for participants.
-        assert (
-            UserMessage.objects.filter(
-                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[2].id
-            )
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .count()
-            == 3
-        )
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(messages[2].id)
+        self.assertEqual(unread_user_ids, {admin_user.id, hamlet.id, aaron.id})
 
-        assert (
-            not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .exists()
-        )
+        read_user_ids = self.get_user_ids_for_whom_message_read(messages[2].id)
+        self.assertEqual(read_user_ids, {cordelia.id})
 
         # Now move to a weird state and confirm we get the normal topic moved message.
         weird_topic_name = "✔ ✔✔" + original_topic_name
@@ -1738,20 +1729,11 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
 
         # Check topic unresolved notification message is only unread for participants.
-        assert (
-            UserMessage.objects.filter(
-                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[4].id
-            )
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .count()
-            == 3
-        )
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(messages[4].id)
+        self.assertEqual(unread_user_ids, {admin_user.id, hamlet.id, aaron.id})
 
-        assert (
-            not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .exists()
-        )
+        read_user_ids = self.get_user_ids_for_whom_message_read(messages[4].id)
+        self.assertEqual(read_user_ids, {cordelia.id})
 
     @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
     def test_mark_topic_as_resolved_within_grace_period(self) -> None:
