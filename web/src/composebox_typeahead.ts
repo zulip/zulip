@@ -671,8 +671,12 @@ export function get_person_suggestions(
                 })),
             ];
         }
-
-        return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
+        const should_remove_diacritics = people.should_remove_diacritics_for_query(
+            query.toLowerCase(),
+        );
+        return person_items.filter((item) =>
+            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
+        );
     }
 
     let groups: UserGroup[];
