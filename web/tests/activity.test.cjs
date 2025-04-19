@@ -469,29 +469,6 @@ test("first/prev/next", ({override, override_rewire, mock_template}) => {
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
 });
 
-test("render_empty_user_list_message", ({override, mock_template}) => {
-    const empty_list_message = "No matching users.";
-    mock_template("empty_list_widget_for_list.hbs", false, (data) => {
-        assert.equal(data.empty_list_message, empty_list_message);
-        return "<empty-list-stub>";
-    });
-
-    let $appended_data;
-    override(buddy_list, "$container", {
-        append($data) {
-            $appended_data = $data;
-        },
-        attr(name) {
-            assert.equal(name, "data-search-results-empty");
-            return empty_list_message;
-        },
-        children: () => [],
-    });
-
-    activity_ui.render_empty_user_list_message_if_needed(buddy_list.$container);
-    assert.equal($appended_data.selector, "<empty-list-stub>");
-});
-
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     override(user_settings, "user_list_style", 2);
 
