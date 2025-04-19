@@ -2,8 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
-
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -120,17 +118,6 @@ export function searching(): boolean {
     return user_filter?.searching() ?? false;
 }
 
-export function render_empty_user_list_message_if_needed($container: JQuery): void {
-    const empty_list_message = $container.attr("data-search-results-empty");
-
-    if (!empty_list_message || $container.children().length > 0) {
-        return;
-    }
-
-    const empty_list_widget_html = render_empty_list_widget_for_list({empty_list_message});
-    $container.append($(empty_list_widget_html));
-}
-
 export let build_user_sidebar = (): number[] | undefined => {
     if (realm.realm_presence_disabled) {
         return undefined;
@@ -142,9 +129,6 @@ export let build_user_sidebar = (): number[] | undefined => {
     const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     buddy_list.populate({all_user_ids});
-
-    render_empty_user_list_message_if_needed(buddy_list.$users_matching_view_list);
-    render_empty_user_list_message_if_needed(buddy_list.$other_users_list);
 
     return all_user_ids; // for testing
 };
