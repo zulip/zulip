@@ -46,7 +46,10 @@ from zerver.lib.mobile_auth_otp import (
 )
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_future_email
-from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
+    get_user_subscribed_streams,
+)
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_classes import ZulipTestCase
@@ -1028,7 +1031,7 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(95),
+            self.assert_database_query_count(96),
             self.assert_memcached_count(18),
             self.captureOnCommitCallbacks(execute=True),
         ):
@@ -4392,8 +4395,15 @@ class DeactivateUserTest(ZulipTestCase):
         email = user.email
         self.login_user(user)
         self.assertTrue(user.is_active)
+        stream_deltas = self.get_stream_subscriber_deltas(streams=get_user_subscribed_streams(user))
         result = self.client_delete("/json/users/me")
         self.assert_json_success(result)
+        # Deactivating a user should result in subscriber_count - 1
+        # for all that user's subscribed streams.
+        expected_stream_deltas = {
+            stream_id: count - 1 for stream_id, count in stream_deltas.items()
+        }
+        self.assert_stream_subscriber_count(expected_stream_deltas)
         user = self.example_user("hamlet")
         self.assertFalse(user.is_active)
         password = initial_password(email)

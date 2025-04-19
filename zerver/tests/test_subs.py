@@ -3499,7 +3499,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3526,7 +3526,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21,
+            query_count=22,
             cache_count=13,
             target_users=target_users,
             is_realm_admin=True,
@@ -3544,7 +3544,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3561,7 +3561,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -3587,7 +3587,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3601,7 +3601,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3615,7 +3615,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_remove_unsubbed_user_along_with_subbed(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=13,
+            query_count=14,
             target_users=[self.example_user("cordelia"), self.example_user("iago")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3648,7 +3648,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
@@ -6129,7 +6129,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(43),
+            self.assert_database_query_count(44),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -6155,7 +6155,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now add ourselves
         with (
             self.capture_send_event_calls(expected_num_events=2) as events,
-            self.assert_database_query_count(19),
+            self.assert_database_query_count(20),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -6501,7 +6501,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 5 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(26),
+            self.assert_database_query_count(27),
             self.assert_memcached_count(5),
             self.capture_send_event_calls(expected_num_events=9) as events,
         ):
@@ -6643,7 +6643,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 18):
+        with self.assert_database_query_count(num_streams + 19):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.subscribe_via_post(
                     mit_user,
@@ -6724,7 +6724,7 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with (
-            self.assert_database_query_count(22),
+            self.assert_database_query_count(23),
             self.assert_memcached_count(11),
             mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
         ):
@@ -7102,7 +7102,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(43):
+        with self.assert_database_query_count(44):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[0]],
@@ -7110,7 +7110,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(52):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
@@ -7122,7 +7122,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(55):
+        with self.assert_database_query_count(56):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[2]],
@@ -7907,7 +7907,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(52):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,
