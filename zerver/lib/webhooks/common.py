@@ -9,6 +9,8 @@ from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
 from django.conf import settings
+from django.core.cache import cache
+from django.db.models import Q
 from django.http import HttpRequest
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
@@ -31,7 +33,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.models import UserProfile
+from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -315,3 +317,58 @@ def validate_webhook_signature(
 
     if signed_payload != signature:
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def get_user_by_external_account(
+    realm: Realm, external_username: str, service: str = "github"
+) -> list[dict[str, str]]:
+    cache_key = f"external_field_id:{realm.id}:{service}"
+    field_id = cache.get(cache_key)
+
+    if field_id is not None:
+        values = (
+            CustomProfileFieldValue.objects.filter(
+                field_id=field_id,
+                value__iexact=external_username,
+                user_profile__realm_id=realm.id,
+                user_profile__is_active=True,
+            )
+            .select_related("user_profile")
+            .values("user_profile__id", "user_profile__full_name", "user_profile__email")
+        )
+    else:
+        values = (
+            CustomProfileFieldValue.objects.filter(
+                field__realm=realm,
+                field__field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+                value__iexact=external_username,
+                user_profile__realm_id=realm.id,
+                user_profile__is_active=True,
+            )
+            .filter(
+                Q(field__field_data__contains=f'"service": "{service}"')
+                | Q(field__field_data__contains=f'"subtype":"{service}"')
+            )
+            .select_related("user_profile", "field")
+            .values(
+                "user_profile__id",
+                "user_profile__full_name",
+                "user_profile__email",
+                "field__id",
+            )
+        )
+        if values:
+            cache.set(cache_key, values[0]["field__id"], timeout=3600)
+
+    result = [
+        {
+            "id": str(value["user_profile__id"]),
+            "full_name": value["user_profile__full_name"],
+            "email": value["user_profile__email"],
+            "external_username": external_username,
+            "service": service,
+        }
+        for value in values
+    ]
+
+    return result
