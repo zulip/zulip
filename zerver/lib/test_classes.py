@@ -1376,6 +1376,19 @@ Output:
         self.assertEqual(stream.recipient_id, message.recipient_id)
         self.assertEqual(stream.name, stream_name)
 
+    def assert_stream_subscriber_count(self, deltas: dict[int, int]) -> None:
+        for stream in Stream.objects.filter(id__in=deltas.keys()):
+            self.assertEqual(
+                stream.subscriber_count,
+                deltas[stream.id],
+                msg=f"""
+                stream of ID ({stream.id}) should have a subscriber_count of {deltas[stream.id]}.
+                """,
+            )
+
+    def get_stream_subscriber_deltas(self, streams: QuerySet[Stream]) -> dict[int, int]:
+        return {stream.id: stream.subscriber_count for stream in streams}
+
     def webhook_fixture_data(self, type: str, action: str, file_type: str = "json") -> str:
         fn = os.path.join(
             os.path.dirname(__file__),
