@@ -298,6 +298,7 @@ EXEMPT_FILES = make_set(
         "web/src/zcommand.ts",
         "web/src/zform.js",
         "web/src/zulip_test.ts",
+        "web/src/zulip_test_expose.ts",
         "web/tests/lib/example_user.cjs",
         "web/tests/lib/mdiff.cjs",
         "web/tests/lib/real_jquery.cjs",
