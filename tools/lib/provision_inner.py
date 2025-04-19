@@ -28,6 +28,7 @@ from scripts.lib.zulip_tools import (
     get_tzdata_zi,
     is_digest_obsolete,
     run,
+    run_as_root,
     write_new_digest,
 )
 from tools.setup.generate_bots_integrations_static_files import (
@@ -323,13 +324,12 @@ def main(options: argparse.Namespace) -> int:
 
         assert settings.RABBITMQ_PASSWORD is not None
         if options.is_force or need_to_run_configure_rabbitmq([settings.RABBITMQ_PASSWORD]):
-            print("Skipping RabbitMQ setup...")
-            # run_as_root(["scripts/setup/configure-rabbitmq"])
-            # write_new_digest(
-            #     "last_configure_rabbitmq_hash",
-            #     configure_rabbitmq_paths(),
-            #     [settings.RABBITMQ_PASSWORD],
-            # )
+            run_as_root(["scripts/setup/configure-rabbitmq"])
+            write_new_digest(
+                "last_configure_rabbitmq_hash",
+                configure_rabbitmq_paths(),
+                [settings.RABBITMQ_PASSWORD],
+            )
         else:
             print("No need to run `scripts/setup/configure-rabbitmq.")
 
