@@ -1,14 +1,14 @@
 # Icons
 
 Zulip makes extensive use of icons to decorate elements in the UI as
-well as for compact buttons.
+well as for compact buttons and other small interactive elements.
 
 ## Using icons
 
-- Modern Zulip icons are implemented using `<i class="zulip-icon
-zulip-icon-smile"></i>`, which is rendered using generated CSS that
-  maps that class name combination to displaying the SVG file located
-  at `web/shared/icons/smile.svg`.
+- Modern Zulip icons are implemented using a class-based combination
+  like `<i class="zulip-icon zulip-icon-smile"></i>`, which is rendered
+  using generated CSS that maps that class name (`zulip-icon-smile`)
+  to the SVG file located at `web/shared/icons/smile.svg`.
 
 - Older icons use [Font Awesome 4.7](https://fontawesome.com/),
   declared in our HTML via `<i class="fa fa-paperclip"></i>`. We are
@@ -18,9 +18,9 @@ zulip-icon-smile"></i>`, which is rendered using generated CSS that
 Always consider [accessibility](../subsystems/accessibility.md) when
 using icons. Typically, this means:
 
-- Icons that are used **purely as a decoration** to a textual label (for
-  example, in our popover menus) should use `aria-hidden`, so that
-  screenreaders ignore them in favor of reading the label.
+- Icons that are used **purely as a decoration** immediately adjacent a
+  textual label (for example, in our popover menus) should use `aria-hidden`,
+  so that screenreaders ignore them in favor of reading the label.
 
 - Buttons whose **entire label** is an icon should have a
   [tooltip](../subsystems/html-css.md#tooltips) as well as an
@@ -30,13 +30,14 @@ using icons. Typically, this means:
 
 ## Adding a new icon
 
-A new feature may require a new icon to represent it, for example to be used
-next to a menu option. The issue you're working on may not have an icon
-specified upfront. In this case, you should:
+A new feature, such as a new menu option, may require a new icon to represent
+it. The issue you're working on may not have an icon specified upfront. In that
+case, you should:
 
 1. Prototype using a [Lucide icon](https://lucide.dev/icons/), which is the
-   default source for icons in Zulip. SVG files must be added under
-   `web/shared/icons/` (don't forget to `git add`) to be used.
+   preferred source for icons in Zulip. New SVG files must be placed in the
+   `web/shared/icons/` directory to be used (don't forget to `git add` new
+   icons along with your other changes).
 
 1. **When your feature is nearing completion**, post in the [appropriate
    channel](https://zulip.com/development-community/#where-do-i-send-my-message)
@@ -48,10 +49,10 @@ specified upfront. In this case, you should:
    ask him to prepare the icon to be used.
 
 1. Follow the [attribution guidelines](../contributing/licensing.md)
-   to document the icon source.
+   to document the icon's source in `docs/THIRDPARTY/`.
 
-## Changing an icon
+## Updating UI icons in the help center
 
 When changing an icon for an existing feature, be sure to [update the help
 center](../documentation/helpcenter.md#icons) accordingly (`git grep` is your
-friend).
+friend for finding instances of icons to be replaced).
