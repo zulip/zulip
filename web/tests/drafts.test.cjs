@@ -36,7 +36,19 @@ const aaron = {
     user_id: 6,
     full_name: "Aaron",
 };
+const iago = {
+    email: "iago@zulip.com",
+    user_id: 2,
+    full_name: "Iago",
+};
+const zoe = {
+    email: "zoe@zulip.com",
+    user_id: 3,
+    full_name: "Zoe",
+};
 people.add_active_user(aaron);
+people.add_active_user(iago);
+people.add_active_user(zoe);
 
 const setTimeout_delay = 3000;
 set_global("setTimeout", (f, delay) => {
@@ -476,7 +488,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         drafts_version: 1,
     };
     const draft_4 = {
-        private_message_recipient: "aaron@zulip.com",
+        private_message_recipient: "iago@zulip.com",
         reply_to: "iago@zulip.com",
         type: "private",
         content: "Test direct message 2",
@@ -485,8 +497,8 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         drafts_version: 1,
     };
     const draft_5 = {
-        private_message_recipient: "aaron@zulip.com",
-        reply_to: "zoe@zulip.com",
+        private_message_recipient: "zoe@zulip.com,iago@zulip.com",
+        reply_to: "zoe@zulip.com,iago@zulip.com",
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),
@@ -528,14 +540,14 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id5",
             is_stream: false,
-            recipients: "Aaron",
+            recipients: "Iago, Zoe",
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
-            recipients: "Aaron",
+            recipients: "Iago",
             raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
         },
@@ -681,7 +693,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     };
     const pm_draft_2 = {
         private_message_recipient: "aaron@zulip.com",
-        reply_to: "iago@zulip.com",
+        reply_to: "aaron@zulip.com",
         type: "private",
         content: "Test direct message 2",
         updatedAt: date(-5),
@@ -690,7 +702,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     };
     const pm_draft_3 = {
         private_message_recipient: "aaron@zulip.com",
-        reply_to: "zoe@zulip.com",
+        reply_to: "aaron@zulip.com",
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),
