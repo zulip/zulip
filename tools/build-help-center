@@ -1,4 +1,28 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
-./tools/convert-help-center-docs-to-mdx
-(cd ./help-beta/ && /usr/local/bin/corepack pnpm build)
+import os
+import subprocess
+import sys
+
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+
+import django
+
+django.setup()
+
+
+def run() -> None:
+    subprocess.check_call(["./tools/convert-help-center-docs-to-mdx"], stderr=subprocess.STDOUT)
+    subprocess.check_call(
+        ["/usr/local/bin/corepack", "pnpm", "build"], stderr=subprocess.STDOUT, cwd="help-beta"
+    )
+
+
+run()
