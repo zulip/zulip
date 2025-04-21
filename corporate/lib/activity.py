@@ -172,7 +172,13 @@ def remote_installation_support_link(hostname: str) -> Markup:
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
-def get_plan_rate_percentage(discount: str | None) -> str:
+def get_plan_rate_percentage(discount: str | None, has_fixed_price: bool) -> str:
+    # We want to clearly note plans with a fixed price, and not show
+    # them as paying 100%, as they are usually a special, negotiated
+    # rate with the customer.
+    if has_fixed_price:
+        return "Fixed"
+
     # CustomerPlan.discount is a string field that stores the discount.
     if discount is None or discount == "0":
         return "100%"
@@ -194,6 +200,7 @@ def get_remote_activity_plan_data(
 ) -> RemoteActivityPlanData:
     from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 
+    has_fixed_price = plan.fixed_price is not None
     if plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY or plan.status in (
         CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
         CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
@@ -207,13 +214,13 @@ def get_remote_activity_plan_data(
         renewal_cents = RemoteRealmBillingSession(
             remote_realm=remote_realm
         ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
-        current_rate = get_plan_rate_percentage(plan.discount)
+        current_rate = get_plan_rate_percentage(plan.discount, has_fixed_price)
     else:
         assert remote_server is not None
         renewal_cents = RemoteServerBillingSession(
             remote_server=remote_server
         ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
-        current_rate = get_plan_rate_percentage(plan.discount)
+        current_rate = get_plan_rate_percentage(plan.discount, has_fixed_price)
 
     return RemoteActivityPlanData(
         current_status=plan.get_plan_status_as_text(),
@@ -254,7 +261,10 @@ def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str
             realm=plan.customer.realm
         ).get_annual_recurring_revenue_for_support_data(plan, latest_ledger_entry)
         annual_revenue[plan.customer.realm.string_id] = renewal_cents
-        plan_rate[plan.customer.realm.string_id] = get_plan_rate_percentage(plan.discount)
+        has_fixed_price = plan.fixed_price is not None
+        plan_rate[plan.customer.realm.string_id] = get_plan_rate_percentage(
+            plan.discount, has_fixed_price
+        )
     return annual_revenue, plan_rate
 
 
