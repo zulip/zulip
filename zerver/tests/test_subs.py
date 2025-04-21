@@ -147,6 +147,16 @@ def fix_expected_fields_for_stream_group_settings(expected_fields: set[str]) -> 
     return expected_fields
 
 
+def check_subscriptions_exists(user_profile: UserProfile, stream: Stream) -> bool:
+    return (
+        get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
+        .filter(
+            user_profile=user_profile,
+        )
+        .exists()
+    )
+
+
 class TestMiscStuff(ZulipTestCase):
     def test_test_helper(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -1818,14 +1828,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(cordelia, stream.name)
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
-        subscription_exists = (
-            get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
-            .filter(
-                user_profile=user_profile,
-            )
-            .exists()
-        )
-        self.assertTrue(subscription_exists)
+        self.assertTrue(check_subscriptions_exists(user_profile, stream))
         # Assert that a notification message was sent for the archive.
         message = self.get_last_message()
         expected_content = f"Channel {stream.name} has been archived."
@@ -1855,14 +1858,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
-        subscription_exists = (
-            get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
-            .filter(
-                user_profile=user_profile,
-            )
-            .exists()
-        )
-        self.assertTrue(subscription_exists)
+        self.assertTrue(check_subscriptions_exists(user_profile, stream))
         # Assert that a notification message was sent for the archive.
         message = self.get_last_message()
         expected_content = f"Channel {stream.name} has been archived."
