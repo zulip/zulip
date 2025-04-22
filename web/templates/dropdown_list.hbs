@@ -24,7 +24,7 @@
             {{#if stream}}
                 {{> inline_decorated_channel_name stream=stream show_colored_icon=true}}
             {{else if is_direct_message}}
-                <i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> {{name}}
+                <i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> <span class="decorated-dm-name">{{name}}</span>
             {{else if is_setting_disabled}}
                 <span class="setting-disabled-option"><i class="setting-disabled-option-icon fa fa-ban" aria-hidden="true"></i>{{t "Disable" }}</span>
             {{else}}
