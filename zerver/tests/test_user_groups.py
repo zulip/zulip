@@ -1840,7 +1840,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             for i in range(50)
         ]
 
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             user_group = create_user_group_in_database(
                 name="support",
                 members=[hamlet, cordelia, *original_users],
@@ -2076,7 +2076,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             params = {
                 "name": "support",
                 "members": orjson.dumps([hamlet.id]).decode(),
-                "description": "Support Team",
+                "description": "Support Team\n",
             }
             result = self.api_post(
                 self.example_user(acting_user), "/api/v1/user_groups/create", info=params
@@ -2210,6 +2210,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 self.assert_json_success(result)
                 user_group.refresh_from_db()
                 self.assertEqual(user_group.name, new_name)
+                if "\n" in new_description:
+                    new_description = new_description.replace("\n", " ")
                 self.assertEqual(user_group.description, new_description)
             else:
                 self.assert_json_error(result, error_msg)
@@ -2285,9 +2287,24 @@ class UserGroupAPITestCase(UserGroupTestCase):
         promote_new_full_members()
         check_update_user_group(
             "help",
-            "Troubleshooting team",
+            "Troubleshooting team\n",
             "cordelia",
         )
+
+        # Verify that we don't render inline URL previews in this code path.
+        with self.settings(INLINE_URL_EMBED_PREVIEW=True):
+            result = self.api_patch(
+                self.example_user("cordelia"),
+                f"/api/v1/user_groups/{user_group.id}",
+                {"description": "See https://zulip.com/team/"},
+            )
+        self.assert_json_success(result)
+        user_group.refresh_from_db()
+        self.assertEqual(
+            user_group.rendered_description,
+            '<p>See <a href="https://zulip.com/team/">https://zulip.com/team/</a></p>',
+        )
+
         check_update_user_group("support", "Support team", "aaron", "Insufficient permission")
 
         othello.date_joined = timezone_now() - timedelta(days=11)

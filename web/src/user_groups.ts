@@ -39,9 +39,15 @@ init();
 export const max_user_group_name_length = 100;
 
 export function add(user_group_raw: UserGroupRaw): UserGroup {
+    if (user_group_raw.rendered_description) {
+        user_group_raw.rendered_description = clean_up_group_description(
+            user_group_raw.rendered_description,
+        );
+    }
     // Reformat the user group members structure to be a set.
     const user_group = {
         description: user_group_raw.description,
+        rendered_description: user_group_raw.rendered_description,
         id: user_group_raw.id,
         name: user_group_raw.name,
         creator_id: user_group_raw.creator_id,
@@ -68,6 +74,11 @@ export function remove(user_group: UserGroup): void {
     user_group_by_id_dict.delete(user_group.id);
 }
 
+export function clean_up_group_description(rendered_description: string): string {
+    rendered_description = rendered_description.replace("<p>", "").replace("</p>", "");
+    return rendered_description;
+}
+
 export function get_user_group_from_id(group_id: number): UserGroup {
     const user_group = user_group_by_id_dict.get(group_id);
     if (!user_group) {
@@ -86,8 +97,9 @@ export function update(event: UserGroupUpdateEvent, group: UserGroup): void {
         group.name = event.data.name;
         user_group_name_dict.set(group.name, group);
     }
-    if (event.data.description !== undefined) {
+    if (event.data.description !== undefined && event.data.rendered_description !== undefined) {
         group.description = event.data.description;
+        group.rendered_description = clean_up_group_description(event.data.rendered_description);
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }

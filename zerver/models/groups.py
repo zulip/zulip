@@ -66,6 +66,7 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     )
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
     description = models.TextField(default="", db_column="description")
+    rendered_description = models.TextField(default="")
     date_created = models.DateTimeField(default=timezone_now, null=True)
     creator = models.ForeignKey(
         UserProfile, null=True, on_delete=models.SET_NULL, related_name="+", db_column="creator_id"

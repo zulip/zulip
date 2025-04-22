@@ -116,7 +116,7 @@ export function toggle_user_group_info_popover(
                     subgroups.length + members.length <= MAX_ROWS_IN_POPOVER;
                 const args = {
                     group_name: user_groups.get_display_group_name(group.name),
-                    group_description: group.description,
+                    rendered_description: group.rendered_description,
                     group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
                     is_system_group: group.is_system_group,

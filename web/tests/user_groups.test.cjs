@@ -30,6 +30,7 @@ const get_test_subgroup = (id) => ({
 run_test("user_groups", () => {
     const students = {
         description: "Students group",
+        rendered_description: "<p>Students group</p>",
         name: "Students",
         creator_id: null,
         date_created: 1596710000,
@@ -63,6 +64,7 @@ run_test("user_groups", () => {
     const admins = {
         name: "Admins",
         description: "foo",
+        rendered_description: "<p>foo</p>",
         creator_id: null,
         date_created: 1596710000,
         id: 1,
@@ -122,6 +124,7 @@ run_test("user_groups", () => {
         group_id: admins.id,
         data: {
             description: "administer",
+            rendered_description: "<p>administer</p>",
         },
     };
     user_groups.update(update_des_event, admins_group);

@@ -84,6 +84,7 @@ rules:
         - zerver/migrations/0443_userpresence_new_table_schema.py
         - zerver/migrations/0493_rename_userhotspot_to_onboardingstep.py
         - pgroonga/migrations/0002_html_escape_subject.py
+        - zerver/migrations/0650_set_namedusergroup_rendered_description.py
 
   - id: use-addindexconcurrently
     pattern: django.db.migrations.AddIndex(...)

@@ -333,6 +333,7 @@ run_test("user groups", ({override}) => {
 
         assert_same(group.name, event.data.name);
         assert_same(group.description, event.data.description);
+        assert_same(args.event.data.rendered_description, event.data.rendered_description);
     }
 });
 
