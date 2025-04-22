@@ -150,6 +150,7 @@ export function spinner_li(): ListInfoNode {
 }
 
 export class TopicListWidget {
+    topic_list_class_name = "topic-list";
     prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
     my_stream_id: number;
@@ -185,7 +186,7 @@ export class TopicListWidget {
             list_info.items.length === num_possible_topics &&
             stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
 
-        const topic_list_classes: [string] = ["topic-list"];
+        const topic_list_classes: [string] = [this.topic_list_class_name];
 
         if (list_info.items.length > 0) {
             topic_list_classes.push("topic-list-has-topics");
@@ -224,7 +225,7 @@ export class TopicListWidget {
     }
 
     remove(): void {
-        this.$parent_elem.find(".topic-list").remove();
+        this.$parent_elem.find(`.${this.topic_list_class_name}`).remove();
         this.prior_dom = undefined;
     }
 
@@ -240,7 +241,7 @@ export class TopicListWidget {
             this.$parent_elem.append($(html));
         };
 
-        const find = (): JQuery => this.$parent_elem.find(".topic-list");
+        const find = (): JQuery => this.$parent_elem.find(`.${this.topic_list_class_name}`);
 
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
@@ -248,7 +249,7 @@ export class TopicListWidget {
     }
 
     is_empty(): boolean {
-        const $topic_list = this.$parent_elem.find(".topic-list");
+        const $topic_list = this.$parent_elem.find(`.${this.topic_list_class_name}`);
         return !$topic_list.hasClass("topic-list-has-topics");
     }
 }
