@@ -1062,6 +1062,28 @@ function set_list_focus(input_key?: string): void {
         }
     }
 
+    // Focus on appropriate button if the is row has no unreads but
+    // `col_focus` is set to `UNREAD_COUNT` column.
+    if (!is_header_row && col_focus === COLUMNS.UNREAD_COUNT) {
+        const row_has_unreads = cols_to_focus.some((col) =>
+            col.classList.contains("unread-count-focus-outline"),
+        );
+        if (!row_has_unreads) {
+            if (input_key !== undefined && RIGHT_NAVIGATION_KEYS.includes(input_key)) {
+                col_focus = COLUMNS.TOPIC_VISIBILITY;
+            } else if (input_key !== undefined && LEFT_NAVIGATION_KEYS.includes(input_key)) {
+                // Focus on entire row.
+                col_focus = COLUMNS.COLLAPSE_BUTTON;
+            } else {
+                // up / down arrow
+                // Focus on the entire row without changing `col_focus` so that
+                // we can focus on unread count button if the next row has one.
+                $row_to_focus.trigger("focus");
+                return;
+            }
+        }
+    }
+
     const col_to_focus = cols_to_focus[col_focus];
     assert(col_to_focus !== undefined);
     $(col_to_focus).trigger("focus");
