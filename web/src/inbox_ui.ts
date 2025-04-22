@@ -1014,8 +1014,8 @@ function set_list_focus(input_key?: string): void {
     // This includes a fake collapse button for `inbox-row` and a fake topic visibility
     // button for `inbox-header`. The fake buttons help simplify code here and
     // `$($cols_to_focus[col_focus]).trigger("focus");` at the end of this function.
-    const $cols_to_focus = [$row_to_focus, ...$row_to_focus.find("[tabindex=0]")];
-    const total_cols = $cols_to_focus.length;
+    const cols_to_focus = [row_to_focus, ...$row_to_focus.find("[tabindex=0]")];
+    const total_cols = cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
     const is_header_row = is_row_a_header($row_to_focus);
     update_closed_compose_text($row_to_focus, is_header_row);
@@ -1062,7 +1062,7 @@ function set_list_focus(input_key?: string): void {
         }
     }
 
-    const col_to_focus = $cols_to_focus[col_focus];
+    const col_to_focus = cols_to_focus[col_focus];
     assert(col_to_focus !== undefined);
     $(col_to_focus).trigger("focus");
 }
