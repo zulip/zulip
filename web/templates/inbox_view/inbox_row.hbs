@@ -44,6 +44,8 @@
                                 {{unread_count}}
                             </span>
                         </div>
+                        {{else}}
+                        <div class="hide fake-unread-count" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}"></div>
                         {{/if}}
                     {{/if}}
                 </div>
