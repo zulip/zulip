@@ -328,7 +328,7 @@ export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): voi
     active_widgets.set(stream_id, widget);
 }
 
-export function scroll_zoomed_in_topic_into_view(): void {
+export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
     const $selected_topic = $(".topic-list .topic-list-item.active-sub-filter");
     if ($selected_topic.length === 0) {
         // If we don't have a selected topic, scroll to top.
@@ -377,7 +377,7 @@ export function zoom_in(): void {
             // It is fine to force scroll here even if user has scrolled to a different
             // position since we just added some topics to the list which moved user
             // to a different position anyway.
-            scroll_zoomed_in_topic_into_view();
+            left_sidebar_scroll_zoomed_in_topic_into_view();
         }
     }
 
@@ -385,7 +385,7 @@ export function zoom_in(): void {
     active_widget.build(spinner);
 
     stream_topic_history_util.get_server_history(stream_id, on_success);
-    scroll_zoomed_in_topic_into_view();
+    left_sidebar_scroll_zoomed_in_topic_into_view();
 }
 
 export function get_left_sidebar_topic_search_term(): string {
