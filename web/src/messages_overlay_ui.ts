@@ -215,3 +215,17 @@ export function initialize_restore_overlay_message_tooltip(): void {
         },
     });
 }
+
+export function initialize_no_channel_selected_tooltip(): void {
+    tippy.default(".message_header .no-channel-selected", {
+        delay: LONG_HOVER_DELAY,
+        appendTo: document.body,
+        placement: "top",
+        content(reference) {
+            const template_id = $(reference).attr("data-tooltip-template-id");
+            assert(template_id !== undefined);
+            const $template = $(`#${CSS.escape(template_id)}`);
+            return parse_html($template.html());
+        },
+    });
+}

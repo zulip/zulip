@@ -10,6 +10,7 @@ const $ = require("./lib/zjquery.cjs");
 const user_pill = mock_esm("../src/user_pill");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
 messages_overlay_ui.initialize_restore_overlay_message_tooltip = noop;
+messages_overlay_ui.initialize_no_channel_selected_tooltip = noop;
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const people = zrequire("people");
