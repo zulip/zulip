@@ -857,6 +857,7 @@ def get_raw_unread_data(
             "flags",
             "recipient_id",
         )
+        # Descending order, so truncation keeps the latest unreads.
         .order_by("-message_id")
     )
 
@@ -909,9 +910,13 @@ def get_raw_unread_data(
                     "recipient__type",
                     "recipient__type_id",
                 )
+                # Output in ascending order. We can't just reverse,
+                # since the CTE join does not guarantee that it
+                # preserves the original descending order.
+                .order_by("message_id")
             )
 
-            rows = list(reversed(user_msgs))
+            rows = list(user_msgs)
         finally:
             cursor.execute("SET enable_bitmapscan TO on")
         return extract_unread_data_from_um_rows(rows, user_profile)
