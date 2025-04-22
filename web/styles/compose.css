@@ -1537,9 +1537,12 @@ textarea.new_message_textarea {
 
     .dropdown_widget_value {
         flex-grow: 1;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: var(--color-text-default);
+        display: flex;
+        align-items: baseline;
+        /* This gap matches a single space character,
+           as used previously in the icon-stream name
+           layout. */
+        gap: 0.4ch;
 
         .channel-privacy-type-icon {
             font-size: 0.9286em; /* 13px at 14px em */
@@ -1547,6 +1550,14 @@ textarea.new_message_textarea {
             height: 1em;
             position: relative;
             top: 0.1538em; /* 2px at 13px/em */
+        }
+
+        .decorated-channel-name {
+            flex: 1 1 auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--color-text-default);
         }
     }
 
