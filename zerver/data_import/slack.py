@@ -1,7 +1,6 @@
 import itertools
 import logging
 import os
-import posixpath
 import re
 import shutil
 import time
@@ -54,7 +53,7 @@ from zerver.data_import.slack_message_conversion import (
     get_user_full_name,
     process_slack_block_and_attachment,
 )
-from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
+from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.message import truncate_content
@@ -248,14 +247,10 @@ def build_realmemoji(
     for emoji_name, url in custom_emoji_list.items():
         split_url = urlsplit(url)
         if split_url.hostname == "emoji.slack-edge.com":
-            # Some of the emojis we get from the API have invalid links
-            # this is to prevent errors related to them
-            content_type = guess_type(posixpath.basename(split_url.path))[0]
-            assert content_type is not None
             realmemoji = RealmEmoji(
                 name=emoji_name,
                 id=emoji_id,
-                file_name=get_emoji_file_name(content_type, emoji_id),
+                file_name=None,
                 deactivated=False,
             )
 
