@@ -1852,6 +1852,10 @@
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
     );
+    --color-background-pill-container-input-disabled: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
 
     /* Inbox view constants - Values from Figma design */
     --height-inbox-search: 1.8571em; /* 26px / 14px em */
