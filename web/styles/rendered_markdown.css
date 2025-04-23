@@ -518,12 +518,6 @@
         }
     }
 
-    &.rtl .twitter-image,
-    &.rtl .message_inline_image {
-        margin-left: unset;
-        margin-right: 5px;
-    }
-
     /* In browsers that support `:has()`, we pull
        `.rendered_markdown` out of the baseline group
        formed with EDITED/MOVED markers and the
@@ -638,18 +632,6 @@
            previews, but there are no ill effects
            on newer preview images. */
         object-fit: contain;
-    }
-
-    &.rtl .twitter-image .media-image-element,
-    &.rtl .message_inline_image .media-image-element,
-    &.rtl .message_inline_ref .media-image-element {
-        float: right;
-        margin-right: unset;
-        margin-left: 10px;
-    }
-
-    & li .message_inline_image .media-image-element {
-        float: none;
     }
 
     .message_inline_video,
