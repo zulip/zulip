@@ -240,6 +240,11 @@
     );
 }
 
+#invitee_emails_container .pill-container.not-editable-by-user {
+    height: var(--height-input-pill);
+    background-color: var(--color-background-pill-container-input-disabled);
+}
+
 .add_subscribers_container .pill-container,
 .add_streams_container .pill-container,
 .add-user-group-container .pill-container,

@@ -15,8 +15,8 @@
         <div id="invite_users_option_tabs_container"></div>
         <div id="invitee_emails_container">
             <label for="invitee_emails" class="modal-field-label">{{t "Emails (one on each line or comma-separated)" }}</label>
-            <div class="pill-container">
-                <div class="input" contenteditable="true"></div>
+            <div class="pill-container {{#unless user_has_email_set}}not-editable-by-user{{/unless}}">
+                <div class="input" {{#if user_has_email_set}}contenteditable="true"{{/if}}></div>
             </div>
         </div>
     </div>

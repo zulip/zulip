@@ -444,9 +444,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
-                (selected_tab === "invite-email-tab" &&
-                    email_pill_widget.items().length === 0 &&
-                    email_pill.get_current_email(email_pill_widget) === null) ||
+                !user_has_email_set ||
+                    (selected_tab === "invite-email-tab" &&
+                        email_pill_widget.items().length === 0 &&
+                        email_pill.get_current_email(email_pill_widget) === null) ||
                     ($expires_in.val() === "custom" && !valid_custom_time),
             );
             if (selected_tab === "invite-email-tab") {
