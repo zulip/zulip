@@ -18,7 +18,8 @@ import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 
 type MessageViewHeaderContext = {
-    title: string;
+    title?: string | undefined;
+    html_title?: string | undefined;
     description?: string;
     link?: string;
     is_spectator?: boolean;
