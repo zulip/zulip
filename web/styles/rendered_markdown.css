@@ -414,18 +414,20 @@
     }
 
     /* embedded link previews */
+    .message-thumbnail-gallery {
+        display: flex;
+        flex-flow: row wrap;
+        place-items: center center;
+        gap: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
+    }
+
     .message_inline_image_title {
         font-weight: bold;
     }
 
     .twitter-image,
     .message_inline_image {
-        display: inline-block;
-        vertical-align: middle;
-
-        margin-bottom: var(--markdown-interelement-space-px);
-        margin-right: 5px;
-
         /* Set a background for the image; the background will be visible
            behind the width of the transparent border. */
         border: solid 3px transparent;
