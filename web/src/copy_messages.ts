@@ -187,7 +187,6 @@ export function copy_handler(ev: ClipboardEvent): boolean {
 
     const selection = window.getSelection();
     assert(selection !== null);
-    improve_katex_selection_range(selection);
 
     const analysis = analyze_selection(selection);
     const start_id = analysis.start_id;
@@ -215,6 +214,15 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message and let the browser handle the copying.
+
+        // We only want to mutate the selection range for a *single*
+        // message that contains partially selected math expressions.
+        // Firefox uses multiple ranges when selecting multiple messages.
+        // See https://drafts.csswg.org/css-ui-4/#valdef-user-select-none
+        // Hence, we check the rangeCount just to be extra certain.
+        if (selection.rangeCount === 1) {
+            improve_katex_selection_range(selection);
+        }
         return false;
     }
 
