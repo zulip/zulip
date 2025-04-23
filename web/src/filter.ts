@@ -23,7 +23,8 @@ import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
 type IconData = {
-    title: string;
+    title?: string | undefined;
+    html_title?: string | undefined;
     is_spectator: boolean;
 } & (
     | {
@@ -1317,7 +1318,8 @@ export class Filter {
     }
 
     add_icon_data(context: {
-        title: string;
+        title?: string;
+        html_title?: string;
         description?: string | undefined;
         link?: string | undefined;
         is_spectator: boolean;

@@ -3,7 +3,12 @@
 {{else if icon}}
 <i class="navbar-icon fa fa-{{icon}}" aria-hidden="true"></i>
 {{/if}}
+{{#if title}}
 <span class="message-header-navbar-title">{{title}}</span>
+{{/if}}
+{{#if html_title}}
+<span class="message-header-navbar-title">{{{html_title}}}</span>
+{{/if}}
 {{#if stream}}
     {{#if stream.is_archived}}
     <span class="message-header-archived">
