@@ -9,3 +9,10 @@
 .wy-table-responsive {
     overflow: visible !important;
 }
+
+/* Present tables with columns of equal size
+   when images are present. */
+.rst-content table.docutils:has(img) {
+    table-layout: fixed;
+    width: 100%;
+}
