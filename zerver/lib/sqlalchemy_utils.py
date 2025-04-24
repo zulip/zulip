@@ -37,6 +37,8 @@ def get_sqlalchemy_connection() -> Iterator[Connection]:
             creator=get_dj_conn,
             poolclass=NonClosingPool,
             pool_reset_on_return=None,
+            # TODO: This is for dev debugging, remove before merging.
+            echo=True,
         )
     with sqlalchemy_engine.connect().execution_options(autocommit=False) as sa_connection:
         yield sa_connection

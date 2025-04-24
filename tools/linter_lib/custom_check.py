@@ -14,6 +14,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/lib/topic_sqlalchemy.py",
     # This is tied to legacy events.
     "zerver/lib/event_types.py",
+    "zerver/lib/paradedb.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
