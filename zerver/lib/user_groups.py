@@ -192,17 +192,7 @@ def access_user_group_for_update(
     raise JsonableError(_("Insufficient permission"))
 
 
-def access_user_group_for_deactivation(
-    user_group_id: int, user_profile: UserProfile
-) -> NamedUserGroup:
-    """
-    Main security check / access function for whether the acting
-    user has permission to deactivate a given user group.
-    """
-    user_group = access_user_group_for_update(
-        user_group_id, user_profile, permission_setting="can_manage_group"
-    )
-
+def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict[str, Any]]:
     objections: list[dict[str, Any]] = []
     supergroup_ids = (
         user_group.direct_supergroups.exclude(named_user_group=None)
@@ -275,6 +265,20 @@ def access_user_group_for_deactivation(
     if objection_settings:
         objections.append(dict(type="realm", settings=objection_settings))
 
+    return objections
+
+
+def access_user_group_for_deactivation(
+    user_group_id: int, user_profile: UserProfile
+) -> NamedUserGroup:
+    """
+    Main security check / access function for whether the acting
+    user has permission to deactivate a given user group.
+    """
+    user_group = access_user_group_for_update(
+        user_group_id, user_profile, permission_setting="can_manage_group"
+    )
+    objections = check_user_group_can_be_deactivated(user_group)
     if len(objections) > 0:
         raise CannotDeactivateGroupInUseError(objections)
     return user_group
