@@ -449,12 +449,20 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "#api_key_button_container.disabled_setting_tooltip",
-            "#user_email_address_dropdown_container.disabled_setting_tooltip",
-        ].join(","),
+        target: "#user_email_address_dropdown_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage: "You must configure your email to access this feature.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#api_key_button_container.disabled_setting_tooltip",
+        content: $t({
+            defaultMessage: "Add an email to access your API key.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
