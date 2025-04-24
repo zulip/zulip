@@ -7,6 +7,7 @@
 import argparse
 import logging
 import os
+import re
 import subprocess
 import sys
 import time
@@ -178,6 +179,30 @@ subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node
 subprocess.check_call(
     [os.path.join(deploy_path, "scripts", "setup", "generate_secrets.py"), "--production"]
 )
+
+# TODO/compatibility: Puppet class names for the manifest renames in
+# the 11.0 release.  Can be removed when we can no longer directly
+# upgrade from 10.x.
+class_renames = {
+    "zulip::postfix_localmail": "zulip::local_mailserver",
+}
+classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes", ""))
+new_classes = [class_renames.get(c, c) for c in classes]
+if classes != new_classes:
+    if args.skip_restart:
+        logging.error("Would need to adjust puppet classes -- aborting!")
+        sys.exit(1)
+    logging.info("Adjusting Puppet classes for renames...")
+    subprocess.check_call(
+        [
+            "crudini",
+            "--set",
+            "/etc/zulip/zulip.conf",
+            "machine",
+            "puppet_classes",
+            ", ".join(new_classes),
+        ]
+    )
 
 # And then, building/installing the static assets.
 if args.ignore_static_assets:
