@@ -51,6 +51,9 @@ const admin_settings_label = {
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
     realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks"}),
+    realm_send_invite_welcome_bot_custom_message: $t({
+        defaultMessage: "Add a custom Welcome Bot message for new users",
+    }),
 
     // Organization permissions
     realm_require_unique_names: $t({defaultMessage: "Require unique names"}),
@@ -184,6 +187,9 @@ export function build_page(): void {
         realm_night_logo_url,
         realm_mandatory_topics: realm.realm_mandatory_topics,
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
+        realm_send_invite_welcome_bot_custom_message:
+            realm.realm_send_invite_welcome_bot_custom_message,
+        realm_default_welcome_bot_custom_message: realm.realm_default_welcome_bot_custom_message,
         realm_message_content_allowed_in_email_notifications:
             realm.realm_message_content_allowed_in_email_notifications,
         realm_enable_spectator_access: realm.realm_enable_spectator_access,

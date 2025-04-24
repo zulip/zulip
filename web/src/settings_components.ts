@@ -1444,8 +1444,23 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
     return false;
 }
 
+function should_disable_save_button_for_welcome_bot_custom_message_setting(): boolean {
+    const is_welcome_bot_custom_message_enabled = util.the(
+        $<HTMLInputElement>("input#id_realm_send_invite_welcome_bot_custom_message"),
+    ).checked;
+    const default_welcome_bot_custom_message_value = $<HTMLTextAreaElement>(
+        "#id_realm_default_welcome_bot_custom_message",
+    )
+        .val()!
+        .trim();
+
+    return is_welcome_bot_custom_message_enabled && default_welcome_bot_custom_message_value === "";
+}
+
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
+    const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(".subsection-changes-save");
+    const tippy_instance = util.the($button_wrapper)._tippy;
 
     let disable_save_button = false;
     if (time_limit_settings.length > 0) {
@@ -1453,10 +1468,6 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
             should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-compose-settings") {
         disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
-        const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
-            ".subsection-changes-save",
-        );
-        const tippy_instance = util.the($button_wrapper)._tippy;
         if (disable_save_button) {
             // avoid duplication of tippy
             if (!tippy_instance) {
@@ -1465,6 +1476,21 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
                     $button_wrapper,
                     $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
                     opts,
+                );
+            }
+        } else {
+            if (tippy_instance) {
+                tippy_instance.destroy();
+            }
+        }
+    } else if ($subsection_elem.attr("id") === "org-notifications") {
+        disable_save_button = should_disable_save_button_for_welcome_bot_custom_message_setting();
+        if (disable_save_button) {
+            // avoid duplication of tippy
+            if (!tippy_instance) {
+                initialize_disable_button_hint_popover(
+                    $button_wrapper,
+                    $t({defaultMessage: "Welcome Bot message text is required."}),
                 );
             }
         } else {
