@@ -18,7 +18,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.mention import MentionData
+from zerver.lib.mention import MentionData, sender_can_mention_group
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
 from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
@@ -41,11 +41,7 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import FormattedEditHistoryEvent, UserDisplayRecipient
-from zerver.lib.user_groups import (
-    UserGroupMembershipDetails,
-    get_recursive_membership_groups,
-    user_has_permission_for_group_setting,
-)
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -60,10 +56,8 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
-from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
-from zerver.models.users import is_cross_realm_bot_email
 
 
 class MessageDetailsDict(TypedDict, total=False):
@@ -1517,28 +1511,9 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[i
     user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids).select_related(
         "can_mention_group", "can_mention_group__named_user_group"
     )
-    sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)
 
     for group in user_groups:
-        can_mention_group = group.can_mention_group
-        if (
-            hasattr(can_mention_group, "named_user_group")
-            and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
-        ):
-            continue
-        if sender_is_system_bot:
-            raise JsonableError(
-                _("You are not allowed to mention user group '{user_group_name}'.").format(
-                    user_group_name=group.name
-                )
-            )
-
-        if not user_has_permission_for_group_setting(
-            can_mention_group.id,
-            sender,
-            NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
-            direct_member_only=False,
-        ):
+        if not sender_can_mention_group(sender, group):
             raise JsonableError(
                 _("You are not allowed to mention user group '{user_group_name}'.").format(
                     user_group_name=group.name

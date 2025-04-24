@@ -384,7 +384,7 @@ class MarkdownMiscTest(ZulipTestCase):
         self.assertEqual(mention_data.get_group_members(hamlet_group.id), set())
 
         # We should make sure non-silent mention always results in fetching group membership,
-        # whether it precedes or follows a silent mention for the SAME group.
+        # whether it precedes or follows a silent mention for the SAME group
 
         # non-silent before silent.
         content = "@*hamletcharacters*, @_*hamletcharacters*"
