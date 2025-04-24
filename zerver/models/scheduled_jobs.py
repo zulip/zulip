@@ -152,6 +152,7 @@ class ScheduledMessage(models.Model):
     delivered = models.BooleanField(default=False)
     delivered_message = models.ForeignKey(Message, null=True, on_delete=CASCADE)
     has_attachment = models.BooleanField(default=False, db_index=True)
+    request_timestamp = models.DateTimeField(default=timezone_now)
 
     # Metadata for messages that failed to send when their scheduled
     # moment arrived.

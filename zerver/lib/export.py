@@ -339,7 +339,7 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
         "date_deleted",
     ],
     "zerver_savedsnippet": ["date_created"],
-    "zerver_scheduledmessage": ["scheduled_timestamp"],
+    "zerver_scheduledmessage": ["scheduled_timestamp", "request_timestamp"],
     "zerver_stream": ["date_created"],
     "zerver_namedusergroup": ["date_created"],
     "zerver_useractivityinterval": ["start", "end"],
