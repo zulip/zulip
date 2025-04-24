@@ -167,29 +167,38 @@ def validate_attachment_request(
         if message.is_stream_message():
             message_channel_ids.add(message.recipient.type_id)
 
-    if len(message_channel_ids) > 0:
-        message_channels = Stream.objects.filter(id__in=message_channel_ids)
-        for channel in message_channels:
-            # The user didn't receive any of the messages that included
-            # this attachment. But they might still have access to it,
-            # if it was sent to a stream they are subscribed to where
-            # history is public to subscribers.
-            if channel.id in subscribed_channel_ids and channel.is_history_public_to_subscribers():
-                return True, attachment
+    if len(message_channel_ids) == 0:
+        # If only DMs are relevant, return early here.
+        return False, attachment
 
-        user_recursive_group_ids = set(
-            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-        )
-        for channel in message_channels:
-            if is_user_in_groups_granting_content_access(channel, user_recursive_group_ids):
-                if channel.is_history_public_to_subscribers():
-                    return True, attachment
-                # If the user had received the message at one point of
-                # time, but they are no longer subscribed to a stream
-                # with protected history. They can still access that
-                # message and it's attachment
-                elif channel.id in usermessages_channel_ids:
-                    return True, attachment
+    # The remaining code path is slow but should only be relevant
+    # rarely: Users trying to view an attachment that was shared with
+    # at least one channel, but the user is not subscribed to any such
+    # channel. So it's not important that the accurate check for this
+    # corner case is somewhat more expensive to check groups-based
+    # permissions; we're no longer in a hot code path.
+    message_channels = Stream.objects.filter(id__in=message_channel_ids)
+    for channel in message_channels:
+        # The user didn't receive any of the messages that included
+        # this attachment. But they might still have access to it,
+        # if it was sent to a stream they are subscribed to where
+        # history is public to subscribers.
+        if channel.id in subscribed_channel_ids and channel.is_history_public_to_subscribers():
+            return True, attachment
+
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+    )
+    for channel in message_channels:
+        if is_user_in_groups_granting_content_access(channel, user_recursive_group_ids):
+            if channel.is_history_public_to_subscribers():
+                return True, attachment
+            # If the user had received the message at one point of
+            # time, but they are no longer subscribed to a stream
+            # with protected history. They can still access that
+            # message and it's attachment
+            elif channel.id in usermessages_channel_ids:
+                return True, attachment
 
     return False, attachment
 
