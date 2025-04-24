@@ -319,6 +319,17 @@
         gap: 0 6px;
     }
 
+    .messagebox:has(.new_message_textarea:focus) {
+        #message-formatting-controls-container {
+            border-color: color-mix(
+                in srgb,
+                var(--color-message-content-container-border-focus) 75%,
+                transparent
+            );
+            background-color: var(--color-background-panel);
+        }
+    }
+
     .message_content {
         margin-right: 0;
     }
@@ -336,7 +347,11 @@
     transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
-        border-color: var(--color-message-content-container-border-focus);
+        border-color: color-mix(
+            in srgb,
+            var(--color-message-content-container-border-focus) 60%,
+            transparent
+        );
     }
 
     &:has(.new_message_textarea.invalid),
