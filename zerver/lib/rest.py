@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from functools import wraps
 from typing import Concatenate
@@ -92,6 +93,12 @@ def get_target_view_function_or_response(
     # Override requested method if magic method=??? parameter exists
     method_to_use = request.method
     if request.POST and "method" in request.POST:
+        logging.warning(
+            "Overriding HTTP method via 'method' parameter: original=%s, override=%s, client=%s",
+            request.method,
+            request.POST["method"],
+            request_notes.client_name,
+        )
         method_to_use = request.POST["method"]
 
     if method_to_use in supported_methods:
