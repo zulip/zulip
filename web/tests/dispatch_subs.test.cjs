@@ -12,15 +12,14 @@ const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
 const compose_recipient = mock_esm("../src/compose_recipient");
-const message_lists = mock_esm("../src/message_lists");
-const narrow_state = mock_esm("../src/narrow_state");
+const message_events = mock_esm("../src/message_events");
 const overlays = mock_esm("../src/overlays");
 const settings_org = mock_esm("../src/settings_org");
 const settings_streams = mock_esm("../src/settings_streams");
 const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
-message_lists.current = {};
+const unread_ops = mock_esm("../src/unread_ops");
 
 const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
@@ -216,13 +215,6 @@ test("stream delete (normal)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    narrow_state.narrowed_to_stream_id = () => true;
-
-    let bookend_updates = 0;
-    override(message_lists.current, "update_trailing_bookend", () => {
-        bookend_updates += 1;
-    });
-
     const removed_stream_ids = [];
 
     override(stream_settings_ui, "remove_stream", (stream_id) => {
@@ -235,13 +227,11 @@ test("stream delete (normal)", ({override}) => {
     });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
-
-    // We should possibly be able to make a single call to
-    // update_trailing_bookend, but we currently do it for each stream.
-    assert.equal(bookend_updates, 2);
 
     assert.equal(removed_sidebar_rows, 1);
 });
@@ -280,9 +270,11 @@ test("stream delete (special streams)", ({override}) => {
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_streams, "update_default_streams_table", noop);
-    override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
 
     dispatch(event);
 
@@ -324,28 +316,20 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    narrow_state.narrowed_to_stream_id = () => true;
-
-    let bookend_updates = 0;
-    override(message_lists.current, "update_trailing_bookend", () => {
-        bookend_updates += 1;
-    });
-
     let removed_sidebar_rows = 0;
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
+
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     assert.equal(compose_state.stream_name(), "");
-
-    // We should possibly be able to make a single call to
-    // update_trailing_bookend, but we currently do it for each stream.
-    assert.equal(bookend_updates, 2);
 
     assert.equal(removed_sidebar_rows, 1);
 });
