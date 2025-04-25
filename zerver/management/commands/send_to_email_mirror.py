@@ -101,7 +101,7 @@ Example:
         self._prepare_message(message, realm, stream, creator, sender)
 
         rcpt_to = message["To"].addresses[0].addr_spec
-        validate_to_address(rcpt_to)
+        validate_to_address(rcpt_to, rate_limit=False)
 
         queue_json_publish_rollback_unsafe(
             "email_mirror",
