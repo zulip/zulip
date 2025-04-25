@@ -517,15 +517,20 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             );
         }
 
-        const invite_tips_data = generate_invite_tips_data();
-
-        const context = {
-            banner_type: compose_banner.INFO,
-            classname: "setup_tips_banner",
-            ...invite_tips_data,
-        };
-
-        $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
+        // Render organization settings tips for non-demo organizations
+        // and for users with admin privileges.
+        if (
+            realm.demo_organization_scheduled_deletion_date === undefined &&
+            current_user.is_admin
+        ) {
+            const invite_tips_data = generate_invite_tips_data();
+            const context = {
+                banner_type: compose_banner.INFO,
+                classname: "setup_tips_banner",
+                ...invite_tips_data,
+            };
+            $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
+        }
 
         const toggler = components.toggle({
             html_class: "invite_users_option_tabs large allow-overflow",
