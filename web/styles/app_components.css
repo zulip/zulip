@@ -542,6 +542,7 @@ input.settings_text_input {
     }
 }
 
+.admin-permissions-banner,
 .desktop-setting-notifications {
     margin-bottom: 10px;
 }
