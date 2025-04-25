@@ -527,8 +527,11 @@
 }
 
 .inbox-container #inbox-pane .inbox-empty-action-link {
-    text-decoration: underline;
     color: var(--color-text-url);
+
+    &:hover {
+        color: var(--color-text-url-hover);
+    }
 }
 
 #inbox-filter_widget {
