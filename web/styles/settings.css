@@ -488,6 +488,11 @@ input[type="checkbox"] {
     }
 }
 
+#customizable_stream_notifications_table .dropdown-widget-button {
+    /* 225px at 16px/1em */
+    width: 14.0625em;
+}
+
 .advanced-configurations-container {
     .advance-config-title-container {
         cursor: pointer;
