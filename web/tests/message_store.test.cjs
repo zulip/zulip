@@ -401,3 +401,52 @@ test("remove", () => {
     assert.equal(message_store.get(message2.id).id, message2.id);
     assert.equal(message_store.get(message3.id), undefined);
 });
+
+test("get_message_ids_in_stream", () => {
+    const message1 = {
+        type: "stream",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        stream_id: devel.stream_id,
+        stream: devel.name,
+        display_recipient: devel.name,
+        topic: "test",
+        id: 100,
+    };
+    const message2 = {
+        sender_email: "me@example.com",
+        sender_id: me.user_id,
+        type: "private",
+        display_recipient: convert_recipients([me, bob, cindy]),
+        flags: ["has_alert_word"],
+        is_me_message: false,
+        id: 101,
+    };
+    const message3 = {
+        type: "stream",
+        sender_full_name: cindy.full_name,
+        sender_id: cindy.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        display_recipient: denmark.name,
+        topic: "test",
+        id: 102,
+    };
+    const message4 = {
+        type: "stream",
+        sender_full_name: me.full_name,
+        sender_id: me.user_id,
+        stream_id: devel.stream_id,
+        stream: devel.name,
+        display_recipient: devel.name,
+        topic: "test",
+        id: 103,
+    };
+
+    for (const message of [message1, message2, message3, message4]) {
+        message_helper.process_new_message(message);
+    }
+
+    assert.deepEqual(message_store.get_message_ids_in_stream(devel.stream_id), [100, 103]);
+    assert.deepEqual(message_store.get_message_ids_in_stream(denmark.stream_id), [102]);
+});

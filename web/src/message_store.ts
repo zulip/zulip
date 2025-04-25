@@ -348,3 +348,9 @@ export function remove(message_ids: number[]): void {
         stored_messages.delete(message_id);
     }
 }
+
+export function get_message_ids_in_stream(stream_id: number): number[] {
+    return [...stored_messages.values()]
+        .filter((message) => message.type === "stream" && message.stream_id === stream_id)
+        .map((message) => message.id);
+}
