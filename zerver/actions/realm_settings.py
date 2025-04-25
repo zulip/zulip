@@ -489,13 +489,20 @@ def do_set_realm_zulip_update_announcements_stream(
 def do_set_realm_user_default_setting(
     realm_user_default: RealmUserDefault,
     name: str,
-    value: Any,
+    raw_value: Any,
     *,
     acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(realm_user_default, name)
     realm = realm_user_default.realm
     event_time = timezone_now()
+
+    if isinstance(raw_value, Enum):
+        value = raw_value.value
+        event_value = raw_value.name
+    else:
+        value = raw_value
+        event_value = raw_value
 
     setattr(realm_user_default, name, value)
     realm_user_default.save(update_fields=[name])
@@ -516,7 +523,7 @@ def do_set_realm_user_default_setting(
         type="realm_user_settings_defaults",
         op="update",
         property=name,
-        value=value,
+        value=event_value,
     )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 

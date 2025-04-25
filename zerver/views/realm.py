@@ -57,6 +57,7 @@ from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
 )
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.user_settings import check_settings_values
 
 
@@ -696,6 +697,16 @@ def update_realm_user_settings_defaults(
     web_navigate_to_sent_message: Json[bool] | None = None,
     web_suggest_update_timezone: Json[bool] | None = None,
     hide_ai_features: Json[bool] | None = None,
+    resolved_topic_notice_auto_read_policy: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "resolved_topic_notice_auto_read_policy",
+                ResolvedTopicNoticeAutoReadPolicyEnum,
+            )
+        ),
+    ] = None,
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
