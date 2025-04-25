@@ -12,6 +12,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
 import {page_params} from "./page_params.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
@@ -274,6 +275,16 @@ export function set_up(settings_panel: SettingsPanel): void {
     );
 
     set_enable_digest_emails_visibility($container, for_realm_settings);
+    settings_banner.set_up_mobile_push_banner();
+
+    $container.on("click", ".mobile-push-notification-info", (e) => {
+        e.preventDefault();
+        window.open(
+            "/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers",
+            "_blank",
+            "noopener,noreferrer",
+        );
+    });
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
