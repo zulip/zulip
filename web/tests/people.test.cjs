@@ -416,9 +416,13 @@ test_people("basics", ({override}) => {
     // The bot doesn't add to our human count.
     assert.equal(people.get_active_human_count(), 1);
 
-    // Invalid user ID returns false and warns.
+    // Invalid user ID returns true and warns.
     blueslip.expect("warn", "Unexpectedly invalid user_id in user popover query");
-    assert.equal(people.is_active_user_for_popover(123412), false);
+    assert.equal(people.is_active_user_for_popover(123412), true);
+
+    unknown_user.is_inaccessible_user = true;
+    assert.equal(people.is_active_user_for_popover(unknown_user.user_id), true);
+    unknown_user.is_inaccessible_user = false;
 
     // We can still get their info for non-realm needs.
     person = people.get_by_email(email);
