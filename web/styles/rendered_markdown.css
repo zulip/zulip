@@ -716,7 +716,6 @@
         height: calc(var(--length-message-preview-embeds) + 10px);
         padding: 5px;
         border-left: 3px solid hsl(0deg 0% 93%);
-        text-shadow: hsl(0deg 0% 0% / 1%) 0 0 1px;
 
         .message_embed_title {
             font-size: 1.2em;
