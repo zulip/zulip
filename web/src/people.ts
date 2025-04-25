@@ -995,6 +995,14 @@ export function is_active_user_for_popover(user_id: number): boolean {
     //       deactivated users at page-load time. For now just warn.
     if (!people_by_user_id_dict.has(user_id)) {
         blueslip.warn("Unexpectedly invalid user_id in user popover query", {user_id});
+        // We return true for inaccessible users. We can assume
+        // this code will not be called for invalid IDs.
+        return true;
+    }
+
+    const user = people_by_user_id_dict.get(user_id)!;
+    if (user.is_inaccessible_user) {
+        return true;
     }
 
     return false;
