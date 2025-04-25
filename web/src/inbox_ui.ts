@@ -17,7 +17,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
-import {is_visible, set_visible} from "./inbox_util.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
@@ -205,8 +205,8 @@ export function show(): void {
         highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
         $view: $("#inbox-view"),
         update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
-        is_visible,
-        set_visible,
+        is_visible: inbox_util.is_visible,
+        set_visible: inbox_util.set_visible,
         complete_rerender,
     });
 
@@ -235,12 +235,12 @@ export function show(): void {
 }
 
 export function hide(): void {
-    if (!is_visible()) {
+    if (!inbox_util.is_visible()) {
         return;
     }
     views_util.hide({
         $view: $("#inbox-view"),
-        set_visible,
+        set_visible: inbox_util.set_visible,
     });
 }
 
@@ -708,7 +708,7 @@ function filter_click_handler(
 }
 
 export function complete_rerender(): void {
-    if (!is_visible()) {
+    if (!inbox_util.is_visible()) {
         return;
     }
     load_data_from_ls();
@@ -1286,7 +1286,7 @@ export function change_focused_element(input_key: string): boolean {
 }
 
 export function update(): void {
-    if (!is_visible()) {
+    if (!inbox_util.is_visible()) {
         return;
     }
 
@@ -1484,7 +1484,7 @@ function center_focus_if_offscreen(): void {
 function move_focus_to_visible_area(): void {
     // Focus on the row below inbox filters if the focused
     // row is not visible.
-    if (!is_visible() || !is_list_focused()) {
+    if (!inbox_util.is_visible() || !is_list_focused()) {
         return;
     }
 
@@ -1536,7 +1536,7 @@ function move_focus_to_visible_area(): void {
 }
 
 export function is_in_focus(): boolean {
-    return is_visible() && views_util.is_in_focus();
+    return inbox_util.is_visible() && views_util.is_in_focus();
 }
 
 export function initialize({hide_other_views}: {hide_other_views: () => void}): void {
@@ -1677,7 +1677,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
     });
 
     $(document).on("compose_canceled.zulip", () => {
-        if (is_visible()) {
+        if (inbox_util.is_visible()) {
             revive_current_focus();
         }
     });
