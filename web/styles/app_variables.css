@@ -460,9 +460,12 @@
     --message-box-timestamp-column-width: 0;
 
     /* This length is the primary reference for height
-       and image width on URL preview embeds.
-       80px at 14px/1em */
-    --length-message-preview-embeds: 5.7143em;
+       and image width on URL preview embeds. 112px
+       comes from the height of a two-line title and a
+       two-line description at a +2 (maximum)
+       line-height setting.
+       112px at 16px/1em */
+    --length-message-preview-embeds: 7em;
 
     /*
     Reaction container UI scaling.
