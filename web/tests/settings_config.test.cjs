@@ -9,7 +9,8 @@ const settings_config = zrequire("settings_config");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-set_realm({});
+const realm = {realm_push_notifications_enabled: false};
+set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
@@ -55,30 +56,35 @@ run_test("all_notifications", ({override}) => {
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_stream_desktop_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: true,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_stream_audible_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: true,
                     is_disabled: true,
                     is_mobile_checkbox: true,
                     setting_name: "enable_stream_push_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: false,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_stream_email_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: false,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "wildcard_mentions_notify",
+                    push_notifications_disabled: true,
                 },
             ],
         },
@@ -90,30 +96,35 @@ run_test("all_notifications", ({override}) => {
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_desktop_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: true,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_sounds",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: false,
                     is_disabled: true,
                     is_mobile_checkbox: true,
                     setting_name: "enable_offline_push_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: true,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_offline_email_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: false,
                     is_disabled: true,
                     is_mobile_checkbox: false,
                     setting_name: "",
+                    push_notifications_disabled: false,
                 },
             ],
         },
@@ -126,30 +137,35 @@ run_test("all_notifications", ({override}) => {
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_followed_topic_desktop_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: true,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_followed_topic_audible_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: false,
                     is_disabled: true,
                     is_mobile_checkbox: true,
                     setting_name: "enable_followed_topic_push_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: true,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_followed_topic_email_notifications",
+                    push_notifications_disabled: true,
                 },
                 {
                     is_checked: false,
                     is_disabled: false,
                     is_mobile_checkbox: false,
                     setting_name: "enable_followed_topic_wildcard_mentions_notify",
+                    push_notifications_disabled: true,
                 },
             ],
         },
