@@ -398,3 +398,14 @@ export function add_request_pending_for(stream_id: number): void {
 export function remove_request_pending_for(stream_id: number): void {
     request_pending_stream_ids.delete(stream_id);
 }
+
+export function remove_history_for_stream(stream_id: number): void {
+    // Currently only used when user loses access to a stream.
+    if (stream_dict.has(stream_id)) {
+        stream_dict.delete(stream_id);
+    }
+
+    if (fetched_stream_ids.has(stream_id)) {
+        fetched_stream_ids.delete(stream_id);
+    }
+}
