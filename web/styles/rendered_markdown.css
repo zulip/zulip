@@ -721,6 +721,36 @@
             font-size: 1.2em;
             /* 5px at 16.8px (1.2 * 14px) */
             margin-top: -0.2976em;
+            /* We set the markdown link colors here so
+               that the ellipsis takes it on truncated
+               lines. The ellipsis will not take an
+               underline even if we specify one, so
+               that is deliberately omitted here. */
+            color: var(--color-markdown-link);
+
+            &:hover {
+                color: var(--color-markdown-link-hover);
+            }
+
+            a {
+                /* Line-clamp lines seem to have a small
+                   interline area that's not clickable
+                   unless we set the anchor to display as
+                   a block. */
+                display: block;
+            }
+        }
+
+        .message_embed_title,
+        .message_embed_description {
+            /* Clamp multi-line titles and descriptions
+               to two lines. */
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            /* Break overflowing words as necessary. */
+            overflow-wrap: break-word;
         }
 
         .message_embed_image {
@@ -735,18 +765,6 @@
         .data-container {
             grid-area: data-container;
             overflow: hidden;
-        }
-
-        &::after {
-            content: " ";
-            grid-area: fader;
-            height: 100%;
-
-            background: linear-gradient(
-                0deg,
-                var(--color-background-stream-message-content),
-                transparent 100%
-            );
         }
     }
 
