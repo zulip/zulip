@@ -695,14 +695,27 @@
     }
 
     .message_embed {
-        display: block;
-        position: relative;
+        display: grid;
+        grid-template-columns:
+            [thumbnail-start] var(--length-message-preview-embeds)
+            [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
+            [data-container-end fader-end];
+        grid-template-rows:
+            [border-start thumbnail-start data-container-start] calc(
+                var(--length-message-preview-embeds) - 10%
+            )
+            [fader-start] 10% [data-container-end thumbnail-end border-end fader-end];
+        column-gap: 5px;
         margin: 0 0 var(--markdown-interelement-space-px);
-        border: none;
-        border-left: 3px solid hsl(0deg 0% 93%);
-        height: 80px;
+        /* We want to control the height without worrying about
+           padding... */
+        box-sizing: border-box;
+        /* ...though we will account for 10px of padding in the
+           height itself, so that the fade effect on long description
+           text works as expected. */
+        height: calc(var(--length-message-preview-embeds) + 10px);
         padding: 5px;
-        z-index: 1;
+        border-left: 3px solid hsl(0deg 0% 93%);
         text-shadow: hsl(0deg 0% 0% / 1%) 0 0 1px;
 
         .message_embed_title {
@@ -714,40 +727,24 @@
             line-height: normal;
         }
 
-        .message_embed_description {
-            position: relative;
-            max-width: 500px;
-            margin-top: 3px;
-
-            /* to put it below the container gradient. */
-            z-index: -1;
-        }
-
         .message_embed_image {
-            display: inline-block;
-            padding: 5px;
-            width: 70px;
-            height: 70px;
+            display: block;
+            grid-area: thumbnail;
+            /* Keep the embed image square. */
+            max-height: var(--length-message-preview-embeds);
             background-size: cover;
             background-position: center;
         }
 
         .data-container {
-            position: relative;
-            padding: 0 5px;
-            display: inline-block;
-            vertical-align: top;
-            max-width: calc(100% - 115px);
-            max-height: 80px;
+            grid-area: data-container;
             overflow: hidden;
         }
 
-        .data-container::after {
+        &::after {
             content: " ";
-            position: absolute;
-            width: 100%;
-            height: 10%;
-            bottom: 0;
+            grid-area: fader;
+            height: 100%;
 
             background: linear-gradient(
                 0deg,
@@ -757,6 +754,9 @@
         }
     }
 
+    /* Although grid will automatically respond to
+       RTL languages, we still need to manually fix
+       the border here, which is not part of grid. */
     &.rtl .message_embed {
         border-left: unset;
         border-right: 3px solid hsl(0deg 0% 93%);
