@@ -413,6 +413,22 @@ def is_forwarded(subject: str) -> bool:
     return bool(re.match(reg, subject, flags=re.IGNORECASE))
 
 
+def check_access_for_channel_email_address(channel_email_address: ChannelEmailAddress) -> None:
+    channel = channel_email_address.channel
+    sender = channel_email_address.sender
+    creator = channel_email_address.creator
+    realm = channel_email_address.realm
+    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+
+    if sender.id == email_gateway_bot.id and creator is not None:
+        user_for_access_check = creator
+    else:
+        user_for_access_check = sender
+
+    # Raises JsonableError on permission denied
+    access_stream_for_send_message(user_for_access_check, channel, forwarder_user_profile=None)
+
+
 def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
 
@@ -428,27 +444,18 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     subject = subject or _("Email with no subject")
 
     channel_email_address, options = decode_stream_email_address(to)
+    channel = channel_email_address.channel
+    sender = channel_email_address.sender
+    realm = channel_email_address.realm
+    try:
+        check_access_for_channel_email_address(channel_email_address)
+    except JsonableError as e:
+        logger.info("Failed to process email to %s (%s): %s", channel.name, realm.string_id, e)
+        return
 
     # Don't remove quotations if message is forwarded, unless otherwise specified:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
-
-    channel = channel_email_address.channel
-    sender = channel_email_address.sender
-    creator = channel_email_address.creator
-    realm = channel_email_address.realm
-    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
-
-    if sender.id == email_gateway_bot.id and creator is not None:
-        user_for_access_check = creator
-    else:
-        user_for_access_check = sender
-
-    try:
-        access_stream_for_send_message(user_for_access_check, channel, forwarder_user_profile=None)
-    except JsonableError as e:
-        logger.info("Failed to process email to %s (%s): %s", channel.name, realm.string_id, e)
-        return
 
     body = construct_zulip_body(message, realm, sender=sender, **options)
     send_zulip(sender, channel, subject, body)
@@ -523,11 +530,28 @@ def process_message(message: EmailMessage, rcpt_to: str | None = None) -> None:
         log_error(message, e.args[0], to)
 
 
-def validate_to_address(rcpt_to: str) -> None:
-    if is_missed_message_address(rcpt_to):
-        get_usable_missed_message_address(rcpt_to)
+def validate_to_address(address: str, rate_limit: bool = True) -> None:
+    if is_missed_message_address(address):
+        mm_address = get_usable_missed_message_address(address)
+        if mm_address.message.recipient.type == Recipient.STREAM:
+            # ACL's on DMs are harder to apply simply, so we
+            # just check channel messages.
+            access_stream_for_send_message(
+                mm_address.user_profile,
+                get_stream_by_id_in_realm(
+                    mm_address.message.recipient.type_id,
+                    mm_address.user_profile.realm,
+                ),
+                forwarder_user_profile=None,
+            )
     else:
-        decode_stream_email_address(rcpt_to)
+        channel_email = decode_stream_email_address(address)[0]
+        if rate_limit:
+            # Only channel email addresses are rate-limited, since
+            # they are likely to be used as the destination for
+            # mails from automated systems.
+            rate_limit_mirror_by_realm(channel_email.realm)
+        check_access_for_channel_email_address(channel_email)
 
 
 # Email mirror rate limiter code:

@@ -22,17 +22,12 @@ from django.core.mail import EmailMultiAlternatives as DjangoEmailMultiAlternati
 from typing_extensions import override
 
 from version import ZULIP_VERSION
-from zerver.lib.email_mirror import (
-    decode_stream_email_address,
-    is_missed_message_address,
-    rate_limit_mirror_by_realm,
-    validate_to_address,
-)
+from zerver.lib.email_mirror import decode_stream_email_address, validate_to_address
 from zerver.lib.email_mirror_helpers import (
     ZulipEmailForwardError,
     get_email_gateway_message_string_from_address,
 )
-from zerver.lib.exceptions import RateLimitedError
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 
@@ -96,26 +91,27 @@ class ZulipMessageHandler(MessageHandler):
                 return "250 Continue"
 
         try:
+            # Attempt to do the ACL-check now, just to reject early.
+            # The authoritative check is done in the worker, but we
+            # wish to reject now if we can do so simply.
             await sync_to_async(validate_to_address)(address)
-            if not is_missed_message_address(address):
-                # Only channel email addresses are rate-limited, since
-                # they are likely to be used as the destination for
-                # mails from automated systems.
-                recipient_realm = await sync_to_async(
-                    lambda a: decode_stream_email_address(a)[0].realm
-                )(address)
-                try:
-                    rate_limit_mirror_by_realm(recipient_realm)
-                except RateLimitedError:
-                    logger.warning(
-                        "Rejecting a MAIL FROM: %s to realm: %s - rate limited.",
-                        envelope.mail_from,
-                        recipient_realm.name,
-                    )
-                    return "550 4.7.0 Rate-limited due to too many emails on this realm."
+
+        except RateLimitedError:
+            recipient_realm = await sync_to_async(
+                lambda a: decode_stream_email_address(a)[0].realm
+            )(address)
+            logger.warning(
+                "Rejecting a MAIL FROM: %s to realm: %s - rate limited.",
+                envelope.mail_from,
+                recipient_realm.name,
+            )
+            return "550 4.7.0 Rate-limited due to too many emails on this realm."
 
         except ZulipEmailForwardError as e:
             return f"550 5.1.1 Bad destination mailbox address: {e}"
+
+        except JsonableError as e:
+            return f"550 5.7.1 Permission denied: {e}"
 
         envelope.rcpt_tos.append(address)
         return "250 Continue"
