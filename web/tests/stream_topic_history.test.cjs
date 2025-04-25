@@ -536,3 +536,36 @@ test("test_max_message_ids_in_channel_and_topics", () => {
         "topic 1",
     ]);
 });
+
+test("remove_history_for_stream", () => {
+    const stream_id = 55;
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 101,
+        topic_name: "toPic1",
+    });
+
+    stream_topic_history.add_message({
+        stream_id: 56,
+        message_id: 102,
+        topic_name: "topic2",
+    });
+    assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
+    assert.equal(stream_topic_history.stream_has_topics(56), true);
+
+    stream_topic_history.remove_history_for_stream(stream_id);
+    assert.equal(stream_topic_history.stream_has_topics(stream_id), false);
+    assert.equal(stream_topic_history.stream_has_topics(56), true);
+
+    stream_topic_history.add_history(stream_id, [
+        {name: "local", max_id: 501},
+        {name: "hist2", max_id: 31},
+        {name: "hist1", max_id: 30},
+    ]);
+    assert.equal(stream_topic_history.has_history_for(stream_id), true);
+    assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
+
+    stream_topic_history.remove_history_for_stream(stream_id);
+    assert.equal(stream_topic_history.stream_has_topics(stream_id), false);
+    assert.equal(stream_topic_history.has_history_for(stream_id), false);
+});
