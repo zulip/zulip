@@ -531,6 +531,13 @@ input.settings_text_input {
     margin: 10px 0;
 }
 
+.two-pane-settings-overlay,
+.organization-box {
+    .banner {
+        margin: 10px 0;
+    }
+}
+
 .invite-stream-notice {
     margin-bottom: 20px;
 }
