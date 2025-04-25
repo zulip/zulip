@@ -2203,6 +2203,36 @@ class TestEmailMirrorServer(ZulipTestCase):
         )
 
     @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_missedmessage_denied(self) -> None:
+        hamlet = await sync_to_async(lambda: self.example_user("hamlet"))()
+        othello = await sync_to_async(lambda: self.example_user("othello"))()
+        await sync_to_async(lambda: self.send_stream_message(hamlet, "Denmark", "Some message"))()
+        mm_address = await sync_to_async(
+            lambda: create_missed_message_address(othello, most_recent_message(othello))
+        )()
+        # Deactivate the stream so the mail bounces
+        await sync_to_async(
+            lambda: do_deactivate_stream(get_stream("Denmark", othello.realm), acting_user=None)
+        )()
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    f"RCPT TO: <{mm_address}>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.7.1 Permission denied: Not authorized to send to channel 'Denmark'\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
     async def test_handler_missedmessage(self) -> None:
         othello = await sync_to_async(lambda: self.example_user("othello"))()
         usermessage = await sync_to_async(lambda: most_recent_usermessage(othello))()
@@ -2262,53 +2292,91 @@ class TestEmailMirrorServer(ZulipTestCase):
         realm = await sync_to_async(lambda: get_realm("zulip"))()
         stream = await sync_to_async(lambda: ensure_stream(realm, stream_name, acting_user=None))()
         hamlet = await sync_to_async(lambda: self.example_user("hamlet"))()
+        email_gateway_bot = await sync_to_async(
+            lambda: get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+        )()
+        for sender in (hamlet, email_gateway_bot):
+            email_token = await sync_to_async(
+                lambda sender: get_channel_email_token(stream, creator=hamlet, sender=sender)
+            )(sender)
+            email_address = encode_email_address(stream.name, email_token)
+            with mock.patch(
+                "zerver.lib.email_mirror_server.queue_json_publish_rollback_unsafe"
+            ) as m:
+                self.assertEqual(
+                    await self.handler_response(
+                        [
+                            "HELO localhost",
+                            "MAIL FROM: <test@example.com>",
+                            f"RCPT TO: <{email_address}>",
+                            "DATA",
+                            f"From: {hamlet.delivery_email}",
+                            f"To: {email_address}",
+                            "Subject: Stream message",
+                            "",
+                            "Some body!",
+                            ".",
+                            "QUIT",
+                        ]
+                    ),
+                    [
+                        "220 testhost Zulip 1.2.3\r\n",
+                        "250 testhost\r\n",
+                        "250 OK\r\n",
+                        "250 Continue\r\n",
+                        "354 End data with <CR><LF>.<CR><LF>\r\n",
+                        "250 OK\r\n",
+                        "221 Bye\r\n",
+                    ],
+                )
+                message_lines = (
+                    f"From: {hamlet.delivery_email}",
+                    f"To: {email_address}",
+                    "Subject: Stream message",
+                    "X-Peer: other-host:1234",
+                    "X-MailFrom: test@example.com",
+                    f"X-RcptTo: {email_address}",
+                    "",
+                    "Some body!",
+                )
+                m.assert_called_once_with(
+                    "email_mirror",
+                    {
+                        "rcpt_to": email_address,
+                        "msg_base64": base64.b64encode(
+                            b"".join([line.encode() + b"\n" for line in message_lines])
+                        ).decode(),
+                    },
+                )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_stream_deactivated(self) -> None:
+        stream_name = "some str"
+        realm = await sync_to_async(lambda: get_realm("zulip"))()
+        stream = await sync_to_async(lambda: ensure_stream(realm, stream_name, acting_user=None))()
+        hamlet = await sync_to_async(lambda: self.example_user("hamlet"))()
         email_token = await sync_to_async(
             lambda: get_channel_email_token(stream, creator=hamlet, sender=hamlet)
         )()
         email_address = encode_email_address(stream.name, email_token)
-        with mock.patch("zerver.lib.email_mirror_server.queue_json_publish_rollback_unsafe") as m:
-            self.assertEqual(
-                await self.handler_response(
-                    [
-                        "HELO localhost",
-                        "MAIL FROM: <test@example.com>",
-                        f"RCPT TO: <{email_address}>",
-                        "DATA",
-                        f"From: {hamlet.delivery_email}",
-                        f"To: {email_address}",
-                        "Subject: Stream message",
-                        "",
-                        "Some body!",
-                        ".",
-                        "QUIT",
-                    ]
-                ),
+
+        # Deactivate the stream so the mail bounces
+        await sync_to_async(lambda: do_deactivate_stream(stream, acting_user=None))()
+
+        self.assertEqual(
+            await self.handler_response(
                 [
-                    "220 testhost Zulip 1.2.3\r\n",
-                    "250 testhost\r\n",
-                    "250 OK\r\n",
-                    "250 Continue\r\n",
-                    "354 End data with <CR><LF>.<CR><LF>\r\n",
-                    "250 OK\r\n",
-                    "221 Bye\r\n",
-                ],
-            )
-            message_lines = (
-                f"From: {hamlet.delivery_email}",
-                f"To: {email_address}",
-                "Subject: Stream message",
-                "X-Peer: other-host:1234",
-                "X-MailFrom: test@example.com",
-                f"X-RcptTo: {email_address}",
-                "",
-                "Some body!",
-            )
-            m.assert_called_once_with(
-                "email_mirror",
-                {
-                    "rcpt_to": email_address,
-                    "msg_base64": base64.b64encode(
-                        b"".join([line.encode() + b"\n" for line in message_lines])
-                    ).decode(),
-                },
-            )
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    f"RCPT TO: <{email_address}>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.7.1 Permission denied: Not authorized to send to channel 'some str'\r\n",
+                "221 Bye\r\n",
+            ],
+        )
