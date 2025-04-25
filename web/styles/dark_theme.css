@@ -446,7 +446,7 @@
     }
 
     & a:not(:active):focus,
-    button:not(.action-button, .icon-button):focus,
+    button:not(.action-button, .icon-button):focus-visible,
     i.fa:focus,
     i.zulip-icon:focus,
     [role="button"]:focus {
