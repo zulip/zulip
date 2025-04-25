@@ -11,6 +11,7 @@ from django_stubs_ext import StrPromise
 
 from zerver.lib.streams import get_content_access_streams
 from zerver.lib.topic import get_first_message_for_user_in_topic
+from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_root_id_annotated_recursive_subgroups_for_groups,
@@ -449,8 +450,11 @@ class MentionData:
         return self.mention_backend.get_topic_info_map(channel_topics, acting_user=acting_user)
 
 
-def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
-    return f"@_**{user_profile.full_name}|{user_profile.id}**"
+def silent_mention_syntax_for_user(user_profile: UserProfile | UserDisplayRecipient) -> str:
+    if isinstance(user_profile, UserProfile):
+        return f"@_**{user_profile.full_name}|{user_profile.id}**"
+    else:
+        return f"@_**{user_profile['full_name']}|{user_profile['id']}**"
 
 
 def silent_mention_syntax_for_user_group(user_group: NamedUserGroup) -> str:
