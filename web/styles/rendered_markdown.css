@@ -719,12 +719,9 @@
         text-shadow: hsl(0deg 0% 0% / 1%) 0 0 1px;
 
         .message_embed_title {
-            padding-top: 0;
-            /* to remove the spacing that the font has from the top of the container. */
-            margin-top: -5px;
-
             font-size: 1.2em;
-            line-height: normal;
+            /* 5px at 16.8px (1.2 * 14px) */
+            margin-top: -0.2976em;
         }
 
         .message_embed_image {
