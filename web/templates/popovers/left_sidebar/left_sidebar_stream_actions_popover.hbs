@@ -32,6 +32,14 @@
             </a>
         </li>
         {{/if}}
+        {{#if show_go_to_list_of_topics}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="button" href="{{stream.list_of_topics_view_url}}" class="stream-popover-go-to-list-of-topics popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-topic-list" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Go to list of topics" }}</span>
+            </a>
+        </li>
+        {{/if}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="copy_stream_link popover-menu-link" data-clipboard-text="{{ stream.url }}" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>

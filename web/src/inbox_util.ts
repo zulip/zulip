@@ -1,9 +1,36 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
+import type {Filter} from "./filter";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 
+export let filter: Filter | undefined;
 let is_inbox_visible = false;
+
+export function set_filter(new_filter: Filter | undefined): void {
+    if (new_filter !== undefined) {
+        assert(new_filter.is_channel_view());
+    }
+    filter = new_filter;
+}
+
+export function is_channel_view(): boolean {
+    // We may support other filters in the future, but for now,
+    // we filtering by a single channel.
+    return filter !== undefined;
+}
+
+export function current_filter(): Filter | undefined {
+    return filter;
+}
+
+export function get_channel_id(): number {
+    assert(filter !== undefined);
+    const narrow_channel_stream_id_string = filter.operands("channel")[0];
+    assert(narrow_channel_stream_id_string !== undefined);
+    return Number.parseInt(narrow_channel_stream_id_string, 10);
+}
 
 export function set_visible(value: boolean): void {
     is_inbox_visible = value;

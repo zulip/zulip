@@ -563,6 +563,7 @@ export function initialize_everything(state_data) {
                 {trigger},
             );
         },
+        update_inbox_channel_view: inbox_ui.update_channel_view,
     });
     condense.initialize();
     spoilers.initialize();

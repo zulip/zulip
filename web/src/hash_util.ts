@@ -75,6 +75,10 @@ export function decode_operand(operator: string, operand: string): string {
     return operand;
 }
 
+export function by_channel_topic_list_url(channel_id: number): string {
+    return internal_url.by_channel_topic_list_url(channel_id, sub_store.maybe_get_stream_name);
+}
+
 export function by_stream_url(stream_id: number): string {
     // Wrapper for web use of internal_url.by_stream_url
     return internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);

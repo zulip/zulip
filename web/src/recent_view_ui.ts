@@ -1427,7 +1427,11 @@ export function show(): void {
     // is a reliable solution to check if recent view was displayed earlier.
     const reattach_event_handlers = topics_widget !== undefined;
     views_util.show({
-        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_recent_view,
+        highlight_view_in_left_sidebar() {
+            views_util.handle_message_view_deactivated(
+                left_sidebar_navigation_area.highlight_recent_view,
+            );
+        },
         $view: $("#recent_view"),
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this

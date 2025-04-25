@@ -66,6 +66,12 @@ export function filters_dropdown_options(
     ];
 }
 
+export function handle_message_view_deactivated(highlight_current_view: () => void): void {
+    highlight_current_view();
+    stream_list.handle_message_view_deactivated();
+    pm_list.handle_message_view_deactivated();
+}
+
 export function show(opts: {
     highlight_view_in_left_sidebar: () => void;
     $view: JQuery;
@@ -90,8 +96,6 @@ export function show(opts: {
 
     // Hide selected elements in the left sidebar.
     opts.highlight_view_in_left_sidebar();
-    stream_list.handle_message_view_deactivated();
-    pm_list.handle_message_view_deactivated();
 
     unread_ui.hide_unread_banner();
     opts.update_compose();

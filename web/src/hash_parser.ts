@@ -158,6 +158,7 @@ export function is_spectator_compatible(hash: string): boolean {
         "all_messages",
         "feed",
         "about-zulip",
+        "topics",
     ];
 
     const main_hash = get_hash_category(hash);

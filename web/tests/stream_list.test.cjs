@@ -43,6 +43,7 @@ mock_esm("../src/group_permission_settings", {
 const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
+stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");

@@ -1067,8 +1067,18 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__web_channel_default_view;
     override(user_settings, "web_channel_default_view", 2);
+    let called_create_initial_sidebar_rows = false;
+    let called_update_streams_sidebar = false;
+    override(stream_list, "create_initial_sidebar_rows", () => {
+        called_create_initial_sidebar_rows = true;
+    });
+    override(stream_list, "update_streams_sidebar", () => {
+        called_update_streams_sidebar = true;
+    });
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
+    assert.equal(called_create_initial_sidebar_rows, true);
+    assert.equal(called_update_streams_sidebar, true);
 
     event = event_fixtures.user_settings__web_font_size_px;
     override(user_settings, "web_font_size_px", 14);

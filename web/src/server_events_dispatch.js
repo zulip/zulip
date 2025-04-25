@@ -977,6 +977,11 @@ export function dispatch_normal_event(event) {
             if (event.property === "web_suggest_update_timezone") {
                 $("#automatically_offer_update_time_zone").prop("checked", event.value);
             }
+            if (event.property === "web_channel_default_view") {
+                const force_rerender = true;
+                stream_list.create_initial_sidebar_rows(force_rerender);
+                stream_list.update_streams_sidebar(force_rerender);
+            }
             settings_preferences.update_page(event.property);
             break;
         }

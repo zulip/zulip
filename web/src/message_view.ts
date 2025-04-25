@@ -293,6 +293,14 @@ export function try_rendering_locally_for_same_narrow(
     filter: Filter,
     opts: ShowMessageViewOpts,
 ): boolean {
+    if (!narrow_state.is_message_feed_visible()) {
+        // This function only works when the message feed is visible.
+        //
+        // TODO: Ideally, excluding the inbox-style channels view from
+        // this code path should be further up the call chain.
+        return false;
+    }
+
     const current_filter = narrow_state.filter();
     let target_scroll_offset;
     if (!current_filter) {

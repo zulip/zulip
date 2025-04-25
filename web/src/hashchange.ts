@@ -5,6 +5,7 @@ import * as admin from "./admin.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
+import {Filter} from "./filter.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
@@ -159,6 +160,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
     const hash = window.location.hash.split("/");
 
     switch (hash[0]) {
+        case "#topics":
         case "#narrow": {
             let terms;
             try {
@@ -181,6 +183,16 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 show_home_view();
                 return false;
             }
+
+            // Show inbox style topics list for #topics narrow.
+            if (hash[0] === "#topics" && terms.length === 1) {
+                const channel_id_string = hash[2];
+                if (channel_id_string) {
+                    inbox_ui.show(new Filter(terms));
+                    return true;
+                }
+            }
+
             const narrow_opts: message_view.ShowMessageViewOpts = {
                 change_hash: false, // already set
                 trigger: "hash change",
