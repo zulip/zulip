@@ -973,6 +973,7 @@ type NotificationSettingCheckbox = {
     is_disabled: boolean;
     is_checked: boolean;
     is_mobile_checkbox: boolean;
+    push_notifications_disabled: boolean;
 };
 
 export function get_notifications_table_row_data(
@@ -987,6 +988,7 @@ export function get_notifications_table_row_data(
                 is_disabled: true,
                 is_checked: false,
                 is_mobile_checkbox: false,
+                push_notifications_disabled: false,
             };
         }
 
@@ -1000,6 +1002,7 @@ export function get_notifications_table_row_data(
             is_disabled: false,
             is_checked: checked,
             is_mobile_checkbox: false,
+            push_notifications_disabled: !realm.realm_push_notifications_enabled,
         };
         if (column === "mobile") {
             checkbox.is_disabled = !realm.realm_push_notifications_enabled;

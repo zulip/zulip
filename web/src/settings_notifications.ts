@@ -75,6 +75,7 @@ function rerender_ui(): void {
                         settings_config.all_notifications(user_settings)
                             .disabled_notification_settings,
                     muted: muted_stream_ids.includes(stream.stream_id),
+                    push_notifications_disabled: !realm.realm_push_notifications_enabled,
                 }),
             ),
         );
