@@ -86,6 +86,12 @@
 
 1. Click **Add**.
 
+!!! tip ""
+
+    Click the <i class="zulip-icon zulip-icon-expand-both-diagonals"></i> icon
+    on a user group pill to add all the members of the group, rather than the
+    group itself.
+
 {end_tabs}
 
 ## Remove user or group from a group
