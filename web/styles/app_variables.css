@@ -459,6 +459,11 @@
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
 
+    /* This length is the primary reference for height
+       and image width on URL preview embeds.
+       80px at 14px/1em */
+    --length-message-preview-embeds: 5.7143em;
+
     /*
     Reaction container UI scaling.
     */
