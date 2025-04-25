@@ -542,8 +542,17 @@ input.settings_text_input {
     }
 }
 
+.organization-upgrade-banner,
+.mobile-push-notifications-banner,
 .organization-permission-banner {
     margin-bottom: 10px;
+}
+
+.create-group-button-container {
+    .upgrade-organization-banner-container {
+        display: flex;
+        justify-content: center;
+    }
 }
 
 .invite-stream-notice {
