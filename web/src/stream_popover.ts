@@ -25,6 +25,7 @@ import type {Message} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
@@ -106,6 +107,10 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
+    const show_go_to_list_of_topics =
+        user_settings.web_channel_default_view !==
+            web_channel_default_view_values.list_of_topics.code &&
+        page_params.development_environment;
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
@@ -113,9 +118,11 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         stream: {
             ...sub_store.get(stream_id),
             url: browser_history.get_full_url(stream_hash),
+            list_of_topics_view_url: hash_util.by_channel_topic_list_url(stream_id),
         },
         has_unread_messages,
         show_go_to_channel_feed,
+        show_go_to_list_of_topics,
     });
 
     popover_menus.toggle_popover_menu(elt, {
@@ -149,6 +156,11 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                     ],
                     {trigger: "stream-popover"},
                 );
+            });
+
+            $popper.on("click", ".stream-popover-go-to-list-of-topics", (e) => {
+                e.stopPropagation();
+                hide_stream_popover(instance);
             });
 
             // Stream settings

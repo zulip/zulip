@@ -1,4 +1,9 @@
 <div id="inbox-main">
+    {{#if unknown_channel}}
+    <div id="inbox-unknown-channel-view" class="empty-list-message">
+        {{t "This channel doesn't exist, or you are not allowed to view it."}}
+    </div>
+    {{else}}
     <div class="search_group" id="inbox-filters" role="group">
         {{> ../dropdown_widget widget_name="inbox-filter"}}
         <i class="zulip-icon zulip-icon-search-inbox"></i>
@@ -10,8 +15,19 @@
     <div id="inbox-empty-with-search" class="inbox-empty-text empty-list-message">
         {{t "No conversations match your filters."}}
     </div>
-    {{> inbox_no_unreads}}
-    <div id="inbox-list">
-        {{> inbox_list .}}
+    <div id="inbox-empty-channel-view-with-search" class="inbox-empty-text empty-list-message">
+        {{t "No topics match your filters."}}
     </div>
+    <div id="inbox-empty-channel-view-without-search" class="inbox-empty-text empty-list-message">
+        {{t "There are no topics in this view."}}
+    </div>
+    {{#if normal_view}}
+        {{> inbox_no_unreads}}
+    {{/if}}
+    <div id="inbox-list">
+        {{#if normal_view}}
+            {{> inbox_list .}}
+        {{/if}}
+    </div>
+    {{/if}}
 </div>

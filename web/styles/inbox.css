@@ -143,6 +143,10 @@
                     var(--width-inbox-filters-dropdown) + 4.5em
             );
 
+            .inbox-channel-topic-list {
+                margin: 0;
+            }
+
             .inbox-focus-border {
                 display: flex;
                 min-height: 1.875em; /* 30px at 16px em */

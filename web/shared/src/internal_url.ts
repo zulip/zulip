@@ -57,6 +57,13 @@ export function by_stream_url(
     return `#narrow/channel/${encode_stream_id(stream_id, maybe_get_stream_name)}`;
 }
 
+export function by_channel_topic_list_url(
+    stream_id: number,
+    maybe_get_stream_name: MaybeGetStreamName,
+): string {
+    return `#topics/channel/${encode_stream_id(stream_id, maybe_get_stream_name)}`;
+}
+
 // The message_id parameter is used to obtain topic permalinks,
 // by using it in a `with` operator.
 export function by_stream_topic_url(
