@@ -394,12 +394,15 @@ test("sort_streams", ({override, override_rewire}) => {
 
 function language_items(languages) {
     return languages.map((language) => ({
-        type: "syntax",
         language,
+        type: "syntax",
     }));
 }
 
-test("sort_languages", ({override_rewire}) => {
+test("sort_languages", ({override, override_rewire}) => {
+    override(realm, "realm_default_code_block_language", "dart");
+    const default_language = realm.realm_default_code_block_language;
+
     override_rewire(pygments_data, "langs", {
         python: {priority: 26},
         javascript: {priority: 27},
@@ -407,20 +410,52 @@ test("sort_languages", ({override_rewire}) => {
         pascal: {priority: 15},
         perl: {priority: 3},
         css: {priority: 21},
+        spoiler: {priority: 29},
+        text: {priority: 31},
+        quote: {priority: 30},
+        math: {priority: 28},
     });
 
-    let test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
+    let test_langs = language_items(["pascal", "perl", "php", "python", "spoiler", "javascript"]);
     test_langs = th.sort_languages(test_langs, "p");
 
     // Sort languages by matching first letter, and then by popularity
-    assert.deepEqual(test_langs, language_items(["python", "php", "pascal", "perl", "javascript"]));
+    assert.deepEqual(
+        test_langs,
+        language_items(["python", "php", "pascal", "perl", "spoiler", "javascript"]),
+    );
 
     // Test if popularity between two languages are the same
     pygments_data.langs.php = {priority: 26};
-    test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
+    test_langs = language_items(["pascal", "perl", "php", "python", "spoiler", "javascript"]);
     test_langs = th.sort_languages(test_langs, "p");
 
-    assert.deepEqual(test_langs, language_items(["php", "python", "pascal", "perl", "javascript"]));
+    assert.deepEqual(
+        test_langs,
+        language_items(["php", "python", "pascal", "perl", "spoiler", "javascript"]),
+    );
+
+    test_langs = language_items([
+        default_language,
+        "text",
+        "quote",
+        "math",
+        "python",
+        "javascript",
+    ]);
+    const test_langs_for_default = th.sort_languages(test_langs, "d");
+
+    assert.deepEqual(
+        test_langs_for_default,
+        language_items([default_language, "text", "quote", "math", "javascript", "python"]),
+    );
+
+    test_langs = th.sort_languages(test_langs, "t");
+
+    assert.deepEqual(
+        test_langs,
+        language_items(["text", "quote", "math", "javascript", "python", default_language]),
+    );
 });
 
 test("sort_languages on actual data", () => {

@@ -113,6 +113,7 @@ export let render_typeahead_item = (args: {
     topic_object?: TopicSuggestion;
     is_stream_topic?: boolean;
     is_empty_string_topic?: boolean;
+    is_default_language?: boolean;
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
@@ -434,8 +435,15 @@ function retain_unique_language_aliases(matches: string[]): string[] {
 
 export function sort_languages(matches: LanguageSuggestion[], query: string): LanguageSuggestion[] {
     const languages = matches.map((object) => object.language);
+    const default_language = realm.realm_default_code_block_language;
     const results = typeahead.triage(query, languages, (x) => x, compare_language);
-    const unique_languages = retain_unique_language_aliases([...results.matches, ...results.rest]);
+    let language_results;
+    if (default_language && results.matches.includes(default_language)) {
+        language_results = [default_language, ...results.matches, ...results.rest];
+    } else {
+        language_results = [...results.matches, ...results.rest];
+    }
+    const unique_languages = retain_unique_language_aliases(language_results);
     return unique_languages.map((language) => ({
         language,
         type: "syntax",
