@@ -206,9 +206,14 @@ def get_pull_request_event_message(
     type: str = "PR",
     title: str | None = None,
 ) -> str:
+    action_messages = {
+        "approval": "added their approval for",
+        "unapproval": "removed their approval for",
+    }
+
     kwargs = {
         "user_name": user_name,
-        "action": action,
+        "action": action_messages.get(action, action),
         "type": type,
         "url": url,
         "id": f" #{number}" if number is not None else "",

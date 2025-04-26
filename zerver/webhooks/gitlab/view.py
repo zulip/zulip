@@ -480,6 +480,10 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Note Hook Snippet": get_commented_snippet_event_body,
     "Merge Request Hook approved": partial(get_merge_request_event_body, "approved"),
     "Merge Request Hook unapproved": partial(get_merge_request_event_body, "unapproved"),
+    # approval and unapproval events are triggered only if there's more than one required approver
+    # ref: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/8742
+    "Merge Request Hook approval": partial(get_merge_request_event_body, "approval"),
+    "Merge Request Hook unapproval": partial(get_merge_request_event_body, "unapproval"),
     "Merge Request Hook open": partial(get_merge_request_open_or_updated_body, "created"),
     "Merge Request Hook update": get_merge_request_updated_event_body,
     "Merge Request Hook merge": partial(get_merge_request_event_body, "merged"),
