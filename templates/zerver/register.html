@@ -163,6 +163,10 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
                         <div class="bar bar-danger" style="width: 10%;"></div>
                     </div>
+                    <div class="password-strength-container">
+                        <div class="progress-bar" id="password-strength-bar"></div>
+                        <div class="password-strength-label" id="password-strength-label"></div>
+                    </div>
                 </div>
                 {% endif %}
             </fieldset>
@@ -268,4 +272,110 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 {% include 'zerver/change_email_address_visibility_modal.html' %}
 {% endif %}
 
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<style>
+    .password-strength-container {
+        margin-top: 10px;
+    }
+    .progress-bar {
+        height: 5px;
+        width: 100%;
+        background-color: #eee;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        width: 0;
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+    .password-strength-label {
+        margin-top: 5px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .strength-weak {
+        color: #dc3545;
+    }
+    .strength-moderate {
+        color: #fd7e14;
+    }
+    .strength-strong {
+        color: #28a745;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('id_password');
+        const strengthBar = document.getElementById('password-strength-bar');
+        const strengthLabel = document.getElementById('password-strength-label');
+
+        // Create the progress bar fill element
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-bar-fill';
+        strengthBar.appendChild(progressFill);
+
+        function calculatePasswordStrength(password) {
+            let strength = 0;
+            
+            // Length check
+            if (password.length > 5) {
+                strength += 20;
+            }
+            
+            // Uppercase check
+            if (/[A-Z]/.test(password)) {
+                strength += 20;
+            }
+            
+            // Lowercase check
+            if (/[a-z]/.test(password)) {
+                strength += 20;
+            }
+            
+            // Digit check
+            if (/[0-9]/.test(password)) {
+                strength += 20;
+            }
+            
+            // Special character check
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+                strength += 20;
+            }
+            
+            return strength;
+        }
+
+        function updatePasswordStrength(password) {
+            const strength = calculatePasswordStrength(password);
+            
+            // Update progress bar
+            progressFill.style.width = strength + '%';
+            
+            // Update colors and label based on strength
+            if (strength <= 40) {
+                progressFill.style.backgroundColor = '#dc3545';
+                strengthLabel.textContent = '{{ _("Weak") }}';
+                strengthLabel.className = 'password-strength-label strength-weak';
+            } else if (strength <= 80) {
+                progressFill.style.backgroundColor = '#fd7e14';
+                strengthLabel.textContent = '{{ _("Moderate") }}';
+                strengthLabel.className = 'password-strength-label strength-moderate';
+            } else {
+                progressFill.style.backgroundColor = '#28a745';
+                strengthLabel.textContent = '{{ _("Strong") }}';
+                strengthLabel.className = 'password-strength-label strength-strong';
+            }
+        }
+
+        // Add event listener for password input
+        passwordInput.addEventListener('input', function() {
+            updatePasswordStrength(this.value);
+        });
+    });
+</script>
 {% endblock %}
