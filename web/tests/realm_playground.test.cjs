@@ -78,6 +78,10 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     let iterator = candidates.entries();
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: custom_lang"}));
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: invent_a_lang"}));
+    assert.equal(iterator.next().value[1], "Text only (text, text)");
+    assert.equal(iterator.next().value[1], "quote (quote, quote)");
+    assert.equal(iterator.next().value[1], "spoiler (spoiler, spoiler)");
+    assert.equal(iterator.next().value[1], "math (math, math)");
     assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
     assert.equal(
         iterator.next().value[1],
@@ -96,6 +100,10 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     );
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: custom_lang"}));
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: invent_a_lang"}));
+    assert.equal(iterator.next().value[1], "Text only (text, text)");
+    assert.equal(iterator.next().value[1], "quote (quote, quote)");
+    assert.equal(iterator.next().value[1], "spoiler (spoiler, spoiler)");
+    assert.equal(iterator.next().value[1], "math (math, math)");
     assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
     assert.equal(
         iterator.next().value[1],
@@ -107,9 +115,7 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     iterator = candidates.entries();
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: invent_a_lang"}));
     assert.equal(iterator.next().value[1], $t({defaultMessage: "Custom language: custom_lang"}));
-    assert.equal(iterator.next().value[1], "JavaScript (javascript, js, javascript, js)");
-    assert.equal(
-        iterator.next().value[1],
-        "Python (python, bazel, py, py3, pyi, python3, sage, starlark, python, bazel, py, py3, pyi, python3, sage, starlark)",
-    );
+    assert.equal(iterator.next().value[1], "Text only (text, text)");
+    assert.equal(iterator.next().value[1], "quote (quote, quote)");
+    assert.equal(iterator.next().value[1], "spoiler (spoiler, spoiler)");
 });
