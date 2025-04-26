@@ -23,6 +23,7 @@ from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     check_add_user_group,
+    do_change_user_group_permission_setting,
     do_deactivate_user_group,
 )
 from zerver.actions.user_settings import do_change_user_setting
@@ -395,6 +396,38 @@ class MarkdownMiscTest(ZulipTestCase):
         content = "@_*hamletcharacters*, @*hamletcharacters*"
         mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertEqual(mention_data.get_group_members(hamlet_group.id), {hamlet.id, cordelia.id})
+
+    def test_fetch_group_membership_when_mention_group_permission_changes(self) -> None:
+        # This tests an edge case where a sender's permission changes (they can't mention that group)
+        # while sending the message and after writing @group_name in compose box, in this case, we should NOT fetch
+        # membership for that group.
+
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        mention_backend = MentionBackend(realm.id)
+        hamlet_group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        content = "@*hamletcharacters*"
+
+        # We should fetch group membership normally when message_sender has the permission to mention.
+        mention_data = MentionData(mention_backend, content, message_sender=aaron)
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), {hamlet.id, cordelia.id})
+
+        # Change group permission, so that only "othello" can mention hamlet_group.
+        can_mention_group = check_add_user_group(realm, "new_group", [othello], acting_user=othello)
+        do_change_user_group_permission_setting(
+            hamlet_group,
+            "can_mention_group",
+            can_mention_group,
+            acting_user=None,
+        )
+
+        # We should NOT fetch group membership when message_sender has NO permission to mention.
+        mention_data = MentionData(mention_backend, content, message_sender=aaron)
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), set())
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
