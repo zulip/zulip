@@ -137,7 +137,6 @@ export function fetch_and_render_message_history(message: Message): void {
         },
         success(raw_data) {
             const data = server_message_history_schema.parse(raw_data);
-
             const content_edit_history: EditHistoryEntry[] = [];
             let prev_stream_item: EditHistoryEntry | null = null;
             for (const [index, msg] of data.message_history.entries()) {
@@ -203,6 +202,9 @@ export function fetch_and_render_message_history(message: Message): void {
                     new_topic_display_name = util.get_final_topic_display_name(msg.topic);
                     is_empty_string_prev_topic = msg.prev_topic === "";
                     is_empty_string_new_topic = msg.topic === "";
+                    if (message.is_stream && message.stream_id !== undefined) {
+                        prev_stream = get_display_stream_name(message.stream_id);
+                    }
                 } else if (msg.prev_stream) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     stream_changed = true;
