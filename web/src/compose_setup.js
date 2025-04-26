@@ -74,7 +74,11 @@ export function initialize() {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
         }
-        compose_validate.warn_if_topic_resolved(false);
+        const recipient_widget_hidden =
+            $(".compose_select_recipient-dropdown-list-container").length === 0;
+        if (recipient_widget_hidden) {
+            compose_validate.warn_if_topic_resolved(false);
+        }
         const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
 
         // Change compose close button tooltip as per condition.

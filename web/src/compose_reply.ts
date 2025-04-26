@@ -256,7 +256,7 @@ export function quote_message(opts: {
             topic = message.topic;
             stream_id = message.stream_id;
         }
-
+        compose_state.set_is_processing_forward_message(true);
         compose_actions.start({
             message_type: message.type,
             topic,
