@@ -250,9 +250,9 @@ run_test("big_list", ({override, override_rewire}) => {
     // which doesn't actually happen, since I don't know how to properly
     // get it set in the middle of buddy_list.populate().
     $.reset_selector("#buddy-list-users-matching-view .empty-list-message");
-    $("#buddy-list-users-matching-view .empty-list-message").remove = noop;
+    $("#buddy-list-users-matching-view .empty-list-message")[0].remove = noop;
     $.reset_selector("#buddy-list-other-users .empty-list-message");
-    $("#buddy-list-users-matching-view .empty-list-message").remove = noop;
+    $("#buddy-list-users-matching-view .empty-list-message")[0].remove = noop;
 
     _.times(num_users, (i) => {
         const person = make_user({

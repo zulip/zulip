@@ -1,6 +1,5 @@
 "use strict";
 
-const {noop} = require("./test.cjs");
 const $ = require("./zjquery.cjs");
 
 let users_matching_view = [];
@@ -42,9 +41,6 @@ exports.stub_buddy_list_elements = () => {
     $.set_results("#buddy-list-other-users .empty-list-message", []);
     $.reset_selector("#buddy-list-other-users-container .view-all-users-link");
     $.set_results("#buddy-list-other-users-container .view-all-users-link", []);
-    $(`#buddy-list-users-matching-view .empty-list-message`).remove = noop;
-    $(`#buddy-list-other-users .empty-list-message`).remove = noop;
-    $(`#buddy-list-participants .empty-list-message`).remove = noop;
 
     // Simulate no avatar images for clear_avatar_preload_backgrounds.
     $.reset_selector("#user-list .avatar-preload-background img");

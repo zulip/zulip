@@ -2581,7 +2581,7 @@ test("set_max_channel_width_css_variable", async () => {
 
     $measure_div.css = () => $measure_div;
     $measure_div[0].getBoundingClientRect = () => ({width: $measure_div.text().length});
-    $measure_div.remove = () => {};
+    $measure_div[0].remove = () => {};
 
     const set_property_calls = [];
     $root.css = (name, value) => {

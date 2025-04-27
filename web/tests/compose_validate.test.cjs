@@ -727,7 +727,6 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
     $.reset_selector("#compose_banners .topic_resolved");
     $.set_results("#compose_banners .topic_resolved", []);
-    $("#compose_banners .topic_resolved").remove = noop;
     override(realm, "realm_can_resolve_topics_group", everyone.id);
 
     let error_shown = false;

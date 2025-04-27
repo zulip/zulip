@@ -394,7 +394,7 @@ run_test("insert_remove", ({mock_template}) => {
 
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
-        pill.$element.remove = set_colored_removed_func(pill.item.color_name);
+        pill.$element[0].remove = set_colored_removed_func(pill.item.color_name);
         pill.$element.on("focus", handle_event(pill.item.color_name));
     }
 
@@ -488,7 +488,7 @@ run_test("exit button on pill", ({mock_template}) => {
 
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
-        pill.$element.remove = noop;
+        pill.$element[0].remove = noop;
     }
 
     const $curr_pill_stub = {
@@ -589,7 +589,7 @@ run_test("appendValue/clear", ({mock_template}) => {
 
     const removed_colors = [];
     for (const pill of pills) {
-        pill.$element.remove = () => {
+        pill.$element[0].remove = () => {
             removed_colors.push(pill.item.color_name);
         };
     }

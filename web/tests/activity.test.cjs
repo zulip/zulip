@@ -469,7 +469,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
     };
 
     let fred_removed;
-    $fred_stub.remove = () => {
+    $fred_stub[0].remove = () => {
         fred_removed = true;
     };
 
@@ -521,7 +521,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     };
 
     let fred_removed;
-    $fred_stub.remove = () => {
+    $fred_stub[0].remove = () => {
         fred_removed = true;
     };
 

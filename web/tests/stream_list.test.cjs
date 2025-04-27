@@ -237,7 +237,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     assert.ok($social_li.hasClass("inactive_stream"));
 
     let removed;
-    $social_li.remove = () => {
+    $social_li[0].remove = () => {
         removed = true;
     };
 
@@ -410,7 +410,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok($("#streams_list").hasClass("zoom-in"));
     assert.ok(filter_topics_appended);
 
-    $(".filter-topics").remove = () => {
+    $(".filter-topics")[0].remove = () => {
         filter_topics_appended = false;
     };
     stream_list.zoom_out_topics({$stream_li: $stream_li1});
