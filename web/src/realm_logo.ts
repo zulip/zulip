@@ -75,7 +75,7 @@ export function render(): void {
     const $night_file_input = $<HTMLInputElement>(
         "#realm-night-logo-upload-widget input.image_file_input",
     );
-    $("#realm-day-logo-upload-widget .image-block").attr("src", realm.realm_logo_url);
+    $("#realm-day-logo-upload-widget .image-block-image").attr("src", realm.realm_logo_url);
 
     if (realm.realm_night_logo_source === "D" && realm.realm_logo_source !== "D") {
         // If no dark theme logo is uploaded but a light theme one
@@ -83,9 +83,12 @@ export function render(): void {
         // of transparent background logos that look good on both
         // dark and light themes.  See also similar code in admin.ts.
 
-        $("#realm-night-logo-upload-widget .image-block").attr("src", realm.realm_logo_url);
+        $("#realm-night-logo-upload-widget .image-block-image").attr("src", realm.realm_logo_url);
     } else {
-        $("#realm-night-logo-upload-widget .image-block").attr("src", realm.realm_night_logo_url);
+        $("#realm-night-logo-upload-widget .image-block-image").attr(
+            "src",
+            realm.realm_night_logo_url,
+        );
     }
 
     const $realm_logo = $<HTMLImageElement>("#realm-navbar-wide-logo");

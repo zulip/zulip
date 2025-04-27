@@ -300,3 +300,68 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
     }
     $element.unwrap(".disabled-tooltip");
 }
+
+export function restore_ublockorigin_hidden_img($img: JQuery): void {
+    /* Use this function on any visible `img` elements that may have just been
+       changed from a gravatar URL to a non-gravatar URL. It will make sure
+       that it is still visible to users of uBlock Origin on Firefox who block
+       gravatar.
+
+       * `$img` should correspond to a single `img` tag.
+
+       Some details:
+
+       If the user blocks gravatar with uBlock Origin, it will hide any img
+       element, such as an avatar or realm icon, which has a gravatar URL in
+       the src. If the user then uploads a new image to replace the gravatar
+       image, the src of the relevant img element(s) will be set to the new
+       non-gravatar URL. The problem is that the img element(s) will not
+       simply reappear (without a page reload).
+
+       uBlock Origin seems to activate the hiding of the element using a
+       randomized attribute. It seems that removing this attribute is the
+       only way to make the element visible again.
+
+       We make sure the element is invisible, try to find an unexpected tag
+       set to an empty value, and remove it. We assume that Zulip itself has
+       no reason to hide the img. */
+
+    // Anticipating attributes we might put on an img element. If we add
+    // other attributes to any img tags that get passed into here, we will
+    // need to add them here.
+    const expectedAttrs = new Set(["class", "src"]);
+
+    $img.filter(":hidden").each((_, img) => {
+        let uBlockOriginAttr: string | null = null;
+
+        for (const attr of img.attributes) {
+            // Normal attributes are not of interest.
+            if (expectedAttrs.has(attr.name)) {
+                continue;
+            }
+
+            // If we already found an abnormal attribute, we don't expect
+            // more. We don't know what's going on so let's not risk
+            // continuing.
+            if (uBlockOriginAttr !== null) {
+                return;
+            }
+
+            // Abnormal attributes that are not set to empty string are not
+            // what we expect. We don't know what's going on so let's not
+            // risk continuing.
+            if (attr.value !== "") {
+                return;
+            }
+
+            uBlockOriginAttr = attr.name;
+        }
+
+        // We didn't find a uBlock Origin attribute
+        if (uBlockOriginAttr === null) {
+            return;
+        }
+
+        img.removeAttribute(uBlockOriginAttr);
+    });
+}

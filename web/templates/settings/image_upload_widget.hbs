@@ -22,7 +22,11 @@
             <img class="image_upload_spinner" src="../../images/loading/tail-spin.svg" alt="" />
         </span>
     </div>
-    <img class="image-block" src="{{ image }}"/>
+    <div class="image-block">
+        <!-- If you add attributes to this img tag, update the list of
+        expected tags in ui_util.restore_ublockorigin_hidden_img. -->
+        <img class="image-block-image" src="{{ image }}"/>
+    </div>
     <input type="file" name="file_input" class="notvisible image_file_input"  value="{{ upload_text }}" />
     <div class="image_file_input_error text-error"></div>
 </div>

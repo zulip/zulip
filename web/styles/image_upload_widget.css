@@ -8,6 +8,12 @@
     .image-block {
         background-size: contain;
         height: 100%;
+
+        img {
+            /* TODO - I'm not sure why this is necessary for the
+               realm icon but not the avatar */
+            height: 100%;
+        }
     }
 
     .image-hover-background {
@@ -150,6 +156,7 @@
 /* CSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
     .image-block {
+        background-color: var(--color-background-image-loader);
         width: 200px;
         height: 200px;
     }
@@ -170,6 +177,10 @@
     .image-delete-button {
         top: 5px;
         right: 5px;
+    }
+
+    .image-block {
+        background-color: var(--color-background-image-loader);
     }
 }
 

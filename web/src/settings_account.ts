@@ -97,6 +97,9 @@ function display_avatar_upload_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
     $("#user-avatar-upload-widget .image-delete-button").show();
+
+    ui_util.restore_ublockorigin_hidden_img($("#user-avatar-upload-widget .image-block-image"));
+    ui_util.restore_ublockorigin_hidden_img($("#personal-menu .header-button-avatar-image"));
 }
 
 function display_avatar_upload_started(): void {
