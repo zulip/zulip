@@ -1735,7 +1735,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n");
     });
-    $("textarea#compose-textarea").caret = () => $("textarea#compose-textarea")[0].selectionStart;
 
     event.key = "Enter";
     $stub_target.attr("id", "stream_message_recipient_topic");

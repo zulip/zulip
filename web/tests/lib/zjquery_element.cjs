@@ -138,6 +138,8 @@ class FakeElement extends RejectMissing {
     classList = new FakeClassList();
     dataset = new FakeDataSet(this);
     innerHTML = "never-been-set";
+    selectionEnd = undefined;
+    selectionStart = undefined;
     textContent = "never-been-set";
     value = undefined;
 
@@ -161,6 +163,10 @@ class FakeElement extends RejectMissing {
     }
     setAttribute(name, value) {
         this.#attributes.set(normalize_attribute(name), String(value));
+    }
+    setSelectionRange(start, end) {
+        this.selectionStart = start;
+        this.selectionEnd = end;
     }
 }
 
@@ -195,6 +201,16 @@ exports.FakeJQuery = function (selector, opts) {
             const [value] = args;
             for (const element of this) {
                 element.setAttribute(name, value);
+            }
+            return this;
+        },
+        caret(...args) {
+            if (args.length === 0) {
+                return this[0]?.selectionStart;
+            }
+            assert.equal(typeof args[0], "number", "zjquery does not support this caret() call");
+            for (const element of this) {
+                element.setSelectionRange(args[0], args[0]);
             }
             return this;
         },

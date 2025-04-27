@@ -569,7 +569,6 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         }
     });
 
-    $("textarea#compose-textarea").caret = noop;
     $("textarea#compose-textarea").attr("id", "compose-textarea");
 
     replaced = false;
