@@ -469,16 +469,12 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
-        /* istanbul ignore next */
         remove() {
-            throw new Error(`
-                We don't support remove in zjquery.
-
-                You can do $(...).remove = ... if necessary.
-
-                But you are probably writing too deep a test
-                for node testing.
-            `);
+            for (const element of this) {
+                element.remove();
+                fake_element_state.get(element).jquery_data.clear();
+            }
+            return this;
         },
         removeData(keys) {
             keys = split_words(keys);

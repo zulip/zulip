@@ -71,7 +71,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     function mock_pill_removes(widget) {
         const pills = widget._get_pills_for_testing();
         for (const pill of pills) {
-            pill.$element.remove = noop;
+            pill.$element[0].remove = noop;
         }
     }
 
@@ -158,7 +158,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const _setup = (terms) => {
                 const pills = search.search_pill_widget._get_pills_for_testing();
                 for (const pill of pills) {
-                    pill.$element.remove = noop;
+                    pill.$element[0].remove = noop;
                 }
                 search_pill.set_search_bar_contents(
                     terms,
@@ -241,7 +241,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     const _setup = (terms) => {
         const pills = search.search_pill_widget._get_pills_for_testing();
         for (const pill of pills) {
-            pill.$element.remove = noop;
+            pill.$element[0].remove = noop;
         }
         search_pill.set_search_bar_contents(terms, search.search_pill_widget, false, (text) =>
             $search_query_box.text(text),

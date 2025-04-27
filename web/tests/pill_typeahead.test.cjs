@@ -460,7 +460,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     function mock_pill_removes(widget) {
         const pills = widget._get_pills_for_testing();
         for (const pill of pills) {
-            pill.$element.remove = noop;
+            pill.$element[0].remove = noop;
         }
     }
 

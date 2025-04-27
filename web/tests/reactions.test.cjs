@@ -1279,7 +1279,7 @@ test("remove_reaction_from_view (last person to react)", ({override_rewire}) => 
     $our_reaction.set_parent($reaction_container);
 
     let removed;
-    $our_reaction.parent().remove = () => {
+    $our_reaction.parent()[0].remove = () => {
         removed = true;
     };
 
@@ -1331,7 +1331,7 @@ test("remove_reaction_from_view (last reaction)", () => {
     );
 
     let removed = false;
-    $message_reactions.remove = () => {
+    $message_reactions[0].remove = () => {
         removed = true;
     };
 
