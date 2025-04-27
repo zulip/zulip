@@ -111,7 +111,7 @@ run_test("autosize_textarea", ({override}) => {
 
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
-    $("textarea#compose-textarea").caret = () => 4;
+    $("textarea#compose-textarea").caret(4);
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
@@ -402,37 +402,6 @@ run_test("quote_message", ({override, override_rewire}) => {
         });
     }
 
-    // zjquery does not simulate caret handling, so we provide
-    // our own version of caret()
-    let textarea_caret_pos;
-
-    $("textarea#compose-textarea").caret = function (arg) {
-        if (arg === undefined) {
-            return textarea_caret_pos;
-        }
-        if (typeof arg === "number") {
-            textarea_caret_pos = arg;
-            return this;
-        }
-
-        /* This next block of mocking code is currently unused, but
-           is preserved, since it may be useful in the future. */
-        /* istanbul ignore next */
-        {
-            if (typeof arg !== "string") {
-                console.info(arg);
-                throw new Error("We expected the actual code to pass in a string.");
-            }
-
-            const textarea_val = $("textarea#compose-textarea").val();
-            const before = textarea_val.slice(0, textarea_caret_pos);
-            const after = textarea_val.slice(textarea_caret_pos);
-
-            $("textarea#compose-textarea").val(before + arg + after);
-            textarea_caret_pos += arg.length;
-            return this;
-        }
-    };
     $("textarea#compose-textarea").attr("id", "compose-textarea");
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, $("textarea#compose-textarea")[0]);
@@ -443,7 +412,7 @@ run_test("quote_message", ({override, override_rewire}) => {
         const caret_position = content.indexOf("%");
         content = content.slice(0, caret_position) + content.slice(caret_position + 1); // remove the "%"
         $("textarea#compose-textarea").val(content);
-        textarea_caret_pos = caret_position;
+        $("textarea#compose-textarea").caret(caret_position);
         $("textarea#compose-textarea").trigger("focus");
     }
 
@@ -453,7 +422,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
         // Reset compose-box state.
         $("textarea#compose-textarea").val("");
-        textarea_caret_pos = 0;
+        $("textarea#compose-textarea").caret(0);
         $("textarea#compose-textarea").trigger("blur");
     }
 
@@ -511,7 +480,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     override_rewire(compose_reply, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
         $("textarea#compose-textarea").val("");
-        textarea_caret_pos = 0;
+        $("textarea#compose-textarea").caret(0);
         $("textarea#compose-textarea").trigger("focus");
     });
 
