@@ -1485,10 +1485,7 @@ Output:
             "invite_only": orjson.dumps(invite_only).decode(),
         }
         post_data.update(extra_post_data)
-        # We wrap the API call with a 'transaction.atomic' context
-        # manager as it helps us with NOT rolling back the entire
-        # test transaction due to error responses.
-        with transaction.atomic(savepoint=True):
+        with self.artificial_transaction_savepoint():
             result = self.api_post(
                 user,
                 "/api/v1/users/me/subscriptions",
@@ -1964,6 +1961,16 @@ Output:
             with open(attach_file.name, "rb") as fp:
                 file_path = upload_message_attachment_from_request(UploadedFile(fp), user)[0]
                 return file_path
+
+    @contextmanager
+    def artificial_transaction_savepoint(self) -> Iterator[None]:
+        # Sometimes we need to wrap some test code, such as an API call with a
+        # 'transaction.atomic' context manager as it helps us with NOT rolling
+        # back the entire test transaction due to errors expected by the test.
+        # Otherwise, those errors can prevent the test from continuing, and throw
+        # TransactionManagementError instead.
+        with transaction.atomic(savepoint=True):
+            yield
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):

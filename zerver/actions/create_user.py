@@ -499,7 +499,7 @@ def notify_created_bot(user_profile: UserProfile) -> None:
     send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_create_user(
     email: str,
     password: str | None,
