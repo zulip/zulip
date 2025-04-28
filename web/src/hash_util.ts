@@ -323,7 +323,7 @@ export function decode_stream_topic_from_url(
     url_str: string,
 ): {stream_id: number; topic_name?: string; message_id?: string} | null {
     try {
-        const url = new URL(url_str);
+        const url = new URL(url_str, window.location.origin);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
             return null;
         }

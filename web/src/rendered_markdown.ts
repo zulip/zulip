@@ -239,9 +239,7 @@ export const update_elements = ($content: JQuery): void => {
     $content.find("a.stream-topic, a.message-link").each(function (): void {
         const narrow_url = $(this).attr("href");
         assert(narrow_url !== undefined);
-        const channel_topic = hash_util.decode_stream_topic_from_url(
-            window.location.origin + narrow_url,
-        );
+        const channel_topic = hash_util.decode_stream_topic_from_url(narrow_url);
         assert(channel_topic !== null);
         const channel_name = sub_store.maybe_get_stream_name(channel_topic.stream_id);
         if (channel_name !== undefined && $(this).find(".highlight").length === 0) {
