@@ -264,6 +264,24 @@ groups. To configure this feature:
    and `group2` will match their membership in LDAP groups with those
    names.
 
+1. Optionally, you can also enable syncing of descriptions of the
+   configured groups. The relevant Zulip groups will have their
+   descriptions updated to match the descriptions in LDAP.
+   To enable this, simply set:
+
+   ```python
+   LDAP_GROUP_DESCRIPTION_ATTR = "description"
+   ```
+
+   in place of `"description"` using the actual attribute name of your
+   LDAP groups that should be synced.
+   If a particular group doesn't have this attribute in your LDAP
+   directory, the Zulip group description will remain unchanged.
+
+   Note that this is a server-level setting, so specifying a different
+   LDAP attribute for the group description for different realms
+   is not supported.
+
 1. Test your configuration and restart the server into the new
    configuration as [documented above](#synchronizing-data).
 
