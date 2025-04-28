@@ -598,14 +598,6 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
 });
 
 const $textarea = $("textarea#compose-textarea");
-$textarea[0].setSelectionRange = (start, end) => {
-    $textarea.range = () => ({
-        start,
-        end,
-        text: $textarea.val().slice(start, end),
-        length: end - start,
-    });
-};
 $textarea[0].click = () => {};
 
 // The argument `text_representation` is a string representing the text
@@ -615,22 +607,11 @@ $textarea[0].click = () => {};
 // followed by a `>` with some text in between.
 function init_textarea_state(text_representation) {
     $textarea.val(text_representation.replaceAll(/[<>|]/g, ""));
-    $textarea.range = text_representation.includes("|")
-        ? () => ({
-              start: text_representation.indexOf("|"),
-              end: text_representation.indexOf("|"),
-              text: "",
-              length: 0,
-          })
-        : () => ({
-              start: text_representation.indexOf("<"),
-              end: text_representation.indexOf(">") - 1,
-              text: text_representation.slice(
-                  text_representation.indexOf("<") + 1,
-                  text_representation.indexOf(">"),
-              ),
-              length: text_representation.indexOf(">") - text_representation.indexOf("<") - 1,
-          });
+    if (text_representation.includes("|")) {
+        $textarea.caret(text_representation.indexOf("|"));
+    } else {
+        $textarea.range(text_representation.indexOf("<"), text_representation.indexOf(">") - 1);
+    }
 }
 
 // Returns a string representing the text in the compose box, of the same
@@ -662,18 +643,10 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
                 syntax_end +
                 $textarea.val().slice($textarea.range().end);
             $textarea.val(new_val);
-            const new_range = {
-                start: $textarea.range().start + syntax_start.length,
-                end: $textarea.range().end + syntax_start.length,
-                text: $textarea
-                    .val()
-                    .slice(
-                        $textarea.range().start + syntax_start.length,
-                        $textarea.range().end + syntax_start.length,
-                    ),
-                length: $textarea.range().end - $textarea.range().start,
-            };
-            $textarea.range = () => new_range;
+            $textarea.range(
+                $textarea.range().start + syntax_start.length,
+                $textarea.range().end + syntax_start.length,
+            );
         },
     );
 
@@ -815,18 +788,10 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
             syntax_end +
             $textarea.val().slice($textarea.range().end);
         $textarea.val(new_val);
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Strikethrough selected text
@@ -867,18 +832,10 @@ run_test("format_text - latex", ({override, override_rewire}) => {
             syntax_end +
             $textarea.val().slice($textarea.range().end);
         $textarea.val(new_val);
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Latex selected text
@@ -938,18 +895,10 @@ run_test("format_text - code", ({override, override_rewire}) => {
             syntax_end +
             $textarea.val().slice($textarea.range().end);
         $textarea.val(new_val);
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Code selected text
@@ -1009,18 +958,10 @@ run_test("format_text - quote", ({override, override_rewire}) => {
             syntax_end +
             $textarea.val().slice($textarea.range().end);
         $textarea.val(new_val);
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Quote selected text
