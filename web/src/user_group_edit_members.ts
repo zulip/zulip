@@ -145,6 +145,7 @@ export function enable_member_management({
         $pill_container,
         get_potential_members,
         get_potential_groups: get_potential_subgroups,
+        with_add_button: true,
     });
 
     $pill_container.find(".input").on("input", () => {

@@ -8,7 +8,6 @@ import type {User} from "./people.ts";
 import * as stream_pill from "./stream_pill.ts";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
-import * as user_group_create_members_data from "./user_group_create_members_data.ts";
 import * as user_group_pill from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
@@ -87,10 +86,16 @@ export function create({
     $pill_container,
     get_potential_members,
     get_potential_groups,
+    with_add_button,
+    onPillCreateAction,
+    onPillRemoveAction,
 }: {
     $pill_container: JQuery;
     get_potential_members: () => User[];
     get_potential_groups: () => UserGroup[];
+    with_add_button: boolean;
+    onPillCreateAction?: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
+    onPillRemoveAction?: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -100,6 +105,19 @@ export function create({
         generate_pill_html: add_subscribers_pill.generate_pill_html,
         show_outline_on_invalid_input: true,
     });
+
+    if (onPillCreateAction) {
+        pill_widget.onPillCreate(() => {
+            onPillCreateAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
+        });
+    }
+
+    if (onPillRemoveAction) {
+        pill_widget.onPillRemove(() => {
+            onPillRemoveAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
+        });
+    }
+
     function get_users(): User[] {
         const potential_members = get_potential_members();
         return user_pill.filter_taken_users(potential_members, pill_widget);
@@ -123,57 +141,9 @@ export function create({
         for_stream_subscribers: false,
     });
 
-    add_subscribers_pill.set_up_handlers_for_add_button_state(pill_widget, $pill_container);
-
-    return pill_widget;
-}
-
-export function create_without_add_button({
-    $pill_container,
-    onPillCreateAction,
-    onPillRemoveAction,
-}: {
-    $pill_container: JQuery;
-    onPillCreateAction: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
-    onPillRemoveAction: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
-}): CombinedPillContainer {
-    const pill_widget = input_pill.create<CombinedPill>({
-        $container: $pill_container,
-        create_item_from_text,
-        get_text_from_item: add_subscribers_pill.get_text_from_item,
-        get_display_value_from_item: add_subscribers_pill.get_display_value_from_item,
-        generate_pill_html: add_subscribers_pill.generate_pill_html,
-        show_outline_on_invalid_input: true,
-    });
-    function get_users(): User[] {
-        const potential_members = user_group_create_members_data.get_potential_members();
-        return user_pill.filter_taken_users(potential_members, pill_widget);
+    if (with_add_button) {
+        add_subscribers_pill.set_up_handlers_for_add_button_state(pill_widget, $pill_container);
     }
-
-    function get_user_groups(): UserGroup[] {
-        let potential_subgroups = user_group_create_members_data.get_potential_subgroups();
-        potential_subgroups = potential_subgroups.filter((item) => item.name !== "role:nobody");
-        return user_group_pill.filter_taken_groups(potential_subgroups, pill_widget);
-    }
-
-    pill_widget.onPillCreate(() => {
-        onPillCreateAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
-    });
-    pill_widget.onPillRemove(() => {
-        onPillRemoveAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
-    });
-
-    pill_widget.onPillExpand((pill) => {
-        expand_group_pill(pill, pill_widget);
-    });
-
-    add_subscribers_pill.set_up_pill_typeahead({
-        pill_widget,
-        $pill_container,
-        get_users,
-        get_user_groups,
-        for_stream_subscribers: false,
-    });
 
     return pill_widget;
 }
