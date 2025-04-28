@@ -303,7 +303,7 @@ export function slug_to_stream_id(slug: string): number | undefined {
 
 export function mark_archived(stream_id: number): void {
     const sub = get_sub_by_id(stream_id);
-    if (sub === undefined || !stream_info.get(stream_id)) {
+    if (sub === undefined) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
         return;
     }
