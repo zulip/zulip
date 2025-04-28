@@ -732,7 +732,7 @@
                 color: var(--color-markdown-link-hover);
             }
 
-            a {
+            .message-embed-title-link {
                 /* Line-clamp lines seem to have a small
                    interline area that's not clickable
                    unless we set the anchor to display as
