@@ -82,7 +82,11 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.types import Validator
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import (
+    get_system_user_group_by_name,
+    get_system_user_group_for_user,
+    is_user_in_group,
+)
 from zerver.lib.users import get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
@@ -105,6 +109,7 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups, UserGroupMembership
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.users import PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
@@ -452,6 +457,13 @@ class AuthBackendTest(ZulipTestCase):
 
         username = self.get_email()
         backend = ZulipLDAPAuthBackend()
+        orig_authenticate = backend.authenticate
+
+        def wrapped_authenticate(*args: Any, **kwargs: Any) -> UserProfile | None:
+            with self.artificial_transaction_savepoint():
+                return orig_authenticate(*args, **kwargs)
+
+        backend.authenticate = wrapped_authenticate
 
         # Test LDAP auth fails when LDAP server rejects password
         self.assertIsNone(
@@ -5090,17 +5102,19 @@ class FetchAPIKeyTest(ZulipTestCase):
         # We do test two combinations here:
         # The first user has no (department) attribute set
         # The second user has one set, but to a different value
-        result = self.client_post(
-            "/api/v1/fetch_api_key",
-            dict(username="hamlet", password=self.ldap_password("hamlet")),
-        )
+        with self.artificial_transaction_savepoint():
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username="hamlet", password=self.ldap_password("hamlet")),
+            )
         self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "department", "testWrongRealm")
-        result = self.client_post(
-            "/api/v1/fetch_api_key",
-            dict(username="hamlet", password=self.ldap_password("hamlet")),
-        )
+        with self.artificial_transaction_savepoint():
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username="hamlet", password=self.ldap_password("hamlet")),
+            )
         self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "department", "zulip")
@@ -5124,18 +5138,20 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.init_default_ldap_database()
 
         # The first user has no attribute set
-        result = self.client_post(
-            "/api/v1/fetch_api_key",
-            dict(username="hamlet", password=self.ldap_password("hamlet")),
-        )
+        with self.artificial_transaction_savepoint():
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username="hamlet", password=self.ldap_password("hamlet")),
+            )
         self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "test2", "testing")
         # Check with only one set
-        result = self.client_post(
-            "/api/v1/fetch_api_key",
-            dict(username="hamlet", password=self.ldap_password("hamlet")),
-        )
+        with self.artificial_transaction_savepoint():
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username="hamlet", password=self.ldap_password("hamlet")),
+            )
         self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "test1", "test")
@@ -5167,10 +5183,11 @@ class FetchAPIKeyTest(ZulipTestCase):
 
         # Setting test1 to wrong value
         self.change_ldap_user_attr("hamlet", "test1", "invalid")
-        result = self.client_post(
-            "/api/v1/fetch_api_key",
-            dict(username="hamlet", password=self.ldap_password("hamlet")),
-        )
+        with self.artificial_transaction_savepoint():
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username="hamlet", password=self.ldap_password("hamlet")),
+            )
         self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         # Override access with `org_membership`
@@ -5191,7 +5208,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_success(result)
+        self.assert_json_success(result)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
@@ -6500,6 +6517,21 @@ class TestLDAP(ZulipLDAPTestCase):
             )
             self.assertIs(user, None)
 
+        with (
+            self.settings(LDAP_APPEND_DOMAIN="zulip.com"),
+            self.assertLogs("zulip.auth.ldap", level="DEBUG") as log_debug,
+        ):
+            user = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=self.example_email("hamlet"),
+                password="",
+                realm=get_realm("zulip"),
+            )
+            self.assertIs(user, None)
+            self.assertEqual(
+                log_debug.output[0], "DEBUG:zulip.auth.ldap:Rejecting empty password for hamlet"
+            )
+
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_login_failure_due_to_nonexistent_user(self) -> None:
         with (
@@ -6972,6 +7004,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             ),
             self.assertLogs("django_auth_ldap") as ldap_logs,
             self.assertRaises(AssertionError),
+            self.artificial_transaction_savepoint(),
         ):
             self.perform_ldap_sync(self.example_user("hamlet"))
         hamlet.refresh_from_db()
@@ -7818,6 +7851,68 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
 
 
 class LDAPGroupSyncTest(ZulipTestCase):
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_ldap_sync_role_from_groups(self) -> None:
+        self.init_default_ldap_database()
+
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        with (
+            self.settings(
+                LDAP_APPEND_DOMAIN="zulip.com",
+                AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                    "ou=groups,dc=zulip,dc=com",
+                    ldap.SCOPE_ONELEVEL,
+                    "(objectClass=groupOfUniqueNames)",
+                ),
+                AUTH_LDAP_USER_FLAGS_BY_GROUP={
+                    "is_realm_admin": "cn=cool_test_group,ou=groups,dc=zulip,dc=com",
+                },
+            ),
+        ):
+            sync_user_from_ldap(hamlet, mock.Mock())
+            hamlet.refresh_from_db()
+            self.assertEqual(hamlet.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+            admin_group = get_system_user_group_by_name(SystemGroups.ADMINISTRATORS, realm.id)
+            self.assertEqual(get_system_user_group_for_user(hamlet), admin_group)
+
+            # Verify UserGroupMembership is set up correct - the user's direct membership should be the admins group.
+            self.assertIn(
+                admin_group.id,
+                set(
+                    UserGroupMembership.objects.filter(user_profile=hamlet).values_list(
+                        "user_group_id", flat=True
+                    )
+                ),
+            )
+
+            # Now test the just-in-time user creation codepath.
+            # A user with no Zulip account logs in for the first time with their LDAP credentials.
+            # The account is created on the fly and should the .role and system groups memberships
+            # set correctly from the start.
+            self.mock_ldap.directory["cn=cool_test_group,ou=groups,dc=zulip,dc=com"][
+                "uniqueMember"
+            ] = ["uid=newuser,ou=users,dc=zulip,dc=com"]
+            password = self.ldap_password("newuser")
+            email = "newuser@zulip.com"
+            self.login_with_return(email, password)
+            user_profile = UserProfile.objects.get(delivery_email=email)
+
+            self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+            admin_group = get_system_user_group_by_name(SystemGroups.ADMINISTRATORS, realm.id)
+            self.assertEqual(get_system_user_group_for_user(user_profile), admin_group)
+
+            self.assertIn(
+                admin_group.id,
+                set(
+                    UserGroupMembership.objects.filter(user_profile=user_profile).values_list(
+                        "user_group_id", flat=True
+                    )
+                ),
+            )
+
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_group_sync(self) -> None:
         self.init_default_ldap_database()
