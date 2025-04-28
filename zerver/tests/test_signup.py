@@ -3627,7 +3627,8 @@ class UserSignUpTest(ZulipTestCase):
             self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log,
         ):
             original_user_count = UserProfile.objects.count()
-            self.login_with_return(username, password, HTTP_HOST=subdomain + ".testserver")
+            with self.artificial_transaction_savepoint():
+                self.login_with_return(username, password, HTTP_HOST=subdomain + ".testserver")
             # Verify that the process failed as intended - no UserProfile is created.
             self.assertEqual(UserProfile.objects.count(), original_user_count)
             self.assertEqual(
