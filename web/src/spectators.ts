@@ -26,7 +26,7 @@ export function build_login_link(): string {
     return login_link;
 }
 
-export function login_to_access(empty_narrow?: boolean): void {
+export let login_to_access = (empty_narrow?: boolean): void => {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
     const login_link = build_login_link();
@@ -49,4 +49,8 @@ export function login_to_access(empty_narrow?: boolean): void {
             browser_history.return_to_web_public_hash();
         },
     });
+};
+
+export function rewire_login_to_access(value: typeof login_to_access): void {
+    login_to_access = value;
 }
