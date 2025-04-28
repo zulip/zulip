@@ -35,7 +35,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser, _LDAPUserGroups, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2 import compat as onelogin_saml2_compat
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -1062,12 +1062,23 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 return_data["no_matching_ldap_user"] = True
             return None
 
-        # Call into (ultimately) the django-auth-ldap authenticate
-        # function.  This will check the username/password pair
+        # Now we would want to run the django-auth-ldap authenticate
+        # function. We're, however, forced to fork it here in order
+        # to use our own ZulipLDAPUser class instead of its _LDAPUser.
+        #
+        # This will check the username/password pair
         # against the LDAP database, and assuming those are correct,
         # end up calling `self.get_or_build_user` with the
         # authenticated user's data from LDAP.
-        return super().authenticate(request=request, username=username, password=password)
+
+        if not password:
+            self.logger.debug("Rejecting empty password for %s", username)
+            return None
+
+        ldap_user = ZulipLDAPUser(self, username=username.strip(), request=request, realm=realm)
+        user = self.authenticate_ldap_user(ldap_user, password)
+
+        return user
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> tuple[UserProfile, bool]:
         """The main function of our authentication backend extension of
@@ -1196,6 +1207,25 @@ class ZulipLDAPUser(_LDAPUser):
         del kwargs["realm"]
 
         super().__init__(*args, **kwargs)
+
+    def _get_groups(self) -> _LDAPUserGroups:
+        groups = super()._get_groups()
+        if settings.DEVELOPMENT:
+            # HACK: We force the loading of all group dns, to coerce
+            # django-auth-ldap into caching the result - which
+            # makes it use this result when running is_member_of
+            # to check if the user is a member of a specific group.
+            #
+            # When this result isn't already loaded, django-auth-ldap
+            # runs a different ldap query, attempting to query for membership
+            # in the specific member group - which doesn't work in our fakeldap
+            # setup for mocking LDAP in tests and development.
+            #
+            # This hack is necessary for us to be able to test
+            # AUTH_LDAP_USER_FLAGS_BY_GROUP functionality.
+            groups.get_group_dns()
+
+        return groups
 
 
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
