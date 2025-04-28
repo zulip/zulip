@@ -30,6 +30,7 @@ from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.db import transaction
 from django.dispatch import Signal, receiver
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -1207,6 +1208,38 @@ class ZulipLDAPUser(_LDAPUser):
         del kwargs["realm"]
 
         super().__init__(*args, **kwargs)
+
+    @transaction.atomic(savepoint=False)
+    def _get_or_create_user(self, force_populate: bool = False) -> UserProfile:
+        # This function is responsible for the core logic of syncing
+        # a user's data with ldap - run in both populate_user codepath
+        # and just-in-time user creation upon first login via LDAP.
+        #
+        # To ensure we don't end up with corrupted database state,
+        # we need to run these operations atomically.
+        return super()._get_or_create_user(force_populate=force_populate)
+
+    def _populate_user(self) -> None:
+        """
+        Populates our User object with information from the LDAP directory.
+        """
+        assert isinstance(self._user, UserProfile)
+        user_profile = self._user
+        original_role = user_profile.role
+
+        # _populate_user() will make whatever changes to the user's attributes
+        # that it needs - possibly changing the user's role multiple times e.g.
+        # as it cycles through various role setters in AUTH_LDAP_USER_FLAGS_BY_GROUP.
+        #
+        # For that reason, we want to only look at the final role value after
+        # it is executed. This is the actual change (if any) that should take place.
+        # This allows us to call do_change_user_role only once.
+        super()._populate_user()
+        if user_profile.role != original_role:
+            # Change the role properly, updating system groups.
+            updated_role = user_profile.role
+            user_profile.role = original_role
+            do_change_user_role(user_profile, updated_role, acting_user=None)
 
     def _get_groups(self) -> _LDAPUserGroups:
         groups = super()._get_groups()
