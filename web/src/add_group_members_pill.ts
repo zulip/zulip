@@ -69,6 +69,13 @@ export function create_item_from_text(
         const subgroup = user_groups.get_user_group_from_id(group_item.group_id);
         group_item.show_expand_button =
             subgroup.members.size > 0 || subgroup.direct_subgroup_ids.size > 0;
+
+        if (user_group_components.active_group_id === undefined) {
+            // Checking whether this group can be used as a subgroup
+            // is not needed when creating a new group.
+            return group_item;
+        }
+
         const current_group_id = user_group_components.active_group_id;
         assert(current_group_id !== undefined);
         const current_group = user_groups.get_user_group_from_id(current_group_id);
@@ -143,7 +150,7 @@ export function create_without_add_button({
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
-        create_item_from_text: add_subscribers_pill.create_item_from_text,
+        create_item_from_text,
         get_text_from_item: add_subscribers_pill.get_text_from_item,
         get_display_value_from_item: add_subscribers_pill.get_display_value_from_item,
         generate_pill_html: add_subscribers_pill.generate_pill_html,
