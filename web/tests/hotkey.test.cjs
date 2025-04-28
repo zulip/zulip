@@ -96,9 +96,7 @@ mock_esm("../src/recent_view_ui", {
     is_in_focus: () => false,
 });
 
-const spectators = mock_esm("../src/spectators", {
-    login_to_access() {},
-});
+const spectators = zrequire("../src/spectators");
 
 message_lists.current = {
     visibly_empty() {
@@ -569,11 +567,11 @@ run_test("test new user input hook called", () => {
     assert.ok(hook_called);
 });
 
-run_test("e shortcut works for anonymous users", () => {
+run_test("e shortcut works for anonymous users", ({override_rewire}) => {
     page_params.is_spectator = true;
 
     const stub = make_stub();
-    spectators.login_to_access = stub.f;
+    override_rewire(spectators, "login_to_access", stub.f);
 
     const e = {
         which: "e".codePointAt(0),
@@ -581,4 +579,7 @@ run_test("e shortcut works for anonymous users", () => {
 
     process_keydown(e);
     assert.equal(stub.num_calls, 0, "login_to_access should not be called for 'e' shortcut");
+    // Fake call to avoid warning about unused stub.
+    spectators.login_to_access();
+    assert.equal(stub.num_calls, 1);
 });
