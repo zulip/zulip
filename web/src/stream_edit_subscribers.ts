@@ -121,6 +121,7 @@ export function enable_subscriber_management({
         $pill_container,
         get_potential_subscribers,
         get_user_groups: user_groups.get_all_realm_user_groups,
+        with_add_button: true,
     });
 
     $pill_container.find(".input").on("input", () => {

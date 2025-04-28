@@ -129,10 +129,16 @@ export function create({
     $pill_container,
     get_potential_subscribers,
     get_user_groups,
+    with_add_button,
+    onPillCreateAction,
+    onPillRemoveAction,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
     get_user_groups: () => UserGroup[];
+    with_add_button: boolean;
+    onPillCreateAction?: (pill_user_ids: number[]) => void;
+    onPillRemoveAction?: (pill_user_ids: number[]) => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -142,6 +148,19 @@ export function create({
         generate_pill_html,
         show_outline_on_invalid_input: true,
     });
+
+    if (onPillCreateAction) {
+        pill_widget.onPillCreate(() => {
+            onPillCreateAction(get_pill_user_ids(pill_widget));
+        });
+    }
+
+    if (onPillRemoveAction) {
+        pill_widget.onPillRemove(() => {
+            onPillRemoveAction(get_pill_user_ids(pill_widget));
+        });
+    }
+
     function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
@@ -161,57 +180,9 @@ export function create({
         for_stream_subscribers: true,
     });
 
-    set_up_handlers_for_add_button_state(pill_widget, $pill_container);
-
-    return pill_widget;
-}
-
-export function create_without_add_button({
-    $pill_container,
-    get_potential_subscribers,
-    get_user_groups,
-    onPillCreateAction,
-    onPillRemoveAction,
-}: {
-    $pill_container: JQuery;
-    get_potential_subscribers: () => User[];
-    get_user_groups: () => UserGroup[];
-    onPillCreateAction: (pill_user_ids: number[]) => void;
-    onPillRemoveAction: (pill_user_ids: number[]) => void;
-}): CombinedPillContainer {
-    const pill_widget = input_pill.create<CombinedPill>({
-        $container: $pill_container,
-        create_item_from_text,
-        get_text_from_item,
-        get_display_value_from_item,
-        generate_pill_html,
-        show_outline_on_invalid_input: true,
-    });
-    function get_users(): User[] {
-        const potential_subscribers = get_potential_subscribers();
-        return user_pill.filter_taken_users(potential_subscribers, pill_widget);
+    if (with_add_button) {
+        set_up_handlers_for_add_button_state(pill_widget, $pill_container);
     }
-
-    function get_groups(): UserGroup[] {
-        let user_groups = get_user_groups();
-        user_groups = user_groups.filter((item) => item.name !== "role:nobody");
-        return user_group_pill.filter_taken_groups(user_groups, pill_widget);
-    }
-
-    pill_widget.onPillCreate(() => {
-        onPillCreateAction(get_pill_user_ids(pill_widget));
-    });
-    pill_widget.onPillRemove(() => {
-        onPillRemoveAction(get_pill_user_ids(pill_widget));
-    });
-
-    set_up_pill_typeahead({
-        pill_widget,
-        $pill_container,
-        get_users,
-        get_user_groups: get_groups,
-        for_stream_subscribers: true,
-    });
 
     return pill_widget;
 }
