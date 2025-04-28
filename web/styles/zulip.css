@@ -1254,8 +1254,10 @@ nav {
 
 #page_loading_indicator_box {
     position: relative;
-    left: -50%;
-    top: -43px;
+    /* 50% of 38px = 19px at 14px/1em */
+    left: -1.3571em;
+    /* -43px at 14px/1em */
+    top: -3.0714em;
     z-index: 1;
     border-radius: 6px;
 }
