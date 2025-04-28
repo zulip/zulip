@@ -478,6 +478,23 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
+        range(...args) {
+            if (args.length === 0) {
+                return 0 in this
+                    ? {
+                          start: this[0].selectionStart,
+                          end: this[0].selectionEnd,
+                          length: this[0].selectionEnd - this[0].selectionStart,
+                          text: this[0].value.slice(this[0].selectionStart, this[0].selectionEnd),
+                      }
+                    : undefined;
+            }
+            assert.equal(typeof args[0], "number", "zjquery does not support this range() call");
+            for (const element of this) {
+                element.setSelectionRange(args[0], args[1]);
+            }
+            return this;
+        },
         removeAttr(name) {
             for (const element of this) {
                 element.removeAttribute(name);

@@ -227,7 +227,6 @@ run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
         // The URL paste path checks this before it reaches reverse-linkify.
         $textarea[0] = window.document.createElement("textarea");
         $textarea[0].value = "";
-        $textarea.range = () => ({start: 0, end: 0, text: "", length: 0});
         inserted_text = undefined;
         undo_texts = [];
 
