@@ -84,6 +84,11 @@ export function postprocess_content(html: string): string {
             }
         }
 
+        // Add a class to the anchor tag on
+        if (elt.parentElement?.classList.contains("message_embed_title")) {
+            elt.classList.add("message-embed-title-link");
+        }
+
         if (elt.parentElement?.classList.contains("message_inline_image")) {
             // For inline images we want to handle the tooltips explicitly, and disable
             // the browser's built in handling of the title attribute.

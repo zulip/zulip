@@ -34,6 +34,15 @@ run_test("postprocess_content", () => {
                 '<a class="" href="https://www.youtube.com/watch?v=tyKJueEk0XM">' +
                 '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/default.jpg">' +
                 "</a>" +
+                "</div>" +
+                '<div class="message_embed">' +
+                '<a class="message_embed_image" href="https://example.com/about" style="background-image: url(&quot;https://example.com/preview.jpeg&quot;)"></a>' +
+                '<div class="data-container">' +
+                '<div class="message_embed_title">' +
+                '<a href="https://example.com/about">About us</a>' +
+                "</div>" +
+                '<div class="message_embed_description">All about us.</div>' +
+                "</div>" +
                 "</div>",
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
@@ -55,6 +64,15 @@ run_test("postprocess_content", () => {
             '<a class="media-anchor-element" href="https://www.youtube.com/watch?v=tyKJueEk0XM" target="_blank" rel="noopener noreferrer">' +
             '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" class="media-image-element" loading="lazy">' +
             "</a>" +
+            "</div>" +
+            "</div>" +
+            '<div class="message_embed">' +
+            '<a class="message_embed_image" href="https://example.com/about" style="background-image: url(&quot;https://example.com/preview.jpeg&quot;)" target="_blank" rel="noopener noreferrer" title="https://example.com/about"></a>' +
+            '<div class="data-container">' +
+            '<div class="message_embed_title">' +
+            '<a href="https://example.com/about" target="_blank" rel="noopener noreferrer" class="message-embed-title-link" title="https://example.com/about">About us</a>' +
+            "</div>" +
+            '<div class="message_embed_description">All about us.</div>' +
             "</div>" +
             "</div>",
     );
