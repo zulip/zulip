@@ -53,12 +53,6 @@ export function create_item_from_text(
     text: string,
     current_items: CombinedPill[],
 ): CombinedPill | undefined {
-    const funcs = [
-        stream_pill.create_item_from_stream_name,
-        user_group_pill.create_item_from_group_name,
-        user_pill.create_item_from_email,
-    ];
-
     const stream_item = stream_pill.create_item_from_stream_name(text, current_items);
     if (stream_item) {
         return stream_item;
@@ -85,13 +79,8 @@ export function create_item_from_text(
 
         return undefined;
     }
-    for (const func of funcs) {
-        const item = func(text, current_items);
-        if (item) {
-            return item;
-        }
-    }
-    return undefined;
+
+    return user_pill.create_item_from_email(text, current_items);
 }
 
 export function create({
