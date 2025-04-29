@@ -442,6 +442,7 @@ class TusdPreCreateTest(ZulipTestCase):
 
         request = self.request(key=confirmation_key)
 
+        assert settings.MAX_WEB_DATA_IMPORT_SIZE_MB is not None
         max_upload_size = settings.MAX_WEB_DATA_IMPORT_SIZE_MB * 1024 * 1024
         request.event.upload.size = max_upload_size + 1
         result = self.client_post(

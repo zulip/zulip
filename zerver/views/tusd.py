@@ -257,16 +257,18 @@ def authenticate_user(request: HttpRequest) -> UserProfile | AnonymousUser:
 def handle_preregistration_pre_create_hook(
     request: HttpRequest, preregistration_realm: PreregistrationRealm, data: TusUpload
 ) -> HttpResponse:
-    max_upload_size = settings.MAX_WEB_DATA_IMPORT_SIZE_MB * 1024 * 1024  # 1G
     if data.size_is_deferred or data.size is None:
         return reject_upload("SizeIsDeferred is not supported", 411)
-    if data.size > max_upload_size:
-        return reject_upload(
-            _(
-                "Uploaded file exceeds the maximum file size for imports ({max_file_size} MiB)."
-            ).format(max_file_size=settings.MAX_WEB_DATA_IMPORT_SIZE_MB),
-            413,
-        )
+
+    if settings.MAX_WEB_DATA_IMPORT_SIZE_MB is not None:
+        max_upload_size = settings.MAX_WEB_DATA_IMPORT_SIZE_MB * 1024 * 1024  # 1G
+        if data.size > max_upload_size:
+            return reject_upload(
+                _(
+                    "Uploaded file exceeds the maximum file size for imports ({max_file_size} MiB)."
+                ).format(max_file_size=settings.MAX_WEB_DATA_IMPORT_SIZE_MB),
+                413,
+            )
 
     filename = f"import/{preregistration_realm.id}/slack.zip"
 
