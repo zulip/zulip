@@ -36,6 +36,8 @@ DESIGN_COMMENT_MESSAGE_TEMPLATE = (
     "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
 )
 
+FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
+
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name.startswith("build"):
@@ -408,6 +410,19 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
     return body
 
 
+def get_feature_flag_event_body(payload: WildValue, include_title: bool) -> str:
+    repo_url = payload["project"]["web_url"].tame(check_string)
+    feature_flag = payload["object_attributes"]
+    action = "activated" if feature_flag["active"] else "deactivated"
+
+    return FEATURE_FLAG_MESSAGE_TEMPLATE.format(
+        user=payload["user"]["username"].tame(check_string),
+        action=action,
+        name=feature_flag["name"].tame(check_string),
+        url=f"{repo_url}/-/feature_flags",
+    )
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -495,6 +510,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
+    "Feature Flag Hook": get_feature_flag_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
