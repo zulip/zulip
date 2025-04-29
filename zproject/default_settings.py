@@ -698,12 +698,12 @@ CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Callable[..., Any] | None = None
 # notification.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
 
-# Maximum allowed size of uploaded file for realm import, in megabytes.
+# Maximum allowed size of uploaded file for realm import on the web.
 # 0 disables import; None means no limit.
 #
 # Note that this is a limit for the size of the uploaded export
 # itself, not any additional files that may be imported as well.
-MAX_WEB_DATA_IMPORT_SIZE_MB: int | None = 1024
+MAX_WEB_DATA_IMPORT_SIZE_MB: int | None = 0
 
 # Minimum and maximum permitted number of days before full data
 # deletion when deactivating an organization. A nonzero minimum helps

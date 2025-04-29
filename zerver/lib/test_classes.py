@@ -898,6 +898,7 @@ Output:
         realm_default_language: str = "en",
         realm_in_root_domain: str | None = None,
         captcha: str | None = None,
+        import_from: str = "none",
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
@@ -905,6 +906,7 @@ Output:
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
+            "import_from": import_from,
         }
         if captcha is not None:
             payload["captcha"] = captcha
