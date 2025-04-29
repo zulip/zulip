@@ -455,7 +455,7 @@ class TusdPreCreateTest(ZulipTestCase):
         self.assertEqual(
             orjson.loads(result_json["HttpResponse"]["Body"]),
             {
-                "message": f"Uploaded file is larger than the allowed limit of {settings.MAX_WEB_DATA_IMPORT_SIZE_MB} MiB"
+                "message": f"Uploaded file exceeds the maximum file size for imports ({settings.MAX_WEB_DATA_IMPORT_SIZE_MB} MiB)."
             },
         )
         self.assertEqual(result_json["RejectUpload"], True)
