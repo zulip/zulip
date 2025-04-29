@@ -234,6 +234,10 @@ p.n-margin {
     }
 }
 
+.messages-logo-svg {
+    width: 1.7188em; /* 27.5px at 16px/1em */
+}
+
 .bottom-messages-logo {
     display: none;
 }
