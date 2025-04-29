@@ -311,12 +311,10 @@ class TusdPreCreateTest(ZulipTestCase):
             email,
             realm_subdomain="ete-slack-import",
             realm_name="Slack import end to end",
-            # TODO: Uncomment after adding support to form.
-            # import_from="slack",
+            import_from="slack",
         )
         prereg_realm = PreregistrationRealm.objects.get(email=email)
-        # TODO: Uncomment after adding support to form.
-        # self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
+        self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
         prereg_realm.data_import_metadata["import_from"] = "slack"
         prereg_realm.save()
 
@@ -392,12 +390,10 @@ class TusdPreCreateTest(ZulipTestCase):
             email,
             realm_subdomain="ete-slack-import",
             realm_name="Slack import end to end",
-            # TODO: Uncomment after adding support to form.
-            # import_from="slack",
+            import_from="slack",
         )
         prereg_realm = PreregistrationRealm.objects.get(email=email)
-        # TODO: Uncomment after adding support to form.
-        # self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
+        self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
         prereg_realm.data_import_metadata["import_from"] = "slack"
         prereg_realm.save()
 
@@ -428,12 +424,10 @@ class TusdPreCreateTest(ZulipTestCase):
             email,
             realm_subdomain="ete-slack-import",
             realm_name="Slack import end to end",
-            # TODO: Uncomment after adding support to form.
-            # import_from="slack",
+            import_from="slack",
         )
         prereg_realm = PreregistrationRealm.objects.get(email=email)
-        # TODO: Uncomment after adding support to form.
-        # self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
+        self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
         prereg_realm.data_import_metadata["import_from"] = "slack"
         prereg_realm.save()
 

@@ -829,9 +829,15 @@ def prepare_realm_activation_url(
     string_id: str,
     org_type: int,
     default_language: str,
+    import_form: str,
 ) -> str:
     prereg_realm = create_preregistration_realm(
-        email, realm_name, string_id, org_type, default_language
+        email,
+        realm_name,
+        string_id,
+        org_type,
+        default_language,
+        import_form,
     )
     activation_url = create_confirmation_link(
         prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
@@ -928,6 +934,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             realm_subdomain = form.cleaned_data["realm_subdomain"]
+            import_from = form.cleaned_data["import_from"]
             activation_url = prepare_realm_activation_url(
                 email,
                 request.session,
@@ -935,6 +942,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
                 realm_subdomain,
                 realm_type,
                 realm_default_language,
+                import_from,
             )
             if key_record is not None and key_record.presume_email_valid:
                 # The user has a token created from the server command line;

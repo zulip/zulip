@@ -306,6 +306,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
                 "realm_default_language": "en",
                 "realm_subdomain": "custom-test",
+                "import_from": "none",
             },
         )
         self.assertEqual(result.status_code, 302)
@@ -334,6 +335,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
                 "realm_default_language": "en",
                 "realm_subdomain": string_id,
+                "import_from": "none",
             },
         )
         self.assertEqual(result.status_code, 302)
