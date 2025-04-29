@@ -1879,9 +1879,13 @@ li.topic-list-item {
 .zoom-in {
     .narrow-filter > .bottom_left_row {
         position: sticky;
+        /* We subtract a quarter pixel of space to correct
+           for possible bleedthrough under certain viewing
+           conditions (e.g., external monitors.) This same
+           technique is used on #streams_header. */
         top: calc(
             var(--left-sidebar-sections-vertical-gutter) +
-                var(--line-height-sidebar-row-prominent)
+                var(--line-height-sidebar-row-prominent) - 0.25px
         );
         z-index: 2;
         padding-bottom: 1px;
