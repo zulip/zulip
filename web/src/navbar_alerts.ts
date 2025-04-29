@@ -8,6 +8,7 @@ import render_navbar_banners_testing_popover from "../templates/popovers/navbar_
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
 import * as channel from "./channel.ts";
+import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -170,15 +171,6 @@ export function toggle_organization_profile_incomplete_banner(): void {
         // this is meant to be a one-time task for administrators.
         open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
     }
-}
-
-export function get_demo_organization_deadline_days_remaining(): number {
-    const now = Date.now();
-    assert(realm.demo_organization_scheduled_deletion_date !== undefined);
-    const deadline = realm.demo_organization_scheduled_deletion_date * 1000;
-    const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-    const days_remaining = Math.round(Math.abs(deadline - now) / day);
-    return days_remaining;
 }
 
 export function should_offer_to_update_timezone(): boolean {
@@ -358,7 +350,7 @@ const bankruptcy_banner = (): AlertBanner => {
 };
 
 const demo_organization_deadline_banner = (): AlertBanner => {
-    const days_remaining = get_demo_organization_deadline_days_remaining();
+    const days_remaining = demo_organizations_ui.get_demo_organization_deadline_days_remaining();
     return {
         process: "demo-organization-deadline",
         intent: days_remaining <= 7 ? "danger" : "info",
