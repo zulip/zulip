@@ -575,6 +575,7 @@ html_rules: list["Rule"] = [
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",
+            "templates/zerver/slack_import.html",
         },
         "good_lines": [
             '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'

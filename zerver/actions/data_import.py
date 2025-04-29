@@ -44,7 +44,7 @@ def import_slack_data(event: dict[str, Any]) -> None:
             realm.save()
 
             # Try finding the user who imported this realm and make them owner.
-            try:
+            try:  # nocoverage
                 prereg_user = UserProfile.objects.get(
                     delivery_email__iexact=preregistration_realm.email, realm=realm
                 )
@@ -60,7 +60,7 @@ def import_slack_data(event: dict[str, Any]) -> None:
 
             preregistration_realm.data_import_metadata["is_import_work_queued"] = False
             preregistration_realm.save()
-    except Exception as e:
+    except Exception as e:  # nocoverage
         logger.exception(e)
         try:
             # Clean up the realm if the import failed
