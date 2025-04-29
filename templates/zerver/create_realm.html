@@ -47,6 +47,7 @@
                     </div>
                 </form>
             </div>
+            {% if not is_realm_import_enabled %}
             <div class="bottom-text">
                 {% trans %}
                 Or import
@@ -54,6 +55,7 @@
                 or <a href="/help/import-from-rocketchat">Rocket.Chat</a>.
                 {% endtrans %}
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
