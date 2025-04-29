@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.hbs";
@@ -8,13 +9,21 @@ import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
-import {get_demo_organization_deadline_days_remaining} from "./navbar_alerts.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import type {RequestOpts} from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
+
+export function get_demo_organization_deadline_days_remaining(): number {
+    const now = Date.now();
+    assert(realm.demo_organization_scheduled_deletion_date !== undefined);
+    const deadline = realm.demo_organization_scheduled_deletion_date * 1000;
+    const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+    const days_remaining = Math.round(Math.abs(deadline - now) / day);
+    return days_remaining;
+}
 
 export function insert_demo_organization_warning(): void {
     const days_remaining = get_demo_organization_deadline_days_remaining();
