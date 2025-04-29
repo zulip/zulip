@@ -76,6 +76,9 @@ importers:
       '@uppy/tus':
         specifier: ^4.1.5
         version: 4.2.2(@uppy/core@4.4.4)
+      '@uppy/utils':
+        specifier: ^6.1.3
+        version: 6.1.3
       '@zxcvbn-ts/core':
         specifier: ^3.0.1
         version: 3.0.4

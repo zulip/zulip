@@ -1,6 +1,7 @@
 import type {Meta} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
+import {getSafeFileId} from "@uppy/utils/lib/generateFileID";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -22,6 +23,7 @@ import {realm} from "./state_data.ts";
 let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy<Meta, TusBody>;
 const upload_objects_by_message_edit_row = new Map<number, Uppy<Meta, TusBody>>();
+const TUS_ENDPOINT = "/api/v1/tus/";
 
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
@@ -355,11 +357,26 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
             },
             pluralize: (_n) => 0,
         },
-        onBeforeFileAdded: () => true, // Allow duplicate file uploads
+        onBeforeFileAdded(file, files) {
+            const file_id = getSafeFileId(file, uppy.getID());
+
+            for (const [key, value] of Object.entries(files)) {
+                if (key === file_id) {
+                    // We have a duplicate file upload on our hands.
+                    // The server could have modified our file name, which
+                    // we store in the Uppy file object. This ensures
+                    // that we copy that modified file name into our
+                    // file object.
+                    file.name = value.name!;
+                }
+            }
+
+            return file;
+        }, // Allow duplicate file uploads
     });
     uppy.use(Tus, {
         // https://uppy.io/docs/tus/#options
-        endpoint: "/api/v1/tus/",
+        endpoint: TUS_ENDPOINT,
         // The tus-js-client fingerprinting feature stores metadata on
         // previously uploaded files by default in browser local storage.
         // Since these local storage entries are never garbage-collected,
@@ -464,25 +481,57 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        let upload_response;
-        try {
-            upload_response = zulip_upload_response_schema.parse(
-                JSON.parse(response.body!.xhr.responseText),
-            );
-        } catch {
-            blueslip.warn("Invalid JSON response from tus server", {
-                body: response.body!.xhr.responseText,
+        if (response.status !== 200) {
+            blueslip.warn("Tus server returned an error, expected a 200 OK response code.", {
+                response,
             });
             return;
         }
-        const filename = upload_response.filename;
-        const url = upload_response.url;
 
-        const filtered_filename = filename.replaceAll("[", "").replaceAll("]", "");
-        const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
+        // We do not receive response text if the file has already
+        // been uploaded. For an existing upload, TUS js client sends
+        // a HEAD request to the TUS server to check `Upload-Offset`
+        // and if some part of the upload is left to be done. When the
+        // upload offset is the same as the file length, it will not
+        // send any further requests. In the case of that HEAD request,
+        // if the server has modified the file name, we update it in the
+        // onBeforeFileAdded hook.
+        if (response.body!.xhr.responseText !== "") {
+            try {
+                const upload_response = zulip_upload_response_schema.parse(
+                    JSON.parse(response.body!.xhr.responseText),
+                );
+                uppy.setFileState(file.id, {
+                    name: upload_response.filename,
+                });
+                file = uppy.getFile(file.id);
+            } catch {
+                blueslip.warn("Invalid JSON response from the tus server", {
+                    body: response.body!.xhr.responseText,
+                });
+                return;
+            }
+        }
+
+        // tus.uploadUrl contains the hostname, which we want to
+        // replace as we only store relative upload URLs.
+        // uploadUrl present here is of the TUS endpoint we send
+        // our PATCH requests for the upload. We ensure that the
+        // suffix to the TUS endpoint (/api/v1/tus) is same as the
+        // suffix for our resultant url (/user_uploads/). We can just
+        // manipulate the string in that case.
+        const fileurl = file
+            .tus!.uploadUrl!.replace(realm.realm_url, "")
+            .replace(TUS_ENDPOINT, "/user_uploads/");
+        const filtered_filename = file.name!.replaceAll("[", "").replaceAll("]", "");
+        const syntax_to_insert = "[" + filtered_filename + "](" + fileurl + ")";
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
-            get_translated_status(file.name!),
+            // We need to replace the original file name, and not the
+            // possibly modified filename returned in the response by
+            // the server. file.meta.name remains unchanged by us
+            // unlike file.name
+            get_translated_status(file.meta.name),
             syntax_to_insert,
             $text_area,
         );
