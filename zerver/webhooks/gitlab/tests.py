@@ -685,3 +685,15 @@ A trivial change that should probably be ignored.
         expected_message = "Release v1.1 for tag v1.1 was deleted."
 
         self.check_webhook("release_hook__delete", expected_topic_name, expected_message)
+
+    def test_feature_flag_activate_event_message(self) -> None:
+        expected_topic_name = "sample"
+        expected_message = "kolanuvarun739 activated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+
+        self.check_webhook("feature_flag_hook__activated", expected_topic_name, expected_message)
+
+    def test_feature_flag_deactivate_event_message(self) -> None:
+        expected_topic_name = "sample"
+        expected_message = "kolanuvarun739 deactivated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+
+        self.check_webhook("feature_flag_hook__deactivated", expected_topic_name, expected_message)
