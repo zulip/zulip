@@ -262,9 +262,9 @@ def handle_preregistration_pre_create_hook(
         return reject_upload("SizeIsDeferred is not supported", 411)
     if data.size > max_upload_size:
         return reject_upload(
-            _("Uploaded file is larger than the allowed limit of {max_file_size} MiB").format(
-                max_file_size=settings.MAX_WEB_DATA_IMPORT_SIZE_MB
-            ),
+            _(
+                "Uploaded file exceeds the maximum file size for imports ({max_file_size} MiB)."
+            ).format(max_file_size=settings.MAX_WEB_DATA_IMPORT_SIZE_MB),
             413,
         )
 
