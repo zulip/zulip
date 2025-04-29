@@ -750,8 +750,10 @@ def registration_helper(
         "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
         "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
     }
-    # Add context for realm creation part of the form.
-    context.update(get_realm_create_form_context())
+
+    if realm_creation:
+        # Add context for realm creation part of the form.
+        context.update(get_realm_create_form_context())
 
     return TemplateResponse(request, "zerver/register.html", context=context)
 
