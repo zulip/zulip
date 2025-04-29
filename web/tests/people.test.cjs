@@ -690,9 +690,7 @@ test_people("user_type", () => {
     people.add_active_user(realm_admin);
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
-    console.log("AAAaaAAAAAAAAA");
     people.add_active_user(moderator);
-    console.log("BABSDBSDBSDBBDSBSDB");
     people.add_active_user(bot_botson);
     assert.equal(people.get_user_type(me.user_id), $t({defaultMessage: "Member"}));
     assert.equal(people.get_user_type(realm_admin.user_id), $t({defaultMessage: "Administrator"}));
