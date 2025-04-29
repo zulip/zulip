@@ -1,4 +1,4 @@
-import type {Meta, UppyFile} from "@uppy/core";
+import type {Meta} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
 import $ from "jquery";
@@ -32,8 +32,8 @@ export function feature_check(): XMLHttpRequestUpload {
     return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
 }
 
-export function get_translated_status(file: File | UppyFile<Meta, TusBody>): string {
-    const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
+export function get_translated_status(filename: string): string {
+    const status = $t({defaultMessage: "Uploading {filename}…"}, {filename});
     return "[" + status + "]()";
 }
 
@@ -225,7 +225,7 @@ export let upload_files = (
         let file_id;
         try {
             compose_ui.insert_syntax_and_focus(
-                get_translated_status(file),
+                get_translated_status(file.name),
                 config.textarea(),
                 "block",
                 1,
@@ -256,7 +256,7 @@ export let upload_files = (
         );
         // eslint-disable-next-line @typescript-eslint/no-loop-func
         config.upload_banner_cancel_button(file_id).on("click", () => {
-            compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+            compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
             compose_ui.autosize_textarea(config.textarea());
             config.textarea().trigger("focus");
 
@@ -482,7 +482,7 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
-            get_translated_status(file),
+            get_translated_status(file.name!),
             syntax_to_insert,
             $text_area,
         );
@@ -543,13 +543,13 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
-        compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
     uppy.on("restriction-failed", (file) => {
         assert(file !== undefined);
-        compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
