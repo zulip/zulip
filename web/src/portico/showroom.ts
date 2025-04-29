@@ -103,20 +103,23 @@ const alert_banners: Record<string, AlertBanner> = {
         process: "demo-organization-deadline",
         intent: "info",
         label: new Handlebars.SafeString(
-            $t_html(
-                {
-                    defaultMessage:
-                        "This <demo_link>demo organization</demo_link> will be automatically deleted in 30 days, unless it's <convert_link>converted into a permanent organization</convert_link>.",
-                },
-                {
-                    demo_link: (content_html) =>
-                        `<a class="banner-link" href="https://zulip.com/help/demo-organizations" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
-                    convert_link: (content_html) =>
-                        `<a class="banner-link" href="https://zulip.com/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
-                },
-            ),
+            $t_html({
+                defaultMessage:
+                    "This demo organization will be automatically deleted in 30 days, unless it's converted into a permanent organization.",
+            }),
         ),
-        buttons: [],
+        buttons: [
+            {
+                attention: "borderless",
+                intent: "info",
+                label: $t({defaultMessage: "Learn more"}),
+            },
+            {
+                attention: "quiet",
+                intent: "info",
+                label: $t({defaultMessage: "Convert"}),
+            },
+        ],
         close_button: true,
         custom_classes: "navbar-alert-banner",
     },
