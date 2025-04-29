@@ -5,8 +5,10 @@ import assert from "minimalistic-assert";
 
 import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
 
+import {get_realm_upload_quota_size, get_used_upload_space_percentage} from "./attachments_ui.ts";
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
+import * as blueslip from "./blueslip.ts";
 import type {ActionButton} from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
@@ -18,6 +20,7 @@ import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as settings_config from "./settings_config.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as time_zone_util from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
@@ -26,6 +29,8 @@ import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
+
+let used_upload_space_percentage: number;
 
 function open_navbar_banner_and_resize(banner: AlertBanner): void {
     banners.open(banner, $("#navbar_alerts_wrapper"));
@@ -125,6 +130,12 @@ export function set_last_upgrade_nag_dismissal_time(ls: LocalStorage): void {
     }
 }
 
+export function set_last_upload_quota_limit_reminder_time(ls: LocalStorage): void {
+    if (localstorage.supported()) {
+        ls.set("lastUpgradeQuotaLimitReminderTime", Date.now());
+    }
+}
+
 export function should_show_organization_profile_incomplete_banner(timestamp: number): boolean {
     if (!current_user.is_admin) {
         return false;
@@ -172,6 +183,36 @@ export function toggle_organization_profile_incomplete_banner(): void {
         // this is meant to be a one-time task for administrators.
         open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
     }
+}
+
+export async function should_show_upload_quota_warning(ls: LocalStorage): Promise<boolean> {
+    if (page_params.is_spectator) {
+        return false;
+    }
+    const space_used = await get_used_upload_space_percentage();
+    used_upload_space_percentage = Math.round(Number(space_used));
+    const threshold = current_user.is_admin ? 90 : 95;
+    if (used_upload_space_percentage >= threshold) {
+        if (
+            !localstorage.supported() ||
+            ls.get("lastUpgradeQuotaLimitReminderTime") === undefined
+        ) {
+            return true;
+        }
+        const lastUpgradeQuotaLimitReminderTime = ls.get("lastUpgradeQuotaLimitReminderTime");
+        assert(typeof lastUpgradeQuotaLimitReminderTime === "number");
+        const newUpgradeQuotaLimitReminderTime = addDays(
+            new Date(lastUpgradeQuotaLimitReminderTime),
+            7,
+        ).getTime();
+
+        if (Date.now() < newUpgradeQuotaLimitReminderTime) {
+            return false;
+        }
+
+        return true;
+    }
+    return false;
 }
 
 export function should_offer_to_update_timezone(): boolean {
@@ -420,6 +461,38 @@ const time_zone_update_offer_banner = (): AlertBanner => {
     };
 };
 
+const upload_file_quota_warning_banner = (upload_quota: string): AlertBanner => {
+    const is_limited_plan = realm.realm_plan_type === settings_config.realm_plan_types.limited.code;
+    let buttons: ActionButton[] = [];
+    if (current_user.is_admin) {
+        buttons = [
+            {
+                attention: "quiet",
+                label: $t({defaultMessage: "Upgrade"}),
+                custom_classes: "upgrade-upload-quota",
+            },
+        ];
+    }
+    return {
+        process: "upload_quota_warning",
+        intent: "warning",
+        label: $t(
+            {
+                defaultMessage:
+                    "Your organization is using {used_upload_space_percentage}% of your {upload_quota} file storage quota.{upgrade_message}",
+            },
+            {
+                used_upload_space_percentage,
+                upload_quota,
+                upgrade_message: is_limited_plan ? " Upgrade for more storage." : "",
+            },
+        ),
+        buttons,
+        close_button: true,
+        custom_classes: "navbar-alert-banner upgrade-quota-banner",
+    };
+};
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -447,6 +520,18 @@ export function initialize(): void {
     ) {
         open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
     } else {
+        should_show_upload_quota_warning(ls)
+            .then((value) => {
+                const realm_upload_quota = get_realm_upload_quota_size();
+                if (value && realm_upload_quota) {
+                    open_navbar_banner_and_resize(
+                        upload_file_quota_warning_banner(realm_upload_quota),
+                    );
+                }
+            })
+            .catch(() => {
+                blueslip.log("Failed to get used upload space size.");
+            });
         maybe_toggle_empty_required_profile_fields_banner();
     }
 
@@ -551,6 +636,20 @@ export function initialize(): void {
             set_last_upgrade_nag_dismissal_time(ls);
         },
     );
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".upgrade-quota-banner .banner-close-button",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            close_navbar_banner_and_resize($banner);
+            set_last_upload_quota_limit_reminder_time(ls);
+        },
+    );
+
+    $("#navbar_alerts_wrapper").on("click", ".upgrade-upload-quota", () => {
+        window.open("/upgrade/", "_blank", "noopener,noreferrer");
+    });
 
     $("#navbar_alerts_wrapper").on(
         "click",
