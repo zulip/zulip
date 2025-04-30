@@ -296,6 +296,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.bots import get_default_service_bot_triggers
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -3375,6 +3376,7 @@ class NormalActionsTest(BaseAction):
                 payload_url=orjson.dumps("https://foo.bar.com").decode(),
                 interface_type=Service.GENERIC,
                 bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                service_triggers=orjson.dumps(get_default_service_bot_triggers()).decode(),
             )
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
@@ -3492,9 +3494,15 @@ class NormalActionsTest(BaseAction):
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             payload_url=orjson.dumps("http://hostname.domain2.com").decode(),
             interface_type=Service.GENERIC,
+            service_triggers=orjson.dumps(get_default_service_bot_triggers()).decode(),
         )
         with self.verify_action() as events:
-            do_update_outgoing_webhook_service(bot, 2, "http://hostname.domain2.com")
+            do_update_outgoing_webhook_service(
+                bot,
+                2,
+                "http://hostname.domain2.com",
+                [Service.BOT_TRIGGER_DM_RECEIVED],
+            )
         check_realm_bot_update("events[0]", events[0], "services")
 
     def test_do_deactivate_bot(self) -> None:

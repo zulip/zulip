@@ -367,6 +367,7 @@ class BotServicesOutgoing(BaseModel):
     base_url: Url
     interface: int
     token: str
+    triggers: list[str]
 
 
 class BotServicesEmbedded(BaseModel):

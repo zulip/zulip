@@ -784,17 +784,21 @@ def do_update_outgoing_webhook_service(
     bot_profile: UserProfile,
     service_interface: int | None = None,
     service_payload_url: str | None = None,
+    triggers: list[str] | None = None,
 ) -> None:
     # TODO: First service is chosen because currently one bot can only have one service.
     # Update this once multiple services are supported.
     service = get_bot_services(bot_profile.id)[0]
-    updated_fields: dict[str, str | int] = {}
+    updated_fields: dict[str, str | int | list[str]] = {}
     if service_payload_url is not None:
         service.base_url = service_payload_url
         updated_fields["base_url"] = service.base_url
     if service_interface is not None:
         service.interface = service_interface
         updated_fields["interface"] = service.interface
+    if triggers is not None:
+        service.triggers = triggers
+        updated_fields["triggers"] = service.triggers
 
     updated_fields["token"] = service.token
     service.save()
@@ -840,6 +844,7 @@ def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
                 "base_url": service.base_url,
                 "interface": service.interface,
                 "token": service.token,
+                "triggers": service.triggers,
             }
             for service in services
         ]
@@ -883,6 +888,7 @@ def get_service_dicts_for_bots(
                     "base_url": service.base_url,
                     "interface": service.interface,
                     "token": service.token,
+                    "triggers": service.triggers,
                 }
                 for service in services
             ]
