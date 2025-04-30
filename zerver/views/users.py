@@ -447,6 +447,10 @@ def patch_bot_backend(
     config_data: Json[dict[str, str]] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     service_interface: Json[int] = 1,
+    service_triggers: Annotated[
+        Json[list[str]] | None,
+        AfterValidator(lambda val: validate_service_bot_triggers(val)),
+    ] = None,
     default_sending_stream: str | None = None,
     default_events_register_stream: str | None = None,
     default_all_public_streams: Json[bool] | None = None,
@@ -496,8 +500,13 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
+    if service_payload_url is not None or service_triggers is not None:
+        do_update_outgoing_webhook_service(
+            bot,
+            service_interface,
+            service_payload_url,
+            service_triggers,
+        )
 
     if config_data is not None:
         do_update_bot_config_data(bot, config_data)
@@ -519,6 +528,7 @@ def patch_bot_backend(
         avatar_url=avatar_url(bot),
         service_interface=service_interface,
         service_payload_url=service_payload_url,
+        service_triggers=service_triggers,
         config_data=config_data,
         default_sending_stream=get_stream_name(bot.default_sending_stream),
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
@@ -547,6 +557,15 @@ def regenerate_bot_api_key(
     return json_success(request, data=json_result)
 
 
+def validate_service_bot_triggers(triggers: list[str]) -> list[str]:
+    service_triggers = {t.strip().lower() for t in triggers}
+
+    if unknown_triggers := service_triggers - set(Service.BOT_TRIGGER_CHOICES):
+        raise JsonableError(f"Invalid service bot trigger(s): {unknown_triggers!s}")
+
+    return list(service_triggers)
+
+
 @require_member_or_admin
 @typed_endpoint
 def add_bot_backend(
@@ -560,6 +579,10 @@ def add_bot_backend(
     service_name: str | None = None,
     config_data: Json[Mapping[str, str]] | None = None,
     interface_type: Json[int] = Service.GENERIC,
+    service_triggers: Annotated[
+        Json[list[str]] | None,
+        AfterValidator(lambda val: validate_service_bot_triggers(val)),
+    ] = None,
     default_sending_stream_name: Annotated[
         str | None, ApiParamConfig("default_sending_stream")
     ] = None,
@@ -606,6 +629,9 @@ def add_bot_backend(
         raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
+
+    if bot_type in UserProfile.SERVICE_BOT_TYPES and not service_triggers:
+        raise JsonableError(_("A service bot must have at least one trigger."))
 
     check_bot_name_available(
         realm_id=user_profile.realm_id,
@@ -658,14 +684,16 @@ def add_bot_backend(
         assert user_file.size is not None
         upload_avatar_image(user_file, bot_profile, future=False)
 
-    if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+    if bot_type in UserProfile.SERVICE_BOT_TYPES:
         assert isinstance(service_name, str)
+        assert service_triggers is not None
         add_service(
             name=service_name,
             user_profile=bot_profile,
             base_url=payload_url,
             interface=interface_type,
             token=generate_api_key(),
+            triggers=service_triggers,
         )
 
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
