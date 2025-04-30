@@ -1425,6 +1425,10 @@ div.settings-radio-input-parent {
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
         }
+
+        .two-pane-settings-header.slide-left {
+            border-bottom: none;
+        }
     }
 
     .two-pane-settings-overlay .left,
@@ -1440,11 +1444,7 @@ div.settings-radio-input-parent {
     .two-pane-settings-overlay .right {
         position: absolute;
         left: 101%;
-
-        top: var(--settings-overlay-header-height);
         background-color: var(--color-background-modal);
-        border-top: none;
-
         transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         z-index: 10;
 
