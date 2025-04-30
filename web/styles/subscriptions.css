@@ -1405,11 +1405,8 @@ div.settings-radio-input-parent {
     }
 }
 
-/* Note that this block has settings_page CSS as well, and thus needs
-   to match the media queries in settings.css
-
-   We should eventually consolidate some of these styles with the settings
-   menu, using shared classnames. */
+/* We should eventually consolidate some of these styles with the styles
+   in settings.css, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .two-pane-settings-container {
         position: relative;
@@ -1443,26 +1440,6 @@ div.settings-radio-input-parent {
 
         &.show {
             transform: translateX(0%);
-        }
-    }
-
-    #settings_page .content-wrapper.right {
-        position: absolute;
-        display: block;
-        left: 101%;
-        margin: 0;
-        width: 100%;
-        height: calc(100% - var(--settings-overlay-header-height));
-
-        top: var(--settings-overlay-header-height);
-        background-color: var(--color-background-modal);
-        border: none;
-
-        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
-        z-index: 10;
-
-        &.show {
-            left: 0%;
         }
     }
 

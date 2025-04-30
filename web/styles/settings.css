@@ -1815,8 +1815,8 @@ label.preferences-radio-choice-label {
     }
 }
 
-/* This value needs to match with the same in subscriptions.css, as
-   we have some shared styles declared there */
+/* We should eventually consolidate some of these styles with the styles
+   in subscriptions.css, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .profile-settings-form {
         .user-avatar-section {
@@ -1868,9 +1868,25 @@ label.preferences-radio-choice-label {
             #settings_content {
                 height: 100%;
             }
+        }
 
-            &.right {
-                top: 47px;
+        .content-wrapper.right {
+            position: absolute;
+            display: block;
+            left: 101%;
+            margin: 0;
+            width: 100%;
+            height: calc(100% - var(--settings-overlay-header-height));
+
+            top: var(--settings-overlay-header-height);
+            background-color: var(--color-background-modal);
+            border: none;
+
+            transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            z-index: 10;
+
+            &.show {
+                left: 0%;
             }
         }
 
