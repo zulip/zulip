@@ -12,7 +12,7 @@
 
     & ul {
         margin: 0 0 var(--markdown-interelement-space-px) 0;
-        margin-inline-start: 3.5ch;
+        margin-inline-start: 2ch;
     }
 
     & ol {
