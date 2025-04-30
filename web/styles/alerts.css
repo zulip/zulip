@@ -147,7 +147,9 @@
     width: 100%;
     max-width: 900px;
     z-index: 230;
-    max-height: 100%;
+    /* Subtract 5px to account for the bottom margin and another
+       5px to account for the top. */
+    max-height: calc(100vh - 10px);
     overflow-y: auto;
     overscroll-behavior: contain;
     /* Set top padding to account for the translate-y motion of the
