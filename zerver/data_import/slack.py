@@ -46,6 +46,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
@@ -940,6 +941,15 @@ def channel_message_to_zerver_message(
         ]:
             continue
 
+        formatted_block = process_slack_block_and_attachment(message)
+
+        # Leave it as is if formatted_block is an empty string, it's likely
+        # one of the unhandled_types.
+        if formatted_block != "":
+            # For most cases, the value of message["text"] will be just an
+            # empty string.
+            message["text"] = formatted_block
+
         try:
             content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
                 message["text"], users, added_channels, slack_user_id_to_zulip_user_id
@@ -1291,6 +1301,8 @@ def get_message_sending_user(message: ZerverFieldsT) -> str | None:
         return message["user"]
     if message.get("file"):
         return message["file"].get("user")
+    if message.get("bot_id"):
+        return message.get("bot_id")
     return None
 
 
