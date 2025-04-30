@@ -2012,7 +2012,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(check_subscriptions_exists(user_profile, stream))
         # Assert that a notification message was sent for the archive.
         message = self.get_last_message()
-        expected_content = f"Channel {stream.name} has been archived."
+        expected_content = f"Channel #**{stream.name}** has been archived."
         self.assertEqual(message.content, expected_content)
 
         # Assert that the message is read.
@@ -2042,7 +2042,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(check_subscriptions_exists(user_profile, stream))
         # Assert that a notification message was sent for the archive.
         message = self.get_last_message()
-        expected_content = f"Channel {stream.name} has been archived."
+        expected_content = f"Channel #**{stream.name}** has been archived."
         self.assertEqual(message.content, expected_content)
 
         # Assert that the message is read.
