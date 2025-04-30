@@ -44,8 +44,10 @@
     position: fixed;
     /* Offset to account for the top padding + 5px from the top. */
     top: calc(5px + (-1 * var(--popup-banner-translate-y-distance)));
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
+    max-width: 900px;
     z-index: 220;
     max-height: 100%;
     overflow-y: auto;
@@ -53,8 +55,10 @@
     /* Set top padding to account for the translate-y motion of the
        animation to prevent the vertical scroll bar from appearing. */
     padding-top: var(--popup-banner-translate-y-distance);
-    /* Allow click events to passthrough in any area without the alerts. */
-    pointer-events: none;
+
+    @media (width < $lg_min) {
+        max-width: 90%;
+    }
 }
 
 .alert-box {
@@ -62,7 +66,6 @@
     /* Using column-reverse flex direction enables a stack-like
        behavior where the most recent alert is always on top. */
     flex-direction: column-reverse;
-    align-items: center;
     justify-content: center;
     gap: 5px;
 
@@ -70,11 +73,9 @@
         @extend .alert-animations;
 
         box-sizing: border-box;
-        max-width: 900px;
         width: 100%;
         border-radius: 4px;
         background-color: hsl(0deg 0% 100%);
-        pointer-events: auto;
 
         position: relative;
 
@@ -161,13 +162,6 @@
         transform: translateY(
             calc(-1 * var(--popup-banner-translate-y-distance))
         );
-    }
-}
-
-/* @media queries */
-@media (width < $lg_min) {
-    .alert-box .alert {
-        max-width: 90%;
     }
 }
 

@@ -193,13 +193,5 @@
 .popup-banner {
     @extend .popup-banner-animations;
 
-    pointer-events: auto;
-    max-width: 900px;
     width: 100%;
-
-    /* Here the container width == viewport width,
-       so we can work with the media breakpoints. */
-    @container banner (width < $lg_min) {
-        max-width: 90%;
-    }
 }
