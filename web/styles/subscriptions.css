@@ -1443,13 +1443,13 @@ div.settings-radio-input-parent {
 
     .two-pane-settings-overlay .right {
         position: absolute;
-        left: 101%;
+        transform: translateX(101%);
+        transition: transform 0.3s ease;
         background-color: var(--color-background-modal);
-        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         z-index: 10;
 
         &.show {
-            left: 0%;
+            transform: translateX(0%);
         }
     }
 
