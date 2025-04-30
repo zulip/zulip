@@ -944,8 +944,9 @@ h4.user_group_setting_subsection_title {
             justify-content: space-between;
             position: absolute;
             bottom: 0;
-            width: calc(100% - 27px);
-            padding: 9px 15px 15px;
+            /* Subtract 15px padding on either side. */
+            width: calc(100% - 30px);
+            padding: 9px 15px;
             text-align: right;
             background-color: var(--color-background-modal-bar);
             border-top: 1px solid var(--color-border-modal-bar);
