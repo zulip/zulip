@@ -1398,10 +1398,6 @@ div.settings-radio-input-parent {
         flex-wrap: wrap;
     }
 
-    .list-toggler-container {
-        text-align: center;
-    }
-
     #groups_overlay .group_settings_header,
     #subscription_overlay .stream_settings_header {
         flex-wrap: wrap;
@@ -1417,10 +1413,6 @@ div.settings-radio-input-parent {
     .two-pane-settings-container {
         position: relative;
         overflow: hidden;
-
-        .list-toggler-container {
-            text-align: left;
-        }
 
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
