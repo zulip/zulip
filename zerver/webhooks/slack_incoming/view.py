@@ -89,7 +89,7 @@ def api_slack_incoming_webhook(
     if payload.get("attachments"):
         pieces += map(render_attachment, payload["attachments"])
 
-    body = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+    body = "\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
     if body == "" and payload.get("text"):
         if payload.get("icon_emoji"):
