@@ -27,12 +27,11 @@ To register an outgoing webhook:
 
 ## Triggering
 
-There are currently two ways to trigger an outgoing webhook:
-
-*  **@-mention** the bot user in a channel.  If the bot replies, its
-    reply will be sent to that channel and topic.
-*  **Send a direct message** with the bot as one of the recipients.
-    If the bot replies, its reply will be sent to that thread.
+You can configure what triggers an outgoing webhook bot when creating it.
+An outgoing webhook bot must have at least one trigger and can have multiple
+triggers. The help center documents the
+[supported triggers](/help/bots-overview#outgoing-webhook-bot-triggers)
+for outgoing webhooks.
 
 ## Timeouts
 
