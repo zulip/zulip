@@ -2128,6 +2128,7 @@ export function launch(
             },
         });
         change_state(section, left_side_tab, right_side_tab);
+        resize.resize_settings_overlay();
     });
     if (!get_active_data().id) {
         if (section === "new") {

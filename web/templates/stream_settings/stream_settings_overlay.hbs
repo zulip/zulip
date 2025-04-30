@@ -19,7 +19,7 @@
                         <div class="float-clear"></div>
                     </div>
                 </div>
-                <div class="input-append stream_name_search_section" id="stream_filter">
+                <div class="input-append stream_name_search_section two-pane-settings-search" id="stream_filter">
                     <input type="text" name="stream_name" id="search_stream_name" class="filter_text_input" autocomplete="off"
                       placeholder="{{t 'Filter' }}" value=""/>
                     <button type="button" class="clear_search_button" id="clear_search_stream_name">
@@ -58,7 +58,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="streams-list" data-simplebar data-simplebar-tab-index="-1">
+                <div class="streams-list two-pane-settings-left-simplebar-container" data-simplebar data-simplebar-tab-index="-1">
                 </div>
             </div>
             <div class="right">
@@ -76,7 +76,7 @@
                         {{/unless}}
                     </div>
                 </div>
-                <div id="stream_settings" class="settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                <div id="stream_settings" class="two-pane-settings-right-simplebar-container settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                     {{!-- edit stream here --}}
                 </div>
                 {{> stream_creation_form . }}
