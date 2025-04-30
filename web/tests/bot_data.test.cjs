@@ -54,7 +54,14 @@ const bot_data_params = {
             is_active: true,
             owner_id: 5,
             user_id: 314,
-            services: [{base_url: "http://foo.com", interface: 1, token: "basictoken12345"}],
+            services: [
+                {
+                    base_url: "http://foo.com",
+                    interface: 1,
+                    token: "basictoken12345",
+                    triggers: ["dms_received", "all_direct_mentions"],
+                },
+            ],
             extra: "This field should be ignored",
         },
     ],
@@ -106,6 +113,7 @@ test("test_basics", () => {
             {
                 config_data: {key: "12345678"},
                 service_name: "giphy",
+                triggers: ["all_direct_mentions", "dms_received"],
             },
         ],
         extra: "This field should be ignored",
@@ -162,10 +170,17 @@ test("test_basics", () => {
         assert.equal("12345678", services[0].config_data.key);
         bot_data.update(bot_id, {
             ...test_embedded_bot,
-            services: [{config_data: {key: "87654321"}, service_name: "embedded bot service"}],
+            services: [
+                {
+                    config_data: {key: "87654321"},
+                    service_name: "embedded bot service",
+                    triggers: ["dms_received"],
+                },
+            ],
         });
         assert.equal("87654321", services[0].config_data.key);
         assert.equal("embedded bot service", services[0].service_name);
+        assert.deepEqual(["dms_received"], services[0].triggers);
     })();
 
     (function test_all_user_ids() {
