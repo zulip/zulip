@@ -65,11 +65,12 @@ A few more details:
   impersonate yourself (e.g., write messages that come from your Zulip
   account), you'll need to use your **personal API key**.
 
-* **Outgoing webhook**: The bot can read direct messages where the bot is a
-  participant, and channel messages where the bot is [mentioned](/help/mention-a-user-or-group). When the
-  bot is DM'd or mentioned, it POSTs the message content to a URL of your
-  choice. The POST request format can be in a Zulip format or a
-  Slack-compatible format.
+* **Outgoing webhook**: Depending on the bots list of
+  [triggers](/help/bots-overview#bot-triggers), it can read direct messages
+  where the bot is a participant, and channel messages where the bot is
+  [mentioned](/help/mention-a-user-or-group). When the bot is triggered, it
+  POSTs the message content to a URL of your choice. The POST request format
+  can be in a Zulip format or a Slack-compatible format.
 
     This is the preferred bot type for interactive bots built on top of Zulip
     Botserver.
@@ -80,6 +81,15 @@ By default, anyone other than guests can [add a bot](/help/add-a-bot-or-integrat
 Zulip organization, but administrators can
 [restrict bot creation](/help/restrict-bot-creation). Any bot that is added
 is visible and available for anyone to use.
+
+## Bot triggers
+
+The bot **triggers** determines what events trigger the bots function.
+
+Trigger | Bot types | Description
+---|---|---
+Mentions of the bot, whether or not it received the message | Outgoing webhook | Any message directly [mentioning](/help/mention-a-user-or-group) the bot, regardless of whether or not the bot actually receives it. This does not include topic, group and `@-all` mentions that includes the bot.
+Direct messages the bot receives | Outgoing webhook | Both direct messages and group direct messages to the bot.
 
 ## Related articles
 

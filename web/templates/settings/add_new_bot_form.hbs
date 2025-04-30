@@ -34,6 +34,15 @@
                 <label for="create_bot_short_name" generated="true" class="text-error"></label>
             </div>
         </div>
+        <div id="service_bot_triggers_container" class="input-group">
+            <label for="service_bot_triggers" class="modal-field-label">
+                {{t "Bot triggers"}}
+                {{> ../help_link_widget link="/help/bots-overview#bot-triggers" }}
+            </label>
+            <div id="new_bot_trigger_checkbox_container">
+                {{!-- Checkboxes for the service bots triggers --}}
+            </div>
+        </div>
         <div id="payload_url_inputbox">
             <div class="input-group">
                 <label for="create_payload_url" class="modal-field-label">{{t "Endpoint URL" }}</label>

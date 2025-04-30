@@ -9,8 +9,8 @@ from django.conf import settings
 from django.test import override_settings
 from typing_extensions import ParamSpec, override
 
-from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
+from zerver.actions.users import do_update_outgoing_webhook_service
 from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
 from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsListError, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
@@ -18,8 +18,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
 from zerver.models import Recipient, UserProfile
+from zerver.models.bots import Service
 from zerver.models.messages import UserMessage
-from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 
 BOT_TYPE_TO_QUEUE_NAME = {
@@ -30,14 +30,11 @@ BOT_TYPE_TO_QUEUE_NAME = {
 
 class TestServiceBotBasics(ZulipTestCase):
     def _get_outgoing_bot(self) -> UserProfile:
-        outgoing_bot = do_create_user(
-            email="bar-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        outgoing_bot = self.create_test_bot(
+            "bar",
+            self.example_user("cordelia"),
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.example_user("cordelia"),
-            acting_user=None,
         )
 
         return outgoing_bot
@@ -169,9 +166,10 @@ class TestServiceBotBasics(ZulipTestCase):
             )
 
         self.assert_length(event_dict, 0)
+        self.assert_length(m.output, 2)
         self.assertEqual(
-            m.output,
-            [f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}"],
+            m.output[1],
+            f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}",
         )
 
 
@@ -180,23 +178,19 @@ class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(
-            email="embedded-bot-1@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.bot_profile = self.create_test_bot(
+            "embedded",
+            self.user_profile,
             full_name="EmbeddedBo1",
             bot_type=UserProfile.EMBEDDED_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            service_name="helloworld",
         )
-        self.second_bot_profile = do_create_user(
-            email="embedded-bot-2@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.second_bot_profile = self.create_test_bot(
+            "embedded2",
+            self.user_profile,
             full_name="EmbeddedBot2",
             bot_type=UserProfile.EMBEDDED_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            service_name="helloworld",
         )
 
     def test_basic_storage_and_retrieval(self) -> None:
@@ -463,23 +457,19 @@ class TestServiceBotEventTriggers(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(
-            email="foo-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.bot_profile = self.create_test_bot(
+            "foo",
+            self.user_profile,
             full_name="FooBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            payload_url='"https://bot.example.com/"',
         )
-        self.second_bot_profile = do_create_user(
-            email="bar-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.second_bot_profile = self.create_test_bot(
+            "bar",
+            self.user_profile,
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            payload_url='"https://bot.example.com/"',
         )
 
     @for_all_bot_types
@@ -524,6 +514,24 @@ class TestServiceBotEventTriggers(ZulipTestCase):
     def test_no_trigger_on_stream_mention_from_bot(
         self, mock_queue_event_on_commit: mock.Mock
     ) -> None:
+        self.send_stream_message(self.second_bot_profile, "Denmark", "@**FooBot** foo bar!!!")
+        self.assertFalse(mock_queue_event_on_commit.called)
+
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_no_trigger_on_mention_from_bot_with_no_trigger(
+        self, mock_queue_event_on_commit: mock.Mock
+    ) -> None:
+        foo_bot = self.bot_profile
+        # No trigger if the bot doesn't have the "all_mentions" trigger.
+        # Set the bots' trigger to only "dm_received".
+        do_update_outgoing_webhook_service(
+            foo_bot,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=[Service.BOT_TRIGGER_DM_RECEIVED],
+            acting_user=None,
+        )
         self.send_stream_message(self.second_bot_profile, "Denmark", "@**FooBot** foo bar!!!")
         self.assertFalse(mock_queue_event_on_commit.called)
 
@@ -607,6 +615,25 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.send_group_direct_message(sender, recipients)
         self.assertFalse(mock_queue_event_on_commit.called)
 
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_no_trigger_on_direct_message_from_bot_with_no_trigger(
+        self, mock_queue_event_on_commit: mock.Mock
+    ) -> None:
+        sender = self.second_bot_profile
+        recipient = self.bot_profile
+        # No trigger if the bot doesn't have the "dm_received" trigger.
+        # Set the bots' trigger to only "all_mentions".
+        do_update_outgoing_webhook_service(
+            recipient,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=[Service.BOT_TRIGGER_ALL_MENTIONS],
+            acting_user=None,
+        )
+        self.send_personal_message(sender, recipient)
+        self.assertFalse(mock_queue_event_on_commit.called)
+
     @responses.activate
     @for_all_bot_types
     def test_flag_messages_service_bots_has_processed(self) -> None:
@@ -621,9 +648,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             "https://bot.example.com/",
             json="",
         )
-        message_id = self.send_group_direct_message(
-            sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
-        )
+        with self.assertLogs(level="INFO"):
+            message_id = self.send_group_direct_message(
+                sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
+            )
         # message = Message.objects.get(id=message_id, sender=sender)
         bot_user_message = UserMessage.objects.get(
             user_profile=self.bot_profile, message=message_id
