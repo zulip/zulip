@@ -188,10 +188,6 @@
         opacity: 0.2;
     }
 
-    .close {
-        color: hsl(236deg 33% 80%);
-    }
-
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
@@ -291,19 +287,6 @@
         color: hsl(236deg 33% 90%);
         background-color: hsl(35deg 84% 62% / 25%);
         border: 1px solid hsl(11deg 46% 54%);
-    }
-
-    .alert {
-        text-shadow: none;
-
-        .close {
-            color: inherit;
-            opacity: 0.8;
-        }
-
-        .close:hover {
-            opacity: 1;
-        }
     }
 
     .alert.alert-success {

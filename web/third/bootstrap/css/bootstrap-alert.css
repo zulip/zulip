@@ -18,12 +18,6 @@
 .alert h4 {
   margin: 0;
 }
-.alert .close {
-  position: relative;
-  top: -2px;
-  right: -21px;
-  line-height: 20px;
-}
 .alert-success {
   background-color: #dff0d8;
   border-color: #d6e9c6;
