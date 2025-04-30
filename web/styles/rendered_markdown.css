@@ -20,6 +20,11 @@
         margin-inline-start: 3.5ch;
     }
 
+    li {
+        /* 3px at 16px/1em */
+        padding: 0 0 0 0.1875em;
+    }
+
     /* To avoid cutting off the focus ring on links, we set
        padding on first children most likely to take links.
        We account for this extra space on `.message_content`. */
