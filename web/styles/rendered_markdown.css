@@ -123,18 +123,24 @@
 
     /* Formatting for blockquotes */
     & blockquote {
-        padding-left: 5px;
-        margin: 0 0 var(--markdown-interelement-space-px) 10px;
-        border-left: 5px solid hsl(0deg 0% 87%);
+        /* This keeps the blockquote text block
+           aligned with list-item text blocks.
+           12.4px at 16px/1em */
+        padding: 0 0 0 0.775em;
+        /* We want to keep the border roughly centered
+           with bullets and single-digit list markers.
+           3.5px at 16px/1em */
+        margin: 0 0 var(--markdown-interelement-space-px) 0.2188em;
+        border-left: 4px solid var(--color-text-message-blockquote-border);
     }
 
     &.rtl blockquote {
-        padding-left: unset;
-        padding-right: 5px;
-        margin-left: unset;
-        margin-right: 10px;
+        /* 12.4px at 16px/1em */
+        padding: 0 0.775em 0 0;
+        /* 3.5px at 16px/1em */
+        margin: 0 0.2188em var(--markdown-interelement-space-px) 0;
         border-left: unset;
-        border-right: 5px solid hsl(0deg 0% 87%);
+        border-right: 4px solid hsl(0deg 0% 65%);
     }
 
     /* Formatting for Markdown tables */
