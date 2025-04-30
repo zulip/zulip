@@ -1,3 +1,4 @@
+import json
 import re
 from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
@@ -13,6 +14,7 @@ from zerver.lib.validator import (
     check_string,
     check_string_in,
     check_url,
+    to_wild_value,
 )
 
 # stubs
@@ -239,10 +241,25 @@ def convert_to_zulip_markdown(
 def render_block(block: WildValue) -> str:
     # https://api.slack.com/reference/block-kit/blocks
     block_type = block["type"].tame(
-        check_string_in(["actions", "context", "divider", "header", "image", "input", "section"])
+        check_string_in(
+            ["actions", "context", "divider", "header", "image", "input", "section", "rich_text"]
+        )
     )
-    if block_type == "actions":
-        # Unhandled
+
+    unhandled_types = [
+        # The "actions" block is used to format literal in-message clickable
+        # buttons and similar elements, which Zulip currently doesn't support.
+        # https://docs.slack.dev/reference/block-kit/blocks/actions-block
+        "actions",
+        # All user-sent messages contain at least a "block" component with a
+        # "rich_text" block. This block contains the same string as the "text"
+        # field. We're skipping this because the Slack import tool already
+        # handles the "text" field and the Slack incoming integration
+        # overrides it.
+        # https://docs.slack.dev/reference/block-kit/blocks/rich-text-block/
+        "rich_text",
+    ]
+    if block_type in unhandled_types:
         return ""
     elif block_type == "context" and block.get("elements"):
         pieces = []
@@ -389,3 +406,15 @@ def replace_links(text: str) -> str:
     text, _ = convert_link_format(text)
     text, _ = convert_mailto_format(text)
     return text
+
+
+def process_slack_block_and_attachment(message: ZerverFieldsT) -> str:
+    slack_message: WildValue = to_wild_value("slack_message", json.dumps(message))
+    pieces: list[str] = []
+
+    if slack_message.get("blocks"):
+        pieces += map(render_block, slack_message["blocks"])
+
+    if slack_message.get("attachments"):
+        pieces += map(render_attachment, slack_message["attachments"])
+    return "\n".join(piece.strip() for piece in pieces if piece.strip() != "")
