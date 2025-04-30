@@ -451,7 +451,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: "#user_email_address_dropdown_container.disabled_setting_tooltip",
         content: $t({
-            defaultMessage: "You must configure your email to access this feature.",
+            defaultMessage: "Configure your email to access this feature.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
