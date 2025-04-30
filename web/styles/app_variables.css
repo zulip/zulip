@@ -1420,24 +1420,6 @@
         hsl(200deg 79% 66%)
     );
 
-    /* Demo Organization colors */
-    --color-text-settings-demo-organization-warning: light-dark(
-        hsl(4deg 58% 33%),
-        hsl(3deg 73% 80%)
-    );
-    --color-background-settings-demo-organization-warning: light-dark(
-        hsl(4deg 35% 90%),
-        hsl(0deg 60% 19%)
-    );
-    --color-border-settings-demo-organization-warning: light-dark(
-        hsl(3deg 57% 33% / 40%),
-        hsl(3deg 73% 74% / 40%)
-    );
-    --color-focus-outline-settings-convert-demo-organization: light-dark(
-        hsl(200deg 100% 25%),
-        hsl(200deg 79% 66%)
-    );
-
     /* Widgets colors */
     --color-border-dropdown-widget-button: light-dark(
         hsl(0deg 0% 80%),

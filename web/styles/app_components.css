@@ -541,30 +541,7 @@ input.settings_text_input {
 }
 
 .demo-organization-warning {
-    position: relative;
-    display: block;
-    background-color: var(
-        --color-background-settings-demo-organization-warning
-    );
-    border: 1px solid var(--color-border-settings-demo-organization-warning);
-    border-radius: 4px;
-    padding: 10px;
     margin: 10px 0;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--color-text-settings-demo-organization-warning);
-
-    a {
-        text-decoration: none;
-    }
-
-    .convert-demo-organization-button {
-        &:focus {
-            outline: 1px solid
-                var(--color-focus-outline-settings-convert-demo-organization);
-            outline-offset: 0;
-        }
-    }
 }
 
 .user_status_icon_wrapper {
