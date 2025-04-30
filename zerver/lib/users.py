@@ -192,9 +192,15 @@ def add_service(
     base_url: str,
     interface: int,
     token: str,
+    triggers: list[str],
 ) -> None:
     Service.objects.create(
-        name=name, user_profile=user_profile, base_url=base_url, interface=interface, token=token
+        name=name,
+        user_profile=user_profile,
+        base_url=base_url,
+        interface=interface,
+        token=token,
+        triggers=triggers,
     )
 
 
