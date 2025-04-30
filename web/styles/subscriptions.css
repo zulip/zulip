@@ -1433,7 +1433,6 @@ div.settings-radio-input-parent {
         display: block;
         margin: 0;
         width: 100%;
-        height: calc(100% - var(--settings-overlay-header-height));
 
         border: none;
     }
@@ -1474,15 +1473,9 @@ div.settings-radio-input-parent {
         }
     }
 
-    .two-pane-settings-overlay {
-        .two-pane-settings-container {
-            height: 95%;
-        }
-
-        .settings {
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+    .two-pane-settings-overlay .settings {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
