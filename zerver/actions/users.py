@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import get_language
+from django.utils.translation import gettext as _
 
 from zerver.actions.streams import send_peer_remove_events
 from zerver.actions.user_groups import (
@@ -23,6 +24,7 @@ from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, 
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
 from zerver.lib.event_types import BotServicesOutgoing
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import (
@@ -786,6 +788,7 @@ def do_update_outgoing_webhook_service(
     bot_profile: UserProfile,
     service_interface: int | None,
     service_payload_url: str | None,
+    service_triggers: list[str] | None,
 ) -> None:
     # TODO: First service is chosen because currently one bot can only have one service.
     # Update this once multiple services are supported.
@@ -795,15 +798,20 @@ def do_update_outgoing_webhook_service(
         service.interface = service_interface
     if service_payload_url is not None:
         service.base_url = service_payload_url
+    if service_triggers is not None:
+        if len(service_triggers) < 1:
+            raise JsonableError(_("A service bot must have at least one trigger."))
+        service.triggers = service_triggers
 
     service.save()
 
     # Keep the event payload of the updated bot service in sync with the
     # schema expected by the web client's `bot_data.update` method.
-    updated_fields: dict[str, str | int] = BotServicesOutgoing(
+    updated_fields: dict[str, str | int | list[str]] = BotServicesOutgoing(
         base_url=service.base_url,
         interface=service.interface,
         token=service.token,
+        triggers=service.triggers,
     ).model_dump()
     send_event_on_commit(
         bot_profile.realm,
@@ -847,6 +855,7 @@ def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
                 "base_url": service.base_url,
                 "interface": service.interface,
                 "token": service.token,
+                "triggers": service.triggers,
             }
             for service in services
         ]
@@ -856,6 +865,7 @@ def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
                 {
                     "config_data": get_bot_config(user_profile),
                     "service_name": services[0].name,
+                    "triggers": services[0].triggers,
                 }
             ]
         # A ConfigError just means that there are no config entries for user_profile.
@@ -890,6 +900,7 @@ def get_service_dicts_for_bots(
                     "base_url": service.base_url,
                     "interface": service.interface,
                     "token": service.token,
+                    "triggers": service.triggers,
                 }
                 for service in services
             ]
@@ -899,6 +910,7 @@ def get_service_dicts_for_bots(
                 {
                     "config_data": bot_config,
                     "service_name": services[0].name,
+                    "triggers": service.triggers,
                 }
             ]
         service_dicts_by_uid[bot_profile_id] = service_dicts
