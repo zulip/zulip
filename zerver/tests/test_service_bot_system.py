@@ -9,7 +9,6 @@ from django.conf import settings
 from django.test import override_settings
 from typing_extensions import ParamSpec, override
 
-from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
 from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
 from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsListError, EmbeddedBotHandler, StateHandler
@@ -19,7 +18,6 @@ from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
 from zerver.models import Recipient, UserProfile
 from zerver.models.messages import UserMessage
-from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 
 BOT_TYPE_TO_QUEUE_NAME = {
@@ -30,14 +28,12 @@ BOT_TYPE_TO_QUEUE_NAME = {
 
 class TestServiceBotBasics(ZulipTestCase):
     def _get_outgoing_bot(self) -> UserProfile:
-        outgoing_bot = do_create_user(
-            email="bar-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        outgoing_bot = self.create_test_bot(
+            "bar",
+            self.example_user("cordelia"),
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.example_user("cordelia"),
-            acting_user=None,
+            message_trigger_type="MENTION_ONLY",
         )
 
         return outgoing_bot
@@ -105,16 +101,17 @@ class TestServiceBotBasics(ZulipTestCase):
             user_profile=cordelia,
         )
 
-        event_dict = get_service_bot_events(
-            sender=sender,
-            service_bot_tuples=[
-                (outgoing_bot.id, outgoing_bot.bot_type),
-                (red_herring_bot.id, UserProfile.OUTGOING_WEBHOOK_BOT),
-            ],
-            active_user_ids=set(),
-            mentioned_user_ids={outgoing_bot.id},
-            recipient_type=Recipient.STREAM,
-        )
+        with self.assertLogs(level="ERROR"):
+            event_dict = get_service_bot_events(
+                sender=sender,
+                service_bot_tuples=[
+                    (outgoing_bot.id, outgoing_bot.bot_type),
+                    (red_herring_bot.id, UserProfile.OUTGOING_WEBHOOK_BOT),
+                ],
+                active_user_ids=set(),
+                mentioned_user_ids={outgoing_bot.id},
+                recipient_type=Recipient.STREAM,
+            )
 
         expected = dict(
             outgoing_webhooks=[
@@ -169,9 +166,10 @@ class TestServiceBotBasics(ZulipTestCase):
             )
 
         self.assert_length(event_dict, 0)
+        self.assert_length(m.output, 2)
         self.assertEqual(
-            m.output,
-            [f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}"],
+            m.output[1],
+            f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}",
         )
 
 
@@ -180,23 +178,21 @@ class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(
-            email="embedded-bot-1@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.bot_profile = self.create_test_bot(
+            "embedded",
+            self.user_profile,
             full_name="EmbeddedBo1",
             bot_type=UserProfile.EMBEDDED_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            service_name="helloworld",
+            message_trigger_type="MENTION_ONLY",
         )
-        self.second_bot_profile = do_create_user(
-            email="embedded-bot-2@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.second_bot_profile = self.create_test_bot(
+            "embedded2",
+            self.user_profile,
             full_name="EmbeddedBot2",
             bot_type=UserProfile.EMBEDDED_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            service_name="helloworld",
+            message_trigger_type="MENTION_ONLY",
         )
 
     def test_basic_storage_and_retrieval(self) -> None:
@@ -364,6 +360,7 @@ class TestServiceBotConfigHandler(ZulipTestCase):
             full_name="Embedded bot",
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="helloworld",
+            message_trigger_type="MENTION_ONLY",
         )
         self.bot_handler = EmbeddedBotHandler(self.bot_profile)
 
@@ -463,23 +460,21 @@ class TestServiceBotEventTriggers(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(
-            email="foo-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.bot_profile = self.create_test_bot(
+            "foo",
+            self.user_profile,
             full_name="FooBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            payload_url='"https://bot.example.com/"',
+            message_trigger_type="MENTION_ONLY",
         )
-        self.second_bot_profile = do_create_user(
-            email="bar-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.second_bot_profile = self.create_test_bot(
+            "bar",
+            self.user_profile,
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            payload_url='"https://bot.example.com/"',
+            message_trigger_type="MENTION_ONLY",
         )
 
     @for_all_bot_types
@@ -621,9 +616,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             "https://bot.example.com/",
             json="",
         )
-        message_id = self.send_group_direct_message(
-            sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
-        )
+        with self.assertLogs(level="INFO"):
+            message_id = self.send_group_direct_message(
+                sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
+            )
         # message = Message.objects.get(id=message_id, sender=sender)
         bot_user_message = UserMessage.objects.get(
             user_profile=self.bot_profile, message=message_id
