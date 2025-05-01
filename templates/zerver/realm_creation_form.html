@@ -2,21 +2,19 @@
     <div class="input-box">
         <div class="inline-block relative">
             <input id="id_team_name" class="required" type="text"
-              placeholder="Acme or Ακμή"
               value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
               name="realm_name" maxlength="{{ MAX_REALM_NAME_LENGTH }}" required {% if not user_registration_form %}autofocus{% endif %} />
         </div>
-        <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+        <label for="id_team_name" class="inline-block label-title">
+            {{ _('Organization name') }}
+            <a href="/help/create-your-organization-profile" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </label>
         {% if form.realm_name.errors %}
             {% for error in form.realm_name.errors %}
             <p class="help-inline text-error">{{ error }}</p>
             {% endfor %}
-        {% endif %}
-
-        {% if not user_registration_form %}
-        <div class="help-text">
-            {{ _('Shorter is better than longer.') }}
-        </div>
         {% endif %}
     </div>
 
