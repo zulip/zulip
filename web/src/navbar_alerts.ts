@@ -503,7 +503,9 @@ export function initialize(): void {
         }, 2000);
     });
 
-    $("#navbar_alerts_wrapper").on("click", ".convert-demo-organization", () => {
+    $("#navbar_alerts_wrapper").on("click", ".convert-demo-organization", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
         demo_organizations_ui.do_convert_demo_organization();
     });
 
