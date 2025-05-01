@@ -214,14 +214,14 @@ export function dispatch_normal_event(event) {
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 can_access_all_users_group: noop,
-                can_add_custom_emoji_group: noop,
+                can_add_custom_emoji_group: settings_emoji.update_custom_emoji_ui,
                 can_add_subscribers_group: noop,
-                can_create_bots_group: noop,
+                can_create_bots_group: settings_bots.update_bot_permissions_ui,
                 can_create_groups: noop,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
                 can_create_web_public_channel_group: noop,
-                can_create_write_only_bots_group: noop,
+                can_create_write_only_bots_group: settings_bots.update_bot_permissions_ui,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
                 can_invite_users_group: noop,
@@ -329,17 +329,6 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
-                                }
-
-                                if (key === "can_add_custom_emoji_group") {
-                                    settings_emoji.update_custom_emoji_ui();
-                                }
-
-                                if (
-                                    key === "can_create_bots_group" ||
-                                    key === "can_create_write_only_bots_group"
-                                ) {
-                                    settings_bots.update_bot_permissions_ui();
                                 }
 
                                 if (
