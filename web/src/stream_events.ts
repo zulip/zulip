@@ -31,11 +31,13 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_muting from "./stream_muting.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import {
     type UpdatableStreamProperties,
     stream_permission_group_settings_schema,
 } from "./stream_types.ts";
+import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {group_setting_value_schema} from "./types.ts";
@@ -109,6 +111,10 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         );
         if (property === "can_subscribe_group" || property === "can_add_subscribers_group") {
             stream_settings_ui.update_subscription_elements(sub);
+        }
+        if (property === "can_administer_channel_group") {
+            const settings_sub = stream_settings_data.get_sub_for_settings(sub);
+            stream_ui_updates.update_add_subscriptions_elements(settings_sub);
         }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),

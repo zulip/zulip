@@ -503,7 +503,9 @@ export function enable_or_disable_add_subscribers_elements(
 
     if (!stream_creation) {
         const $add_subscribers_button = $container_elem.find(".add-subscriber-button").expectOne();
-        $add_subscribers_button.prop("disabled", !enable_elem);
+        const input_empty =
+            $container_elem.find(".pill").length === 0 && $input_element.text().length === 0;
+        $add_subscribers_button.prop("disabled", !enable_elem || input_empty);
         if (enable_elem) {
             $add_subscribers_button.css("pointer-events", "");
         }

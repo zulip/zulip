@@ -19,6 +19,7 @@ const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
 const stream_settings_api = mock_esm("../src/stream_settings_api");
+const stream_settings_data = mock_esm("../src/stream_settings_data");
 const onboarding_steps = mock_esm("../src/onboarding_steps");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
     update_settings_for_subscribed: noop,
@@ -290,6 +291,10 @@ test("update_property", ({override}) => {
     {
         const stub = make_stub();
         override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
+        override(stream_settings_data, "get_sub_for_settings", () => ({
+            can_add_subscribers: false,
+            ...sub,
+        }));
         stream_events.update_property(stream_id, "can_administer_channel_group", 3);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("setting_name", "sub", "val");

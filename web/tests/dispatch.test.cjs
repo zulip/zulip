@@ -77,6 +77,8 @@ const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
 const stream_list = mock_esm("../src/stream_list");
+const stream_settings_components = mock_esm("../src/stream_settings_components");
+const stream_settings_data = mock_esm("../src/stream_settings_data");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
@@ -607,6 +609,19 @@ run_test("realm settings", ({override}) => {
     });
     override(settings_org, "populate_auth_methods", noop);
     override(user_group_edit, "update_realm_setting_in_permissions_panel", noop);
+    override(overlays, "streams_open", () => true);
+    override(stream_settings_components, "get_active_data", () => ({
+        id: events.test_streams.devel.stream_id,
+    }));
+    override(stream_settings_data, "get_sub_for_settings", () => ({
+        ...events.test_streams.devel,
+        can_add_subscribers: false,
+    }));
+    let add_subscribers_element_updated = false;
+    override(stream_ui_updates, "update_add_subscriptions_elements", (sub) => {
+        assert.deepEqual(sub, {...events.test_streams.devel, can_add_subscribers: false});
+        add_subscribers_element_updated = true;
+    });
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
@@ -626,6 +641,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
     assert_same(update_stream_privacy_choices_called, true);
+    assert_same(add_subscribers_element_updated, true);
 
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
