@@ -108,7 +108,9 @@ export function do_convert_demo_organization(): void {
 }
 
 export function handle_demo_organization_conversion(): void {
-    $(".convert-demo-organization-button").on("click", () => {
+    $(".convert-demo-organization-button").on("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
         do_convert_demo_organization();
     });
 
