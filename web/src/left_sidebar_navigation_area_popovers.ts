@@ -21,6 +21,21 @@ import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 
+
+const auto_collapse_views_STATE_KEY = "views_auto_collapse_views_state";
+const STATES = {
+    ALWAYS_EXPANDED: "always_expanded",
+    auto_collapse_views: "auto_collapse_views",
+};
+
+export function get_auto_collapse_views_state(): boolean {
+    const state = localStorage.getItem(auto_collapse_views_STATE_KEY);
+    if (state === null) {
+        return true;
+    } 
+    return state === STATES.auto_collapse_views;
+}
+
 function common_click_handlers(): void {
     $("body").on("click", ".set-home-view", (e) => {
         e.preventDefault();
@@ -228,6 +243,7 @@ export function initialize(): void {
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
+            popovers.hide_all();
             // Determine at show time whether there are scheduled messages,
             // so that Tippy properly calculates the height of the popover
             const scheduled_message_count = scheduled_messages.get_count();
@@ -235,10 +251,15 @@ export function initialize(): void {
             if (scheduled_message_count > 0) {
                 has_scheduled_messages = true;
             }
-            popovers.hide_all();
+            
+            const $views_header = $("#views-label-container");
+            const is_auto_collapse_views = get_auto_collapse_views_state();
+            const is_condensed = $views_header.hasClass("showing-condensed-navigation");
+            $views_header.addClass("more-options-active");
+
             instance.setContent(
                 ui_util.parse_html(
-                    render_left_sidebar_condensed_views_popover({has_scheduled_messages}),
+                    render_left_sidebar_condensed_views_popover({has_scheduled_messages, is_auto_collapse_views, is_condensed}),
                 ),
             );
         },
@@ -254,6 +275,7 @@ export function initialize(): void {
         },
         onHidden(instance) {
             instance.destroy();
+            $("#views-label-container").removeClass("more-options-active");
             popover_menus.popover_instances.top_left_sidebar = null;
         },
     });

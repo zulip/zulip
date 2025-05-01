@@ -2,9 +2,11 @@ import $ from "jquery";
 import _ from "lodash";
 
 import type {Filter} from "./filter.ts";
+import { get_auto_collapse_views_state } from "./left_sidebar_navigation_area_popovers.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
@@ -13,12 +15,27 @@ import * as unread from "./unread.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
+const auto_collapse_views_STATE_KEY = "views_auto_collapse_views_state";
 const ls = localstorage();
 
 const STATES = {
     EXPANDED: "expanded",
     CONDENSED: "condensed",
 };
+
+const auto_collapse_views_STATES = {
+    ALWAYS_EXPANDED: "always_expanded",
+    auto_collapse_views: "auto_collapse_views",
+};
+
+function set_auto_collapse_views_state(is_auto_collapse_views: boolean): void {
+    localStorage.setItem(
+        auto_collapse_views_STATE_KEY,
+        is_auto_collapse_views ? auto_collapse_views_STATES.auto_collapse_views : auto_collapse_views_STATES.ALWAYS_EXPANDED,
+    );
+}
+
+
 
 function restore_views_state(): void {
     if (page_params.is_spectator) {
@@ -140,6 +157,7 @@ export function handle_narrow_activated(filter: Filter): void {
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    const condensedList : Element = document.querySelector("#left-sidebar-navigation-list-condensed");
 
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -147,6 +165,10 @@ function toggle_condensed_navigation_area(): void {
     }
 
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
+        // Change state keep_views_expanded to auto collapse before condensing
+        set_auto_collapse_views_state(true);
+        checkAutoCollapse();
+        condensedList.setAttribute("style", "display: flex;");
         // Toggle into the condensed state
         $views_label_container.addClass("showing-condensed-navigation");
         $views_label_container.removeClass("showing-expanded-navigation");
@@ -154,6 +176,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-down");
         save_state(STATES.CONDENSED);
     } else {
+        condensedList.setAttribute("style", "display: none;");
         // Toggle into the expanded state
         $views_label_container.addClass("showing-expanded-navigation");
         $views_label_container.removeClass("showing-condensed-navigation");
@@ -161,6 +184,26 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-right");
         save_state(STATES.EXPANDED);
     }
+    resize.resize_stream_filters_container();
+}
+
+function toggle_auto_collpase_views_section(): void {
+    const $views_label_container = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    $views_label_container.addClass("showing-expanded-navigation");
+    $views_label_container.removeClass("showing-condensed-navigation");
+    $views_label_icon.addClass("rotate-icon-down");
+    $views_label_icon.removeClass("rotate-icon-right");
+
+    save_state(STATES.EXPANDED); 
+
+    // Toggle the state of Auto collapse and update the local storage
+    const current_state = get_auto_collapse_views_state();
+    const new_state = !current_state;
+    set_auto_collapse_views_state(new_state);
+
+    checkAutoCollapse();
     resize.resize_stream_filters_container();
 }
 
@@ -260,9 +303,91 @@ export function handle_home_view_changed(new_home_view: string): void {
     update_dom_with_unread_counts(res, true);
 }
 
+function checkAutoCollapse(): void {
+    const $views_navigation_list = $("#left-sidebar-navigation-list");
+    const $direct_messages_header = $("#direct-messages-section-header");
+    const $views_section_header = $("#views-label-container");
+    const is_auto_collapse_views = get_auto_collapse_views_state();
+
+    if(is_auto_collapse_views) {
+        $views_navigation_list.removeClass("keep_views_expanded");
+        $direct_messages_header.removeClass("keep_views_expanded");
+        $views_section_header.removeClass("keep_views_expanded");
+    } else {
+        $views_navigation_list.addClass("keep_views_expanded");
+        $direct_messages_header.addClass("keep_views_expanded");
+        $views_section_header.addClass("keep_views_expanded");
+    }
+    
+}
+
+function attachSidebarScrollListener(): void {
+    const scrollContainer = document.querySelector("#left_sidebar_scroll_container .simplebar-content-wrapper");
+    const $viewsHeader = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    const $dmHeader = $("#direct-messages-section-header");
+    const $dm_icon = $("#toggle-direct-messages-section-icon");
+    const $streamsHeader = $("#streams_header");
+    const condensedList : Element = document.querySelector("#left-sidebar-navigation-list-condensed");
+
+    if (scrollContainer && $viewsHeader && $dmHeader && condensedList) {
+        scrollContainer.addEventListener("scroll", () => {
+            // Add "scrolled" class to views header if scrolled from top
+            if (scrollContainer.scrollTop > 0) {
+                $viewsHeader.addClass("scrolled");
+            } else {
+                $viewsHeader.removeClass("scrolled");
+            }
+
+            // Calculate position of dmHeader relative to viewsHeader
+            const viewsBottom = $viewsHeader[0].getBoundingClientRect().bottom;
+            const dmTop = $dmHeader[0].getBoundingClientRect().top;
+
+            if (dmTop <= viewsBottom) {
+                // Toggle into the condensed state
+                if($viewsHeader.hasClass("showing-expanded-navigation")) {
+                    condensedList.setAttribute("style", "display: flex;");
+                    $views_label_icon.addClass("rotate-icon-right");
+                    $views_label_icon.removeClass("rotate-icon-down");
+                }
+                $dmHeader.addClass("scrolled");
+            } else {
+                if($viewsHeader.hasClass("showing-expanded-navigation")) {
+                    condensedList.setAttribute("style", "display: none;");
+                    $views_label_icon.addClass("rotate-icon-down");
+                    $views_label_icon.removeClass("rotate-icon-right");
+                }
+                $dmHeader.removeClass("scrolled");
+            }
+
+            // Calculate position of 
+            const dmBottom = $dmHeader[0].getBoundingClientRect().bottom;
+            const streamsHeaderTop = $streamsHeader[0].getBoundingClientRect().top;
+
+            if(streamsHeaderTop <= dmBottom) {
+                $dmHeader.removeClass("scrolled");
+                $dm_icon.removeClass("rotate-icon-down");
+                $dm_icon.addClass("rotate-icon-right");
+                $streamsHeader.addClass("scrolled");
+            } else {
+                $dm_icon.removeClass("rotate-icon-right");
+                $dm_icon.addClass("rotate-icon-down");
+                $streamsHeader.removeClass("scrolled");
+            }
+
+        });
+    } else {
+        setTimeout(attachSidebarScrollListener, 100);
+    }
+}
+
+
 export function initialize(): void {
     update_scheduled_messages_row();
     restore_views_state();
+
+    attachSidebarScrollListener();
+    checkAutoCollapse();
 
     $("body").on(
         "click",
@@ -272,4 +397,13 @@ export function initialize(): void {
             toggle_condensed_navigation_area();
         },
     );
+
+    $("body").on("click", ".popover-menu-button", 
+        (e) => {
+        e.preventDefault();
+        toggle_auto_collpase_views_section();
+        popovers.hide_all();
+    });
+
 }
+
