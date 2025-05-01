@@ -15,7 +15,7 @@
                         {{> ../components/icon_button
                           id="change_email_button"
                           icon="edit"
-                          intent="brand"
+                          intent="neutral"
                           custom_classes="tippy-zulip-delayed-tooltip"
                           hidden=(not user_can_change_email)
                           aria-label=(t "Change your email")
@@ -61,7 +61,7 @@
                         {{> ../components/action_button
                           label=(t "Change your password")
                           attention="quiet"
-                          intent="brand"
+                          intent="neutral"
                           id="change_password"
                           }}
                     </div>
@@ -110,7 +110,7 @@
                     {{> ../components/action_button
                       label=(t "Manage your API key")
                       attention="quiet"
-                      intent="brand"
+                      intent="neutral"
                       id="api_key_button"
                       disabled=(not user_has_email_set)
                       }}
