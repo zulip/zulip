@@ -1,16 +1,13 @@
 <div id="convert-demo-organization-form">
+    {{#unless user_has_email_set}}
     <div class="tip">
-        {{#unless user_has_email_set}}
-            {{#tr}}
-                You must <z-link>configure your email</z-link> to access this feature.
-                {{#*inline "z-link"}}<a href="/help/demo-organizations#configure-email-for-demo-organization-owner" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
-            {{/tr}}
-        {{else}}
-            {{t "All users will need to log in again at your new organization URL." }}
-        {{/unless}}
+        {{#tr}}
+            You must <z-link>configure your email</z-link> to access this feature.
+            {{#*inline "z-link"}}<a href="/help/demo-organizations#configure-email-for-demo-organization-owner" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+        {{/tr}}
     </div>
-
-    <p>{{t "You can convert this demo organization to a permanent Zulip organization. All users and message history will be preserved." }}</p>
+    {{/unless}}
+    <p>{{t "Everyone will need to log in again at the new URL for your organization." }}</p>
     <form class="subdomain-setting">
         <div class="input-group">
             <label for="organization_type" class="modal-field-label">{{t "Organization type" }}
