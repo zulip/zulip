@@ -237,13 +237,15 @@ export function update_subscribers_ui(sub: StreamSubscription): void {
     message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
-export function update_subscription_elements(sub: StreamSubscription): void {
+export function update_subscription_elements(slim_sub: StreamSubscription): void {
     if (!overlays.streams_open()) {
         return;
     }
 
-    update_left_panel_row(sub);
-    stream_ui_updates.update_settings_button_for_sub(sub);
+    update_left_panel_row(slim_sub);
+    stream_ui_updates.update_settings_button_for_sub(slim_sub);
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
+    stream_ui_updates.update_add_subscriptions_elements(sub);
 }
 
 export function add_sub_to_table(sub: StreamSubscription): void {

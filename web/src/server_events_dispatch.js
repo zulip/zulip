@@ -76,6 +76,8 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_events from "./stream_events.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
+import * as stream_settings_components from "./stream_settings_components.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
@@ -361,6 +363,20 @@ export function dispatch_normal_event(event) {
 
                                 if (key === "plan_type") {
                                     gear_menu.rerender();
+                                }
+
+                                if (
+                                    key === "can_add_subscribers_group" &&
+                                    overlays.streams_open()
+                                ) {
+                                    const active_stream_id =
+                                        stream_settings_components.get_active_data().id;
+                                    if (active_stream_id !== undefined) {
+                                        const slim_sub = sub_store.get(active_stream_id);
+                                        const sub =
+                                            stream_settings_data.get_sub_for_settings(slim_sub);
+                                        stream_ui_updates.update_add_subscriptions_elements(sub);
+                                    }
                                 }
                             }
                             if (event.data.authentication_methods !== undefined) {
