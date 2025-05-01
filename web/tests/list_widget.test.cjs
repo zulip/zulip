@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -176,17 +177,18 @@ function div(item) {
     return "<div>" + item + "</div>";
 }
 
-run_test("scrolling", () => {
+function test_widget(label, f) {
+    run_test(label, ({override}) => {
+        override(scroll_util, "get_scroll_element", ($element) => $element);
+        f();
+    });
+}
+
+test_widget("scrolling", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
 
     const items = [];
-
-    let get_scroll_element_called = false;
-    scroll_util.get_scroll_element = ($element) => {
-        get_scroll_element_called = true;
-        return $element;
-    };
 
     for (let i = 0; i < 200; i += 1) {
         items.push("item " + i);
@@ -201,7 +203,6 @@ run_test("scrolling", () => {
     ListWidget.create($container, items, opts);
 
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
-    assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry so it forces a scroll action.
     $scroll_container[0].scrollTop = 180;
@@ -214,26 +215,20 @@ run_test("scrolling", () => {
     assert.deepEqual($container.$appended_data.html(), items.slice(80, 100).join(""));
 });
 
-run_test("not_scrolling", () => {
+test_widget("not_scrolling", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
 
     const items = [];
 
-    let get_scroll_element_called = false;
-    scroll_util.get_scroll_element = ($element) => {
-        get_scroll_element_called = true;
-        return $element;
-    };
-
-    let post_scroll__pre_render_callback_called = false;
+    const post_scroll_side_effect = new SideEffect("call post_scroll__pre_render_callback");
     const post_scroll__pre_render_callback = () => {
-        post_scroll__pre_render_callback_called = true;
+        post_scroll_side_effect.has_happened();
     };
 
-    let get_min_load_count_called = false;
+    const call_to_get_min_load_count = new SideEffect("call get_min_load_count");
     const get_min_load_count = (_offset, load_count) => {
-        get_min_load_count_called = true;
+        call_to_get_min_load_count.has_happened();
         return load_count;
     };
 
@@ -250,10 +245,11 @@ run_test("not_scrolling", () => {
         get_min_load_count,
     };
 
-    ListWidget.create($container, items, opts);
+    call_to_get_min_load_count.should_happen_during(() => {
+        ListWidget.create($container, items, opts);
+    });
 
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
-    assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry.
     $scroll_container[0].scrollTop = 180;
@@ -262,14 +258,15 @@ run_test("not_scrolling", () => {
 
     // Since `should_render` is always false, no elements will be
     // added regardless of scrolling.
-    $scroll_container.call_scroll();
+    post_scroll_side_effect.should_happen_during(() => {
+        $scroll_container.call_scroll();
+    });
+
     // $appended_data remains the same.
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
-    assert.equal(post_scroll__pre_render_callback_called, true);
-    assert.equal(get_min_load_count_called, true);
 });
 
-run_test("filtering", () => {
+test_widget("filtering", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
 
@@ -328,7 +325,7 @@ run_test("filtering", () => {
     assert.deepEqual($container.$appended_data.html(), expected_html);
 });
 
-run_test("no filtering", () => {
+test_widget("no filtering", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
 
@@ -402,7 +399,7 @@ function sort_button(opts) {
     return $button;
 }
 
-run_test("wire up filter element", () => {
+test_widget("wire up filter element", () => {
     const lst = ["alice", "JESSE", "moses", "scott", "Sean", "Xavier"];
 
     const $container = make_container();
@@ -424,7 +421,7 @@ run_test("wire up filter element", () => {
     assert.equal($container.$appended_data.html(), "(JESSE)(moses)(Sean)");
 });
 
-run_test("sorting", () => {
+test_widget("sorting", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
     const $sort_container = make_sort_container();
@@ -629,7 +626,7 @@ run_test("Apply consecutive sorts", () => {
     assert.ok($button.hasClass("descend"));
 });
 
-run_test("custom sort", () => {
+test_widget("custom sort", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
 
@@ -673,7 +670,7 @@ run_test("custom sort", () => {
     assert.deepEqual($container.$appended_data.html(), "(6, 7)(4, 11)(1, 43)");
 });
 
-run_test("clear_event_handlers", () => {
+test_widget("clear_event_handlers", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
     const $sort_container = make_sort_container();
@@ -731,7 +728,7 @@ run_test("sort helpers", () => {
     assert.equal(num_cmp(alice10, bob2), 1);
 });
 
-run_test("replace_list_data w/filter update", () => {
+test_widget("replace_list_data w/filter update", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
 
@@ -804,7 +801,7 @@ run_test("opts.get_item", () => {
     assert.deepEqual(ListWidget.get_filtered_items("t", list, filterer_opts), ["two", "three"]);
 });
 
-run_test("render item", () => {
+test_widget("render item", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
@@ -911,7 +908,7 @@ run_test("render item", () => {
     blueslip.reset();
 });
 
-run_test("Multiselect dropdown retain_selected_items", () => {
+test_widget("Multiselect dropdown retain_selected_items", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
     const $filter_element = make_filter_element();

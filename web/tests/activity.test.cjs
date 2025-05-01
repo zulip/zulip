@@ -9,7 +9,9 @@ const {
     buddy_list_add_other_user,
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
+const {CallbackData} = require("./lib/callback_data.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -99,15 +101,6 @@ const zoe = {
     full_name: "Zoe Yang",
 };
 
-people.add_active_user(alice);
-people.add_active_user(fred);
-people.add_active_user(jill);
-people.add_active_user(mark);
-people.add_active_user(norbert);
-people.add_active_user(zoe);
-people.add_active_user(me);
-people.initialize_current_user(me.user_id);
-
 const $alice_stub = $.create("alice stub");
 const $fred_stub = $.create("fred stub");
 
@@ -137,6 +130,16 @@ function test(label, f) {
 
         stub_buddy_list_elements();
         helpers.override(buddy_list, "render_view_user_list_links", noop);
+
+        people.init();
+        people.add_active_user({...alice});
+        people.add_active_user({...fred});
+        people.add_active_user({...jill});
+        people.add_active_user({...mark});
+        people.add_active_user({...norbert});
+        people.add_active_user({...zoe});
+        people.add_active_user({...me});
+        people.initialize_current_user(me.user_id);
 
         presence.presence_info.set(alice.user_id, {status: "active"});
         presence.presence_info.set(fred.user_id, {status: "active"});
@@ -245,9 +248,13 @@ test("direct_message_group_data.process_loaded_messages", () => {
 
 test("presence_list_full_update", ({override, mock_template}) => {
     override(padded_widget, "update_padding", noop);
-    let presence_rows = [];
+
+    const callback_data = new CallbackData("from template");
+
     mock_template("presence_rows.hbs", false, (data) => {
-        presence_rows = [...presence_rows, ...data.presence_rows];
+        callback_data.set({
+            presence_rows: data.presence_rows,
+        });
         return "<presence-rows-stub>";
     });
 
@@ -256,6 +263,7 @@ test("presence_list_full_update", ({override, mock_template}) => {
     $("input.user-list-filter").trigger("focus");
 
     const user_ids = activity_ui.build_user_sidebar();
+    const {presence_rows} = callback_data.get();
 
     assert.deepEqual(user_ids, [
         me.user_id,
@@ -293,12 +301,14 @@ test("direct_message_update_dom_counts", () => {
 });
 
 test("handlers", ({override, override_rewire, mock_template}) => {
-    let filter_key_handlers;
+    const handlers = new CallbackData("handlers passed into keydown_util.handle");
 
     mock_template("presence_rows.hbs", false, () => "<presence-rows-stub>");
 
     override(keydown_util, "handle", (opts) => {
-        filter_key_handlers = opts.handlers;
+        handlers.set({
+            filter_key_handlers: opts.handlers,
+        });
     });
     override(scroll_util, "scroll_element_into_container", noop);
     override(padded_widget, "update_padding", noop);
@@ -324,11 +334,11 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         buddy_list_add_user_matching_view(fred.user_id, $fred_li);
     });
 
-    let narrowed;
+    const call_narrow_by_email = new SideEffect("call narrow_by_email");
 
     function narrow_by_email(email) {
         assert.equal(email, "alice@zulip.com");
-        narrowed = true;
+        call_narrow_by_email.has_happened();
     }
 
     function init() {
@@ -345,12 +355,12 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         });
     }
 
-    (function test_filter_keys() {
-        init();
-        activity_ui.user_cursor.go_to(alice.user_id);
-        filter_key_handlers.ArrowDown();
-        filter_key_handlers.ArrowUp();
-    })();
+    init();
+    const {filter_key_handlers} = handlers.get();
+
+    activity_ui.user_cursor.go_to(alice.user_id);
+    filter_key_handlers.ArrowDown();
+    filter_key_handlers.ArrowUp();
 
     (function test_click_filter() {
         init();
@@ -366,10 +376,10 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         init();
 
         $("input.user-list-filter").val("al");
-        narrowed = false;
         activity_ui.user_cursor.go_to(alice.user_id);
-        filter_key_handlers.Enter();
-        assert.ok(narrowed);
+        call_narrow_by_email.should_happen_during(() => {
+            filter_key_handlers.Enter();
+        });
 
         // get line coverage for cleared case
         activity_ui.user_cursor.clear();
@@ -380,9 +390,9 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         init();
         // We wire up the click handler in click_handlers.ts,
         // so this just tests the called function.
-        narrowed = false;
-        activity_ui.narrow_for_user({$li: $alice_li});
-        assert.ok(narrowed);
+        call_narrow_by_email.should_happen_during(() => {
+            activity_ui.narrow_for_user({$li: $alice_li});
+        });
     })();
 
     (function test_blur_filter() {
@@ -476,10 +486,13 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
         return "<empty-list-stub>";
     });
 
-    let $appended_data;
+    const callback_data = new CallbackData("from $container.append");
+
     override(buddy_list, "$container", {
         append($data) {
-            $appended_data = $data;
+            callback_data.set({
+                $appended_data: $data,
+            });
         },
         attr(name) {
             assert.equal(name, "data-search-results-empty");
@@ -489,6 +502,8 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
     });
 
     activity_ui.render_empty_user_list_message_if_needed(buddy_list.$container);
+
+    const {$appended_data} = callback_data.get();
     assert.equal($appended_data.selector, "<empty-list-stub>");
 });
 
@@ -519,13 +534,19 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
         return html;
     });
 
-    let $users_matching_view_appended;
+    const users_callback_data = new CallbackData("from buddy_list.$users_matching_view_list");
+
     override(buddy_list.$users_matching_view_list, "append", ($element) => {
-        $users_matching_view_appended = $element;
+        users_callback_data.set({
+            $users_matching_view_appended: $element,
+        });
     });
-    let $other_users_appended;
+
+    const other_users_callback_data = new CallbackData("from buddy_list.$other_users_list");
     override(buddy_list.$other_users_list, "append", ($element) => {
-        $other_users_appended = $element;
+        other_users_callback_data.set({
+            $other_users_appended: $element,
+        });
     });
 
     $.create("[data-presence-indicator-user-id]", {
@@ -549,6 +570,9 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
     peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id]);
     activity_ui.redraw_user(alice.user_id);
+
+    const {$users_matching_view_appended} = users_callback_data.get();
+
     assert.ok($users_matching_view_appended.selector.includes('data-user-id="1"'));
     assert.ok($users_matching_view_appended.selector.includes("user-circle-active"));
 
@@ -556,6 +580,9 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     buddy_list_add_other_user(alice.user_id, $alice_stub);
     peer_data.set_subscribers(rome_sub.stream_id, []);
     activity_ui.redraw_user(alice.user_id);
+
+    const {$other_users_appended} = other_users_callback_data.get();
+
     assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
     assert.ok($other_users_appended.selector.includes("user-circle-active"));
 });
@@ -563,20 +590,30 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
 test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
-    let $other_users_appended;
+    const callback_data = new CallbackData("$other_users_appended");
+
     override(buddy_list.$other_users_list, "append", ($element) => {
-        $other_users_appended = $element;
+        callback_data.set({
+            $other_users_appended: $element,
+        });
     });
+
     override(padded_widget, "update_padding", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
 
-    activity_ui.redraw_user(alice.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    {
+        activity_ui.redraw_user(alice.user_id);
+        const {$other_users_appended} = callback_data.get();
+        assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
+        assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    }
 
-    activity_ui.redraw_user(fred.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    {
+        activity_ui.redraw_user(fred.user_id);
+        const {$other_users_appended} = callback_data.get();
+        assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
+        assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    }
 });
 
 test("insert_fred_then_alice_then_rename, both as users matching view", ({
@@ -589,9 +626,11 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     add_sub_and_set_as_current_narrow(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id, fred.user_id]);
 
-    let $users_matching_view_appended;
+    const users_callback_data = new CallbackData("from buddy_list.$users_matching_view_list");
     override(buddy_list.$users_matching_view_list, "append", ($element) => {
-        $users_matching_view_appended = $element;
+        users_callback_data.set({
+            $users_matching_view_appended: $element,
+        });
     });
     override(padded_widget, "update_padding", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
@@ -599,22 +638,29 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
+
+    const {$users_matching_view_appended} = users_callback_data.get();
     assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
     assert.ok($users_matching_view_appended.selector.includes("user-circle-active"));
 
-    let $inserted;
+    const fred_insert_before_callback_data = new CallbackData("from $fred_stub.before");
     $fred_stub.before = ($element) => {
-        $inserted = $element;
+        fred_insert_before_callback_data.set({
+            $fred_before_inserted: $element,
+        });
     };
 
-    let fred_removed;
+    const remove_fred = new SideEffect("remove fred");
     $fred_stub.remove = () => {
-        fred_removed = true;
+        remove_fred.has_happened();
     };
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok($inserted.selector.includes('data-user-id="1"'));
-    assert.ok($inserted.selector.includes("user-circle-active"));
+
+    const {$fred_before_inserted} = fred_insert_before_callback_data.get();
+
+    assert.ok($fred_before_inserted.selector.includes('data-user-id="1"'));
+    assert.ok($fred_before_inserted.selector.includes("user-circle-active"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -624,16 +670,13 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     };
     people.add_active_user(fred_with_new_name);
 
-    $alice_stub.before = ($element) => {
-        $inserted = $element;
-    };
+    $alice_stub.before = () => {};
 
-    activity_ui.redraw_user(fred_with_new_name.user_id);
-    assert.ok(fred_removed);
+    remove_fred.should_happen_during(() => {
+        activity_ui.redraw_user(fred_with_new_name.user_id);
+    });
+
     assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
-
-    // restore old Fred data
-    people.add_active_user(fred);
 });
 
 test("insert_fred_then_alice_then_rename, both as other users", ({
@@ -646,9 +689,11 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
     add_sub_and_set_as_current_narrow(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, []);
 
-    let $other_users_appended;
+    const other_users_callback_data = new CallbackData("from buddy_list.$other_users_list");
     override(buddy_list.$other_users_list, "append", ($element) => {
-        $other_users_appended = $element;
+        other_users_callback_data.set({
+            $other_users_appended: $element,
+        });
     });
     override(padded_widget, "update_padding", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
@@ -657,20 +702,22 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
     buddy_list_add_other_user(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
+
+    const {$other_users_appended} = other_users_callback_data.get();
+
     assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
     assert.ok($other_users_appended.selector.includes("user-circle-active"));
 
-    let $inserted;
+    const fred_insert_before_callback_data = new CallbackData("from $fred_stub.before");
     $fred_stub.before = ($element) => {
-        $inserted = $element;
-    };
-
-    let fred_removed;
-    $fred_stub.remove = () => {
-        fred_removed = true;
+        fred_insert_before_callback_data.set({
+            $inserted: $element,
+        });
     };
 
     activity_ui.redraw_user(alice.user_id);
+
+    const {$inserted} = fred_insert_before_callback_data.get();
     assert.ok($inserted.selector.includes('data-user-id="1"'));
     assert.ok($inserted.selector.includes("user-circle-active"));
 
@@ -682,16 +729,18 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
     };
     people.add_active_user(fred_with_new_name);
 
-    $alice_stub.before = ($element) => {
-        $inserted = $element;
+    $alice_stub.before = () => {};
+
+    const remove_fred = new SideEffect("remove fred");
+    $fred_stub.remove = () => {
+        remove_fred.has_happened();
     };
 
-    activity_ui.redraw_user(fred_with_new_name.user_id);
-    assert.ok(fred_removed);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
+    remove_fred.should_happen_during(() => {
+        activity_ui.redraw_user(fred_with_new_name.user_id);
+    });
 
-    // restore old Fred data
-    people.add_active_user(fred);
+    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
 });
 
 test("insert_unfiltered_user_with_filter", () => {
@@ -734,19 +783,22 @@ test("update_presence_info", ({override, override_rewire}) => {
     const $alice_li = $.create("alice stub");
     buddy_list_add_user_matching_view(alice.user_id, $alice_li);
 
-    let inserted;
+    const insert_or_move = new SideEffect("call insert_or_move");
     override(buddy_list, "insert_or_move", () => {
-        inserted = true;
+        insert_or_move.has_happened();
     });
 
     presence.presence_info.delete(me.user_id);
-    activity_ui.update_presence_info(me.user_id, info, server_time);
-    assert.ok(inserted);
+
+    insert_or_move.should_happen_during(() => {
+        activity_ui.update_presence_info(me.user_id, info, server_time);
+    });
     assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
     presence.presence_info.delete(alice.user_id);
-    activity_ui.update_presence_info(alice.user_id, info, server_time);
-    assert.ok(inserted);
+    insert_or_move.should_happen_during(() => {
+        activity_ui.update_presence_info(alice.user_id, info, server_time);
+    });
 
     const expected = {status: "active", last_active: 500};
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
@@ -774,15 +826,6 @@ test("initialize", ({override, override_rewire}) => {
     override(buddy_list, "fill_screen_with_content", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
 
-    let payload;
-    override(channel, "post", (arg) => {
-        if (payload === undefined) {
-            // This "if" block is added such that we can execute "success"
-            // function when want_redraw is true.
-            payload = arg;
-        }
-    });
-
     function clear() {
         $.clear_all_elements();
         buddy_list.$users_matching_view_list = $("#buddy-list-users-matching-view");
@@ -796,70 +839,97 @@ test("initialize", ({override, override_rewire}) => {
 
     clear();
 
-    let scroll_handler_started;
+    const start_scroll_handler = new SideEffect("call buddy_list.start_scroll_handler");
     buddy_list.start_scroll_handler = () => {
-        scroll_handler_started = true;
+        start_scroll_handler.has_happened();
     };
 
-    activity.mark_client_idle();
-
-    $(window).off("focus");
-
-    let set_timeout_function_called = false;
+    const call_setTimeout = new SideEffect("call setTimeout");
     set_global("setTimeout", (func) => {
-        if (set_timeout_function_called) {
+        if (call_setTimeout.num_times_met > 0) {
             // This conditional is needed to avoid indefinite calls.
             return;
         }
-        set_timeout_function_called = true;
+        call_setTimeout.has_happened();
         func();
     });
 
-    activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
-    payload.success({
-        zephyr_mirror_active: true,
-        presences: {},
-        msg: "",
-        result: "success",
-        server_timestamp: 0,
-        presence_last_update_id: -1,
-    });
-    $(window).trigger("focus");
-    clear();
+    {
+        $(window).off("focus");
 
-    assert.ok(scroll_handler_started);
-    assert.ok(!activity.new_user_input);
-    assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
-    assert.equal(activity.compute_active_status(), "active");
+        const callback_data = new CallbackData("from channel.post");
+        override(channel, "post", (arg) => {
+            if (callback_data.obj === undefined) {
+                // This "if" block is added such that we can execute "success"
+                // function when want_redraw is true.
+                callback_data.set({payload: arg});
+            }
+        });
 
-    $(window).idle = (params) => {
-        params.onIdle();
-    };
-    payload = undefined;
-    set_timeout_function_called = false;
+        activity.mark_client_idle();
+        activity.initialize();
 
-    $(window).off("focus");
-    activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
-    payload.success({
-        zephyr_mirror_active: false,
-        presences: {},
-        msg: "",
-        result: "success",
-        server_timestamp: 0,
-        presence_last_update_id: -1,
-    });
+        start_scroll_handler.should_happen_during(() => {
+            call_setTimeout.should_happen_during(() => {
+                activity_ui.initialize({narrow_by_email() {}});
+            });
+        });
 
-    assert.ok($("#zephyr-mirror-error").hasClass("show"));
-    assert.ok(!activity.new_user_input);
-    assert.equal(activity.compute_active_status(), "idle");
+        const {payload} = callback_data.get();
 
-    // Exercise the mousemove handler, which just
-    // sets a flag.
-    $("html").get_on_handler("mousemove")();
+        payload.success({
+            zephyr_mirror_active: true,
+            presences: {},
+            msg: "",
+            result: "success",
+            server_timestamp: 0,
+            presence_last_update_id: -1,
+        });
+        $(window).trigger("focus");
+
+        assert.ok(!activity.new_user_input);
+        assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
+        assert.equal(activity.compute_active_status(), "active");
+    }
 
     clear();
+
+    {
+        $(window).idle = (params) => {
+            params.onIdle();
+        };
+
+        const callback_data = new CallbackData("from channel.post");
+        override(channel, "post", (arg) => {
+            callback_data.set({payload: arg});
+        });
+
+        $(window).off("focus");
+        activity.initialize();
+
+        start_scroll_handler.should_happen_during(() => {
+            activity_ui.initialize({narrow_by_email() {}});
+        });
+
+        const {payload} = callback_data.get();
+
+        payload.success({
+            zephyr_mirror_active: false,
+            presences: {},
+            msg: "",
+            result: "success",
+            server_timestamp: 0,
+            presence_last_update_id: -1,
+        });
+
+        assert.ok($("#zephyr-mirror-error").hasClass("show"));
+        assert.ok(!activity.new_user_input);
+        assert.equal(activity.compute_active_status(), "idle");
+
+        // Exercise the mousemove handler, which just
+        // sets a flag.
+        $("html").get_on_handler("mousemove")();
+    }
 });
 
 test("electron_bridge", ({override_rewire}) => {

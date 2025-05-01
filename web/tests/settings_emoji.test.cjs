@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -10,7 +11,8 @@ const upload_widget = mock_esm("../src/upload_widget");
 const settings_emoji = zrequire("settings_emoji");
 
 run_test("add_custom_emoji_post_render", () => {
-    let build_widget_stub = false;
+    const side_effect = new SideEffect("build_widget gets called");
+
     upload_widget.build_widget = (
         get_file_input,
         file_name_field,
@@ -23,8 +25,10 @@ run_test("add_custom_emoji_post_render", () => {
         assert.deepEqual(input_error, $("#emoji_file_input_error"));
         assert.deepEqual(clear_button, $("#emoji_image_clear_button"));
         assert.deepEqual(upload_button, $("#emoji_upload_button"));
-        build_widget_stub = true;
+        side_effect.has_happened();
     };
-    settings_emoji.add_custom_emoji_post_render();
-    assert.ok(build_widget_stub);
+
+    side_effect.should_happen_during(() => {
+        settings_emoji.add_custom_emoji_post_render();
+    });
 });
