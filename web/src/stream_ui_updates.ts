@@ -325,7 +325,10 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find(".message-retention-setting-custom-input")
         .prop("disabled", disable_message_retention_setting);
 
-    update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
+    const $stream_permission_settings = $("#stream_permission_settings");
+
+    update_web_public_stream_privacy_option_state($stream_permission_settings);
+    update_public_stream_privacy_option_state($stream_permission_settings);
 
     if (!sub.can_change_stream_permissions_requiring_content_access) {
         const $stream_privacy_values = $stream_settings
