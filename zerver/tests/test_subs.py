@@ -1013,6 +1013,31 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assert_json_success(result)
 
+        stream = self.subscribe(user_profile, "private_stream_3", invite_only=True)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_public_channel_group",
+            nobody_group,
+            acting_user=None,
+        )
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_public_channel_group",
+            user_profile_group,
+            acting_user=None,
+        )
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream = get_stream("private_stream_3", realm)
+        self.assertFalse(stream.invite_only)
+
     def test_make_stream_private(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -1096,6 +1121,31 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertFalse(stream.invite_only)
         self.assert_json_success(result)
+
+        stream = self.subscribe(user_profile, "public_stream_3")
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_private_channel_group",
+            nobody_group,
+            acting_user=None,
+        )
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_private_channel_group",
+            user_profile_group,
+            acting_user=None,
+        )
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream = get_stream("public_stream_3", realm)
+        self.assertTrue(stream.invite_only)
 
     def test_create_web_public_stream(self) -> None:
         user_profile = self.example_user("hamlet")

@@ -347,6 +347,13 @@ def update_stream_backend(
         # public/private status for channels requires content access
         # to the channel.
 
+    if is_private is not None:
+        if is_private and not user_profile.can_create_private_streams():
+            raise JsonableError(_("Insufficient permission"))
+
+        if not is_private and not user_profile.can_create_public_streams():
+            raise JsonableError(_("Insufficient permission"))
+
     # Enforce restrictions on creating web-public streams. Since these
     # checks are only required when changing a stream to be
     # web-public, we don't use an "is not None" check.
