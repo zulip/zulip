@@ -26,6 +26,10 @@
 * [Edit a scheduled message](/api/update-scheduled-message)
 * [Delete a scheduled message](/api/delete-scheduled-message)
 
+#### Message reminders
+
+* [Create a message reminder](/api/create-message-reminder)
+
 #### Drafts
 
 * [Get drafts](/api/get-drafts)

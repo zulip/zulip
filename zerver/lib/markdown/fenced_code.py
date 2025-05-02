@@ -147,6 +147,20 @@ CODE_VALIDATORS: dict[str | None, Callable[[list[str]], None]] = {
 }
 
 
+# This function is similar to one used in fenced_code.ts
+def get_unused_fence(content: str) -> str:
+    # Define the regular expression pattern to match ``` fences
+    fence_length_re = re.compile(r"^ {0,3}(`{3,})", re.MULTILINE)
+
+    # Initialize the length variable to 3, corresponding to default fence length
+    length = 3
+    matches = fence_length_re.findall(content)
+    for match in matches:
+        length = max(length, len(match) + 1)
+
+    return "`" * length
+
+
 class FencedCodeExtension(Extension):
     def __init__(self, config: Mapping[str, Any] = {}) -> None:
         self.config = {

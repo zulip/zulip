@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 381**
+
+* [`POST /reminders`](/api/create-message-reminder): Added a new endpoint to
+  schedule personal reminder for a message.
+
 **Feature level 380**
 
 * [`POST /register`](/api/register-queue), [`GET

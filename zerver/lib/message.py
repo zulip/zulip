@@ -181,6 +181,7 @@ class SendMessageRequest:
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: int | None = None
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
+    reminder_target_message_id: int | None = None
 
 
 # We won't try to fetch more unread message IDs from the database than

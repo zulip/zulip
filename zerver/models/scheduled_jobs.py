@@ -153,6 +153,8 @@ class ScheduledMessage(models.Model):
     delivered_message = models.ForeignKey(Message, null=True, on_delete=CASCADE)
     has_attachment = models.BooleanField(default=False, db_index=True)
     request_timestamp = models.DateTimeField(default=timezone_now)
+    # Only used for REMIND delivery_type messages.
+    reminder_target_message_id = models.IntegerField(null=True)
 
     # Metadata for messages that failed to send when their scheduled
     # moment arrived.

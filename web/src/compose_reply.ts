@@ -290,6 +290,7 @@ export function quote_message(opts: {
         //     ```quote
         //     message content
         //     ```
+        // Keep syntax in sync with zerver/lib/reminders.py
         let content = $t(
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {

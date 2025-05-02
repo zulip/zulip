@@ -3,6 +3,7 @@ import time
 from datetime import timedelta
 from io import StringIO
 from typing import TYPE_CHECKING, Any
+from unittest import mock
 
 import orjson
 import time_machine
@@ -330,7 +331,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
         self.assertNotIn(expected_failure_message, message_after_deactivation.content)
 
-    def test_delivery_type_reminder_failed_to_deliver_scheduled_message_unknown_exception(
+    def test_failed_to_deliver_scheduled_message_unknown_exception(
         self,
     ) -> None:
         self.create_scheduled_message()
@@ -339,11 +340,14 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = scheduled_message.scheduled_timestamp + timedelta(
             minutes=1
         )
-
-        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
+        with (
+            mock.patch(
+                "zerver.actions.scheduled_messages.send_scheduled_message",
+                side_effect=Exception(),
+            ),
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+        ):
             scheduled_message = self.last_scheduled_message()
-            scheduled_message.delivery_type = ScheduledMessage.REMIND
-            scheduled_message.save()
             with self.assertLogs(level="INFO") as logs:
                 result = try_deliver_one_scheduled_message()
             self.assertTrue(result)

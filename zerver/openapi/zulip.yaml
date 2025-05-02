@@ -6560,6 +6560,51 @@ paths:
                         "result": "error",
                         "msg": "Saved snippet does not exist.",
                       }
+  /reminders:
+    post:
+      operationId: create-message-reminder
+      tags: ["reminders"]
+      summary: Create a message reminder
+      description: |
+        Schedule a reminder to be sent to the current user at the specified time. The reminder will link the relevant message.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-f8d751).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                message_id:
+                  description: |
+                    The ID of the previously sent message to reference in the reminder message.
+                  type: integer
+                  example: 1
+                scheduled_delivery_timestamp:
+                  type: integer
+                  description: |
+                    The UNIX timestamp for when the reminder will be sent,
+                    in UTC seconds.
+                  example: 5681662420
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      reminder_id:
+                        type: integer
+                        description: |
+                          Unique ID of the scheduled message reminder.
+                    example: {"msg": "", "reminder_id": 42, "result": "success"}
   /scheduled_messages:
     get:
       operationId: get-scheduled-messages

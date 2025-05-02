@@ -150,6 +150,7 @@ from zerver.views.registration import (
     realm_register,
     signup_send_confirm,
 )
+from zerver.views.reminders import create_reminders_message_backend
 from zerver.views.report import report_csp_violations
 from zerver.views.saved_snippets import (
     create_saved_snippet,
@@ -353,7 +354,7 @@ v1_api_and_json_patterns = [
         DELETE=delete_saved_snippet,
         PATCH=edit_saved_snippet,
     ),
-    # New scheduled messages are created via send_message_backend.
+    rest_path("reminders", POST=create_reminders_message_backend),
     rest_path(
         "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend
     ),
