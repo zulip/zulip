@@ -295,7 +295,9 @@ if not TORNADO_PORTS:
     TORNADO_PORTS = get_tornado_ports(config_file)
 TORNADO_PROCESSES = len(TORNADO_PORTS)
 
-RUNNING_INSIDE_TORNADO = False
+RUNNING_INSIDE_TORNADO = (
+    len(sys.argv) > 1 and "manage.py" in sys.argv[0] and sys.argv[1] == "runtornado"
+)
 
 SILENCED_SYSTEM_CHECKS = [
     # auth.W004 checks that the UserProfile field named by USERNAME_FIELD has
