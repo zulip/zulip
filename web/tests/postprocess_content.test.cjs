@@ -81,7 +81,7 @@ run_test("postprocess_content", () => {
 run_test("ordered_lists", () => {
     assert.equal(
         postprocess_content('<ol start="9"><li>Nine</li><li>Ten</li></ol>'),
-        '<ol start="9" class="counter-length-2"><li>Nine</li><li>Ten</li></ol>',
+        '<ol start="9" class="counter-length-2" style="counter-reset: count 8;"><li>Nine</li><li>Ten</li></ol>',
     );
 });
 
