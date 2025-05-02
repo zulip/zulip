@@ -1,0 +1,42 @@
+{
+    "object_kind": "deployment",
+    "status": "canceled",
+    "status_changed_at": "2025-05-02 12:36:52 +0000",
+    "deployment_id": 988610373,
+    "deployable_id": 9905830127,
+    "deployable_url": "https://gitlab.com/vedant8600317/test/-/jobs/9905830127",
+    "environment": "production",
+    "environment_tier": "production",
+    "environment_slug": "production",
+    "environment_external_url": null,
+    "project": {
+        "id": 69310893,
+        "name": "test",
+        "description": null,
+        "web_url": "https://gitlab.com/vedant8600317/test",
+        "avatar_url": null,
+        "git_ssh_url": "git@gitlab.com:vedant8600317/test.git",
+        "git_http_url": "https://gitlab.com/vedant8600317/test.git",
+        "namespace": "vedant",
+        "visibility_level": 0,
+        "path_with_namespace": "vedant8600317/test",
+        "default_branch": "master",
+        "ci_config_path": "",
+        "homepage": "https://gitlab.com/vedant8600317/test",
+        "url": "git@gitlab.com:vedant8600317/test.git",
+        "ssh_url": "git@gitlab.com:vedant8600317/test.git",
+        "http_url": "https://gitlab.com/vedant8600317/test.git"
+    },
+    "short_sha": "c3cf29e8",
+    "user": {
+        "id": 27470334,
+        "name": "Vedant Joshi",
+        "username": "theofficialvedantjoshi",
+        "avatar_url": "https://secure.gravatar.com/avatar/0d29c5c241fe093697c078fbb8abc26b93d4ebbd1609dbbd3835e6b5602fea38?s=80&amp;d=identicon",
+        "email": "[REDACTED]"
+    },
+    "user_url": "https://gitlab.com/theofficialvedantjoshi",
+    "commit_url": "https://gitlab.com/vedant8600317/test/-/commit/c3cf29e88c1b0a8a60df37f4687dd5060955d2ae",
+    "commit_title": "Update .gitlab-ci.yml file",
+    "ref": "master"
+}
