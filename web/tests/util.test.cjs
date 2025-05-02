@@ -374,11 +374,11 @@ run_test("format_array_as_list", () => {
 
     // Conjunction format
     assert.equal(
-        util.format_array_as_list_with_conjuction(array, "narrow"),
+        util.format_array_as_list_with_conjunction(array, "narrow"),
         "apple, banana, orange",
     );
     assert.equal(
-        util.format_array_as_list_with_conjuction(array, "long"),
+        util.format_array_as_list_with_conjunction(array, "long"),
         "apple, banana, and orange",
     );
 
@@ -395,11 +395,11 @@ run_test("format_array_as_list", () => {
         );
 
         assert.equal(
-            util.format_array_as_list_with_conjuction(array, "narrow"),
+            util.format_array_as_list_with_conjunction(array, "narrow"),
             "apple, banana, orange",
         );
         assert.equal(
-            util.format_array_as_list_with_conjuction(array, "long"),
+            util.format_array_as_list_with_conjunction(array, "long"),
             "apple, banana, orange",
         );
     });

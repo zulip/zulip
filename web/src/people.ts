@@ -469,7 +469,7 @@ export function format_recipients(
     users_ids_string: string,
     join_strategy: "long" | "narrow",
 ): string {
-    const formatted_recipients_string = util.format_array_as_list_with_conjuction(
+    const formatted_recipients_string = util.format_array_as_list_with_conjunction(
         get_recipients(users_ids_string),
         join_strategy,
     );

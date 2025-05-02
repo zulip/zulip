@@ -319,7 +319,7 @@ function format_dm(
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with: util.format_array_as_list_with_conjuction(rendered_dm_with, "long"),
+        rendered_dm_with: util.format_array_as_list_with_conjunction(rendered_dm_with, "long"),
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
