@@ -83,6 +83,10 @@ SOCIAL_AUTH_GITHUB_TEAM_ID: str | None = None
 SOCIAL_AUTH_GITLAB_KEY = get_secret("social_auth_gitlab_key", development_only=True)
 SOCIAL_AUTH_SUBDOMAIN: str | None = None
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = get_secret("social_auth_azuread_oauth2_key", development_only=True)
+SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_SECRET = get_secret(
+    "social_auth_azuread_b2c_oauth2_secret", development_only=True
+)
+
 SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=True)
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: str | None = None

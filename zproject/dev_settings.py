@@ -58,6 +58,7 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "zproject.backends.GoogleAuthBackend",
     "zproject.backends.SAMLAuthBackend",
     # 'zproject.backends.AzureADAuthBackend',
+    # 'zproject.backends.AzureADB2CAuthBackend',
     "zproject.backends.GitLabAuthBackend",
     "zproject.backends.AppleAuthBackend",
     "zproject.backends.GenericOpenIdConnectBackend",

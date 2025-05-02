@@ -2525,6 +2525,7 @@ class RealmImportExportTest(ExportFile):
             AUTHENTICATION_BACKENDS=(
                 "zproject.backends.EmailAuthBackend",
                 "zproject.backends.AzureADAuthBackend",
+                "zproject.backends.AzureADB2CAuthBackend",
                 "zproject.backends.SAMLAuthBackend",
             )
         ):
@@ -2556,7 +2557,7 @@ class RealmImportExportTest(ExportFile):
 
             self.assertEqual(
                 imported_realm.authentication_methods_dict(),
-                {"Email": True, "AzureAD": False, "SAML": False},
+                {"Email": True, "AzureADB2C": True, "AzureAD": False, "SAML": False},
             )
             self.assertEqual(
                 mock_warn.output,
