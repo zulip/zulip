@@ -12,6 +12,7 @@ from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
+from zerver.actions.navigation_views import do_get_navigation_views
 from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
 from zerver.actions.saved_snippets import do_get_saved_snippets
 from zerver.actions.users import get_owned_bot_dicts
@@ -295,6 +296,12 @@ def fetch_initial_state_data(
             state["saved_snippets"] = []
         else:
             state["saved_snippets"] = do_get_saved_snippets(user_profile)
+
+    if want("navigation_views"):
+        if user_profile is None:
+            state["navigation_views"] = []
+        else:
+            state["navigation_views"] = do_get_navigation_views(user_profile)
 
     if want("drafts"):
         if user_profile is None:
@@ -987,6 +994,20 @@ def apply_event(
             for idx, saved_snippet in enumerate(state["saved_snippets"]):
                 if saved_snippet["id"] == event["saved_snippet"]["id"]:
                     state["saved_snippets"][idx] = event["saved_snippet"]
+                    break
+
+    elif event["type"] == "navigation_view":
+        if event["op"] == "add":
+            state["navigation_views"].append(event["navigation_view"])
+        elif event["op"] == "update":
+            for navigation_view in state["navigation_views"]:
+                if navigation_view["fragment"] == event["fragment"]:
+                    navigation_view.update(event["data"])
+                    break
+        elif event["op"] == "remove":
+            for idx, navigation_view in enumerate(state["navigation_views"]):
+                if navigation_view["fragment"] == event["fragment"]:
+                    del state["navigation_views"][idx]
                     break
 
     elif event["type"] == "drafts":
