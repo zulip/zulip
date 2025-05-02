@@ -239,6 +239,28 @@ export function update_regular_sub_settings(sub: StreamSubscription): void {
     }
 }
 
+export function enable_or_disable_generate_email_button(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    const $settings = $(
+        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
+    );
+    const $generate_email_button_container = $settings.find(
+        ".generate-channel-email-button-container",
+    );
+    const $generate_email_button = $generate_email_button_container.find(".copy_email_button");
+
+    if (stream_data.can_access_stream_email(sub)) {
+        $generate_email_button.prop("disabled", false);
+        $generate_email_button_container.removeClass("disabled_setting_tooltip");
+    } else {
+        $generate_email_button.prop("disabled", true);
+        $generate_email_button_container.addClass("disabled_setting_tooltip");
+    }
+}
+
 export function update_default_stream_and_stream_privacy_state($container: JQuery): void {
     const $default_stream = $container.find(".default-stream");
     const is_stream_creation = $container.attr("id") === "stream-creation";

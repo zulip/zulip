@@ -383,7 +383,7 @@ export function update_settings_for_archived(slim_sub: StreamSubscription): void
         stream_ui_updates.update_toggler_for_sub(sub);
         stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
         stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
-        stream_ui_updates.update_regular_sub_settings(sub);
+        stream_ui_updates.enable_or_disable_generate_email_button(sub);
     }
 }
 
