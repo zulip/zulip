@@ -62,6 +62,7 @@ from zerver.models import (
     Attachment,
     BotConfigData,
     BotStorageData,
+    ChannelFolder,
     Client,
     CustomProfileField,
     CustomProfileFieldValue,
@@ -169,6 +170,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "scheduledmessage": {},
     "onboardingusermessage": {},
     "savedsnippet": {},
+    "channelfolder": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -1231,6 +1233,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(UserGroup, data, "usergroup")
     if "zerver_presencesequence" in data:
         update_model_ids(PresenceSequence, data, "presencesequence")
+    if "zerver_channelfolder" in data:
+        update_model_ids(ChannelFolder, data, "channelfolder")
 
     # Now we prepare to import the Realm table
     re_map_foreign_keys(data, "zerver_realm", "moderation_request_channel", related_table="stream")
@@ -1385,6 +1389,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     for stream in streams:
         stream.creator_id = stream_id_to_creator_id[stream.id]
     Stream.objects.bulk_update(streams, ["creator_id"])
+
+    if "zerver_channelfolder" in data:
+        fix_datetime_fields(data, "zerver_channelfolder")
+        re_map_foreign_keys(data, "zerver_channelfolder", "realm", related_table="realm")
+        re_map_foreign_keys(data, "zerver_channelfolder", "creator", related_table="user_profile")
+        bulk_import_model(data, ChannelFolder)
 
     if "zerver_namedusergroup" in data:
         # UserProfiles have been loaded, so now we're ready to set .creator_id

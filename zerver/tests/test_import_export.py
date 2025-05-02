@@ -76,6 +76,7 @@ from zerver.models import (
     Attachment,
     BotConfigData,
     BotStorageData,
+    ChannelFolder,
     CustomProfileField,
     CustomProfileFieldValue,
     DirectMessageGroup,
@@ -1618,6 +1619,13 @@ class RealmImportExportTest(ExportFile):
             flags=OnboardingUserMessage.flags.starred,
         )
 
+        ChannelFolder.objects.create(
+            realm=original_realm,
+            name="Frontend",
+            description="Frontend channels",
+            creator=self.example_user("iago"),
+        )
+
         # We want to have an extra, malformed RealmEmoji with no .author
         # to test that upon import that gets fixed.
         with get_test_image_file("img.png") as img_file:
@@ -2248,6 +2256,10 @@ class RealmImportExportTest(ExportFile):
                 tups, {("onboarding message", OnboardingUserMessage.flags.starred.mask)}
             )
             return tups
+
+        @getter
+        def get_channel_folders(r: Realm) -> set[str]:
+            return set(ChannelFolder.objects.filter(realm=r).values_list("name", flat=True))
 
         return getters
 
