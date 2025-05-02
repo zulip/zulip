@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Iterable
 from typing import TypedDict
 
@@ -45,40 +46,42 @@ def check_update_first_message_id(
     send_event_on_commit(realm, stream_event, users_to_notify)
 
 
-def do_delete_messages(
-    realm: Realm, messages: Iterable[Message], *, acting_user: UserProfile | None
+def _process_grouped_messages_deletion(
+    realm: Realm,
+    grouped_messages: list[Message],
+    *,
+    stream_id: int | None,
+    topic: str | None,
+    acting_user: UserProfile | None,
 ) -> None:
-    # messages in delete_message event belong to the same topic
-    # or is a single direct message, as any other behaviour is not possible with
-    # the current callers to this method.
-    messages = list(messages)
-    message_ids = [message.id for message in messages]
+    """
+    Helper for do_delete_messages. Should not be called directly otherwise.
+    """
+
+    message_ids = [message.id for message in grouped_messages]
     if not message_ids:
-        return
+        return  # nocoverage
 
     event: DeleteMessagesEvent = {
         "type": "delete_message",
         "message_ids": message_ids,
     }
-
-    sample_message = messages[0]
-    message_type = "stream"
-    users_to_notify = set()
-    if not sample_message.is_stream_message():
-        assert len(messages) == 1
+    if stream_id is None:
+        assert topic is None
         message_type = "private"
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
-
-    if message_type == "stream":
-        stream_id = sample_message.recipient.type_id
+    else:
+        assert topic is not None
+        message_type = "stream"
         event["stream_id"] = stream_id
-        event["topic"] = sample_message.topic_name()
+        event["topic"] = topic
         stream = Stream.objects.get(id=stream_id)
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
+    event["message_type"] = message_type
 
     # We exclude long-term idle users, since they by definition have no active clients.
     users_to_notify = event_recipient_ids_for_action_on_messages(
-        messages,
+        grouped_messages,
         channel=stream if message_type == "stream" else None,
     )
 
@@ -90,8 +93,35 @@ def do_delete_messages(
     if message_type == "stream":
         check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
-    event["message_type"] = message_type
     send_event_on_commit(realm, event, users_to_notify)
+
+
+def do_delete_messages(
+    realm: Realm, messages: Iterable[Message], *, acting_user: UserProfile | None
+) -> None:
+    private_messages_by_recipient: defaultdict[int, list[Message]] = defaultdict(list)
+    stream_messages_by_stream_and_topic: defaultdict[tuple[int, str], list[Message]] = defaultdict(
+        list
+    )
+    for message in messages:
+        if message.is_stream_message():
+            stream_id = message.recipient.type_id
+            # topics are case-insensitive.
+            topic_name = message.topic_name().lower()
+            stream_messages_by_stream_and_topic[(stream_id, topic_name)].append(message)
+        else:
+            recipient_id = message.recipient.id
+            private_messages_by_recipient[recipient_id].append(message)
+
+    for recipient_id, grouped_messages in private_messages_by_recipient.items():
+        _process_grouped_messages_deletion(
+            realm, grouped_messages, stream_id=None, topic=None, acting_user=acting_user
+        )
+
+    for (stream_id, topic_name), grouped_messages in stream_messages_by_stream_and_topic.items():
+        _process_grouped_messages_deletion(
+            realm, grouped_messages, stream_id=stream_id, topic=topic_name, acting_user=acting_user
+        )
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
