@@ -18,7 +18,7 @@ that address will be delivered into the channel.
 
 There are two ways to configure Zulip's email gateway:
 
-1. Local delivery (recommended): A postfix server runs on the Zulip
+1. Local delivery (recommended): A server runs on the Zulip
    server and passes the emails directly to Zulip.
 1. Polling: A cron job running on the Zulip server checks an IMAP
    inbox (`username@example.com`) every minute for new emails.
@@ -68,26 +68,12 @@ using an [HTTP reverse proxy][reverse-proxy]).
 
 1. Log in to your Zulip server; the remaining steps all happen there.
 
-1. Add `, zulip::postfix_localmail` to `puppet_classes` in
+1. Add `, zulip::local_mailserver` to `puppet_classes` in
    `/etc/zulip/zulip.conf`. A typical value after this change is:
 
    ```ini
-   puppet_classes = zulip::profile::standalone, zulip::postfix_localmail
+   puppet_classes = zulip::profile::standalone, zulip::local_mailserver
    ```
-
-1. If `hostname.example.com` is different from
-   `emaildomain.example.com`, add a section to `/etc/zulip/zulip.conf`
-   on your Zulip server like this:
-
-   ```ini
-   [postfix]
-   mailname = emaildomain.example.com
-   ```
-
-   This tells postfix to expect to receive emails at addresses ending with
-   `@emaildomain.example.com`, overriding the default of
-   `@hostname.example.com`. It will also identify itself as
-   `emaildomain.example.com` on any outgoing emails it sends.
 
 1. Run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`
    (and answer `y`) to apply your new `/etc/zulip/zulip.conf`
