@@ -50,6 +50,7 @@ from onelogin.saml2.xml_utils import OneLogin_Saml2_XML
 from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
+from social_core.backends.azuread_b2c import AzureADB2COAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
@@ -2293,6 +2294,22 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
         raise AssertionError("Invalid configuration")
+
+
+@external_auth_method
+class AzureADB2CAuthBackend(SocialAuthMixin, AzureADB2COAuth2):
+    # Allows authentication via Azure B2C in tenants
+
+    sort_order = 40
+    name = "azuread-b2c-oauth2"
+    auth_backend_name = "AzureADB2C"
+    display_icon = staticfiles_storage.url("images/authentication_backends/azuread-icon.png")
+
+    available_for_cloud_plans = [
+        Realm.PLAN_TYPE_STANDARD,
+        Realm.PLAN_TYPE_STANDARD_FREE,
+        Realm.PLAN_TYPE_PLUS,
+    ]
 
 
 @external_auth_method

@@ -31,6 +31,7 @@ authentication providers:
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
 - Microsoft Entra ID (AzureAD), with `AzureADAuthBackend`
+- Microsoft Entra B2C ID (AzureADB2C), with `AzureADB2CAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
@@ -103,10 +104,12 @@ In either configuration, you will need to do the following:
    - Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find
      an LDAP user given their email address (i.e. a search by
      `LDAP_EMAIL_ATTR`). For example:
+
      ```python
      AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                                  ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
      ```
+
    - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
      attribute for the user's LDAP username in that search result.
 
@@ -134,6 +137,7 @@ of the following configurations:
   ```
 
 - To access by Active Directory email address:
+
   ```python
   AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                      ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
@@ -575,9 +579,11 @@ other IdPs (identity providers). You can configure it as follows:
       trust, which consists of multiple certificates. The private key cannot be encrypted
       with a password, as then Zulip will not be able to load it. An example pair can be
       generated using:
+
       ```bash
       openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key -out zulip-cert.crt -days 365 -nodes
       ```
+
    4. Set the proper permissions on these files and directories:
 
       ```bash
@@ -737,10 +743,12 @@ integration](../production/scim.md).
       certificate on the Zulip server and import them into Keycloak:
 
       1. Generate **Zulip server public certificate** and the corresponding **private key**:
+
          ```bash
          openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key \
            -out zulip-cert.crt -days 365 -nodes
          ```
+
       2. Generate a JKS keystore (replace `{mypassword}` and
          `{myalias}` in the `keytool` invocation):
 
@@ -754,7 +762,7 @@ integration](../production/scim.md).
          You can run the above on the Zulip server. If you instead run
          it on a Mac, you may want to use the keychain
          administration tool to generate the JKS keystore with a UI instead of
-         using the `keytool` command. (see also: https://stackoverflow.com/a/41250334)
+         using the `keytool` command. (see also: <https://stackoverflow.com/a/41250334>)
 
       3. Then switch to the `SAML Keys` tab of your Keycloak
          client. Import `domainname.pfx` into Keycloak. After
