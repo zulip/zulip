@@ -76,7 +76,7 @@ export const get_helpers = (): MarkdownHelpers => ({
 
     // stream hashes
     get_stream_by_name: (name) => stream(stream_data.get_sub(name)),
-    stream_hash: hash_util.by_stream_url,
+    stream_hash: hash_util.channel_url_by_user_setting,
     stream_topic_hash: hash_util.by_stream_topic_url,
 
     // settings

@@ -103,7 +103,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         return;
     }
 
-    const stream_hash = hash_util.by_stream_url(stream_id);
+    const stream_hash = hash_util.channel_url_by_user_setting(stream_id);
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;

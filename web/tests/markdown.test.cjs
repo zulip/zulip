@@ -58,11 +58,14 @@ const pygments_data = zrequire("pygments_data");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const settings_config = zrequire("settings_config");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
 set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
-const user_settings = {};
+const user_settings = {
+    web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+};
 initialize_user_settings({user_settings});
 
 const emoji_params = {

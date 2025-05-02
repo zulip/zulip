@@ -21,6 +21,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
+import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -43,6 +44,7 @@ import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload from "./reload.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
@@ -978,9 +980,19 @@ export function dispatch_normal_event(event) {
                 $("#automatically_offer_update_time_zone").prop("checked", event.value);
             }
             if (event.property === "web_channel_default_view") {
+                // We need to rerender wherever `channel_url_by_user_setting` is used in the DOM.
+                // Left sidebar
                 const force_rerender = true;
                 stream_list.create_initial_sidebar_rows(force_rerender);
                 stream_list.update_streams_sidebar(force_rerender);
+                // Inbox View
+                inbox_ui.complete_rerender();
+                // Recent View
+                recent_view_ui.complete_rerender();
+                // Message feed
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
+                }
             }
             settings_preferences.update_page(event.property);
             break;

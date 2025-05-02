@@ -28,3 +28,8 @@ declare export function by_stream_topic_url(
     topic: string,
     maybe_get_stream_name: (id: number) => ?string,
 ): string;
+
+declare export function by_channel_topic_list_url(
+    stream_id: number,
+    maybe_get_stream_name: (id: number) => ?string,
+): string;

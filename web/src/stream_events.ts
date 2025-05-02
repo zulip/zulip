@@ -288,7 +288,7 @@ export function mark_subscribed(
         // bookend during the window that the client doesn't yet know
         // that we're a subscriber to the new channel.
         stream_create.reset_created_stream();
-        browser_history.go_to_location(hash_util.by_stream_url(sub.stream_id));
+        browser_history.go_to_location(hash_util.channel_url_by_user_setting(sub.stream_id));
 
         if (stream_create.should_show_first_stream_created_modal()) {
             stream_create.set_first_stream_created_modal_shown();
