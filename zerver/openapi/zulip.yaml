@@ -19456,6 +19456,10 @@ paths:
                             description: |
                               Whether the user can authenticate using their Microsoft Entra ID account.
                             type: boolean
+                          azureadb2c:
+                            description: |
+                              Whether the user can authenticate using their Microsoft Entra B2C ID account.
+                            type: boolean
                           gitlab:
                             description: |
                               Whether the user can authenticate using their GitLab account.
@@ -19633,6 +19637,7 @@ paths:
                             "remoteuser": false,
                             "github": true,
                             "azuread": false,
+                            "azureadb2c": false,
                             "google": true,
                             "saml": true,
                           },
