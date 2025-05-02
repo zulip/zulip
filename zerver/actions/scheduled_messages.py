@@ -16,7 +16,12 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
 from zerver.lib.display_recipient import get_recipient_ids
-from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
+from zerver.lib.exceptions import (
+    DeliveryTimeNotInFutureError,
+    JsonableError,
+    RealmDeactivatedError,
+    UserDeactivatedError,
+)
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.message import SendMessageRequest, truncate_topic
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
@@ -153,7 +158,7 @@ def edit_scheduled_message(
     # If the server failed to send the scheduled message, a new scheduled
     # delivery timestamp (`deliver_at`) is required.
     if scheduled_message_object.failed and deliver_at is None:
-        raise JsonableError(_("Scheduled delivery time must be in the future."))
+        raise DeliveryTimeNotInFutureError
 
     # Get existing scheduled message's recipient IDs and recipient_type_name.
     existing_recipient, existing_recipient_type_name = get_recipient_ids(

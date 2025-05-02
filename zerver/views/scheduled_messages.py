@@ -10,7 +10,7 @@ from zerver.actions.scheduled_messages import (
     delete_scheduled_message,
     edit_scheduled_message,
 )
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import DeliveryTimeNotInFutureError, JsonableError
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -101,7 +101,7 @@ def update_scheduled_message_backend(
     if scheduled_delivery_timestamp is not None:
         deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)
         if deliver_at <= timezone_now():
-            raise JsonableError(_("Scheduled delivery time must be in the future."))
+            raise DeliveryTimeNotInFutureError
 
     sender = user_profile
     client = RequestNotes.get_notes(request).client
@@ -151,7 +151,7 @@ def create_scheduled_message_backend(
 
     deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)
     if deliver_at <= timezone_now():
-        raise JsonableError(_("Scheduled delivery time must be in the future."))
+        raise DeliveryTimeNotInFutureError
 
     sender = user_profile
     client = RequestNotes.get_notes(request).client

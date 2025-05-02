@@ -766,3 +766,13 @@ class EmailAlreadyInUseError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Email is already in use.")
+
+
+class DeliveryTimeNotInFutureError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Scheduled delivery time must be in the future.")
