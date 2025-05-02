@@ -463,7 +463,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
-    let url = hash_util.by_stream_url(sub.stream_id);
+    let url = hash_util.channel_url_by_user_setting(sub.stream_id);
     if (
         web_channel_default_view_values.list_of_topics.code ===
         user_settings.web_channel_default_view
@@ -928,7 +928,7 @@ export function set_event_handlers({
         }
 
         if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
-            const channel_feed_url = hash_util.by_stream_url(stream_id);
+            const channel_feed_url = hash_util.channel_url_by_user_setting(stream_id);
             browser_history.go_to_location(channel_feed_url);
             return;
         }

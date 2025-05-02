@@ -300,7 +300,7 @@ export function add_sub_to_table(sub: StreamSubscription): void {
                 banner_type: compose_banner.SUCCESS,
                 classname: "stream_creation_confirmation",
                 stream_name: sub.name,
-                stream_url: hash_util.by_stream_url(sub.stream_id),
+                stream_url: hash_util.channel_url_by_user_setting(sub.stream_id),
             };
             $("#stream_settings .stream-creation-confirmation-banner").html(
                 render_stream_creation_confirmation_banner(context),

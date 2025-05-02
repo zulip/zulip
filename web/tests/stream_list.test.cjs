@@ -52,6 +52,7 @@ const settings_config = zrequire("settings_config");
 // Start with always filtering out inactive streams.
 const user_settings = {
     demote_inactive_streams: settings_config.demote_inactive_streams_values.always.code,
+    web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
 };
 initialize_user_settings({user_settings});
 stream_list_sort.set_filter_out_inactives();

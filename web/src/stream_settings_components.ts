@@ -29,7 +29,7 @@ export function set_right_panel_title(sub: StreamSubscription): void {
         title_icon_color = "#dddeee";
     }
 
-    const preview_url = hash_util.by_stream_url(sub.stream_id);
+    const preview_url = hash_util.channel_url_by_user_setting(sub.stream_id);
     $("#subscription_overlay .stream-info-title").html(
         render_selected_stream_title({sub, title_icon_color, preview_url}),
     );

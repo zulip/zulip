@@ -665,7 +665,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const stream_id = last_msg.stream_id;
         const stream_name = stream_data.get_stream_name_from_id(last_msg.stream_id);
         const stream_color = stream_info.color;
-        const stream_url = hash_util.by_stream_url(stream_id);
+        const stream_url = hash_util.channel_url_by_user_setting(stream_id);
         const invite_only = stream_info.invite_only;
         const is_web_public = stream_info.is_web_public;
         const is_archived = stream_info.is_archived;

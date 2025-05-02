@@ -383,7 +383,7 @@ function populate_group_from_message(
         const topic_display_name = util.get_final_topic_display_name(topic);
         const is_empty_string_topic = topic === "";
         const match_topic = util.get_match_topic(message);
-        const stream_url = hash_util.by_stream_url(message.stream_id);
+        const stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
         const is_archived = stream_data.is_stream_archived(message.stream_id);
         const topic_url = internal_url.by_stream_topic_url(
             message.stream_id,
@@ -815,7 +815,7 @@ export class MessageListView {
                 unsubscribed = false;
 
                 if (message.type === "stream") {
-                    stream_url = hash_util.by_stream_url(message.stream_id);
+                    stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
                     topic_url = hash_util.by_stream_topic_url(message.stream_id, message.topic);
                 } else {
                     pm_with_url = message.pm_with_url;

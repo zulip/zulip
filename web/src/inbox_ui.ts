@@ -452,7 +452,7 @@ function format_stream(stream_id: number): StreamContext {
         is_muted: stream_info.is_muted,
         stream_color: stream_color.get_stream_privacy_icon_color(stream_info.color),
         stream_header_color: stream_color.get_recipient_bar_color(stream_info.color),
-        stream_url: hash_util.by_stream_url(stream_id),
+        stream_url: hash_util.channel_url_by_user_setting(stream_id),
         stream_id,
         // Will be displayed if any topic is visible.
         is_hidden: true,

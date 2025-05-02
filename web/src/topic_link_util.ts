@@ -75,7 +75,7 @@ export function get_topic_link_content(
     }
     return {
         text: `#${escape(stream_name)}`,
-        url: hash_util.by_stream_url(stream_id),
+        url: hash_util.channel_url_by_user_setting(stream_id),
     };
 }
 

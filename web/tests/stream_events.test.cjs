@@ -45,6 +45,12 @@ mock_esm("../src/settings_notifications", {
 mock_esm("../src/overlays", {
     streams_open: () => true,
 });
+const settings_config = zrequire("settings_config");
+mock_esm("../src/user_settings", {
+    user_settings: {
+        web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+    },
+});
 
 const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");

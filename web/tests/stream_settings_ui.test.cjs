@@ -13,7 +13,7 @@ const scroll_util = mock_esm("../src/scroll_util", {
 });
 
 mock_esm("../src/hash_util", {
-    by_stream_url() {},
+    channel_url_by_user_setting() {},
 });
 
 mock_esm("../src/browser_history", {

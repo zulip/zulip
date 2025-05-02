@@ -62,7 +62,7 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
         can_remove_subscribers: stream_data.can_unsubscribe_others(sub),
         can_archive_stream: stream_data.can_archive_stream(sub),
 
-        preview_url: hash_util.by_stream_url(sub.stream_id),
+        preview_url: hash_util.channel_url_by_user_setting(sub.stream_id),
         is_old_stream: sub.stream_weekly_traffic !== null,
 
         subscriber_count: peer_data.get_subscriber_count(sub.stream_id),

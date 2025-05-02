@@ -4,6 +4,7 @@ import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -12,6 +13,7 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export function build_reload_url(): string {
@@ -82,6 +84,16 @@ export function by_channel_topic_list_url(channel_id: number): string {
 export function by_stream_url(stream_id: number): string {
     // Wrapper for web use of internal_url.by_stream_url
     return internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);
+}
+
+export function channel_url_by_user_setting(channel_id: number): string {
+    if (
+        user_settings.web_channel_default_view ===
+        web_channel_default_view_values.list_of_topics.code
+    ) {
+        return by_channel_topic_list_url(channel_id);
+    }
+    return by_stream_url(channel_id);
 }
 
 export function by_stream_topic_url(stream_id: number, topic: string): string {
