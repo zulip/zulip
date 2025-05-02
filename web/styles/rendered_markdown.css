@@ -1,3 +1,15 @@
+/* We use a custom counter here for Safari to
+   get better control of its counter positioning.
+   Because Safari does not recognize `content`
+   properties on `::marker`, the style here better
+   approximates the same styles set on `::marker`
+   below. */
+@counter-style numbers {
+    system: numeric;
+    symbols: "0" "1" "2" "3" "4" "5" "6" "7" "8" "9";
+    suffix: ".";
+}
+
 .rendered_markdown {
     & p {
         margin: 0 0 var(--markdown-interelement-space-px);
@@ -12,17 +24,62 @@
 
     & ul {
         margin: 0 0 var(--markdown-interelement-space-px) 0;
-        margin-inline-start: 2ch;
+        /* Because browsers use inline padding, we set the
+           same property here to offset bullets. */
+        padding-inline-start: 1.1ch;
+        /* By setting Unicode characters of our own, we
+           gain better, cross-browser alignment of bullets. */
+        list-style-type: "•";
+
+        & ul {
+            list-style-type: "◦";
+
+            & ul {
+                list-style-type: "▪︎";
+            }
+        }
+
+        li {
+            /* This aligns bullets to roughly the
+               center of a single-digit counter.
+               11.2px at 16px/1em */
+            padding-inline-start: 0.7em;
+        }
+
+        & li::marker {
+            /* This is an eyeballed value, but it makes the
+               otherwise diminutive markers specified above
+               both larger *and* better vertically centered. */
+            font-size: 1.3em;
+            /* We do not want the line-height for the item text
+               affected by the larger font-size, though. So we
+               zero it out. */
+            line-height: 0;
+        }
     }
 
     & ol {
+        /* For the sake of Safari, we reference the `numbers`
+           counter defined on `@counter-style` above. */
+        list-style: numbers;
+        /* To preserve the `start` attribute on lists that
+           begin with a number other than 1, we update the
+           `counter-reset` in postprocess_content.ts. */
+        counter-reset: count;
         margin: 0 0 var(--markdown-interelement-space-px) 0;
-        margin-inline-start: 3.5ch;
-    }
+        /* Because browsers use inline padding, we set the
+           same here to offset the counters. */
+        padding-inline-start: 2.1ch;
 
-    li {
-        /* 3px at 16px/1em */
-        padding: 0 0 0 0.1875em;
+        & li {
+            counter-increment: count 1;
+            /* 3.2px at 16px/1em */
+            padding-inline-start: 0.2em;
+        }
+
+        & li::marker {
+            content: counter(count, decimal) ". ";
+        }
     }
 
     /* To avoid cutting off the focus ring on links, we set
@@ -38,27 +95,27 @@
        The values here keep the counters flush left, just like paragraph
        text. */
     .counter-length-1 {
-        margin-inline-start: 1.95ch;
+        padding-inline-start: 2.1ch;
     }
 
     .counter-length-2 {
-        margin-inline-start: 2.95ch;
+        padding-inline-start: 3.1ch;
     }
 
     .counter-length-3 {
-        margin-inline-start: 3.95ch;
+        padding-inline-start: 4.1ch;
     }
 
     .counter-length-4 {
-        margin-inline-start: 4.95ch;
+        padding-inline-start: 5.1ch;
     }
 
     .counter-length-5 {
-        margin-inline-start: 5.95ch;
+        padding-inline-start: 6.1ch;
     }
 
     .counter-length-6 {
-        margin-inline-start: 6.95ch;
+        padding-inline-start: 7.1ch;
     }
 
     & hr {
