@@ -27,6 +27,7 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
@@ -154,6 +155,7 @@ from zerver.lib.event_schema import (
     check_attachment_add,
     check_attachment_remove,
     check_attachment_update,
+    check_channel_folder_add,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
@@ -5433,3 +5435,12 @@ class ScheduledMessagesEventsTest(BaseAction):
         with self.verify_action() as events:
             delete_scheduled_message(self.user_profile, scheduled_message_id)
         check_scheduled_message_remove("events[0]", events[0])
+
+
+class ChannelFolderActionTest(BaseAction):
+    def test_channel_folder_creation_event(self) -> None:
+        folder_name = "Frontend"
+        folder_description = "Channels for **frontend** discussions"
+        with self.verify_action() as events:
+            check_add_channel_folder(folder_name, folder_description, acting_user=self.user_profile)
+        check_channel_folder_add("events[0]", events[0])

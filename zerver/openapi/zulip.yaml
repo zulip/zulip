@@ -5716,6 +5716,42 @@ paths:
                                   "op": "remove",
                                   "scheduled_message_id": 17,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when a channel folder is created.
+
+                                **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                channel_folder:
+                                  $ref: "#/components/schemas/ChannelFolder"
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "add",
+                                  "channel_folder":
+                                    {
+                                      "name": "fronted",
+                                      "creator_id": 9,
+                                      "date_created": 1717484476,
+                                      "description": "Channels for frontend discussions",
+                                      "rendered_description": "<p>Channels for frontend discussions</p>",
+                                      "id": 2,
+                                      "is_archived": false,
+                                    },
+                                  "id": 0,
+                                }
                       queue_id:
                         type: string
                         description: |
@@ -15793,6 +15829,17 @@ paths:
                           in `can_administer_channel_group` of a channel that they never
                           subscribed to, but not an organization administrator, the channel
                           in question would not be part of this array.
+                      channel_folders:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ChannelFolder"
+                        description: |
+                          Present if `channel_folders` is present in `fetch_event_types`.
+
+                          An array of dictionaries where each dictionary describes one
+                          of the channel folders in the organization.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
                       unread_msgs:
                         type: object
                         description: |
@@ -22819,6 +22866,76 @@ paths:
 
                           **Changes**: New in Zulip 10.0 (feature level 298). Previously,
                           this error returned the `"BAD_REQUEST"` code.
+  /channel_folders/create:
+    post:
+      operationId: create-channel-folder
+      summary: Create a channel folder
+      tags: ["channels"]
+      description: |
+        Create a new channel folder, that will be used to organize
+        channels in left sidebar.
+
+        Only organization administrators can create a new channel
+        folder.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: |
+                    The name of the channel folder.
+                  type: string
+                  example: marketing
+                description:
+                  description: |
+                    The description of the channel folder.
+                  type: string
+                  example: Channels for marketing.
+      responses:
+        "200":
+          description: |
+            A success response containing the unique ID of the channel folder.
+            This field provides a straightforward way to reference the
+            newly created channel folder.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - channel_folder_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      channel_folder_id:
+                        type: integer
+                        description: |
+                          The unique ID of the created channel folder.
+                    example:
+                      {"msg": "", "result": "success", "channel_folder_id": 123}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be an organization administrator",
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to create a channel folder:
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -25490,6 +25607,51 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
+    ChannelFolder:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing the channel folder's attributes.
+      properties:
+        name:
+          type: string
+          description: |
+            The name of the channel folder.
+        date_created:
+          type: integer
+          nullable: true
+          description: |
+            The UNIX timestamp for when the channel folder was created,
+            in UTC seconds.
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this channel folder.
+        description:
+          type: string
+          description: |
+            The description of the channel folder.
+        rendered_description:
+          type: string
+          description: |
+            The description of the channel folder rendered as HTML,
+            intended to be used when displaying the channel folder
+            description in a UI.
+
+            One should use the standard Zulip rendered_markdown CSS when
+            displaying this content so that emoji, LaTeX, and other syntax
+            work correctly. And any client-side security logic for
+            user-generated message content should be applied when displaying
+            this HTML as though it were the body of a Zulip message.
+        id:
+          type: integer
+          description: |
+            The ID of the channel folder.
+        is_archived:
+          type: boolean
+          description: |
+            Whether the channel folder is archived or not.
     JsonResponseBase:
       type: object
       properties:
