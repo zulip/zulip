@@ -166,8 +166,23 @@ const COLUMNS = {
     TOPIC_VISIBILITY: 3,
     ACTION_MENU: 4,
 };
-let col_focus = COLUMNS.COLLAPSE_BUTTON;
-let row_focus = 0;
+
+const DEFAULT_ROW_FOCUS = 0;
+const DEFAULT_COL_FOCUS = COLUMNS.COLLAPSE_BUTTON;
+
+const channel_view_navigation_state = {
+    channel_id: -1,
+    col_focus: DEFAULT_COL_FOCUS,
+    row_focus: DEFAULT_ROW_FOCUS,
+};
+
+const inbox_view_navigation_state = {
+    col_focus: DEFAULT_COL_FOCUS,
+    row_focus: DEFAULT_ROW_FOCUS,
+};
+
+let col_focus = DEFAULT_COL_FOCUS;
+let row_focus = DEFAULT_ROW_FOCUS;
 
 let hide_other_views_callback: (() => void) | undefined;
 
@@ -198,6 +213,34 @@ function save_data_to_ls(): void {
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
 
+function save_channel_view_navigation_state(): void {
+    channel_view_navigation_state.col_focus = col_focus;
+    channel_view_navigation_state.row_focus = row_focus;
+    channel_view_navigation_state.channel_id = inbox_util.get_channel_id();
+}
+
+function save_inbox_view_navigation_state(): void {
+    inbox_view_navigation_state.col_focus = col_focus;
+    inbox_view_navigation_state.row_focus = row_focus;
+}
+
+function restore_channel_view_navigation_state(): void {
+    if (channel_view_navigation_state.channel_id === inbox_util.get_channel_id()) {
+        col_focus = channel_view_navigation_state.col_focus;
+        row_focus = channel_view_navigation_state.row_focus;
+        return;
+    }
+
+    // Restore default state if channel_id doesn't match.
+    col_focus = DEFAULT_COL_FOCUS;
+    row_focus = DEFAULT_ROW_FOCUS;
+}
+
+function restore_inbox_view_navigation_state(): void {
+    col_focus = inbox_view_navigation_state.col_focus;
+    row_focus = inbox_view_navigation_state.row_focus;
+}
+
 export function show(filter?: Filter): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
@@ -211,7 +254,9 @@ export function show(filter?: Filter): void {
 
     // Check if we are already narrowed to the same channel view.
     const was_inbox_channel_view = inbox_util.is_channel_view();
-    if (was_inbox_channel_view && filter?.is_channel_view()) {
+    const is_new_filter_channel_view = filter?.is_channel_view();
+    if (was_inbox_channel_view && is_new_filter_channel_view) {
+        assert(filter !== undefined);
         const filter_channel_id_string = filter.operands("channel")[0];
         assert(filter_channel_id_string !== undefined);
         const filter_channel_id = Number.parseInt(filter_channel_id_string, 10);
@@ -221,6 +266,12 @@ export function show(filter?: Filter): void {
             // do anything here if view for the same channel is visible.
             return;
         }
+    } else if (!was_inbox_channel_view && is_new_filter_channel_view) {
+        save_inbox_view_navigation_state();
+    }
+
+    if (was_inbox_channel_view) {
+        save_channel_view_navigation_state();
     }
 
     // Before we set the filter, we need to check if the inbox view is already visible.
@@ -228,6 +279,7 @@ export function show(filter?: Filter): void {
 
     inbox_util.set_filter(filter);
     if (inbox_util.is_channel_view()) {
+        restore_channel_view_navigation_state();
         views_util.show({
             highlight_view_in_left_sidebar() {
                 assert(filter !== undefined);
@@ -246,6 +298,7 @@ export function show(filter?: Filter): void {
         return;
     }
 
+    restore_inbox_view_navigation_state();
     views_util.show({
         highlight_view_in_left_sidebar() {
             views_util.handle_message_view_deactivated(
