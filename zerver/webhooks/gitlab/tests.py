@@ -685,3 +685,49 @@ A trivial change that should probably be ignored.
         expected_message = "Release v1.1 for tag v1.1 was deleted."
 
         self.check_webhook("release_hook__delete", expected_topic_name, expected_message)
+
+    def test_deployment_started_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = "[Vedant Joshi](https://gitlab.com/theofficialvedantjoshi) created a new [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091) : [Update .gitlab-ci.yml file](https://gitlab.com/vedant8600317/test/-/commit/58793660b22d6ceacbdc23b28a0562bca339702c)."
+
+        self.check_webhook(
+            "deployment_hook__running",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_succeeded_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091) was successful."
+
+        self.check_webhook(
+            "deployment_hook__success",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_failed_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = (
+            "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905759933) failed."
+        )
+
+        self.check_webhook(
+            "deployment_hook__failed",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_canceled_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905830127) was canceled."
+
+        self.check_webhook(
+            "deployment_hook__canceled",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
