@@ -88,7 +88,7 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        const formatted_string = util.format_array_as_list_with_conjuction(values, "narrow");
+        const formatted_string = util.format_array_as_list_with_conjunction(values, "narrow");
         language_labels.set(key, key + " (" + formatted_string + ")");
     }
 

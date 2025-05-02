@@ -441,7 +441,7 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
-export function format_array_as_list_with_conjuction(
+export function format_array_as_list_with_conjunction(
     array: string[],
     // long uses "and", narrow uses commas.
     join_strategy: "long" | "narrow",
