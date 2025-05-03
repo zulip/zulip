@@ -1161,6 +1161,10 @@ li.top_left_scheduled_messages {
             color: var(--color-vdots-hover);
             background-color: var(--color-background-sidebar-action-hover);
         }
+
+        @media (hover: none) {
+            opacity: 0.9;
+        }
     }
 }
 
