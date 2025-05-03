@@ -15,6 +15,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
+import {show_email_configure_banner} from "./invite.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as pygments_data from "./pygments_data.ts";
@@ -1351,6 +1352,7 @@ export function build_page(): void {
     disable_create_user_groups_if_on_limited_plan();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
+    show_email_configure_banner();
 
     $(".settings-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();

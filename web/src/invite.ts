@@ -11,6 +11,8 @@ import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
+import * as banners from "./banners.ts";
+import type {Banner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
@@ -517,6 +519,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             );
         }
 
+        show_email_configure_banner();
+
         // Render organization settings tips for non-demo organizations
         // and for users with admin privileges.
         if (
@@ -593,6 +597,29 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     });
 }
 
+export function show_email_configure_banner(): void {
+    const $email_configure_banner_container = $(".invite-banner-container");
+    if ($email_configure_banner_container.length > 0) {
+        const EMAIL_CONFIGURE_BANNER: Banner = {
+            intent: "warning",
+            label: $t({defaultMessage: "Add your email to access this feature."}),
+            buttons: [
+                {
+                    attention: "primary",
+                    label: $t({defaultMessage: "Add"}),
+                    custom_classes: "configure-email",
+                },
+            ],
+            close_button: false,
+        };
+        banners.open(EMAIL_CONFIGURE_BANNER, $email_configure_banner_container);
+    }
+}
+
 export function initialize(): void {
     $(document).on("click", ".invite-user-link", open_invite_user_modal);
+    $(document).on("click", ".configure-email", (e) => {
+        e.preventDefault();
+        window.location.href = "/#settings/account-and-privacy";
+    });
 }
