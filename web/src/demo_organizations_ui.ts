@@ -69,6 +69,30 @@ export function insert_demo_organization_warning(): void {
     banners.append(demo_organization_warning_banner, $(".demo-organization-warning"));
 }
 
+export function show_configure_email_banner(): void {
+    const $configure_email_banner_container = $(".demo-organization-add-email-banner");
+    if ($configure_email_banner_container.length > 0) {
+        const CONFIGURE_EMAIL_BANNER: banners.Banner = {
+            intent: "warning",
+            label: $t({defaultMessage: "Add your email to access this feature."}),
+            buttons: [
+                {
+                    attention: "primary",
+                    label: $t({defaultMessage: "Add"}),
+                    custom_classes: "demo-organization-add-email",
+                },
+            ],
+            close_button: false,
+        };
+        banners.open(CONFIGURE_EMAIL_BANNER, $configure_email_banner_container);
+    }
+
+    $configure_email_banner_container.on("click", ".demo-organization-add-email", (e) => {
+        e.preventDefault();
+        window.location.href = "/#settings/account-and-privacy";
+    });
+}
+
 export function do_convert_demo_organization(): void {
     if (!current_user.is_owner) {
         return;
@@ -95,6 +119,8 @@ export function do_convert_demo_organization(): void {
             // Disable form fields if demo organization owner email not set.
             $("#add_organization_type").prop("disabled", true);
             $("#new_subdomain").prop("disabled", true);
+            // Show banner for adding email to account.
+            show_configure_email_banner();
         } else {
             // Disable submit button if either form field blank.
             $("#convert-demo-organization-form").on("input change", () => {

@@ -16,6 +16,7 @@ import * as components from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
+import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -516,6 +517,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 "disabled",
                 true,
             );
+            demo_organizations_ui.show_configure_email_banner();
         }
 
         // Render organization settings tips for non-demo organizations
