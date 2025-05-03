@@ -307,16 +307,19 @@ function checkAutoCollapse(): void {
     const $views_navigation_list = $("#left-sidebar-navigation-list");
     const $direct_messages_header = $("#direct-messages-section-header");
     const $views_section_header = $("#views-label-container");
+    const $streams_header = $("#streams_header");
     const is_auto_collapse_views = get_auto_collapse_views_state();
 
     if(is_auto_collapse_views) {
         $views_navigation_list.removeClass("keep_views_expanded");
         $direct_messages_header.removeClass("keep_views_expanded");
         $views_section_header.removeClass("keep_views_expanded");
+        $streams_header.removeClass("keep_views_expanded");
     } else {
         $views_navigation_list.addClass("keep_views_expanded");
         $direct_messages_header.addClass("keep_views_expanded");
         $views_section_header.addClass("keep_views_expanded");
+        $streams_header.addClass("keep_views_expanded");
     }
     
 }
@@ -328,6 +331,7 @@ function attachSidebarScrollListener(): void {
     const $dmHeader = $("#direct-messages-section-header");
     const $dm_icon = $("#toggle-direct-messages-section-icon");
     const $streamsHeader = $("#streams_header");
+    
     const condensedList : Element = document.querySelector("#left-sidebar-navigation-list-condensed");
 
     if (scrollContainer && $viewsHeader && $dmHeader && condensedList) {
@@ -342,7 +346,8 @@ function attachSidebarScrollListener(): void {
             // Calculate position of dmHeader relative to viewsHeader
             const viewsBottom = $viewsHeader[0].getBoundingClientRect().bottom;
             const dmTop = $dmHeader[0].getBoundingClientRect().top;
-
+            const has_active_filters : boolean = $("#left-sidebar-navigation-list").find(".top-left-active-filter").length > 0;
+            
             if (dmTop <= viewsBottom) {
                 // Toggle into the condensed state
                 if($viewsHeader.hasClass("showing-expanded-navigation")) {
