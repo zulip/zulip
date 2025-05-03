@@ -531,6 +531,17 @@ input.settings_text_input {
     margin: 10px 0;
 }
 
+.demo-organization-add-email-banner {
+    margin-bottom: 10px;
+}
+
+#convert-demo-organization-form,
+#invite-user-form {
+    .banner-action-buttons {
+        padding: 0.085em 0;
+    }
+}
+
 .invite-stream-notice {
     margin-bottom: 20px;
 }

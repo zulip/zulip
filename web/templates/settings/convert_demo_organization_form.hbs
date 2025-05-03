@@ -1,11 +1,6 @@
 <div id="convert-demo-organization-form">
     {{#unless user_has_email_set}}
-    <div class="tip">
-        {{#tr}}
-            You must <z-link>configure your email</z-link> to access this feature.
-            {{#*inline "z-link"}}<a href="/help/demo-organizations#configure-email-for-demo-organization-owner" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
-        {{/tr}}
-    </div>
+    <div class="demo-organization-add-email-banner"></div>
     {{/unless}}
     <p>{{t "Everyone will need to log in again at the new URL for your organization." }}</p>
     <form class="subdomain-setting">
