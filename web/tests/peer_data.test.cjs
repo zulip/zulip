@@ -115,7 +115,7 @@ test("unsubscribe", () => {
     assert.ok(!sub.subscribed);
 });
 
-test("subscribers", () => {
+test("subscribers", async () => {
     const sub = {
         name: "Rome",
         subscribed: true,
@@ -225,6 +225,18 @@ test("subscribers", () => {
     assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
     peer_data.remove_subscriber(stream_id, brutus.user_id);
     assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    blueslip.reset();
+
+    // Same test but for `maybe_fetch_is_user_subscribed`
+    blueslip.expect(
+        "warn",
+        "We got a maybe_fetch_is_user_subscribed call for a non-existent or inaccessible stream.",
+        2,
+    );
+    peer_data.add_subscriber(stream_id, brutus.user_id);
+    assert.ok(!(await stream_data.maybe_fetch_is_user_subscribed(stream_id, brutus.user_id)));
+    peer_data.remove_subscriber(stream_id, brutus.user_id);
+    assert.ok(!(await stream_data.maybe_fetch_is_user_subscribed(stream_id, brutus.user_id)));
     blueslip.reset();
 
     // Verify that we don't crash for a bad stream.

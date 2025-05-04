@@ -10,6 +10,8 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+const channel = mock_esm("../src/channel");
+
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
@@ -139,7 +141,7 @@ user_groups.initialize({realm_user_groups: [nobody, everyone, admin, moderators,
 function test_ui(label, f) {
     run_test(label, (helpers) => {
         $("textarea#compose-textarea").val("some message");
-        f(helpers);
+        return f(helpers);
     });
 }
 
@@ -549,7 +551,7 @@ test_ui("test_check_overflow_text", ({override, override_rewire}) => {
     }
 });
 
-test_ui("needs_subscribe_warning", () => {
+test_ui("needs_subscribe_warning", async () => {
     const invalid_user_id = 999;
 
     const test_bot = {
@@ -570,17 +572,23 @@ test_ui("needs_subscribe_warning", () => {
 
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     // Test with an invalid user id.
-    assert.equal(compose_validate.needs_subscribe_warning(invalid_user_id, sub.stream_id), false);
+    assert.equal(
+        await compose_validate.needs_subscribe_warning(invalid_user_id, sub.stream_id),
+        false,
+    );
 
     // Test with bot user.
-    assert.equal(compose_validate.needs_subscribe_warning(test_bot.user_id, sub.stream_id), false);
+    assert.equal(
+        await compose_validate.needs_subscribe_warning(test_bot.user_id, sub.stream_id),
+        false,
+    );
 
     // Test when user is subscribed to the stream.
-    assert.equal(compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), false);
+    assert.equal(await compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), false);
 
     peer_data.remove_subscriber(sub.stream_id, bob.user_id);
     // Test when the user is not subscribed.
-    assert.equal(compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
+    assert.equal(await compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
 test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
@@ -655,7 +663,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     assert.ok(!banner_rendered);
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
+test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}) => {
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     compose_state.set_stream_id("");
@@ -678,19 +686,19 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         return "<banner-stub>";
     });
 
-    function test_noop_case(is_private, is_zephyr_mirror, type) {
+    async function test_noop_case(is_private, is_zephyr_mirror, type) {
         new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
         override(realm, "realm_is_zephyr_mirror_realm", is_zephyr_mirror);
         mentioned_details.type = type;
-        compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+        await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
     }
 
-    test_noop_case(true, false, "user");
-    test_noop_case(false, true, "user");
-    test_noop_case(false, false, "broadcast");
+    await test_noop_case(true, false, "user");
+    await test_noop_case(false, true, "user");
+    await test_noop_case(false, false, "broadcast");
 
     $("#compose_invite_users").hide();
     compose_state.set_message_type("stream");
@@ -699,7 +707,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     // Test with empty stream name in compose box. It should return noop.
     new_banner_rendered = false;
     assert.equal(compose_state.stream_name(), "");
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(!new_banner_rendered);
 
     const sub = {
@@ -714,10 +722,10 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     // Test with invalid stream in compose box. It should return noop.
     new_banner_rendered = false;
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(!new_banner_rendered);
 
-    // Test mentioning a user that should gets a warning.
+    // Test mentioning a user that should get a warning.
     mentioned_details = {
         type: "user",
         user: {
@@ -731,8 +739,14 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     new_banner_rendered = false;
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".recipient_not_subscribed", []);
+    channel.get = (opts) => {
+        assert.equal(opts.url, `/json/streams/${sub.stream_id}/members`);
+        return {
+            subscribers: [],
+        };
+    };
 
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);
 
     // Simulate that the row was added to the DOM.
@@ -746,7 +760,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     // not render.
     new_banner_rendered = false;
     $banner_container.set_find_results(".recipient_not_subscribed", $warning_row);
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(!new_banner_rendered);
 });
 

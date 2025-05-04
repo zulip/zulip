@@ -147,7 +147,10 @@ export function get_disabled_save_tooltip($container: JQuery): string {
     return "";
 }
 
-export function needs_subscribe_warning(user_id: number, stream_id: number): boolean {
+export async function needs_subscribe_warning(
+    user_id: number,
+    stream_id: number,
+): Promise<boolean> {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the user is not already subscribed to the stream
@@ -173,7 +176,7 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
         return false;
     }
 
-    if (stream_data.is_user_subscribed(stream_id, user_id)) {
+    if (await stream_data.maybe_fetch_is_user_subscribed(stream_id, user_id, false)) {
         // If our user is already subscribed
         return false;
     }
@@ -291,10 +294,10 @@ export function warn_if_private_stream_is_linked(
     }
 }
 
-export function warn_if_mentioning_unsubscribed_user(
+export async function warn_if_mentioning_unsubscribed_user(
     mentioned: UserOrMention,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): Promise<void> {
     // Disable for Zephyr mirroring realms, since we never have subscriber lists there
     if (realm.realm_is_zephyr_mirror_realm) {
         return;
@@ -310,7 +313,13 @@ export function warn_if_mentioning_unsubscribed_user(
         return;
     }
 
-    if (needs_subscribe_warning(user_id, stream_id)) {
+    if (await needs_subscribe_warning(user_id, stream_id)) {
+        // Double check that we're still composing to the same stream id
+        // after the awaited fetch for subscriber data.
+        if (get_stream_id_for_textarea($textarea) !== stream_id) {
+            return;
+        }
+
         const $banner_container = compose_banner.get_compose_banner_container($textarea);
         const $existing_invites_area = $banner_container.find(
             `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
