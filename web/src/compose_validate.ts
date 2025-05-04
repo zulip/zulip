@@ -352,11 +352,11 @@ export async function warn_if_mentioning_unsubscribed_user(
     }
 }
 
-export function warn_if_mentioning_unsubscribed_group(
+export async function warn_if_mentioning_unsubscribed_group(
     mentioned_group: UserGroup,
     $textarea: JQuery<HTMLTextAreaElement>,
     is_silent: boolean,
-): void {
+): Promise<void> {
     if (is_silent) {
         return;
     }
@@ -370,7 +370,7 @@ export function warn_if_mentioning_unsubscribed_group(
     let any_member_subscribed = false;
     for (const user_id of group_members) {
         if (
-            stream_data.is_user_subscribed(stream_id, user_id) &&
+            (await stream_data.maybe_fetch_is_user_subscribed(stream_id, user_id, false)) &&
             people.is_person_active(user_id)
         ) {
             any_member_subscribed = true;
@@ -378,6 +378,12 @@ export function warn_if_mentioning_unsubscribed_group(
         }
     }
     if (any_member_subscribed) {
+        return;
+    }
+
+    // Double check that we're still composing to the same stream id
+    // after the awaited fetches for subscriber data.
+    if (get_stream_id_for_textarea($textarea) !== stream_id) {
         return;
     }
 

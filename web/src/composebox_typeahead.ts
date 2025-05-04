@@ -1192,7 +1192,7 @@ export function content_typeahead_selected(
                 let user_group_mention_text = is_silent ? "@_*" : "@*";
                 user_group_mention_text += item.name + "* ";
                 beginning += user_group_mention_text;
-                compose_validate.warn_if_mentioning_unsubscribed_group(
+                void compose_validate.warn_if_mentioning_unsubscribed_group(
                     item,
                     $textbox,
                     is_silent ?? false,
