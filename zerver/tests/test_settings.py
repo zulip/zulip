@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 
-import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
@@ -609,6 +608,21 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_font_size_px, 14)
         self.assertEqual(hamlet.web_line_height_percent, 122)
+
+    def test_change_auto_collapse_views_setting(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        self.assertFalse(user.auto_collapse_views)
+
+        result = self.client_patch(
+            "/json/settings",
+            {"auto_collapse_views": "true"},
+        )
+        self.assert_json_success(result)
+
+        user.refresh_from_db()
+        self.assertTrue(user.auto_collapse_views)    
 
 
 class UserChangesTest(ZulipTestCase):

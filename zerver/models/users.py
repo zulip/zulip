@@ -264,6 +264,9 @@ class UserBaseSettings(models.Model):
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
+    # User preferences settings to auto collapse views section when scrolled down
+    auto_collapse_views = models.BooleanField(default=False)
+
     # Privacy settings
     send_stream_typing_notifications = models.BooleanField(default=True)
     send_private_typing_notifications = models.BooleanField(default=True)
@@ -362,6 +365,7 @@ class UserBaseSettings(models.Model):
         web_navigate_to_sent_message=bool,
         web_suggest_update_timezone=bool,
         hide_ai_features=bool,
+        auto_collapse_views=bool,
     )
 
     modern_notification_settings = dict(
