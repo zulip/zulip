@@ -871,6 +871,28 @@ export function rewire_is_user_subscribed(value: typeof is_user_subscribed): voi
     is_user_subscribed = value;
 }
 
+// This function parallels `is_user_subscribed` but fetches subscriber data for the
+// `stream_id` if we don't have complete data yet.
+export async function maybe_fetch_is_user_subscribed(
+    stream_id: number,
+    user_id: number,
+    retry_on_failure: boolean,
+): Promise<boolean> {
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined || !can_view_subscribers(sub)) {
+        // If we don't know about the stream, or we ourselves cannot access subscriber list,
+        // so we return false.
+        blueslip.warn(
+            "We got a maybe_fetch_is_user_subscribed call for a non-existent or inaccessible stream.",
+        );
+        return false;
+    }
+    return (
+        (await peer_data.maybe_fetch_is_user_subscribed(stream_id, user_id, retry_on_failure)) ??
+        false
+    );
+}
+
 export function create_streams(streams: Stream[]): void {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.

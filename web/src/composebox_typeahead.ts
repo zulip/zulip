@@ -1210,7 +1210,7 @@ export function content_typeahead_selected(
                     is_silent,
                 );
                 if (!is_silent && item.type !== "broadcast") {
-                    compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
+                    void compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
                     mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
                         mention_text,
                         item.user.full_name,
