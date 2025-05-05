@@ -330,11 +330,13 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -350,6 +352,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -359,10 +362,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -384,6 +389,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -392,9 +398,12 @@ Output:
         self,
         url: str,
         payload: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -406,7 +415,8 @@ Output:
             content_type="application/json",
             follow=follow,
             secure=secure,
-            headers=None,
+            headers=headers,
+            query_params=query_params,
             **extra,
         )
 
@@ -415,10 +425,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urlencode(info)
@@ -426,17 +438,25 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.put(
-            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+            url,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
         )
 
     def json_put(
         self,
         url: str,
         payload: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -449,6 +469,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             **extra,
         )
 
@@ -457,10 +478,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -477,6 +500,7 @@ Output:
                 "Content-Type": "application/x-www-form-urlencoded",  # https://code.djangoproject.com/ticket/33230
                 **(headers or {}),
             },
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -486,16 +510,24 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.options(
-            url, dict(info), follow=follow, secure=secure, headers=headers, **extra
+            url,
+            dict(info),
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
         )
 
     @instrument_url
@@ -503,25 +535,37 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.head(url, info, follow=follow, secure=secure, headers=headers, **extra)
+        return django_client.head(
+            url,
+            info,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
+        )
 
     @instrument_url
     def client_post(
         self,
         url: str,
         info: str | bytes | Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         content_type: str | None = None,
         **extra: str,
@@ -549,6 +593,7 @@ Output:
                 "Content-Type": content_type,  # https://code.djangoproject.com/ticket/33230
                 **(headers or {}),
             },
+            query_params=query_params,
             content_type=content_type,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
@@ -577,6 +622,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -588,6 +634,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -741,6 +788,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -884,6 +932,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -990,6 +1039,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1009,6 +1059,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1024,6 +1075,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1033,6 +1085,7 @@ Output:
         user: UserProfile,
         url: str,
         info: str | bytes | Mapping[str, Any] = {},
+        *,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -1044,6 +1097,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -1059,6 +1113,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1074,6 +1129,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1578,6 +1634,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
