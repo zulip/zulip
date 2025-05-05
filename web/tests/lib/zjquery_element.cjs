@@ -243,6 +243,12 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
+        detach() {
+            for (const element of this) {
+                element.remove();
+            }
+            return this;
+        },
         each(callback) {
             for (const [index, element] of [...this].entries()) {
                 callback.call(element, index, element);
