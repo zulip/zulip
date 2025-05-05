@@ -6568,7 +6568,7 @@ paths:
       description: |
         Schedule a reminder to be sent to the current user at the specified time. The reminder will link the relevant message.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-f8d751).
+        **Changes**: New in Zulip 11.0 (feature level 381).
       requestBody:
         required: true
         content:
