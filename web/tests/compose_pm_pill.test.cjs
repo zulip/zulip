@@ -207,6 +207,10 @@ run_test("pills", ({override, override_rewire}) => {
 
     user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id]);
+
+    compose_pm_pill.set_from_user_ids([hamlet.user_id]);
+    user_ids = compose_pm_pill.get_user_ids();
+    assert.deepEqual(user_ids, [hamlet.user_id]);
 });
 
 run_test("has_unconverted_data", ({override}) => {

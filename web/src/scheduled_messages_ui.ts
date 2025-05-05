@@ -56,6 +56,8 @@ export function open_scheduled_message_in_compose(
     should_narrow_to_recipient?: boolean,
 ): void {
     let compose_args;
+    let narrow_args;
+
     if (scheduled_msg.type === "stream") {
         compose_args = {
             message_type: "stream" as const,
@@ -63,17 +65,23 @@ export function open_scheduled_message_in_compose(
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
         };
+        narrow_args = compose_args;
     } else {
-        const recipient_emails = [];
-        if (scheduled_msg.to) {
-            for (const recipient_id of scheduled_msg.to) {
-                const recipient_user = people.get_by_user_id(recipient_id);
-                if (!recipient_user.is_inaccessible_user) {
-                    recipient_emails.push(recipient_user.email);
-                }
-            }
-        }
+        const recipient_ids = scheduled_msg.to.filter(
+            (recipient_id) => !people.get_by_user_id(recipient_id).is_inaccessible_user,
+        );
+        const recipient_emails = recipient_ids.map(
+            (recipient_id) => people.get_by_user_id(recipient_id).email,
+        );
         compose_args = {
+            message_type: "private" as const,
+            private_message_recipient_ids: recipient_ids,
+            content: scheduled_msg.content,
+            keep_composebox_empty: true,
+        };
+        // Narrow filters still use emails for PMs, though we'll
+        // eventually want to migrate that as well.
+        narrow_args = {
             message_type: "private" as const,
             private_message_recipient: recipient_emails.join(","),
             content: scheduled_msg.content,
@@ -82,7 +90,7 @@ export function open_scheduled_message_in_compose(
     }
 
     if (should_narrow_to_recipient) {
-        narrow_via_edit_scheduled_message(compose_args);
+        narrow_via_edit_scheduled_message(narrow_args);
     }
 
     compose_actions.start(compose_args);

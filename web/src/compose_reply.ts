@@ -127,7 +127,7 @@ export let respond_to_message = (opts: {
 
     let stream_id: number | undefined;
     let topic = "";
-    let pm_recipient: string | undefined = "";
+    let private_message_recipient_ids: number[] | undefined;
     if (msg_type === "stream") {
         assert(message.type === "stream");
         stream_id = message.stream_id;
@@ -136,16 +136,16 @@ export let respond_to_message = (opts: {
         // reply_to for direct messages is everyone involved, so for
         // personals replies we need to set the direct message
         // recipient to just the sender
-        pm_recipient = people.get_by_user_id(message.sender_id).email;
+        private_message_recipient_ids = [message.sender_id];
     } else {
-        pm_recipient = people.pm_reply_to(message);
+        private_message_recipient_ids = people.pm_with_user_ids(message);
     }
 
     compose_actions.start({
         message_type: msg_type,
         stream_id,
         topic,
-        ...(pm_recipient !== undefined && {private_message_recipient: pm_recipient}),
+        ...(private_message_recipient_ids !== undefined && {private_message_recipient_ids}),
         ...(opts.trigger !== undefined && {trigger: opts.trigger}),
         is_reply: true,
         keep_composebox_empty: opts.keep_composebox_empty,
@@ -263,7 +263,7 @@ export function quote_message(opts: {
             keep_composebox_empty: opts.keep_composebox_empty,
             content: quoting_placeholder,
             stream_id,
-            private_message_recipient: people.pm_reply_to(message) ?? "",
+            private_message_recipient_ids: people.pm_with_user_ids(message) ?? [],
         });
         compose_recipient.toggle_compose_recipient_dropdown();
     } else {

@@ -918,11 +918,10 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".respond_personal_button, .compose_private_message", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         compose_actions.start({
             message_type: "private",
             trigger: "popover send private",
-            private_message_recipient: email,
+            private_message_recipient_ids: [user_id],
         });
         hide_all();
         if (overlays.any_active()) {

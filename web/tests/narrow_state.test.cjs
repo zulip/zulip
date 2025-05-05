@@ -240,13 +240,13 @@ test("set_compose_defaults", () => {
 
     set_filter([["dm", "john@doe.com"]]);
     dm_test = narrow_state.set_compose_defaults();
-    assert.equal(dm_test.private_message_recipient, "john@doe.com");
+    assert.deepEqual(dm_test.private_message_recipient_ids, [john.user_id]);
 
     // Even though we renamed "pm-with" to "dm",
     // compose defaults are set correctly.
     set_filter([["pm-with", "john@doe.com"]]);
     dm_test = narrow_state.set_compose_defaults();
-    assert.equal(dm_test.private_message_recipient, "john@doe.com");
+    assert.deepEqual(dm_test.private_message_recipient_ids, [john.user_id]);
 
     set_filter([
         ["topic", "duplicate"],

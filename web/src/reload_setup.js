@@ -5,6 +5,7 @@ import * as compose_actions from "./compose_actions.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_view from "./message_view.ts";
+import * as people from "./people.ts";
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
@@ -51,11 +52,15 @@ export function initialize() {
         const send_now = Number.parseInt(vars.send_after_reload, 10);
 
         try {
+            const private_message_recipient_ids = vars.recipient
+                ? people.emails_string_to_user_ids(vars.recipient)
+                : [];
+
             compose_actions.start({
                 message_type: vars.msg_type,
                 stream_id: Number.parseInt(vars.stream_id, 10) || undefined,
                 topic: vars.topic || "",
-                private_message_recipient: vars.recipient || "",
+                private_message_recipient_ids,
                 content: vars.msg || "",
                 draft_id: vars.draft_id || "",
             });
