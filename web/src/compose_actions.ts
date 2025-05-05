@@ -272,7 +272,8 @@ function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
             opts.stream_id === compose_state.stream_id() &&
             opts.topic === compose_state.topic()) ||
             (opts.message_type === "private" &&
-                opts.private_message_recipient === compose_state.private_message_recipient()))
+                opts.private_message_recipient ===
+                    compose_state.private_message_recipient_emails()))
     );
 }
 
@@ -361,7 +362,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     compose_recipient.update_topic_displayed_text(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
-    compose_state.private_message_recipient(
+    compose_state.private_message_recipient_emails(
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
 

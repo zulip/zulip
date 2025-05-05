@@ -314,7 +314,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
         updatedAt: getTimestamp(),
     };
     if (message.type === "private") {
-        const recipient = compose_state.private_message_recipient();
+        const recipient = compose_state.private_message_recipient_emails();
         return {
             ...message,
             type: "private",
@@ -484,7 +484,7 @@ export function current_recipient_data(): {
         return {
             stream_name: undefined,
             topic: undefined,
-            private_recipients: compose_state.private_message_recipient(),
+            private_recipients: compose_state.private_message_recipient_emails(),
         };
     }
     return {
