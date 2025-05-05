@@ -109,7 +109,7 @@ function assert_hidden(sel) {
     assert.ok(!$(sel).visible());
 }
 
-function override_private_message_recipient({override}) {
+function override_private_message_recipient_emails({override}) {
     let recipient;
     override(compose_pm_pill, "set_from_emails", (value) => {
         recipient = value;
@@ -146,7 +146,7 @@ test("initial_state", () => {
 
 test("start", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    override_private_message_recipient({override});
+    override_private_message_recipient_emails({override});
     override_rewire(compose_actions, "autosize_message_content", noop);
     override_rewire(compose_actions, "expand_compose_box", noop);
     override_rewire(compose_actions, "complete_starting_tasks", noop);
@@ -259,7 +259,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert_hidden("input#stream_message_recipient_topic");
     assert_visible("#compose-direct-recipient");
 
-    assert.equal(compose_state.private_message_recipient(), "foo@example.com");
+    assert.equal(compose_state.private_message_recipient_emails(), "foo@example.com");
     assert.equal($("textarea#compose-textarea").val(), "hello");
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
@@ -272,7 +272,7 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     start(opts);
 
-    assert.equal(compose_state.private_message_recipient(), "");
+    assert.equal(compose_state.private_message_recipient_emails(), "");
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
 
@@ -310,7 +310,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
-    override_private_message_recipient({override});
+    override_private_message_recipient_emails({override});
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     override(realm, "realm_direct_message_permission_group", nobody.id);
@@ -336,7 +336,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     };
 
     respond_to_message(opts);
-    assert.equal(compose_state.private_message_recipient(), "alice@example.com");
+    assert.equal(compose_state.private_message_recipient_emails(), "alice@example.com");
 
     // Test stream
     const denmark = {
@@ -373,7 +373,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
-    override_private_message_recipient({override});
+    override_private_message_recipient_emails({override});
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
@@ -448,7 +448,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
-    override_private_message_recipient({override});
+    override_private_message_recipient_emails({override});
 
     let selected_message;
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));

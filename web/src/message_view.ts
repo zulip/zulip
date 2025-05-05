@@ -1463,7 +1463,7 @@ export function to_compose_target(): void {
     }
 
     if (compose_state.get_message_type() === "private") {
-        const recipient_string = compose_state.private_message_recipient();
+        const recipient_string = compose_state.private_message_recipient_emails();
         const emails = util.extract_pm_recipients(recipient_string);
         const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is

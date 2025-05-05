@@ -49,7 +49,9 @@ export const pm_recipient = {
     },
 
     async expect(page: Page, expected: string): Promise<void> {
-        const actual_recipients = await page.evaluate(() => zulip_test.private_message_recipient());
+        const actual_recipients = await page.evaluate(() =>
+            zulip_test.private_message_recipient_emails(),
+        );
         assert.equal(actual_recipients, expected);
     },
 };
