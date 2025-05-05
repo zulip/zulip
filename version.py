@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 381
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (325, 2)  # bumped 2025-04-16 to add altcha
+PROVISION_VERSION = (325, 3)  # bumped 2025-05-04 to upgrade uv
