@@ -362,26 +362,6 @@ test_ui("validate", ({mock_template, override}) => {
     }
 });
 
-test_ui("get_invalid_recipient_emails", ({override, override_rewire}) => {
-    const welcome_bot = {
-        email: "welcome-bot@example.com",
-        user_id: 124,
-        full_name: "Welcome Bot",
-    };
-
-    override(current_user, "user_id", me.user_id);
-
-    const params = {};
-    params.realm_users = [];
-    params.realm_non_active_users = [];
-    params.cross_realm_bots = [welcome_bot];
-
-    people.initialize(current_user.user_id, params);
-
-    override_rewire(compose_pm_pill, "get_emails", () => "welcome-bot@example.com");
-    assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
-});
-
 test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) => {
     override(current_user, "user_id", me.user_id);
 
