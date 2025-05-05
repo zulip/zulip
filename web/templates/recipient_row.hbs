@@ -10,14 +10,10 @@
             </span>
 
             {{~! Recipient (e.g. stream/topic or topic) ~}}
-            <span class="message-header-stream-name">
-                {{~display_recipient~}}
-            </span>
             {{#if is_archived}}
             <span class="message-header-stream-archived"><i class="archived-indicator">({{t 'archived' }})</i></span>
             {{/if}}
         </a>
-        <span class="stream_topic_separator"><i class="zulip-icon zulip-icon-chevron-right"></i></span>
 
         {{! hidden narrow icon for copy-pasting }}
         <span class="copy-paste-text">&gt;</span>
