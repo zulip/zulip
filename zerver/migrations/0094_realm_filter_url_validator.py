@@ -9,4 +9,4 @@ class Migration(migrations.Migration):
         ("zerver", "0093_subscription_event_log_backfill"),
     ]
 
-    operations: list[migrations.operations.base.Operation] = []
+    operations = []
