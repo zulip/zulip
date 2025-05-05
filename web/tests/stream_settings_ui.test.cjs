@@ -246,9 +246,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         sub_stubs.push(sub_row);
 
         $(sub_row).attr("data-stream-id", data.stream_id);
-        $(sub_row).detach = function () {
-            return this;
-        };
+        $(sub_row)[0].remove = () => {};
     }
 
     $.set_results("#channels_overlay_container .stream-row", sub_stubs);
