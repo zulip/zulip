@@ -35,7 +35,7 @@ export const strings = {
 export function do_settings_change(
     request_method: AjaxRequestHandler,
     url: string,
-    data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined">,
+    data: Record<string, unknown>,
     $status_element: JQuery,
     {
         success_msg_html = strings.success_html,
