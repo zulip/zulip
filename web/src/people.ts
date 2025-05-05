@@ -249,12 +249,6 @@ export function is_known_user_id(user_id: number): boolean {
     return true;
 }
 
-function sort_numerically(user_ids: number[]): number[] {
-    user_ids.sort((a, b) => a - b);
-
-    return user_ids;
-}
-
 export function direct_message_group_string(message: Message): string | undefined {
     if (message.type !== "private") {
         return undefined;
@@ -274,7 +268,7 @@ export function direct_message_group_string(message: Message): string | undefine
         return undefined;
     }
 
-    user_ids = sort_numerically(user_ids);
+    user_ids = util.sorted_ids(user_ids);
 
     return user_ids.join(",");
 }
@@ -344,7 +338,7 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
         return undefined;
     }
 
-    user_ids = sort_numerically(user_ids);
+    user_ids = util.sorted_ids(user_ids);
 
     return user_ids.join(",");
 }
@@ -404,7 +398,7 @@ export let email_list_to_user_ids_string = (emails: string[]): string | undefine
         return undefined;
     }
 
-    user_ids = sort_numerically(user_ids);
+    user_ids = util.sorted_ids(user_ids);
 
     return user_ids.join(",");
 };
@@ -525,7 +519,7 @@ export function sorted_other_user_ids(user_ids: number[]): number[] {
         user_ids = [my_user_id];
     }
 
-    user_ids = sort_numerically(user_ids);
+    user_ids = util.sorted_ids(user_ids);
 
     return user_ids;
 }
@@ -538,7 +532,7 @@ export function concat_direct_message_group(user_ids: number[], user_id: number)
         The only logic we're encapsulating here is
         how to encode direct message group.
     */
-    const sorted_ids = sort_numerically([...user_ids, user_id]);
+    const sorted_ids = util.sorted_ids([...user_ids, user_id]);
     return sorted_ids.join(",");
 }
 
@@ -574,7 +568,7 @@ export function all_user_ids_in_pm(message: Message): number[] | undefined {
 
     let user_ids = message.display_recipient.map((recip) => recip.id);
 
-    user_ids = sort_numerically(user_ids);
+    user_ids = util.sorted_ids(user_ids);
     return user_ids;
 }
 
@@ -694,13 +688,13 @@ export function pm_with_operand_ids(operand: string): number[] | undefined {
 
     let user_ids = persons.map((person) => person.user_id);
 
-    user_ids = sort_numerically(user_ids);
+    user_ids = util.sorted_ids(user_ids);
 
     return user_ids;
 }
 
 export function filter_other_guest_ids(user_ids: number[]): number[] {
-    return sort_numerically(
+    return util.sorted_ids(
         user_ids.filter((id) => id !== current_user.user_id && get_by_user_id(id)?.is_guest),
     );
 }
