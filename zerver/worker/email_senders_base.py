@@ -64,7 +64,7 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         if "failed_tries" in copied_event:
             del copied_event["failed_tries"]
         handle_send_email_format_changes(copied_event)
-        if "realm_id" in copied_event:
+        if copied_event.get("realm_id") is not None:
             # "realm" does not serialize over the queue, so we send the realm_id
             copied_event["realm"] = Realm.objects.get(id=copied_event["realm_id"])
             del copied_event["realm_id"]
