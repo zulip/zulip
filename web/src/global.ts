@@ -1,5 +1,3 @@
-import type * as zulip_test_module from "./zulip_test.ts";
-
 type JQueryCaretRange = {
     start: number;
     end: number;
@@ -16,8 +14,6 @@ type JQueryIdleOptions = Partial<{
 }>;
 
 declare global {
-    const zulip_test: typeof zulip_test_module;
-
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace JQueryValidation {
         // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -52,3 +48,5 @@ declare global {
     const DEVELOPMENT: boolean;
     const ZULIP_VERSION: string;
 }
+
+export {};
