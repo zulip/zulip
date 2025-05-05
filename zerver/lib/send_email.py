@@ -358,6 +358,11 @@ def send_email(
             ),
         )
     else:
+        if settings.TEST_SUITE:
+            # In tests, verify that the context object is
+            # JSON-serializable, as may happen in production using
+            # EMAIL_ALWAYS_ENQUEUED, above.
+            context = orjson.loads(orjson.dumps(context))
         send_immediate_email(
             template_prefix,
             to_user_ids,
