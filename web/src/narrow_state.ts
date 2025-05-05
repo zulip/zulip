@@ -102,9 +102,9 @@ function collect_single(terms: NarrowTerm[]): Map<string, string> {
 export function set_compose_defaults(): {
     stream_id?: number;
     topic?: string;
-    private_message_recipient?: string;
+    private_message_recipient_ids?: number[];
 } {
-    const opts: {stream_id?: number; topic?: string; private_message_recipient?: string} = {};
+    const opts: {stream_id?: number; topic?: string; private_message_recipient_ids?: number[]} = {};
     const single = collect_single(search_terms());
 
     // Set the stream, topic, and/or direct message recipient
@@ -123,12 +123,14 @@ export function set_compose_defaults(): {
         opts.topic = topic;
     }
 
-    const private_message_recipient = single.get("dm");
+    const private_message_recipient_emails = single.get("dm");
     if (
-        private_message_recipient !== undefined &&
-        people.is_valid_bulk_emails_for_compose(private_message_recipient.split(","))
+        private_message_recipient_emails !== undefined &&
+        people.is_valid_bulk_emails_for_compose(private_message_recipient_emails.split(","))
     ) {
-        opts.private_message_recipient = private_message_recipient;
+        opts.private_message_recipient_ids = people.emails_string_to_user_ids(
+            private_message_recipient_emails,
+        );
     }
     return opts;
 }

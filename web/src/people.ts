@@ -275,7 +275,10 @@ export function direct_message_group_string(message: Message): string | undefine
 
 export function user_ids_string_to_emails_string(user_ids_string: string): string | undefined {
     const user_ids = split_to_ints(user_ids_string);
+    return user_ids_to_emails_string(user_ids);
+}
 
+export function user_ids_to_emails_string(user_ids: number[]): string | undefined {
     let emails = util.try_parse_as_truthy(
         user_ids.map((user_id) => {
             const person = people_by_user_id_dict.get(user_id);
@@ -284,7 +287,7 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
     );
 
     if (emails === undefined) {
-        blueslip.warn("Unknown user ids: " + user_ids_string);
+        blueslip.warn("Unknown user ids: " + user_ids.join(","));
         return undefined;
     }
 
@@ -383,6 +386,13 @@ export function get_user_type(user_id: number): string | undefined {
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
     const emails = emails_string.split(",");
     return email_list_to_user_ids_string(emails);
+}
+
+export function emails_string_to_user_ids(emails_string: string): number[] {
+    const user_ids_string = email_list_to_user_ids_string(
+        util.extract_pm_recipients(emails_string),
+    );
+    return user_ids_string ? user_ids_string_to_ids_array(user_ids_string) : [];
 }
 
 export let email_list_to_user_ids_string = (emails: string[]): string | undefined => {

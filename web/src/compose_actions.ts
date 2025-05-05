@@ -2,6 +2,7 @@
 
 import autosize from "autosize";
 import $ from "jquery";
+import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -29,13 +30,14 @@ import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as util from "./util.ts";
 
 // Opts sent to `compose_actions.start`.
 type ComposeActionsStartOpts = {
     message_type: "private" | "stream";
     force_close?: boolean;
     trigger?: string;
-    private_message_recipient?: string;
+    private_message_recipient_ids?: number[];
     message?: Message | undefined;
     stream_id?: number | undefined;
     topic?: string;
@@ -50,7 +52,7 @@ type ComposeActionsStartOpts = {
 // some values are present.
 type ComposeActionsOpts = ComposeActionsStartOpts & {
     topic: string;
-    private_message_recipient: string;
+    private_message_recipient_ids: number[];
     trigger: string;
 };
 
@@ -99,7 +101,8 @@ function show_compose_box(opts: ComposeActionsOpts): void {
         opts_by_message_type = {
             trigger: opts.trigger,
             message_type: "private",
-            private_message_recipient: opts.private_message_recipient,
+            private_message_recipient:
+                people.user_ids_to_emails_string(opts.private_message_recipient_ids) ?? "",
         };
     } else {
         opts_by_message_type = {
@@ -253,7 +256,7 @@ export function fill_in_opts_from_current_narrowed_view(
     return {
         stream_id: undefined,
         topic: "",
-        private_message_recipient: "",
+        private_message_recipient_ids: [],
         trigger: "unknown",
 
         // Set default parameters based on the current narrowed view.
@@ -272,8 +275,10 @@ function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
             opts.stream_id === compose_state.stream_id() &&
             opts.topic === compose_state.topic()) ||
             (opts.message_type === "private" &&
-                opts.private_message_recipient ===
-                    compose_state.private_message_recipient_emails()))
+                _.isEqual(
+                    new Set(opts.private_message_recipient_ids),
+                    new Set(compose_state.private_message_recipient_ids()),
+                )))
     );
 }
 
@@ -313,7 +318,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         opts.trigger === "new direct message"
     ) {
         opts.topic = "";
-        opts.private_message_recipient = "";
+        opts.private_message_recipient_ids = [];
     }
 
     const subbed_streams = stream_data.subscribed_subs();
@@ -361,10 +366,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     }
     compose_recipient.update_topic_displayed_text(opts.topic);
 
-    // Set the recipients with a space after each comma, so it looks nice.
-    compose_state.private_message_recipient_emails(
-        opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
-    );
+    compose_state.private_message_recipient_ids(opts.private_message_recipient_ids);
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
@@ -592,16 +594,16 @@ export function on_narrow(opts: NarrowActivateOpts): void {
             message_type: "private",
         });
         // Do not open compose box if an invalid recipient is present.
-        if (!filled_in_opts.private_message_recipient) {
+        if (filled_in_opts.private_message_recipient_ids.length === 0) {
             if (compose_state.composing()) {
                 cancel();
             }
             return;
         }
         // Do not open compose box if sender is not allowed to send direct message.
-        const recipient_ids_string = people.emails_strings_to_user_ids_string(
-            filled_in_opts.private_message_recipient,
-        );
+        const recipient_ids_string = util
+            .sorted_ids(filled_in_opts.private_message_recipient_ids)
+            .join(",");
 
         if (
             recipient_ids_string &&
