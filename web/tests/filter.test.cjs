@@ -2431,6 +2431,15 @@ test("navbar_helpers", ({override}) => {
             link: "/help/view-your-mentions",
         },
         {
+            terms: is_alerted,
+            is_common_narrow: true,
+            zulip_icon: "eye",
+            title: "translated: Alerted messages",
+            redirect_url_with_search: "/#narrow/is/alerted",
+            description: "translated: Messages containing alert words",
+            link: "/help/dm-mention-alert-notifications",
+        },
+        {
             terms: is_resolved,
             is_common_narrow: true,
             icon: "check",
@@ -2582,10 +2591,12 @@ test("navbar_helpers", ({override}) => {
         },
         {
             terms: is_alerted,
-            is_common_narrow: false,
-            icon: undefined,
+            is_common_narrow: true,
+            zulip_icon: "eye",
             title: "translated: Alerted messages",
-            redirect_url_with_search: "#",
+            redirect_url_with_search: "/#narrow/is/alerted",
+            description: "translated: Messages containing alert words",
+            link: "/help/dm-mention-alert-notifications",
         },
         {
             terms: is_unread,

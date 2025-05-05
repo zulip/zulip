@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
+import render_left_sidebar_alert_words_popover from "../templates/popovers/left_sidebar/left_sidebar_alert_words_popover.hbs";
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
 import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.hbs";
 import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
@@ -153,6 +154,32 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.left_sidebar_inbox_popover = null;
+            ui_util.hide_left_sidebar_menu_icon();
+        },
+    });
+
+    // Alert words settings popover
+    popover_menus.register_popover_menu(".alert-words-sidebar-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            popover_menus.popover_instances.left_sidebar_alert_words_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+
+            $popper.one("click", "#alert_words_settings", {instance}, () => {
+                window.location.href = "#alert-words-settings";
+            });
+        },
+        onShow(instance) {
+            popovers.hide_all();
+            instance.setContent(
+                ui_util.parse_html(render_left_sidebar_alert_words_popover()), // Render the content from the HBS template
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.left_sidebar_alert_words_popover = null;
             ui_util.hide_left_sidebar_menu_icon();
         },
     });

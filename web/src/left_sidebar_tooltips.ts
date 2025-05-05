@@ -87,6 +87,18 @@ export function initialize(): void {
                         ),
                     );
                     break;
+                case "alert_words":
+                    display_count = unread.get_counts().alert_word_count;
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no alerted messages} one {# Alerted message} other {# alerted messages}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
             }
 
             // Since the tooltip is attached to the anchor tag which doesn't

@@ -29,10 +29,18 @@ async function toggle_test_star_message(page: Page): Promise<void> {
 
 async function test_narrow_to_starred_messages(page: Page): Promise<void> {
     await page.click('#left-sidebar-navigation-list a[href^="#narrow/is/starred"]');
+    await page.waitForSelector(".message_row", {visible: true}); // Ensure messages are visible
+
+    await page.waitForSelector(".message_content", {visible: true, timeout: 10000}); // Ensure elements are present
+    const messages = await page.$$eval(".message_content", (elements) =>
+        elements.map((el) => el.textContent?.trim() ?? ""),
+    );
+    assert.ok(messages.length > 0, "No messages found in narrowed view.");
+    console.log("Messages found in narrowed view:", messages);
+
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [["Verona > stars", [message]]]);
 
-    // Go back to the combined feed view.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const combined_feed_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
