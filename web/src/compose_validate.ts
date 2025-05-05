@@ -652,17 +652,6 @@ export function set_user_acknowledged_stream_wildcard_flag(value: boolean): void
     user_acknowledged_stream_wildcard = value;
 }
 
-export function get_invalid_recipient_emails(): string[] {
-    const private_recipients = util.extract_pm_recipients(
-        compose_state.private_message_recipient(),
-    );
-    const invalid_recipients = private_recipients.filter(
-        (email) => !people.is_valid_email_for_compose(email),
-    );
-
-    return invalid_recipients;
-}
-
 function is_recipient_large_stream(): boolean {
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
@@ -915,42 +904,7 @@ function validate_private_message(show_banner = true): boolean {
         return false;
     }
 
-    const invalid_recipients = get_invalid_recipient_emails();
-
     let context = {};
-    if (invalid_recipients.length === 1) {
-        context = {recipient: invalid_recipients.join(",")};
-        const error_message = $t(
-            {defaultMessage: "The recipient {recipient} is not valid."},
-            context,
-        );
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.invalid_recipient,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message = error_message;
-        }
-        return false;
-    } else if (invalid_recipients.length > 1) {
-        context = {recipients: invalid_recipients.join(",")};
-        const error_message = $t(
-            {defaultMessage: "The recipients {recipients} are not valid."},
-            context,
-        );
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.invalid_recipients,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message = error_message;
-        }
-        return false;
-    }
 
     for (const user_id of user_ids) {
         if (!people.is_person_active(user_id)) {
