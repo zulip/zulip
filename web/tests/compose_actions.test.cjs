@@ -664,26 +664,34 @@ test("on_narrow", ({override, override_rewire}) => {
     narrowed_by_pm_reply = true;
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
+    let compose_defaults;
+    override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    compose_defaults = {
+        private_message_recipient: "steve@example.com",
+    };
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
-        private_message_recipient: "steve@example.com",
     });
     assert.ok(!start_called);
 
+    compose_defaults = {
+        private_message_recipient: "bot@example.com",
+    };
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
-        private_message_recipient: "bot@example.com",
     });
     assert.ok(start_called);
 
     override(realm, "realm_direct_message_permission_group", everyone.id);
     blueslip.expect("warn", "Unknown emails");
+    compose_defaults = {
+        private_message_recipient: "not@empty.com",
+    };
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
-        private_message_recipient: "not@empty.com",
     });
     assert.ok(start_called);
 
