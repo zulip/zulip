@@ -37,25 +37,12 @@ function composing_to_current_topic_narrow(): boolean {
 }
 
 function composing_to_current_private_message_narrow(): boolean {
-    const compose_state_recipient = compose_state.private_message_recipient_emails();
-    const narrow_state_recipient = narrow_state.pm_emails_string();
-    if (narrow_state_recipient === undefined) {
+    const compose_state_recipient = new Set(compose_state.private_message_recipient_ids());
+    const narrow_state_recipient = narrow_state.pm_ids_set();
+    if (narrow_state_recipient.size === 0) {
         return false;
     }
-    return (
-        Boolean(compose_state_recipient) &&
-        Boolean(narrow_state_recipient) &&
-        _.isEqual(
-            compose_state_recipient
-                .split(",")
-                .map((s) => s.trim())
-                .sort(),
-            narrow_state_recipient
-                .split(",")
-                .map((s) => s.trim())
-                .sort(),
-        )
-    );
+    return _.isEqual(narrow_state_recipient, compose_state_recipient);
 }
 
 export let update_narrow_to_recipient_visibility = (): void => {
