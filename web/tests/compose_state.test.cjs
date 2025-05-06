@@ -31,12 +31,12 @@ run_test("has_full_recipient", ({override}) => {
     $(`#compose_banners .topic_resolved`).remove = noop;
     $(".narrow_to_compose_recipients").toggleClass = noop;
 
-    let emails;
-    override(compose_pm_pill, "set_from_emails", (value) => {
-        emails = value;
+    let user_ids;
+    override(compose_pm_pill, "set_from_user_ids", (value) => {
+        user_ids = value;
     });
 
-    override(compose_pm_pill, "get_emails", () => emails);
+    override(compose_pm_pill, "get_user_ids", () => user_ids);
 
     compose_state.set_message_type("stream");
     compose_state.set_stream_id("");
@@ -51,9 +51,9 @@ run_test("has_full_recipient", ({override}) => {
     assert.equal(compose_state.has_full_recipient(), true);
 
     compose_state.set_message_type("private");
-    compose_state.private_message_recipient_emails("");
+    compose_state.private_message_recipient_ids([]);
     assert.equal(compose_state.has_full_recipient(), false);
 
-    compose_state.private_message_recipient_emails("foo@zulip.com");
+    compose_state.private_message_recipient_ids([123]);
     assert.equal(compose_state.has_full_recipient(), true);
 });

@@ -215,7 +215,7 @@ export function focus_in_empty_compose(
     // Check whether the current input element is empty for each input type.
     switch (focused_element_id) {
         case "private_message_recipient":
-            return private_message_recipient_emails().length === 0;
+            return private_message_recipient_ids().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
         case "compose_select_recipient_widget_wrapper":
@@ -263,7 +263,7 @@ export function has_full_recipient(): boolean {
         const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
         return stream_id() !== undefined && has_topic;
     }
-    return private_message_recipient_emails() !== "";
+    return private_message_recipient_ids().length > 0;
 }
 
 export function update_email(user_id: number, new_email: string): void {
