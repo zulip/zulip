@@ -61,10 +61,10 @@ export async function maybe_fetch_stream_subscribers(stream_id: number): Promise
     const subscribers_promise = (async () => {
         let subscribers: number[];
         try {
-            const xhr = await channel.get({
+            const result = await channel.get({
                 url: `/json/streams/${stream_id}/members`,
             });
-            subscribers = fetch_stream_subscribers_response_schema.parse(await xhr).subscribers;
+            subscribers = fetch_stream_subscribers_response_schema.parse(result).subscribers;
         } catch {
             blueslip.error("Failure fetching channel subscribers", {
                 stream_id,
