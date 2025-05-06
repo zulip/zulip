@@ -59,7 +59,27 @@ class FakeClassList extends RejectMissing {
     }
 }
 
+class FakeStyle extends RejectMissing {
+    #style = new Map();
+
+    get length() {
+        return this.#style.size;
+    }
+    getPropertyValue(name) {
+        return this.#style.get(name) ?? "";
+    }
+    setProperty(name, value) {
+        this.#style.set(name, String(value));
+    }
+    removeProperty(name) {
+        const value = this.#style.get(name) ?? "";
+        this.#style.delete(name);
+        return value;
+    }
+}
+
 class FakeElementState {
+    computed_style = new FakeStyle();
     event_handlers = new Map();
     delegated_event_handlers = new Map();
     is_focused = false;
@@ -133,6 +153,10 @@ class FakeDataSet {
     }
 }
 
+// https://api.jquery.com/css/
+const auto_px =
+    /^(Border(Top|Right|Bottom|Left)?(Width)?|(Margin|Padding)?(Top|Right|Bottom|Left)?|(Min|Max)?(Width|Height))$/;
+
 class FakeElement extends RejectMissing {
     _tippy = undefined;
     classList = new FakeClassList();
@@ -140,6 +164,7 @@ class FakeElement extends RejectMissing {
     innerHTML = "never-been-set";
     selectionEnd = undefined;
     selectionStart = undefined;
+    style = new FakeStyle();
     textContent = "never-been-set";
     value = undefined;
 
@@ -223,6 +248,44 @@ exports.FakeJQuery = function (selector, opts) {
                 );
             }
             return state.jquery_closest_results.get(closest_selector);
+        },
+        css(property, ...args) {
+            if (args.length === 0 && typeof property === "string") {
+                if (!(0 in this)) {
+                    return undefined;
+                }
+                return fake_element_state
+                    .get(this[0])
+                    .computed_style.getPropertyValue(decamel(property));
+            }
+
+            if (args.length === 0 && Array.isArray(property)) {
+                if (!(0 in this)) {
+                    return undefined;
+                }
+                const state = fake_element_state.get(this[0]);
+                return Object.fromEntries(
+                    property.map((key) => [
+                        key,
+                        state.computed_style.getPropertyValue(decamel(key)),
+                    ]),
+                );
+            }
+
+            for (const element of this) {
+                for (const [key, value] of Object.entries(
+                    typeof property === "string" ? {[property]: args[0]} : property,
+                )) {
+                    element.style.setProperty(
+                        decamel(key),
+                        typeof value === "number" &&
+                            auto_px.test(camel(key).replace(/^./, (c) => c.toUpperCase()))
+                            ? `${value}px`
+                            : value,
+                    );
+                }
+            }
+            return this;
         },
         data(key, ...args) {
             if (args.length === 0) {

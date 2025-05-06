@@ -228,10 +228,6 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         markdown_preview_hide_button_clicked = true;
     });
     $("#compose-send-button").removeClass("disabled-message-send-controls");
-    $("#compose .undo_markdown_preview").css = (property) => {
-        assert.equal(property, "display");
-        return "flex";
-    };
 
     banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, () => {

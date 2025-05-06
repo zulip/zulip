@@ -2579,18 +2579,10 @@ test("set_max_channel_width_css_variable", async () => {
     const $measure_div = $("<div>");
     const $root = $(":root");
 
-    $measure_div.css = () => $measure_div;
     $measure_div[0].getBoundingClientRect = () => ({width: $measure_div.text().length});
     $measure_div[0].remove = () => {};
 
-    const set_property_calls = [];
-    $root.css = (name, value) => {
-        set_property_calls.push({name, value});
-    };
-
     await stream_data.set_max_channel_width_css_variable();
 
-    assert.equal(set_property_calls.length, 1);
-    assert.equal(set_property_calls[0].name, "--longest-subscribed-channel-name-width");
-    assert.equal(set_property_calls[0].value, "3px");
+    assert.equal($root[0].style.getPropertyValue("--longest-subscribed-channel-name-width"), "3px");
 });

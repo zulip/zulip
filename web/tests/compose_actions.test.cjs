@@ -150,10 +150,6 @@ function override_private_message_recipient_ids({override}) {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        // We don't test the css calls; we just skip over them.
-        $("#compose").css = noop;
-        $(".new_message_textarea").css = noop;
-
         people.init();
         compose_state.set_message_type(undefined);
         compose_recipient.initialize();

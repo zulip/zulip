@@ -48,7 +48,6 @@ initialize_user_settings({user_settings: {}});
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
         helpers.override(current_user, "is_admin", false);
         helpers.override(realm, "realm_domains", [
             {domain: "example.com", allow_subdomains: true},

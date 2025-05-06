@@ -99,7 +99,6 @@ test("clear_search with button", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
-    $("#buddy-list-loading-subscribers").css = noop;
 
     stub_buddy_list_empty_list_message_lengths();
 
@@ -120,7 +119,6 @@ test("clear_search with button", ({override}) => {
 
 test("clear_search", ({override}) => {
     override(realm, "realm_presence_disabled", true);
-    $("#buddy-list-loading-subscribers").css = noop;
 
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
@@ -141,7 +139,6 @@ test("fetch on search", async ({override}) => {
     override(fake_buddy_list, "populate", () => {
         populate_call_count += 1;
     });
-    $("#buddy-list-loading-subscribers").css = noop;
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
 
