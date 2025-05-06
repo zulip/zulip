@@ -22,7 +22,6 @@ import type {ShowMessageViewOpts} from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
-import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as reload_state from "./reload_state.ts";
 import * as resize from "./resize.ts";
@@ -101,8 +100,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
         opts_by_message_type = {
             trigger: opts.trigger,
             message_type: "private",
-            private_message_recipient:
-                people.user_ids_to_emails_string(opts.private_message_recipient_ids) ?? "",
+            private_message_recipient_ids: opts.private_message_recipient_ids,
         };
     } else {
         opts_by_message_type = {
