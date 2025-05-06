@@ -56,7 +56,7 @@ const draft_schema = z.intersection(
         z.object({
             type: z.literal("private"),
             reply_to: z.string(),
-            private_message_recipient: z.string(),
+            private_message_recipient_ids: z.array(z.number()),
         }),
     ]),
 );
@@ -84,7 +84,8 @@ const possibly_buggy_draft_schema = z.intersection(
         z.object({
             type: z.literal("private"),
             reply_to: z.string(),
-            private_message_recipient: z.string(),
+            private_message_recipient: z.string().optional(),
+            private_message_recipient_ids: z.array(z.number()).optional(),
         }),
     ]),
 );
@@ -117,8 +118,23 @@ export const draft_model = (function () {
         const parsed_drafts = possibly_buggy_drafts_schema.parse(drafts);
         const valid_drafts: Record<string, LocalStorageDraft> = {};
         for (const [draft_id, draft] of Object.entries(parsed_drafts)) {
-            if (draft.type !== "stream") {
-                valid_drafts[draft_id] = draft;
+            // TODO/compatibility: We should eventually be able to delete this. But
+            // probably not anytime soon. Once you can no longer upgrade to `main` without
+            // first upgrading to 11.0, we can be certain clients that have actually logged
+            // in have experienced this conversion code... but even after that, a client
+            // may still have old-style drafts for several months.
+            if (draft.type === "private") {
+                if (draft.private_message_recipient_ids === undefined) {
+                    assert(draft.private_message_recipient !== undefined);
+                    draft.private_message_recipient_ids = people.emails_string_to_user_ids(
+                        draft.private_message_recipient,
+                    );
+                    delete draft.private_message_recipient;
+                }
+                valid_drafts[draft_id] = {
+                    ...draft,
+                    private_message_recipient_ids: draft.private_message_recipient_ids,
+                };
                 continue;
             }
 
@@ -314,12 +330,12 @@ export function snapshot_message(): LocalStorageDraft | undefined {
         updatedAt: getTimestamp(),
     };
     if (message.type === "private") {
-        const recipient = compose_state.private_message_recipient_emails();
+        const recipient_emails = compose_state.private_message_recipient_emails();
         return {
             ...message,
             type: "private",
-            reply_to: recipient,
-            private_message_recipient: recipient,
+            reply_to: recipient_emails,
+            private_message_recipient_ids: compose_state.private_message_recipient_ids(),
             is_sending_saving: false,
             drafts_version: CURRENT_DRAFT_VERSION,
         };
@@ -344,7 +360,7 @@ type ComposeArguments =
       }
     | {
           type: "private";
-          private_message_recipient: string;
+          private_message_recipient_ids: number[];
           content: string;
       };
 
@@ -363,13 +379,13 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
         };
     }
 
-    const recipient_emails = draft.private_message_recipient
-        .split(",")
-        .filter((email) => people.is_valid_email_for_compose(email));
-    const sorted_recipient_emails = people.sort_emails_by_username(recipient_emails);
+    const recipient_ids = draft.private_message_recipient_ids.filter((user_id) =>
+        people.is_valid_user_id_for_compose(user_id),
+    );
+    const sorted_recipient_ids = people.sort_user_ids_by_username(recipient_ids);
     return {
         type: "private",
-        private_message_recipient: sorted_recipient_emails.join(","),
+        private_message_recipient_ids: sorted_recipient_ids,
         content: draft.content,
     };
 }
@@ -460,7 +476,7 @@ export function rewire_update_draft(value: typeof update_draft): void {
 export function current_recipient_data(): {
     stream_name: string | undefined;
     topic: string | undefined;
-    private_recipients: string | undefined;
+    private_recipient_ids: number[] | undefined;
 } {
     // Prioritize recipients from the compose box first. If the compose
     // box isn't open, just return data from the current narrow.
@@ -469,7 +485,7 @@ export function current_recipient_data(): {
         return {
             stream_name,
             topic: narrow_state.topic(),
-            private_recipients: narrow_state.pm_emails_string(),
+            private_recipient_ids: [...narrow_state.pm_ids_set()],
         };
     }
 
@@ -478,26 +494,26 @@ export function current_recipient_data(): {
         return {
             stream_name,
             topic: compose_state.topic(),
-            private_recipients: undefined,
+            private_recipient_ids: undefined,
         };
     } else if (compose_state.get_message_type() === "private") {
         return {
             stream_name: undefined,
             topic: undefined,
-            private_recipients: compose_state.private_message_recipient_emails(),
+            private_recipient_ids: compose_state.private_message_recipient_ids(),
         };
     }
     return {
         stream_name: undefined,
         topic: undefined,
-        private_recipients: undefined,
+        private_recipient_ids: undefined,
     };
 }
 
 export function filter_drafts_by_compose_box_and_recipient(
     drafts = draft_model.get(),
 ): Record<string, LocalStorageDraft> {
-    const {stream_name, topic, private_recipients} = current_recipient_data();
+    const {stream_name, topic, private_recipient_ids} = current_recipient_data();
     const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
     const narrow_drafts_ids = [];
     for (const [id, draft] of Object.entries(drafts)) {
@@ -527,17 +543,9 @@ export function filter_drafts_by_compose_box_and_recipient(
         // Match by direct message recipient.
         else if (
             draft.type === "private" &&
-            private_recipients &&
-            _.isEqual(
-                draft.private_message_recipient
-                    .split(",")
-                    .map((s) => s.trim())
-                    .sort(),
-                private_recipients
-                    .split(",")
-                    .map((s) => s.trim())
-                    .sort(),
-            )
+            private_recipient_ids &&
+            private_recipient_ids.length > 0 &&
+            _.isEqual(new Set(draft.private_message_recipient_ids), new Set(private_recipient_ids))
         ) {
             narrow_drafts_ids.push(id);
         }
@@ -655,7 +663,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         };
     }
 
-    if (draft.private_message_recipient === "") {
+    if (draft.private_message_recipient_ids.length === 0) {
         // No users were set as DM recipients when the draft was created.
         return {
             draft_id: draft.id,
@@ -669,14 +677,14 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
     }
 
     let is_dm_with_self = false;
-    const emails = util.extract_pm_recipients(draft.private_message_recipient);
-    if (emails.length === 1) {
-        const user = people.get_by_email(emails[0]!);
+    const user_ids = draft.private_message_recipient_ids;
+    if (user_ids.length === 1) {
+        const user = people.get_by_user_id(user_ids[0]!);
         if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
             is_dm_with_self = true;
         }
     }
-    const recipients = people.emails_to_full_names_string(emails);
+    const recipients = people.user_ids_to_full_names_string(user_ids);
     return {
         draft_id: draft.id,
         is_stream: false,

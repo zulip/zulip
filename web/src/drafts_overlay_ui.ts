@@ -45,8 +45,10 @@ function restore_draft(draft_id: string): void {
             );
         }
     } else {
-        if (compose_args.private_message_recipient !== "") {
-            message_view.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
+        if (compose_args.private_message_recipient_ids.length > 0) {
+            const private_message_recipient_emails =
+                people.user_ids_to_emails_string(compose_args.private_message_recipient_ids) ?? "";
+            message_view.show([{operator: "dm", operand: private_message_recipient_emails}], {
                 trigger: "restore draft",
             });
         }
@@ -148,10 +150,10 @@ export function launch(): void {
     }
 
     function get_header_for_narrow_drafts(): string {
-        const {stream_name, topic, private_recipients} = drafts.current_recipient_data();
-        if (private_recipients) {
-            if (!private_recipients.includes(",")) {
-                const user = people.get_by_email(private_recipients);
+        const {stream_name, topic, private_recipient_ids} = drafts.current_recipient_data();
+        if (private_recipient_ids && private_recipient_ids.length > 0) {
+            if (private_recipient_ids.length === 1) {
+                const user = people.get_by_user_id(private_recipient_ids[0]!);
                 if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
                     return $t({defaultMessage: "Drafts from conversation with yourself"});
                 }
@@ -159,7 +161,7 @@ export function launch(): void {
             return $t(
                 {defaultMessage: "Drafts from conversation with {recipient}"},
                 {
-                    recipient: people.emails_to_full_names_string(private_recipients.split(",")),
+                    recipient: people.user_ids_to_full_names_string(private_recipient_ids),
                 },
             );
         }
