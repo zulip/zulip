@@ -357,6 +357,7 @@ test_people("basics", ({override}) => {
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
+    assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
     let bot_user_ids = people.get_bot_ids();
     assert.equal(bot_user_ids.length, 0);
@@ -368,6 +369,7 @@ test_people("basics", ({override}) => {
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
+    assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
@@ -923,20 +925,17 @@ test_people("multi_user_methods", () => {
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
 });
 
-test_people("emails_to_full_names_string", () => {
+test_people("user_ids_to_full_names_string", () => {
     people.add_active_user(charles);
     people.add_active_user(maria);
     assert.equal(
-        people.emails_to_full_names_string([charles.email, maria.email]),
+        people.user_ids_to_full_names_string([charles.user_id, maria.user_id]),
         `${charles.full_name}, ${maria.full_name}`,
     );
 
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     assert.equal(
-        people.emails_to_full_names_string([
-            charles.email,
-            "unknown-email@example.com",
-            maria.email,
-        ]),
+        people.user_ids_to_full_names_string([charles.user_id, 9999, maria.user_id]),
         `${charles.full_name}, ${maria.full_name}, translated: Unknown user`,
     );
 });
@@ -1336,28 +1335,25 @@ test_people("initialize", () => {
 
     const params = {};
 
-    params.realm_non_active_users = [
-        {
-            email: "retiree@example.com",
-            user_id: 15,
-            full_name: "Retiree",
-        },
-    ];
+    const retiree = {
+        email: "retiree@example.com",
+        user_id: 15,
+        full_name: "Retiree",
+    };
+    params.realm_non_active_users = [retiree];
 
-    params.realm_users = [
-        {
-            email: "alice@example.com",
-            user_id: 16,
-            full_name: "Alice",
-        },
-    ];
-    params.cross_realm_bots = [
-        {
-            email: "bot@example.com",
-            user_id: 17,
-            full_name: "Test Bot",
-        },
-    ];
+    const alice = {
+        email: "alice@example.com",
+        user_id: 16,
+        full_name: "Alice",
+    };
+    params.realm_users = [alice];
+    const test_bot = {
+        email: "bot@example.com",
+        user_id: 17,
+        full_name: "Test Bot",
+    };
+    params.cross_realm_bots = [test_bot];
 
     const my_user_id = 42;
     people.initialize(my_user_id, params);
@@ -1365,9 +1361,14 @@ test_people("initialize", () => {
     assert.equal(people.is_active_user_for_popover(17), true);
     assert.ok(people.is_cross_realm_email("bot@example.com"));
     assert.ok(people.is_valid_email_for_compose("bot@example.com"));
+    assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
     assert.ok(people.is_valid_email_for_compose("alice@example.com"));
+    assert.ok(people.is_valid_user_id_for_compose(alice.user_id));
     assert.ok(people.is_valid_email_for_compose("retiree@example.com"));
+    assert.ok(people.is_valid_user_id_for_compose(retiree.user_id));
     assert.ok(!people.is_valid_email_for_compose("totally-bogus-username@example.com"));
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.ok(!people.is_valid_user_id_for_compose(9999));
     assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
     assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
     assert.ok(people.is_my_user_id(42));
@@ -1603,6 +1604,23 @@ test_people("user_can_initiate_direct_message_thread", ({override}) => {
 
     override(realm, "realm_direct_message_initiator_group", everyone.id);
     assert.ok(people.user_can_initiate_direct_message_thread("32"));
+});
+
+test_people("sort_by_username", () => {
+    people.add_active_user(maria);
+    people.add_active_user(cedar);
+    people.add_active_user(leo);
+
+    assert.deepEqual(
+        people.sort_user_ids_by_username([maria.user_id, cedar.user_id, leo.user_id]),
+        [cedar.user_id, leo.user_id, maria.user_id],
+    );
+
+    assert.deepEqual(people.sort_emails_by_username([maria.email, cedar.email, leo.email]), [
+        cedar.email,
+        leo.email,
+        maria.email,
+    ]);
 });
 
 // reset to native Date()

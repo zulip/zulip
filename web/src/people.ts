@@ -189,6 +189,17 @@ export function update_email(user_id: number, new_email: string): void {
     // still work correctly.
 }
 
+export function sort_user_ids_by_username(user_ids: number[]): number[] {
+    const name_id_dict = user_ids.map((user_id, index) => ({
+        name: people_by_user_id_dict.has(user_id)
+            ? people_by_user_id_dict.get(user_id)?.full_name
+            : "?",
+        user_id: user_ids[index]!,
+    }));
+
+    return name_id_dict.sort((a, b) => util.strcmp(a.name!, b.name!)).map(({user_id}) => user_id);
+}
+
 // A function that sorts Email according to the user's full name
 export function sort_emails_by_username(emails: string[]): (string | undefined)[] {
     const user_ids = emails.map((email) => get_user_id(email));
@@ -346,10 +357,9 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
     return user_ids.join(",");
 }
 
-export function emails_to_full_names_string(emails: string[]): string {
-    const names = emails.map((email) => {
-        email = email.trim();
-        const person = get_by_email(email);
+export function user_ids_to_full_names_string(user_ids: number[]): string {
+    const names = user_ids.map((user_id) => {
+        const person = maybe_get_user_by_id(user_id);
         if (person !== undefined) {
             return person.full_name;
         }
@@ -957,6 +967,21 @@ export function small_avatar_url(message: Message): string {
     }
 
     return gravatar_url_for_email(email);
+}
+
+export function is_valid_user_id_for_compose(user_id: number): boolean {
+    if (cross_realm_dict.has(user_id)) {
+        return true;
+    }
+
+    const person = maybe_get_user_by_id(user_id);
+    if (!person || person.is_inaccessible_user) {
+        return false;
+    }
+
+    // we allow deactivated users in compose so that
+    // one can attempt to reply to threads that contained them.
+    return true;
 }
 
 export function is_valid_email_for_compose(email: string): boolean {
