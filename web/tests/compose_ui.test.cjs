@@ -560,18 +560,12 @@ run_test("quote_message", ({override, override_rewire}) => {
 });
 
 run_test("set_compose_box_top", () => {
-    let compose_top = "";
-    $("#compose").css = (arg, val) => {
-        assert.equal(arg, "top");
-        compose_top = val;
-    };
-
     $("#navbar-fixed-container").set_height(50);
     compose_ui.set_compose_box_top(true);
-    assert.equal(compose_top, "50px");
+    assert.equal($("#compose")[0].style.getPropertyValue("top"), "50px");
 
     compose_ui.set_compose_box_top(false);
-    assert.equal(compose_top, "");
+    assert.equal($("#compose")[0].style.getPropertyValue("top"), "");
 });
 
 run_test("test_compose_height_changes", ({override, override_rewire}) => {

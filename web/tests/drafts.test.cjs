@@ -155,7 +155,6 @@ const short_msg = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#draft_overlay").css = noop;
         $(".top_left_drafts").set_find_results(".unread_count", $("<unread-count-stub>"));
         $(".compose-drafts-count-container").set_find_results(
             ".compose-drafts-count",

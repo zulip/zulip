@@ -2,7 +2,6 @@
 
 const assert = require("node:assert/strict");
 
-const {noop} = require("./test.cjs");
 const $ = require("./zjquery.cjs");
 
 class FakeComposeBox {
@@ -36,7 +35,6 @@ class FakeComposeBox {
         this.$content_textarea.val("default message");
         this.$content_textarea.trigger("blur");
 
-        this.$preview_message_area.css = noop;
         $(".compose-submit-button .loader").show();
     }
 
