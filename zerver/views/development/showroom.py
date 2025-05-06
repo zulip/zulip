@@ -48,3 +48,16 @@ def showroom_component_banners(request: HttpRequest) -> HttpResponse:
         "isolated_page": True,
     }
     return render(request, "zerver/development/showroom/banners.html", context)
+
+
+def showroom_component_inputs(request: HttpRequest) -> HttpResponse:
+    context = {
+        "background_colors": background_colors,
+        "icons": get_svg_filenames(),
+        "page_is_showroom": True,
+        "showroom_component": "inputs",
+        "doc_root_title": "Input styles browser",
+        # We set isolated_page to avoid clutter from footer/header.
+        "isolated_page": True,
+    }
+    return render(request, "zerver/development/showroom/inputs.html", context)
