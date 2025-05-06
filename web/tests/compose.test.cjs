@@ -48,10 +48,9 @@ const server_events = mock_esm("../src/server_events");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
 const onboarding_steps = mock_esm("../src/onboarding_steps");
-mock_esm("../src/group_permission_settings", {
-    get_group_permission_setting_config: () => ({
-        allow_everyone_group: true,
-    }),
+mock_esm("../src/settings_data", {
+    user_has_permission_for_group_setting: () => true,
+    user_can_access_all_other_users: () => true,
 });
 
 const compose_ui = zrequire("compose_ui");
@@ -519,9 +518,9 @@ test_ui("finish", ({override, override_rewire}) => {
 
         override_rewire(compose_ui, "compose_spinner_visible", false);
         compose_state.set_message_type("private");
-        override(compose_pm_pill, "get_emails", () => "bob@example.com");
-        override(compose_pm_pill, "get_user_ids", () => []);
-        override(realm, "realm_direct_message_permission_group", nobody.id);
+        override(compose_pm_pill, "get_emails", () => bob.email);
+        override(compose_pm_pill, "get_user_ids", () => [bob.user_id]);
+        override(realm, "realm_direct_message_permission_group", everyone.id);
         override(realm, "realm_direct_message_initiator_group", everyone.id);
 
         let compose_finished_event_checked = false;
