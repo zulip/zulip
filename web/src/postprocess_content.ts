@@ -126,12 +126,10 @@ export function postprocess_content(html: string): string {
                 // these extremely tall or extremely wide images, and
                 // use a subtler background color than on other images
                 const image_min_aspect_ratio = 0.4;
-                // "Dinky" images are those that are smaller than the
-                // 10em box reserved for thumbnails
+                // "Dinky" images are those that are shorter than the
+                // 10em height reserved for thumbnails
                 const image_box_em = 10;
-                const is_dinky_image =
-                    original_width / font_size_in_use <= image_box_em &&
-                    original_height / font_size_in_use <= image_box_em;
+                const is_dinky_image = original_height / font_size_in_use <= image_box_em;
                 const has_extreme_aspect_ratio =
                     original_width / original_height <= image_min_aspect_ratio ||
                     original_height / original_width <= image_min_aspect_ratio;
@@ -140,8 +138,22 @@ export function postprocess_content(html: string): string {
                 inline_image.setAttribute("width", `${original_width}`);
                 inline_image.setAttribute("height", `${original_height}`);
 
+                // Despite setting `width` and `height` values above, the
+                // flexbox gallery collapses until images have loaded. We
+                // therefore have to avoid the layout shift that would
+                // otherwise cause by setting the only the width attribute
+                // here. And by setting this value in ems, we ensure that
+                // images scale as users adjust the information-density
+                // settings.
+                inline_image.style.setProperty(
+                    "width",
+                    `${(image_box_em * font_size_in_use * original_width) / original_height / font_size_in_use}em`,
+                );
+
                 if (is_dinky_image) {
                     inline_image.classList.add("dinky-thumbnail");
+                    // For dinky images, we just set the original width
+                    inline_image.style.setProperty("width", `${original_width}px`);
                 }
 
                 if (has_extreme_aspect_ratio) {
