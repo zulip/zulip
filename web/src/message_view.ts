@@ -10,6 +10,7 @@ import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
+import type {NarrowActivateOpts} from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
@@ -258,10 +259,7 @@ function create_and_update_message_list(
 function handle_post_message_list_change(
     id_info: TargetMessageIdInfo,
     msg_list: MessageList,
-    opts: {
-        change_hash: boolean;
-        show_more_topics: boolean;
-    } & ShowMessageViewOpts,
+    opts: NarrowActivateOpts,
     select_immediately: boolean,
     select_opts: SelectIdOpts,
     then_select_offset: number | undefined,
