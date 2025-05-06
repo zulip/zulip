@@ -72,7 +72,6 @@
 .messagebox {
     grid-area: messagebox;
     word-wrap: break-word;
-    cursor: pointer;
     border: none;
     /* The left padding value accounts for a 2px
       unread marker, ensuring a uniform 5px of
