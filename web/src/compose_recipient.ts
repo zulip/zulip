@@ -152,7 +152,7 @@ function switch_message_type(message_type: MessageType): void {
         trigger: "switch_message_type",
         stream_id: compose_state.stream_id()!,
         topic: compose_state.topic(),
-        private_message_recipient: compose_state.private_message_recipient_emails(),
+        private_message_recipient_ids: compose_state.private_message_recipient_ids(),
     };
     update_compose_for_message_type(opts);
     update_compose_area_placeholder_text();
