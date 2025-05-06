@@ -1557,13 +1557,29 @@
         var(--color-markdown-pre-border)
     );
     --color-markdown-link: light-dark(
-        hsl(200deg 100% 40%),
-        var(--color-text-generic-link)
+        hsl(210deg 94% 42%),
+        hsl(200deg 100% 43%)
+    );
+    --color-markdown-link-visited: light-dark(
+        hsl(210deg 94% 42% / 20%),
+        hsl(200deg 100% 43% / 30%)
     );
     --color-markdown-code-link: var(--color-markdown-link);
     --color-markdown-link-hover: light-dark(
-        hsl(200deg 100% 25%),
-        var(--color-text-generic-link-interactive)
+        hsl(212deg 100% 50%),
+        hsl(200deg 100% 60%)
+    );
+    --color-markdown-link-hover-decoration: light-dark(
+        hsl(210deg 100% 50% / 70%),
+        var(--color-markdown-link-hover)
+    );
+    --color-markdown-link-active: light-dark(
+        hsl(212deg 100% 30%),
+        hsl(200deg 100% 43%)
+    );
+    --color-markdown-link-active-decoration: light-dark(
+        hsl(210deg 100% 30%),
+        hsl(200deg 100% 40%)
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
     --color-background-image-thumbnail: light-dark(
