@@ -470,7 +470,7 @@
                but further care is needed because different layout mechanisms,
                including inline-block, can ignore those dimensions. For that
                reason, we enforce a minimum 4em square for "dinky" images,
-               and a maximum 10em square for all others.
+               and set the scaled-down width on all others via JavaScript.
 
                If there are several images next to each other, we display
                them in a grid format; the same considerations require
@@ -483,34 +483,19 @@
             min-width: 4em;
             min-height: 4em;
 
-            /* Constrain height and width to a 10em box. */
-            max-width: 10em;
+            /* Constrain height to 10em, but otherwise keep
+               the width to the size of the gallery, and
+               therefore the message area. */
             max-height: 10em;
+            max-width: 100%;
 
-            /* Allow height and width to grow as needed... */
+            /* Allow height and width to grow as needed, though
+               note we set the scaled-down `width` property on
+               each image in JavaScript to keep flexbox from
+               collapsing to the min-height and min-width values
+               set above... */
             width: auto;
             height: auto;
-
-            /* But set specific widths based on the image's
-               orientation. */
-            &.landscape-thumbnail {
-                width: 10em;
-
-                /* For dinky thumbnails (those whose dimensions are
-                   less than 10em on both sides), we set a 4em
-                   thumbnail. */
-                &.dinky-thumbnail {
-                    width: 4em;
-                }
-            }
-
-            &.portrait-thumbnail {
-                height: 10em;
-
-                &.dinky-thumbnail {
-                    height: 4em;
-                }
-            }
         }
 
         img.image-loading-placeholder {
