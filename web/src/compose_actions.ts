@@ -17,6 +17,7 @@ import * as drafts from "./drafts.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
+import type {ShowMessageViewOpts} from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
@@ -553,12 +554,10 @@ export function rewire_on_topic_narrow(value: typeof on_topic_narrow): void {
     on_topic_narrow = value;
 }
 
-// TODO/typescript: Fill this in when converting narrow.js to typescripot.
-type NarrowActivateOpts = {
-    trigger?: string;
-    force_close?: boolean;
-    private_message_recipient?: string;
-};
+export type NarrowActivateOpts = {
+    change_hash: boolean;
+    show_more_topics: boolean;
+} & ShowMessageViewOpts;
 
 export function on_narrow(opts: NarrowActivateOpts): void {
     // We use force_close when jumping between direct message narrows with
@@ -587,12 +586,12 @@ export function on_narrow(opts: NarrowActivateOpts): void {
     }
 
     if (narrow_state.narrowed_by_pm_reply()) {
-        opts = fill_in_opts_from_current_narrowed_view({
+        const filled_in_opts = fill_in_opts_from_current_narrowed_view({
             ...opts,
             message_type: "private",
         });
         // Do not open compose box if an invalid recipient is present.
-        if (!opts.private_message_recipient) {
+        if (!filled_in_opts.private_message_recipient) {
             if (compose_state.composing()) {
                 cancel();
             }
@@ -600,7 +599,7 @@ export function on_narrow(opts: NarrowActivateOpts): void {
         }
         // Do not open compose box if sender is not allowed to send direct message.
         const recipient_ids_string = people.emails_strings_to_user_ids_string(
-            opts.private_message_recipient,
+            filled_in_opts.private_message_recipient,
         );
 
         if (
