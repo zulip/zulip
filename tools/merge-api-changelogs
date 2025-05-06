@@ -93,7 +93,7 @@ def update_feature_level_in_api_docs(new_feature_level: int) -> None:
         for line in lines:
             old_line = line
             for file_name in changelog_files_list:
-                temporary_feature_level = file_name
+                temporary_feature_level = file_name[: -len(".md")]
                 line = line.replace(temporary_feature_level, str(new_feature_level))
 
             if old_line != line:
