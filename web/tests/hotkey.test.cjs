@@ -469,7 +469,6 @@ test_while_not_editing_text("motion_keys", () => {
         page_down: 34,
         spacebar: 32,
         up_arrow: 38,
-        "+": 187,
     };
 
     function process(name) {
