@@ -518,7 +518,6 @@ test_ui("finish", ({override, override_rewire}) => {
 
         override_rewire(compose_ui, "compose_spinner_visible", false);
         compose_state.set_message_type("private");
-        override(compose_pm_pill, "get_emails", () => bob.email);
         override(compose_pm_pill, "get_user_ids", () => [bob.user_id]);
         override(realm, "realm_direct_message_permission_group", everyone.id);
         override(realm, "realm_direct_message_initiator_group", everyone.id);

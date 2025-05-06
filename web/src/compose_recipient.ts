@@ -72,9 +72,9 @@ export let update_narrow_to_recipient_visibility = (): void => {
             return;
         }
     } else if (message_type === "private") {
-        const recipients = compose_state.private_message_recipient_emails();
+        const recipients = compose_state.private_message_recipient_ids();
         if (
-            recipients &&
+            recipients.length > 0 &&
             !composing_to_current_private_message_narrow() &&
             compose_state.has_full_recipient()
         ) {
@@ -287,7 +287,7 @@ function on_hidden_callback(): void {
         // after updating the stream.
         ui_util.place_caret_at_end(util.the($("input#stream_message_recipient_topic")));
     } else {
-        if (compose_state.private_message_recipient_emails().length === 0) {
+        if (compose_state.private_message_recipient_ids().length === 0) {
             $("#private_message_recipient").trigger("focus").trigger("select");
         } else {
             $("textarea#compose-textarea").trigger("focus");
