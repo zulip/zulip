@@ -90,8 +90,7 @@ test("patch", () => {
         },
 
         check_ajax_options(options) {
-            assert.equal(options.type, "POST");
-            assert.equal(options.data.method, "PATCH");
+            assert.equal(options.type, "PATCH");
             assert.equal(options.dataType, "json");
 
             // Just make sure these don't explode.
@@ -193,38 +192,6 @@ test("normal_post", () => {
 
             options.simulate_error();
             assert.ok(orig_error_called);
-        },
-    });
-});
-
-test("patch_with_form_data", () => {
-    let appended;
-
-    const data = {
-        append(k, v) {
-            assert.equal(k, "method");
-            assert.equal(v, "PATCH");
-            appended = true;
-        },
-    };
-
-    test_with_mock_ajax({
-        run_code() {
-            channel.patch({
-                data,
-                url: "/json/endpoint",
-                processData: false,
-            });
-            assert.ok(appended);
-        },
-
-        check_ajax_options(options) {
-            assert.equal(options.type, "POST");
-            assert.equal(options.dataType, "json");
-
-            // Just make sure these don't explode.
-            options.simulate_success();
-            options.simulate_error();
         },
     });
 });
