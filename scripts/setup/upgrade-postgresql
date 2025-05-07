@@ -88,7 +88,7 @@ fi
 
 # Capture the output so we know where the path to the post-upgrade scripts is
 UPGRADE_LOG=$(mktemp "/var/log/zulip/upgrade-postgresql-$UPGRADE_FROM-$UPGRADE_TO.XXXXXXXXX.log")
-pg_upgradecluster -v "$UPGRADE_TO" "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
+pg_upgradecluster -v "$UPGRADE_TO" "$UPGRADE_FROM" main --method=upgrade --link --no-start | tee "$UPGRADE_LOG"
 SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPGRADE_TO-main.*" "$UPGRADE_LOG" || true)
 
 # If the upgrade completed successfully, lock in the new version in
@@ -96,14 +96,7 @@ SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPG
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
 # Make sure the new PostgreSQL is running
-start_main_cluster="$(
-    pg_lsclusters --json \
-        | jq --arg pg_version "$UPGRADE_TO" -r \
-            '.[] | select((.version|tostring == $ARGS.named.pg_version) and (.cluster == "main") and (.running != 1)) | .cluster'
-)"
-if [ -n "$start_main_cluster" ]; then
-    pg_ctlcluster "$UPGRADE_TO" main start
-fi
+pg_ctlcluster "$UPGRADE_TO" main start
 
 # Update the statistics
 su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"
