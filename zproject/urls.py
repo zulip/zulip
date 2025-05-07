@@ -45,7 +45,7 @@ from zerver.views.auth import (
     start_social_login,
     start_social_signup,
 )
-from zerver.views.channel_folders import create_channel_folder
+from zerver.views.channel_folders import create_channel_folder, get_channel_folders
 from zerver.views.compatibility import check_global_compatibility
 from zerver.views.custom_profile_fields import (
     create_realm_custom_profile_field,
@@ -532,6 +532,7 @@ v1_api_and_json_patterns = [
         DELETE=remove_subscriptions_backend,
     ),
     rest_path("channel_folders/create", POST=create_channel_folder),
+    rest_path("channel_folders", GET=get_channel_folders),
     # topic-muting -> zerver.views.user_topics
     # (deprecated and will be removed once clients are migrated to use '/user_topics')
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
