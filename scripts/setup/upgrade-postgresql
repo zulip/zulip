@@ -76,7 +76,12 @@ fi
     ZULIP_CONF="${TEMP_CONF_DIR}/zulip.conf"
     crudini --set "$ZULIP_CONF" postgresql version "$UPGRADE_TO"
     crudini --set "$ZULIP_CONF" machine puppet_classes zulip::profile::base,zulip::postgresql_base
-    touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
+
+    if [ -f "/usr/share/postgresql/$UPGRADE_FROM/pgroonga_setup.sql.applied" ]; then
+        # This file is intentionally blank, to trigger always running
+        # `ALTER EXTENSION pgroonga UPDATE` and not `CREATE EXTENSION pgroonga`.
+        touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
+    fi
 
     FACTER_LEAVE_SUPERVISOR=true "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"
     rm -rf "$TEMP_CONF_DIR"
