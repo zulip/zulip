@@ -487,9 +487,9 @@
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
     allow elements like DM pills to stack without breaking out of their
-    flex item. 2.1786em is 30.5px at 14px/1em.
+    flex item. 2em is 32px at 16px/1em.
     */
-    --compose-recipient-box-min-height: 2.1786em;
+    --compose-recipient-box-min-height: 2em;
     /* 28px at 14px/1em */
     /* Note that this variable can only be used in contexts where
        the font-size doesn't deviate from the base font-size;
