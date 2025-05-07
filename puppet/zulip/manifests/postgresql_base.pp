@@ -47,12 +47,13 @@ class zulip::postgresql_base {
     ensure  => link,
     require => Package[$postgresql],
     target  => $postgresql_dict_dict,
+    tag     => ['postgresql_upgrade'],
   }
   file { "${tsearch_datadir}/en_us.affix":
     ensure  => link,
     require => Package[$postgresql],
     target  => $postgresql_dict_affix,
-
+    tag     => ['postgresql_upgrade'],
   }
   file { "${tsearch_datadir}/zulip_english.stop":
     ensure  => file,
@@ -61,6 +62,7 @@ class zulip::postgresql_base {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/postgresql/zulip_english.stop',
+    tag     => ['postgresql_upgrade'],
   }
   zulip::nagios_plugins { 'zulip_postgresql': }
 
@@ -73,6 +75,7 @@ class zulip::postgresql_base {
         Package[$postgresql],
         Exec[$setup_system_deps]
       ],
+      tag     => ['postgresql_upgrade'],
     }
     exec { 'pgroonga-config':
       require => Package["${postgresql}-pgdg-pgroonga"],
