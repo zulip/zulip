@@ -55,6 +55,8 @@
         {% set user_data = realm_support_data[realm.id].user_data %}
         {% include 'corporate/support/basic_realm_data.html' %}
     {% endwith %}
+    <br />
+    <b>File upload usage</b>: {{ realm_support_data[realm.id].file_upload_usage }}<br />
 </div>
 <div>
     <div class="realm-management-actions">
