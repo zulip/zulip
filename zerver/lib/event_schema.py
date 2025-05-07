@@ -24,6 +24,7 @@ from zerver.lib.event_types import (
     EventAttachmentRemove,
     EventAttachmentUpdate,
     EventChannelFolderAdd,
+    EventChannelFolderUpdate,
     EventCustomProfileFields,
     EventDefaultStreamGroups,
     EventDefaultStreams,
@@ -232,6 +233,7 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 # TODO: work through the bottom of this file to try to find ways to
 #       simplify our types or make them more robust
 
+_check_channel_folder_update = make_checker(EventChannelFolderUpdate)
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
 _check_muted_topics = make_checker(EventMutedTopics)
@@ -265,6 +267,13 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     timezone=PersonTimezone,
     is_active=PersonIsActive,
 )
+
+
+def check_channel_folder_update(var_name: str, event: dict[str, object], fields: set[str]) -> None:
+    _check_channel_folder_update(var_name, event)
+
+    assert isinstance(event["data"], dict)
+    assert set(event["data"].keys()) == fields
 
 
 def check_delete_message(
