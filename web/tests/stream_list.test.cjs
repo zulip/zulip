@@ -397,7 +397,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
 
     mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
-    $stream_li1.children = () => ({
+    $stream_li1.set_children_results("div.bottom_left_row", {
         append($element) {
             assert.equal($element.selector, "<filter-topics-stub>");
             filter_topics_appended = true;
