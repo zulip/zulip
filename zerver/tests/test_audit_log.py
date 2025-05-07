@@ -12,7 +12,13 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
-from zerver.actions.channel_folders import check_add_channel_folder
+from zerver.actions.channel_folders import (
+    check_add_channel_folder,
+    do_archive_channel_folder,
+    do_change_channel_folder_description,
+    do_change_channel_folder_name,
+    do_unarchive_channel_folder,
+)
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
@@ -1553,6 +1559,73 @@ class TestRealmAuditLog(ZulipTestCase):
             realm=iago.realm,
             event_time__gte=now,
             event_type=AuditLogEventType.CHANNEL_FOLDER_CREATED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+
+        do_change_channel_folder_name(
+            channel_folder,
+            "Web frontend",
+            acting_user=iago,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_NAME_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {RealmAuditLog.OLD_VALUE: "Frontend", RealmAuditLog.NEW_VALUE: "Web frontend"},
+        )
+
+        do_change_channel_folder_description(
+            channel_folder,
+            "Channels for web frontend discussion",
+            acting_user=iago,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_DESCRIPTION_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: "Channels for frontend discussions",
+                RealmAuditLog.NEW_VALUE: "Channels for web frontend discussion",
+            },
+        )
+
+        do_archive_channel_folder(channel_folder, acting_user=iago)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_ARCHIVED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+
+        do_unarchive_channel_folder(channel_folder, acting_user=iago)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_UNARCHIVED,
         )
         self.assert_length(audit_log_entries, 1)
         self.assertIsNone(audit_log_entries[0].modified_user)

@@ -27,7 +27,13 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
-from zerver.actions.channel_folders import check_add_channel_folder
+from zerver.actions.channel_folders import (
+    check_add_channel_folder,
+    do_archive_channel_folder,
+    do_change_channel_folder_description,
+    do_change_channel_folder_name,
+    do_unarchive_channel_folder,
+)
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
@@ -156,6 +162,7 @@ from zerver.lib.event_schema import (
     check_attachment_remove,
     check_attachment_update,
     check_channel_folder_add,
+    check_channel_folder_update,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
@@ -5444,3 +5451,39 @@ class ChannelFolderActionTest(BaseAction):
         with self.verify_action() as events:
             check_add_channel_folder(folder_name, folder_description, acting_user=self.user_profile)
         check_channel_folder_add("events[0]", events[0])
+
+    def test_channel_folder_update_event(self) -> None:
+        channel_folder = check_add_channel_folder(
+            "Frontend", "Channels for frontend discussion", acting_user=self.user_profile
+        )
+        iago = self.example_user("iago")
+
+        with self.verify_action() as events:
+            do_change_channel_folder_name(channel_folder, "Web frontend", acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"name"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertEqual(events[0]["data"]["name"], "Web frontend")
+
+        with self.verify_action() as events:
+            do_change_channel_folder_description(
+                channel_folder, "Channels for **frontend** discussions", acting_user=iago
+            )
+        check_channel_folder_update("events[0]", events[0], {"description", "rendered_description"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertEqual(events[0]["data"]["description"], "Channels for **frontend** discussions")
+        self.assertEqual(
+            events[0]["data"]["rendered_description"],
+            "<p>Channels for <strong>frontend</strong> discussions</p>",
+        )
+
+        with self.verify_action() as events:
+            do_archive_channel_folder(channel_folder, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"is_archived"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertTrue(events[0]["data"]["is_archived"])
+
+        with self.verify_action() as events:
+            do_unarchive_channel_folder(channel_folder, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"is_archived"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertFalse(events[0]["data"]["is_archived"])

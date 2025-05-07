@@ -164,3 +164,112 @@ class GetChannelFoldersTest(ZulipTestCase):
         )
         channel_folders_data = orjson.loads(result.content)["channel_folders"]
         check_channel_folders_in_zulip_realm(channel_folders_data)
+
+
+class UpdateChannelFoldersTest(ZulipTestCase):
+    def test_updating_channel_folder_name(self) -> None:
+        channel_folder = check_add_channel_folder(
+            "Frontend",
+            "Channels for frontend discussions",
+            acting_user=self.example_user("desdemona"),
+        )
+        check_add_channel_folder("Backend", "", acting_user=self.example_user("desdemona"))
+        channel_folder_id = channel_folder.id
+
+        self.login("hamlet")
+
+        params = {"name": "Web frontend"}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("iago")
+
+        # Test invalid channel folder ID.
+        result = self.client_patch("/json/channel_folders/999", params)
+        self.assert_json_error(result, "Invalid channel folder ID")
+
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_success(result)
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
+        self.assertEqual(channel_folder.name, "Web frontend")
+
+        params = {"name": ""}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Channel folder name can't be empty.")
+
+        params = {"name": "Backend"}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Channel folder 'Backend' already exists")
+
+        invalid_name = "abc\000"
+        params = {"name": invalid_name}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Invalid character in channel folder name, at position 4.")
+
+    def test_updating_channel_folder_description(self) -> None:
+        channel_folder = check_add_channel_folder(
+            "Frontend",
+            "Channels for frontend discussions",
+            acting_user=self.example_user("desdemona"),
+        )
+        channel_folder_id = channel_folder.id
+
+        self.login("hamlet")
+
+        params = {"description": "Channels for **frontend** discussions"}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("iago")
+
+        # Test invalid channel folder ID.
+        result = self.client_patch("/json/channel_folders/999", params)
+        self.assert_json_error(result, "Invalid channel folder ID")
+
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_success(result)
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
+        self.assertEqual(channel_folder.description, "Channels for **frontend** discussions")
+        self.assertEqual(
+            channel_folder.rendered_description,
+            "<p>Channels for <strong>frontend</strong> discussions</p>",
+        )
+
+        # Channel folder descriptions can be empty.
+        params = {"description": ""}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_success(result)
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
+        self.assertEqual(channel_folder.description, "")
+        self.assertEqual(channel_folder.rendered_description, "")
+
+    def test_archiving_and_unarchiving_channel_folder(self) -> None:
+        channel_folder = check_add_channel_folder(
+            "Frontend",
+            "Channels for frontend discussions",
+            acting_user=self.example_user("desdemona"),
+        )
+        channel_folder_id = channel_folder.id
+
+        self.login("hamlet")
+
+        params = {"is_archived": orjson.dumps(True).decode()}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("iago")
+
+        # Test invalid channel folder ID.
+        result = self.client_patch("/json/channel_folders/999", params)
+        self.assert_json_error(result, "Invalid channel folder ID")
+
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_success(result)
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
+        self.assertTrue(channel_folder.is_archived)
+
+        params = {"is_archived": orjson.dumps(False).decode()}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_success(result)
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
+        self.assertFalse(channel_folder.is_archived)

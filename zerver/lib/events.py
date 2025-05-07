@@ -1880,6 +1880,10 @@ def apply_event(
         if event["op"] == "add":
             state["channel_folders"].append(event["channel_folder"])
             state["channel_folders"].sort(key=lambda folder: folder["id"])
+        elif event["op"] == "update":
+            for channel_folder in state["channel_folders"]:
+                if channel_folder["id"] == event["channel_folder_id"]:
+                    channel_folder.update(event["data"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "has_zoom_token":

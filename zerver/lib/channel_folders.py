@@ -63,3 +63,11 @@ def get_channel_folders_in_realm(
 
     channel_folders = [get_channel_folder_dict(channel_folder) for channel_folder in folders]
     return sorted(channel_folders, key=lambda folder: folder["id"])
+
+
+def get_channel_folder_by_id(channel_folder_id: int, realm: Realm) -> ChannelFolder:
+    try:
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id, realm=realm)
+        return channel_folder
+    except ChannelFolder.DoesNotExist:
+        raise JsonableError(_("Invalid channel folder ID"))
