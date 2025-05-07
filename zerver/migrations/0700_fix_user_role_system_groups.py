@@ -257,7 +257,8 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("zerver", "0699_scheduledmessage_reminder_target_message_id"),
+        # Because this will be backported to 10.x, we only depend on the last migration in 10.x
+        ("zerver", "0697_empty_topic_name_for_dms_from_third_party_imports"),
     ]
 
     operations = [
