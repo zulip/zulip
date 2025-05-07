@@ -25,7 +25,7 @@ function stub_pills() {
     const $pill_container = $("#searchbox-input-container.pill-container");
     const $pill_input = $.create("pill_input");
     $pill_container.set_find_results(".input", $pill_input);
-    $pill_input.before = noop;
+    $pill_input[0].before = noop;
 }
 
 set_global("getSelection", () => ({

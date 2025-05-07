@@ -165,7 +165,7 @@ function initialize_pm_pill(mock_template) {
     const $pm_pill_container = $.create("fake-pm-pill-container");
     $("#private_message_recipient").set_parent($pm_pill_container);
     $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-    $("#private_message_recipient").before = noop;
+    $("#private_message_recipient")[0].before = noop;
 
     compose_pm_pill.initialize({
         on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
