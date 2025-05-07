@@ -22936,6 +22936,76 @@ paths:
                     description: |
                       Error when the user does not have permission
                       to create a channel folder:
+  /channel_folders:
+    get:
+      operationId: get-channel-folders
+      summary: Get channel folders
+      tags: ["channels"]
+      description: |
+        Fetches all of the channel folders in the organization.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-2a4adb).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                include_archived:
+                  description: |
+                    Whether to include archived channel folders in the response.
+                  type: boolean
+                  example: true
+                  default: false
+            encoding:
+              include_archived:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      channel_folders:
+                        type: array
+                        description: |
+                          A list of channel folder objects.
+                        items:
+                          $ref: "#/components/schemas/ChannelFolder"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "channel_folders":
+                          [
+                            {
+                              "description": "Channels for frontend discussions",
+                              "rendered_description": "<p>Channels for frontend discussions</p>",
+                              "id": 1,
+                              "creator_id": 1,
+                              "date_created": 1691057093,
+                              "name": "Frontend",
+                              "is_archived": false,
+                            },
+                            {
+                              "description": "Channels for **backend** discussions",
+                              "rendered_description": "<p>Channels for <strong>backend</strong> discussions</p>",
+                              "id": 2,
+                              "creator_id": 1,
+                              "date_created": 1791057093,
+                              "name": "Backend",
+                              "is_archived": false,
+                            },
+                          ],
+                      }
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.

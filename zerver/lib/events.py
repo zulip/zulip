@@ -768,7 +768,7 @@ def fetch_initial_state_data(
     if want("channel_folders") and user_profile is not None:
         # TODO: Spectators should get the channel folders that
         # contain atleast one web-public channel.
-        state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm)
+        state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
 
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and

@@ -1,11 +1,11 @@
 from typing import Annotated
 
 from django.http import HttpRequest, HttpResponse
-from pydantic import StringConstraints
+from pydantic import Json, StringConstraints
 
 from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.decorator import require_realm_admin
-from zerver.lib.channel_folders import check_channel_folder_name
+from zerver.lib.channel_folders import check_channel_folder_name, get_channel_folders_in_realm
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models.channel_folders import ChannelFolder
@@ -25,3 +25,14 @@ def create_channel_folder(
     channel_folder = check_add_channel_folder(name, description, acting_user=user_profile)
 
     return json_success(request, data={"channel_folder_id": channel_folder.id})
+
+
+@typed_endpoint
+def get_channel_folders(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    include_archived: Json[bool] = False,
+) -> HttpResponse:
+    channel_folders = get_channel_folders_in_realm(user_profile.realm, include_archived)
+    return json_success(request, data={"channel_folders": channel_folders})
