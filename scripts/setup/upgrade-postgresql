@@ -101,18 +101,34 @@ pg_ctlcluster "$UPGRADE_TO" main start
 # Update the statistics
 su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"
 
+# Update extensions
+if [ -n "$SCRIPTS_PATH" ] && [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
+    su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
+    rm "$SCRIPTS_PATH/update_extensions.sql"
+fi
+
 # Start the database up cleanly
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 # Drop the old data, binaries, and scripts
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
-if [ -n "$SCRIPTS_PATH" ]; then
-    if [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
-        su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
-    fi
+if [ -n "$SCRIPTS_PATH" ] && [ -f "$SCRIPTS_PATH/delete_old_cluster.sh" ]; then
     su postgres -c "$SCRIPTS_PATH/delete_old_cluster.sh"
-    rm -rf "$SCRIPTS_PATH"
+    rm "$SCRIPTS_PATH/delete_old_cluster.sh"
+fi
+
+if [ -n "$SCRIPTS_PATH" ]; then
+    if [ -n "$(ls -A "$SCRIPTS_PATH")" ]; then
+        set +x
+        echo
+        echo
+        echo ">>>>> pg_upgradecluster succeeded, but unexpected post-upgrade scripts"
+        echo "      were found:"
+        ls -A1 "$SCRIPTS_PATH"
+    else
+        rmdir "$SCRIPTS_PATH"
+    fi
 else
     set +x
     echo
