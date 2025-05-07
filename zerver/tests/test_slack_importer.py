@@ -1953,7 +1953,7 @@ class SlackImporter(ZulipTestCase):
 
         result = post_process_request()
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://ete-slack-import.testserver/accounts/login/")
+        self.assertEqual(result.url, "http://ete-slack-import.testserver/accounts/login/")  # type: ignore[attr-defined]
 
         # Event reloading leads to the same page (added for coverage)
         # Check if we render a form for user to select a user if there
@@ -1961,11 +1961,11 @@ class SlackImporter(ZulipTestCase):
         prereg_realm.data_import_metadata["no_user_matching_email"] = True
         result = post_process_request()
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://ete-slack-import.testserver/accounts/login/")
+        self.assertEqual(result.url, "http://ete-slack-import.testserver/accounts/login/")  # type: ignore[attr-defined]
 
         result = post_process_request()
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://ete-slack-import.testserver/accounts/login/")
+        self.assertEqual(result.url, "http://ete-slack-import.testserver/accounts/login/")  # type: ignore[attr-defined]
 
         # Check if we render a form for user to select a user if there
         # are no users matching the provided email.

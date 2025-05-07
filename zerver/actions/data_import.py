@@ -7,23 +7,30 @@ from django.conf import settings
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.realm_settings import do_delete_all_realm_attachments
+from zerver.actions.users import do_change_user_role
+from zerver.context_processors import is_realm_import_enabled
 from zerver.data_import.slack import do_convert_zipfile
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.upload import save_attachment_contents
 from zerver.models.prereg_users import PreregistrationRealm
 from zerver.models.realms import Realm
-from zerver.models.users import UserProfile
+from zerver.models.users import UserProfile, get_user_by_delivery_email
 
 logger = logging.getLogger(__name__)
 
 
 def import_slack_data(event: dict[str, Any]) -> None:
+    # This is only possible if data imports were enqueued before the
+    # setting was turned off.
+    assert is_realm_import_enabled()
+
     preregistration_realm = PreregistrationRealm.objects.get(id=event["preregistration_realm_id"])
     string_id = preregistration_realm.string_id
     output_dir = tempfile.mkdtemp(
         prefix=f"import-{preregistration_realm.id}-converted-",
         dir=settings.IMPORT_TMPFILE_DIRECTORY,
     )
+
     try:
         with tempfile.NamedTemporaryFile(
             prefix=f"import-{preregistration_realm.id}-slack-",
@@ -45,17 +52,23 @@ def import_slack_data(event: dict[str, Any]) -> None:
 
             # Try finding the user who imported this realm and make them owner.
             try:  # nocoverage
-                prereg_user = UserProfile.objects.get(
-                    delivery_email__iexact=preregistration_realm.email, realm=realm
+                importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)
+                assert (
+                    importing_user.is_active
+                    and not importing_user.is_bot
+                    and not importing_user.is_mirror_dummy
                 )
-                if prereg_user.role != UserProfile.ROLE_REALM_OWNER:
-                    prereg_user.role = UserProfile.ROLE_REALM_OWNER
-                    prereg_user.save(update_fields=["role"])
+                if importing_user.role != UserProfile.ROLE_REALM_OWNER:
+                    do_change_user_role(
+                        importing_user, UserProfile.ROLE_REALM_OWNER, acting_user=importing_user
+                    )
+
                 preregistration_realm.status = confirmation_settings.STATUS_USED
                 preregistration_realm.created_realm = realm
             except UserProfile.DoesNotExist:
-                # The email address in the import may not match the email
-                # address they provided. Ask user which user they want to become.
+                # If the email address that the importing user
+                # validated with Zulip does not appear in the data
+                # export, we will prompt them which account is theirs.
                 preregistration_realm.data_import_metadata["no_user_matching_email"] = True
 
             preregistration_realm.data_import_metadata["is_import_work_queued"] = False
