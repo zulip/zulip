@@ -50,6 +50,7 @@ const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
 const message_actions_popover = mock_esm("../src/message_actions_popover");
 const message_edit = mock_esm("../src/message_edit");
+const message_edit_history = mock_esm("../src/message_edit_history");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const message_view = mock_esm("../src/message_view");
@@ -131,6 +132,11 @@ emoji.initialize({
     emoji_codes,
 });
 
+const settings_config = zrequire("settings_config");
+const {set_realm} = zrequire("state_data");
+const realm = {};
+set_realm(realm);
+
 function stubbing(module, func_name_to_stub, test_function) {
     with_overrides(({override}) => {
         const stub = make_stub();
@@ -179,6 +185,7 @@ run_test("mappings", () => {
     assert.equal(map_down("Enter").name, "enter");
     assert.equal(map_down("Delete").name, "delete");
     assert.equal(map_down("Enter", true).name, "enter");
+    assert.equal(map_down("H", true).name, "view_edit_history");
     assert.equal(map_down("N", true).name, "narrow_to_next_unread_followed_topic");
     assert.equal(map_down("V", true).name, "toggle_read_receipts");
 
@@ -358,7 +365,7 @@ run_test("modal open", ({override}) => {
 
 test_while_not_editing_text("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
-    const message_view_only_keys = "@+>RjJkKsuvVi:GM";
+    const message_view_only_keys = "@+>RjJkKsuvVi:GMH";
 
     // Check that they do nothing without a selected message
     with_overrides(({override}) => {
@@ -369,7 +376,7 @@ test_while_not_editing_text("misc", ({override}) => {
     // Check that they do nothing while in the settings overlay
     with_overrides(({override}) => {
         override(overlays, "settings_open", () => true);
-        assert_unmapped("@*+->rRjJkKsSuvVi:GM");
+        assert_unmapped("@*+->rRjJkKsSuvVi:GMH");
     });
 
     // TODO: Similar check for being in the subs page
@@ -392,6 +399,13 @@ test_while_not_editing_text("misc", ({override}) => {
     assert_mapping(">", compose_reply, "quote_message");
     assert_mapping("<", compose_reply, "quote_message");
     assert_mapping("e", message_edit, "start");
+
+    override(
+        realm,
+        "realm_message_edit_history_visibility_policy",
+        settings_config.message_edit_history_visibility_policy_values.always.code,
+    );
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
     assert_mapping("s", message_view, "narrow_by_recipient");
