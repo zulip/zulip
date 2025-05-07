@@ -75,9 +75,8 @@ fi
     cp /etc/zulip/zulip.conf "$TEMP_CONF_DIR"
     ZULIP_CONF="${TEMP_CONF_DIR}/zulip.conf"
     crudini --set "$ZULIP_CONF" postgresql version "$UPGRADE_TO"
-    crudini --set "$ZULIP_CONF" machine puppet_classes zulip::profile::base,zulip::postgresql_base
 
-    FACTER_LEAVE_SUPERVISOR=true "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"
+    "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF" --tags postgresql_upgrade
     rm -rf "$TEMP_CONF_DIR"
 )
 
