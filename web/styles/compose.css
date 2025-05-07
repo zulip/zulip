@@ -172,7 +172,7 @@
 /* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: var(--color-compose-box-background);
-    padding: 7px 7px 8px;
+    padding: 4px 4px 6px;
     border: 1px solid var(--color-border-compose-content);
     border-radius: 9px 9px 0 0;
     box-shadow: 0 0 0 hsl(236deg 11% 28%);
@@ -320,7 +320,7 @@
         grid-template-areas:
             "message-content-container message-send-controls-container"
             "message-formatting-controls-container message-send-controls-container";
-        gap: 0 6px;
+        gap: 0 4px;
     }
 
     .message_content {
@@ -644,11 +644,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    /* Matched to 6px grid-gap on .messagebox grid. */
-    padding-bottom: 6px;
+    /* Matched to 4px grid-gap on .messagebox grid. */
+    padding-bottom: 4px;
     /* Align to compose controls; that's 112px width,
        plus 6px of grid gap for 118px here. */
-    margin-right: calc(var(--compose-send-controls-width) + 6px);
+    margin-right: calc(var(--compose-send-controls-width) + 4px);
 }
 
 #compose_close {
