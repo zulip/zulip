@@ -862,6 +862,20 @@ button#register_auth_button_gitlab {
 .back-to-login-wrapper {
     margin: 20px 0 0;
     text-align: left;
+
+    &.forgot-password-container {
+        margin: 0;
+    }
+
+    &.signup-link-wrapper {
+        font-weight: normal;
+        float: right;
+
+        .register-link {
+            font-size: 1rem;
+            margin-left: 5px;
+        }
+    }
 }
 
 .register-page-container .register-form-login-redirect {

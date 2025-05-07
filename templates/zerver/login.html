@@ -110,6 +110,13 @@ page can be easily identified in it's respective JavaScript file. -->
                                 <label for="id_password">{{ _('Password') }}</label>
                                 <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
                             </div>
+
+                            <div class="actions forgot-password-container">
+                                {% if email_auth_enabled %}
+                                <a class="forgot-password" href="/accounts/password/reset/">{{ _('Forgot your password?') }}</a>
+                                {% endif %}
+                            </div>
+
                             {% else %}
                             {% include "two_factor/_wizard_forms.html" %}
                             {% endif %}
@@ -145,10 +152,8 @@ page can be easily identified in it's respective JavaScript file. -->
                     </div>
                     {% endfor %}
 
-                    <div class="actions">
-                        {% if email_auth_enabled %}
-                        <a class="forgot-password" href="/accounts/password/reset/">{{ _('Forgot your password?') }}</a>
-                        {% endif %}
+                    <div class="actions signup-link-wrapper">
+                        {{ _("Don't have an account?")}}
                         {% if not register_link_disabled %}
                         <a class="register-link float-right" href="/register/">{{ _('Sign up') }}</a>
                         {% endif %}
