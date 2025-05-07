@@ -6133,7 +6133,7 @@ msgstr "管理者限定"
 
 #: zerver/models/users.py:469
 msgid "Unknown user"
-msgstr ""
+msgstr "不明なユーザー"
 
 #: zerver/models/users.py:635
 msgid "Organization owner"

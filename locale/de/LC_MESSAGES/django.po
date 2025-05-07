@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Akira Tenchi <jimjan2002@gmail.com>, 2019
+# Anders Kaseorg <anders@zulip.com>, 2025
 # Ansgar Hofmann <ansgar@trollgames.de>, 2016
 # Ansgar Hofmann <ansgar@trollgames.de>, 2017,2019
 # n3w2oo <kontakt@n3w2oo.net>, 2016
@@ -46,7 +47,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Dustin Skoracki, 2025\n"
+"Last-Translator: Anders Kaseorg <anders@zulip.com>, 2025\n"
 "Language-Team: German (http://app.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -5237,7 +5238,7 @@ msgid ""
 "\n"
 "Check out [Recent conversations](#recent) for a list of topics that are being\n"
 "discussed.\n"
-msgstr "\n[Themen](/help/introduction-to-topics) fassen zusammen, worum es in jeder Unterhaltung\nin Zulip geht. Du kannst Zulip Thema für Thema lesen, und dabei jede\nNachricht im Kontext sehen, unabhängig davon wie viele Unterhaltungen gerade laufen.\n\nWenn du eine Unterhaltung startest, kennzeichne es mit einem neuen Thema. Für einen guten Themennamen,\ndenke daran diesen Satz zu vervollständigen: “Hey, können wir über … reden?”\n\nSieh dir [neueste Unterhaltungen](#recent) an für eine Liste der Themen die\ndiskutiert werden.\n"
+msgstr "\n[Themen](/help/introduction-to-topics) fassen zusammen, worum es in jeder Unterhaltung\nin Zulip geht. Du kannst Zulip Thema für Thema lesen, und dabei jede\nNachricht im Kontext sehen, unabhängig davon wie viele Unterhaltungen gerade laufen.\n\nWenn du eine Unterhaltung startest, kennzeichne sie mit einem neuen Thema. Für einen guten Themennamen,\ndenke daran diesen Satz zu vervollständigen: “Hey, können wir über … reden?”\n\nSieh dir [neueste Unterhaltungen](#recent) an für eine Liste der Themen die\ndiskutiert werden.\n"
 
 #: zerver/lib/onboarding.py:176
 msgid ""
@@ -5301,7 +5302,7 @@ msgid ""
 "For example, this message is in the “{topic_name}” topic in the\n"
 "#**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar\n"
 "and above.\n"
-msgstr ""
+msgstr "\nZulip ist so organisiert, dass es dir hilft effizienter zu kommunizieren. Unterhaltungen sind\nmit Themen gekennzeichnet, die zusammenfassen worum es in der Unterhaltung geht.\n\nBeispielsweise ist diese Nachricht im Thema “{topic_name}” im\nKanal #**{zulip_discussion_channel_name}**, wie du in der linken Seitenleiste\nund oben sehen kannst.\n"
 
 #: zerver/lib/onboarding.py:278 zerver/lib/onboarding.py:330
 #: zerver/lib/onboarding.py:402
@@ -5313,41 +5314,41 @@ msgid ""
 "\n"
 "You can read Zulip one conversation at a time, seeing each message in context,\n"
 "no matter how many other conversations are going on.\n"
-msgstr ""
+msgstr "\nDu kannst Zulip eine Unterhaltung nach der anderen lesen, wobei du jede Nachricht im Kontext siehst,\nunabhängig davon, wie viele verschiedene Diskussionen gerade stattfinden.\n"
 
 #: zerver/lib/onboarding.py:286
 msgid ""
 "\n"
 ":point_right: When you're ready, check out your [Inbox](/#inbox) for other\n"
 "conversations with unread messages.\n"
-msgstr ""
+msgstr "\n:point_right: Für mehr Unterhaltungen mit ungelesenen Nachrichten,\nprüfe deinen [Eingang](/#inbox) wenn du bereit bist.\n"
 
 #: zerver/lib/onboarding.py:291
 msgid ""
 "\n"
 "To kick off a new conversation, pick a channel in the left sidebar, and click\n"
 "the `+` button next to its name.\n"
-msgstr ""
+msgstr "\nUm eine neue Unterhaltung zu starten, wähle einen Kanal in der linken Seitenleiste und klicke auf\nden `+` Button seinem Namen.\n"
 
 #: zerver/lib/onboarding.py:296
 msgid ""
 "\n"
 "Label your conversation with a topic. Think about finishing the sentence: “Hey,\n"
 "can we chat about…?”\n"
-msgstr ""
+msgstr "\nKennzeichne deine Unterhaltung mit einem Thema. Denke daran den folgen Satz zu vervollständigen: “Hey,\nkönnen wir über … reden?”\n"
 
 #: zerver/lib/onboarding.py:301
 msgid ""
 "\n"
 ":point_right: Try starting a new conversation in this channel.\n"
-msgstr ""
+msgstr "\n:point_right: Versuche eine neue Unterhaltung in diesem Kanal zu starten.\n"
 
 #: zerver/lib/onboarding.py:306
 #, python-brace-format
 msgid ""
 "\n"
 ":point_right:  Use this topic to try out [Zulip's messaging features]({format_message_help_url}).\n"
-msgstr ""
+msgstr "\n:point_right:  Verwende dieses Thema um [Zulips Nachrichtenfunktionen]({format_message_help_url}) auszuprobieren.\n"
 
 #: zerver/lib/onboarding.py:312
 #, python-brace-format
@@ -5367,19 +5368,19 @@ msgid ""
 "Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**\n"
 "\n"
 "```\n"
-msgstr ""
+msgstr "\n```spoiler Möchtest du ein paar Beispiele sehen?\n\n````python\n\nprint(\"Code-Blöcke\")\n\n````\n\n- Listen mit\n- Aufzählungen\n\nLink zu einer Unterhaltung: #**{zulip_discussion_channel_name}>{topic_name}**\n\n```\n"
 
 #: zerver/lib/onboarding.py:333
 msgid ""
 "\n"
 "This **greetings** topic is a great place to say “hi” :wave: to your teammates.\n"
-msgstr ""
+msgstr "\nDieses **Grüße**-Thema ist ein toller Ort um “hi” :wave: zu deinen Team-Mitgliedern zu sagen.\n"
 
 #: zerver/lib/onboarding.py:337
 msgid ""
 "\n"
 ":point_right: Click on this message to start a new message in the same conversation.\n"
-msgstr ""
+msgstr "\n:point_right: Klicke auf diese Nachricht um eine neue Nachricht in derselben Unterhaltung zu beginnen.\n"
 
 #: zerver/lib/onboarding.py:354
 msgid "moving messages"
@@ -5391,7 +5392,7 @@ msgstr "Experimente"
 
 #: zerver/lib/onboarding.py:378
 msgid "start a conversation"
-msgstr ""
+msgstr "Eine Unterhaltung beginnen"
 
 #: zerver/lib/onboarding.py:392
 msgid "greetings"
@@ -5445,7 +5446,7 @@ msgstr "Testbenachrichtigung"
 #: zerver/lib/push_notifications.py:1466
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
-msgstr ""
+msgstr "Dies ist eine Testbenachrichtigung von {realm_name} ({realm_url})."
 
 #: zerver/lib/push_notifications.py:1518
 msgid "Device not recognized"
@@ -5457,7 +5458,7 @@ msgstr "Gerät vom Push-Bouncer nicht erkannt"
 
 #: zerver/lib/recipient_parsing.py:9
 msgid "Invalid data type for channel ID"
-msgstr ""
+msgstr "Ungültiger Datentyp für Kanal-ID"
 
 #: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:505
 #: zerver/lib/streams.py:521 zerver/tornado/views.py:225
@@ -5512,7 +5513,7 @@ msgstr "Du bist nicht berechtigt, in diesem Kanal zu posten."
 #: zerver/lib/streams.py:512 zerver/lib/streams.py:558
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
-msgstr ""
+msgstr "Nicht zum Senden in den Kanal '{channel_name}' autorisiert"
 
 #: zerver/lib/streams.py:654 zerver/lib/streams.py:689
 #: zerver/lib/streams.py:818 zerver/lib/streams.py:845
@@ -5522,7 +5523,7 @@ msgstr "Ungültige Kanal-ID"
 
 #: zerver/lib/streams.py:887
 msgid "Channel name is already in use."
-msgstr ""
+msgstr "Kanalname wird bereits verwendet."
 
 #: zerver/lib/streams.py:899 zerver/lib/streams.py:1024
 #, python-brace-format
@@ -5531,35 +5532,35 @@ msgstr "Ungültiger Kanalname '{channel_name}'"
 
 #: zerver/lib/streams.py:1359 zerver/views/streams.py:333
 msgid "A default channel cannot be private."
-msgstr ""
+msgstr "Ein Standardkanal kann nicht privat sein."
 
 #: zerver/lib/streams.py:1363
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
-msgstr ""
+msgstr "Kanal(e) ({channel_names}) existieren nicht"
 
 #: zerver/lib/streams.py:1372 zerver/views/streams.py:355
 msgid "Web-public channels are not enabled."
-msgstr ""
+msgstr "Im Netz öffentliche Kanäle sind nicht aktiviert."
 
 #: zerver/lib/streams.py:1405
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
-msgstr ""
+msgstr "Standard-Kanalgruppe mit der ID '{group_id}' existiert nicht."
 
 #: zerver/lib/string_validation.py:40
 msgid "Channel name can't be empty."
-msgstr ""
+msgstr "Kanalname kann nicht  leer sein."
 
 #: zerver/lib/string_validation.py:44
 #, python-brace-format
 msgid "Channel name too long (limit: {max_length} characters)."
-msgstr ""
+msgstr "Kanalname zu lang (Limit: {max_length} Zeichen)."
 
 #: zerver/lib/string_validation.py:52
 #, python-brace-format
 msgid "Invalid character in channel name, at position {position}."
-msgstr ""
+msgstr "Ungültiges Zeichen in Kanalname an Position {position}."
 
 #: zerver/lib/string_validation.py:62
 #, python-brace-format
@@ -5568,11 +5569,11 @@ msgstr "Ungültiges Zeichen im Thema an Position {position}!"
 
 #: zerver/lib/subscription_info.py:441
 msgid "Subscriber data is not available for this channel"
-msgstr ""
+msgstr "Daten zu Abonnent:innen dieses Kanals sind nicht verfügbar"
 
 #: zerver/lib/subscription_info.py:462
 msgid "Unable to retrieve subscribers for private channel"
-msgstr ""
+msgstr "Kann Abonnent:innen des privaten Kanals nicht laden"
 
 #: zerver/lib/thumbnail.py:163
 msgid "Could not decode image; did you upload an image file?"
@@ -5585,7 +5586,7 @@ msgstr "Bildgröße überschreitet das Limit."
 
 #: zerver/lib/thumbnail.py:198
 msgid "Image is corrupted or truncated"
-msgstr ""
+msgstr "Bild beschädigt oder abgeschnitten"
 
 #: zerver/lib/typed_endpoint.py:317 zerver/lib/typed_endpoint.py:318
 #: zerver/lib/validator.py:172
@@ -5670,7 +5671,7 @@ msgstr "{var_name} ist kein String"
 #: zerver/lib/typed_endpoint.py:339
 #, python-brace-format
 msgid "{var_name} has invalid format"
-msgstr ""
+msgstr "{var_name}  hat ein ungültiges Format"
 
 #: zerver/lib/typed_endpoint.py:340
 #, python-brace-format
@@ -5708,7 +5709,7 @@ msgstr "Keine URL"
 
 #: zerver/lib/typed_endpoint_validators.py:76
 msgid "Not a recognized time zone"
-msgstr ""
+msgstr "Keine bekannte Zeitzone"
 
 #: zerver/lib/typed_endpoint_validators.py:106
 #, python-brace-format
@@ -5725,7 +5726,7 @@ msgstr "Bildgröße überschreitet das Limit"
 
 #: zerver/lib/user_groups.py:100 zerver/lib/user_groups.py:129
 msgid "User group is deactivated."
-msgstr ""
+msgstr "Nutzergruppe ist deaktiviert."
 
 #: zerver/lib/user_groups.py:132
 msgid "Invalid user group"
@@ -5733,7 +5734,7 @@ msgstr "Ungültige Nutzergruppe"
 
 #: zerver/lib/user_groups.py:137
 msgid "Invalid system group name."
-msgstr ""
+msgstr "Ungültiger Systemgruppenname."
 
 #: zerver/lib/user_groups.py:347 zerver/lib/user_groups.py:443
 #, python-brace-format
@@ -5792,11 +5793,11 @@ msgstr "Ungültiges Format!"
 
 #: zerver/lib/users.py:89
 msgid "Unique names required in this organization."
-msgstr ""
+msgstr "In dieser Organisation sind einzigartige Namen erforderlich."
 
 #: zerver/lib/users.py:111
 msgid "Name is already in use."
-msgstr ""
+msgstr "Name wird bereits verwendet."
 
 #: zerver/lib/users.py:117 zerver/views/users.py:591 zerver/views/users.py:604
 #: zerver/views/users.py:793
@@ -5949,7 +5950,7 @@ msgstr "Befehl nicht vorhanden: {command}"
 
 #: zerver/lib/zulip_update_announcements.py:542
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
-msgstr ""
+msgstr "`zulip_update_announcements_stream` ist unerwartet deaktiviert."
 
 #: zerver/middleware.py:464
 #, python-brace-format
@@ -5964,7 +5965,7 @@ msgstr "Reverse-Proxy-Fehlkonfiguration: {proxy_reason}"
 #: zerver/models/custom_profile_fields.py:45
 #, python-brace-format
 msgid "Invalid user IDs: {invalid_ids}"
-msgstr ""
+msgstr "Ungültige Nutzer-IDs: {invalid_ids}"
 
 #: zerver/models/custom_profile_fields.py:53
 #, python-brace-format
@@ -6073,7 +6074,7 @@ msgstr "\"code\" sollte die einzige Variable sein, die in der URL-Vorlage enthal
 
 #: zerver/models/realms.py:419
 msgid "sandbox"
-msgstr ""
+msgstr "Sandbox"
 
 #: zerver/models/realms.py:420
 msgid "general"
@@ -6325,11 +6326,11 @@ msgstr "Die Einladung wurde bereits widerrufen."
 #: zerver/views/invite.py:90
 #, python-brace-format
 msgid "Invalid channel ID {channel_id}. No invites were sent."
-msgstr ""
+msgstr "Ungültige Kanal-ID {channel_id}. Es wurden keine Einladungen versendet."
 
 #: zerver/views/invite.py:104
 msgid "You do not have permission to subscribe other users to channels."
-msgstr ""
+msgstr "Du bist nicht berechtigt, andere Nutzer:innen für Kanäle zu abonnieren."
 
 #: zerver/views/invite.py:156
 msgid "You must specify at least one email address."
@@ -6389,15 +6390,15 @@ msgstr "Zephyr-Spiegelung ist in dieser Organisation nicht erlaubt"
 
 #: zerver/views/message_summary.py:28
 msgid "AI features are not enabled on this server."
-msgstr ""
+msgstr "KI-Funktionen sind auf diesem Server nicht aktiviert."
 
 #: zerver/views/message_summary.py:38
 msgid "Reached monthly limit for AI credits."
-msgstr ""
+msgstr "Monatliches Limit von KI-Credits erreicht."
 
 #: zerver/views/message_summary.py:42
 msgid "No messages in conversation to summarize"
-msgstr ""
+msgstr "Keine Nachrichten zur Zusammenfassung in Unterhaltung"
 
 #: zerver/views/muted_users.py:16
 msgid "Cannot mute self"
@@ -6421,7 +6422,7 @@ msgstr "Unbekannter onboarding_step: {onboarding_step}"
 msgid ""
 "\n"
 "You asked to watch the [Welcome to Zulip video]({navigation_tour_video_url}) later. Is this a good time?\n"
-msgstr ""
+msgstr "\nDu hast angegeben das  [Willkommen bei Zulip Video]({navigation_tour_video_url}) später ansehen zu wollen. Ist das eine gute Zeit?\n"
 
 #: zerver/views/presence.py:48
 msgid "Presence is not supported for bot users."
@@ -6456,7 +6457,7 @@ msgstr "Ungültiges APNS Token"
 
 #: zerver/views/push_notifications.py:130
 msgid "Server doesn't use the push notification service"
-msgstr ""
+msgstr "Server verwendet den Dienst für Push-Benachrichtungen nicht"
 
 #: zerver/views/push_notifications.py:162
 #, python-brace-format
@@ -6465,7 +6466,7 @@ msgstr "Vom Bouncer zurückgegebener Fehler: {result}"
 
 #: zerver/views/push_notifications.py:246
 msgid "Verification secret not prepared"
-msgstr ""
+msgstr "Verifizierungsgeheimnis nicht vorbereitet"
 
 #: zerver/views/reactions.py:48
 msgid ""
@@ -6504,13 +6505,13 @@ msgstr "Muss eine Demo-Organisation sein."
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
-msgstr ""
+msgstr "Löschzeitpunkt für Daten darf höchstens {max_allowed_days} Tage in der Zukunft liegen."
 
 #: zerver/views/realm.py:539
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
-msgstr ""
+msgstr "Löschzeitpunkt für Daten muss mindestens {min_allowed_days} Tage in der Zukunft liegen."
 
 #: zerver/views/realm_domains.py:38
 #, python-brace-format
@@ -6588,7 +6589,7 @@ msgstr "Beim Aktualisieren des Typs der geplanten Nachricht ist ein:e Empfänger
 
 #: zerver/views/scheduled_messages.py:86
 msgid "Topic required when updating scheduled message type to channel."
-msgstr ""
+msgstr "Thema erforderlich, wenn der Typ der geplanten Nachricht auf Kanal aktualisiert wird."
 
 #: zerver/views/sentry.py:38
 msgid "Invalid request format"
@@ -6600,7 +6601,7 @@ msgstr "Ungültige DSN"
 
 #: zerver/views/streams.py:164
 msgid "Private channels cannot be made default."
-msgstr ""
+msgstr "Private Kanäle können nicht als Standard gesetzt werden."
 
 #: zerver/views/streams.py:198
 msgid "You must pass \"new_description\" or \"new_group_name\"."
@@ -6617,7 +6618,7 @@ msgstr "Ungültige Parameter"
 
 #: zerver/views/streams.py:345 zerver/views/streams.py:437
 msgid "Channel content access is required."
-msgstr ""
+msgstr "Zugriff auf Inhalt des Kanals ist erforderlich."
 
 #: zerver/views/streams.py:399
 msgid "Channel already has that name."
@@ -6630,31 +6631,31 @@ msgstr "Es gibt nichts zu tun. Gib mindestens \"add\" oder \"delete\" an."
 #: zerver/views/streams.py:575
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the channel {channel_name}."
-msgstr ""
+msgstr "{user_full_name} hat dich zum Kanal {channel_name} hinzugefügt."
 
 #: zerver/views/streams.py:581
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
-msgstr ""
+msgstr "{user_full_name} hat dich zu den folgenden Kanälen hinzugefügt:"
 
 #: zerver/views/streams.py:717
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
-msgstr ""
+msgstr "Kann auf Kanal ({channel_name}) nicht zugreifen."
 
 #: zerver/views/streams.py:733
 msgid "You can only invite other Zephyr mirroring users to private channels."
-msgstr ""
+msgstr "Du kannst andere Zephyr-Mirroring-Nutzer:innen nur zu privaten Kanälen einladen."
 
 #: zerver/views/streams.py:851
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
-msgstr ""
+msgstr "{user_name} hat die folgenden Kanäle angelegt: {new_channels}."
 
 #: zerver/views/streams.py:853
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
-msgstr ""
+msgstr "{user_name} hat den neuen Kanal {new_channels} angelegt."
 
 #: zerver/views/streams.py:854
 msgid "new channels"
@@ -6663,12 +6664,12 @@ msgstr "neue Kanäle"
 #: zerver/views/streams.py:888
 #, python-brace-format
 msgid "**{policy}** channel created by {user_name}. **Description:**"
-msgstr ""
+msgstr "**{policy}** Kanal erstellt von {user_name}. **Beschreibung:**"
 
 #: zerver/views/streams.py:1120
 #, python-brace-format
 msgid "{property} is not a boolean"
-msgstr ""
+msgstr "{property} ist kein Boolean"
 
 #: zerver/views/streams.py:1123
 #, python-brace-format
@@ -6678,7 +6679,7 @@ msgstr "Unbekannte Abonnementeigenschaft: {property}"
 #: zerver/views/streams.py:1171
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
-msgstr ""
+msgstr "Kanal-ID {channel_id} nicht abonniert"
 
 #: zerver/views/submessage.py:40
 msgid "Invalid json for submessage"
@@ -6689,23 +6690,23 @@ msgstr "Ungültiges JSON für Subnachricht"
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your"
 " organization's plan."
-msgstr ""
+msgstr "Datei ist größer als die maximale Upload-Größe ({max_size} MiB), die von deiner Organisation erlaubt ist."
 
 #: zerver/views/tusd.py:117 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size}"
 " MiB)."
-msgstr ""
+msgstr "Datei ist größer als die auf diesem Server konfigurierte maximale Upload-Größe ({max_size} MiB)."
 
 #: zerver/views/tusd.py:249
 #, python-brace-format
 msgid "Uploaded file is larger than the allowed limit of {max_file_size} MiB"
-msgstr ""
+msgstr "Hochgeladene Datei ist größer als das erlaubte Maximum von {max_file_size} MiB"
 
 #: zerver/views/typing.py:50 zerver/views/typing.py:92
 msgid "User has disabled typing notifications for channel messages"
-msgstr ""
+msgstr "Nutzer:in hat die Schreibbenachrichtigungen für Kanalnachrichten deaktiviert"
 
 #: zerver/views/typing.py:60
 msgid "Missing 'to' argument"
@@ -6752,7 +6753,7 @@ msgstr "Keine neuen Daten übergeben"
 msgid ""
 "Nothing to do. Specify at least one of \"add\", \"delete\", "
 "\"add_subgroups\" or \"delete_subgroups\"."
-msgstr ""
+msgstr "Nichts zu tun. Gibt mindestens \"add\", \"delete\", \"add_subgroups\" or \"delete_subgroups\" an."
 
 #: zerver/views/user_groups.py:298
 #, python-brace-format
@@ -6844,7 +6845,7 @@ msgstr "Der:die einzige Organisations-Besitzer:in kann nicht deaktiviert werden"
 
 #: zerver/views/users.py:268
 msgid "User not authorized to change user emails"
-msgstr ""
+msgstr "Nutzer:in nicht berechtigt, E-Mail-Adressen von Nutzer:innen zu ändern."
 
 #: zerver/views/users.py:282
 msgid ""
@@ -6853,12 +6854,12 @@ msgstr "Die Eigentümerberechtigung kann dem:der einzigen Organisations-Besitzer
 
 #: zerver/views/users.py:324
 msgid "Invalid new email address."
-msgstr ""
+msgstr "Ungültige neue E-Mail-Adresse."
 
 #: zerver/views/users.py:332
 #, python-brace-format
 msgid "New email value error: {message}"
-msgstr ""
+msgstr "Fehler bei neuer E-Mail-Adresse: {message}"
 
 #: zerver/views/users.py:471
 msgid "Failed to change owner, no such user"
@@ -6905,7 +6906,7 @@ msgstr "Ungültiger Zoom-Access-Token"
 
 #: zerver/views/video_calls.py:61
 msgid "Unknown Zoom user email"
-msgstr ""
+msgstr "Unbekannte Zoom-Nutzer-E-Mail-Adresse"
 
 #: zerver/views/video_calls.py:66 zerver/views/video_calls.py:205
 msgid "Zoom credentials have not been configured"
@@ -6982,7 +6983,7 @@ msgstr "Inhalt kann nicht leer sein"
 
 #: zerver/webhooks/jotform/view.py:25
 msgid "Unable to handle Jotform payload"
-msgstr ""
+msgstr "Jotform Payload konnte nicht bearbeitet werden"
 
 #: zerver/webhooks/librato/view.py:176
 msgid "Malformed JSON input"
@@ -7014,19 +7015,19 @@ msgstr "Dein Datenexport ist abgeschlossen. [Exporte anzeigen und herunterladen]
 
 #: zilencer/auth.py:61
 msgid "The verification secret has expired"
-msgstr ""
+msgstr "Das Verifikationsgeheimnis ist abgelaufen"
 
 #: zilencer/auth.py:63
 msgid "The verification secret is invalid"
-msgstr ""
+msgstr "Das Verifikationsgeheimnis ist ungültig"
 
 #: zilencer/auth.py:65
 msgid "The verification secret is malformed"
-msgstr ""
+msgstr "Das Verifikationsgeheimnis hat ein falsches Format"
 
 #: zilencer/auth.py:67
 msgid "The verification secret is for a different hostname"
-msgstr ""
+msgstr "Das Verifikationsgeheimnis ist für einen anderen Hostnamen"
 
 #: zilencer/auth.py:128
 msgid "Invalid subdomain for push notifications bouncer"
@@ -7049,7 +7050,7 @@ msgstr "Ungültiger Token-Typ"
 #: zilencer/views.py:153
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
-msgstr ""
+msgstr "{hostname} enthält ungültige Komponenten (z. B. Pfad, Query, Fragment)"
 
 #: zilencer/views.py:160
 #, python-brace-format
@@ -7059,16 +7060,16 @@ msgstr "{hostname} ist kein gültiger Hostname"
 #: zilencer/views.py:170
 #, python-brace-format
 msgid "{hostname} not yet registered"
-msgstr ""
+msgstr "{hostname} noch nicht registriert"
 
 #: zilencer/views.py:222
 msgid "Invalid email address."
-msgstr ""
+msgstr "Ungültige E-Mail-Adresse."
 
 #: zilencer/views.py:238
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
-msgstr ""
+msgstr "{domain} ist ungültig, weil keine MX-Records vorhanden sind"
 
 #: zilencer/views.py:243
 #, python-brace-format
@@ -7080,20 +7081,20 @@ msgstr "{domain} existiert nicht"
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please"
 " try again later or reach out to {support_email} for assistance."
-msgstr ""
+msgstr "Die globalen Limits für die jüngste Verwendung dieses Endpunktes wurde erreicht. Bitte versuche es später erneut oder melde dich bei {support_email} für Unterstützung."
 
 #: zilencer/views.py:350
 msgid "Registration not found for this hostname"
-msgstr ""
+msgstr "Registrierung für diesen Hostnamen nicht gefunden"
 
 #: zilencer/views.py:362
 msgid "The host reported it has no verification secret."
-msgstr ""
+msgstr "Der Host hat gemeldet, dass er kein Verifikationsgeheimnis hat."
 
 #: zilencer/views.py:364
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
-msgstr ""
+msgstr "Fehlerantwort vom Host erhalten: {status_code}"
 
 #: zilencer/views.py:434
 msgid "Missing ios_app_id"
@@ -7108,7 +7109,7 @@ msgstr "Fehlende user_id oder user_uuid"
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
 "server: {reason}"
-msgstr ""
+msgstr "Dein Tarif erlaubt den Versand von Push-Benachrichtigungen nicht. Vom Server bereitgestellte Begründung: {reason}"
 
 #: zilencer/views.py:738
 msgid "Your plan doesn't allow sending push notifications."
