@@ -64,6 +64,7 @@
 * [Add a default channel](/api/add-default-stream)
 * [Remove a default channel](/api/remove-default-stream)
 * [Create a channel folder](/api/create-channel-folder)
+* [Get channel folders](/api/get-channel-folders)
 
 #### Users
 

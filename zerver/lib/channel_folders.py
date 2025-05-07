@@ -54,7 +54,12 @@ def get_channel_folder_dict(channel_folder: ChannelFolder) -> ChannelFolderDict:
     )
 
 
-def get_channel_folders_in_realm(realm: Realm) -> list[ChannelFolderDict]:
+def get_channel_folders_in_realm(
+    realm: Realm, include_archived: bool = False
+) -> list[ChannelFolderDict]:
     folders = ChannelFolder.objects.filter(realm=realm)
+    if not include_archived:
+        folders = folders.exclude(is_archived=True)
+
     channel_folders = [get_channel_folder_dict(channel_folder) for channel_folder in folders]
     return sorted(channel_folders, key=lambda folder: folder["id"])
