@@ -1561,10 +1561,9 @@ textarea.new_message_textarea {
         }
     }
 
+    /* We suppress the chevron on the channel picker. */
     .zulip-icon-chevron-down {
-        padding-left: 5px;
-        color: var(--color-compose-chevron-arrow);
-        font-weight: lighter;
+        display: none;
     }
 }
 
