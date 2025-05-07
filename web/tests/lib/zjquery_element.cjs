@@ -197,8 +197,6 @@ class FakeElement extends RejectMissing {
 
 // TODO: convert this to a true class
 exports.FakeJQuery = function (selector, opts) {
-    let height;
-
     const $self = {
         [Symbol.iterator]: Array.prototype.values,
 
@@ -397,10 +395,28 @@ exports.FakeJQuery = function (selector, opts) {
         hasClass(class_name) {
             return [...this].some((element) => element.classList.contains(class_name));
         },
-        height() {
-            const state = fake_element_state.get(this[0]);
-            assert.notEqual(height, undefined, `Please call $("${state.selector}").set_height`);
-            return height;
+        height(...args) {
+            if (args.length === 0) {
+                if (!(0 in this)) {
+                    return undefined;
+                }
+                const state = fake_element_state.get(this[0]);
+                const height = state.computed_style.getPropertyValue("height");
+                assert.notEqual(
+                    height,
+                    "",
+                    `Please call $(${JSON.stringify(state.selector)}).set_height`,
+                );
+                assert.ok(height.endsWith("px"));
+                return Number(height.slice(0, -"px".length));
+            }
+            for (const element of this) {
+                element.style.setProperty(
+                    "height",
+                    typeof args[0] === "number" ? `${args[0]}px` : args[0],
+                );
+            }
+            return this;
         },
         hide() {
             for (const element of this) {
@@ -609,7 +625,14 @@ exports.FakeJQuery = function (selector, opts) {
             fake_element_state.get(this[0]).jquery_find_results.set(find_selector, $jquery_object);
         },
         set_height(fake_height) {
-            height = fake_height;
+            for (const element of this) {
+                fake_element_state
+                    .get(element)
+                    .computed_style.setProperty(
+                        "height",
+                        typeof fake_height === "number" ? `${fake_height}px` : fake_height,
+                    );
+            }
         },
         set_parent($parent_elem) {
             assert.equal(this.length, 1);
