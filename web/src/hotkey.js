@@ -100,49 +100,94 @@ const color_picker_hotkeys = new Set([
 // `message_view_only` hotkeys, as a group, are not processed if any
 // overlays are open (e.g. settings, streams, etc.).
 
-const keydown_shift_mappings = {
+function keydown_shift_mappings(key) {
     // these can be triggered by Shift + key only
-    Tab: {name: "shift_tab", message_view_only: false},
-    " ": {name: "shift_spacebar", message_view_only: true},
-    ArrowLeft: {name: "left_arrow", message_view_only: false},
-    ArrowRight: {name: "right_arrow", message_view_only: false},
-    ArrowUp: {name: "up_arrow", message_view_only: false},
-    ArrowDown: {name: "down_arrow", message_view_only: false},
-};
+    switch (key) {
+        case "Tab":
+            return {name: "shift_tab", message_view_only: false};
+        case " ":
+            return {name: "shift_spacebar", message_view_only: true};
+        case "ArrowLeft":
+            return {name: "left_arrow", message_view_only: false};
+        case "ArrowRight":
+            return {name: "right_arrow", message_view_only: false};
+        case "ArrowUp":
+            return {name: "up_arrow", message_view_only: false};
+        case "ArrowDown":
+            return {name: "down_arrow", message_view_only: false};
+        default:
+            return undefined;
+    }
+}
 
-const keydown_unshift_mappings = {
+function keydown_unshift_mappings(key) {
     // these can be triggered by key only (without Shift)
-    Tab: {name: "tab", message_view_only: false},
-    Escape: {name: "escape", message_view_only: false},
-    " ": {name: "spacebar", message_view_only: true},
-    PageUp: {name: "page_up", message_view_only: true},
-    PageDown: {name: "page_down", message_view_only: true},
-    End: {name: "end", message_view_only: true},
-    Home: {name: "home", message_view_only: true},
-    ArrowLeft: {name: "left_arrow", message_view_only: false},
-    ArrowRight: {name: "right_arrow", message_view_only: false},
-    ArrowUp: {name: "up_arrow", message_view_only: false},
-    ArrowDown: {name: "down_arrow", message_view_only: false},
-};
+    switch (key) {
+        case "Tab":
+            return {name: "tab", message_view_only: false};
+        case "Escape":
+            return {name: "escape", message_view_only: false};
+        case " ":
+            return {name: "spacebar", message_view_only: true};
+        case "PageUp":
+            return {name: "page_up", message_view_only: true};
+        case "PageDown":
+            return {name: "page_down", message_view_only: true};
+        case "End":
+            return {name: "end", message_view_only: true};
+        case "Home":
+            return {name: "home", message_view_only: true};
+        case "ArrowLeft":
+            return {name: "left_arrow", message_view_only: false};
+        case "ArrowRight":
+            return {name: "right_arrow", message_view_only: false};
+        case "ArrowUp":
+            return {name: "up_arrow", message_view_only: false};
+        case "ArrowDown":
+            return {name: "down_arrow", message_view_only: false};
+        default:
+            return undefined;
+    }
+}
 
-const keydown_ctrl_mappings = {
-    "[": {name: "escape", message_view_only: false},
-};
+function keydown_ctrl_mappings(key) {
+    switch (key) {
+        case "[":
+            return {name: "escape", message_view_only: false};
+        default:
+            return undefined;
+    }
+}
 
-const keydown_cmd_or_ctrl_mappings = {
-    Enter: {name: "action_with_enter", message_view_only: true},
-    c: {name: "copy_with_c", message_view_only: false},
-    k: {name: "search_with_k", message_view_only: false},
-    s: {name: "star_message", message_view_only: true},
-    ".": {name: "narrow_to_compose_target", message_view_only: true},
-    "'": {name: "open_saved_snippet_dropdown", message_view_only: true},
-};
+function keydown_cmd_or_ctrl_mappings(key) {
+    switch (key) {
+        case "Enter":
+            return {name: "action_with_enter", message_view_only: true};
+        case "c":
+            return {name: "copy_with_c", message_view_only: false};
+        case "k":
+            return {name: "search_with_k", message_view_only: false};
+        case "s":
+            return {name: "star_message", message_view_only: true};
+        case ".":
+            return {name: "narrow_to_compose_target", message_view_only: true};
+        case "'":
+            return {name: "open_saved_snippet_dropdown", message_view_only: true};
+        default:
+            return undefined;
+    }
+}
 
-const keydown_alt_mappings = {
-    p: {name: "toggle_compose_preview", message_view_only: true},
-};
+function keydown_alt_mappings(key) {
+    switch (key) {
+        case "p":
+            return {name: "toggle_compose_preview", message_view_only: true};
+        default:
+            return undefined;
+    }
+}
 
-const keydown_either_mappings = {
+function keydown_either_mappings(key) {
     // these can be triggered by key or Shift + key
     // Note that codes for letters are still case sensitive!
     //
@@ -154,70 +199,128 @@ const keydown_either_mappings = {
     // For Enter, there is some possibly that Shift-Enter is intended to
     // have special behavior for folks that are used to Shift-Enter behavior
     // in other apps, but that's also slightly dubious.
-    Backspace: {name: "backspace", message_view_only: true},
-    Enter: {name: "enter", message_view_only: false},
-    Delete: {name: "delete", message_view_only: false},
-};
+    switch (key) {
+        case "Backspace":
+            return {name: "backspace", message_view_only: true};
+        case "Enter":
+            return {name: "enter", message_view_only: false};
+        case "Delete":
+            return {name: "delete", message_view_only: false};
+        default:
+            return undefined;
+    }
+}
 
-const character_mappings = {
-    "*": {name: "open_starred_message_view", message_view_only: true},
-    "+": {name: "thumbs_up_emoji", message_view_only: true},
-    "=": {name: "upvote_first_emoji", message_view_only: true},
-    "-": {name: "toggle_message_collapse", message_view_only: true},
-    "/": {name: "search", message_view_only: false},
-    ":": {name: "toggle_reactions_popover", message_view_only: true},
-    "<": {name: "compose_forward_message", message_view_only: true},
-    ">": {name: "compose_quote_message", message_view_only: true},
-    "?": {name: "show_shortcuts", message_view_only: false},
-    "@": {name: "compose_reply_with_mention", message_view_only: true},
-    A: {name: "stream_cycle_backward", message_view_only: true},
-    C: {name: "C_deprecated", message_view_only: true},
-    D: {name: "stream_cycle_forward", message_view_only: true},
-    G: {name: "G_end", message_view_only: true},
-    H: {name: "view_edit_history", message_view_only: true},
-    I: {name: "open_inbox", message_view_only: true},
-    J: {name: "vim_page_down", message_view_only: true},
-    K: {name: "vim_page_up", message_view_only: true},
-    M: {name: "toggle_topic_visibility_policy", message_view_only: true},
-    N: {name: "narrow_to_next_unread_followed_topic", message_view_only: false},
-    P: {name: "narrow_private", message_view_only: true},
-    R: {name: "respond_to_author", message_view_only: true},
-    S: {name: "toggle_stream_subscription", message_view_only: true},
-    U: {name: "mark_unread", message_view_only: true},
-    V: [
-        {name: "view_selected_stream", message_view_only: false},
-        {name: "toggle_read_receipts", message_view_only: true},
-    ],
-    // The shortcut "a" dates from when this was called "All messages".
-    a: {name: "open_combined_feed", message_view_only: true},
-    c: {name: "compose", message_view_only: true},
-    d: {name: "open_drafts", message_view_only: true},
-    e: {name: "edit_message", message_view_only: true},
-    g: {name: "gear_menu", message_view_only: true},
-    h: {name: "vim_left", message_view_only: true},
-    i: {name: "message_actions", message_view_only: true},
-    j: {name: "vim_down", message_view_only: true},
-    k: {name: "vim_up", message_view_only: true},
-    l: {name: "vim_right", message_view_only: true},
-    m: {name: "move_message", message_view_only: true},
-    n: {name: "n_key", message_view_only: false},
-    p: {name: "p_key", message_view_only: false},
-    q: {name: "query_streams", message_view_only: true},
-    r: {name: "reply_message", message_view_only: true},
-    s: {name: "toggle_conversation_view", message_view_only: true},
-    t: {name: "open_recent_view", message_view_only: true},
-    u: {name: "toggle_sender_info", message_view_only: true},
-    v: {name: "show_lightbox", message_view_only: true},
-    w: {name: "query_users", message_view_only: true},
-    x: {name: "compose_private_message", message_view_only: true},
-    z: {name: "zoom_to_message_near", message_view_only: true},
-};
+function character_mappings(key) {
+    switch (key) {
+        case "*":
+            return {name: "open_starred_message_view", message_view_only: true};
+        case "+":
+            return {name: "thumbs_up_emoji", message_view_only: true};
+        case "=":
+            return {name: "upvote_first_emoji", message_view_only: true};
+        case "-":
+            return {name: "toggle_message_collapse", message_view_only: true};
+        case "/":
+            return {name: "search", message_view_only: false};
+        case ":":
+            return {name: "toggle_reactions_popover", message_view_only: true};
+        case "<":
+            return {name: "compose_forward_message", message_view_only: true};
+        case ">":
+            return {name: "compose_quote_message", message_view_only: true};
+        case "?":
+            return {name: "show_shortcuts", message_view_only: false};
+        case "@":
+            return {name: "compose_reply_with_mention", message_view_only: true};
+        case "A":
+            return {name: "stream_cycle_backward", message_view_only: true};
+        case "C":
+            return {name: "C_deprecated", message_view_only: true};
+        case "D":
+            return {name: "stream_cycle_forward", message_view_only: true};
+        case "G":
+            return {name: "G_end", message_view_only: true};
+        case "H":
+            return {name: "view_edit_history", message_view_only: true};
+        case "I":
+            return {name: "open_inbox", message_view_only: true};
+        case "J":
+            return {name: "vim_page_down", message_view_only: true};
+        case "K":
+            return {name: "vim_page_up", message_view_only: true};
+        case "M":
+            return {name: "toggle_topic_visibility_policy", message_view_only: true};
+        case "N":
+            return {name: "narrow_to_next_unread_followed_topic", message_view_only: false};
+        case "P":
+            return {name: "narrow_private", message_view_only: true};
+        case "R":
+            return {name: "respond_to_author", message_view_only: true};
+        case "S":
+            return {name: "toggle_stream_subscription", message_view_only: true};
+        case "U":
+            return {name: "mark_unread", message_view_only: true};
+        case "V":
+            return [
+                {name: "view_selected_stream", message_view_only: false},
+                {name: "toggle_read_receipts", message_view_only: true},
+            ];
+        // The shortcut "a" dates from when this was called "All messages".
+        case "a":
+            return {name: "open_combined_feed", message_view_only: true};
+        case "c":
+            return {name: "compose", message_view_only: true};
+        case "d":
+            return {name: "open_drafts", message_view_only: true};
+        case "e":
+            return {name: "edit_message", message_view_only: true};
+        case "g":
+            return {name: "gear_menu", message_view_only: true};
+        case "h":
+            return {name: "vim_left", message_view_only: true};
+        case "i":
+            return {name: "message_actions", message_view_only: true};
+        case "j":
+            return {name: "vim_down", message_view_only: true};
+        case "k":
+            return {name: "vim_up", message_view_only: true};
+        case "l":
+            return {name: "vim_right", message_view_only: true};
+        case "m":
+            return {name: "move_message", message_view_only: true};
+        case "n":
+            return {name: "n_key", message_view_only: false};
+        case "p":
+            return {name: "p_key", message_view_only: false};
+        case "q":
+            return {name: "query_streams", message_view_only: true};
+        case "r":
+            return {name: "reply_message", message_view_only: true};
+        case "s":
+            return {name: "toggle_conversation_view", message_view_only: true};
+        case "t":
+            return {name: "open_recent_view", message_view_only: true};
+        case "u":
+            return {name: "toggle_sender_info", message_view_only: true};
+        case "v":
+            return {name: "show_lightbox", message_view_only: true};
+        case "w":
+            return {name: "query_users", message_view_only: true};
+        case "x":
+            return {name: "compose_private_message", message_view_only: true};
+        case "z":
+            return {name: "zoom_to_message_near", message_view_only: true};
+        default:
+            return undefined;
+    }
+}
 
 export function get_keydown_hotkey(e) {
     let hotkey;
 
     if (e.altKey) {
-        hotkey = keydown_alt_mappings[e.key];
+        hotkey = keydown_alt_mappings(e.key);
         if (hotkey) {
             return hotkey;
         }
@@ -225,7 +328,7 @@ export function get_keydown_hotkey(e) {
     }
 
     if (e.ctrlKey && !e.shiftKey) {
-        hotkey = keydown_ctrl_mappings[e.key];
+        hotkey = keydown_ctrl_mappings(e.key);
         if (hotkey) {
             return hotkey;
         }
@@ -233,7 +336,7 @@ export function get_keydown_hotkey(e) {
 
     const isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
     if (isCmdOrCtrl && !e.shiftKey) {
-        hotkey = keydown_cmd_or_ctrl_mappings[e.key];
+        hotkey = keydown_cmd_or_ctrl_mappings(e.key);
         if (hotkey) {
             return hotkey;
         }
@@ -243,25 +346,25 @@ export function get_keydown_hotkey(e) {
     }
 
     if (e.shiftKey) {
-        hotkey = keydown_shift_mappings[e.key];
+        hotkey = keydown_shift_mappings(e.key);
         if (hotkey) {
             return hotkey;
         }
     }
 
     if (!e.shiftKey) {
-        hotkey = keydown_unshift_mappings[e.key];
+        hotkey = keydown_unshift_mappings(e.key);
         if (hotkey) {
             return hotkey;
         }
     }
 
-    hotkey = keydown_either_mappings[e.key];
+    hotkey = keydown_either_mappings(e.key);
     if (hotkey) {
         return hotkey;
     }
 
-    return character_mappings[e.key];
+    return character_mappings(e.key);
 }
 
 export let processing_text = () => {
