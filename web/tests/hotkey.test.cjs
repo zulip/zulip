@@ -151,13 +151,6 @@ function test_while_not_editing_text(label, f) {
 }
 
 run_test("mappings", () => {
-    function map_press(key, shiftKey) {
-        return hotkey.get_keypress_hotkey({
-            key,
-            shiftKey,
-        });
-    }
-
     function map_down(key, shiftKey, ctrlKey, metaKey, altKey) {
         return hotkey.get_keydown_hotkey({
             key,
@@ -170,7 +163,7 @@ run_test("mappings", () => {
 
     // The next assertion protects against an iOS bug where we
     // treat "!" as a hotkey, because iOS sends the wrong code.
-    assert.equal(map_press("!"), undefined);
+    assert.equal(map_down("!"), undefined);
 
     // Test page-up does work.
     assert.equal(map_down("PageUp").name, "page_up");
@@ -185,10 +178,13 @@ run_test("mappings", () => {
     assert.equal(map_down("Enter", true).name, "enter");
     assert.equal(map_down("H", true).name, "view_edit_history");
     assert.equal(map_down("N", true).name, "narrow_to_next_unread_followed_topic");
-    assert.equal(map_down("V", true).name, "toggle_read_receipts");
+    assert.deepEqual(
+        map_down("V", true).map((item) => item.name),
+        ["view_selected_stream", "toggle_read_receipts"],
+    );
 
-    assert.equal(map_press("/").name, "search");
-    assert.equal(map_press("j").name, "vim_down");
+    assert.equal(map_down("/").name, "search");
+    assert.equal(map_down("j").name, "vim_down");
 
     assert.equal(map_down("[", false, true).name, "escape");
     assert.equal(map_down("c", false, true).name, "copy_with_c");
@@ -199,8 +195,6 @@ run_test("mappings", () => {
     assert.equal(map_down("p", false, false, false, true).name, "toggle_compose_preview"); // Alt + P
 
     // More negative tests.
-    assert.equal(map_down("/"), undefined);
-    assert.equal(map_press("Escape"), undefined);
     assert.equal(map_down("Escape", true), undefined);
     assert.equal(map_down("v", false, true), undefined);
     assert.equal(map_down("z", false, true), undefined);
@@ -238,16 +232,13 @@ run_test("mappings", () => {
     navigator.platform = "";
 });
 
-function process(s, shiftKey, keydown = false) {
+function process(s, shiftKey) {
     const e = {
         key: s,
         shiftKey,
     };
     try {
-        if (keydown) {
-            return hotkey.process_keydown(e);
-        }
-        return hotkey.process_keypress(e);
+        return hotkey.process_keydown(e);
     } catch (error) /* istanbul ignore next */ {
         // An exception will be thrown here if a different
         // function is called than the one declared.  Try to
@@ -258,9 +249,9 @@ function process(s, shiftKey, keydown = false) {
     }
 }
 
-function assert_mapping(c, module, func_name, shiftKey, keydown) {
+function assert_mapping(c, module, func_name, shiftKey) {
     stubbing(module, func_name, (stub) => {
-        assert.ok(process(c, shiftKey, keydown));
+        assert.ok(process(c, shiftKey));
         assert.equal(stub.num_calls, 1);
     });
 }
@@ -314,7 +305,7 @@ test_while_not_editing_text("streams", ({override}) => {
     override(overlays, "streams_open", () => true);
     override(overlays, "any_active", () => true);
     assert_mapping("S", stream_settings_ui, "keyboard_sub");
-    assert_mapping("V", stream_settings_ui, "view_stream");
+    assert_mapping("V", stream_settings_ui, "view_stream", true);
     assert_mapping("n", stream_settings_ui, "open_create_stream");
     settings_data.user_can_create_private_streams = () => false;
     settings_data.user_can_create_public_streams = () => false;
@@ -420,11 +411,11 @@ test_while_not_editing_text("misc", ({override}) => {
     override(message_edit, "can_move_message", () => false);
     assert_unmapped("m");
 
-    assert_mapping("V", read_receipts, "show_user_list", true, true);
+    assert_mapping("V", read_receipts, "show_user_list", true);
 
     override(modals, "any_active", () => true);
     override(modals, "active_modal", () => "#read_receipts_modal");
-    assert_mapping("V", read_receipts, "hide_user_list", true, true);
+    assert_mapping("V", read_receipts, "hide_user_list", true);
 });
 
 test_while_not_editing_text("lightbox overlay open", ({override}) => {
@@ -464,7 +455,7 @@ test_while_not_editing_text("n/p keys", () => {
 });
 
 test_while_not_editing_text("narrow next unread followed topic", () => {
-    assert_mapping("N", message_view, "narrow_to_next_topic", true, true);
+    assert_mapping("N", message_view, "narrow_to_next_topic", true);
 });
 
 test_while_not_editing_text("motion_keys", () => {
@@ -575,7 +566,10 @@ run_test("test new user input hook called", () => {
         hook_called = true;
     });
 
-    hotkey.process_keydown({key: "S"});
+    // Currently, "b" is not a valid hotkey.
+    // But it serves our purpose here to verify
+    // `hook_called` on keydown.
+    hotkey.process_keydown({key: "b"});
     assert.ok(hook_called);
 });
 
@@ -592,7 +586,7 @@ test_while_not_editing_text("e shortcut works for anonymous users", ({override_r
     };
 
     stubbing(message_edit, "start", (stub) => {
-        hotkey.process_keypress(e);
+        hotkey.process_keydown(e);
         assert.equal(stub.num_calls, 1);
     });
     assert.equal(stub.num_calls, 0, "login_to_access should not be called for 'e' shortcut");
