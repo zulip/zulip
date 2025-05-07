@@ -11,7 +11,7 @@
                     {{/tr}}
                 </span>
             </template>
-            <button class="action-button action-button-quiet-brand subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
+            <button class="action-button subscribe-button sub_unsub_button {{#if subscribed}}action-button-quiet-neutral{{else}}action-button-quiet-brand{{/if}} {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
                 {{#if subscribed }}
                     {{t "Unsubscribe" }}
                 {{else}}
@@ -22,7 +22,7 @@
         {{> ../components/action_button
           icon="eye"
           attention="quiet"
-          intent="info"
+          intent="neutral"
           custom_classes="tippy-zulip-delayed-tooltip"
           data-tooltip-template-id="view-stream-tooltip-template"
           id="preview-stream-button"

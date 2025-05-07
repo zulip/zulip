@@ -198,9 +198,15 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 
     if (sub.subscribed) {
-        $settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
+        $settings_button
+            .text($t({defaultMessage: "Unsubscribe"}))
+            .removeClass("unsubscribed action-button-quiet-brand")
+            .addClass("action-button-quiet-neutral");
     } else {
-        $settings_button.text($t({defaultMessage: "Subscribe"})).addClass("unsubscribed");
+        $settings_button
+            .text($t({defaultMessage: "Subscribe"}))
+            .addClass("unsubscribed action-button-quiet-brand")
+            .removeClass("action-button-quiet-neutral");
     }
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
