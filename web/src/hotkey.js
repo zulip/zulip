@@ -110,7 +110,10 @@ const keydown_shift_mappings = {
     ArrowDown: {name: "down_arrow", message_view_only: false},
     H: {name: "view_edit_history", message_view_only: true},
     N: {name: "narrow_to_next_unread_followed_topic", message_view_only: false},
-    V: {name: "toggle_read_receipts", message_view_only: true},
+    V: [
+        {name: "view_selected_stream", message_view_only: false},
+        {name: "toggle_read_receipts", message_view_only: true},
+    ],
 };
 
 const keydown_unshift_mappings = {
@@ -162,7 +165,7 @@ const keydown_either_mappings = {
     Delete: {name: "delete", message_view_only: false},
 };
 
-const keypress_mappings = {
+const character_mappings = {
     "*": {name: "open_starred_message_view", message_view_only: true},
     "+": {name: "thumbs_up_emoji", message_view_only: true},
     "=": {name: "upvote_first_emoji", message_view_only: true},
@@ -185,7 +188,6 @@ const keypress_mappings = {
     R: {name: "respond_to_author", message_view_only: true},
     S: {name: "toggle_stream_subscription", message_view_only: true},
     U: {name: "mark_unread", message_view_only: true},
-    V: {name: "view_selected_stream", message_view_only: false},
     // The shortcut "a" dates from when this was called "All messages".
     a: {name: "open_combined_feed", message_view_only: true},
     c: {name: "compose", message_view_only: true},
@@ -256,15 +258,12 @@ export function get_keydown_hotkey(e) {
         }
     }
 
-    return keydown_either_mappings[e.key];
-}
-
-export function get_keypress_hotkey(e) {
-    if (e.metaKey || e.ctrlKey || e.altKey) {
-        return undefined;
+    hotkey = keydown_either_mappings[e.key];
+    if (hotkey) {
+        return hotkey;
     }
 
-    return keypress_mappings[e.key];
+    return character_mappings[e.key];
 }
 
 export let processing_text = () => {
@@ -681,7 +680,7 @@ export function process_shift_tab_key() {
     return false;
 }
 
-// Process a keydown or keypress event.
+// Process a keydown event.
 //
 // Returns true if we handled it, false if the browser should.
 export function process_hotkey(e, hotkey) {
@@ -1318,42 +1317,22 @@ export function process_hotkey(e, hotkey) {
     return false;
 }
 
-/* We register both a keydown and a keypress function because
-   we want to intercept PgUp/PgDn, Esc, etc, and process them
-   as they happen on the keyboard. However, if we processed
-   letters/numbers in keydown, we wouldn't know what the case of
-   the letters were.
-
-   We want case-sensitive hotkeys (such as in the case of r vs R)
-   so we bail in .keydown if the event is a letter or number and
-   instead just let keypress go for it. */
-
 export function process_keydown(e) {
     activity.set_new_user_input(true);
-    const hotkey = get_keydown_hotkey(e);
-    if (!hotkey) {
+    const result = get_keydown_hotkey(e);
+    if (!result) {
         return false;
     }
-    return process_hotkey(e, hotkey);
-}
 
-export function process_keypress(e) {
-    const hotkey = get_keypress_hotkey(e);
-    if (!hotkey) {
-        return false;
+    if (Array.isArray(result)) {
+        return result.some((hotkey) => process_hotkey(e, hotkey));
     }
-    return process_hotkey(e, hotkey);
+    return process_hotkey(e, result);
 }
 
 export function initialize() {
     $(document).on("keydown", (e) => {
         if (process_keydown(e)) {
-            e.preventDefault();
-        }
-    });
-
-    $(document).on("keypress", (e) => {
-        if (process_keypress(e)) {
             e.preventDefault();
         }
     });
