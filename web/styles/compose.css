@@ -216,6 +216,10 @@
 
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
+                /* This height is necessary only for the
+                   DM picker, so that it does not stretch
+                   open taller with multiple rows of user
+                   pills. */
                 height: var(--compose-recipient-box-min-height);
             }
 
@@ -1103,6 +1107,12 @@ textarea.new_message_textarea {
     #stream_message_recipient_topic {
         grid-area: topic;
         color: var(--color-compose-recipient-box-text-color);
+        /* Keep the line-height matched to the font-size
+           for a more predictable box height.
+           This will have to be watched very closely for
+           possible regressions, such as when Unicode emoji
+           appear in the topic box. */
+        line-height: 1;
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1110,7 +1120,7 @@ textarea.new_message_textarea {
         box-shadow: none;
         outline: none;
 
-        padding: 4px 6px;
+        padding: 0 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
 
@@ -1121,6 +1131,7 @@ textarea.new_message_textarea {
 
     #topic-not-mandatory-placeholder {
         grid-area: topic-box;
+        align-self: center;
         white-space: nowrap;
         overflow-x: hidden;
         text-overflow: ellipsis;
@@ -1375,10 +1386,9 @@ textarea.new_message_textarea {
 }
 
 #compose-recipient {
-    /* Enforce a shared, 'normal' line-height on
-       the recipient elements for baseline alignment,
-       and better use of the recipient-row space. */
-    line-height: normal;
+    /* Set a line-height equal to the font-size to
+       make a compact, predictably tall recipient row. */
+    line-height: 1;
     display: flex;
     flex: 1 1 0;
     /* Use this containing flex element to
