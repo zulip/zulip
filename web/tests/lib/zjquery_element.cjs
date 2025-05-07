@@ -220,6 +220,11 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
+        after(...args) {
+            assert.equal(this.length, 1);
+            this[0].after(...dom_args(args));
+            return this;
+        },
         append(arg) {
             assert.notEqual(typeof arg, "string");
             return this;
