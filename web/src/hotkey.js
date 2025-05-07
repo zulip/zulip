@@ -108,9 +108,6 @@ const keydown_shift_mappings = {
     ArrowRight: {name: "right_arrow", message_view_only: false},
     ArrowUp: {name: "up_arrow", message_view_only: false},
     ArrowDown: {name: "down_arrow", message_view_only: false},
-    H: {name: "view_edit_history", message_view_only: true},
-    N: {name: "narrow_to_next_unread_followed_topic", message_view_only: false},
-    V: {name: "toggle_read_receipts", message_view_only: true},
 };
 
 const keydown_unshift_mappings = {
@@ -177,15 +174,20 @@ const keypress_mappings = {
     C: {name: "C_deprecated", message_view_only: true},
     D: {name: "stream_cycle_forward", message_view_only: true},
     G: {name: "G_end", message_view_only: true},
+    H: {name: "view_edit_history", message_view_only: true},
     I: {name: "open_inbox", message_view_only: true},
     J: {name: "vim_page_down", message_view_only: true},
     K: {name: "vim_page_up", message_view_only: true},
     M: {name: "toggle_topic_visibility_policy", message_view_only: true},
+    N: {name: "narrow_to_next_unread_followed_topic", message_view_only: false},
     P: {name: "narrow_private", message_view_only: true},
     R: {name: "respond_to_author", message_view_only: true},
     S: {name: "toggle_stream_subscription", message_view_only: true},
     U: {name: "mark_unread", message_view_only: true},
-    V: {name: "view_selected_stream", message_view_only: false},
+    V: [
+        {name: "view_selected_stream", message_view_only: false},
+        {name: "toggle_read_receipts", message_view_only: true},
+    ],
     // The shortcut "a" dates from when this was called "All messages".
     a: {name: "open_combined_feed", message_view_only: true},
     c: {name: "compose", message_view_only: true},
@@ -1336,11 +1338,15 @@ export function process_keydown(e) {
 }
 
 export function process_keypress(e) {
-    const hotkey = get_keypress_hotkey(e);
-    if (!hotkey) {
+    const result = get_keypress_hotkey(e);
+    if (!result) {
         return false;
     }
-    return process_hotkey(e, hotkey);
+
+    if (Array.isArray(result)) {
+        return result.some((hotkey) => process_hotkey(e, hotkey));
+    }
+    return process_hotkey(e, result);
 }
 
 export function initialize() {

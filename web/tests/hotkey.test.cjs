@@ -177,11 +177,14 @@ run_test("mappings", () => {
     assert.equal(map_down("Enter").name, "enter");
     assert.equal(map_down("Delete").name, "delete");
     assert.equal(map_down("Enter", true).name, "enter");
-    assert.equal(map_down("N", true).name, "narrow_to_next_unread_followed_topic");
-    assert.equal(map_down("V", true).name, "toggle_read_receipts");
 
     assert.equal(map_press("/").name, "search");
     assert.equal(map_press("j").name, "vim_down");
+    assert.equal(map_press("N", true).name, "narrow_to_next_unread_followed_topic");
+    assert.deepEqual(
+        map_press("V", true).map((item) => item.name),
+        ["view_selected_stream", "toggle_read_receipts"],
+    );
 
     assert.equal(map_down("[", false, true).name, "escape");
     assert.equal(map_down("c", false, true).name, "copy_with_c");
@@ -276,7 +279,7 @@ test_while_not_editing_text("unmapped keys return false easily", () => {
     // calling any functions outside of hotkey.js.
     // (unless we are editing text)
     assert_unmapped("bfoyz");
-    assert_unmapped("BEFHLNOQTWXYZ");
+    assert_unmapped("BEFLOQTWXYZ");
 });
 
 run_test("allow normal typing when editing text", ({override, override_rewire}) => {
@@ -405,11 +408,11 @@ test_while_not_editing_text("misc", ({override}) => {
     override(message_edit, "can_move_message", () => false);
     assert_unmapped("m");
 
-    assert_mapping("V", read_receipts, "show_user_list", true, true);
+    assert_mapping("V", read_receipts, "show_user_list", true);
 
     override(modals, "any_active", () => true);
     override(modals, "active_modal", () => "#read_receipts_modal");
-    assert_mapping("V", read_receipts, "hide_user_list", true, true);
+    assert_mapping("V", read_receipts, "hide_user_list", true);
 });
 
 test_while_not_editing_text("lightbox overlay open", ({override}) => {
@@ -449,7 +452,7 @@ test_while_not_editing_text("n/p keys", () => {
 });
 
 test_while_not_editing_text("narrow next unread followed topic", () => {
-    assert_mapping("N", message_view, "narrow_to_next_topic", true, true);
+    assert_mapping("N", message_view, "narrow_to_next_topic", true);
 });
 
 test_while_not_editing_text("motion_keys", () => {
