@@ -63,10 +63,10 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         $stub.text(old_key);
         if (old_key === "data-mac-following-key") {
             $stub.attr("data-mac-following-key", "⌥");
-            $stub.after = ($plus, $elem) => {
-                assert.equal($plus.selector, "<contents-stub>");
-                assert.equal($elem.selector, "<kbd>");
-                assert.equal($elem.text(), $stub.attr("data-mac-following-key"));
+            $stub[0].after = (plus, element) => {
+                assert.equal(plus.innerHTML, "<contents-stub>");
+                assert.equal(element.innerHTML, "<kbd>");
+                assert.equal(element.textContent, $stub.attr("data-mac-following-key"));
             };
         }
         test_item.$stub = $stub;
