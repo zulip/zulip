@@ -674,12 +674,6 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
     PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
     PythonAPIIntegration("trac", ["project-management"]),
-    PythonAPIIntegration(
-        "twitter",
-        ["customer-support", "marketing"],
-        # _ needed to get around adblock plus
-        logo="images/integrations/logos/twitte_r.svg",
-    ),
 ]
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
