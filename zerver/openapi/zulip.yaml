@@ -9294,21 +9294,20 @@ paths:
       summary: Report a message
       tags: ["messages"]
       description: |
-        Reports a message to the moderation request channel if the
-        `moderation_request_channel` is configured. Moderators can
-        review the reports and act on the reported content.
+        Sends a notification to the organization's moderation request channel,
+        if it is configured, that reports the targeted message for review and
+        moderation.
 
-        Clients should check for whether the `moderation_request_channel`
-        setting is enabled to decide whether to show the message
-        report option in the UI.
+        Clients should check the `moderation_request_channel` realm setting to
+        decide whether to show the option to report messages in the UI.
 
-        If the `report_type` for the report is `other`, the `description`
-        parameter will become required. Clients should also enforce and
-        communicate this behavior in the UI.
+        If the `report_type` parameter value is `"other"`, the `description`
+        parameter is required. Clients should also enforce and communicate this
+        behavior in the UI.
 
-        **Changes**: New in Zulip 10.0 (feature level 382). This API builds
-        on the `moderation_request_channel` setting (feature 331)
-        which was previously a non-operational realm-level setting.
+        **Changes**: New in Zulip 11.0 (feature level 382). This API builds on
+        the `moderation_request_channel` realm setting, which was added in
+        feature level 331.
       parameters:
         - $ref: "#/components/parameters/MessageId"
       requestBody:
@@ -9320,7 +9319,8 @@ paths:
               properties:
                 report_type:
                   description: |
-                    The type of moderation request selected by the reporting user.
+                    The reason that best describes why the current user is reporting the
+                    target message for moderation.
                   type: string
                   enum:
                     - spam
@@ -9331,15 +9331,15 @@ paths:
                   example: harassment
                 description:
                   description: |
-                    The client should provide a text input of maximum length
-                    1000 characters for the reporting user to provide additional
-                    context explaining the report.
+                    A short description with additional context about why the current user
+                    is reporting the target message for moderation.
 
-                    If the `report_type` for the report is `other`, this field
-                    will become required.
+                    Clients should limit this string to a maximum length of 1000 characters.
 
+                    If the `report_type` parameter is `"other"`, this parameter is required,
+                    and its value cannot be an empty string.
                   type: string
-                  example: "this message is bullying Frodo."
+                  example: "This message insults and mocks Frodo, which is against the code of conduct."
               required:
                 - report_type
       responses:
@@ -9359,8 +9359,8 @@ paths:
                         "code": "BAD_REQUEST",
                       }
                     description: |
-                      An example JSON error response for when trying to report a
-                      message with `moderation_request_channel` disabled:
+                      An example JSON error response for when the organization's moderation
+                      request channel is not configured:
   /user_uploads:
     post:
       operationId: upload-file
