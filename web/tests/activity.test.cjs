@@ -463,9 +463,9 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
     assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
     assert.ok($users_matching_view_appended.selector.includes("user-circle-active"));
 
-    let $inserted;
-    $fred_stub.before = ($element) => {
-        $inserted = $element;
+    let inserted;
+    $fred_stub[0].before = (element) => {
+        inserted = element;
     };
 
     let fred_removed;
@@ -474,8 +474,8 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
     };
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok($inserted.selector.includes('data-user-id="1"'));
-    assert.ok($inserted.selector.includes("user-circle-active"));
+    assert.ok(inserted.innerHTML.includes('data-user-id="1"'));
+    assert.ok(inserted.innerHTML.includes("user-circle-active"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -485,8 +485,8 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
     };
     people.add_active_user(fred_with_new_name);
 
-    $alice_stub.before = ($element) => {
-        $inserted = $element;
+    $alice_stub[0].before = (element) => {
+        inserted = element;
     };
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
@@ -515,9 +515,9 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
     assert.ok($other_users_appended.selector.includes("user-circle-active"));
 
-    let $inserted;
-    $fred_stub.before = ($element) => {
-        $inserted = $element;
+    let inserted;
+    $fred_stub[0].before = (element) => {
+        inserted = element;
     };
 
     let fred_removed;
@@ -526,8 +526,8 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     };
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok($inserted.selector.includes('data-user-id="1"'));
-    assert.ok($inserted.selector.includes("user-circle-active"));
+    assert.ok(inserted.innerHTML.includes('data-user-id="1"'));
+    assert.ok(inserted.innerHTML.includes("user-circle-active"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -537,8 +537,8 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     };
     people.add_active_user(fred_with_new_name);
 
-    $alice_stub.before = ($element) => {
-        $inserted = $element;
+    $alice_stub[0].before = (element) => {
+        inserted = element;
     };
 
     activity_ui.redraw_user(fred_with_new_name.user_id);

@@ -196,6 +196,13 @@ class FakeElement extends RejectMissing {
     }
 }
 
+function dom_args(args) {
+    return args.flat().flatMap((arg) => {
+        assert.equal(typeof arg, "object");
+        return arg.__zjquery ? [...arg] : [arg];
+    });
+}
+
 // TODO: convert this to a true class
 exports.FakeJQuery = function (selector, opts) {
     const $self = {
@@ -226,6 +233,11 @@ exports.FakeJQuery = function (selector, opts) {
             for (const element of this) {
                 element.setAttribute(name, value);
             }
+            return this;
+        },
+        before(...args) {
+            assert.equal(this.length, 1);
+            this[0].before(...dom_args(args));
             return this;
         },
         caret(...args) {

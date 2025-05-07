@@ -54,9 +54,9 @@ run_test("basics", ({mock_template}) => {
     let inserted_before;
     const expected_html = pill_html("JavaScript");
 
-    $pill_input.before = ($elem) => {
+    $pill_input[0].before = (element) => {
         inserted_before = true;
-        assert.equal($elem.html(), expected_html);
+        assert.equal(element.innerHTML, expected_html);
     };
 
     widget.appendValidatedData(item);
@@ -88,7 +88,7 @@ function set_up() {
     };
 
     const $pill_input = $.create("pill_input");
-    $pill_input.before = noop;
+    $pill_input[0].before = noop;
 
     const create_item_from_text = (text) => items[text];
 
@@ -345,8 +345,8 @@ run_test("insert_remove", ({mock_template}) => {
     const $container = info.$container;
 
     const inserted_html = [];
-    $pill_input.before = ($elem) => {
-        inserted_html.push($elem.html());
+    $pill_input[0].before = (element) => {
+        inserted_html.push(element.innerHTML);
     };
 
     const widget = input_pill.create(config);
@@ -574,7 +574,7 @@ run_test("appendValue/clear", ({mock_template}) => {
         get_display_value_from_item: (s) => s.color_name,
     };
 
-    $pill_input.before = noop;
+    $pill_input[0].before = noop;
 
     const widget = input_pill.create(config);
 

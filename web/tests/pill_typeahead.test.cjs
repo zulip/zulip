@@ -163,7 +163,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
     mock_template("input_pill.hbs", true, (_data, html) => html);
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
-    $fake_input.before = noop;
+    $fake_input[0].before = noop;
 
     const $container = $.create(".pill-container");
     $container.set_find_results(".input", $fake_input);
@@ -255,7 +255,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
     mock_template("input_pill.hbs", true, (_data, html) => html);
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
-    $fake_input.before = noop;
+    $fake_input[0].before = noop;
 
     const $container = $.create(".pill-container");
     $container.set_find_results(".input", $fake_input);
@@ -348,7 +348,7 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
 
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
-    $fake_input.before = noop;
+    $fake_input[0].before = noop;
 
     const $container = $.create(".pill-container");
     $container.set_find_results(".input", $fake_input);
@@ -440,7 +440,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     mock_template("input_pill.hbs", true, (_data, html) => html);
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
-    $fake_input.before = noop;
+    $fake_input[0].before = noop;
 
     const $container = $.create(".pill-container");
     $container.set_find_results(".input", $fake_input);
@@ -700,7 +700,7 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
 
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
-    $fake_input.before = noop;
+    $fake_input[0].before = noop;
 
     const $container = $.create(".pill-container");
     $container.set_find_results(".input", $fake_input);
