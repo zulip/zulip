@@ -82,6 +82,20 @@ class EventChannelFolderAdd(BaseEvent):
     channel_folder: ChannelFolderForEventChannelFolderAdd
 
 
+class ChannelFolderDataForUpdate(BaseModel):
+    # TODO: fix types to avoid optional fields
+    name: str | None = None
+    description: str | None = None
+    is_archived: bool | None = None
+
+
+class EventChannelFolderUpdate(BaseEvent):
+    type: Literal["channel_folder"]
+    op: Literal["update"]
+    channel_folder_id: int
+    data: ChannelFolderDataForUpdate
+
+
 class DetailedCustomProfileCore(BaseModel):
     id: int
     type: int

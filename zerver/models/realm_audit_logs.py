@@ -115,6 +115,10 @@ class AuditLogEventType(IntEnum):
     SAVED_SNIPPET_CREATED = 800
 
     CHANNEL_FOLDER_CREATED = 901
+    CHANNEL_FOLDER_NAME_CHANGED = 902
+    CHANNEL_FOLDER_DESCRIPTION_CHANGED = 903
+    CHANNEL_FOLDER_ARCHIVED = 904
+    CHANNEL_FOLDER_UNARCHIVED = 905
 
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding

@@ -5752,6 +5752,61 @@ paths:
                                     },
                                   "id": 0,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when a channel folder is updated.
+
+                                **Changes**: New in Zulip 11.0 (feature level ZF-7b788e).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                channel_folder_id:
+                                  type: number
+                                  description: |
+                                    ID of the updated channel folder.
+                                data:
+                                  type: object
+                                  additionalProperties: false
+                                  description: |
+                                    Dictionary containing the changed details of the channel folder.
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: |
+                                        The new name of the channel folder. Only present if the channel
+                                        folder's name changed.
+                                    description:
+                                      type: string
+                                      description: |
+                                        The new description of the channel folder. Only present if the
+                                        description changed.
+                                    rendered_description:
+                                      type: string
+                                      description: |
+                                        The new rendered description of the channel folder. Only present
+                                        if the description changed.
+                                    is_archived:
+                                      type: boolean
+                                      description: |
+                                        Whether the channel folder is archived or not. Only present if
+                                        the channel folder is archived or unarchived.
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "update",
+                                  "data": {"name": "New frontend"},
+                                  "id": 0,
+                                }
                       queue_id:
                         type: string
                         description: |
@@ -23006,6 +23061,64 @@ paths:
                             },
                           ],
                       }
+  /channel_folders/{channel_folder_id}:
+    patch:
+      operationId: update-channel-folder
+      summary: Update a channel folder
+      tags: ["channels"]
+      description: |
+        Update the name or description of a channel folder.
+
+        This endpoint is also used to archive and unarchive
+        a channel folder.
+
+        Only organization administrators can update a
+        channel folder.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-7b788e).
+      parameters:
+        - $ref: "#/components/parameters/ChannelFolderId"
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: |
+                    The new name of the channel folder.
+                  type: string
+                  example: backend
+                description:
+                  description: |
+                    The new description of the channel folder.
+                  type: string
+                  example: Backend channels.
+                is_archived:
+                  description: |
+                    Whether to archive or unarchive the channel folder.
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid channel folder ID",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the channel folder ID is invalid:
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -26664,3 +26777,12 @@ components:
         type: boolean
       example: false
       required: false
+    ChannelFolderId:
+      name: channel_folder_id
+      in: path
+      description: |
+        The ID of the target channel folder.
+      schema:
+        type: integer
+      example: 1
+      required: true
