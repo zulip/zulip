@@ -11,7 +11,6 @@ const user_pill = mock_esm("../src/user_pill");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
 messages_overlay_ui.initialize_restore_overlay_message_tooltip = noop;
 
-const compose_pm_pill = zrequire("compose_pm_pill");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
@@ -223,9 +222,8 @@ test("draft_model delete", ({override_rewire}) => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", ({override, override_rewire}) => {
+test("snapshot_message", ({override}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
-    override_rewire(compose_pm_pill, "set_from_emails", noop);
     mock_banners();
 
     $(".narrow_to_compose_recipients").toggleClass = noop;
@@ -241,7 +239,6 @@ test("snapshot_message", ({override, override_rewire}) => {
             compose_state.set_stream_id(curr_draft.stream_id);
         }
         compose_state.topic(curr_draft.topic);
-        compose_state.private_message_recipient(curr_draft.private_message_recipient);
     }
 
     const stream = {
@@ -295,11 +292,9 @@ test("update_draft", ({override, override_rewire}) => {
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
 
-    override_rewire(compose_pm_pill, "set_from_emails", noop);
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
     compose_state.message_content("dummy content");
-    compose_state.private_message_recipient(aaron.email);
 
     const $container = $(".top_left_drafts");
     const $child = $(".unread_count");
@@ -642,7 +637,6 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
-    compose_state.private_message_recipient(null);
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests formatting and time-sorting of drafts
@@ -837,9 +831,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
-    override_rewire(compose_pm_pill, "set_from_emails", noop);
     compose_state.set_message_type("private");
-    compose_state.private_message_recipient(aaron.email);
 
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
