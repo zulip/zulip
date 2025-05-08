@@ -676,15 +676,10 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         };
     }
 
-    let is_dm_with_self = false;
-    const user_ids = draft.private_message_recipient_ids;
-    if (user_ids.length === 1) {
-        const user = people.get_by_user_id(user_ids[0]!);
-        if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
-            is_dm_with_self = true;
-        }
-    }
-    const recipients = people.user_ids_to_full_names_string(user_ids);
+    const is_dm_with_self = people.is_direct_message_conversation_with_self(
+        draft.private_message_recipient_ids,
+    );
+    const recipients = people.user_ids_to_full_names_string(draft.private_message_recipient_ids);
     return {
         draft_id: draft.id,
         is_stream: false,
