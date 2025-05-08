@@ -373,13 +373,16 @@ function attachSidebarScrollListener(): void {
     }
 }
 
+export function initialize_auto_collapse_setting(): void {
+    auto_collapse_views = user_settings.auto_collapse_views;
+    checkAutoCollapse();
+}
 
 export function initialize(): void {
     update_scheduled_messages_row();
     restore_views_state();
-    auto_collapse_views = user_settings.auto_collapse_views;
+    initialize_auto_collapse_setting();
     attachSidebarScrollListener();
-    checkAutoCollapse();
 
     $("body").on(
         "click",

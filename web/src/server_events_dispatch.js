@@ -896,7 +896,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if(event.property === "auto_collapse_views") {
-                left_sidebar_navigation_area.initialize();
+                left_sidebar_navigation_area.initialize_auto_collapse_setting();
             }
             if (event.property === "high_contrast_mode") {
                 $("body").toggleClass("high-contrast", event.value);
