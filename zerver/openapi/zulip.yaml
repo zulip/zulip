@@ -12800,13 +12800,13 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 350).
                 auto_collapse_views:
                   description: |
-                    A boolean parameter to control whether the "Views" section in the left sidebar 
-                    should automatically collapse when the user scrolls down. 
-                    
-                    When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains 
+                    A boolean parameter to control whether the "Views" section in the left sidebar
+                    should automatically collapse when the user scrolls down.
+
+                    When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
                     pinned open regardless of scroll behavior.
                   type: boolean
-                  example: true    
+                  example: true
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -16204,10 +16204,10 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 350).
                           auto_collapse_views:
                             description: |
-                              A boolean parameter to control whether the "Views" section in the left sidebar 
-                              should automatically collapse when the user scrolls down. 
-                              
-                              When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains 
+                              A boolean parameter to control whether the "Views" section in the left sidebar
+                              should automatically collapse when the user scrolls down.
+
+                              When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
                               pinned open regardless of scroll behavior.
                             type: boolean
                             example: true
@@ -18961,10 +18961,10 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 350).
                           auto_collapse_views:
                             description: |
-                              A boolean parameter to control whether the "Views" section in the left sidebar 
-                              should automatically collapse when the user scrolls down. 
-                              
-                              When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains 
+                              A boolean parameter to control whether the "Views" section in the left sidebar
+                              should automatically collapse when the user scrolls down.
+
+                              When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
                               pinned open regardless of scroll behavior.
                             type: boolean
                             example: true
@@ -20209,10 +20209,10 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 350).
                 auto_collapse_views:
                   description: |
-                    A boolean parameter to control whether the "Views" section in the left sidebar 
-                    should automatically collapse when the user scrolls down. 
-                    
-                    When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains 
+                    A boolean parameter to control whether the "Views" section in the left sidebar
+                    should automatically collapse when the user scrolls down.
+
+                    When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
                     pinned open regardless of scroll behavior.
                   type: boolean
                   example: true

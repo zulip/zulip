@@ -90,6 +90,11 @@ run_test("narrowing", ({override_rewire}) => {
 });
 
 run_test("update_count_in_dom", () => {
+    // Mock the global `page_params` before initialize
+    set_global("page_params", {
+        auto_collapse_views: true,
+    });
+
     function make_elem($elem, count_selector) {
         const $count = $(count_selector);
         $elem.set_find_results(".unread_count", $count);
