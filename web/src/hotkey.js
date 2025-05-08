@@ -106,6 +106,7 @@ function keydown_shift_mappings(key) {
         case "Tab":
             return {name: "shift_tab", message_view_only: false};
         case " ":
+        case "Space":
             return {name: "shift_spacebar", message_view_only: true};
         case "ArrowLeft":
             return {name: "left_arrow", message_view_only: false};
@@ -128,6 +129,7 @@ function keydown_unshift_mappings(key) {
         case "Escape":
             return {name: "escape", message_view_only: false};
         case " ":
+        case "Space":
             return {name: "spacebar", message_view_only: true};
         case "PageUp":
             return {name: "page_up", message_view_only: true};
@@ -153,6 +155,7 @@ function keydown_unshift_mappings(key) {
 function keydown_ctrl_mappings(key) {
     switch (key) {
         case "[":
+        case "BracketLeft":
             return {name: "escape", message_view_only: false};
         default:
             return undefined;
@@ -164,14 +167,19 @@ function keydown_cmd_or_ctrl_mappings(key) {
         case "Enter":
             return {name: "action_with_enter", message_view_only: true};
         case "c":
+        case "KeyC":
             return {name: "copy_with_c", message_view_only: false};
         case "k":
+        case "KeyK":
             return {name: "search_with_k", message_view_only: false};
         case "s":
+        case "KeyS":
             return {name: "star_message", message_view_only: true};
         case ".":
+        case "Period":
             return {name: "narrow_to_compose_target", message_view_only: true};
         case "'":
+        case "Quote":
             return {name: "open_saved_snippet_dropdown", message_view_only: true};
         default:
             return undefined;
@@ -181,6 +189,7 @@ function keydown_cmd_or_ctrl_mappings(key) {
 function keydown_alt_mappings(key) {
     switch (key) {
         case "p":
+        case "KeyP":
             return {name: "toggle_compose_preview", message_view_only: true};
         default:
             return undefined;
@@ -214,113 +223,191 @@ function keydown_either_mappings(key) {
 function character_mappings(key) {
     switch (key) {
         case "*":
+        case "shift-Digit8":
             return {name: "open_starred_message_view", message_view_only: true};
         case "+":
+        case "shift-Equal":
             return {name: "thumbs_up_emoji", message_view_only: true};
         case "=":
+        case "Equal":
             return {name: "upvote_first_emoji", message_view_only: true};
         case "-":
+        case "Minus":
             return {name: "toggle_message_collapse", message_view_only: true};
         case "/":
+        case "Slash":
             return {name: "search", message_view_only: false};
         case ":":
+        case "shift-Semicolon":
             return {name: "toggle_reactions_popover", message_view_only: true};
         case "<":
+        case "shift-Comma":
             return {name: "compose_forward_message", message_view_only: true};
         case ">":
+        case "shift-Period":
             return {name: "compose_quote_message", message_view_only: true};
         case "?":
+        case "shift-Slash":
             return {name: "show_shortcuts", message_view_only: false};
         case "@":
+        case "shift-Digit2":
             return {name: "compose_reply_with_mention", message_view_only: true};
         case "A":
+        case "shift-KeyA":
             return {name: "stream_cycle_backward", message_view_only: true};
         case "C":
+        case "shift-KeyC":
             return {name: "C_deprecated", message_view_only: true};
         case "D":
+        case "shift-KeyD":
             return {name: "stream_cycle_forward", message_view_only: true};
         case "G":
+        case "shift-KeyG":
             return {name: "G_end", message_view_only: true};
         case "H":
+        case "shift-KeyH":
             return {name: "view_edit_history", message_view_only: true};
         case "I":
+        case "shift-KeyI":
             return {name: "open_inbox", message_view_only: true};
         case "J":
+        case "shift-KeyJ":
             return {name: "vim_page_down", message_view_only: true};
         case "K":
+        case "shift-KeyK":
             return {name: "vim_page_up", message_view_only: true};
         case "M":
+        case "shift-KeyM":
             return {name: "toggle_topic_visibility_policy", message_view_only: true};
         case "N":
+        case "shift-KeyN":
             return {name: "narrow_to_next_unread_followed_topic", message_view_only: false};
         case "P":
+        case "shift-KeyP":
             return {name: "narrow_private", message_view_only: true};
         case "R":
+        case "shift-KeyR":
             return {name: "respond_to_author", message_view_only: true};
         case "S":
+        case "shift-KeyS":
             return {name: "toggle_stream_subscription", message_view_only: true};
         case "U":
+        case "shift-KeyU":
             return {name: "mark_unread", message_view_only: true};
         case "V":
+        case "shift-KeyV":
             return [
                 {name: "view_selected_stream", message_view_only: false},
                 {name: "toggle_read_receipts", message_view_only: true},
             ];
         // The shortcut "a" dates from when this was called "All messages".
         case "a":
+        case "KeyA":
             return {name: "open_combined_feed", message_view_only: true};
         case "c":
+        case "KeyC":
             return {name: "compose", message_view_only: true};
         case "d":
+        case "KeyD":
             return {name: "open_drafts", message_view_only: true};
         case "e":
+        case "KeyE":
             return {name: "edit_message", message_view_only: true};
         case "g":
+        case "KeyG":
             return {name: "gear_menu", message_view_only: true};
         case "h":
+        case "KeyH":
             return {name: "vim_left", message_view_only: true};
         case "i":
+        case "KeyI":
             return {name: "message_actions", message_view_only: true};
         case "j":
+        case "KeyJ":
             return {name: "vim_down", message_view_only: true};
         case "k":
+        case "KeyK":
             return {name: "vim_up", message_view_only: true};
         case "l":
+        case "KeyL":
             return {name: "vim_right", message_view_only: true};
         case "m":
+        case "KeyM":
             return {name: "move_message", message_view_only: true};
         case "n":
+        case "KeyN":
             return {name: "n_key", message_view_only: false};
         case "p":
+        case "KeyP":
             return {name: "p_key", message_view_only: false};
         case "q":
+        case "KeyQ":
             return {name: "query_streams", message_view_only: true};
         case "r":
+        case "KeyR":
             return {name: "reply_message", message_view_only: true};
         case "s":
+        case "KeyS":
             return {name: "toggle_conversation_view", message_view_only: true};
         case "t":
+        case "KeyT":
             return {name: "open_recent_view", message_view_only: true};
         case "u":
+        case "KeyU":
             return {name: "toggle_sender_info", message_view_only: true};
         case "v":
+        case "KeyV":
             return {name: "show_lightbox", message_view_only: true};
         case "w":
+        case "KeyW":
             return {name: "query_users", message_view_only: true};
         case "x":
+        case "KeyX":
             return {name: "compose_private_message", message_view_only: true};
         case "z":
+        case "KeyZ":
             return {name: "zoom_to_message_near", message_view_only: true};
         default:
             return undefined;
     }
 }
 
+function is_printable_ascii(key) {
+    if (key.length !== 1) {
+        return false;
+    }
+
+    const code_point = key.codePointAt(0);
+    return code_point >= 32 && code_point <= 126;
+}
+
+const NAMED_KEY_ATTRIBUTE_VALUES = new Set([
+    "Alt",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "Backspace",
+    "Control",
+    "Delete",
+    "End",
+    "Enter",
+    "Escape",
+    "Home",
+    "Meta",
+    "PageDown",
+    "PageUp",
+    "Shift",
+    "Tab",
+]);
+
 export function get_keydown_hotkey(e) {
     let hotkey;
+    const use_event_key = is_printable_ascii(e.key) || NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
+    let key_or_code = use_event_key ? e.key : e.code;
 
     if (e.altKey) {
-        hotkey = keydown_alt_mappings(e.key);
+        hotkey = keydown_alt_mappings(key_or_code);
         if (hotkey) {
             return hotkey;
         }
@@ -328,7 +415,7 @@ export function get_keydown_hotkey(e) {
     }
 
     if (e.ctrlKey && !e.shiftKey) {
-        hotkey = keydown_ctrl_mappings(e.key);
+        hotkey = keydown_ctrl_mappings(key_or_code);
         if (hotkey) {
             return hotkey;
         }
@@ -336,7 +423,7 @@ export function get_keydown_hotkey(e) {
 
     const isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
     if (isCmdOrCtrl && !e.shiftKey) {
-        hotkey = keydown_cmd_or_ctrl_mappings(e.key);
+        hotkey = keydown_cmd_or_ctrl_mappings(key_or_code);
         if (hotkey) {
             return hotkey;
         }
@@ -346,25 +433,28 @@ export function get_keydown_hotkey(e) {
     }
 
     if (e.shiftKey) {
-        hotkey = keydown_shift_mappings(e.key);
+        hotkey = keydown_shift_mappings(key_or_code);
         if (hotkey) {
             return hotkey;
         }
     }
 
     if (!e.shiftKey) {
-        hotkey = keydown_unshift_mappings(e.key);
+        hotkey = keydown_unshift_mappings(key_or_code);
         if (hotkey) {
             return hotkey;
         }
     }
 
-    hotkey = keydown_either_mappings(e.key);
+    hotkey = keydown_either_mappings(key_or_code);
     if (hotkey) {
         return hotkey;
     }
 
-    return character_mappings(e.key);
+    if (!use_event_key && e.shiftKey) {
+        key_or_code = "shift-" + key_or_code;
+    }
+    return character_mappings(key_or_code);
 }
 
 export let processing_text = () => {
