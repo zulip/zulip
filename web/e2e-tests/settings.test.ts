@@ -34,7 +34,7 @@ async function open_settings(page: Page): Promise<void> {
 }
 
 async function close_settings_and_date_picker(page: Page): Promise<void> {
-    const date_picker_selector = ".custom_user_field_value.datepicker.form-control";
+    const date_picker_selector = ".date-field-alt-input";
     await page.click(date_picker_selector);
 
     await page.waitForSelector(".flatpickr-calendar", {visible: true});
