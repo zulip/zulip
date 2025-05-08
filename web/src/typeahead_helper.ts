@@ -15,6 +15,7 @@ import type {
     TopicSuggestion,
 } from "./composebox_typeahead.ts";
 import type {InputPillContainer} from "./input_pill.ts";
+import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
@@ -302,6 +303,18 @@ export function compare_people_for_relevance(
     // Now handle actual people users.
     // give preference to subscribed users first
     if (current_stream_id !== undefined) {
+        // Fetch subscriber data if we don't have it yet, but don't wait for it.
+        // It's fine to use partial data for now, and hopefully on subsequent
+        // keystrokes, we'll have the full data to show more subscribers at the
+        // top of the list.
+        //
+        // (We will usually have it, since entering a channel triggers a fetch.)
+        if (!peer_data.has_full_subscriber_data(current_stream_id)) {
+            void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
+        }
+
+        // If the client does not yet have complete subscriber data,
+        // "unknown" and "not subscribed" are both represented as false here.
         const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
         const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
 

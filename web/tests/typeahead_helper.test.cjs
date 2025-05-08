@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const settings_config = zrequire("settings_config");
@@ -23,6 +23,10 @@ const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+
+mock_esm("../src/channel", {
+    get: () => ({subscribers: []}),
+});
 
 const current_user = {};
 set_current_user(current_user);

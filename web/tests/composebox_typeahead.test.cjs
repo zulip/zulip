@@ -34,6 +34,9 @@ const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
+mock_esm("../src/channel", {
+    get: () => ({subscribers: []}),
+});
 
 let set_timeout_called;
 set_global("setTimeout", (f, time) => {
