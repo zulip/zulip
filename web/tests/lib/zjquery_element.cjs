@@ -87,8 +87,10 @@ class FakeElementState {
     jquery_closest_results = new Map();
     jquery_data = new Map();
     jquery_find_results = new Map();
+    jquery_next_results = new Map();
     $jquery_parent = undefined;
     jquery_parents_results = new Map();
+    jquery_prev_results = new Map();
     selector = undefined;
     shown = false;
 }
@@ -483,6 +485,16 @@ exports.FakeJQuery = function (selector, opts) {
             assert.ok(0 in this);
             return fake_element_state.get(this[0]).is_focused;
         },
+        next(next_selector = "*") {
+            assert.equal(this.length, 1);
+            const state = fake_element_state.get(this[0]);
+            if (!state.jquery_next_results.has(next_selector)) {
+                throw new Error(
+                    `You need to call $(${JSON.stringify(state.selector)}).set_next_results(${JSON.stringify(next_selector)}, ...)`,
+                );
+            }
+            return state.jquery_next_results.get(next_selector);
+        },
         off(event_type, ...args) {
             if (args.length === 0) {
                 for (const element of this) {
@@ -578,6 +590,16 @@ exports.FakeJQuery = function (selector, opts) {
             this[0].prepend(...dom_args(args));
             return this;
         },
+        prev(prev_selector = "*") {
+            assert.equal(this.length, 1);
+            const state = fake_element_state.get(this[0]);
+            if (!state.jquery_prev_results.has(prev_selector)) {
+                throw new Error(
+                    `You need to call $(${JSON.stringify(state.selector)}).set_prev_results(${JSON.stringify(prev_selector)}, ...)`,
+                );
+            }
+            return state.jquery_prev_results.get(prev_selector);
+        },
         prop(name, ...args) {
             if (args.length === 0) {
                 return this[0]?.[name];
@@ -669,6 +691,10 @@ exports.FakeJQuery = function (selector, opts) {
                     );
             }
         },
+        set_next_results(selector, $result) {
+            assert.equal(this.length, 1);
+            fake_element_state.get(this[0]).jquery_next_results.set(selector, $result);
+        },
         set_parent($parent_elem) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).$jquery_parent = $parent_elem;
@@ -676,6 +702,10 @@ exports.FakeJQuery = function (selector, opts) {
         set_parents_result(selector, $result) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).jquery_parents_results.set(selector, $result);
+        },
+        set_prev_results(selector, $result) {
+            assert.equal(this.length, 1);
+            fake_element_state.get(this[0]).jquery_prev_results.set(selector, $result);
         },
         show() {
             for (const element of this) {
