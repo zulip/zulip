@@ -492,7 +492,7 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
         return `<stub-section-${section.id}>`;
     });
 
-    mock_template("show_inactive_or_muted_channels.hbs", false, () => $("<inactive-toggle>"));
+    mock_template("show_inactive_or_muted_channels.hbs", false, () => "<inactive-toggle>");
 
     const pinned_streams = [];
     $("#stream-list-pinned-streams").append = (stream) => {
@@ -613,7 +613,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
 
     stream_data.rename_sub(sub, new_name);
 
-    const $li_stub = $.create("li stub");
+    const $li_stub = $("<li-stub>");
 
     mock_template("stream_sidebar_row.hbs", false, (payload) => {
         assert.deepEqual(payload, {
@@ -629,7 +629,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
             is_empty_topic_only_channel: false,
             cannot_create_topics_in_channel: false,
         });
-        return {to_$: () => $li_stub};
+        return "<li-stub>";
     });
 
     const $subscription_block = $.create("development-block");

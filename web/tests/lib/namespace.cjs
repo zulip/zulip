@@ -69,18 +69,23 @@ function template_stub({filename, actual_render}) {
 
         const data = args[0];
 
+        let html;
         if (exercise_template) {
             // If our dev wants to exercise the actual template, then do so.
             // We set the in_mid_render bool so that included (i.e. partial)
             // templates get rendered.
             in_mid_render = true;
-            const html = actual_render(...args);
+            html = actual_render(...args);
             in_mid_render = false;
-
-            return f(data, html);
         }
 
-        return f(data);
+        const mock_html = f(data, html);
+        assert.equal(
+            typeof mock_html,
+            "string",
+            `The template mock for ${filename} must return a string`,
+        );
+        return mock_html;
     };
 }
 
