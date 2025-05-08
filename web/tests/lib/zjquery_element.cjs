@@ -175,6 +175,7 @@ class FakeElement extends RejectMissing {
         super();
         fake_element_state.set(this, new FakeElementState());
     }
+    append() {}
     hasAttribute(name) {
         return this.#attributes.has(normalize_attribute(name));
     }
@@ -225,8 +226,9 @@ exports.FakeJQuery = function (selector, opts) {
             this[0].after(...dom_args(args));
             return this;
         },
-        append(arg) {
-            assert.notEqual(typeof arg, "string");
+        append(...args) {
+            assert.equal(this.length, 1);
+            this[0].append(...dom_args(args));
             return this;
         },
         attr(name, ...args) {

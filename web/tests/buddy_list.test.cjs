@@ -110,15 +110,15 @@ run_test("split list", ({override, override_rewire}) => {
     override(padded_widget, "update_padding", noop);
 
     let appended_to_users_matching_view = false;
-    $("#buddy-list-users-matching-view").append = ($element) => {
-        if ($element.selector === "<html-stub>") {
+    $("#buddy-list-users-matching-view")[0].append = (element) => {
+        if (element.innerHTML === "<html-stub>") {
             appended_to_users_matching_view = true;
         }
     };
 
     let appended_to_other_users = false;
-    $("#buddy-list-other-users").append = ($element) => {
-        if ($element.selector === "<html-stub>") {
+    $("#buddy-list-other-users")[0].append = (element) => {
+        if (element.innerHTML === "<html-stub>") {
             appended_to_other_users = true;
         }
     };

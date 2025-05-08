@@ -892,8 +892,8 @@ test("insert_new_reaction (first reaction)", ({mock_template, override_rewire}) 
     $rows.set_find_results(".messagebox-content", $messagebox_content);
 
     let append_called = false;
-    $messagebox_content.append = ($element) => {
-        assert.equal($element.selector, "<msg-reactions-section-stub>");
+    $messagebox_content[0].append = (element) => {
+        assert.equal(element.innerHTML, "<msg-reactions-section-stub>");
         append_called = true;
     };
 

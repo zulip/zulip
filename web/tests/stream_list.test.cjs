@@ -175,12 +175,12 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
 
     const pinned_streams = [];
-    $("#stream-list-pinned-streams").append = (stream) => {
-        pinned_streams.push(stream);
+    $("#stream-list-pinned-streams")[0].append = (...streams) => {
+        pinned_streams.push(...streams);
     };
     const normal_streams = [];
-    $("#stream-list-normal-streams").append = (stream) => {
-        normal_streams.push(stream);
+    $("#stream-list-normal-streams")[0].append = (...streams) => {
+        normal_streams.push(...streams);
     };
 
     stream_data.add_sub_for_tests(devel);
@@ -202,8 +202,8 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     assert.ok(topics_closed);
     assert.deepEqual(appended_sections, ["pinned-streams", "normal-streams"]);
 
-    assert.deepEqual(pinned_streams, [$devel_sidebar]);
-    assert.deepEqual(normal_streams, [$social_sidebar]);
+    assert.deepEqual(pinned_streams, [$devel_sidebar[0]]);
+    assert.deepEqual(normal_streams, [$social_sidebar[0]]);
 
     const $social_li = $("<social-sidebar-row-stub>");
     const stream_id = social.stream_id;
@@ -490,12 +490,12 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     mock_template("show_inactive_or_muted_channels.hbs", false, () => "<inactive-toggle>");
 
     const pinned_streams = [];
-    $("#stream-list-pinned-streams").append = (stream) => {
-        pinned_streams.push(stream);
+    $("#stream-list-pinned-streams")[0].append = (...streams) => {
+        pinned_streams.push(...streams);
     };
     const normal_streams = [];
-    $("#stream-list-normal-streams").append = (stream) => {
-        normal_streams.push(stream);
+    $("#stream-list-normal-streams")[0].append = (...streams) => {
+        normal_streams.push(...streams);
     };
 
     stream_list.build_stream_list(true);
@@ -503,15 +503,15 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     assert.deepEqual(appended_sections, ["pinned-streams", "normal-streams"]);
 
     assert.deepEqual(pinned_streams, [
-        $("<devel-sidebar-row-stub>"),
-        $("<Rome-sidebar-row-stub>"),
-        $("<test-sidebar-row-stub>"),
+        $("<devel-sidebar-row-stub>")[0],
+        $("<Rome-sidebar-row-stub>")[0],
+        $("<test-sidebar-row-stub>")[0],
     ]);
     assert.deepEqual(normal_streams, [
-        $("<announce-sidebar-row-stub>"),
-        $("<Denmark-sidebar-row-stub>"),
-        $("<inactive-toggle>"),
-        $("<cars-sidebar-row-stub>"),
+        $("<announce-sidebar-row-stub>")[0],
+        $("<Denmark-sidebar-row-stub>")[0],
+        $("<inactive-toggle>")[0],
+        $("<cars-sidebar-row-stub>")[0],
     ]);
 
     const streams = stream_list_sort.get_stream_ids();
@@ -582,15 +582,18 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
         return `<stub-section-${section.id}>`;
     });
     const pinned_streams = [];
-    $("#stream-list-pinned-streams").append = (stream) => {
-        pinned_streams.push(stream);
+    $("#stream-list-pinned-streams")[0].append = (...streams) => {
+        pinned_streams.push(...streams);
     };
 
     stream_list.build_stream_list();
 
     assert.deepEqual(appended_sections, ["pinned-streams", "normal-streams"]);
 
-    assert.deepEqual(pinned_streams, [$("<devel-sidebar-row-stub>"), $("<Rome-sidebar-row-stub>")]);
+    assert.deepEqual(pinned_streams, [
+        $("<devel-sidebar-row-stub>")[0],
+        $("<Rome-sidebar-row-stub>")[0],
+    ]);
 });
 
 test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
