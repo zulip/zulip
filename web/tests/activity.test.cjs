@@ -430,29 +430,29 @@ test("insert_one_user_into_empty_list", ({override}) => {
 });
 
 test("insert_alice_then_fred", ({override}) => {
-    let $other_users_appended;
-    override(buddy_list.$other_users_list, "append", ($element) => {
-        $other_users_appended = $element;
+    let other_users_appended;
+    override(buddy_list.$other_users_list[0], "append", (element) => {
+        other_users_appended = element;
     });
     override(padded_widget, "update_padding", noop);
     override(buddy_list_presence, "update_indicators", noop);
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="1"'));
+    assert.ok(other_users_appended.innerHTML.includes("user-circle-active"));
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="2"'));
+    assert.ok(other_users_appended.innerHTML.includes("user-circle-active"));
 });
 
 test("insert_fred_then_alice_then_rename, both as users matching view", ({override}) => {
     add_sub_and_set_as_current_narrow(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id, fred.user_id]);
 
-    let $users_matching_view_appended;
-    override(buddy_list.$users_matching_view_list, "append", ($element) => {
-        $users_matching_view_appended = $element;
+    let users_matching_view_appended;
+    override(buddy_list.$users_matching_view_list[0], "append", (element) => {
+        users_matching_view_appended = element;
     });
     override(padded_widget, "update_padding", noop);
     override(buddy_list_presence, "update_indicators", noop);
@@ -460,8 +460,8 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
     buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
-    assert.ok($users_matching_view_appended.selector.includes("user-circle-active"));
+    assert.ok(users_matching_view_appended.innerHTML.includes('data-user-id="2"'));
+    assert.ok(users_matching_view_appended.innerHTML.includes("user-circle-active"));
 
     let inserted;
     $fred_stub[0].before = (element) => {
@@ -491,7 +491,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({overri
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
-    assert.ok($users_matching_view_appended.selector.includes('data-user-id="2"'));
+    assert.ok(users_matching_view_appended.innerHTML.includes('data-user-id="2"'));
 
     // restore old Fred data
     people.add_active_user(fred);
@@ -501,9 +501,9 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     add_sub_and_set_as_current_narrow(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, []);
 
-    let $other_users_appended;
-    override(buddy_list.$other_users_list, "append", ($element) => {
-        $other_users_appended = $element;
+    let other_users_appended;
+    override(buddy_list.$other_users_list[0], "append", (element) => {
+        other_users_appended = element;
     });
     override(padded_widget, "update_padding", noop);
     override(buddy_list_presence, "update_indicators", noop);
@@ -512,8 +512,8 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     buddy_list_add_other_user(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
-    assert.ok($other_users_appended.selector.includes("user-circle-active"));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="2"'));
+    assert.ok(other_users_appended.innerHTML.includes("user-circle-active"));
 
     let inserted;
     $fred_stub[0].before = (element) => {
@@ -543,7 +543,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
-    assert.ok($other_users_appended.selector.includes('data-user-id="2"'));
+    assert.ok(other_users_appended.innerHTML.includes('data-user-id="2"'));
 
     // restore old Fred data
     people.add_active_user(fred);
