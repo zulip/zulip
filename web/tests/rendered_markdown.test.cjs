@@ -738,7 +738,7 @@ function test_code_playground(mock_template, viewing_code) {
 
     $hilite.attr("data-code-language", "javascript");
 
-    const $code_buttons_container = $.create("code-buttons-container-stub");
+    const $code_buttons_container = $("<code-buttons-container-stub>");
     const $copy_code_button = $("<copy-code-button-stub>");
     const $view_code_in_playground = $.create("view_code_in_playground");
 
@@ -758,12 +758,12 @@ function test_code_playground(mock_template, viewing_code) {
     if (viewing_code) {
         mock_template("code_buttons_container.hbs", true, (data) => {
             assert.equal(data.show_playground_button, true);
-            return {to_$: () => $code_buttons_container};
+            return "<code-buttons-container-stub>";
         });
     } else {
         mock_template("code_buttons_container.hbs", true, (data) => {
             assert.equal(data.show_playground_button, false);
-            return {to_$: () => $code_buttons_container};
+            return "<code-buttons-container-stub>";
         });
     }
 

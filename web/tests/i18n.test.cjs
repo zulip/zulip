@@ -69,6 +69,7 @@ run_test("t_tag", ({mock_template}) => {
     mock_template("popovers/message_actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.includes("Citer le message"));
+        return "<message-actions-popover-stub>";
     });
 
     require("../templates/popovers/message_actions_popover.hbs")(args);
@@ -112,6 +113,7 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
     mock_template("settings/user_notification_settings.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.includes("Déclencheurs de notification"));
+        return "<user-notification-settings-stub>";
     });
     require("../templates/settings/user_notification_settings.hbs")(args);
 });

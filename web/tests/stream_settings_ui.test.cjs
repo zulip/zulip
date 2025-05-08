@@ -222,6 +222,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
 
     mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
         populated_subs = data.subscriptions;
+        return "<browse-streams-list-stub>";
     });
 
     const filters_dropdown_widget = {
