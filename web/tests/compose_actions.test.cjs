@@ -697,10 +697,12 @@ test("on_narrow", ({override, override_rewire}) => {
     assert.ok(start_called);
 
     start_called = false;
+    compose_defaults = {
+        private_message_recipient: "",
+    };
     compose_actions.on_narrow({
         force_close: false,
         trigger: "search",
-        private_message_recipient: "",
     });
     assert.ok(!start_called);
 
