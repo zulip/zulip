@@ -16,7 +16,7 @@ class zulip::postgresql_base {
       $tsearch_datadir = "${postgresql_sharedir}/tsearch_data"
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_apt_repo'
-      $postgresql_restart = "pg_ctlcluster ${zulip::postgresql_common::version} main restart"
+      $postgresql_restart = "systemctl restart postgresql@${zulip::postgresql_common::version}-main"
     }
     'RedHat': {
       $postgresql = "postgresql${zulip::postgresql_common::version}"
