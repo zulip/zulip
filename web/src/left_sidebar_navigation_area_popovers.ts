@@ -20,21 +20,8 @@ import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
+import { auto_collapse_views } from "./left_sidebar_navigation_area.ts";
 
-
-const auto_collapse_views_STATE_KEY = "views_auto_collapse_views_state";
-const STATES = {
-    ALWAYS_EXPANDED: "always_expanded",
-    auto_collapse_views: "auto_collapse_views",
-};
-
-export function get_auto_collapse_views_state(): boolean {
-    const state = localStorage.getItem(auto_collapse_views_STATE_KEY);
-    if (state === null) {
-        return true;
-    } 
-    return state === STATES.auto_collapse_views;
-}
 
 function common_click_handlers(): void {
     $("body").on("click", ".set-home-view", (e) => {
@@ -253,7 +240,7 @@ export function initialize(): void {
             }
             
             const $views_header = $("#views-label-container");
-            const is_auto_collapse_views = get_auto_collapse_views_state();
+            const is_auto_collapse_views = auto_collapse_views;
             const is_condensed = $views_header.hasClass("showing-condensed-navigation");
             $views_header.addClass("more-options-active");
 

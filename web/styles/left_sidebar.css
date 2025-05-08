@@ -203,7 +203,7 @@
         top: 203.4px;
     }
 
-    &.scrolled, &.keep_views_expanded {
+    &.scrolled, &.scrolled-when-views-expanded {
         box-shadow: 0 1px 1px -1px hsl(0deg 0% 0% / 100%),
         0 3px 4px -5px hsl(0deg 0% 0% / 100%),
         0 4px 9px -10px hsl(0deg 0% 0% / 100%),

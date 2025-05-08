@@ -2,7 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 
 import type {Filter} from "./filter.ts";
-import { get_auto_collapse_views_state } from "./left_sidebar_navigation_area_popovers.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -12,30 +11,18 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import { user_settings } from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
-const auto_collapse_views_STATE_KEY = "views_auto_collapse_views_state";
 const ls = localstorage();
+
+export let auto_collapse_views: boolean;
 
 const STATES = {
     EXPANDED: "expanded",
     CONDENSED: "condensed",
 };
-
-const auto_collapse_views_STATES = {
-    ALWAYS_EXPANDED: "always_expanded",
-    auto_collapse_views: "auto_collapse_views",
-};
-
-function set_auto_collapse_views_state(is_auto_collapse_views: boolean): void {
-    localStorage.setItem(
-        auto_collapse_views_STATE_KEY,
-        is_auto_collapse_views ? auto_collapse_views_STATES.auto_collapse_views : auto_collapse_views_STATES.ALWAYS_EXPANDED,
-    );
-}
-
-
 
 function restore_views_state(): void {
     if (page_params.is_spectator) {
@@ -166,7 +153,7 @@ function toggle_condensed_navigation_area(): void {
 
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
         // Change state keep_views_expanded to auto collapse before condensing
-        set_auto_collapse_views_state(true);
+        auto_collapse_views = true;
         checkAutoCollapse();
         condensedList.setAttribute("style", "display: flex;");
         // Toggle into the condensed state
@@ -198,10 +185,8 @@ function toggle_auto_collpase_views_section(): void {
 
     save_state(STATES.EXPANDED); 
 
-    // Toggle the state of Auto collapse and update the local storage
-    const current_state = get_auto_collapse_views_state();
-    const new_state = !current_state;
-    set_auto_collapse_views_state(new_state);
+    // Toggle the state of Auto collapse 
+    auto_collapse_views = !auto_collapse_views;
 
     checkAutoCollapse();
     resize.resize_stream_filters_container();
@@ -308,9 +293,8 @@ function checkAutoCollapse(): void {
     const $direct_messages_header = $("#direct-messages-section-header");
     const $views_section_header = $("#views-label-container");
     const $streams_header = $("#streams_header");
-    const is_auto_collapse_views = get_auto_collapse_views_state();
 
-    if(is_auto_collapse_views) {
+    if(auto_collapse_views) {
         $views_navigation_list.removeClass("keep_views_expanded");
         $direct_messages_header.removeClass("keep_views_expanded");
         $views_section_header.removeClass("keep_views_expanded");
@@ -339,14 +323,17 @@ function attachSidebarScrollListener(): void {
             // Add "scrolled" class to views header if scrolled from top
             if (scrollContainer.scrollTop > 0) {
                 $viewsHeader.addClass("scrolled");
+                if($viewsHeader.hasClass("keep_views_expanded")) {
+                    $dmHeader.addClass("scrolled-when-views-expanded");
+                }    
             } else {
                 $viewsHeader.removeClass("scrolled");
+                $dmHeader.removeClass("scrolled-when-views-expanded");
             }
 
             // Calculate position of dmHeader relative to viewsHeader
             const viewsBottom = $viewsHeader[0].getBoundingClientRect().bottom;
             const dmTop = $dmHeader[0].getBoundingClientRect().top;
-            const has_active_filters : boolean = $("#left-sidebar-navigation-list").find(".top-left-active-filter").length > 0;
             
             if (dmTop <= viewsBottom) {
                 // Toggle into the condensed state
@@ -390,7 +377,7 @@ function attachSidebarScrollListener(): void {
 export function initialize(): void {
     update_scheduled_messages_row();
     restore_views_state();
-
+    auto_collapse_views = user_settings.auto_collapse_views;
     attachSidebarScrollListener();
     checkAutoCollapse();
 
