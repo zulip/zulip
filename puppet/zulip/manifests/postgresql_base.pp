@@ -16,7 +16,6 @@ class zulip::postgresql_base {
       $tsearch_datadir = "${postgresql_sharedir}/tsearch_data"
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_apt_repo'
-      $postgresql_restart = "pg_ctlcluster ${zulip::postgresql_common::version} main restart"
     }
     'RedHat': {
       $postgresql = "postgresql${zulip::postgresql_common::version}"
@@ -30,7 +29,6 @@ class zulip::postgresql_base {
       $tsearch_datadir = "${postgresql_sharedir}/tsearch_data/"
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_yum_repo'
-      $postgresql_restart = "systemctl restart postgresql-${zulip::postgresql_common::version}"
     }
     default: {
       fail('osfamily not supported')
