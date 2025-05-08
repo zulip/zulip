@@ -669,6 +669,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
+        list.$list[0].prepend = noop;
         const result = list.merge_message_groups([message_group2], "top");
 
         assert.equal(message_group1.bookend_top, undefined);

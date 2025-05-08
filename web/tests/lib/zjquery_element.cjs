@@ -573,8 +573,9 @@ exports.FakeJQuery = function (selector, opts) {
             );
             return $result;
         },
-        prepend(arg) {
-            assert.notEqual(typeof arg, "string");
+        prepend(...args) {
+            assert.equal(this.length, 1);
+            this[0].prepend(...dom_args(args));
             return this;
         },
         prop(name, ...args) {
