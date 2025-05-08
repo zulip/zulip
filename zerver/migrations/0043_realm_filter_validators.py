@@ -6,4 +6,4 @@ class Migration(migrations.Migration):
         ("zerver", "0042_attachment_file_name_length"),
     ]
 
-    operations: list[migrations.operations.base.Operation] = []
+    operations = []

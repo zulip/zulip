@@ -64,6 +64,7 @@ def send_webhook_fixture_message(
         follow=False,
         secure=False,
         headers=None,
+        query_params=None,
         HTTP_HOST=http_host,
         **standardized_headers,
     )

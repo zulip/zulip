@@ -1,7 +1,7 @@
 import logging
 import re
 from email.headerregistry import Address
-from typing import Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import dns.resolver
 from django import forms
@@ -333,7 +333,16 @@ class RealmCreationForm(RealmDetailsForm):
         super().__init__(*args, **kwargs)
 
 
-class LoggingSetPasswordForm(SetPasswordForm):
+# https://github.com/typeddjango/django-stubs/pull/2384#pullrequestreview-2813849209
+if TYPE_CHECKING:
+    BaseSetPasswordForm: TypeAlias = SetPasswordForm[UserProfile]  # type: ignore[type-var]  # we don't subclass AbstractUser
+else:
+    BaseSetPasswordForm = SetPasswordForm
+
+
+class LoggingSetPasswordForm(
+    BaseSetPasswordForm  # type: ignore[type-var]  # we don't subclass AbstractUser
+):
     new_password1 = forms.CharField(
         label=_("New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
@@ -359,7 +368,6 @@ class LoggingSetPasswordForm(SetPasswordForm):
 
     @override
     def save(self, commit: bool = True) -> UserProfile:
-        assert isinstance(self.user, UserProfile)
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
         return self.user
 

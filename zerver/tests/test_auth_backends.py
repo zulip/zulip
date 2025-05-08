@@ -37,6 +37,9 @@ from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
 from onelogin.saml2.logout_response import OneLogin_Saml2_Logout_Response
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2
+from social_core.backends.oauth import BaseOAuth2
+from social_core.backends.saml import SAMLAuth
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
@@ -1874,10 +1877,14 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         )
 
     def test_social_auth_complete(self) -> None:
+        def mock_process_error(backend: BaseOAuth2, data: Mapping[str, object]) -> None:
+            raise AuthFailed(backend, "Not found")
+
         with (
             mock.patch(
                 "social_core.backends.oauth.BaseOAuth2.process_error",
-                side_effect=AuthFailed("Not found"),
+                autospec=True,
+                side_effect=mock_process_error,
             ),
             self.assertLogs(self.logger_string, level="INFO") as m,
         ):
@@ -1887,7 +1894,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(
             m.output,
             [
-                self.logger_output("AuthFailed: Authentication failed: ", "info"),
+                self.logger_output("AuthFailed: Authentication failed: Not found", "info"),
             ],
         )
 
@@ -1909,10 +1916,14 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         )
 
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
+        def mock_auth_complete(backend: BaseOAuth2, *args: object, **kwargs: object) -> object:
+            raise AuthStateForbidden(backend, "State forbidden")
+
         with (
             mock.patch(
                 "social_core.backends.oauth.BaseOAuth2.auth_complete",
-                side_effect=AuthStateForbidden("State forbidden"),
+                autospec=True,
+                side_effect=mock_auth_complete,
             ),
             self.assertLogs(self.logger_string, level="WARNING"),
         ):
@@ -2600,11 +2611,15 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     @override
     def test_social_auth_complete_when_base_exc_is_raised(self) -> None:
+        def mock_auth_complete(backend: SAMLAuth, *args: object, **kwargs: object) -> object:
+            raise AuthStateForbidden(backend, "State forbidden")
+
         with mock.patch.object(OneLogin_Saml2_Response, "is_valid", return_value=True):
             with (
                 mock.patch(
                     "social_core.backends.saml.SAMLAuth.auth_complete",
-                    side_effect=AuthStateForbidden("State forbidden"),
+                    autospec=True,
+                    side_effect=mock_auth_complete,
                 ),
                 self.assertLogs(self.logger_string, level="WARNING") as m,
             ):
@@ -4201,13 +4216,17 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID="51246")
     def test_social_auth_github_team_not_member_failed(self) -> None:
+        def mock_user_data(backend: GithubTeamOAuth2, *args: object, **kwargs: object) -> object:
+            raise AuthFailed(backend, "Not found")
+
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         subdomain = "zulip"
         realm = get_realm(subdomain)
         with (
             mock.patch(
                 "social_core.backends.github.GithubTeamOAuth2.user_data",
-                side_effect=AuthFailed("Not found"),
+                autospec=True,
+                side_effect=mock_user_data,
             ),
             self.assertLogs(self.logger_string, level="INFO") as mock_info,
         ):
@@ -4240,13 +4259,19 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME="Zulip")
     def test_social_auth_github_organization_not_member_failed(self) -> None:
+        def mock_user_data(
+            backend: GithubOrganizationOAuth2, *args: object, **kwargs: object
+        ) -> object:
+            raise AuthFailed(backend, "Not found")
+
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         subdomain = "zulip"
         realm = get_realm(subdomain)
         with (
             mock.patch(
                 "social_core.backends.github.GithubOrganizationOAuth2.user_data",
-                side_effect=AuthFailed("Not found"),
+                autospec=True,
+                side_effect=mock_user_data,
             ),
             self.assertLogs(self.logger_string, level="INFO") as mock_info,
         ):
