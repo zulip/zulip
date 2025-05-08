@@ -2,8 +2,6 @@
 
 const assert = require("node:assert/strict");
 
-const {process_keydown} = require("../src/hotkey.js");
-
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -573,17 +571,22 @@ run_test("test new user input hook called", () => {
     assert.ok(hook_called);
 });
 
-run_test("e shortcut works for anonymous users", ({override_rewire}) => {
+test_while_not_editing_text("e shortcut works for anonymous users", ({override_rewire}) => {
     page_params.is_spectator = true;
 
     const stub = make_stub();
     override_rewire(spectators, "login_to_access", stub.f);
+    overlays.any_active = () => false;
+    overlays.settings_open = () => false;
 
     const e = {
         which: "e".codePointAt(0),
     };
 
-    process_keydown(e);
+    stubbing(message_edit, "start", (stub) => {
+        hotkey.process_keypress(e);
+        assert.equal(stub.num_calls, 1);
+    });
     assert.equal(stub.num_calls, 0, "login_to_access should not be called for 'e' shortcut");
     // Fake call to avoid warning about unused stub.
     spectators.login_to_access();
