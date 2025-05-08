@@ -1,5 +1,5 @@
 # @summary Extends postgresql_base by tuning the configuration.
-class zulip::profile::postgresql {
+class zulip::profile::postgresql(Boolean $start = true) {
   include zulip::profile::base
   include zulip::postgresql_base
 
@@ -73,7 +73,7 @@ class zulip::profile::postgresql {
     file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
       ensure  => file,
       require => Package[$zulip::postgresql_base::postgresql],
-      before  => Exec[$zulip::postgresql_base::postgresql_restart],
+      before  => Service['postgresql'],
       owner   => 'postgres',
       group   => 'postgres',
       mode    => '0644',
@@ -88,10 +88,9 @@ class zulip::profile::postgresql {
   } else {
     $require = [Package[$zulip::postgresql_base::postgresql]]
   }
-  exec { $zulip::postgresql_base::postgresql_restart:
-    require     => $require,
-    refreshonly => true,
-    subscribe   => [ File[$postgresql_conf_file] ],
-    onlyif      => "test -d ${zulip::postgresql_base::postgresql_datadir}",
+  service { 'postgresql':
+    ensure    => $start,
+    require   => $require,
+    subscribe => [ File[$postgresql_conf_file] ],
   }
 }
