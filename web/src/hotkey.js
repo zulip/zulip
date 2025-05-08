@@ -217,10 +217,124 @@ const KEYDOWN_MAPPINGS = {
     "Shift+Delete": {name: "delete", message_view_only: false},
 };
 
+function is_printable_ascii(key) {
+    // ASCII printable characters (character code 32-126) -> " " to "~".
+    // It includes letters, digits, punctuation marks, and a few
+    // miscellaneous symbols.
+    return key.length === 1 && key >= " " && key <= "~";
+}
+
+const KNOWN_NAMED_KEY_ATTRIBUTE_VALUES = new Set([
+    "Alt",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "Backspace",
+    "Control",
+    "Delete",
+    "End",
+    "Enter",
+    "Escape",
+    "Home",
+    "Meta",
+    "PageDown",
+    "PageUp",
+    "Shift",
+    "Tab",
+]);
+
+const CODE_TO_QWERTY_CHAR = {
+    KeyA: "a",
+    KeyB: "b",
+    KeyC: "c",
+    KeyD: "d",
+    KeyE: "e",
+    KeyF: "f",
+    KeyG: "g",
+    KeyH: "h",
+    KeyI: "i",
+    KeyJ: "j",
+    KeyK: "k",
+    KeyL: "l",
+    KeyM: "m",
+    KeyN: "n",
+    KeyO: "o",
+    KeyP: "p",
+    KeyQ: "q",
+    KeyR: "r",
+    KeyS: "s",
+    KeyT: "t",
+    KeyU: "u",
+    KeyV: "v",
+    KeyW: "w",
+    KeyX: "x",
+    KeyY: "y",
+    KeyZ: "z",
+    "Shift+KeyA": "A",
+    "Shift+KeyB": "B",
+    "Shift+KeyC": "C",
+    "Shift+KeyD": "D",
+    "Shift+KeyE": "E",
+    "Shift+KeyF": "F",
+    "Shift+KeyG": "G",
+    "Shift+KeyH": "H",
+    "Shift+KeyI": "I",
+    "Shift+KeyJ": "J",
+    "Shift+KeyK": "K",
+    "Shift+KeyL": "L",
+    "Shift+KeyM": "M",
+    "Shift+KeyN": "N",
+    "Shift+KeyO": "O",
+    "Shift+KeyP": "P",
+    "Shift+KeyQ": "Q",
+    "Shift+KeyR": "R",
+    "Shift+KeyS": "S",
+    "Shift+KeyT": "T",
+    "Shift+KeyU": "U",
+    "Shift+KeyV": "V",
+    "Shift+KeyW": "W",
+    "Shift+KeyX": "X",
+    "Shift+KeyY": "Y",
+    "Shift+KeyZ": "Z",
+    BracketLeft: "[",
+    Equal: "=",
+    Minus: "-",
+    Period: ".",
+    Quote: "'",
+    "Shift+Comma": "<",
+    "Shift+Digit2": "@",
+    "Shift+Digit8": "*",
+    "Shift+Equal": "+",
+    "Shift+Period": ">",
+    "Shift+Semicolon": ":",
+    "Shift+Slash": "?",
+    Slash: "/",
+    Space: " ",
+};
+
 // Keyboard Event Viewer tool:
 // https://w3c.github.io/uievents/tools/key-event-viewer.html
 export function get_keydown_hotkey(e) {
-    if (common.has_mac_keyboard() && e.ctrlKey && e.key !== "[") {
+    // Determine the key pressed in a consistent way.
+    //
+    // For keyboard layouts (e.g. QWERTY) where `e.key` results
+    // in printable ASCII characters or named key attribute values
+    // like "Tab", "Enter", etc., we use `e.key` directly.
+    //
+    // However, for layouts where the character defined for a hotkey
+    // can't be typed directly (e.g. 'a' in Cyrillic), users press
+    // the same physical key combination that a QWERTY user would
+    // use (e.g. 'ф' on Cyrillic maps to 'a' on QWERTY). In such cases,
+    // we derive the QWERTY equivalent using `e.code` and the `CODE_TO_QWERTY_CHAR` map.
+    const use_event_key = is_printable_ascii(e.key) || KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
+    let key = e.key;
+    if (!use_event_key) {
+        const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
+        key = CODE_TO_QWERTY_CHAR[code];
+    }
+
+    if (common.has_mac_keyboard() && e.ctrlKey && key !== "[") {
         // On macOS, Cmd is used instead of Ctrl. Except 'Ctrl + ['.
         return undefined;
     }
@@ -231,7 +345,9 @@ export function get_keydown_hotkey(e) {
     // Make lowercase a-z uppercase; leave others unchanged.
     // We distinguish between 'a' and 'A' as 'A' vs 'Shift+A'.
     // This helps to avoid Caps Lock affecting shortcuts.
-    let key = /^[a-z]$/.test(e.key) ? e.key.toUpperCase() : e.key;
+    if (/^[a-z]$/.test(key)) {
+        key = key.toUpperCase();
+    }
 
     if (e.shiftKey && !KNOWN_IGNORE_SHIFT_MODIFIER_KEYS.has(key)) {
         key = "Shift+" + key;

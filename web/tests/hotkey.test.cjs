@@ -244,6 +244,78 @@ run_test("mappings", () => {
     assert.equal(map_down("P", false, false, false, true).name, "toggle_compose_preview");
 });
 
+run_test("mappings non-latin keyboard", () => {
+    // This test replicates the logic of the "mappings" test above
+    // but uses a non-Latin (Russian) keyboard layout to verify that
+    // hotkeys work irrespective of the keyboard layout.
+    // Layout used: https://kbdlayout.info/kbdru/overview+virtualkeys?arrangement=ANSI104
+    function map_down(key, code, shiftKey, ctrlKey, metaKey, altKey) {
+        return hotkey.get_keydown_hotkey({
+            key,
+            code,
+            shiftKey,
+            ctrlKey,
+            metaKey,
+            altKey,
+        });
+    }
+
+    // Test mappings.
+    assert.equal(map_down("Р", "KeyH", true).name, "view_edit_history");
+    assert.equal(map_down("Т", "KeyN", true).name, "narrow_to_next_unread_followed_topic");
+    assert.deepEqual(
+        map_down("М", "KeyV", true).map((item) => item.name),
+        ["view_selected_stream", "toggle_read_receipts"],
+    );
+    assert.equal(map_down("о", "KeyJ").name, "vim_down");
+    assert.equal(map_down("х", "BracketLeft", false, true).name, "escape");
+    assert.equal(map_down("с", "KeyC", false, true).name, "copy_with_c");
+    assert.equal(map_down("л", "KeyK", false, true).name, "search_with_k");
+    assert.equal(map_down("ы", "KeyS", false, true).name, "star_message");
+    assert.equal(map_down("з", "KeyP", false, false, false, true).name, "toggle_compose_preview");
+
+    // More negative tests.
+    assert.equal(map_down("м", "KeyV", false, true), undefined);
+    assert.equal(map_down("я", "KeyZ", false, true), undefined);
+    assert.equal(map_down("е", "KeyT", false, true), undefined);
+    assert.equal(map_down("к", "KeyR", false, true), undefined);
+    assert.equal(map_down("щ", "KeyO", false, true), undefined);
+    assert.equal(map_down("з", "KeyP", false, true), undefined);
+    assert.equal(map_down("ф", "KeyA", false, true), undefined);
+    assert.equal(map_down("а", "KeyF", false, true), undefined);
+    assert.equal(map_down("р", "KeyH", false, true), undefined);
+    assert.equal(map_down("ч", "KeyX", false, true), undefined);
+    assert.equal(map_down("т", "KeyN", false, true), undefined);
+    assert.equal(map_down("ь", "KeyM", false, true), undefined);
+    assert.equal(map_down("с", "KeyC", false, false, true), undefined);
+    assert.equal(map_down("л", "KeyK", false, false, true), undefined);
+    assert.equal(map_down("ы", "KeyS", false, false, true), undefined);
+    assert.equal(map_down("Л", "KeyK", true, true), undefined);
+    assert.equal(map_down("Ы", "KeyS", true, true), undefined);
+    assert.equal(map_down("Х", "BracketLeft", true, true, false), undefined);
+    assert.equal(map_down("З", "KeyP", true, false, false, true), undefined);
+
+    // Cmd tests for MacOS
+    navigator.platform = "MacIntel";
+    assert.equal(map_down("х", "BracketLeft", false, true, false).name, "escape");
+    assert.equal(map_down("х", "BracketLeft", false, false, true), undefined);
+    assert.equal(map_down("с", "KeyC", false, false, true).name, "copy_with_c");
+    assert.equal(map_down("с", "KeyC", false, true, true), undefined);
+    assert.equal(map_down("с", "KeyC", false, true, false), undefined);
+    assert.equal(map_down("л", "KeyK", false, false, true).name, "search_with_k");
+    assert.equal(map_down("л", "KeyK", false, true, false), undefined);
+    assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
+    assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
+    // Reset platform
+    navigator.platform = "";
+
+    // Caps Lock doesn't interfere with shortcuts.
+    assert.equal(map_down("Ф", "KeyA").name, "open_combined_feed");
+    assert.equal(map_down("Ф", "KeyA", true).name, "stream_cycle_backward");
+    assert.equal(map_down("С", "KeyC", false, true).name, "copy_with_c");
+    assert.equal(map_down("З", "KeyP", false, false, false, true).name, "toggle_compose_preview");
+});
+
 function process(s, shiftKey) {
     const e = {
         key: s,
