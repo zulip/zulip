@@ -48,9 +48,6 @@ function FakeElement(selector, opts) {
             attrs.set("data-" + name, val);
             return $self;
         },
-        delay() {
-            return $self;
-        },
         /* istanbul ignore next */
         debug() {
             return {
@@ -136,12 +133,6 @@ function FakeElement(selector, opts) {
         off(...args) {
             event_store.off(...args);
             return $self;
-        },
-        offset() {
-            return {
-                top: 0,
-                left: 0,
-            };
         },
         on(...args) {
             event_store.on(...args);
