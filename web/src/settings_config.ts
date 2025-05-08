@@ -83,7 +83,6 @@ export const auto_collapse_views_values = {
     },
 };
 
-
 export const user_list_style_values: {
     compact: {
         code: number;

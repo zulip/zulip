@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0697_empty_topic_name_for_dms_from_third_party_imports"),
     ]

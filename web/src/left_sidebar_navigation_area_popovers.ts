@@ -11,6 +11,7 @@ import render_left_sidebar_starred_messages_popover from "../templates/popovers/
 
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";
+import {auto_collapse_views} from "./left_sidebar_navigation_area.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -20,8 +21,6 @@ import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
-import { auto_collapse_views } from "./left_sidebar_navigation_area.ts";
-
 
 function common_click_handlers(): void {
     $("body").on("click", ".set-home-view", (e) => {
@@ -238,7 +237,7 @@ export function initialize(): void {
             if (scheduled_message_count > 0) {
                 has_scheduled_messages = true;
             }
-            
+
             const $views_header = $("#views-label-container");
             const is_auto_collapse_views = auto_collapse_views;
             const is_condensed = $views_header.hasClass("showing-condensed-navigation");
@@ -246,7 +245,11 @@ export function initialize(): void {
 
             instance.setContent(
                 ui_util.parse_html(
-                    render_left_sidebar_condensed_views_popover({has_scheduled_messages, is_auto_collapse_views, is_condensed}),
+                    render_left_sidebar_condensed_views_popover({
+                        has_scheduled_messages,
+                        is_auto_collapse_views,
+                        is_condensed,
+                    }),
                 ),
             );
         },

@@ -895,7 +895,7 @@ export function dispatch_normal_event(event) {
                     msg_list.rerender();
                 }
             }
-            if(event.property === "auto_collapse_views") {
+            if (event.property === "auto_collapse_views") {
                 left_sidebar_navigation_area.initialize_auto_collapse_setting();
             }
             if (event.property === "high_contrast_mode") {

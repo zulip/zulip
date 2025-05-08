@@ -11,7 +11,7 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
-import { user_settings } from "./user_settings.ts";
+import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
@@ -144,7 +144,9 @@ export function handle_narrow_activated(filter: Filter): void {
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
-    const condensedList : Element = document.querySelector("#left-sidebar-navigation-list-condensed");
+    const condensedList: Element = document.querySelector(
+        "#left-sidebar-navigation-list-condensed",
+    );
 
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -183,9 +185,9 @@ function toggle_auto_collpase_views_section(): void {
     $views_label_icon.addClass("rotate-icon-down");
     $views_label_icon.removeClass("rotate-icon-right");
 
-    save_state(STATES.EXPANDED); 
+    save_state(STATES.EXPANDED);
 
-    // Toggle the state of Auto collapse 
+    // Toggle the state of Auto collapse
     auto_collapse_views = !auto_collapse_views;
 
     checkAutoCollapse();
@@ -294,7 +296,7 @@ function checkAutoCollapse(): void {
     const $views_section_header = $("#views-label-container");
     const $streams_header = $("#streams_header");
 
-    if(auto_collapse_views) {
+    if (auto_collapse_views) {
         $views_navigation_list.removeClass("keep_views_expanded");
         $direct_messages_header.removeClass("keep_views_expanded");
         $views_section_header.removeClass("keep_views_expanded");
@@ -305,27 +307,30 @@ function checkAutoCollapse(): void {
         $views_section_header.addClass("keep_views_expanded");
         $streams_header.addClass("keep_views_expanded");
     }
-    
 }
 
 function attachSidebarScrollListener(): void {
-    const scrollContainer = document.querySelector("#left_sidebar_scroll_container .simplebar-content-wrapper");
+    const scrollContainer = document.querySelector(
+        "#left_sidebar_scroll_container .simplebar-content-wrapper",
+    );
     const $viewsHeader = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
     const $dmHeader = $("#direct-messages-section-header");
     const $dm_icon = $("#toggle-direct-messages-section-icon");
     const $streamsHeader = $("#streams_header");
-    
-    const condensedList : Element = document.querySelector("#left-sidebar-navigation-list-condensed");
+
+    const condensedList: Element = document.querySelector(
+        "#left-sidebar-navigation-list-condensed",
+    );
 
     if (scrollContainer && $viewsHeader && $dmHeader && condensedList) {
         scrollContainer.addEventListener("scroll", () => {
             // Add "scrolled" class to views header if scrolled from top
             if (scrollContainer.scrollTop > 0) {
                 $viewsHeader.addClass("scrolled");
-                if($viewsHeader.hasClass("keep_views_expanded")) {
+                if ($viewsHeader.hasClass("keep_views_expanded")) {
                     $dmHeader.addClass("scrolled-when-views-expanded");
-                }    
+                }
             } else {
                 $viewsHeader.removeClass("scrolled");
                 $dmHeader.removeClass("scrolled-when-views-expanded");
@@ -334,17 +339,17 @@ function attachSidebarScrollListener(): void {
             // Calculate position of dmHeader relative to viewsHeader
             const viewsBottom = $viewsHeader[0].getBoundingClientRect().bottom;
             const dmTop = $dmHeader[0].getBoundingClientRect().top;
-            
+
             if (dmTop <= viewsBottom) {
                 // Toggle into the condensed state
-                if($viewsHeader.hasClass("showing-expanded-navigation")) {
+                if ($viewsHeader.hasClass("showing-expanded-navigation")) {
                     condensedList.setAttribute("style", "display: flex;");
                     $views_label_icon.addClass("rotate-icon-right");
                     $views_label_icon.removeClass("rotate-icon-down");
                 }
                 $dmHeader.addClass("scrolled");
             } else {
-                if($viewsHeader.hasClass("showing-expanded-navigation")) {
+                if ($viewsHeader.hasClass("showing-expanded-navigation")) {
                     condensedList.setAttribute("style", "display: none;");
                     $views_label_icon.addClass("rotate-icon-down");
                     $views_label_icon.removeClass("rotate-icon-right");
@@ -352,11 +357,11 @@ function attachSidebarScrollListener(): void {
                 $dmHeader.removeClass("scrolled");
             }
 
-            // Calculate position of 
+            // Calculate position of
             const dmBottom = $dmHeader[0].getBoundingClientRect().bottom;
             const streamsHeaderTop = $streamsHeader[0].getBoundingClientRect().top;
 
-            if(streamsHeaderTop <= dmBottom) {
+            if (streamsHeaderTop <= dmBottom) {
                 $dmHeader.removeClass("scrolled");
                 $dm_icon.removeClass("rotate-icon-down");
                 $dm_icon.addClass("rotate-icon-right");
@@ -366,7 +371,6 @@ function attachSidebarScrollListener(): void {
                 $dm_icon.addClass("rotate-icon-down");
                 $streamsHeader.removeClass("scrolled");
             }
-
         });
     } else {
         setTimeout(attachSidebarScrollListener, 100);
@@ -393,12 +397,9 @@ export function initialize(): void {
         },
     );
 
-    $("body").on("click", ".popover-menu-button", 
-        (e) => {
+    $("body").on("click", ".popover-menu-button", (e) => {
         e.preventDefault();
         toggle_auto_collpase_views_section();
         popovers.hide_all();
     });
-
 }
-

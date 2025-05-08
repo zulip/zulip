@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 
+import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
@@ -622,7 +623,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assert_json_success(result)
 
         user.refresh_from_db()
-        self.assertTrue(user.auto_collapse_views)    
+        self.assertTrue(user.auto_collapse_views)
 
 
 class UserChangesTest(ZulipTestCase):

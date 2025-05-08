@@ -170,7 +170,7 @@
     position: relative;
     z-index: 0;
     width: 100%;
-    
+
     max-height: 90vh !important;
 
     .direct-messages-container {
@@ -198,16 +198,18 @@
     &:not(.keep_views_expanded) {
         top: 27px;
     }
-    
+
     &.keep_views_expanded {
         top: 203.4px;
     }
 
-    &.scrolled, &.scrolled-when-views-expanded {
-        box-shadow: 0 1px 1px -1px hsl(0deg 0% 0% / 100%),
-        0 3px 4px -5px hsl(0deg 0% 0% / 100%),
-        0 4px 9px -10px hsl(0deg 0% 0% / 100%),
-        0 12px 12px -13px hsl(0deg 0% 0% / 100%);
+    &.scrolled,
+    &.scrolled-when-views-expanded {
+        box-shadow:
+            0 1px 1px -1px hsl(0deg 0% 0% / 100%),
+            0 3px 4px -5px hsl(0deg 0% 0% / 100%),
+            0 4px 9px -10px hsl(0deg 0% 0% / 100%),
+            0 12px 12px -13px hsl(0deg 0% 0% / 100%);
     }
 
     /* Prevent hover styles set on other rows when zoomed in. */
@@ -1034,7 +1036,7 @@ li.top_left_scheduled_messages {
 }
 
 #left-sidebar-navigation-area {
-    top: 0px;
+    top: 0;
     position: sticky;
 }
 
@@ -1049,7 +1051,7 @@ li.top_left_scheduled_messages {
     cursor: pointer;
     border-radius: 4px;
     position: sticky;
-    top:0px;
+    top: 0;
     z-index: 5;
     background-color: var(--color-background);
     transition: box-shadow 0.5s ease;
@@ -1066,17 +1068,19 @@ li.top_left_scheduled_messages {
         }
     }
 
-    &:hover, &.more-options-active {
+    &:hover,
+    &.more-options-active {
         .left-sidebar-navigation-menu-icon {
-            opacity: 100%;
+            opacity: 1;
         }
     }
 
     &.scrolled:not(.keep_views_expanded) {
-        box-shadow: 0 1px 1px -1px hsl(0deg 0% 0% / 100%),
-        0 3px 4px -5px hsl(0deg 0% 0% / 100%),
-        0 4px 9px -10px hsl(0deg 0% 0% / 100%),
-        0 12px 12px -13px hsl(0deg 0% 0% / 100%);
+        box-shadow:
+            0 1px 1px -1px hsl(0deg 0% 0% / 100%),
+            0 3px 4px -5px hsl(0deg 0% 0% / 100%),
+            0 4px 9px -10px hsl(0deg 0% 0% / 100%),
+            0 12px 12px -13px hsl(0deg 0% 0% / 100%);
     }
 
     &.showing-expanded-navigation {
@@ -1731,16 +1735,17 @@ li.topic-list-item {
     &:not(.keep_views_expanded) {
         top: 54px;
     }
-    
+
     &.keep_views_expanded {
         top: 230.4px;
     }
 
     &.scrolled {
-        box-shadow: 0 1px 1px -1px hsl(0deg 0% 0% / 100%),
-        0 3px 4px -5px hsl(0deg 0% 0% / 100%),
-        0 4px 9px -10px hsl(0deg 0% 0% / 100%),
-        0 12px 12px -13px hsl(0deg 0% 0% / 100%);
+        box-shadow:
+            0 1px 1px -1px hsl(0deg 0% 0% / 100%),
+            0 3px 4px -5px hsl(0deg 0% 0% / 100%),
+            0 4px 9px -10px hsl(0deg 0% 0% / 100%),
+            0 12px 12px -13px hsl(0deg 0% 0% / 100%);
     }
 
     &.showing-stream-search-section {

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0699_realmuserdefault_auto_collapse_views"),
         ("zerver", "0701_merge"),

@@ -1190,7 +1190,7 @@ ul.popover-group-menu-member-list {
     }
 
     .text-item,
-    .link-item .popover-menu-link  {
+    .link-item .popover-menu-link {
         box-sizing: border-box;
         display: flex;
         flex-flow: row nowrap;
@@ -1216,9 +1216,9 @@ ul.popover-group-menu-member-list {
             text-align: center;
         }
     }
-    
+
     .popover-menu-button {
-        all: unset; 
+        all: unset;
         box-sizing: border-box;
         display: flex;
         flex-flow: row nowrap;
@@ -1236,7 +1236,7 @@ ul.popover-group-menu-member-list {
            so we calculate its height to the 16px em in use. */
         min-height: 1.625em;
         width: 100%;
-        
+
         &:hover {
             background: var(--color-background-hover-popover-menu);
             cursor: pointer;
