@@ -684,6 +684,7 @@ test("on_narrow", ({override, override_rewire}) => {
     });
     assert.ok(start_called);
 
+    start_called = false;
     override(realm, "realm_direct_message_permission_group", everyone.id);
     blueslip.expect("warn", "Unknown emails");
     compose_defaults = {
