@@ -233,7 +233,10 @@ export function add_custom_profile_fields_to_settings(): void {
         true,
         pill_update_handler,
     );
-    custom_profile_fields_ui.initialize_custom_date_type_fields(element_id);
+    custom_profile_fields_ui.initialize_custom_date_type_fields(
+        element_id,
+        people.my_current_user_id(),
+    );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
 
@@ -724,22 +727,26 @@ export function set_up(): void {
         },
     );
 
-    $("#profile-settings").on("change", ".custom_user_field_value", function (this: HTMLElement) {
-        const fields: CustomProfileFieldData[] = [];
-        const value = $(this).val()!;
-        assert(typeof value === "string");
-        const field_id = Number.parseInt(
-            $(this).closest(".custom_user_field").attr("data-field-id")!,
-            10,
-        );
-        if (value) {
-            fields.push({id: field_id, value});
-            custom_profile_fields_ui.update_user_custom_profile_fields(fields, channel.patch);
-        } else {
-            fields.push({id: field_id});
-            custom_profile_fields_ui.update_user_custom_profile_fields(fields, channel.del);
-        }
-    });
+    $("#profile-settings").on(
+        "change",
+        ".custom_user_field_value:not(.datepicker)",
+        function (this: HTMLElement) {
+            const fields: CustomProfileFieldData[] = [];
+            const value = $(this).val()!;
+            assert(typeof value === "string");
+            const field_id = Number.parseInt(
+                $(this).closest(".custom_user_field").attr("data-field-id")!,
+                10,
+            );
+            if (value) {
+                fields.push({id: field_id, value});
+                custom_profile_fields_ui.update_user_custom_profile_fields(fields, channel.patch);
+            } else {
+                fields.push({id: field_id});
+                custom_profile_fields_ui.update_user_custom_profile_fields(fields, channel.del);
+            }
+        },
+    );
 
     $("#account-settings .deactivate_realm_button").on(
         "click",

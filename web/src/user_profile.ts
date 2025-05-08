@@ -1150,7 +1150,10 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         custom_profile_field_form_selector,
         user_id,
     );
-    custom_profile_fields_ui.initialize_custom_date_type_fields(custom_profile_field_form_selector);
+    custom_profile_fields_ui.initialize_custom_date_type_fields(
+        custom_profile_field_form_selector,
+        user_id,
+    );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(
         custom_profile_field_form_selector,
     );
