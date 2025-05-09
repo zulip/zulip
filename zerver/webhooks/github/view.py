@@ -88,7 +88,7 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
         description = pull_request["body"].tame(check_none_or(check_string))
     target_branch = None
     base_branch = None
-    if action in ("opened", "merged"):
+    if action in ("opened", "merged", "reopened"):
         target_branch = pull_request["head"]["label"].tame(check_string)
         base_branch = pull_request["base"]["label"].tame(check_string)
 
@@ -613,6 +613,70 @@ def get_pull_request_review_body(helper: Helper) -> str:
     )
 
 
+def get_pull_request_review_request_removed_body(helper: Helper) -> str:
+    payload = helper.payload
+
+    return get_pull_request_event_message(
+        user_name=get_sender_name(payload),
+        action="removed",
+        reviewer=payload["requested_reviewer"]["login"].tame(check_string),
+        url=payload["pull_request"]["html_url"].tame(check_string),
+        number=payload["pull_request"]["number"].tame(check_int),
+        title=payload["pull_request"]["title"].tame(check_string),
+    )
+
+
+def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
+    payload = helper.payload
+    return get_pull_request_event_message(
+        user_name=get_sender_name(payload),
+        action="converted to draft",
+        url=payload["pull_request"]["html_url"].tame(check_string),
+        number=payload["pull_request"]["number"].tame(check_int),
+        title=payload["pull_request"]["title"].tame(check_string),
+    )
+
+
+def get_pull_request_labeled_or_unlabeled_body(helper: Helper) -> str:
+    payload = helper.payload
+    label_name = payload["label"]["name"].tame(check_string)
+    action = payload["action"].tame(check_string)
+    sender = get_sender_name(payload)
+    pr_number = payload["pull_request"]["number"].tame(check_int)
+    pr_url = payload["pull_request"]["html_url"].tame(check_string)
+
+    return f"**{sender}** {action} the label `{label_name}` on [PR #{pr_number}] ({pr_url})."
+
+
+def get_pull_request_milestoned_or_demilestoned_body(helper: Helper) -> str:
+    payload = helper.payload
+    action = payload["action"].tame(check_string)
+    sender_name = get_sender_name(payload)
+    pr_number = payload["pull_request"]["number"].tame(check_int)
+    pr_url = payload["pull_request"]["html_url"].tame(check_string)
+
+    if action == "milestoned":
+        milestone_title = payload["pull_request"]["milestone"]["title"].tame(check_string)
+    else:  # demilestoned
+        milestone_title = payload["milestone"]["title"].tame(check_string)
+
+    return (
+        f"**{sender_name}** {action} the milestone `{milestone_title}` "
+        f"on [PR #{pr_number}]({pr_url})."
+    )
+
+
+def get_pull_request_enqueued_or_dequeued_body(helper: Helper) -> str:
+    payload = helper.payload
+    return get_pull_request_event_message(
+        user_name=get_sender_name(payload),
+        action=payload["action"].tame(check_string),
+        url=payload["pull_request"]["html_url"].tame(check_string),
+        number=payload["pull_request"]["number"].tame(check_int),
+        title=payload["pull_request"]["title"].tame(check_string),
+    )
+
+
 def get_pull_request_review_comment_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
@@ -939,6 +1003,11 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "pull_request_review": get_pull_request_review_body,
     "pull_request_review_comment": get_pull_request_review_comment_body,
     "pull_request_review_requested": get_pull_request_review_requested_body,
+    "pull_request_milestoned_or_demilestoned": get_pull_request_milestoned_or_demilestoned_body,
+    "pull_request_enqueued_or_dequeued": get_pull_request_enqueued_or_dequeued_body,
+    "pull_request_labeled_or_unlabeled": get_pull_request_labeled_or_unlabeled_body,
+    "pull_request_converted_to_draft": get_pull_request_converted_to_draft_body,
+    "pull_request_review_request_removed": get_pull_request_review_request_removed_body,
     "pull_request_auto_merge": get_pull_request_auto_merge_body,
     "locked_or_unlocked_pull_request": get_locked_or_unlocked_pull_request_body,
     "push_commits": get_push_commits_body,
@@ -976,14 +1045,6 @@ IGNORED_EVENTS = [
     "project_card",
     "push__merge_queue",
     "repository_vulnerability_alert",
-]
-
-IGNORED_PULL_REQUEST_ACTIONS = [
-    "approved",
-    "converted_to_draft",
-    "labeled",
-    "review_request_removed",
-    "unlabeled",
 ]
 
 IGNORED_TEAM_ACTIONS = [
@@ -1079,6 +1140,7 @@ def get_zulip_event_name(
     """
     if header_event == "pull_request":
         action = payload["action"].tame(check_string)
+
         if action in ("opened", "reopened"):
             return "opened_pull_request"
         elif action in ("synchronize", "edited"):
@@ -1095,8 +1157,17 @@ def get_zulip_event_name(
             return "locked_or_unlocked_pull_request"
         if action in ("auto_merge_enabled", "auto_merge_disabled"):
             return "pull_request_auto_merge"
-        if action in IGNORED_PULL_REQUEST_ACTIONS:
-            return None
+        if action in ("milestoned", "demilestoned"):
+            return "pull_request_milestoned_or_demilestoned"
+        if action in ("enqueued", "dequeued"):
+            return "pull_request_enqueued_or_dequeued"
+        if action in ("labeled", "unlabeled"):
+            return "pull_request_labeled_or_unlabeled"
+        if action == "converted_to_draft":
+            return "pull_request_converted_to_draft"
+        if action == "review_request_removed":
+            return "pull_request_review_request_removed"
+
     elif header_event == "pull_request_review":
         if is_empty_pull_request_review_event(payload):
             # When submitting a review, GitHub has a bug where it'll
