@@ -26,8 +26,8 @@
 
     To reorder the list of todos, click and drag the **vertical dots**
     (<i class="zulip-icon zulip-icon-grip-vertical"></i>) to the left of
-    each option. To delete an option, click the **trash**
-    (<i class="fa fa-trash-o"></i>) icon to the right of it.
+    each option. To delete an option, click the **delete**
+    (<i class="zulip-icon zulip-icon-trash"></i>) icon to the right of it.
 
 {tab|via-markdown}
 

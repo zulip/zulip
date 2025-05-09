@@ -86,7 +86,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {!go-to-scheduled-messages.md!}
 
-1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the message you
+1. Click the **delete** (<i class="zulip-icon zulip-icon-trash"></i>) icon on the message you
    want to delete.
 
 !!! keyboard_tip ""
