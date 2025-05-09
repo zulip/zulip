@@ -11,7 +11,7 @@ user_settings_module.initialize_user_settings({
     user_settings: {
         auto_collapse_views: true,
     },
-});    
+});
 
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},
@@ -97,7 +97,6 @@ run_test("narrowing", ({override_rewire}) => {
 });
 
 run_test("update_count_in_dom", () => {
-
     set_global("page_params", {
         auto_collapse_views: true,
     });
