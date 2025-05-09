@@ -531,6 +531,32 @@ input.settings_text_input {
     margin: 10px 0;
 }
 
+.mobile-push-notifications-banner-container,
+.organization-upgrade-banners-container,
+.upgrade-or-sponsorship-banners-container {
+    display: flex;
+}
+
+.two-pane-settings-overlay {
+    .organization-upgrade-banners-container,
+    .upgrade-or-sponsorship-banners-container {
+        justify-content: center;
+    }
+}
+
+.two-pane-settings-overlay,
+.organization-box {
+    .banner {
+        margin-bottom: 10px;
+    }
+}
+
+#organization-profile {
+    .banner {
+        margin-top: 10px;
+    }
+}
+
 .invite-stream-notice {
     margin-bottom: 20px;
 }

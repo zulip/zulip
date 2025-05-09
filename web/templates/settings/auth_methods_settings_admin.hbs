@@ -1,6 +1,11 @@
 <div id="organization-auth-settings" class="settings-section" data-name="auth-methods">
     {{#unless is_owner}}
-    <div class='tip'>{{t "Only organization owners can edit these settings."}}</div>
+    {{> ../components/banner
+      label=(t "Only organization owners can edit these settings.")
+      intent="info"
+      close_button=false
+      process=false
+      }}
     {{/unless}}
     {{#unless user_has_email_set}}
     <div class="tip">
