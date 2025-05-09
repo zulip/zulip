@@ -109,7 +109,7 @@ class StreamSetupTest(ZulipTestCase):
 
         new_user = self.create_simple_new_user(realm, "alice@zulip.com")
 
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(14):
             set_up_streams_and_groups_for_new_human_user(
                 user_profile=new_user,
                 prereg_user=None,
@@ -145,7 +145,7 @@ class StreamSetupTest(ZulipTestCase):
 
         new_user = self.create_simple_new_user(realm, new_user_email)
 
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(17):
             set_up_streams_and_groups_for_new_human_user(
                 user_profile=new_user,
                 prereg_user=prereg_user,

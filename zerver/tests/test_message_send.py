@@ -47,6 +47,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.message import get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.stream_subscription import create_stream_subscription
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -1559,11 +1560,7 @@ class StreamMessagesTest(ZulipTestCase):
                 delivery_email=email,
                 long_term_idle=long_term_idle,
             )
-            Subscription.objects.create(
-                user_profile=user,
-                is_user_active=user.is_active,
-                recipient=recipient,
-            )
+            create_stream_subscription(user_profile=user, recipient=recipient, stream=stream)
 
         def send_test_message() -> None:
             message = Message(
