@@ -488,7 +488,7 @@
     #add-todo-form {
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: visible;
         height: 100%;
 
         .poll-label,
@@ -514,6 +514,10 @@
             height: 0;
             overflow: auto;
             flex-grow: 1;
+            /* Moves scrollbar out without affecting content */
+            margin-right: -15px;
+            /* Keeps space for scrollbar */
+            padding-right: 15px;
 
             .option-row {
                 list-style-type: none;
@@ -553,7 +557,7 @@
             }
 
             .option-row:first-child {
-                margin-top: 0;
+                margin-top: 2px;
             }
 
             .option-row:last-child {
