@@ -822,10 +822,10 @@ vacuum_freeze_table_age   = 1800000000
 
 # Performance settings
 max_connections = 1000
-maintenance_work_mem = <%= scope["zulip::profile::postgresql::maintenance_work_mem"] %>
-effective_cache_size = <%= scope["zulip::profile::postgresql::effective_cache_size"] %>
-work_mem = <%= scope["zulip::profile::postgresql::work_mem"] %>
-shared_buffers = <%= scope["zulip::profile::postgresql::shared_buffers"] %>
+maintenance_work_mem = <%= @maintenance_work_mem %>
+effective_cache_size = <%= @effective_cache_size %>
+work_mem = <%= @work_mem %>
+shared_buffers = <%= @shared_buffers %>
 wal_buffers = 4MB
 <% unless @random_page_cost.nil? -%>
 random_page_cost = <%= @random_page_cost %>
