@@ -138,11 +138,12 @@ class Integration:
 
         return None
 
-    def get_logo_url(self) -> str | None:
+    def get_logo_url(self) -> str:
         if self.logo_path is not None:
             return staticfiles_storage.url(self.logo_path)
 
-        return None
+        # Default logo for embedded bots and integrations without a logo
+        return staticfiles_storage.url("images/integrations/logos/default.png")
 
     def get_translated_categories(self) -> list[str]:
         return [str(category) for category in self.categories]
