@@ -295,6 +295,7 @@ export function launch(): void {
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
     setup_event_handlers();
     messages_overlay_ui.initialize_restore_overlay_message_tooltip();
+    messages_overlay_ui.initialize_no_channel_selected_tooltip();
 }
 
 export function update_bulk_delete_ui(): void {
