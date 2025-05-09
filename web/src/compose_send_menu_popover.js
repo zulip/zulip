@@ -131,7 +131,7 @@ export function do_schedule_message(send_at_time) {
 
 function get_send_later_menu_items() {
     const $current_schedule_popover_elem = $("[data-tippy-root] #send_later_popover");
-    if (!$current_schedule_popover_elem) {
+    if ($current_schedule_popover_elem.length === 0) {
         blueslip.error("Trying to get menu items when schedule popover is closed.");
         return undefined;
     }
