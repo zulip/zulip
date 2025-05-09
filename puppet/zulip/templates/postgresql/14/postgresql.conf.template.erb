@@ -835,6 +835,18 @@ random_page_cost = <%= @random_page_cost %>
 <% unless @effective_io_concurrency.nil? -%>
 effective_io_concurrency = <%= @effective_io_concurrency %>
 <% end -%>
+<% unless @max_worker_processes.nil? -%>
+max_worker_processes = <%= @max_worker_processes %>
+<% end -%>
+<% unless @max_parallel_workers_per_gather.nil? -%>
+max_parallel_workers_per_gather = <%= @max_parallel_workers_per_gather %>
+<% end -%>
+<% unless @max_parallel_workers.nil? -%>
+max_parallel_workers = <%= @max_parallel_workers %>
+<% end -%>
+<% unless @max_parallel_maintenance_workers.nil? -%>
+max_parallel_maintenance_workers = <%= @max_parallel_maintenance_workers %>
+<% end -%>
 
 <% unless @listen_addresses.nil? -%>
 listen_addresses = <%= @listen_addresses %>
