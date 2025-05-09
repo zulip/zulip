@@ -963,8 +963,8 @@ test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
     });
 
     let insert_called;
-    $("<new-reaction-stub>").insertBefore = (element) => {
-        assert.equal(element, $reaction_button);
+    $reaction_button[0].before = (element) => {
+        assert.equal(element.innerHTML, "<new-reaction-stub>");
         insert_called = true;
     };
 
@@ -1041,8 +1041,8 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
     });
 
     let insert_called;
-    $("<new-reaction-stub>").insertBefore = (element) => {
-        assert.equal(element, $reaction_button);
+    $reaction_button[0].before = (element) => {
+        assert.equal(element.innerHTML, "<new-reaction-stub>");
         insert_called = true;
     };
 

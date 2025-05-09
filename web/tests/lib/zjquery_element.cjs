@@ -468,6 +468,18 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
+        insertAfter(...args) {
+            args = dom_args(args);
+            assert.equal(args.length, 1);
+            args[0].after(...this);
+            return this;
+        },
+        insertBefore(...args) {
+            args = dom_args(args);
+            assert.equal(args.length, 1);
+            args[0].before(...this);
+            return this;
+        },
         is(arg) {
             switch (arg) {
                 case ":visible":
