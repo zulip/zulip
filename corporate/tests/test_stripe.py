@@ -2999,6 +2999,11 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         self.add_card_and_upgrade(user)
+
+        # Check that the card is displayed on the billing page.
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Visa ending in 4242"], response)
+
         # Create an open invoice
         customer = Customer.objects.first()
         assert customer is not None
