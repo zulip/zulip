@@ -144,12 +144,12 @@ def get_formatted_realm_upload_space_used(realm: Realm) -> str:  # nocoverage
     quota = realm.upload_quota_bytes()
     if quota is None:
         if files_uploaded:
-            return f"{realm_uploads} MB / No quota"
+            return f"{realm_uploads} MiB / No quota"
         return f"{realm_uploads} / No quota"
     if quota == 0:
-        return f"{realm_uploads} / 0.0 MB"
+        return f"{realm_uploads} / 0.0 MiB"
     quota_mb = round(quota / 1024 / 1024, 2)
-    return f"{realm_uploads} / {quota_mb} MB"
+    return f"{realm_uploads} / {quota_mb} MiB"
 
 
 def get_realm_user_data(realm: Realm) -> UserData:
