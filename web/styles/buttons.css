@@ -21,7 +21,8 @@
     transition: 0.05s ease-in;
     transition-property: background-color, clip-path;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-neutral-quiet-action-button-hover
         );
@@ -43,9 +44,19 @@
 
     &:focus-visible {
         /* Override common button outline style set in zulip.css and dark_theme.css */
-        outline: 1px solid var(--color-outline-focus) !important;
-        outline-offset: 2px;
-        clip-path: inset(-3px);
+        outline: var(--outline-width-button-focus) solid
+            var(--color-outline-button-focus) !important;
+        outline-offset: var(--outline-offset-button-focus);
+        clip-path: inset(
+            calc(
+                    -1 *
+                        (
+                            var(--outline-width-button-focus) +
+                                var(--outline-offset-button-focus)
+                        )
+                )
+                round 4px
+        );
     }
 
     &:disabled {
@@ -66,7 +77,8 @@
     color: var(--color-text-neutral-primary-action-button);
     background-color: var(--color-background-neutral-primary-action-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-neutral-primary-action-button-hover
         );
@@ -84,7 +96,8 @@
     background-color: var(--color-background-neutral-quiet-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-neutral-quiet-action-button-hover
         );
@@ -101,7 +114,8 @@
     color: var(--color-text-neutral-borderless-action-button);
     background-color: transparent;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-neutral-borderless-action-button-hover
         );
@@ -119,7 +133,8 @@
     color: var(--color-text-brand-primary-action-button);
     background-color: var(--color-background-brand-primary-action-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-brand-primary-action-button-hover
         );
@@ -137,7 +152,8 @@
     background-color: var(--color-background-brand-quiet-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-brand-quiet-action-button-hover
         );
@@ -154,7 +170,8 @@
     color: var(--color-text-brand-borderless-action-button);
     background-color: transparent;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-brand-borderless-action-button-hover
         );
@@ -172,7 +189,8 @@
     color: var(--color-text-info-primary-action-button);
     background-color: var(--color-background-info-primary-action-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-info-primary-action-button-hover
         );
@@ -190,7 +208,8 @@
     background-color: var(--color-background-info-quiet-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-info-quiet-action-button-hover
         );
@@ -207,7 +226,8 @@
     color: var(--color-text-info-borderless-action-button);
     background-color: transparent;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-info-borderless-action-button-hover
         );
@@ -225,7 +245,8 @@
     color: var(--color-text-success-primary-action-button);
     background-color: var(--color-background-success-primary-action-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-success-primary-action-button-hover
         );
@@ -243,7 +264,8 @@
     background-color: var(--color-background-success-quiet-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-success-quiet-action-button-hover
         );
@@ -260,7 +282,8 @@
     color: var(--color-text-success-borderless-action-button);
     background-color: transparent;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-success-borderless-action-button-hover
         );
@@ -278,7 +301,8 @@
     color: var(--color-text-warning-primary-action-button);
     background-color: var(--color-background-warning-primary-action-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-warning-primary-action-button-hover
         );
@@ -296,7 +320,8 @@
     background-color: var(--color-background-warning-quiet-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-warning-quiet-action-button-hover
         );
@@ -313,7 +338,8 @@
     color: var(--color-text-warning-borderless-action-button);
     background-color: transparent;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-warning-borderless-action-button-hover
         );
@@ -331,7 +357,8 @@
     color: var(--color-text-danger-primary-action-button);
     background-color: var(--color-background-danger-primary-action-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-danger-primary-action-button-hover
         );
@@ -349,7 +376,8 @@
     background-color: var(--color-background-danger-quiet-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-danger-quiet-action-button-hover
         );
@@ -366,7 +394,8 @@
     color: var(--color-text-danger-borderless-action-button);
     background-color: transparent;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         background-color: var(
             --color-background-danger-borderless-action-button-hover
         );
@@ -397,7 +426,8 @@
     transition: 0.05s ease-in;
     transition-property: background-color, clip-path;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         transition: 0.1s ease-out;
         transition-property: background-color, clip-path;
     }
@@ -413,9 +443,19 @@
 
     &:focus-visible {
         /* Override common button outline style set in zulip.css and dark_theme.css */
-        outline: 1px solid var(--color-outline-focus) !important;
-        outline-offset: 2px;
-        clip-path: inset(-3px);
+        outline: var(--outline-width-button-focus) solid
+            var(--color-outline-button-focus) !important;
+        outline-offset: var(--outline-offset-button-focus);
+        clip-path: inset(
+            calc(
+                    -1 *
+                        (
+                            var(--outline-width-button-focus) +
+                                var(--outline-offset-button-focus)
+                        )
+                )
+                round 4px
+        );
     }
 
     &:disabled {
@@ -428,7 +468,8 @@
 .icon-button-neutral {
     color: var(--color-text-neutral-icon-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         color: var(--color-text-neutral-icon-button-hover);
     }
 
@@ -437,7 +478,8 @@
     }
 
     &.icon-button-square {
-        &:hover {
+        &:hover,
+        &:focus-visible {
             background-color: var(
                 --color-background-neutral-icon-button-square-hover
             );
@@ -455,7 +497,8 @@
 .icon-button-brand {
     color: var(--color-text-brand-icon-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         color: var(--color-text-brand-icon-button-hover);
     }
 
@@ -464,7 +507,8 @@
     }
 
     &.icon-button-square {
-        &:hover {
+        &:hover,
+        &:focus-visible {
             background-color: var(
                 --color-background-brand-icon-button-square-hover
             );
@@ -482,7 +526,8 @@
 .icon-button-info {
     color: var(--color-text-info-icon-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         color: var(--color-text-info-icon-button-hover);
     }
 
@@ -491,7 +536,8 @@
     }
 
     &.icon-button-square {
-        &:hover {
+        &:hover,
+        &:focus-visible {
             background-color: var(
                 --color-background-info-icon-button-square-hover
             );
@@ -509,7 +555,8 @@
 .icon-button-success {
     color: var(--color-text-success-icon-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         color: var(--color-text-success-icon-button-hover);
     }
 
@@ -518,7 +565,8 @@
     }
 
     &.icon-button-square {
-        &:hover {
+        &:hover,
+        &:focus-visible {
             background-color: var(
                 --color-background-success-icon-button-square-hover
             );
@@ -536,7 +584,8 @@
 .icon-button-warning {
     color: var(--color-text-warning-icon-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         color: var(--color-text-warning-icon-button-hover);
     }
 
@@ -545,7 +594,8 @@
     }
 
     &.icon-button-square {
-        &:hover {
+        &:hover,
+        &:focus-visible {
             background-color: var(
                 --color-background-warning-icon-button-square-hover
             );
@@ -563,7 +613,8 @@
 .icon-button-danger {
     color: var(--color-text-danger-icon-button);
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         color: var(--color-text-danger-icon-button-hover);
     }
 
@@ -572,7 +623,8 @@
     }
 
     &.icon-button-square {
-        &:hover {
+        &:hover,
+        &:focus-visible {
             background-color: var(
                 --color-background-danger-icon-button-square-hover
             );
