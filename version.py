@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 382
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (326, 2)  # bumped 2025-05-05 to upgrade JavaScript dependencies
+PROVISION_VERSION = (326, 3)  # bumped 2025-05-12 to add unplugin-icons
