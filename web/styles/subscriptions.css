@@ -1005,7 +1005,7 @@ h4.user_group_setting_subsection_title {
     .stream_settings_header {
         white-space: nowrap;
         display: flex;
-        margin-left: 15px;
+        margin-left: 18px;
 
         .tab-container {
             .tab-switcher {
