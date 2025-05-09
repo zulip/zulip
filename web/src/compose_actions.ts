@@ -144,9 +144,7 @@ function clear_box(): void {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
-    $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
-        "disabled-on-hover",
-    );
+    $(".needs-empty-compose").removeClass("disabled-on-hover");
     // Reset send button status.
     $("#compose-send-button").removeClass("disabled-message-send-controls");
 }
@@ -397,9 +395,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             false,
             replace_all_without_undo_support,
         );
-        $(".compose_control_button_container:has(.needs-empty-compose)").addClass(
-            "disabled-on-hover",
-        );
+        $(".needs-empty-compose").addClass("disabled-on-hover");
         // If we were provided with message content, we might need to
         // display that it's too long.
         compose_validate.check_overflow_text($("#send_message_form"));
