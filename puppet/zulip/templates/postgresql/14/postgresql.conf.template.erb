@@ -826,7 +826,9 @@ maintenance_work_mem = <%= @maintenance_work_mem %>
 effective_cache_size = <%= @effective_cache_size %>
 work_mem = <%= @work_mem %>
 shared_buffers = <%= @shared_buffers %>
-wal_buffers = 4MB
+<% unless @wal_buffers.nil? -%>
+wal_buffers = <%= @wal_buffers %>
+<% end -%>
 <% unless @random_page_cost.nil? -%>
 random_page_cost = <%= @random_page_cost %>
 <% end -%>
