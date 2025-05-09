@@ -98,6 +98,19 @@ def append_str_to_line(text: str, destination_str: str, n: int) -> str:
     return "\n".join(lines)
 
 
+def replace_icon_with_unplugin_component(
+    match: re.Match[str],
+    icon_package_name: str,
+    icon_component_prefix: str,
+    import_statement_set: set[str],
+) -> str:
+    icon_name = match.group(1)
+    component_name = icon_component_prefix + to_pascal(icon_name).replace("-", "")
+    import_statement = f'import {component_name} from "~icons/{icon_package_name}/{icon_name}"'
+    import_statement_set.add(import_statement)
+    return f"<{component_name} />"
+
+
 def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     """
     Write some examples here and some assumptions we made about
@@ -108,15 +121,22 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     )
 
     def replace_font_awesome_icon_with_unplugin_component(match: re.Match[str]) -> str:
-        icon_name = match.group(1)
-        component_name = "Fa" + to_pascal(icon_name).replace("-", "")
-        import_statement = f'import {component_name} from "~icons/fa/{icon_name}"'
-        import_statement_set.add(import_statement)
-        return f"<{component_name} />"
+        return replace_icon_with_unplugin_component(match, "fa", "Fa", import_statement_set)
 
     result = re.sub(
         font_awesome_pattern, replace_font_awesome_icon_with_unplugin_component, markdown_string
     )
+
+    zulip_icon_pattern = re.compile(
+        r'<i[^>]*class="(?:[^"]*\s)?zulip-icon(?:\s+zulip-icon-([a-z0-9\-]+))(?:\s[^"]*)?"[^>]*>(?:\s[^<]*)?</i>',
+    )
+
+    def replace_zulip_icon_with_unplugin_component(match: re.Match[str]) -> str:
+        return replace_icon_with_unplugin_component(
+            match, "zulip-icon", "ZulipIcons", import_statement_set
+        )
+
+    result = re.sub(zulip_icon_pattern, replace_zulip_icon_with_unplugin_component, markdown_string)
 
     return result
 

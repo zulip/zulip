@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+
 import starlight from "@astrojs/starlight";
 import {defineConfig} from "astro/config";
 import Icons from "unplugin-icons/vite";
@@ -14,6 +16,23 @@ export default defineConfig({
                 // them look larger than the text around them.
                 scale: 1,
                 defaultStyle: "display: inline; vertical-align: text-bottom;",
+                customCollections: {
+                    // unplugin-icons has a FileSystemIconLoader which is more
+                    // versatile. But it only supports one directory path for
+                    // a single set of icons. We should start using that loader
+                    // if they add support for multiple paths in the future.
+                    async "zulip-icon"(iconName) {
+                        const sharedIconsPath = `../web/shared/icons/${iconName}.svg`;
+                        const webOnlyIconsPath = `../web/images/icons/${iconName}.svg`;
+
+                        if (fs.existsSync(sharedIconsPath)) {
+                            return await fs.promises.readFile(sharedIconsPath, "utf8");
+                        } else if (fs.existsSync(webOnlyIconsPath)) {
+                            return await fs.promises.readFile(webOnlyIconsPath, "utf8");
+                        }
+                        throw new Error("Zulip icon not found.");
+                    },
+                },
             }),
         ],
     },
