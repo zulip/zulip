@@ -326,6 +326,30 @@ class MarkdownThumbnailTest(ZulipTestCase):
             message_id, f'<p><a href="/user_uploads/{path_id}">image</a></p>'
         )
 
+    def test_thumbnail_bad_image_with_empty_title(self) -> None:
+        """Test what happens a file with empty title fine, but resizing later fails"""
+        path_id = self.upload_image("img.png")
+        message_id = self.send_message_content(f"[](/user_uploads/{path_id})")
+        self.assert_length(ImageAttachment.objects.get(path_id=path_id).thumbnail_metadata, 0)
+
+        with (
+            patch.object(
+                pyvips.Image, "thumbnail_buffer", side_effect=pyvips.Error("some bad error")
+            ) as thumb_mock,
+            self.assertLogs("zerver.worker.thumbnail", "ERROR") as thumbnail_logs,
+        ):
+            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
+            thumb_mock.assert_called_once()
+        self.assert_length(thumbnail_logs.output, 1)
+        self.assertTrue(
+            thumbnail_logs.output[0].startswith("ERROR:zerver.worker.thumbnail:some bad error")
+        )
+        self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
+        # We remove all trace of the preview (since the image was bad) and replaced it with a plain link.
+        self.assert_message_content_is(
+            message_id, f'<p><a href="/user_uploads/{path_id}">/user_uploads/{path_id}</a></p>'
+        )
+
     def test_thumbnail_multiple_messages(self) -> None:
         sender_user_profile = self.example_user("othello")
         path_id = self.upload_image("img.png")
