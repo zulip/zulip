@@ -6,7 +6,8 @@ class kandra::profile::prod_app_frontend inherits kandra::profile::base {
     keys => 'internal-limited-write-deploy-key',
   }
   Kandra::User_Dotfiles['zulip'] {
-    keys => 'internal-limited-write-deploy-key',
+    keys            => 'internal-limited-write-deploy-key',
+    authorized_keys => ['common', 'postgres-upgrade-only-supervisor'],
   }
 
   zulip::sysctl { 'conntrack':

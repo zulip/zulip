@@ -53,6 +53,13 @@ class kandra::profile::postgresql inherits kandra::profile::base {
       before  => File["${zulip::postgresql_base::postgresql_datadir}/standby.signal"],
       notify  => Exec[$zulip::postgresql_base::postgresql_restart],
     }
+    Kandra::User_Dotfiles['root'] {
+      authorized_keys => ['common', 'postgres-upgrade'],
+    }
+  } else {
+    Kandra::User_Dotfiles['root'] {
+      keys => ['internal-read-only-deploy-key', 'postgres-upgrade'],
+    }
   }
 
   file { "${zulip::postgresql_base::postgresql_confdir}/pg_hba.conf":

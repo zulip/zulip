@@ -2,6 +2,10 @@ class kandra::profile::staging_app_frontend inherits kandra::profile::base {
 
   include kandra::app_frontend
 
+  Kandra::User_Dotfiles['zulip'] {
+    authorized_keys => ['common', 'postgres-upgrade-only-supervisor'],
+  }
+
   file { '/etc/nginx/sites-available/zulip-staging':
     ensure  => file,
     require => Package['nginx-full'],
