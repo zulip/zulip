@@ -1609,6 +1609,10 @@
     --color-user-circle-active: light-dark(#43a35e, #4cdc75);
     --color-user-circle-idle: light-dark(#f5b266, #ae640a);
     --color-user-circle-offline: light-dark(#bcc0cf, #545764);
+    --color-user-circle-offline-typeahead-highlight: light-dark(
+        #adb2c5,
+        #737582
+    );
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     --gradient-user-circle-idle: linear-gradient(
         to right,
