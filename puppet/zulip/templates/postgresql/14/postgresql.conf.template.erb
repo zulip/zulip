@@ -827,7 +827,6 @@ effective_cache_size = <%= scope["zulip::profile::postgresql::effective_cache_si
 work_mem = <%= scope["zulip::profile::postgresql::work_mem"] %>
 shared_buffers = <%= scope["zulip::profile::postgresql::shared_buffers"] %>
 wal_buffers = 4MB
-checkpoint_completion_target = 0.7
 <% unless @random_page_cost.nil? -%>
 random_page_cost = <%= @random_page_cost %>
 <% end -%>
