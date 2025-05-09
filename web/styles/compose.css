@@ -172,7 +172,7 @@
 /* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: var(--color-compose-box-background);
-    padding: 7px 7px 8px;
+    padding: 4px 4px 6px;
     border: 1px solid var(--color-border-compose-content);
     border-radius: 9px 9px 0 0;
     box-shadow: 0 0 0 hsl(236deg 11% 28%);
@@ -216,6 +216,10 @@
 
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
+                /* This height is necessary only for the
+                   DM picker, so that it does not stretch
+                   open taller with multiple rows of user
+                   pills. */
                 height: var(--compose-recipient-box-min-height);
             }
 
@@ -316,7 +320,7 @@
         grid-template-areas:
             "message-content-container message-send-controls-container"
             "message-formatting-controls-container message-send-controls-container";
-        gap: 0 6px;
+        gap: 0 4px;
     }
 
     .message_content {
@@ -640,11 +644,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    /* Matched to 6px grid-gap on .messagebox grid. */
-    padding-bottom: 6px;
+    /* Matched to 4px grid-gap on .messagebox grid. */
+    padding-bottom: 4px;
     /* Align to compose controls; that's 112px width,
        plus 6px of grid gap for 118px here. */
-    margin-right: calc(var(--compose-send-controls-width) + 6px);
+    margin-right: calc(var(--compose-send-controls-width) + 4px);
 }
 
 #compose_close {
@@ -1086,6 +1090,10 @@ textarea.new_message_textarea {
     transition: border-color 0.2s ease;
     background: var(--color-compose-recipient-box-background-color);
 
+    &:hover {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
+
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
@@ -1103,6 +1111,12 @@ textarea.new_message_textarea {
     #stream_message_recipient_topic {
         grid-area: topic;
         color: var(--color-compose-recipient-box-text-color);
+        /* Keep the line-height matched to the font-size
+           for a more predictable box height.
+           This will have to be watched very closely for
+           possible regressions, such as when Unicode emoji
+           appear in the topic box. */
+        line-height: 1;
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1110,7 +1124,7 @@ textarea.new_message_textarea {
         box-shadow: none;
         outline: none;
 
-        padding: 4px 6px;
+        padding: 0 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
 
@@ -1121,6 +1135,7 @@ textarea.new_message_textarea {
 
     #topic-not-mandatory-placeholder {
         grid-area: topic-box;
+        align-self: center;
         white-space: nowrap;
         overflow-x: hidden;
         text-overflow: ellipsis;
@@ -1181,6 +1196,11 @@ textarea.new_message_textarea {
     color: var(--color-compose-recipient-box-text-color);
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
+
+    &:hover,
+    &.widget-open {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
 
     &.dropdown-widget-button {
         padding: 0 6px;
@@ -1375,10 +1395,9 @@ textarea.new_message_textarea {
 }
 
 #compose-recipient {
-    /* Enforce a shared, 'normal' line-height on
-       the recipient elements for baseline alignment,
-       and better use of the recipient-row space. */
-    line-height: normal;
+    /* Set a line-height equal to the font-size to
+       make a compact, predictably tall recipient row. */
+    line-height: 1;
     display: flex;
     flex: 1 1 0;
     /* Use this containing flex element to
@@ -1561,10 +1580,9 @@ textarea.new_message_textarea {
         }
     }
 
+    /* We suppress the chevron on the channel picker. */
     .zulip-icon-chevron-down {
-        padding-left: 5px;
-        color: var(--color-compose-chevron-arrow);
-        font-weight: lighter;
+        display: none;
     }
 }
 
