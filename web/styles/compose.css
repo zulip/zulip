@@ -1090,6 +1090,10 @@ textarea.new_message_textarea {
     transition: border-color 0.2s ease;
     background: var(--color-compose-recipient-box-background-color);
 
+    &:hover {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
+
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
@@ -1192,6 +1196,11 @@ textarea.new_message_textarea {
     color: var(--color-compose-recipient-box-text-color);
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
+
+    &:hover,
+    &.widget-open {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
 
     &.dropdown-widget-button {
         /* We control the surrounding space through the
