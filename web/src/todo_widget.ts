@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
@@ -404,6 +405,12 @@ export function activate({
         const html = render_widgets_todo_widget();
         $elem.html(html);
 
+        const throttled_update_add_task_button = _.throttle(update_add_task_button, 300);
+        $elem.find("input.add-task").on("keyup", (e) => {
+            e.stopPropagation();
+            throttled_update_add_task_button();
+        });
+
         $elem.find("input.todo-task-list-title").on("keyup", (e) => {
             e.stopPropagation();
             update_edit_controls();
@@ -440,33 +447,46 @@ export function activate({
 
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
-            $elem.find(".widget-error").text("");
+
             const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
             const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
 
-            if (task === "") {
-                return;
-            }
-
             $elem.find("input.add-task").val("").trigger("focus");
             $elem.find("input.add-desc").val("");
-
-            const task_exists = task_data.name_in_use(task);
-            if (task_exists) {
-                $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
-                return;
-            }
 
             const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
     }
 
+    function update_add_task_button(): void {
+        const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const task_exists = task_data.name_in_use(task);
+        const $add_task_wrapper = $elem.find(".add-task-wrapper");
+        const $add_task_button = $elem.find("button.add-task");
+
+        if (task === "") {
+            $add_task_wrapper.attr(
+                "data-tippy-content",
+                $t({defaultMessage: "Name the task before adding."}),
+            );
+            $add_task_button.prop("disabled", true);
+        } else if (task_exists) {
+            $add_task_wrapper.attr(
+                "data-tippy-content",
+                $t({defaultMessage: "Cannot add duplicate task."}),
+            );
+            $add_task_button.prop("disabled", true);
+        } else {
+            $add_task_wrapper.removeAttr("data-tippy-content");
+            $add_task_button.prop("disabled", false);
+        }
+    }
+
     function render_results(): void {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
-        $elem.find(".widget-error").text("");
 
         $elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
@@ -487,6 +507,8 @@ export function activate({
             const data = task_data.handle.strike.outbound(key);
             callback(data);
         });
+
+        update_add_task_button();
     }
 
     const handle_events = function (events: Event[]): void {
