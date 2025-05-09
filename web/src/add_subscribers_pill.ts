@@ -109,6 +109,9 @@ export function set_up_handlers_for_add_button_state(
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
+    const $check_icon = $pill_widget_button.find("i");
+    $check_icon.hide();
+
     // If all the pills are removed, disable the add button.
     pill_widget.onPillRemove(() =>
         $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
