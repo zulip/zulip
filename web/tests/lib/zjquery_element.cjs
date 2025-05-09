@@ -586,6 +586,10 @@ exports.FakeJQuery = function (selector, opts) {
                 },
             );
         },
+        outerHeight(...args) {
+            assert.equal(args.length, 0, "zjquery does not support this outerHeight() call");
+            return 0 in this ? this[0].offsetHeight : undefined;
+        },
         parent() {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
