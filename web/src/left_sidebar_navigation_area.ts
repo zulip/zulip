@@ -310,23 +310,25 @@ function checkAutoCollapse(): void {
 }
 
 function attachSidebarScrollListener(): void {
-    const scrollContainer = document.querySelector(
-        "#left_sidebar_scroll_container .simplebar-content-wrapper",
-    );
+    const $scrollContainer = $("#left_sidebar_scroll_container .simplebar-content-wrapper");
     const $viewsHeader = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
     const $dmHeader = $("#direct-messages-section-header");
     const $dm_icon = $("#toggle-direct-messages-section-icon");
     const $streamsHeader = $("#streams_header");
+    const $condensedList = $("#left-sidebar-navigation-list-condensed");
 
-    const condensedList: Element = document.querySelector(
-        "#left-sidebar-navigation-list-condensed",
-    );
+    if (
+        $scrollContainer.length > 0 &&
+        $viewsHeader.length > 0 &&
+        $dmHeader.length > 0 &&
+        $condensedList.length > 0
+    ) {
+        $scrollContainer.on("scroll", () => {
+            const scrollTop = $scrollContainer.scrollTop() ?? 0;
 
-    if (scrollContainer && $viewsHeader && $dmHeader && condensedList) {
-        scrollContainer.addEventListener("scroll", () => {
-            // Add "scrolled" class to views header if scrolled from top
-            if (scrollContainer.scrollTop > 0) {
+            // Toggle "scrolled" class on views header
+            if (scrollTop > 0) {
                 $viewsHeader.addClass("scrolled");
                 if ($viewsHeader.hasClass("keep_views_expanded")) {
                     $dmHeader.addClass("scrolled-when-views-expanded");
@@ -336,39 +338,34 @@ function attachSidebarScrollListener(): void {
                 $dmHeader.removeClass("scrolled-when-views-expanded");
             }
 
-            // Calculate position of dmHeader relative to viewsHeader
             const viewsBottom = $viewsHeader[0].getBoundingClientRect().bottom;
             const dmTop = $dmHeader[0].getBoundingClientRect().top;
 
             if (dmTop <= viewsBottom) {
-                // Toggle into the condensed state
                 if ($viewsHeader.hasClass("showing-expanded-navigation")) {
-                    condensedList.setAttribute("style", "display: flex;");
+                    $condensedList.css("display", "flex");
                     $views_label_icon.addClass("rotate-icon-right");
                     $views_label_icon.removeClass("rotate-icon-down");
                 }
                 $dmHeader.addClass("scrolled");
             } else {
                 if ($viewsHeader.hasClass("showing-expanded-navigation")) {
-                    condensedList.setAttribute("style", "display: none;");
+                    $condensedList.css("display", "none");
                     $views_label_icon.addClass("rotate-icon-down");
                     $views_label_icon.removeClass("rotate-icon-right");
                 }
                 $dmHeader.removeClass("scrolled");
             }
 
-            // Calculate position of
             const dmBottom = $dmHeader[0].getBoundingClientRect().bottom;
-            const streamsHeaderTop = $streamsHeader[0].getBoundingClientRect().top;
+            const streamsTop = $streamsHeader[0].getBoundingClientRect().top;
 
-            if (streamsHeaderTop <= dmBottom) {
+            if (streamsTop <= dmBottom) {
                 $dmHeader.removeClass("scrolled");
-                $dm_icon.removeClass("rotate-icon-down");
-                $dm_icon.addClass("rotate-icon-right");
+                $dm_icon.removeClass("rotate-icon-down").addClass("rotate-icon-right");
                 $streamsHeader.addClass("scrolled");
             } else {
-                $dm_icon.removeClass("rotate-icon-right");
-                $dm_icon.addClass("rotate-icon-down");
+                $dm_icon.removeClass("rotate-icon-right").addClass("rotate-icon-down");
                 $streamsHeader.removeClass("scrolled");
             }
         });
