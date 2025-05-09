@@ -1,0 +1,29 @@
+{
+    "object_kind": "access_token",
+    "project": {
+      "id": 7,
+      "name": "Flight",
+      "description": "Eum dolore maxime atque reprehenderit voluptatem.",
+      "web_url": "https://example.com/flightjs/Flight",
+      "avatar_url": null,
+      "git_ssh_url": "ssh://git@example.com/flightjs/Flight.git",
+      "git_http_url": "https://example.com/flightjs/Flight.git",
+      "namespace": "Flightjs",
+      "visibility_level": 0,
+      "path_with_namespace": "flightjs/Flight",
+      "default_branch": "master",
+      "ci_config_path": null,
+      "homepage": "https://example.com/flightjs/Flight",
+      "url": "ssh://git@example.com/flightjs/Flight.git",
+      "ssh_url": "ssh://git@example.com/flightjs/Flight.git",
+      "http_url": "https://example.com/flightjs/Flight.git"
+    },
+    "object_attributes": {
+      "user_id": 90,
+      "created_at": "2024-01-24 16:27:40 UTC",
+      "id": 25,
+      "name": "acd",
+      "expires_at": "2024-01-26"
+    },
+    "event_name": "expiring_access_token"
+  }
