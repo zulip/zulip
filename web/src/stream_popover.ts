@@ -25,7 +25,6 @@ import type {Message} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
-import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
@@ -109,8 +108,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         web_channel_default_view_values.channel_feed.code;
     const show_go_to_list_of_topics =
         user_settings.web_channel_default_view !==
-            web_channel_default_view_values.list_of_topics.code &&
-        page_params.development_environment;
+        web_channel_default_view_values.list_of_topics.code;
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
