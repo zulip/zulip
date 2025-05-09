@@ -1608,7 +1608,7 @@
     --color-tab-picker-icon: light-dark(hsl(200deg 100% 40%), hsl(0deg 0% 80%));
     --color-user-circle-active: light-dark(#43a35e, #4cdc75);
     --color-user-circle-idle: light-dark(#f5b266, #ae640a);
-    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-offline: light-dark(#bcc0cf, #545764);
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     --gradient-user-circle-idle: linear-gradient(
         to right,
