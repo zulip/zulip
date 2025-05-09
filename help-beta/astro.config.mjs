@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+
 import starlight from "@astrojs/starlight";
 import {defineConfig} from "astro/config";
 import Icons from "unplugin-icons/vite";
@@ -12,6 +14,19 @@ export default defineConfig({
                 compiler: "astro",
                 scale: 1,
                 defaultStyle: "display: inline; vertical-align: text-bottom;",
+                customCollections: {
+                    async "zulip-icon"(iconName) {
+                        const sharedIconsPath = `../web/shared/icons/${iconName}.svg`;
+                        const webOnlyIconsPath = `../web/images/icons/${iconName}.svg`;
+
+                        if (fs.existsSync(sharedIconsPath)) {
+                            return await fs.promises.readFile(sharedIconsPath, "utf8");
+                        } else if (fs.existsSync(webOnlyIconsPath)) {
+                            return await fs.promises.readFile(webOnlyIconsPath, "utf8");
+                        }
+                        throw new Error("Zulip icon not found.");
+                    },
+                },
             }),
         ],
     },

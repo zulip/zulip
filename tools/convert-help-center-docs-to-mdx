@@ -111,6 +111,19 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
         font_awesome_pattern, replace_font_awesome_icon_with_unplugin_component, markdown_string
     )
 
+    zulip_icon_pattern = re.compile(
+        r'<i[^>]*class="(?:[^"]*\s)?zulip-icon(?:\s+zulip-icon-([a-z0-9\-]+))(?:\s[^"]*)?"[^>]*>(?:\s[^<]*)?</i>',
+    )
+
+    def replace_zulip_icon_with_unplugin_component(match: re.Match[str]) -> str:
+        icon_name = match.group(1)
+        component_name = "ZulipIcon" + to_pascal(icon_name).replace("-", "")
+        import_statement = f'import {component_name} from "~icons/zulip-icon/{icon_name}"'
+        import_statement_set.add(import_statement)
+        return f"<{component_name} />"
+
+    result = re.sub(zulip_icon_pattern, replace_zulip_icon_with_unplugin_component, markdown_string)
+
     return result
 
 
