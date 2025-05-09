@@ -1538,6 +1538,30 @@ label.preferences-radio-choice-label {
     }
 }
 
+/* We should eventually consolidate some of these styles with the styles
+   in subscriptions.css, using shared classnames. */
+@container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        display: block;
+        left: 101%;
+        margin: 0;
+        width: 100%;
+        height: calc(100% - var(--settings-overlay-header-height));
+
+        top: var(--settings-overlay-header-height);
+        background-color: var(--color-background-modal);
+        border: none;
+
+        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        z-index: 10;
+
+        &.show {
+            left: 0%;
+        }
+    }
+}
+
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
