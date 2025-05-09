@@ -95,8 +95,30 @@ def append_str_to_line(text: str, destination_str: str, n: int) -> str:
     lines = destination_str.splitlines()
     if 1 <= n <= len(lines):
         lines[n - 1] += "\n" + text
-
     return "\n".join(lines)
+
+
+def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
+    """
+    Write some examples here and some assumptions we made about
+    the icon tags.
+    """
+    font_awesome_pattern = re.compile(
+        r'<i[^>]*class="(?:[^"]*\s)?fa(?:\s+fa-([a-z0-9\-]+))(?:\s[^"]*)?"[^>]*>(?:\s[^<]*)?</i>',
+    )
+
+    def replace_font_awesome_icon_with_unplugin_component(match: re.Match[str]) -> str:
+        icon_name = match.group(1)
+        component_name = "Fa" + to_pascal(icon_name).replace("-", "")
+        import_statement = f'import {component_name} from "~icons/fa/{icon_name}"'
+        import_statement_set.add(import_statement)
+        return f"<{component_name} />"
+
+    result = re.sub(
+        font_awesome_pattern, replace_font_awesome_icon_with_unplugin_component, markdown_string
+    )
+
+    return result
 
 
 def insert_imports(markdown_string: str, import_statement_set: set[str]) -> str:
@@ -140,6 +162,7 @@ def convert_string_to_mdx(markdown_string: str) -> str:
     result = fix_relative_path(result)
     result = replace_emoticon_translation_table(result, import_statement_set)
     result = replace_image_path(result)
+    result = replace_icons(result, import_statement_set)
     result = insert_imports(result, import_statement_set)
     result = insert_frontmatter(result)
     return result
