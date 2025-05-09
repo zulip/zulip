@@ -12804,6 +12804,15 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                auto_collapse_views:
+                  description: |
+                    A boolean parameter to control whether the "Views" section in the left sidebar
+                    should automatically collapse when the user scrolls down.
+
+                    When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
+                    pinned open regardless of scroll behavior.
+                  type: boolean
+                  example: true
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -13114,6 +13123,8 @@ paths:
               web_stream_unreads_count_display_policy:
                 contentType: application/json
               hide_ai_features:
+                contentType: application/json
+              auto_collapse_views:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -16201,6 +16212,15 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          auto_collapse_views:
+                            description: |
+                              A boolean parameter to control whether the "Views" section in the left sidebar
+                              should automatically collapse when the user scrolls down.
+
+                              When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
+                              pinned open regardless of scroll behavior.
+                            type: boolean
+                            example: true
                           timezone:
                             type: string
                             description: |
@@ -18953,6 +18973,15 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          auto_collapse_views:
+                            description: |
+                              A boolean parameter to control whether the "Views" section in the left sidebar
+                              should automatically collapse when the user scrolls down.
+
+                              When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
+                              pinned open regardless of scroll behavior.
+                            type: boolean
+                            example: true
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -20196,6 +20225,15 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                auto_collapse_views:
+                  description: |
+                    A boolean parameter to control whether the "Views" section in the left sidebar
+                    should automatically collapse when the user scrolls down.
+
+                    When set to `true`, the section collapses automatically when scrolled down; when `false`, the section remains
+                    pinned open regardless of scroll behavior.
+                  type: boolean
+                  example: true
                 timezone:
                   description: |
                     The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
@@ -20593,6 +20631,8 @@ paths:
               web_stream_unreads_count_display_policy:
                 contentType: application/json
               hide_ai_features:
+                contentType: application/json
+              auto_collapse_views:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json

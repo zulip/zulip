@@ -6,6 +6,13 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+const user_settings_module = zrequire("../src/user_settings");
+user_settings_module.initialize_user_settings({
+    user_settings: {
+        auto_collapse_views: true,
+    },
+});
+
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
@@ -90,6 +97,10 @@ run_test("narrowing", ({override_rewire}) => {
 });
 
 run_test("update_count_in_dom", () => {
+    set_global("page_params", {
+        auto_collapse_views: true,
+    });
+
     function make_elem($elem, count_selector) {
         const $count = $(count_selector);
         $elem.set_find_results(".unread_count", $count);
