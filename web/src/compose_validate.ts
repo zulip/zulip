@@ -1132,7 +1132,7 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         $("textarea#compose-textarea").toggleClass("invalid", false);
     }
 
-    if ($("#zephyr-mirror-error").is(":visible")) {
+    if ($("#zephyr-mirror-error").hasClass("show")) {
         const error_message = $t({
             defaultMessage: "You need to be running Zephyr mirroring in order to send messages!",
         });
