@@ -545,9 +545,16 @@ inline.zulip = merge({}, inline.breaks, {
   unicodeemoji: possible_emoji_regex,
   usermention: /^@(_?)(?:\*\*([^\*]+)\*\*)/, // Match potentially multi-word string between @** **
   groupmention: /^@(_?)(?:\*([^\*]+)\*)/, // Match multi-word string between @* *
+  
+  // These patterns don't handle the case where a prettified link appears
+  // in a markdown link's URL placeholder (e.g. [text](#**stream>topic**)).
+  // While the backend supports this, implementing it in the frontend would add
+  // significant complexity for an extremely rare case that only affects local
+  // echo for a brief moment.
   stream_topic_message: /^#\*\*([^\*>]+)>([^\*]*)@(\d+)\*\*/,
   stream_topic: /^#\*\*([^\*>]+)>([^\*]*)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
+
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
   timestamp: /^<time:([^>]+)>/,
   text: replace(inline.breaks.text)
