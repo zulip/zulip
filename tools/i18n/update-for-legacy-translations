@@ -207,6 +207,9 @@ def get_translations(path: str) -> dict[str, str]:
     return translations
 
 
+en_translations = get_translations(get_json_filename("en"))
+
+
 def update_for_legacy_stream_translations(
     current: dict[str, str], legacy: dict[str, str], path: str
 ) -> None:
@@ -217,9 +220,10 @@ def update_for_legacy_stream_translations(
         # not currently translated (e.g. an empty string), then use
         # the legacy translated string (which might be an empty string).
         if (
-            line in LEGACY_STRINGS_MAP
+            line in en_translations
+            and en_translations[line] in LEGACY_STRINGS_MAP
             and translation == ""
-            and (legacy_string := LEGACY_STRINGS_MAP[line]) in legacy
+            and (legacy_string := LEGACY_STRINGS_MAP[en_translations[line]]) in legacy
         ):
             updated_translations[line] = legacy[legacy_string]
             number_of_updates += 1
