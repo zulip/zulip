@@ -7,10 +7,12 @@
                     <span class="exit-sign">&times;</span>
                 </div>
                 <div class="removed-drafts">
-                    {{#tr}}
-                        Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.
-                        {{#*inline "z-pencil-icon"}}<i class="fa fa-pencil"></i>{{/inline}}
-                    {{/tr}}
+                    <div class="overlay-keyboard-shortcuts">
+                        {{#tr}}
+                            To edit or reschedule a message, click on it or press <z-shortcut></z-shortcut>.
+                            {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
+                        {{/tr}}
+                    </div>
                 </div>
             </div>
             <div class="scheduled-messages-list overlay-messages-list">
