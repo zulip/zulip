@@ -36,7 +36,11 @@ from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_string_in_validator
+from zerver.lib.typed_endpoint_validators import (
+    check_int_in_validator,
+    check_string_in_validator,
+    parse_enum_from_string_value,
+)
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     access_user_group_for_setting,
@@ -53,6 +57,7 @@ from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
 )
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.user_settings import check_settings_values
 
 
@@ -78,17 +83,6 @@ def check_jitsi_url(value: str) -> str:
         return validator(var_name, value)
     except ValidationError:
         raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
-
-
-def parse_message_edit_history_visibility_policy(
-    policy_name: str,
-) -> MessageEditHistoryVisibilityPolicyEnum:
-    try:
-        return MessageEditHistoryVisibilityPolicyEnum[policy_name]
-    except KeyError:
-        raise JsonableError(
-            _("Invalid {var_name}").format(var_name="message_edit_history_visibility_policy")
-        )
 
 
 @require_realm_admin
@@ -125,7 +119,14 @@ def update_realm(
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
     message_edit_history_visibility_policy: Annotated[
-        str | None, AfterValidator(lambda val: parse_message_edit_history_visibility_policy(val))
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "message_edit_history_visibility_policy",
+                MessageEditHistoryVisibilityPolicyEnum,
+            )
+        ),
     ] = None,
     default_language: str | None = None,
     waiting_period_threshold: Json[NonNegativeInt] | None = None,
@@ -696,6 +697,16 @@ def update_realm_user_settings_defaults(
     web_navigate_to_sent_message: Json[bool] | None = None,
     web_suggest_update_timezone: Json[bool] | None = None,
     hide_ai_features: Json[bool] | None = None,
+    resolved_topic_notice_auto_read_policy: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "resolved_topic_notice_auto_read_policy",
+                ResolvedTopicNoticeAutoReadPolicyEnum,
+            )
+        ),
+    ] = None,
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

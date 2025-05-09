@@ -1,4 +1,5 @@
 from datetime import timedelta
+from enum import Enum
 from typing import Any
 
 from django.contrib.auth.password_validation import validate_password
@@ -94,6 +95,7 @@ from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
 from zerver.models.streams import get_stream
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 
 
 class TestRealmAuditLog(ZulipTestCase):
@@ -817,13 +819,14 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_change_user_settings(self) -> None:
         user = self.example_user("hamlet")
-        value: bool | int | str
-        test_values = dict(
+        value: bool | int | str | Enum
+        test_values: dict[str, Any] = dict(
             default_language="de",
             web_animate_image_previews="on_hover",
             web_home_view="all_messages",
             emojiset="twitter",
             notification_sound="ding",
+            resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum.always,
         )
 
         for setting, setting_type in user.property_types.items():
@@ -837,9 +840,13 @@ class TestRealmAuditLog(ZulipTestCase):
 
             old_value = getattr(user, setting)
             do_change_user_setting(user, setting, value, acting_user=user)
+            if isinstance(value, Enum):
+                new_value = value.value
+            else:
+                new_value = value
             expected_extra_data = {
                 RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
+                RealmAuditLog.NEW_VALUE: new_value,
                 "property": setting,
             }
             self.assertEqual(
@@ -853,7 +860,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 ).count(),
                 1,
             )
-            self.assertEqual(getattr(user, setting), value)
+            self.assertEqual(getattr(user, setting), new_value)
 
     def test_realm_domain_entries(self) -> None:
         user = self.example_user("iago")

@@ -12999,6 +12999,21 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 235).
                   type: boolean
                   example: true
+                resolved_topic_notice_auto_read_policy:
+                  description: |
+                    Controls whether the resolved-topic notices are marked as read.
+
+                    - "always" - Always mark resolved-topic notices as read.
+                    - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                    - "never" - Never mark resolved-topic notices as read.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-e0d354.md).
+                  type: string
+                  enum:
+                    - always
+                    - except_followed
+                    - never
+                  example: except_followed
                 presence_enabled:
                   description: |
                     Display the presence status to other users when online.
@@ -16380,6 +16395,16 @@ paths:
                               topics where the user is mentioned.
 
                               **Changes**: New in Zulip 8.0 (feature level 235).
+                          resolved_topic_notice_auto_read_policy:
+                            type: string
+                            description: |
+                              Controls whether the resolved-topic notices are marked as read.
+
+                              - "always" - Always mark resolved-topic notices as read.
+                              - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                              - "never" - Never mark resolved-topic notices as read.
+
+                              **Changes**: New in Zulip 11.0 (feature level ZF-e0d354.md).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -19108,6 +19133,16 @@ paths:
                               topics where the user is mentioned.
 
                               **Changes**: New in Zulip 8.0 (feature level 235).
+                          resolved_topic_notice_auto_read_policy:
+                            type: string
+                            description: |
+                              Controls whether the resolved-topic notices are marked as read.
+
+                              - "always" - Always mark resolved-topic notices as read.
+                              - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                              - "never" - Never mark resolved-topic notices as read.
+
+                              **Changes**: New in Zulip 11.0 (feature level ZF-e0d354.md).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -20470,6 +20505,21 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 235).
                   type: boolean
                   example: true
+                resolved_topic_notice_auto_read_policy:
+                  description: |
+                    Controls whether the resolved-topic notices are marked as read.
+
+                    - "always" - Always mark resolved-topic notices as read.
+                    - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                    - "never" - Never mark resolved-topic notices as read.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-e0d354.md).
+                  type: string
+                  enum:
+                    - always
+                    - except_followed
+                    - never
+                  example: except_followed
                 presence_enabled:
                   description: |
                     Display the presence status to other users when online.
