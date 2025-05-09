@@ -144,9 +144,7 @@ export function handle_narrow_activated(filter: Filter): void {
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
-    const condensedList: Element = document.querySelector(
-        "#left-sidebar-navigation-list-condensed",
-    );
+    const $condensedList = $("#left-sidebar-navigation-list-condensed");
 
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -157,7 +155,7 @@ function toggle_condensed_navigation_area(): void {
         // Change state keep_views_expanded to auto collapse before condensing
         auto_collapse_views = true;
         checkAutoCollapse();
-        condensedList.setAttribute("style", "display: flex;");
+        $condensedList.css("display", "flex");
         // Toggle into the condensed state
         $views_label_container.addClass("showing-condensed-navigation");
         $views_label_container.removeClass("showing-expanded-navigation");
@@ -165,7 +163,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-down");
         save_state(STATES.CONDENSED);
     } else {
-        condensedList.setAttribute("style", "display: none;");
+        $condensedList.css("display", "none");
         // Toggle into the expanded state
         $views_label_container.addClass("showing-expanded-navigation");
         $views_label_container.removeClass("showing-condensed-navigation");
@@ -338,6 +336,9 @@ function attachSidebarScrollListener(): void {
                 $dmHeader.removeClass("scrolled-when-views-expanded");
             }
 
+            if (!$viewsHeader[0] || !$dmHeader[0]) {
+                return;
+            }
             const viewsBottom = $viewsHeader[0].getBoundingClientRect().bottom;
             const dmTop = $dmHeader[0].getBoundingClientRect().top;
 
@@ -357,6 +358,9 @@ function attachSidebarScrollListener(): void {
                 $dmHeader.removeClass("scrolled");
             }
 
+            if (!$streamsHeader[0]) {
+                return;
+            }
             const dmBottom = $dmHeader[0].getBoundingClientRect().bottom;
             const streamsTop = $streamsHeader[0].getBoundingClientRect().top;
 
