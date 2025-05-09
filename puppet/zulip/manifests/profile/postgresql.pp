@@ -14,6 +14,7 @@ class zulip::profile::postgresql {
   $shared_buffers = zulipconf('postgresql', 'shared_buffers', sprintf('%dMB', $total_postgres_memory_mb / 4))
   $effective_cache_size = zulipconf('postgresql', 'effective_cache_size', sprintf('%dMB', $total_postgres_memory_mb * 10 / 16))
   $maintenance_work_mem = zulipconf('postgresql', 'maintenance_work_mem', sprintf('%dMB', $total_postgres_memory_mb / 16))
+  $wal_buffers = zulipconf('postgresql', 'wal_buffers', undef)
   $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
   $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
 
