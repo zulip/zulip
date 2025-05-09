@@ -217,15 +217,6 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
     assert.ok(banner_shown);
 
     override(realm, "max_file_upload_size_mib", 25);
-    let on_click_close_button_callback;
-
-    $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").one = (
-        event,
-        callback,
-    ) => {
-        assert.equal(event, "click");
-        on_click_close_button_callback = callback;
-    };
     let compose_ui_insert_syntax_and_focus_called = false;
     override_rewire(compose_ui, "insert_syntax_and_focus", () => {
         compose_ui_insert_syntax_and_focus_called = true;
@@ -288,7 +279,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         assert.equal(new_syntax, "");
         assert.equal($textarea, $("textarea#compose-textarea"));
     });
-    on_click_close_button_callback();
+    $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").trigger("click");
     assert.ok(remove_file_called);
     assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
@@ -298,7 +289,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
     remove_file_called = false;
     $("textarea#compose-textarea").val("user modified text");
 
-    on_click_close_button_callback();
+    $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").trigger("click");
     assert.ok(remove_file_called);
     assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
