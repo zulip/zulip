@@ -46,6 +46,7 @@ from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+from zerver.lib.stream_subscription import bulk_create_stream_subscriptions
 from zerver.lib.types import AnalyticsDataUploadLevel, ProfileFieldData
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
@@ -156,6 +157,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
     subscriptions_to_add = []
     event_time = timezone_now()
     all_subscription_logs = []
+    subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
     for i, stream_name in enumerate(stream_dict):
         stream = Stream.objects.get(name=stream_name, realm=realm)
@@ -169,6 +171,8 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
             )
             subscriptions_to_add.append(s)
+            if profile.is_active:
+                subscriber_count_changes[stream.id].add(profile.id)
 
             log = RealmAuditLog(
                 realm=profile.realm,
@@ -179,7 +183,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 event_time=event_time,
             )
             all_subscription_logs.append(log)
-    Subscription.objects.bulk_create(subscriptions_to_add)
+    bulk_create_stream_subscriptions(subs=subscriptions_to_add, streams=subscriber_count_changes)
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
@@ -727,6 +731,7 @@ class Command(ZulipBaseCommand):
                         subscriptions_list.append((profile, r))
 
             subscriptions_to_add: list[Subscription] = []
+            subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
             event_time = timezone_now()
             all_subscription_logs: list[RealmAuditLog] = []
 
@@ -742,6 +747,8 @@ class Command(ZulipBaseCommand):
                 )
 
                 subscriptions_to_add.append(s)
+                if profile.is_active:
+                    subscriber_count_changes[recipient.type_id].add(profile.id)
 
                 log = RealmAuditLog(
                     realm=profile.realm,
@@ -753,7 +760,9 @@ class Command(ZulipBaseCommand):
                 )
                 all_subscription_logs.append(log)
 
-            Subscription.objects.bulk_create(subscriptions_to_add)
+            bulk_create_stream_subscriptions(
+                subs=subscriptions_to_add, streams=subscriber_count_changes
+            )
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
             # Create custom profile field data

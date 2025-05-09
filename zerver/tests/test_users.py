@@ -37,6 +37,7 @@ from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import clear_scheduled_emails, queue_scheduled_emails, send_future_email
+from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -982,6 +983,8 @@ class QueryCountTest(ZulipTestCase):
         ]
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
+        subscriber_count_before = self.build_streams_subscriber_count(streams)
+
         invite_expires_in_minutes = 4 * 24 * 60
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
@@ -995,7 +998,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(85),
+            self.assert_database_query_count(86),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -1019,6 +1022,17 @@ class QueryCountTest(ZulipTestCase):
 
         self.assertEqual(
             notifications, {"private_stream1", "private_stream2", "Verona", "Denmark,Scotland"}
+        )
+
+        # DB-refresh streams
+        subscriber_count_after = self.fetch_streams_subscriber_count(
+            stream_ids=set(subscriber_count_before)
+        )
+
+        self.assert_stream_subscriber_count(
+            subscriber_count_before,
+            subscriber_count_after,
+            expected_difference=1,
         )
 
 
@@ -1810,6 +1824,95 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_success(result)
         user = self.example_user("hamlet")
         self.assertTrue(user.is_active)
+
+    def test_stream_subscriber_count_upon_deactivate(self) -> None:
+        # Test subscriber_count decrements upon deactivating a user.
+        # We use the api here as we want this to be end-to-end.
+
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+        user = self.example_user("hamlet")
+
+        streams_subscriber_counts_before = self.build_streams_subscriber_count(
+            streams=get_user_subscribed_streams(user)
+        )
+        stream_ids = set(streams_subscriber_counts_before)
+        other_streams_subscriber_counts_before = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        result = self.client_delete(f"/json/users/{user.id}")
+        self.assert_json_success(result)
+
+        # DB-refresh streams.
+        streams_subscriber_counts_after = self.fetch_streams_subscriber_count(stream_ids)
+
+        # DB-refresh other_streams.
+        other_streams_subscriber_counts_after = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        # Deactivating a user should result in subscriber_count - 1
+        self.assert_stream_subscriber_count(
+            streams_subscriber_counts_before,
+            streams_subscriber_counts_after,
+            expected_difference=-1,
+        )
+
+        # Make sure other streams are not affected upon deactivation.
+        self.assert_stream_subscriber_count(
+            other_streams_subscriber_counts_before,
+            other_streams_subscriber_counts_after,
+            expected_difference=0,
+        )
+
+    def test_stream_subscriber_count_upon_reactivate(self) -> None:
+        # Test subscriber_count increments upon reactivating a user.
+        # We use the api here as we want this to be end-to-end.
+
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+        user = self.example_user("hamlet")
+
+        # First, deactivate that user
+        result = self.client_delete(f"/json/users/{user.id}")
+        self.assert_json_success(result)
+
+        streams_subscriber_counts_before = self.build_streams_subscriber_count(
+            streams=get_user_subscribed_streams(user)
+        )
+        stream_ids = set(streams_subscriber_counts_before)
+        other_streams_subscriber_counts_before = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        # Reactivate user
+        result = self.client_post(f"/json/users/{user.id}/reactivate")
+        self.assert_json_success(result)
+
+        # DB-refresh streams.
+        streams_subscriber_counts_after = self.fetch_streams_subscriber_count(stream_ids)
+
+        # DB-refresh other_streams.
+        other_streams_subscriber_counts_after = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        # Reactivating a user should result in subscriber_count + 1
+        self.assert_stream_subscriber_count(
+            streams_subscriber_counts_before,
+            streams_subscriber_counts_after,
+            expected_difference=1,
+        )
+
+        # Make sure other streams are not affected upon reactivation.
+        self.assert_stream_subscriber_count(
+            other_streams_subscriber_counts_before,
+            other_streams_subscriber_counts_after,
+            expected_difference=0,
+        )
 
     def test_email_sent(self) -> None:
         self.login("iago")
