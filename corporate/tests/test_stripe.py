@@ -784,9 +784,9 @@ class StripeTestCase(ZulipTestCase):
 
     def setup_mocked_stripe(self, callback: Callable[..., Any], *args: Any, **kwargs: Any) -> Mock:
         with patch.multiple("stripe", Invoice=mock.DEFAULT, InvoiceItem=mock.DEFAULT) as mocked:
-            mocked["Invoice"].create.return_value = None
-            mocked["Invoice"].finalize_invoice.return_value = None
-            mocked["InvoiceItem"].create.return_value = None
+            mocked["Invoice"].create.return_value = mock.Mock()
+            mocked["Invoice"].finalize_invoice.return_value = mock.Mock()
+            mocked["InvoiceItem"].create.return_value = mock.Mock()
             callback(*args, **kwargs)
             return mocked
 
