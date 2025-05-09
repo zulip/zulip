@@ -22,10 +22,11 @@ from zerver.lib.create_user import create_user
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+from zerver.lib.stream_subscription import create_stream_subscription
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
-from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, Subscription, UserProfile
+from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroupMembership
 from zerver.models.realm_audit_logs import AuditLogEventType
 
@@ -125,10 +126,10 @@ class Command(ZulipBaseCommand):
         stream.save(update_fields=["recipient"])
 
         # Subscribe shylock to the stream to avoid invariant failures.
-        Subscription.objects.create(
-            recipient=recipient,
+        create_stream_subscription(
             user_profile=shylock,
-            is_user_active=shylock.is_active,
+            recipient=recipient,
+            stream=stream,
             color=STREAM_ASSIGNMENT_COLORS[0],
         )
         RealmAuditLog.objects.create(
