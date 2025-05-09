@@ -112,6 +112,11 @@ function get_loaded_subscriber_subset(stream_id: number): LazySet {
     return subscribers;
 }
 
+async function get_full_subscriber_set(stream_id: number, retry_on_failure: true): Promise<LazySet>;
+async function get_full_subscriber_set(
+    stream_id: number,
+    retry_on_failure: boolean,
+): Promise<LazySet | null>;
 async function get_full_subscriber_set(
     stream_id: number,
     retry_on_failure: boolean,
@@ -317,11 +322,19 @@ export async function maybe_fetch_is_user_subscribed(
     return subscribers.has(user_id);
 }
 
-export function get_unique_subscriber_count_for_streams(stream_ids: number[]): number {
+export async function get_unique_subscriber_count_for_streams(
+    stream_ids: number[],
+): Promise<number> {
     const valid_subscribers = new LazySet([]);
+    const promises: Record<number, Promise<LazySet>> = {};
+    for (const stream_id of stream_ids) {
+        promises[stream_id] = get_full_subscriber_set(stream_id, true);
+    }
 
     for (const stream_id of stream_ids) {
-        const subscribers = get_loaded_subscriber_subset(stream_id);
+        // If it's `null`, that means a request failed and we don't know the
+        // full subscribers set, so just use whatever we have already.
+        const subscribers = await promises[stream_id]!;
 
         for (const user_id of subscribers.keys()) {
             if (!people.is_valid_bot_user(user_id)) {

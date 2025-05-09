@@ -447,7 +447,7 @@ test("is_subscriber_subset", async () => {
     assert.equal(await peer_data.is_subscriber_subset(sub_a.stream_id, sub_b.stream_id), null);
 });
 
-test("get_unique_subscriber_count_for_streams", () => {
+test("get_unique_subscriber_count_for_streams", async () => {
     const sub = {name: "Rome", subscribed: true, stream_id: 1001};
     stream_data.add_sub(sub);
 
@@ -459,7 +459,7 @@ test("get_unique_subscriber_count_for_streams", () => {
     const stream_id = sub.stream_id;
     peer_data.set_subscribers(stream_id, [me.user_id, fred.user_id, bot_botson.user_id]);
 
-    const count = peer_data.get_unique_subscriber_count_for_streams([stream_id]);
+    const count = await peer_data.get_unique_subscriber_count_for_streams([stream_id]);
 
     assert.equal(count, 2);
 });

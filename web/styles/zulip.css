@@ -1326,6 +1326,14 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     vertical-align: bottom;
 }
 
+#invite-user-form .loading_indicator_spinner {
+    height: 1em;
+    width: fit-content;
+    display: inline-block;
+    float: none;
+    margin: 0 5px;
+}
+
 .add-user-group-container,
 .add_streams_container {
     display: inline-flex;
