@@ -1126,6 +1126,10 @@
         color-mix(in srgb, hsl(0deg 0% 0%) 10%, hsl(232deg 20% 92%)),
         hsl(0deg 0% 0% / 80%)
     );
+    --color-compose-recipient-box-hover: light-dark(
+        hsl(0deg 0% 69%),
+        hsl(0deg 0% 100% / 12%)
+    );
     --color-compose-recipient-box-has-focus: light-dark(
         hsl(0deg 0% 57%),
         hsl(0deg 0% 100% / 27%)
