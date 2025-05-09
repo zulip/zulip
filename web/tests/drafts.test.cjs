@@ -61,6 +61,20 @@ mock_esm("../src/markdown", {
 });
 mock_esm("../src/overlays", {
     open_overlay: noop,
+    close_overlay: noop,
+});
+
+mock_esm("../src/components", {
+    toggle(_opts) {
+        return {
+            get() {
+                return {
+                    prependTo: noop,
+                    addClass: noop,
+                };
+            },
+        };
+    },
 });
 
 const tippy_sel = ".top_left_drafts .unread_count";
@@ -284,7 +298,10 @@ test("initialize", ({override_rewire}) => {
 
     drafts.initialize();
     drafts.initialize_ui();
-    drafts_overlay_ui.initialize();
+    drafts_overlay_ui.initialize({
+        on_send_message_success(_request, _data) {},
+        send_message(_request, _on_success, _error) {},
+    });
 });
 
 test("update_draft", ({override, override_rewire}) => {
@@ -642,6 +659,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         // Tests formatting and time-sorting of drafts
         assert.deepEqual(data.narrow_drafts, []);
         assert.deepEqual(data.other_drafts, expected);
+        assert.deepEqual(data.outbox_message, []);
         return "<draft table stub>";
     });
 
@@ -651,7 +669,16 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     $.create("#drafts_table .overlay-message-row", {children: []});
+    $(".outbox-selection-checkbox").filter = () => [];
     $(".draft-selection-checkbox").filter = () => [];
+
+    const $drafts_table = $.create("drafts_table");
+    const $child = $(".message_content.rendered_markdown.restore-overlay-message");
+    $drafts_table.set_find_results(
+        ".message_content.rendered_markdown.restore-overlay-message",
+        $child,
+    );
+
     drafts_overlay_ui.launch();
 
     $.clear_all_elements();
@@ -670,7 +697,14 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    $(".outbox-selection-checkbox").filter = () => [];
     $(".draft-selection-checkbox").filter = () => [];
+
+    $drafts_table.set_find_results(
+        ".message_content.rendered_markdown.restore-overlay-message",
+        $child,
+    );
+
     drafts_overlay_ui.launch();
 });
 
@@ -834,6 +868,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     compose_state.set_message_type("private");
 
     $.create("#drafts_table .overlay-message-row", {children: []});
+    $(".outbox-selection-checkbox").filter = () => [];
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
 });
