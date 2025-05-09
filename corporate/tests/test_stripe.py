@@ -659,6 +659,8 @@ class StripeTestCase(ZulipTestCase):
             params.pop(key, None)
 
         if talk_to_stripe:
+            # Store the event after which we pay the invoice so that we can
+            # process all the events from this event to the latest.
             [last_event] = iter(stripe.Event.list(limit=1))
 
         existing_customer = self.billing_session.customer_plan_exists()
