@@ -1036,6 +1036,8 @@ class StripeTest(StripeTestCase):
         self.assertFalse(stripe_customer_has_credit_card_as_default_payment_method(stripe_customer))
 
         # Check Charges in Stripe
+        # There is no charge created for out of band payments which is used
+        # to test this method.
         self.assertFalse(stripe.Charge.list(customer=stripe_customer.id))
         # Check Invoices in Stripe
         [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
