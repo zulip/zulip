@@ -452,6 +452,11 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
         return
 
     body = construct_zulip_body(message, realm, sender=sender, **options)
+    
+    # If the subject is longer than 60 characters, prepend it to the body
+    if len(subject) > 60:
+        body = f"Subject: {subject}\n\n{body}"
+
     send_zulip(sender, channel, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
