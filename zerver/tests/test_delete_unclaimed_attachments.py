@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
+from zerver.lib.attachments import get_old_unclaimed_attachments
 from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
@@ -55,6 +56,10 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             ArchivedAttachment.objects.filter(id=attachment.id).exists(), has_archived_attachment
         )
 
+    def get_and_do_delete_old_unclaimed_attachments(self, weeks_ago: int) -> None:
+        old_attachments, old_archived_attachments = get_old_unclaimed_attachments(weeks_ago)
+        do_delete_old_unclaimed_attachments(old_attachments, old_archived_attachments)
+
     def test_delete_unused_thumbnails(self) -> None:
         assert settings.LOCAL_FILES_DIR
         with self.captureOnCommitCallbacks(execute=True):
@@ -80,7 +85,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # If we have 3 weeks of grace, nothing happens
-        do_delete_old_unclaimed_attachments(3)
+        self.get_and_do_delete_old_unclaimed_attachments(3)
         self.assert_exists(
             unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
         )
@@ -99,7 +104,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # If we have 1 weeks of grace, the Attachment is deleted, and so is the file on disk
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             unused_attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
@@ -116,13 +121,13 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # If we have 3 weeks of grace, nothing happens
-        do_delete_old_unclaimed_attachments(3)
+        self.get_and_do_delete_old_unclaimed_attachments(3)
         self.assert_exists(
             unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
         )
 
         # If we have 1 weeks of grace, the Attachment is deleted, and so is the file on disk
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             unused_attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
@@ -137,7 +142,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         self.send_stream_message(hamlet, "Denmark", body, "test")
 
         # Because the message is claimed, it is not removed
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=False
         )
@@ -159,7 +164,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
         # Removing unclaimed attachments leaves the file, since it is
         # attached to an existing ArchivedAttachment
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=True, has_attachment=False, has_archived_attachment=True
         )
@@ -174,7 +179,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # Removing unclaimed attachments now cleans it out
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
@@ -201,7 +206,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # Removing unclaimed attachments leaves the file, since it is
         # attached to an existing Attachment and ArchivedAttachment
         # which have Messages and ArchivedMessages, respectively
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -217,7 +222,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # Removing unclaimed attachments still does nothing, because
         # the ArchivedAttachment is protected by the existing
         # Attachment.
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -234,7 +239,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # attachments now finally removes it.
         with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
             clean_archived_data()
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
@@ -261,7 +266,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # The ScheduledMessage protects the attachment from being removed
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=False
         )
@@ -273,7 +278,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # Having no referents, it is now a target for removal
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
@@ -321,7 +326,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # Removing unclaimed attachments deletes nothing, since the
         # the ArchivedAttachment is protected by the Attachment which
         # is still protected by the scheduled message
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -333,7 +338,14 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
 
         # Having no referents, it is now a target for removal
-        do_delete_old_unclaimed_attachments(1)
+        with self.assertLogs(level="WARNING") as warn_log:
+            self.get_and_do_delete_old_unclaimed_attachments(1)
+            self.assertEqual(
+                warn_log.output,
+                [
+                    f"WARNING:root:{attachment.file_name} does not exist. Its entry in the database will be removed."
+                ],
+            )
         self.assert_exists(
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
@@ -380,7 +392,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # unreferenced Attachment which is protected by the
         # ArchivedAttachment which has archived messages referencing
         # it.
-        do_delete_old_unclaimed_attachments(1)
+        self.get_and_do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             attachment, has_file=True, has_attachment=True, has_archived_attachment=True
         )
@@ -396,7 +408,14 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
         # Having no referents in either place, it is now a target for
         # removal
-        do_delete_old_unclaimed_attachments(1)
+        with self.assertLogs(level="WARNING") as warn_log:
+            self.get_and_do_delete_old_unclaimed_attachments(1)
+            self.assertEqual(
+                warn_log.output,
+                [
+                    f"WARNING:root:{attachment.file_name} does not exist. Its entry in the database will be removed."
+                ],
+            )
         self.assert_exists(
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
@@ -411,7 +430,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 5),
             patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
         ):
-            do_delete_old_unclaimed_attachments(1)
+            self.get_and_do_delete_old_unclaimed_attachments(1)
 
         # We expect all of the 5 attachments to be deleted, across two
         # different calls of 5- and 1-element lists.  Since each image
@@ -450,7 +469,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 6),
             patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
         ):
-            do_delete_old_unclaimed_attachments(1)
+            self.get_and_do_delete_old_unclaimed_attachments(1)
 
         # We expect all of the 20 attachments (10 of which are
         # ArchivedAttachments) to be deleted, across four different
