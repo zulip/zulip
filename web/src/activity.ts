@@ -5,6 +5,7 @@ import {z} from "zod";
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
 import * as presence from "./presence.ts";
 import * as watchdog from "./watchdog.ts";
 
@@ -40,7 +41,7 @@ export type ActivityState = "active" | "idle";
 */
 
 /* Broadcast "idle" to server after 5 minutes of local inactivity */
-const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+export const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 // When you open Zulip in a new browser window, client_is_active
 // should be true.  When a server-initiated reload happens, however,
@@ -111,7 +112,10 @@ export function compute_active_status(): ActivityState {
     return "idle";
 }
 
-export let send_presence_to_server = (redraw?: () => void): void => {
+export let send_presence_to_server = (
+    redraw?: () => void,
+    redraw_user?: (user_id: number) => void,
+): void => {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -174,6 +178,14 @@ export let send_presence_to_server = (redraw?: () => void): void => {
                     data.presence_last_update_id,
                 );
                 redraw();
+            } else if (redraw_user) {
+                const raw = {
+                    server_timestamp: Date.now(),
+                };
+                const user_id = people.my_current_user_id();
+                const status = presence.status_from_raw(raw, people.maybe_get_user_by_id(user_id));
+                presence.presence_info.set(user_id, status);
+                redraw_user(user_id);
             }
         },
     });
@@ -183,24 +195,10 @@ export function rewire_send_presence_to_server(value: typeof send_presence_to_se
     send_presence_to_server = value;
 }
 
-export function mark_client_active(): void {
+export function mark_client_active(redraw_user: (user_id: number) => void): void {
     // exported for testing
     if (!client_is_active) {
         client_is_active = true;
-        send_presence_to_server();
+        send_presence_to_server(undefined, redraw_user);
     }
-}
-
-export function initialize(): void {
-    $("html").on("mousemove", () => {
-        set_new_user_input(true);
-    });
-
-    $(window).on("focus", mark_client_active);
-    $(window).idle({
-        idle: DEFAULT_IDLE_TIMEOUT_MS,
-        onIdle: mark_client_idle,
-        onActive: mark_client_active,
-        keepTracking: true,
-    });
 }
