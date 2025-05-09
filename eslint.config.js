@@ -131,6 +131,7 @@ export default tseslint.config(
             "no-jquery/no-append-html": "error",
             "no-jquery/no-constructor-attributes": "error",
             "no-jquery/no-parse-html-literal": "error",
+            "no-jquery/no-sizzle": ["error", {}],
             "no-label-var": "error",
             "no-labels": "error",
             "no-multi-str": "error",
