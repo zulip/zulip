@@ -174,8 +174,6 @@ function initialize_pm_pill(mock_template) {
         on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
     });
 
-    $("#zephyr-mirror-error").is = noop;
-
     mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
 
     mock_banners();
@@ -317,15 +315,9 @@ test_ui("validate", ({mock_template, override}) => {
     // Now add content to compose, and expect to see the banner.
     add_content_to_compose_box();
     expected_invalid_state = false;
-    let zephyr_checked = false;
-    $("#zephyr-mirror-error").is = (arg) => {
-        assert.equal(arg, ":visible");
-        zephyr_checked = true;
-        return true;
-    };
+    $("#zephyr-mirror-error").addClass("show");
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
-    assert.ok(zephyr_checked);
     assert.ok(zephyr_error_rendered);
 
     initialize_pm_pill(mock_template);
