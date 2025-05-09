@@ -287,6 +287,11 @@ input::placeholder {
             outline: none;
         }
 
+        &:focus-visible {
+            outline: 1px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+
         &:not(.selected) {
             border: 1px solid var(--color-border-tab-switcher-ind-tab);
         }
