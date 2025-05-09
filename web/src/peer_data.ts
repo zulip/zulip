@@ -168,7 +168,11 @@ export function potential_subscribers(stream_id: number): User[] {
         other than typeahead.  (The guest use case
         may be moot now for other reasons.)
     */
-
+    if (!fetched_stream_ids.has(stream_id)) {
+        blueslip.error("Fetching potential subscribers for stream without full subscriber data", {
+            stream_id,
+        });
+    }
     const subscribers = get_loaded_subscriber_subset(stream_id);
 
     function is_potential_subscriber(person: User): boolean {
@@ -208,6 +212,21 @@ export function get_subscribers(stream_id: number): number[] {
     // want an array of user_ids who are subscribed to a stream.
     const subscribers = get_loaded_subscriber_subset(stream_id);
 
+    return [...subscribers.keys()];
+}
+
+export async function get_all_subscribers(
+    stream_id: number,
+    retry_on_failure = true,
+): Promise<number[] | null> {
+    // This function parallels `get_subscribers` but ensures we include all
+    // subscribers, possibly fetching that data from the server.
+    const subscribers = await get_full_subscriber_set(stream_id, retry_on_failure);
+    // This means the request failed, which can only happen if `retry_on_failure`
+    // is false.
+    if (subscribers === null) {
+        return null;
+    }
     return [...subscribers.keys()];
 }
 

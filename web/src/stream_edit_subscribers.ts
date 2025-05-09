@@ -15,6 +15,7 @@ import * as hash_parser from "./hash_parser.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -128,8 +129,30 @@ export function enable_subscriber_management({
         $parent_container.find(".stream_subscription_request_result").empty();
     });
 
-    const user_ids = peer_data.get_subscribers(stream_id);
     const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
+    void render_subscriber_list_widget(sub, user_can_remove_subscribers, $parent_container);
+}
+
+async function render_subscriber_list_widget(
+    sub: StreamSubscription,
+    user_can_remove_subscribers: boolean,
+    $parent_container: JQuery,
+): Promise<void> {
+    $(".subscriber_list_settings_container").toggleClass("no-display", true);
+    loading.make_indicator($(".subscriber_list_settings_loading"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
+
+    // Because we're using `retry_on_failure=true`, this will only return once it
+    // succeeds, so we can't get `null`.
+    const user_ids = await peer_data.get_all_subscribers(sub.stream_id, true);
+    assert(user_ids !== null);
+
+    // Make sure we're still editing this stream after waiting for subscriber data.
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        blueslip.info("ignoring subscriber data for stream that is no longer being edited");
+        return;
+    }
 
     // We track a single subscribers_list_widget for this module, since we
     // only ever have one list of subscribers visible at a time.
@@ -139,6 +162,8 @@ export function enable_subscriber_management({
         user_ids,
         user_can_remove_subscribers,
     });
+    loading.destroy_indicator($(".subscriber_list_settings_loading"));
+    $(".subscriber_list_settings_container").toggleClass("no-display", false);
 }
 
 function make_list_widget({
@@ -452,7 +477,6 @@ export function rerender_subscribers_list(sub: sub_store.StreamSubscription): vo
         return;
     }
 
-    const user_ids = peer_data.get_subscribers(sub.stream_id);
     const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
     const $parent_container = stream_settings_containers
         .get_edit_container(sub)
@@ -463,12 +487,7 @@ export function rerender_subscribers_list(sub: sub_store.StreamSubscription): vo
             can_remove_subscribers: user_can_remove_subscribers,
         }),
     );
-    subscribers_list_widget = make_list_widget({
-        $parent_container,
-        name: "stream_subscribers",
-        user_ids,
-        user_can_remove_subscribers,
-    });
+    void render_subscriber_list_widget(sub, user_can_remove_subscribers, $parent_container);
 }
 
 export function initialize(): void {
