@@ -110,7 +110,12 @@
         <div class="desktop-notification-settings-banners"></div>
 
         {{#unless for_realm_settings}}
-        <p><a class="send_test_notification">{{t "Send a test notification" }}</a></p>
+        {{> ../components/action_button
+          label=(t "Send a test notification")
+          attention="quiet"
+          intent="neutral"
+          custom_classes="send_test_notification"
+          }}
         {{/unless}}
 
         {{#each notification_settings.desktop_notification_settings}}
