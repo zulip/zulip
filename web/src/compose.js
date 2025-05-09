@@ -19,7 +19,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
-import * as server_events from "./server_events.js";
+import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as transmit from "./transmit.js";
 import {user_settings} from "./user_settings.ts";
@@ -86,7 +86,7 @@ export function create_message_object(message_content = compose_state.message_co
         type: compose_state.get_message_type(),
         content: message_content,
         sender_id: current_user.user_id,
-        queue_id: server_events.queue_id,
+        queue_id: server_events_state.queue_id,
         stream_id: undefined,
     };
     message.topic = "";
@@ -257,7 +257,7 @@ export let send_message = (request = create_message_object()) => {
     }
 
     transmit.send_message(request, success, error);
-    server_events.assert_get_events_running(
+    server_events_state.assert_get_events_running(
         "Restarting get_events because it was not running during send",
     );
 

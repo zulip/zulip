@@ -111,6 +111,7 @@ import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
 import * as server_events from "./server_events.js";
+import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -579,6 +580,11 @@ export function initialize_everything(state_data) {
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
+    server_events_state.initialize({
+        ...state_data.server_events_state,
+        assert_get_events_running: server_events.assert_get_events_running,
+        restart_get_events: server_events.restart_get_events,
+    });
     server_events.initialize(state_data.server_events);
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();

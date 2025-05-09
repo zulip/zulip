@@ -44,7 +44,7 @@ const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
 const sent_messages = mock_esm("../src/sent_messages");
-const server_events = mock_esm("../src/server_events");
+const server_events_state = mock_esm("../src/server_events_state");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
 const onboarding_steps = mock_esm("../src/onboarding_steps");
@@ -285,7 +285,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
     override_rewire(drafts, "update_compose_draft_count", noop);
 
-    override(server_events, "assert_get_events_running", () => {
+    override(server_events_state, "assert_get_events_running", () => {
         stub_state.get_events_running_called += 1;
     });
 

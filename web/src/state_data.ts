@@ -546,7 +546,13 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                queue_id: NOT_TYPED_YET,
+                queue_id: z.nullable(z.string()),
+            })
+            .transform((server_events_state) => ({server_events_state})),
+    )
+    .and(
+        z
+            .object({
                 server_generation: NOT_TYPED_YET,
                 event_queue_longpoll_timeout_seconds: NOT_TYPED_YET,
                 last_event_id: NOT_TYPED_YET,
