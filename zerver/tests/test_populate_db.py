@@ -1,6 +1,10 @@
+from collections import defaultdict
 from datetime import timedelta
 
+from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_ids
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import Stream
+from zerver.models.realms import get_realm
 from zilencer.management.commands.populate_db import choose_date_sent
 
 
@@ -30,3 +34,31 @@ class TestUserTimeZones(ZulipTestCase):
         self.assertEqual(shiva.timezone, "Asia/Kolkata")
         cordelia = self.example_user("cordelia")
         self.assertEqual(cordelia.timezone, "UTC")
+
+
+class TestSubscribeUsers(ZulipTestCase):
+    def test_bulk_create_stream_subscriptions(self) -> None:
+        """
+        This insures bulk_create_stream_subscriptions() ran successfully when test data is loaded via populate_db.py
+        """
+
+        realm = get_realm("zulip")
+        streams = Stream.objects.filter(realm=realm)
+        active_subscriptions = get_active_subscriptions_for_stream_ids(
+            {stream.id for stream in streams}
+        ).select_related("recipient")
+
+        # Map stream_id to its No. active subscriptions.
+        expected_subscriber_count: dict[int, int] = defaultdict(int)
+
+        for sub in active_subscriptions:
+            expected_subscriber_count[sub.recipient.type_id] += 1
+
+        for stream in streams:
+            self.assertEqual(
+                stream.subscriber_count,
+                expected_subscriber_count[stream.id],
+                msg=f"""
+                stream of ID ({stream.id}) should have a subscriber_count of {expected_subscriber_count[stream.id]}.
+                """,
+            )
