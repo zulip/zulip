@@ -66,6 +66,23 @@ export function percentage_used_space(uploads_size: number): string | null {
     return ((100 * uploads_size) / mib_to_bytes(realm.realm_upload_quota_mib)).toFixed(1);
 }
 
+export async function get_used_upload_space_percentage(): Promise<string> {
+    const raw_data = await channel.get({url: "/json/attachments"});
+    const data = attachment_api_response_schema.parse(raw_data);
+    const space_used = percentage_used_space(data.upload_space_used);
+    if (!space_used) {
+        return "0.0";
+    }
+    return space_used;
+}
+
+export function get_realm_upload_quota_size(): string | null {
+    if (realm.realm_upload_quota_mib === null) {
+        return null;
+    }
+    return bytes_to_size(mib_to_bytes(realm.realm_upload_quota_mib), true);
+}
+
 function set_upload_space_stats(): void {
     if (realm.realm_upload_quota_mib === null) {
         return;
