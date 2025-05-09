@@ -590,7 +590,9 @@ export function update_stream_privacy_choices(policy: string): void {
     if (!overlays.streams_open()) {
         return;
     }
+    // eslint-disable-next-line no-jquery/no-sizzle
     const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
+    // eslint-disable-next-line no-jquery/no-sizzle
     const stream_creation_form_opened = $("#stream-creation").is(":visible");
 
     if (!stream_edit_panel_opened && !stream_creation_form_opened) {

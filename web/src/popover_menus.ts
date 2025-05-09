@@ -173,6 +173,7 @@ export function get_popover_items_for_instance(instance: tippy.Instance): JQuery
         return undefined;
     }
 
+    // eslint-disable-next-line no-jquery/no-sizzle
     return $current_elem.find("a, [tabindex='0']").filter(":visible");
 }
 

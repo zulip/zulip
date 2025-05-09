@@ -68,6 +68,7 @@ function get_target_navbar_menu(
     event_name: string,
     $current_navbar_menu: JQuery,
 ): string | undefined {
+    // eslint-disable-next-line no-jquery/no-sizzle
     const $visible_navbar_menus = $(".navbar-item:visible");
     const index = $visible_navbar_menus.index($current_navbar_menu);
     let $target_navbar_menu;

@@ -94,6 +94,7 @@ class PopoverMenu {
 
         const $popover = $(this.instance.popper);
 
+        // eslint-disable-next-line no-jquery/no-sizzle
         const $items = $("[tabindex='0']", $popover).filter(":visible");
 
         popover_items_handle_keyboard_with_overrides(key, $items);
@@ -631,6 +632,7 @@ function get_user_card_popover_for_message_items(): JQuery | undefined {
 
     // Return only the popover menu options that are visible, and not the
     // copy buttons or the link items in the custom profile fields.
+    // eslint-disable-next-line no-jquery/no-sizzle
     return $(".link-item .popover-menu-link", $popover).filter(":visible");
 }
 
