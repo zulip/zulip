@@ -55,7 +55,9 @@
             </div>
             <div id="personal-menu" class="hidden-for-spectators navbar-item">
                 <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tooltip-template-id="personal-menu-tooltip-template">
-                    <img class="header-button-avatar" src="{{user_avatar}}"/>
+                    <div class="header-button-avatar">
+                        <img class="header-button-avatar-image" src="{{user_avatar}}"/>
+                    </div>
                 </a>
             </div>
             <div class="spectator_narrow_login_button only-visible-for-spectators" data-tippy-content="{{t 'Log in' }}" data-tippy-placement="bottom">

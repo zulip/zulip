@@ -151,7 +151,10 @@ export const update_person = function update(event: UserUpdate): void {
             current_user.avatar_url = url;
             current_user.avatar_url_medium = event.avatar_url_medium;
             $("#user-avatar-upload-widget .image-block").attr("src", event.avatar_url_medium);
-            $("#personal-menu .header-button-avatar").attr("src", `${event.avatar_url_medium}`);
+            $("#personal-menu .header-button-avatar-image").attr(
+                "src",
+                `${event.avatar_url_medium}`,
+            );
         }
 
         message_live_update.update_avatar(user.user_id, event.avatar_url);
