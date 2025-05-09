@@ -208,6 +208,8 @@ export function postprocess_content(html: string): string {
         // and use that to offset the list accordingly in CSS
         const max_list_counter_string_length = max_list_counter.toString().length;
         ol.classList.add(`counter-length-${max_list_counter_string_length}`);
+        // We subtract 1 from list_start, as `count 0` displays 1.
+        ol.style.setProperty("counter-reset", `count ${list_start - 1}`);
     }
 
     for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(

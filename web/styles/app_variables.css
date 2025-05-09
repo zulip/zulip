@@ -1297,6 +1297,10 @@
         hsl(0deg 0% 15%),
         var(--color-text-default)
     );
+    --color-text-message-blockquote-border: light-dark(
+        hsl(0deg 0% 15% / 25%),
+        hsl(0deg 0% 87% / 40%)
+    );
     --color-text-message-header-archived: hsl(0deg 0% 50%);
     --color-text-message-view-header: light-dark(
         hsl(0deg 0% 20% / 100%),
