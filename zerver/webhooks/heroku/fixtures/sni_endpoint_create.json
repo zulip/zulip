@@ -1,0 +1,42 @@
+{
+    "action": "create",
+    "actor": {
+        "email": "user-0015@example.com",
+        "id": "ea6d71a0-a4ea-4a5d-87fc-508d22bdbd7d"
+    },
+    "created_at": "2016-06-30T23:13:33Z",
+    "id": "cc75ec10-79e0-4874-adce-38831da0d9d3",
+    "data": {
+        "certificate_chain": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n",
+        "cname": null,
+        "created_at": "2016-06-30T23:13:33Z",
+        "id": "3bf54a53-e5de-4cf6-906d-f890a7ee3cdd",
+        "name": "carnotaurus-30180",
+        "updated_at": "2016-06-30T23:13:33Z",
+        "app": {
+            "id": "803b4081-9fc0-4bdb-9a6b-3a87672fba39",
+            "name": "sample-app-0224"
+        }
+    },
+    "previous_data": {},
+    "published_at": null,
+    "resource": "sni-endpoint",
+    "sequence": null,
+    "updated_at": "2016-06-30T23:13:33Z",
+    "version": "application/vnd.heroku+json; version=3",
+    "webhook_metadata": {
+        "attempt": {
+            "id": "8a44f820-2354-489d-9a11-a793cbf49979"
+        },
+        "delivery": {
+            "id": "d244009a-670f-4340-88e9-789a4f9002d5"
+        },
+        "event": {
+            "id": "cc75ec10-79e0-4874-adce-38831da0d9d3",
+            "include": "api:sni-endpoint"
+        },
+        "webhook": {
+            "id": "b54e6a7e-d162-4bd7-ab42-1011582c19cc"
+        }
+    }
+}
