@@ -231,6 +231,71 @@ configure:
 
 Common validators are available in `zerver/lib/validators.py`.
 
+### Configuration option presets
+
+Config options presets are `WebhookConfigOption` objects with pre configured fields.
+They primarily serve two purposes:
+
+- To construct commonly used `WebhookConfigOption` settings. These presets construct
+normal `WebhookConfigOption` objects. One should browse through the presets and check
+if a similar setting exists before creating a `WebhookConfigOption` object manually.  
+
+- To construct unique `WebhookConfigOption` objects with special logic. These settings
+behaves differently from normal `WebhookConfigOption` objects and  triggers custom UI
+elements unique to each setting, usually tailored for categories of integrations.
+For example, the `PresetConfigOption.BRANCHES` is meant to be used by version-control
+integrations, it adds custom user interfaces that lets the user choose which branches
+of their repository will trigger notifications.
+
+Using config options preset:
+
+```python
+# zerver/lib/integrations.py
+from zerver.lib.webhooks.common import PresetConfigOption, WebhookConfigOption
+  # -- snip --
+    WebhookIntegration(
+        "github",
+        # -- snip --
+        config_options=[
+            WebhookConfigOption.preset_config(PresetConfigOption.BRANCHES),
+        ],
+    ),
+```
+
+Here are the details of each `PresetConfigOption`:
+
+  1. **BRANCHES**: Adds a new check box field to the modal called "Send
+    notifications for all branches?", which is checked by default. This setting
+    is meant to be used by "version-control" integrations such as GitHub. It
+    lets the user configure which branches of their repository will trigger
+    notifications.
+
+    If unchecked, an input pill field called "Which branches should notifications
+    be sent for?" will appear. The user can then specify which branches to receive
+    notifications from. It will be added to the integration URL as the `&branches=`
+    variable, like this:
+
+    ```
+    {{zulip_url}}/api/v1/external/github?api_key=kT2KTUBJVv0kAyrwY3povICtTaczHQwl&branches=main%2Cdev
+    ```
+
+    Integration(s) using this: GitHub, Gitea, Gitlab, rhodecode, azuredevops
+    bitbucket3, bitbucket2, Gogs.
+
+  2. **MAPPING**: Adds a new option to the "Where to send notification?" drop
+    down field called "Matching Zulip channel". This setting is meant to be
+    used by chat-app integrations like Slack. It lets the user choose whether
+    messages from the third-party app should be sent to Zulip channels that
+    match the messages' original channel name or not.
+
+    If selected, this will disable the  "Send all notification to a single topic"
+    field and adds `&z_mapping=channels` variable to the integration URL, like
+    this:
+
+    ```
+    {{zulip_url}}/api/v1/external/slack?api_key=kT2KTUBJVv0kAyrwY3povICtTaczHQwl&z_mapping=channels
+    ```
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an

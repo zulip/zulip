@@ -5,6 +5,7 @@ import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
@@ -31,6 +32,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -54,11 +56,54 @@ SETUP_MESSAGE_USER_PART = " by {user_name}"
 OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
 
 
+class PresetConfigOption(str, Enum):
+    # BRANCHES is kept as is to maintain backwards compatibility
+    # with existing integrations.
+    BRANCHES = "branches"
+    # Encode the config's name with the "z_" prefix as to not
+    # accidentally trigger a config's custom behavior when
+    # manually declaring new config with identical key name.
+    MAPPING = "z_mapping"
+
+
 @dataclass
 class WebhookConfigOption:
     name: str
     description: str
     validator: Callable[[str, str], str | bool | None]
+
+    @classmethod
+    def preset_config(
+        cls, config: PresetConfigOption, description: str = ""
+    ) -> "WebhookConfigOption":
+        """
+        This creates the corresponding `WebhookConfigOption` object for the
+        `PresetConfigOptions` -- those are config options that come with a
+        custom UI and logic in the "Generate integration URL" modal.
+
+        See /api_docs/incoming-webhooks-walkthrough#preset-configuration-options
+        for more details on this system and what each `PresetConfigOptions` do.
+        """
+        match config:
+            case PresetConfigOption.BRANCHES:
+                return cls(
+                    name=config.value,
+                    description=description,
+                    validator=check_bool,
+                )
+            case PresetConfigOption.MAPPING:
+                return cls(
+                    name=config.value,
+                    description=description,
+                    validator=check_string,
+                )
+
+        raise AssertionError(
+            _(
+                "Please configure how to build the '{}' option in WebhookConfigOption.preset_config.",
+                config,
+            )
+        )
 
 
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
