@@ -12,13 +12,13 @@ import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
+import {queue_id} from "./server_events_state.ts";
 import {server_message_schema} from "./server_message.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
-export let queue_id;
 let last_event_id;
 let event_queue_longpoll_timeout_seconds;
 
@@ -267,7 +267,6 @@ export function finished_initial_fetch() {
 }
 
 export function initialize(params) {
-    queue_id = params.queue_id;
     last_event_id = params.last_event_id;
     event_queue_longpoll_timeout_seconds = params.event_queue_longpoll_timeout_seconds;
 

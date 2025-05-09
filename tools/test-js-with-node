@@ -209,6 +209,7 @@ EXEMPT_FILES = make_set(
         "web/src/sentry.ts",
         "web/src/server_event_types.ts",
         "web/src/server_events.js",
+        "web/src/server_events_state.ts",
         "web/src/settings.ts",
         "web/src/settings_account.ts",
         "web/src/settings_bots.ts",
