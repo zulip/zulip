@@ -771,6 +771,17 @@ export class MessageListView {
         const finish_group = (): void => {
             if (current_group_message_containers.length > 0) {
                 current_group.message_containers = current_group_message_containers;
+                // console.log("in finish_group current_group", current_group);
+                if (
+                    current_group?.is_stream &&
+                    current_group_message_containers[0]?.msg.type === "stream" &&
+                    current_group_message_containers[0].msg.rendered_topic !== undefined
+                ) {
+                    current_group.topic_display_name =
+                        current_group_message_containers[0].msg.rendered_topic;
+                    current_group.match_topic =
+                        current_group_message_containers[0].msg.rendered_topic;
+                }
                 new_message_groups.push(current_group);
             }
             current_group_message_containers = [];
