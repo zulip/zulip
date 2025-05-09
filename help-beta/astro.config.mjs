@@ -1,9 +1,20 @@
 import starlight from "@astrojs/starlight";
 import {defineConfig} from "astro/config";
+import Icons from "unplugin-icons/vite";
 
 // https://astro.build/config
 export default defineConfig({
     base: "help-beta",
+    vite: {
+        plugins: [
+            // eslint-disable-next-line new-cap
+            Icons({
+                compiler: "astro",
+                scale: 1,
+                defaultStyle: "display: inline; vertical-align: text-bottom;",
+            }),
+        ],
+    },
     integrations: [
         starlight({
             title: "Zulip help center",
