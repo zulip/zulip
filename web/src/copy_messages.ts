@@ -119,53 +119,97 @@ function get_nearest_html_element(node: Node | null): Element | null {
     return node.parentElement;
 }
 
+// selection_element will be either the anchor_element or focus element
+function expand_range_based_on_katex_parent(
+    selection_element: Element,
+    is_range_start: boolean,
+    selection: Selection,
+): void {
+    const range = selection.getRangeAt(0);
+    // Here, we have three cases:
+    // 1. This element lies within a math block expression i.e. within a  `.katex-display`
+    // 2. This element lies within an inline math expression i.e. inside a `.katex` span
+    // with no `.katex-display` parent for that `.katex`
+    // 3. This element does not lie within a math expression, we directly return without expansion.
+    // We cascade through these cases, expanding the range and prioritizing math blocks over expressions
+    // in case we encounter them.
+
+    const is_within_math_block = selection_element.closest(".katex-display") !== null;
+    const is_within_math_expression = selection_element.closest(".katex") !== null;
+    if (!is_within_math_block && !is_within_math_expression) {
+        return;
+    }
+    if (is_within_math_block) {
+        // One might think that this will break in case of empty katex-display(s)
+        // being the anchor or focus node which is/are created when we insert
+        // some extra newlines within a math block.
+        // However, is it not possible to select those empty katex-displays
+        // as per my observation on Chrome and Firefox.
+        if (is_range_start) {
+            range.setStart(selection_element.closest(".katex-display")!, 0);
+        } else {
+            // The offset 1 selects the only child of `.katex-display`
+            // which is `.katex`.
+            range.setEnd(selection_element.closest(".katex-display")!, 1);
+        }
+    } else {
+        if (is_range_start) {
+            range.setStart(selection_element.closest(".katex")!, 0);
+        } else {
+            // The offset 2 selects the two children of `.katex`
+            // namely `.katex-mathml` and `.katex-html`
+            range.setEnd(selection_element.closest(".katex")!, 2);
+        }
+    }
+}
 /*
     This is done to make the copying within math blocks smarter.
     We mutate the selection for selecting singular katex expressions
     within math blocks when applicable, which will be
     converted into the inline $$<expr>$$ syntax.
 
-    In case when a single expression or its subset is selected
-    within a math block, we adjust the selection so that it
-    selects the katex span which is parenting that expression.
-    This converts the selection into an inline expression as
-    per the turndown rules below.
+    We expand the selection range only in the following cases:
+    1. Either the anchor or focus or both nodes are within an inline expression where the selection covers
+    one or more math expressions.
+    2. Either the anchor, focus, or both nodes are within a math block where the selection covers one or more
+    math expressions.
 
-    We want to avoid this behavior if the selection
-    spreads across multiple katex displays i.e. the
-    focus and anchor are not part of the same katex span.
+    In principle, we only need to expand the start of the selection range for the
+    cases where multiple expressions are selected because the end of the range
+    always contains the annotation element in case it lies within the math block.
+
+    But, we still expand the end of the range to select the complete expression.
+    This is done in cases where the anchor/focus denoting the end of the range
+    lies inside the math block or expression(depending on whether anchor comes after the focus or
+    vice-versa in the DOM) as part of the effort to keep selection and paste content
+    as close as possible, to eventually tackle #6316.
+
+    The primary objective of this function is to include the `<annotation>` tag within
+    the selection range so that it can be utilized later by `paste_handler_converter`
+    as `paste_html`.
 */
 function improve_katex_selection_range(selection: Selection): void {
+    assert(selection.anchorNode !== null && selection.focusNode !== null);
     const anchor_element = get_nearest_html_element(selection.anchorNode);
     const focus_element = get_nearest_html_element(selection.focusNode);
-    // If the anchor and focus end up in different katex spans, this selection
-    // isn't meant to be an inline expression, so we perform an early return.
-    if (
-        focus_element &&
-        anchor_element &&
-        focus_element?.closest(".katex") !== anchor_element?.closest(".katex")
-    ) {
+    if (!focus_element || !anchor_element) {
         return;
     }
-
-    if (anchor_element) {
-        const parent = anchor_element.closest(".katex");
-        const is_math_block = parent !== null && parent !== selection.anchorNode;
-        if (is_math_block) {
-            const range = document.createRange();
-            range.selectNodeContents(parent);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-    } else if (focus_element) {
-        const parent = focus_element.closest(".katex");
-        const is_math_block = parent !== null && parent !== selection.focusNode;
-        if (is_math_block) {
-            const range = document.createRange();
-            range.selectNodeContents(parent);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
+    // If either the anchor or focus node ends up in a `.katex` span,
+    // we will perform the expansion.
+    if (focus_element.closest(".katex") === null && anchor_element.closest(".katex") === null) {
+        return;
+    }
+    if (
+        selection.anchorNode.compareDocumentPosition(selection.focusNode) ===
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ) {
+        // anchor comes before the focus
+        expand_range_based_on_katex_parent(anchor_element, true, selection);
+        expand_range_based_on_katex_parent(focus_element, false, selection);
+    } else {
+        expand_range_based_on_katex_parent(focus_element, true, selection);
+        expand_range_based_on_katex_parent(anchor_element, false, selection);
     }
 }
 
@@ -215,6 +259,15 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message and let the browser handle the copying.
+
+        // We only want to mutate the selection range for a *single*
+        // message that contains partially selected math expressions.
+        // Firefox uses multiple ranges when selecting multiple messages.
+        // https://github.com/zulip/zulip/pull/34137#discussion_r2017530929
+        // Hence, we check the rangeCount just to be extra certain.
+        if (selection.rangeCount === 1) {
+            improve_katex_selection_range(selection);
+        }
         return false;
     }
 
