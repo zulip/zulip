@@ -669,6 +669,11 @@ exports.FakeJQuery = function (selector, opts) {
             }
             return this;
         },
+        replaceWith(...args) {
+            assert.equal(this.length, 1);
+            this[0].replaceWith(...dom_args(args));
+            return this;
+        },
         set_children_results(selector, $result) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).jquery_children_results.set(selector, $result);
