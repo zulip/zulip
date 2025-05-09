@@ -88,13 +88,6 @@ function createSaveButtons(subsection) {
         $stub_discard_button,
     );
     $save_button_controls.set_find_results(".discard-button", $stub_discard_button);
-    const props = {hidden: false};
-    $save_button_controls.fadeIn = () => {
-        props.hidden = false;
-    };
-    $save_button_controls.fadeOut = () => {
-        props.hidden = true;
-    };
 
     $save_button_controls.set_closest_results(
         ".settings-subsection-parent",
@@ -106,7 +99,6 @@ function createSaveButtons(subsection) {
     $stub_save_button_header.set_find_results(".save-button", $stub_save_button);
 
     return {
-        props,
         $save_button: $stub_save_button,
         $discard_button: $stub_discard_button,
         $save_button_header: $stub_save_button_header,
@@ -170,7 +162,7 @@ function test_submit_settings_form(override, submit_form) {
 
     // Testing only once for since callback is same for all cases
     success_callback();
-    assert.equal(stubs.props.hidden, true);
+    assert.equal(stubs.$save_button_controls.visible(), false);
     assert.equal($save_button.attr("data-status"), "saved");
     assert.equal(stubs.$save_button_text.text(), "translated: Saved");
 }
@@ -182,7 +174,6 @@ function test_change_save_button_state() {
         $save_button,
         $save_button_header,
         $discard_button,
-        props,
     } = createSaveButtons("msg-editing");
     $save_button_header.attr("id", "org-msg-editing");
     $("#org-msg-editing").set_closest_results(".channel-permissions", {});
@@ -190,13 +181,13 @@ function test_change_save_button_state() {
     {
         settings_components.change_save_button_state($save_button_controls, "unsaved");
         assert.equal($save_button_text.text(), "translated: Save changes");
-        assert.equal(props.hidden, false);
+        assert.equal($save_button_controls.visible(), true);
         assert.equal($save_button.attr("data-status"), "unsaved");
         assert.equal($discard_button.visible(), true);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "discarded");
-        assert.equal(props.hidden, true);
+        assert.equal($save_button_controls.visible(), false);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "saving");
@@ -206,17 +197,17 @@ function test_change_save_button_state() {
     {
         // The "discarded" state should not interfere during the saving stage.
         settings_components.change_save_button_state($save_button_controls, "discarded");
-        assert.equal(props.hidden, false);
+        assert.equal($save_button_controls.visible(), true);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "succeeded");
-        assert.equal(props.hidden, true);
+        assert.equal($save_button_controls.visible(), false);
         assert.equal($save_button.attr("data-status"), "saved");
         assert.equal($save_button_text.text(), "translated: Saved");
     }
     {
         settings_components.change_save_button_state($save_button_controls, "failed");
-        assert.equal(props.hidden, false);
+        assert.equal($save_button_controls.visible(), true);
         assert.equal($save_button.attr("data-status"), "failed");
         assert.equal($save_button_text.text(), "translated: Save changes");
     }
@@ -405,7 +396,7 @@ function test_discard_changes_button({override}, discard_changes) {
         $msg_delete_limit_setting,
     ]);
 
-    const {$discard_button, $save_button_controls, props} = createSaveButtons("msg-editing");
+    const {$discard_button, $save_button_controls} = createSaveButtons("msg-editing");
     $discard_button.set_closest_results(".settings-subsection-parent", $discard_button_parent);
 
     $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
@@ -420,7 +411,7 @@ function test_discard_changes_button({override}, discard_changes) {
     assert.equal($message_content_edit_limit_minutes.val(), "60");
     assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
-    assert.ok(props.hidden);
+    assert.ok(!$save_button_controls.visible());
 }
 
 test("set_up", ({override, override_rewire}) => {

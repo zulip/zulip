@@ -375,6 +375,18 @@ exports.FakeJQuery = function (selector, opts) {
             // silently do nothing
             return this;
         },
+        fadeIn() {
+            for (const element of this) {
+                fake_element_state.get(element).shown = true;
+            }
+            return this;
+        },
+        fadeOut() {
+            for (const element of this) {
+                fake_element_state.get(element).shown = false;
+            }
+            return this;
+        },
         fadeTo() {
             return this;
         },
