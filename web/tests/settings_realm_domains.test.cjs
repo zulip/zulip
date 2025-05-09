@@ -60,7 +60,6 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     };
 
     const $info = $(".realm_domains_info");
-    $info.fadeOut = noop;
     const domain = "example.com";
     let allow = true;
 
