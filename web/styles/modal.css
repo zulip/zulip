@@ -445,7 +445,8 @@
         box-shadow linear 0.2s;
     margin-bottom: 10px;
     /* subtract padding (6px each side) and border (1px each side) */
-    width: calc(var(--modal-input-width) - 14px);
+    min-width: calc(var(--modal-input-width) - 14px);
+    width: auto;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -569,7 +570,7 @@
             }
         }
 
-        @media (max-width: $sm_min) {
+        @media (max-width: 768px) {
             .option-row {
                 .todo-input {
                     width: 100%;

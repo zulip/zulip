@@ -1,7 +1,8 @@
 # Rename a channel
 
 A channel's name can be in any language, and can include spaces, punctuation,
-and Unicode emoji.
+and Unicode emoji. The channel name input field will automatically adjust its width
+to fit the content while maintaining a minimum width for better usability.
 
 {start_tabs}
 
