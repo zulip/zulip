@@ -2225,7 +2225,8 @@ body:not(.spectator-view) {
 .dropdown-list-container .list-item {
     color: var(--color-dropdown-item);
 
-    &:focus {
+    &:focus,
+    &.current_selection {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
     }
@@ -2243,7 +2244,7 @@ body:not(.spectator-view) {
             background-color: transparent;
         }
 
-        &.active {
+        &.current_user_setting {
             background-color: var(--background-color-active-dropdown-item);
             outline: none;
         }

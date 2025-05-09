@@ -1,5 +1,5 @@
 {{#with item}}
-    <li class="list-item {{#if is_item_selected}}active{{/if}}" role="presentation" data-unique-id="{{unique_id}}" data-name="{{name}}" tabindex="0">
+    <li class="list-item {{#if is_current_user_setting}}current_user_setting{{/if}}" role="presentation" data-unique-id="{{unique_id}}" data-name="{{name}}" tabindex="0">
         {{#if description}}
         <a class="dropdown-list-item-common-styles">
             <span class="dropdown-list-item-name">
