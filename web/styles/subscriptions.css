@@ -520,7 +520,6 @@ h4.user_group_setting_subsection_title {
         position: relative;
         display: inline-block;
         vertical-align: top;
-        height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
 
@@ -654,11 +653,6 @@ h4.user_group_setting_subsection_title {
     position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    /* Calculated from several heights and padding/margin measurements
-    in .list-toggler-container and .stream_filter, with some added
-    fiddling to see what worked best at 12px - 20px font sizes.
-    When we redesign this area we should make this less brittle. */
-    height: calc(100% - 3.4em - 40px);
     width: 100%;
 }
 
@@ -944,8 +938,9 @@ h4.user_group_setting_subsection_title {
             justify-content: space-between;
             position: absolute;
             bottom: 0;
-            width: calc(100% - 27px);
-            padding: 9px 15px 15px;
+            /* Subtract 15px padding on either side. */
+            width: calc(100% - 30px);
+            padding: 9px 15px;
             text-align: right;
             background-color: var(--color-background-modal-bar);
             border-top: 1px solid var(--color-border-modal-bar);
@@ -1142,7 +1137,6 @@ h4.user_group_setting_subsection_title {
 
     .settings {
         position: relative;
-        height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
 
@@ -1398,32 +1392,25 @@ div.settings-radio-input-parent {
         flex-wrap: wrap;
     }
 
-    .list-toggler-container {
-        text-align: center;
-    }
-
     #groups_overlay .group_settings_header,
     #subscription_overlay .stream_settings_header {
         flex-wrap: wrap;
     }
 }
 
-/* Note that this block has settings_page CSS as well, and thus needs
-   to match the media queries in settings.css
-
-   We should eventually consolidate some of these styles with the settings
-   menu, using shared classnames. */
+/* We should eventually consolidate some of these styles with the styles
+   in settings.css, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .two-pane-settings-container {
         position: relative;
         overflow: hidden;
 
-        .list-toggler-container {
-            text-align: left;
-        }
-
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
+        }
+
+        .two-pane-settings-header.slide-left {
+            border-bottom: none;
         }
     }
 
@@ -1433,56 +1420,25 @@ div.settings-radio-input-parent {
         display: block;
         margin: 0;
         width: 100%;
-        height: calc(100% - var(--settings-overlay-header-height));
 
         border: none;
     }
 
     .two-pane-settings-overlay .right {
         position: absolute;
-        left: 101%;
-
-        top: var(--settings-overlay-header-height);
+        transform: translateX(101%);
+        transition: transform 0.3s ease;
         background-color: var(--color-background-modal);
-        border-top: none;
-
-        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         z-index: 10;
 
         &.show {
-            left: 0%;
+            transform: translateX(0%);
         }
     }
 
-    #settings_page .content-wrapper.right {
-        position: absolute;
-        display: block;
-        left: 101%;
-        margin: 0;
-        width: 100%;
-        height: calc(100% - var(--settings-overlay-header-height));
-
-        top: var(--settings-overlay-header-height);
-        background-color: var(--color-background-modal);
-        border: none;
-
-        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
-        z-index: 10;
-
-        &.show {
-            left: 0%;
-        }
-    }
-
-    .two-pane-settings-overlay {
-        .two-pane-settings-container {
-            height: 95%;
-        }
-
-        .settings {
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+    .two-pane-settings-overlay .settings {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 

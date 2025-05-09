@@ -1033,6 +1033,7 @@ export function launch(
                 }
             }
         }, 0);
+        resize.resize_settings_overlay();
     });
 }
 

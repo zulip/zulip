@@ -218,6 +218,27 @@ function resize_navbar_alerts(): void {
     }
 }
 
+export function resize_settings_overlay(): void {
+    if ($(".two-pane-settings-overlay.show").length === 0) {
+        return;
+    }
+
+    $(".two-pane-settings-left-simplebar-container").css(
+        "height",
+        height_of($(".two-pane-settings-container")) -
+            height_of($(".two-pane-settings-header")) -
+            height_of($(".two-pane-settings-overlay .display-type")) -
+            height_of($(".two-pane-settings-search")),
+    );
+
+    $(".two-pane-settings-right-simplebar-container").css(
+        "height",
+        height_of($(".two-pane-settings-container")) -
+            height_of($(".two-pane-settings-header")) -
+            height_of($(".two-pane-settings-overlay .display-type")),
+    );
+}
+
 export function resize_settings_creation_overlay(): void {
     if ($(".two-pane-settings-creation-simplebar-container").length === 0) {
         return;
@@ -237,5 +258,6 @@ export function resize_page_components(): void {
     resize_sidebars();
     resize_bottom_whitespace();
     resize_stream_subscribers_list();
+    resize_settings_overlay();
     resize_settings_creation_overlay();
 }
