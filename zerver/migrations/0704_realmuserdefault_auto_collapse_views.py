@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0698_userprofile_auto_collapse_views"),
+        ("zerver", "0703_rename_populate_db_client_to_zulip_data_import"),
     ]
 
     operations = [
