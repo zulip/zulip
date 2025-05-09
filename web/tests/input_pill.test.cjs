@@ -723,9 +723,9 @@ run_test("updatePill", ({mock_template}) => {
     };
 
     let element_replaced = false;
-    blue_pill.$element.replaceWith = ($new_elem) => {
+    blue_pill.$element[0].replaceWith = (new_element) => {
         element_replaced = true;
-        assert.equal($new_elem.html(), pill_html("DARK BLUE"));
+        assert.equal(new_element.innerHTML, pill_html("DARK BLUE"));
     };
 
     widget.updatePill(blue_pill.$element[0], updated_blue_data);

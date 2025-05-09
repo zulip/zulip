@@ -417,7 +417,7 @@ run_test("stream-links", ({mock_template}) => {
         "href",
         `/#narrow/channel/${stream.stream_id}-random/topic/topic.20name.20.3E.20still.20the.20topic.20name`,
     );
-    $stream_topic.replaceWith = noop;
+    $stream_topic[0].replaceWith = noop;
     $stream_topic.addClass("stream-topic");
     $stream_topic.text("#random > topic name > still the topic name");
 
@@ -456,7 +456,7 @@ run_test("topic-link (empty string topic)", ({mock_template}) => {
     const $channel_topic = $.create("a.stream-topic(empty-string-topic)");
     $channel_topic.set_find_results(".highlight", false);
     $channel_topic.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/`);
-    $channel_topic.replaceWith = noop;
+    $channel_topic[0].replaceWith = noop;
     $channel_topic.addClass("stream-topic");
     $channel_topic.html(`#random &gt; <em>${REALM_EMPTY_TOPIC_DISPLAY_NAME}</em>`);
     $content.set_find_results("a.stream-topic, a.message-link", $array([$channel_topic]));
@@ -494,7 +494,7 @@ run_test("message-links", ({mock_template}) => {
         "href",
         `/#narrow/channel/${stream.stream_id}-${stream.name}/topic//near/123`,
     );
-    $channel_topic_message.replaceWith = noop;
+    $channel_topic_message[0].replaceWith = noop;
     $channel_topic_message.addClass("message-link");
     $channel_topic_message.html(
         `#${stream.name} &gt; <em>${REALM_EMPTY_TOPIC_DISPLAY_NAME}</em> @ 💬`,
@@ -539,7 +539,7 @@ run_test("audio", ({mock_template}) => {
 
     const $content = get_content_element();
     const $audio = $.create("audio");
-    $audio.replaceWith = noop;
+    $audio[0].replaceWith = noop;
     $audio.attr("src", audio_src);
     $audio.attr("title", audio_title);
 
