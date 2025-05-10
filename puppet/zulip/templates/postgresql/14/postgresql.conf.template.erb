@@ -822,17 +822,36 @@ vacuum_freeze_table_age   = 1800000000
 
 # Performance settings
 max_connections = 1000
-maintenance_work_mem = <%= scope["zulip::profile::postgresql::maintenance_work_mem"] %>MB
-effective_cache_size = <%= scope["zulip::profile::postgresql::effective_cache_size"] %>MB
-work_mem = <%= scope["zulip::profile::postgresql::work_mem"] %>MB
-shared_buffers = <%= scope["zulip::profile::postgresql::shared_buffers"] %>MB
-wal_buffers = 4MB
-checkpoint_completion_target = 0.7
+maintenance_work_mem = <%= @maintenance_work_mem %>
+effective_cache_size = <%= @effective_cache_size %>
+work_mem = <%= @work_mem %>
+shared_buffers = <%= @shared_buffers %>
+<% unless @wal_buffers.nil? -%>
+wal_buffers = <%= @wal_buffers %>
+<% end -%>
+<% unless @min_wal_size.nil? -%>
+min_wal_size = <%= @min_wal_size %>
+<% end -%>
+<% unless @max_wal_size.nil? -%>
+max_wal_size = <%= @max_wal_size %>
+<% end -%>
 <% unless @random_page_cost.nil? -%>
 random_page_cost = <%= @random_page_cost %>
 <% end -%>
 <% unless @effective_io_concurrency.nil? -%>
 effective_io_concurrency = <%= @effective_io_concurrency %>
+<% end -%>
+<% unless @max_worker_processes.nil? -%>
+max_worker_processes = <%= @max_worker_processes %>
+<% end -%>
+<% unless @max_parallel_workers_per_gather.nil? -%>
+max_parallel_workers_per_gather = <%= @max_parallel_workers_per_gather %>
+<% end -%>
+<% unless @max_parallel_workers.nil? -%>
+max_parallel_workers = <%= @max_parallel_workers %>
+<% end -%>
+<% unless @max_parallel_maintenance_workers.nil? -%>
+max_parallel_maintenance_workers = <%= @max_parallel_maintenance_workers %>
 <% end -%>
 
 <% unless @listen_addresses.nil? -%>

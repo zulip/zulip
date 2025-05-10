@@ -4,11 +4,25 @@ class zulip::profile::postgresql {
   include zulip::postgresql_base
 
   $version = $zulip::postgresql_common::version
-  $work_mem = $zulip::common::total_memory_mb / 512
-  $shared_buffers = $zulip::common::total_memory_mb / 8
-  $effective_cache_size = $zulip::common::total_memory_mb * 10 / 32
-  $maintenance_work_mem = $zulip::common::total_memory_mb / 32
 
+  if defined(Class['zulip::app_frontend_base']) {
+    $total_postgres_memory_mb = zulipconf('postgresql', 'memory', $zulip::common::total_memory_mb / 2)
+  } else {
+    $total_postgres_memory_mb = zulipconf('postgresql', 'memory', $zulip::common::total_memory_mb)
+  }
+  $work_mem = zulipconf('postgresql', 'work_mem', sprintf('%dMB', $total_postgres_memory_mb / 256))
+  $shared_buffers = zulipconf('postgresql', 'shared_buffers', sprintf('%dMB', $total_postgres_memory_mb / 4))
+  $effective_cache_size = zulipconf('postgresql', 'effective_cache_size', sprintf('%dMB', $total_postgres_memory_mb * 3 / 4))
+  $maintenance_work_mem = zulipconf('postgresql', 'maintenance_work_mem', sprintf('%dMB', min(2048, $total_postgres_memory_mb / 8)))
+
+  $max_worker_processes = zulipconf('postgresql', 'max_worker_processes', undef)
+  $max_parallel_workers_per_gather = zulipconf('postgresql', 'max_parallel_workers_per_gather', undef)
+  $max_parallel_workers = zulipconf('postgresql', 'max_parallel_workers', undef)
+  $max_parallel_maintenance_workers = zulipconf('postgresql', 'max_parallel_maintenance_workers', undef)
+
+  $wal_buffers = zulipconf('postgresql', 'wal_buffers', undef)
+  $min_wal_size = zulipconf('postgresql', 'min_wal_size', undef)
+  $max_wal_size = zulipconf('postgresql', 'max_wal_size', undef)
   $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
   $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
 
