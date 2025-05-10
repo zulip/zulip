@@ -3638,6 +3638,20 @@ class BillingSession(ABC):
         assert isinstance(stripe_invoice.customer, str)
         assert stripe_invoice.statement_descriptor is not None
         assert stripe_invoice.metadata is not None
+        assert plan.next_invoice_date is not None
+        # Difference between end of free trial and event time
+        days_until_due = (plan.next_invoice_date - event_time).days
+
+        new_stripe_invoice = stripe.Invoice.create(
+            auto_advance=False,
+            collection_method="send_invoice",
+            customer=stripe_invoice.customer,
+            days_until_due=days_until_due,
+            statement_descriptor=stripe_invoice.statement_descriptor,
+            metadata=stripe_invoice.metadata,
+        )
+        assert new_stripe_invoice.id is not None
+
         invoice_items = stripe_invoice.lines.data
         # Stripe does something weird and puts the discount item first, so we need to reverse the order here.
         invoice_items.reverse()
@@ -3657,6 +3671,7 @@ class BillingSession(ABC):
                     "amount": invoice_item.amount,
                 }
             stripe.InvoiceItem.create(
+                invoice=new_stripe_invoice.id,
                 currency=invoice_item.currency,
                 customer=stripe_invoice.customer,
                 description=invoice_item.description,
@@ -3667,18 +3682,6 @@ class BillingSession(ABC):
                 **price_args,
             )
 
-        assert plan.next_invoice_date is not None
-        # Difference between end of free trial and event time
-        days_until_due = (plan.next_invoice_date - event_time).days
-
-        new_stripe_invoice = stripe.Invoice.create(
-            auto_advance=False,
-            collection_method="send_invoice",
-            customer=stripe_invoice.customer,
-            days_until_due=days_until_due,
-            statement_descriptor=stripe_invoice.statement_descriptor,
-            metadata=stripe_invoice.metadata,
-        )
         new_stripe_invoice = stripe.Invoice.finalize_invoice(new_stripe_invoice)
         last_sent_invoice.stripe_invoice_id = str(new_stripe_invoice.id)
         last_sent_invoice.save(update_fields=["stripe_invoice_id"])
