@@ -4669,38 +4669,42 @@ class StripeTest(StripeTestCase):
         lear_customer = RealmBillingSession(king).update_or_create_stripe_customer()
 
         assert zulip_customer.stripe_customer_id
-        stripe.InvoiceItem.create(
-            currency="usd",
-            customer=zulip_customer.stripe_customer_id,
-            description="Zulip Cloud Standard upgrade",
-            discountable=False,
-            unit_amount=800,
-            quantity=8,
-        )
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
             collection_method="send_invoice",
             customer=zulip_customer.stripe_customer_id,
             days_until_due=30,
             statement_descriptor="Zulip Cloud Standard",
+        )
+        assert stripe_invoice.id is not None
+        stripe.InvoiceItem.create(
+            invoice=stripe_invoice.id,
+            currency="usd",
+            customer=zulip_customer.stripe_customer_id,
+            description="Zulip Cloud Standard upgrade",
+            discountable=False,
+            unit_amount=800,
+            quantity=8,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
         assert lear_customer.stripe_customer_id
-        stripe.InvoiceItem.create(
-            currency="usd",
-            customer=lear_customer.stripe_customer_id,
-            description="Zulip Cloud Standard upgrade",
-            discountable=False,
-            unit_amount=800,
-            quantity=8,
-        )
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
             collection_method="send_invoice",
             customer=lear_customer.stripe_customer_id,
             days_until_due=30,
             statement_descriptor="Zulip Cloud Standard",
+        )
+        assert stripe_invoice.id is not None
+        stripe.InvoiceItem.create(
+            invoice=stripe_invoice.id,
+            currency="usd",
+            customer=lear_customer.stripe_customer_id,
+            description="Zulip Cloud Standard upgrade",
+            discountable=False,
+            unit_amount=800,
+            quantity=8,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
