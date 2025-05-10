@@ -193,7 +193,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             let template = "show-left-sidebar-tooltip-template";
-            if ($("#left-sidebar-container").is(":visible")) {
+            if ($("#left-sidebar-container").css("display") !== "none") {
                 template = "hide-left-sidebar-tooltip-template";
             }
             $(instance.reference).attr("data-tooltip-template-id", template);
