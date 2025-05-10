@@ -461,14 +461,14 @@ def update_or_create_user_group_for_setting(
 
 def access_user_group_api_value_for_setting(
     setting_user_group: int | UserGroupMembersData,
-    user_profile: UserProfile,
+    realm: Realm,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> NamedUserGroup | UserGroupMembersData:
     if isinstance(setting_user_group, int):
         named_user_group = get_user_group_by_id_in_realm(
-            setting_user_group, user_profile.realm, for_read=False, for_setting=True
+            setting_user_group, realm, for_read=False, for_setting=True
         )
         check_setting_configuration_for_system_groups(
             named_user_group, setting_name, permission_configuration
@@ -498,7 +498,7 @@ def access_user_group_for_setting(
     """
     user_group_api_value_for_setting = access_user_group_api_value_for_setting(
         setting_user_group,
-        user_profile,
+        user_profile.realm,
         setting_name=setting_name,
         permission_configuration=permission_configuration,
     )
