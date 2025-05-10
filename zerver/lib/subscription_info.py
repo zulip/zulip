@@ -42,7 +42,7 @@ from zerver.lib.user_groups import (
     get_recursive_membership_groups,
 )
 from zerver.models import Realm, Stream, Subscription, UserGroup, UserProfile
-from zerver.models.streams import get_all_streams
+from zerver.models.streams import StreamTopicsPolicyEnum, get_all_streams
 
 
 def get_web_public_subs(
@@ -92,6 +92,7 @@ def get_web_public_subs(
         stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
             stream.can_send_message_group
         )
+        topics_policy = stream.topics_policy
         is_announcement_only = stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
 
         # Add versions of the Subscription fields based on a simulated
@@ -139,6 +140,7 @@ def get_web_public_subs(
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
+            topics_policy=StreamTopicsPolicyEnum(topics_policy).name,
             wildcard_mentions_notify=wildcard_mentions_notify,
         )
         subscribed.append(sub)
@@ -212,6 +214,7 @@ def build_stream_api_dict(
         stream_id=raw_stream_dict["id"],
         stream_post_policy=raw_stream_dict["stream_post_policy"],
         stream_weekly_traffic=stream_weekly_traffic,
+        topics_policy=raw_stream_dict["topics_policy"],
         is_announcement_only=is_announcement_only,
         is_recently_active=raw_stream_dict["is_recently_active"],
     )
@@ -242,6 +245,7 @@ def build_stream_dict_for_sub(
     stream_id = stream_dict["stream_id"]
     stream_post_policy = stream_dict["stream_post_policy"]
     stream_weekly_traffic = stream_dict["stream_weekly_traffic"]
+    topics_policy = stream_dict["topics_policy"]
     is_announcement_only = stream_dict["is_announcement_only"]
     is_recently_active = stream_dict["is_recently_active"]
 
@@ -290,6 +294,7 @@ def build_stream_dict_for_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        topics_policy=topics_policy,
         wildcard_mentions_notify=wildcard_mentions_notify,
     )
 
@@ -313,6 +318,7 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    topics_policy = raw_stream_dict["topics_policy"]
 
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -363,6 +369,7 @@ def build_stream_dict_for_never_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        topics_policy=topics_policy,
     )
 
 
@@ -674,6 +681,9 @@ def gather_subscriptions_helper(
             stream.can_send_message_group
         )
         all_streams_map[stream.id]["stream_post_policy"] = stream_post_policy
+        all_streams_map[stream.id]["topics_policy"] = StreamTopicsPolicyEnum(
+            stream.topics_policy
+        ).name
 
     if anonymous_group_membership is None:
         setting_group_ids = set()

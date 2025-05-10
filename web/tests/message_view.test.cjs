@@ -800,7 +800,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
 
     compose_state.set_message_type("stream");
     const rome_id = 99;
-    stream_data.add_sub({name: "ROME", stream_id: rome_id});
+    stream_data.add_sub({name: "ROME", stream_id: rome_id, topics_policy: "inherit"});
     compose_state.set_stream_id(99);
 
     // Test with existing topic
@@ -824,16 +824,16 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: "four"},
     ]);
 
-    // Test with blank topic, with realm_mandatory_topics
-    override(realm, "realm_mandatory_topics", true);
+    // Test with blank topic, with realm_topics_policy
+    override(realm, "realm_topics_policy", "disable_empty_topic");
     compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
 
-    // Test with blank topic, without realm_mandatory_topics
-    override(realm, "realm_mandatory_topics", false);
+    // Test with blank topic, without realm_topics_policy
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
@@ -844,7 +844,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     ]);
 
     // Test with no topic, with realm mandatory topics
-    override(realm, "realm_mandatory_topics", true);
+    override(realm, "realm_topics_policy", "disable_empty_topic");
     compose_state.topic(undefined);
     args.called = false;
     message_view.to_compose_target();
@@ -852,7 +852,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
 
     // Test with no topic, without realm mandatory topics
-    override(realm, "realm_mandatory_topics", false);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     compose_state.topic(undefined);
     args.called = false;
     message_view.to_compose_target();

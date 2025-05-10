@@ -11,6 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from pydantic import BaseModel, Field, Json, NonNegativeInt, StringConstraints, model_validator
+from pydantic.functional_validators import AfterValidator
 
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -38,6 +39,7 @@ from zerver.actions.streams import (
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
+    do_set_stream_property,
     get_subscriber_ids,
 )
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
@@ -103,7 +105,17 @@ from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
+
+
+def validate_topics_policy(
+    policy_name: str,
+) -> str:
+    if policy_name in StreamTopicsPolicyEnum.__members__:
+        return policy_name
+    else:
+        raise JsonableError(_("Invalid {var_name}").format(var_name="topics_policy"))
 
 
 def bulk_principals_to_user_profiles(
@@ -268,6 +280,9 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
+    topics_policy: Annotated[
+        str | None, AfterValidator(lambda val: validate_topics_policy(val))
+    ] = None,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
@@ -386,6 +401,14 @@ def update_stream_backend(
         )
         do_change_stream_message_retention_days(
             stream, user_profile, new_message_retention_days_value
+        )
+
+    if topics_policy is not None:
+        if not user_profile.can_set_topics_policy():
+            raise JsonableError(_("You do not have permission to change empty topics policy."))
+
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum[topics_policy].value, user_profile
         )
 
     if description is not None:
@@ -603,6 +626,9 @@ def add_subscriptions_backend(
     is_default_stream: Json[bool] = False,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
+    topics_policy: Json[
+        Annotated[str | None, AfterValidator(lambda val: validate_topics_policy(val))]
+    ] = None,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
@@ -674,6 +700,13 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+        if topics_policy is not None:
+            if (
+                topics_policy != StreamTopicsPolicyEnum.inherit.name
+                and not user_profile.can_set_topics_policy()
+            ):
+                raise JsonableError(_("You do not have permission to change empty topics policy."))
+            stream_dict_copy["topics_policy"] = StreamTopicsPolicyEnum[topics_policy].value
         stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
             "can_add_subscribers_group"
         ]
