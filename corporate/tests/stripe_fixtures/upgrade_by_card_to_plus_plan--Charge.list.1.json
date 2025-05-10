@@ -7,25 +7,26 @@
       "application": null,
       "application_fee": null,
       "application_fee_amount": null,
-      "balance_transaction": "txn_3QhmoVDEQaroqDjs1HdjZTgI",
+      "balance_transaction": "txn_NORMALIZED",
       "billing_details": {
         "address": {
           "city": "San Francisco",
           "country": "US",
           "line1": "123 Main St",
           "line2": null,
-          "postal_code": "94105",
+          "postal_code": "12345",
           "state": "CA"
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "calculated_statement_descriptor": "ZULIP CLOUD PLUS",
       "captured": true,
-      "created": 1737009865,
+      "created": 1000000000,
       "currency": "usd",
-      "customer": "cus_Rayl61NfhWAqlU",
+      "customer": "cus_NORMALIZED",
       "description": "Payment for Invoice",
       "destination": null,
       "dispute": null,
@@ -34,8 +35,7 @@
       "failure_code": null,
       "failure_message": null,
       "fraud_details": {},
-      "id": "ch_3QhmoVDEQaroqDjs1TqEb35J",
-      "invoice": "in_1QhmoUDEQaroqDjsQnCDqhY5",
+      "id": "upgrade_by_card_to_plus_plan--Charge.list.1.json",
       "livemode": false,
       "metadata": {},
       "object": "charge",
@@ -48,13 +48,13 @@
         "network_status": "approved_by_network",
         "reason": null,
         "risk_level": "normal",
-        "risk_score": 13,
+        "risk_score": 0,
         "seller_message": "Payment complete.",
         "type": "authorized"
       },
       "paid": true,
-      "payment_intent": "pi_3QhmoVDEQaroqDjs1KgTmdOU",
-      "payment_method": "pm_1QhmoNDEQaroqDjsFlYVAWzJ",
+      "payment_intent": "pi_NORMALIZED",
+      "payment_method": "pm_NORMALIZED",
       "payment_method_details": {
         "card": {
           "amount_authorized": 120000,
@@ -67,11 +67,11 @@
           },
           "country": "US",
           "exp_month": 1,
-          "exp_year": 2026,
+          "exp_year": 9999,
           "extended_authorization": {
             "status": "disabled"
           },
-          "fingerprint": "9XKsMixKBi6kIIzd",
+          "fingerprint": "NORMALIZED",
           "funding": "credit",
           "incremental_authorization": {
             "status": "unavailable"
@@ -86,7 +86,7 @@
           "network_token": {
             "used": false
           },
-          "network_transaction_id": "578875115771051",
+          "network_transaction_id": "100110997670110",
           "overcapture": {
             "maximum_amount_capturable": 120000,
             "status": "unavailable"
@@ -100,15 +100,8 @@
       "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKM_VorwGMgbateH_ACY6LBauJUbkIc7nvmWnA3dsVXpdXMD3rrMImGoCrlM-JzSKwDeJNZOsbGdUX0Tb?s=ap",
+      "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
       "refunded": false,
-      "refunds": {
-        "data": [],
-        "has_more": false,
-        "object": "list",
-        "total_count": 0,
-        "url": "/v1/charges/ch_3QhmoVDEQaroqDjs1TqEb35J/refunds"
-      },
       "review": null,
       "shipping": null,
       "source": null,

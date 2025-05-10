@@ -13,7 +13,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "card": {
         "brand": "mastercard",
@@ -36,6 +37,7 @@
           ],
           "preferred": null
         },
+        "regulated_status": "unregulated",
         "three_d_secure_usage": {
           "supported": true
         },
@@ -43,7 +45,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED",
-      "id": "replace_payment_method--Customer.retrieve.8.json",
+      "id": "replace_payment_method--Customer.retrieve.9.json",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",

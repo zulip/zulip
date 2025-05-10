@@ -1,25 +1,24 @@
 {
   "address": null,
   "balance": 0,
-  "created": 1737009851,
+  "created": 1000000000,
   "currency": null,
-  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_Rayl61NfhWAqlU",
-  "invoice_prefix": "4194EA84",
+  "id": "upgrade_by_card_to_plus_plan--Customer.create.1.json",
+  "invoice_prefix": "NORMALIZED",
   "invoice_settings": {
     "custom_fields": null,
-    "default_payment_method": "pm_1QhmoNDEQaroqDjsFlYVAWzJ",
+    "default_payment_method": "pm_NORMALIZED",
     "footer": null,
     "rendering_options": null
   },
   "livemode": false,
   "metadata": {
-    "realm_id": "2",
+    "realm_id": "1",
     "realm_str": "zulip"
   },
   "name": null,

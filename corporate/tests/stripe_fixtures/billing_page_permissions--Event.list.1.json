@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2020-08-27",
+      "api_version": "2025-04-30.basil",
       "created": 1000000000,
       "data": {
         "object": {
@@ -9,12 +9,11 @@
           "balance": 0,
           "created": 1000000000,
           "currency": null,
-          "default_currency": null,
           "default_source": null,
           "delinquent": false,
           "description": "zulip (Zulip Dev)",
           "discount": null,
-          "email": "othello@zulip.com",
+          "email": "desdemona@zulip.com",
           "id": "billing_page_permissions--Customer.create.1.json",
           "invoice_prefix": "NORMALIZED",
           "invoice_settings": {

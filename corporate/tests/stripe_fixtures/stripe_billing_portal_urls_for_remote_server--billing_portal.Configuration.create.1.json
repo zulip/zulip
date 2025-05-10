@@ -40,7 +40,10 @@
     "subscription_update": {
       "default_allowed_updates": [],
       "enabled": false,
-      "proration_behavior": "none"
+      "proration_behavior": "none",
+      "schedule_at_period_end": {
+        "conditions": []
+      }
     }
   },
   "id": "stripe_billing_portal_urls_for_remote_server--billing_portal.Configuration.create.1.json",
