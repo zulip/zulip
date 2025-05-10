@@ -3216,25 +3216,32 @@ class BillingSession(ABC):
                 licenses_base = plan.invoiced_through.licenses
                 invoiced_through_id = plan.invoiced_through.id
 
+            # Invoice Variables
+            stripe_invoice: stripe.Invoice | None = None
+            need_to_invoice = False
+
             # Track if we added renewal invoice item which is possibly eligible for discount.
             renewal_invoice_period: stripe.InvoiceItem.CreateParamsPeriod | None = None
             for ledger_entry in LicenseLedger.objects.filter(
                 plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
             ).order_by("id"):
-                price_args: PriceArgs = {}
+                # InvoiceItem variables.
+                invoice_item_params = stripe.InvoiceItem.CreateParams(
+                    customer=plan.customer.stripe_customer_id
+                )
+
                 if ledger_entry.is_renewal:
                     if plan.fixed_price is not None:
                         amount_due = get_amount_due_fixed_price_plan(
                             plan.fixed_price, plan.billing_schedule
                         )
-                        price_args = {"amount": amount_due}
+                        invoice_item_params["amount"] = amount_due
                     else:
                         assert plan.price_per_license is not None  # needed for mypy
-                        price_args = {
-                            "unit_amount": plan.price_per_license,
-                            "quantity": ledger_entry.licenses,
-                        }
-                    description = f"{plan.name} - renewal"
+                        invoice_item_params["unit_amount"] = plan.price_per_license
+                        invoice_item_params["quantity"] = ledger_entry.licenses
+                    invoice_item_params["description"] = f"{plan.name} - renewal"
+                    need_to_invoice = True
                 elif (
                     plan.fixed_price is None
                     and licenses_base is not None
@@ -3260,19 +3267,34 @@ class BillingSession(ABC):
                             plan_renewal_or_end_date - ledger_entry.event_time
                         ) / (billing_period_end - last_renewal)
                         unit_amount = int(plan.price_per_license * proration_fraction + 0.5)
-                    price_args = {
-                        "unit_amount": unit_amount,
-                        "quantity": ledger_entry.licenses - licenses_base,
-                    }
-                    description = "Additional license ({} - {})".format(
+                    invoice_item_params["unit_amount"] = unit_amount
+                    invoice_item_params["quantity"] = ledger_entry.licenses - licenses_base
+                    invoice_item_params["description"] = "Additional license ({} - {})".format(
                         ledger_entry.event_time.strftime("%b %-d, %Y"),
                         plan_renewal_or_end_date.strftime("%b %-d, %Y"),
                     )
+                    need_to_invoice = True
 
-                if price_args:
-                    plan.invoiced_through = ledger_entry
-                    plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
-                    plan.save(update_fields=["invoicing_status", "invoiced_through"])
+                if stripe_invoice is None and need_to_invoice:
+                    if plan.charge_automatically:
+                        collection_method: Literal["charge_automatically", "send_invoice"] = (
+                            "charge_automatically"
+                        )
+                        days_until_due = None
+                    else:
+                        collection_method = "send_invoice"
+                        days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+                    invoice_params = stripe.Invoice.CreateParams(
+                        auto_advance=True,
+                        collection_method=collection_method,
+                        customer=plan.customer.stripe_customer_id,
+                        statement_descriptor=plan.name,
+                    )
+                    if days_until_due is not None:
+                        invoice_params["days_until_due"] = days_until_due
+                    stripe_invoice = stripe.Invoice.create(**invoice_params)
+
+                if invoice_item_params.get("description") is not None:
                     invoice_period = stripe.InvoiceItem.CreateParamsPeriod(
                         start=datetime_to_timestamp(ledger_entry.event_time),
                         end=datetime_to_timestamp(
@@ -3283,22 +3305,28 @@ class BillingSession(ABC):
                     if ledger_entry.is_renewal:
                         renewal_invoice_period = invoice_period
 
-                    stripe.InvoiceItem.create(
-                        currency="usd",
-                        customer=plan.customer.stripe_customer_id,
-                        description=description,
-                        discountable=False,
-                        period=invoice_period,
-                        idempotency_key=get_idempotency_key(ledger_entry),
-                        **price_args,
-                    )
+                    invoice_item_params["currency"] = "usd"
+                    invoice_item_params["discountable"] = False
+                    invoice_item_params["period"] = invoice_period
+                    invoice_item_params["idempotency_key"] = get_idempotency_key(ledger_entry)
+                    assert stripe_invoice is not None
+                    assert stripe_invoice.id is not None
+                    invoice_item_params["invoice"] = stripe_invoice.id
+                    stripe.InvoiceItem.create(**invoice_item_params)
+
                 # Update license base per ledger_entry.
                 licenses_base = ledger_entry.licenses
                 plan.invoiced_through = ledger_entry
 
-            if renewal_invoice_period is not None:
-                flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
-                if plan.fixed_price is None and flat_discounted_months > 0:
+            flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
+            if stripe_invoice is not None:
+                # Only apply discount if this invoice contains renewal of the plan.
+                if (
+                    renewal_invoice_period is not None
+                    and plan.fixed_price is None
+                    and flat_discounted_months > 0
+                ):
+                    assert stripe_invoice.id is not None
                     num_months = (
                         12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
                     )
@@ -3307,6 +3335,7 @@ class BillingSession(ABC):
                     plan.customer.flat_discounted_months -= flat_discounted_months
                     plan.customer.save(update_fields=["flat_discounted_months"])
                     stripe.InvoiceItem.create(
+                        invoice=stripe_invoice.id,
                         currency="usd",
                         customer=plan.customer.stripe_customer_id,
                         description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
@@ -3315,23 +3344,6 @@ class BillingSession(ABC):
                         period=renewal_invoice_period,
                     )
 
-                if plan.charge_automatically:
-                    collection_method: Literal["charge_automatically", "send_invoice"] = (
-                        "charge_automatically"
-                    )
-                    days_until_due = None
-                else:
-                    collection_method = "send_invoice"
-                    days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-                invoice_params = stripe.Invoice.CreateParams(
-                    auto_advance=True,
-                    collection_method=collection_method,
-                    customer=plan.customer.stripe_customer_id,
-                    statement_descriptor=plan.name,
-                )
-                if days_until_due is not None:
-                    invoice_params["days_until_due"] = days_until_due
-                stripe_invoice = stripe.Invoice.create(**invoice_params)
                 stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
