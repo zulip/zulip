@@ -550,7 +550,7 @@ export function process_enter_key(e) {
         return false;
     }
 
-    if ($("#preview_message_area").is(":visible")) {
+    if ($("#compose").hasClass("preview_mode")) {
         compose.handle_enter_key_with_preview_open();
         return true;
     }
@@ -600,7 +600,7 @@ export function process_enter_key(e) {
 }
 
 export function process_cmd_or_ctrl_enter_key() {
-    if ($("#preview_message_area").is(":visible")) {
+    if ($("#compose").hasClass("preview_mode")) {
         const cmd_or_ctrl_pressed = true;
         compose.handle_enter_key_with_preview_open(cmd_or_ctrl_pressed);
         return true;
@@ -849,7 +849,7 @@ export function process_hotkey(e, hotkey) {
         }
 
         if (compose_state.composing()) {
-            if ($("#compose .markdown_preview").is(":visible")) {
+            if ($("#compose").hasClass("preview_mode")) {
                 compose.show_preview_area();
             } else {
                 compose.clear_preview_area();
@@ -1200,7 +1200,7 @@ export function process_hotkey(e, hotkey) {
             const $row = message_lists.current.selected_row();
             const $emoji_icon = $row.find(".emoji-message-control-button-container");
             let emoji_picker_reference;
-            if ($emoji_icon.is(":visible")) {
+            if ($emoji_icon.closest(".message_control_button").css("display") !== "none") {
                 emoji_picker_reference = $emoji_icon[0];
             } else {
                 emoji_picker_reference = $row.find(".message-actions-menu-button")[0];
