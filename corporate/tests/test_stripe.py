@@ -3009,8 +3009,11 @@ class StripeTest(StripeTestCase):
         assert customer is not None
         stripe_customer_id = customer.stripe_customer_id
         assert stripe_customer_id is not None
-        stripe.InvoiceItem.create(amount=5000, currency="usd", customer=stripe_customer_id)
         stripe_invoice = stripe.Invoice.create(customer=stripe_customer_id)
+        assert stripe_invoice.id is not None
+        stripe.InvoiceItem.create(
+            invoice=stripe_invoice.id, amount=5000, currency="usd", customer=stripe_customer_id
+        )
         stripe.Invoice.finalize_invoice(stripe_invoice)
         RealmAuditLog.objects.filter(event_type=AuditLogEventType.STRIPE_CARD_CHANGED).delete()
 
