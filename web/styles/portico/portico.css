@@ -1288,7 +1288,6 @@ label.label-title {
 }
 
 #devtools-wrapper {
-    text-align: right;
     display: flex;
     justify-content: center;
 }
