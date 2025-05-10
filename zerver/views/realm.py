@@ -52,6 +52,7 @@ from zerver.models.realms import (
     DigestWeekdayEnum,
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
+    RealmTopicsPolicyEnum,
 )
 from zerver.views.user_settings import check_settings_values
 
@@ -91,6 +92,15 @@ def parse_message_edit_history_visibility_policy(
         )
 
 
+def parse_realm_topics_policy(
+    policy_name: str,
+) -> RealmTopicsPolicyEnum:
+    try:
+        return RealmTopicsPolicyEnum[policy_name]
+    except KeyError:
+        raise JsonableError(_("Invalid {var_name}").format(var_name="topics_policy"))
+
+
 @require_realm_admin
 @typed_endpoint
 def update_realm(
@@ -120,7 +130,9 @@ def update_realm(
         ApiParamConfig("message_content_delete_limit_seconds"),
     ] = None,
     allow_message_editing: Json[bool] | None = None,
-    mandatory_topics: Json[bool] | None = None,
+    topics_policy: Annotated[
+        str | None, AfterValidator(lambda val: parse_realm_topics_policy(val))
+    ] = None,
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
