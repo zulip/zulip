@@ -157,6 +157,10 @@ function stub_message_row($textarea) {
 function initialize_pm_pill(mock_template) {
     $.clear_all_elements();
 
+    $(".message_comp").css = (property) => {
+        assert.equal(property, "display");
+        return "block";
+    };
     $("#compose-send-button").trigger("focus");
     $("#compose-send-button .loader").hide();
 
