@@ -1,3 +1,4 @@
+import type Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
@@ -176,7 +177,7 @@ export function clear_all(): void {
 }
 
 export function show_error_message(
-    message: string,
+    message: string | Handlebars.SafeString,
     classname: string,
     $container: JQuery,
     $bad_input?: JQuery,

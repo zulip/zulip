@@ -509,7 +509,10 @@ function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: numb
         // we disable the save button and show a tooltip with an error message.
         ui_util.disable_element_and_add_tooltip(
             $topic_edit_save_button,
-            $t({defaultMessage: "Topics are required in this organization."}),
+            $t({
+                defaultMessage:
+                    "Sending messages to the general chat topic is not allowed in this channel.",
+            }),
         );
         return;
     }
