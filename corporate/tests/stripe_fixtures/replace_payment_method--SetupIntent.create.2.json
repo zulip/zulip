@@ -2,6 +2,7 @@
   "_message": "Your card was declined.",
   "code": "card_declined",
   "error": {
+    "advice_code": "try_again_later",
     "charge": null,
     "code": "card_declined",
     "decline_code": "generic_decline",
@@ -22,7 +23,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "card": {
         "brand": "visa",
@@ -45,6 +47,7 @@
           ],
           "preferred": null
         },
+        "regulated_status": "unregulated",
         "three_d_secure_usage": {
           "supported": true
         },
@@ -58,7 +61,7 @@
       "object": "payment_method",
       "type": "card"
     },
-    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1726724746",
+    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1746899381",
     "setup_intent": {
       "application": null,
       "automatic_payment_methods": null,
@@ -70,6 +73,7 @@
       "flow_directions": null,
       "id": "replace_payment_method--SetupIntent.create.2.json",
       "last_setup_error": {
+        "advice_code": "try_again_later",
         "code": "card_declined",
         "decline_code": "generic_decline",
         "doc_url": "https://stripe.com/docs/error-codes/card-declined",
@@ -87,7 +91,8 @@
             },
             "email": null,
             "name": "John Doe",
-            "phone": null
+            "phone": null,
+            "tax_id": null
           },
           "card": {
             "brand": "visa",
@@ -110,6 +115,7 @@
               ],
               "preferred": null
             },
+            "regulated_status": "unregulated",
             "three_d_secure_usage": {
               "supported": true
             },
@@ -153,35 +159,33 @@
   },
   "headers": {
     "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+    "Access-Control-Allow-Methods": "GET, HEAD, PUT, PATCH, POST, DELETE",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Expose-Headers": "Request-Id, Stripe-Manage-Version, Stripe-Should-Retry, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required",
     "Access-Control-Max-Age": "300",
     "Cache-Control": "no-cache, no-store",
     "Connection": "keep-alive",
-    "Content-Length": "4320",
-    "Content-Security-Policy": "report-uri https://q.stripe.com/csp-report?p=v1%2Fsetup_intents; block-all-mixed-content; default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'",
+    "Content-Length": "4542",
+    "Content-Security-Policy": "base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'; worker-src 'none'; upgrade-insecure-requests; report-uri https://q.stripe.com/csp-violation?q=TukYFDLV2lHfmYsKO8QKy1Rs8CFOE-Ik92j0oi7ZNOKjRVL1NdvjDcjXu7lLN5teYlBHlKnXeBBeKYy1",
     "Content-Type": "application/json",
-    "Cross-Origin-Opener-Policy-Report-Only": "same-origin; report-to=\"coop\"",
     "Date": "NORMALIZED DATETIME",
-    "Idempotency-Key": "6ac8ef14-fc05-473a-86a1-5eef5d312c0a",
+    "Idempotency-Key": "3dbc2960-cd2f-442e-b6a0-2340e8fd46c7",
     "Original-Request": "req_NORMALIZED",
-    "Report-To": "{\"group\": \"coop\",\"max_age\": 8640,\"endpoints\": [{\"url\": \"https://q.stripe.com/coop-report?s=billing-api-srv\"}],\"include_subdomains\": true}",
-    "Reporting-Endpoints": "coop=\"https://q.stripe.com/coop-report?s=payins-bapi-srv\"",
     "Request-Id": "req_NORMALIZED",
     "Server": "nginx",
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
     "Stripe-Should-Retry": "false",
-    "Stripe-Version": "2020-08-27",
+    "Stripe-Version": "2025-04-30.basil",
     "Vary": "Origin",
-    "X-Content-Type-Options": "nosniff",
     "X-Stripe-Priority-Routing-Enabled": "true",
-    "X-Stripe-Routing-Context-Priority-Tier": "api-testmode"
+    "X-Stripe-Routing-Context-Priority-Tier": "api-testmode",
+    "X-Wc": "ABGHI"
   },
-  "http_body": "{\"error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"replace_payment_method--PaymentMethod.create.2.json\", \"object\": \"payment_method\", \"allow_redisplay\": \"unspecified\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"12345\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": \"pass\", \"address_postal_code_check\": \"pass\", \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 1, \"exp_year\": 9999, \"fingerprint\": \"NORMALIZED\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"request_log_url\": \"https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1726724746\", \"setup_intent\": {\"id\": \"replace_payment_method--SetupIntent.create.2.json\", \"object\": \"setup_intent\", \"application\": null, \"automatic_payment_methods\": null, \"cancellation_reason\": null, \"client_secret\": \"NORMALIZED\", \"created\": 1000000000, \"customer\": \"cus_NORMALIZED\", \"description\": null, \"flow_directions\": null, \"last_setup_error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"replace_payment_method--PaymentMethod.create.2.json\", \"object\": \"payment_method\", \"allow_redisplay\": \"unspecified\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"12345\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": \"pass\", \"address_postal_code_check\": \"pass\", \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 1, \"exp_year\": 9999, \"fingerprint\": \"NORMALIZED\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"type\": \"card_error\"}, \"latest_attempt\": \"setatt_NORMALIZED\", \"livemode\": false, \"mandate\": null, \"metadata\": {}, \"next_action\": null, \"on_behalf_of\": null, \"payment_method\": null, \"payment_method_configuration_details\": null, \"payment_method_options\": {\"card\": {\"mandate_options\": null, \"network\": null, \"request_three_d_secure\": \"automatic\"}}, \"payment_method_types\": [\"card\"], \"single_use_mandate\": null, \"status\": \"requires_payment_method\", \"usage\": \"off_session\"}, \"type\": \"card_error\"}}",
+  "http_body": "{\n  \"error\": {\n    \"advice_code\": \"try_again_later\",\n    \"code\": \"card_declined\",\n    \"decline_code\": \"generic_decline\",\n    \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\",\n    \"message\": \"Your card was declined.\",\n    \"payment_method\": {\n      \"id\": \"replace_payment_method--PaymentMethod.create.2.json\",\n      \"object\": \"payment_method\",\n      \"allow_redisplay\": \"unspecified\",\n      \"billing_details\": {\n        \"address\": {\n          \"city\": \"San Francisco\",\n          \"country\": \"US\",\n          \"line1\": \"123 Main St\",\n          \"line2\": null,\n          \"postal_code\": \"94105\",\n          \"state\": \"CA\"\n        },\n        \"email\": null,\n        \"name\": \"John Doe\",\n        \"phone\": null,\n        \"tax_id\": null\n      },\n      \"card\": {\n        \"brand\": \"visa\",\n        \"checks\": {\n          \"address_line1_check\": \"pass\",\n          \"address_postal_code_check\": \"pass\",\n          \"cvc_check\": \"pass\"\n        },\n        \"country\": \"US\",\n        \"display_brand\": \"visa\",\n        \"exp_month\": 5,\n        \"exp_year\": 2026,\n        \"fingerprint\": \"D5bwp1hJalF8jxeQ\",\n        \"funding\": \"credit\",\n        \"generated_from\": null,\n        \"last4\": \"0002\",\n        \"networks\": {\n          \"available\": [\n            \"visa\"\n          ],\n          \"preferred\": null\n        },\n        \"regulated_status\": \"unregulated\",\n        \"three_d_secure_usage\": {\n          \"supported\": true\n        },\n        \"wallet\": null\n      },\n      \"created\": 1000000000,\n      \"customer\": null,\n      \"livemode\": false,\n      \"metadata\": {\n      },\n      \"type\": \"card\"\n    },\n    \"request_log_url\": \"https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1746899381\",\n    \"setup_intent\": {\n      \"id\": \"replace_payment_method--SetupIntent.create.2.json\",\n      \"object\": \"setup_intent\",\n      \"application\": null,\n      \"automatic_payment_methods\": null,\n      \"cancellation_reason\": null,\n      \"client_secret\": \"replace_payment_method--SetupIntent.create.2.json_secret_SHrFXdsjvZJ3KImUJYY5smbmnfFiAQ6\",\n      \"created\": 1000000000,\n      \"customer\": \"cus_NORMALIZED\",\n      \"description\": null,\n      \"flow_directions\": null,\n      \"last_setup_error\": {\n        \"advice_code\": \"try_again_later\",\n        \"code\": \"card_declined\",\n        \"decline_code\": \"generic_decline\",\n        \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\",\n        \"message\": \"Your card was declined.\",\n        \"payment_method\": {\n          \"id\": \"replace_payment_method--PaymentMethod.create.2.json\",\n          \"object\": \"payment_method\",\n          \"allow_redisplay\": \"unspecified\",\n          \"billing_details\": {\n            \"address\": {\n              \"city\": \"San Francisco\",\n              \"country\": \"US\",\n              \"line1\": \"123 Main St\",\n              \"line2\": null,\n              \"postal_code\": \"94105\",\n              \"state\": \"CA\"\n            },\n            \"email\": null,\n            \"name\": \"John Doe\",\n            \"phone\": null,\n            \"tax_id\": null\n          },\n          \"card\": {\n            \"brand\": \"visa\",\n            \"checks\": {\n              \"address_line1_check\": \"pass\",\n              \"address_postal_code_check\": \"pass\",\n              \"cvc_check\": \"pass\"\n            },\n            \"country\": \"US\",\n            \"display_brand\": \"visa\",\n            \"exp_month\": 5,\n            \"exp_year\": 2026,\n            \"fingerprint\": \"D5bwp1hJalF8jxeQ\",\n            \"funding\": \"credit\",\n            \"generated_from\": null,\n            \"last4\": \"0002\",\n            \"networks\": {\n              \"available\": [\n                \"visa\"\n              ],\n              \"preferred\": null\n            },\n            \"regulated_status\": \"unregulated\",\n            \"three_d_secure_usage\": {\n              \"supported\": true\n            },\n            \"wallet\": null\n          },\n          \"created\": 1000000000,\n          \"customer\": null,\n          \"livemode\": false,\n          \"metadata\": {\n          },\n          \"type\": \"card\"\n        },\n        \"type\": \"card_error\"\n      },\n      \"latest_attempt\": \"setatt_NORMALIZED\",\n      \"livemode\": false,\n      \"mandate\": null,\n      \"metadata\": {\n      },\n      \"next_action\": null,\n      \"on_behalf_of\": null,\n      \"payment_method\": null,\n      \"payment_method_configuration_details\": null,\n      \"payment_method_options\": {\n        \"card\": {\n          \"mandate_options\": null,\n          \"network\": null,\n          \"request_three_d_secure\": \"automatic\"\n        }\n      },\n      \"payment_method_types\": [\n        \"card\"\n      ],\n      \"single_use_mandate\": null,\n      \"status\": \"requires_payment_method\",\n      \"usage\": \"off_session\"\n    },\n    \"type\": \"card_error\"\n  }\n}\n",
   "http_status": 402,
   "json_body": {
     "error": {
+      "advice_code": "try_again_later",
       "code": "card_declined",
       "decline_code": "generic_decline",
       "doc_url": "https://stripe.com/docs/error-codes/card-declined",
@@ -199,7 +203,8 @@
           },
           "email": null,
           "name": "John Doe",
-          "phone": null
+          "phone": null,
+          "tax_id": null
         },
         "card": {
           "brand": "visa",
@@ -222,6 +227,7 @@
             ],
             "preferred": null
           },
+          "regulated_status": "unregulated",
           "three_d_secure_usage": {
             "supported": true
           },
@@ -235,7 +241,7 @@
         "object": "payment_method",
         "type": "card"
       },
-      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1726724746",
+      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED?t=1746899381",
       "setup_intent": {
         "application": null,
         "automatic_payment_methods": null,
@@ -247,6 +253,7 @@
         "flow_directions": null,
         "id": "replace_payment_method--SetupIntent.create.2.json",
         "last_setup_error": {
+          "advice_code": "try_again_later",
           "code": "card_declined",
           "decline_code": "generic_decline",
           "doc_url": "https://stripe.com/docs/error-codes/card-declined",
@@ -264,7 +271,8 @@
               },
               "email": null,
               "name": "John Doe",
-              "phone": null
+              "phone": null,
+              "tax_id": null
             },
             "card": {
               "brand": "visa",
@@ -287,6 +295,7 @@
                 ],
                 "preferred": null
               },
+              "regulated_status": "unregulated",
               "three_d_secure_usage": {
                 "supported": true
               },

@@ -1,5 +1,6 @@
 {
   "amount": -7200,
+  "checkout_session": null,
   "created": 1000000000,
   "credit_note": null,
   "currency": "usd",
