@@ -867,42 +867,6 @@ class BillingSession(ABC):
         assert customer.stripe_customer_id is not None
         plan_name = CustomerPlan.name_from_tier(plan_tier)
         assert price_per_license is None or fixed_price is None
-        price_args: PriceArgs = {}
-        if fixed_price is None:
-            assert price_per_license is not None
-            price_args = {
-                "quantity": licenses,
-                "unit_amount": price_per_license,
-            }
-        else:
-            assert fixed_price is not None
-            amount_due = get_amount_due_fixed_price_plan(fixed_price, billing_schedule)
-            price_args = {"amount": amount_due}
-
-        stripe.InvoiceItem.create(
-            currency="usd",
-            customer=customer.stripe_customer_id,
-            description=plan_name,
-            discountable=False,
-            period=invoice_period,
-            **price_args,
-        )
-
-        if fixed_price is None and customer.flat_discounted_months > 0:
-            num_months = 12 if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
-            flat_discounted_months = min(customer.flat_discounted_months, num_months)
-            discount = customer.flat_discount * flat_discounted_months
-            customer.flat_discounted_months -= flat_discounted_months
-            customer.save(update_fields=["flat_discounted_months"])
-
-            stripe.InvoiceItem.create(
-                currency="usd",
-                customer=customer.stripe_customer_id,
-                description=f"${cents_to_dollar_string(customer.flat_discount)}/month new customer discount",
-                # Negative value to apply discount.
-                amount=(-1 * discount),
-                period=invoice_period,
-            )
 
         if charge_automatically:
             collection_method: Literal["charge_automatically", "send_invoice"] = (
@@ -942,6 +906,46 @@ class BillingSession(ABC):
         if days_until_due is not None:
             invoice_params["days_until_due"] = days_until_due
         stripe_invoice = stripe.Invoice.create(**invoice_params)
+        assert stripe_invoice.id is not None
+
+        price_args: PriceArgs = {}
+        if fixed_price is None:
+            assert price_per_license is not None
+            price_args = {
+                "quantity": licenses,
+                "unit_amount": price_per_license,
+            }
+        else:
+            assert fixed_price is not None
+            amount_due = get_amount_due_fixed_price_plan(fixed_price, billing_schedule)
+            price_args = {"amount": amount_due}
+
+        stripe.InvoiceItem.create(
+            invoice=stripe_invoice.id,
+            currency="usd",
+            customer=customer.stripe_customer_id,
+            description=plan_name,
+            discountable=False,
+            period=invoice_period,
+            **price_args,
+        )
+
+        if fixed_price is None and customer.flat_discounted_months > 0:
+            num_months = 12 if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+            flat_discounted_months = min(customer.flat_discounted_months, num_months)
+            discount = customer.flat_discount * flat_discounted_months
+            customer.flat_discounted_months -= flat_discounted_months
+            customer.save(update_fields=["flat_discounted_months"])
+
+            stripe.InvoiceItem.create(
+                invoice=stripe_invoice.id,
+                currency="usd",
+                customer=customer.stripe_customer_id,
+                description=f"${cents_to_dollar_string(customer.flat_discount)}/month new customer discount",
+                # Negative value to apply discount.
+                amount=(-1 * discount),
+                period=invoice_period,
+            )
         stripe.Invoice.finalize_invoice(stripe_invoice)
         return stripe_invoice
 
