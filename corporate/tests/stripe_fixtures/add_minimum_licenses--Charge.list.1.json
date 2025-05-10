@@ -19,7 +19,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
       "captured": true,
@@ -35,13 +36,15 @@
       "failure_message": null,
       "fraud_details": {},
       "id": "add_minimum_licenses--Charge.list.1.json",
-      "invoice": "in_NORMALIZED",
       "livemode": false,
       "metadata": {},
       "object": "charge",
       "on_behalf_of": null,
       "order": null,
       "outcome": {
+        "advice_code": null,
+        "network_advice_code": null,
+        "network_decline_code": null,
         "network_status": "approved_by_network",
         "reason": null,
         "risk_level": "normal",
@@ -83,10 +86,12 @@
           "network_token": {
             "used": false
           },
+          "network_transaction_id": "100110997670110",
           "overcapture": {
             "maximum_amount_capturable": 100000,
             "status": "unavailable"
           },
+          "regulated_status": "unregulated",
           "three_d_secure": null,
           "wallet": null
         },
@@ -97,13 +102,6 @@
       "receipt_number": null,
       "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
       "refunded": false,
-      "refunds": {
-        "data": [],
-        "has_more": false,
-        "object": "list",
-        "total_count": 0,
-        "url": "/v1/charges/add_minimum_licenses--Charge.list.1.json/refunds"
-      },
       "review": null,
       "shipping": null,
       "source": null,
