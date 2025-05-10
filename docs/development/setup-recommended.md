@@ -726,7 +726,8 @@ Next, read the following to learn more about developing for Zulip:
 Below you'll find a list of common errors and their solutions. Most
 issues are resolved by just provisioning again (by running
 `./tools/provision` (from `/srv/zulip`) inside the Vagrant guest or
-equivalently `vagrant provision` from outside).
+equivalently `vagrant provision` from outside in case of a Vagrant installation. For WSL, this
+can be done by running `./tools/provision` in `~/zulip`).
 
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
@@ -738,14 +739,15 @@ documented below, there are a few ways to get further help:
 When reporting your issue, please include the following information:
 
 - Host operating system
-- Installation method (Vagrant or direct)
+- Installation method (Vagrant or direct like using WSL)
 - Whether or not you are using a proxy
 - A copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/provision.log` on your virtual machine. If you choose to
+  `/var/log/provision.log` on your virtual machine or `~/zulip/var/log/provision.log`
+  on your WSL instance. If you choose to
   post just the error output, please include the **beginning of the
   error output**, not just the last few lines.
 
-The output of `tools/diagnose` run inside the Vagrant guest is also
+The output of `tools/diagnose` run inside the Vagrant guest or WSL instance is also
 usually helpful.
 
 #### Vagrant guest doesn't show (zulip-server) at start of prompt
