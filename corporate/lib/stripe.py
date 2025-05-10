@@ -3216,8 +3216,8 @@ class BillingSession(ABC):
                 licenses_base = plan.invoiced_through.licenses
                 invoiced_through_id = plan.invoiced_through.id
 
-            invoice_item_created = False
-            invoice_period: stripe.InvoiceItem.CreateParamsPeriod | None = None
+            # Track if we added renewal invoice item which is possibly eligible for discount.
+            renewal_invoice_period: stripe.InvoiceItem.CreateParamsPeriod | None = None
             for ledger_entry in LicenseLedger.objects.filter(
                 plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
             ).order_by("id"):
@@ -3273,12 +3273,16 @@ class BillingSession(ABC):
                     plan.invoiced_through = ledger_entry
                     plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
                     plan.save(update_fields=["invoicing_status", "invoiced_through"])
-                    invoice_period = {
-                        "start": datetime_to_timestamp(ledger_entry.event_time),
-                        "end": datetime_to_timestamp(
+                    invoice_period = stripe.InvoiceItem.CreateParamsPeriod(
+                        start=datetime_to_timestamp(ledger_entry.event_time),
+                        end=datetime_to_timestamp(
                             get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
                         ),
-                    }
+                    )
+
+                    if ledger_entry.is_renewal:
+                        renewal_invoice_period = invoice_period
+
                     stripe.InvoiceItem.create(
                         currency="usd",
                         customer=plan.customer.stripe_customer_id,
@@ -3288,14 +3292,12 @@ class BillingSession(ABC):
                         idempotency_key=get_idempotency_key(ledger_entry),
                         **price_args,
                     )
-                    invoice_item_created = True
                 plan.invoiced_through = ledger_entry
                 plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
                 plan.save(update_fields=["invoicing_status", "invoiced_through"])
                 licenses_base = ledger_entry.licenses
 
-            if invoice_item_created:
-                assert invoice_period is not None
+            if renewal_invoice_period is not None:
                 flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
                 if plan.fixed_price is None and flat_discounted_months > 0:
                     num_months = (
@@ -3311,7 +3313,7 @@ class BillingSession(ABC):
                         description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
                         # Negative value to apply discount.
                         amount=(-1 * discount),
-                        period=invoice_period,
+                        period=renewal_invoice_period,
                     )
 
                 if plan.charge_automatically:
