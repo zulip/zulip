@@ -28,23 +28,6 @@ Contents:
 - [Specifying a proxy](#specifying-a-proxy)
 - [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
-**If you encounter errors installing the Zulip development
-environment,** check [troubleshooting and common
-errors](#troubleshooting-and-common-errors). If that doesn't help,
-please visit [#provision
-help](https://chat.zulip.org/#narrow/channel/21-provision-help) in the
-[Zulip development community
-server](https://zulip.com/development-community/) for real-time help or
-[file an issue](https://github.com/zulip/zulip/issues).
-
-When reporting your issue, please include the following information:
-
-- host operating system
-- installation method (Vagrant or direct)
-- whether or not you are using a proxy
-- a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/provision.log` on your virtual machine
-
 ### Requirements
 
 Installing the Zulip development environment requires downloading several
