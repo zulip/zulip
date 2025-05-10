@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 385
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (326, 3)  # bumped 2025-05-12 to add unplugin-icons
+PROVISION_VERSION = (326, 4)  # bumped 2025-05-14 to upgrade stripe

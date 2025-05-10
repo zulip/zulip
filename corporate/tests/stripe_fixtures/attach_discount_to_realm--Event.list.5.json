@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2020-08-27",
+      "api_version": "2025-04-30.basil",
       "created": 1000000000,
       "data": {
         "object": {
@@ -9,7 +9,6 @@
           "balance": 0,
           "created": 1000000000,
           "currency": "usd",
-          "default_currency": "usd",
           "default_source": null,
           "delinquent": false,
           "description": "zulip (Zulip Dev)",

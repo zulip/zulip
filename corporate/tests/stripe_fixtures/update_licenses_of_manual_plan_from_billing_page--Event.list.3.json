@@ -1,145 +1,36 @@
 {
   "data": [
     {
-      "api_version": "2020-08-27",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "ach_credit_transfer": {
-            "account_number": "test_NORMALIZED",
-            "bank_name": "TEST BANK",
-            "fingerprint": "NORMALIZED",
-            "refund_account_holder_name": null,
-            "refund_account_holder_type": null,
-            "refund_routing_number": null,
-            "routing_number": "110000000",
-            "swift_code": "TSTEZ122"
-          },
-          "amount": null,
-          "client_secret": "NORMALIZED",
-          "created": 1000000000,
-          "currency": "usd",
-          "customer": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
-          "flow": "receiver",
-          "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.3.json",
-          "livemode": false,
-          "metadata": {},
-          "object": "source",
-          "owner": {
-            "address": null,
-            "email": "amount_0@stripe.com",
-            "name": null,
-            "phone": null,
-            "verified_address": null,
-            "verified_email": null,
-            "verified_name": null,
-            "verified_phone": null
-          },
-          "receiver": {
-            "address": "000000000-test_NORMALIZED",
-            "amount_charged": 0,
-            "amount_received": 0,
-            "amount_returned": 0,
-            "refund_attributes_method": "email",
-            "refund_attributes_status": "missing"
-          },
-          "statement_descriptor": null,
-          "status": "pending",
-          "type": "ach_credit_transfer",
-          "usage": "reusable"
-        }
-      },
-      "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": null,
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "customer.source.created"
-    },
-    {
-      "api_version": "2020-08-27",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "address": null,
-          "balance": 0,
-          "created": 1000000000,
-          "currency": "usd",
-          "default_currency": "usd",
-          "default_source": "update_licenses_of_manual_plan_from_billing_page--Event.list.3.json",
-          "delinquent": false,
-          "description": "zulip (Zulip Dev)",
-          "discount": null,
-          "email": "hamlet@zulip.com",
-          "id": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
-          "invoice_prefix": "NORMALIZED",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": null,
-            "footer": null,
-            "rendering_options": null
-          },
-          "livemode": false,
-          "metadata": {
-            "realm_id": "1",
-            "realm_str": "zulip"
-          },
-          "name": null,
-          "next_invoice_sequence": 2,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
-          "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
-        },
-        "previous_attributes": {
-          "default_source": null
-        }
-      },
-      "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": null,
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "customer.updated"
-    },
-    {
-      "api_version": "2020-08-27",
+      "api_version": "2025-04-30.basil",
       "created": 1000000000,
       "data": {
         "object": {
           "account_country": "US",
-          "account_name": "Kandra Labs, Inc.",
+          "account_name": "NORMALIZED",
           "account_tax_ids": null,
           "amount_due": 800000,
-          "amount_paid": 0,
-          "amount_remaining": 800000,
+          "amount_overpaid": 0,
+          "amount_paid": 800000,
+          "amount_remaining": 0,
           "amount_shipping": 0,
           "application": null,
-          "application_fee_amount": null,
           "attempt_count": 0,
           "attempted": false,
           "auto_advance": false,
           "automatic_tax": {
+            "disabled_reason": null,
             "enabled": false,
             "liability": null,
+            "provider": null,
             "status": null
           },
           "automatically_finalizes_at": null,
           "billing_reason": "manual",
-          "charge": null,
           "collection_method": "send_invoice",
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "update_licenses_of_manual_plan_from_billing_page--Customer.create.1.json",
+          "customer": "cus_NORMALIZED",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -151,7 +42,6 @@
           "default_source": null,
           "default_tax_rates": [],
           "description": null,
-          "discount": null,
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -170,7 +60,6 @@
             "data": [
               {
                 "amount": 800000,
-                "amount_excluding_tax": 800000,
                 "currency": "usd",
                 "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
@@ -178,46 +67,36 @@
                 "discounts": [],
                 "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
                 "invoice": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
-                "invoice_item": "ii_NORMALIZED",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
+                "parent": {
+                  "invoice_item_details": {
+                    "invoice_item": "ii_NORMALIZED",
+                    "proration": false,
+                    "proration_details": {
+                      "credited_items": null
+                    },
+                    "subscription": null
+                  },
+                  "subscription_item_details": null,
+                  "type": "invoice_item_details"
+                },
                 "period": {
                   "end": 1357095845,
                   "start": 1325473445
                 },
-                "plan": null,
-                "price": {
-                  "active": false,
-                  "billing_scheme": "per_unit",
-                  "created": 1000000000,
-                  "currency": "usd",
-                  "custom_unit_amount": null,
-                  "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
-                  "livemode": false,
-                  "lookup_key": null,
-                  "metadata": {},
-                  "nickname": null,
-                  "object": "price",
-                  "product": "prod_NORMALIZED",
-                  "recurring": null,
-                  "tax_behavior": "unspecified",
-                  "tiers_mode": null,
-                  "transform_quantity": null,
-                  "type": "one_time",
-                  "unit_amount": 8000,
+                "pretax_credit_amounts": [],
+                "pricing": {
+                  "price_details": {
+                    "price": "price_NORMALIZED",
+                    "product": "prod_NORMALIZED"
+                  },
+                  "type": "price_details",
                   "unit_amount_decimal": "8000"
                 },
-                "proration": false,
-                "proration_details": {
-                  "credited_items": null
-                },
                 "quantity": 100,
-                "subscription": null,
-                "tax_amounts": [],
-                "tax_rates": [],
-                "type": "invoiceitem",
-                "unit_amount_excluding_tax": "8000"
+                "taxes": []
               }
             ],
             "has_more": false,
@@ -236,12 +115,10 @@
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALIZED-0001",
+          "number": "NORMALIZED",
           "object": "invoice",
           "on_behalf_of": null,
-          "paid": true,
-          "paid_out_of_band": true,
-          "payment_intent": null,
+          "parent": null,
           "payment_settings": {
             "default_mandate": null,
             "payment_method_options": null,
@@ -251,7 +128,6 @@
           "period_start": 1000000000,
           "post_payment_credit_notes_amount": 0,
           "pre_payment_credit_notes_amount": 0,
-          "quote": null,
           "receipt_number": null,
           "rendering": {
             "amount_tax_display": null,
@@ -261,7 +137,6 @@
             "template": null,
             "template_version": null
           },
-          "rendering_options": null,
           "shipping_cost": null,
           "shipping_details": null,
           "starting_balance": 0,
@@ -273,20 +148,15 @@
             "paid_at": 1000000000,
             "voided_at": null
           },
-          "subscription": null,
-          "subscription_details": {
-            "metadata": null
-          },
           "subtotal": 800000,
           "subtotal_excluding_tax": 800000,
-          "tax": null,
           "test_clock": null,
           "total": 800000,
           "total_discount_amounts": [],
           "total_excluding_tax": 800000,
-          "total_tax_amounts": [],
-          "transfer_data": null,
-          "webhooks_delivered_at": null
+          "total_pretax_credit_amounts": [],
+          "total_taxes": [],
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.3.json",

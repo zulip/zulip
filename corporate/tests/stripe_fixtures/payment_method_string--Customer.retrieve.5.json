@@ -3,8 +3,7 @@
   "balance": 0,
   "created": 1000000000,
   "currency": "usd",
-  "default_currency": "usd",
-  "default_source": "src_NORMALIZED",
+  "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
@@ -26,7 +25,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "card": {
         "brand": "visa",
@@ -49,6 +49,7 @@
           ],
           "preferred": null
         },
+        "regulated_status": "unregulated",
         "three_d_secure_usage": {
           "supported": true
         },

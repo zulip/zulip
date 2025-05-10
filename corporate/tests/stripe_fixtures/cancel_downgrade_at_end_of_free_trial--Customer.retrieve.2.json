@@ -3,13 +3,12 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
-  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cancel_downgrade_at_end_of_free_trial--Customer.retrieve.1.json",
+  "id": "cancel_downgrade_at_end_of_free_trial--Customer.create.1.json",
   "invoice_prefix": "NORMALIZED",
   "invoice_settings": {
     "custom_fields": null,
@@ -26,7 +25,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "card": {
         "brand": "visa",
@@ -49,13 +49,14 @@
           ],
           "preferred": null
         },
+        "regulated_status": "unregulated",
         "three_d_secure_usage": {
           "supported": true
         },
         "wallet": null
       },
       "created": 1000000000,
-      "customer": "cancel_downgrade_at_end_of_free_trial--Customer.retrieve.1.json",
+      "customer": "cancel_downgrade_at_end_of_free_trial--Customer.create.1.json",
       "id": "cancel_downgrade_at_end_of_free_trial--Customer.retrieve.1.json",
       "livemode": false,
       "metadata": {},
