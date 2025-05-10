@@ -33,6 +33,12 @@ shared_buffers = <%= @shared_buffers %>
 <% unless @wal_buffers.nil? -%>
 wal_buffers = <%= @wal_buffers %>
 <% end -%>
+<% unless @min_wal_size.nil? -%>
+min_wal_size = <%= @min_wal_size %>
+<% end -%>
+<% unless @max_wal_size.nil? -%>
+max_wal_size = <%= @max_wal_size %>
+<% end -%>
 <% unless @random_page_cost.nil? -%>
 random_page_cost = <%= @random_page_cost %>
 <% end -%>
