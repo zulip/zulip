@@ -10,6 +10,7 @@ import type {ActionButton} from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t} from "./i18n.ts";
+import {show_email_configure_banner} from "./invite.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
@@ -139,6 +140,8 @@ export function do_convert_demo_organization(): void {
         help_link:
             "/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization",
     });
+
+    show_email_configure_banner();
 }
 
 export function handle_demo_organization_conversion(): void {
