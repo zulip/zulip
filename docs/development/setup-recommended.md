@@ -737,10 +737,10 @@ documented below, there are a few ways to get further help:
 
 When reporting your issue, please include the following information:
 
-- host operating system
-- installation method (Vagrant or direct)
-- whether or not you are using a proxy
-- a copy of Zulip's `vagrant` provisioning logs, available in
+- The host operating system
+- The installation method (Vagrant or direct)
+- Whether or not you are using a proxy
+- A copy of Zulip's `vagrant` provisioning logs, available in
   `/var/log/provision.log` on your virtual machine. If you choose to
   post just the error output, please include the **beginning of the
   error output**, not just the last few lines.
