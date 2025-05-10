@@ -303,11 +303,20 @@ export function slug_to_stream_id(slug: string): number | undefined {
 
 export function mark_archived(stream_id: number): void {
     const sub = get_sub_by_id(stream_id);
-    if (sub === undefined || !stream_info.get(stream_id)) {
+    if (sub === undefined) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
         return;
     }
     sub.is_archived = true;
+}
+
+export function mark_unarchived(stream_id: number): void {
+    const sub = get_sub_by_id(stream_id);
+    if (sub === undefined) {
+        blueslip.warn("Failed to unarchive stream " + stream_id.toString());
+        return;
+    }
+    sub.is_archived = false;
 }
 
 export function delete_sub(stream_id: number): void {
@@ -603,7 +612,7 @@ export function rewire_has_content_access(value: typeof has_content_access): voi
     has_content_access = value;
 }
 
-function can_administer_channel(sub: StreamSubscription): boolean {
+export function can_administer_channel(sub: StreamSubscription): boolean {
     // Note that most callers should use wrappers like
     // can_change_permissions_requiring_content_access, since actions
     // that can grant access to message content require content access

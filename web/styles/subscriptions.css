@@ -1084,7 +1084,8 @@ h4.user_group_setting_subsection_title {
                 width: 1em;
             }
 
-            .deactivate {
+            .deactivate,
+            .reactivate {
                 margin-right: 3px;
                 text-decoration: none;
             }

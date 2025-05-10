@@ -224,6 +224,34 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 }
 
+export function update_settings_button_for_archive_and_unarchive(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    // This is for the Archive/Unarchive button in the right panel.
+    const $archive_button = $(
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
+    );
+    const $unarchive_button = $(
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
+    );
+
+    if (!stream_data.can_administer_channel(sub)) {
+        $archive_button.hide();
+        $unarchive_button.hide();
+        return;
+    }
+
+    if (sub.is_archived) {
+        $archive_button.hide();
+        $unarchive_button.show();
+    } else {
+        $unarchive_button.hide();
+        $archive_button.show();
+    }
+}
+
 export function update_regular_sub_settings(sub: StreamSubscription): void {
     // These are in the right panel.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
@@ -236,6 +264,28 @@ export function update_regular_sub_settings(sub: StreamSubscription): void {
         $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".stream-email-box").hide();
+    }
+}
+
+export function enable_or_disable_generate_email_button(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    const $settings = $(
+        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
+    );
+    const $generate_email_button_container = $settings.find(
+        ".generate-channel-email-button-container",
+    );
+    const $generate_email_button = $generate_email_button_container.find(".copy_email_button");
+
+    if (stream_data.can_access_stream_email(sub)) {
+        $generate_email_button.prop("disabled", false);
+        $generate_email_button_container.removeClass("disabled_setting_tooltip");
+    } else {
+        $generate_email_button.prop("disabled", true);
+        $generate_email_button_container.addClass("disabled_setting_tooltip");
     }
 }
 
