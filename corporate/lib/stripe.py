@@ -3292,10 +3292,9 @@ class BillingSession(ABC):
                         idempotency_key=get_idempotency_key(ledger_entry),
                         **price_args,
                     )
-                plan.invoiced_through = ledger_entry
-                plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
-                plan.save(update_fields=["invoicing_status", "invoiced_through"])
+                # Update license base per ledger_entry.
                 licenses_base = ledger_entry.licenses
+                plan.invoiced_through = ledger_entry
 
             if renewal_invoice_period is not None:
                 flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
@@ -3335,9 +3334,17 @@ class BillingSession(ABC):
                 stripe_invoice = stripe.Invoice.create(**invoice_params)
                 stripe.Invoice.finalize_invoice(stripe_invoice)
 
+        plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
         plan.next_invoice_date = next_invoice_date(plan)
         plan.invoice_overdue_email_sent = False
-        plan.save(update_fields=["next_invoice_date", "invoice_overdue_email_sent"])
+        plan.save(
+            update_fields=[
+                "next_invoice_date",
+                "invoice_overdue_email_sent",
+                "invoicing_status",
+                "invoiced_through",
+            ]
+        )
 
     def do_change_plan_to_new_tier(self, new_plan_tier: int) -> str:
         customer = self.get_customer()
