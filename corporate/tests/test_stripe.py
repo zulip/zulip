@@ -4736,13 +4736,6 @@ class StripeTest(StripeTestCase):
         invoices = []
         assert customer.stripe_customer_id is not None
         for _ in range(num_invoices):
-            stripe.InvoiceItem.create(
-                amount=10000,
-                currency="usd",
-                customer=customer.stripe_customer_id,
-                description="Zulip Cloud Standard",
-                discountable=False,
-            )
             invoice = stripe.Invoice.create(
                 auto_advance=True,
                 collection_method="send_invoice",
@@ -4750,6 +4743,16 @@ class StripeTest(StripeTestCase):
                 days_until_due=DEFAULT_INVOICE_DAYS_UNTIL_DUE,
                 statement_descriptor="Zulip Cloud Standard",
             )
+            assert invoice.id is not None
+            stripe.InvoiceItem.create(
+                invoice=invoice.id,
+                amount=10000,
+                currency="usd",
+                customer=customer.stripe_customer_id,
+                description="Zulip Cloud Standard",
+                discountable=False,
+            )
+
             stripe.Invoice.finalize_invoice(invoice)
             invoices.append(invoice)
         return invoices
