@@ -752,6 +752,15 @@ WSL instance) is also usually helpful.
 
 ::::{tab-set}
 
+:::{tab-item} Windows (WSL)
+:sync: os-windows
+
+```{include} setup/wsl-troubleshoot.md
+
+```
+
+:::
+
 :::{tab-item} Windows (VM)
 :sync: os-windows-vm
 
