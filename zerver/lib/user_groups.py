@@ -192,15 +192,103 @@ def access_user_group_for_update(
     raise JsonableError(_("Insufficient permission"))
 
 
-def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict[str, Any]]:
-    objections: list[dict[str, Any]] = []
-    supergroup_ids = (
-        user_group.direct_supergroups.exclude(named_user_group=None)
-        .filter(named_user_group__deactivated=False)
-        .values_list("id", flat=True)
+def get_replacement_value_for_group_based_setting(
+    object_with_settings: Stream | NamedUserGroup | Realm, setting_name: str
+) -> NamedUserGroup:
+    if isinstance(object_with_settings, Stream):
+        realm_id = object_with_settings.realm_id
+        group_name = Stream.stream_permission_group_settings[setting_name].replacement_group_name
+    elif isinstance(object_with_settings, NamedUserGroup):
+        realm_id = object_with_settings.realm_id
+        group_name = NamedUserGroup.GROUP_PERMISSION_SETTINGS[setting_name].replacement_group_name
+    elif isinstance(object_with_settings, Realm):
+        realm_id = object_with_settings.id
+        group_name = Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name].replacement_group_name
+
+    # The few settings where replacement_group_name is None shouldn't be able to reach this codepath,
+    # as the group that's the value of the setting should be impossible to deactivate.
+    assert group_name is not None
+
+    return NamedUserGroup.objects.get(name=group_name, realm_id=realm_id, is_system_group=True)
+
+
+def remove_user_group_from_group_based_setting(
+    object_with_settings: Stream | NamedUserGroup | Realm,
+    setting_name: str,
+    user_group: NamedUserGroup,
+) -> tuple[int | UserGroupMembersData, int | UserGroupMembersData]:
+    old_user_group = getattr(object_with_settings, setting_name)
+    old_setting_api_value = get_group_setting_value_for_api(old_user_group)
+    if isinstance(old_setting_api_value, int):
+        assert old_setting_api_value == user_group.id
+        return (
+            get_replacement_value_for_group_based_setting(object_with_settings, setting_name).id,
+            old_setting_api_value,
+        )
+
+    assert isinstance(old_setting_api_value, UserGroupMembersData)
+    assert user_group.id in old_setting_api_value.direct_subgroups
+
+    # Construct the new setting value by dropping our user_group from the list of subgroups.
+    new_subgroups_value = list(
+        filter(
+            lambda subgroup_id: subgroup_id != user_group.id, old_setting_api_value.direct_subgroups
+        )
     )
-    if supergroup_ids:
-        objections.append(dict(type="subgroup", supergroup_ids=list(supergroup_ids)))
+    new_setting_value = UserGroupMembersData(
+        direct_members=old_setting_api_value.direct_members, direct_subgroups=new_subgroups_value
+    )
+    # parse_group_setting_value will ensure to return a sane final setting
+    # value, avoiding the formation of a pathological anonymous group, and
+    # replacing it with the replacement group if it was about to become empty.
+    parsed_new_setting_value = parse_group_setting_value(
+        new_setting_value,
+        nobody_group=get_replacement_value_for_group_based_setting(
+            object_with_settings, setting_name
+        ),
+    )
+
+    return parsed_new_setting_value, old_setting_api_value
+
+
+@transaction.atomic(savepoint=False)
+def check_user_group_can_be_deactivated(
+    user_group: NamedUserGroup, *, force: bool = False
+) -> list[dict[str, Any]]:
+    """
+    This function is called in advance of deactivating a group.
+    Ordinarily (with force=False), checks for the conditions that prevent
+    group deactivation - returns a list of objections if such conditions
+    are present.
+    With force=False, it forcefully resolved such issues, in order to prepare
+    the group for correct deactivation.
+
+    The conditions we check and resolve are:
+
+    1. Is user_group a subgroup of any supergroups?
+       With force=True, remove it from such supergroups.
+    2. Are there any permissions that rely on the user group?
+       This has two possible cases:
+       a) A permission might be set directly to the group.
+          With force=True, we set such a permission to its corresponding
+          replacement_group_name.
+       b) A permission might be set to an anonymous group, which has user_group
+          as a subgroup.
+          With force=True, we remove user_group from the anonymous group.
+    """
+    from zerver.actions.user_groups import remove_subgroups_from_user_group
+
+    objections: list[dict[str, Any]] = []
+    supergroups = user_group.direct_supergroups.exclude(named_user_group=None).filter(
+        named_user_group__deactivated=False
+    )
+    if supergroups and not force:
+        objections.append(dict(type="subgroup", supergroup_ids=[s.id for s in supergroups]))
+    if supergroups and force:
+        for supergroup in supergroups:
+            remove_subgroups_from_user_group(
+                supergroup.named_user_group, [user_group], acting_user=None
+            )
 
     anonymous_supergroup_ids = user_group.direct_supergroups.filter(
         named_user_group=None
@@ -229,10 +317,24 @@ def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict
             if getattr(stream, setting_name + "_id")
             in setting_group_ids_using_deactivating_user_group
         ]
-        if len(objection_settings) > 0:
+        if not force and len(objection_settings) > 0:
             objections.append(
                 dict(type="channel", channel_id=stream.id, settings=objection_settings)
             )
+        elif force and len(objection_settings) > 0:
+            from zerver.actions.streams import do_change_stream_group_based_setting
+
+            for setting_name in objection_settings:
+                new_setting_api_value, old_setting_api_value = (
+                    remove_user_group_from_group_based_setting(stream, setting_name, user_group)
+                )
+                do_change_stream_group_based_setting(
+                    stream,
+                    setting_name,
+                    new_setting_api_value,
+                    old_setting_api_value=old_setting_api_value,
+                    acting_user=None,
+                )
 
     group_setting_query = Q()
     for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
@@ -240,21 +342,47 @@ def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict
             **{f"{setting_name}__in": setting_group_ids_using_deactivating_user_group}
         )
 
-    for group in NamedUserGroup.objects.filter(
+    for group_with_settings in NamedUserGroup.objects.filter(
         realm_id=user_group.realm_id, deactivated=False
     ).filter(group_setting_query):
         objection_settings = []
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             if (
-                getattr(group, setting_name + "_id")
+                getattr(group_with_settings, setting_name + "_id")
                 in setting_group_ids_using_deactivating_user_group
             ):
                 objection_settings.append(setting_name)
 
-        if len(objection_settings) > 0:
+        if not force and len(objection_settings) > 0:
             objections.append(
-                dict(type="user_group", group_id=group.id, settings=objection_settings)
+                dict(
+                    type="user_group", group_id=group_with_settings.id, settings=objection_settings
+                )
             )
+        elif force and len(objection_settings) > 0:
+            from zerver.actions.user_groups import do_change_user_group_permission_setting
+
+            for setting_name in objection_settings:
+                new_setting_api_value, old_setting_api_value = (
+                    remove_user_group_from_group_based_setting(
+                        group_with_settings, setting_name, user_group
+                    )
+                )
+                new_setting_group_value = access_user_group_for_setting(
+                    new_setting_api_value,
+                    None,
+                    user_group.realm,
+                    setting_name=setting_name,
+                    permission_configuration=NamedUserGroup.GROUP_PERMISSION_SETTINGS[setting_name],
+                    current_setting_value=getattr(group_with_settings, setting_name),
+                )
+                do_change_user_group_permission_setting(
+                    group_with_settings,
+                    setting_name,
+                    new_setting_group_value,
+                    old_setting_api_value=old_setting_api_value,
+                    acting_user=None,
+                )
 
     objection_settings = []
     realm = user_group.realm
@@ -262,8 +390,30 @@ def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict
         if getattr(realm, setting_name + "_id") in setting_group_ids_using_deactivating_user_group:
             objection_settings.append(setting_name)
 
-    if objection_settings:
+    if not force and objection_settings:
         objections.append(dict(type="realm", settings=objection_settings))
+    if force and objection_settings:
+        from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+
+        for setting_name in objection_settings:
+            new_setting_api_value, old_setting_api_value = (
+                remove_user_group_from_group_based_setting(realm, setting_name, user_group)
+            )
+            new_setting_group_value = access_user_group_for_setting(
+                new_setting_api_value,
+                None,
+                realm,
+                setting_name=setting_name,
+                permission_configuration=Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name],
+                current_setting_value=getattr(realm, setting_name),
+            )
+            do_change_realm_permission_group_setting(
+                realm,
+                setting_name,
+                new_setting_group_value,
+                old_setting_api_value=old_setting_api_value,
+                acting_user=None,
+            )
 
     return objections
 
@@ -419,12 +569,15 @@ def check_setting_configuration_for_system_groups(
 
 
 def update_or_create_user_group_for_setting(
-    user_profile: UserProfile,
+    user_profile: UserProfile | None,
+    realm: Realm,
     direct_members: list[int],
     direct_subgroups: list[int],
     current_setting_value: UserGroup | None,
 ) -> UserGroup:
-    realm = user_profile.realm
+    if user_profile is not None:
+        assert realm == user_profile.realm
+
     if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
         # We do not create a new group if the setting was already set
         # to an anonymous group. The memberships of existing group
@@ -450,13 +603,16 @@ def update_or_create_user_group_for_setting(
             _("Invalid user group ID: {group_id}").format(group_id=group_ids_not_found[0])
         )
 
-    for subgroup in potential_subgroups:
-        # At this time, we only do a check on the realm ID of the subgroup and
-        # whether the group is deactivated or not. Realm ID error would be caught
-        # above and in case the user group is deactivated the error will be raised
-        # in has_user_group_access_for_subgroup itself, so there is no coverage here.
-        if not has_user_group_access_for_subgroup(subgroup, user_profile):
-            raise JsonableError(_("Insufficient permission"))  # nocoverage
+    if user_profile is not None:
+        # If no user_profile is passed, it means that we're not processing some user's request
+        # and thus we don't care about checking permissions for this action.
+        for subgroup in potential_subgroups:
+            # At this time, we only do a check on the realm ID of the subgroup and
+            # whether the group is deactivated or not. Realm ID error would be caught
+            # above and in case the user group is deactivated the error will be raised
+            # in has_user_group_access_for_subgroup itself, so there is no coverage here.
+            if not has_user_group_access_for_subgroup(subgroup, user_profile):
+                raise JsonableError(_("Insufficient permission"))  # nocoverage
 
     user_group.direct_subgroups.set(group_ids_found)
 
@@ -490,7 +646,8 @@ def access_user_group_api_value_for_setting(
 
 def access_user_group_for_setting(
     setting_user_group: int | UserGroupMembersData,
-    user_profile: UserProfile,
+    user_profile: UserProfile | None,
+    realm: Realm,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
@@ -502,7 +659,7 @@ def access_user_group_for_setting(
     """
     user_group_api_value_for_setting = access_user_group_api_value_for_setting(
         setting_user_group,
-        user_profile.realm,
+        realm,
         setting_name=setting_name,
         permission_configuration=permission_configuration,
     )
@@ -511,6 +668,7 @@ def access_user_group_for_setting(
 
     user_group = update_or_create_user_group_for_setting(
         user_profile,
+        realm,
         user_group_api_value_for_setting.direct_members,
         user_group_api_value_for_setting.direct_subgroups,
         current_setting_value,
