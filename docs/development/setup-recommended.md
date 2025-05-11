@@ -750,6 +750,24 @@ When reporting your issue, please include the following information:
 The output of `tools/diagnose` (run inside the Vagrant guest or
 WSL instance) is also usually helpful.
 
+::::{tab-set}
+
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
+
+```{include} setup/shared-vagrant-errors.md
+
+```
+
+```{include} setup/winvm-troubleshoot.md
+
+```
+
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
 ```{include} setup/shared-vagrant-errors.md
 
 ```
@@ -758,9 +776,34 @@ WSL instance) is also usually helpful.
 
 ```
 
-```{include} setup/winvm-troubleshoot.md
+:::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+```{include} setup/shared-vagrant-errors.md
 
 ```
+
+```{include} setup/unix-troubleshoot.md
+
+```
+
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+```{include} setup/shared-vagrant-errors.md
+
+```
+
+```{include} setup/unix-troubleshoot.md
+
+```
+
+:::
+::::
 
 ### Specifying an Ubuntu mirror
 
