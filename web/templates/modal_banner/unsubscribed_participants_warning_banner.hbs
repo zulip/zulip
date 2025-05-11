@@ -1,0 +1,18 @@
+{{#> modal_banner . }}
+    <p class="banner_message">
+        {{#if few_unsubscribed_participants}}
+            {{#tr}}
+                Some topic participants <z-user-names></z-user-names> are not subscribed to &nbsp;<z-stream></z-stream>.
+                {{#*inline "z-user-names"}}({{{unsubscribed_participant_formatted_names_list}}}){{/inline}}
+                {{#*inline "z-stream"}}<strong>{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+            {{/tr}}
+
+        {{else}}
+            {{#tr}}
+                {n_unsubscribed_participants} topic participants are not subscribed to &nbsp;<z-stream></z-stream>.
+                {{#*inline "z-stream"}}<strong>{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+
+{{/modal_banner}}
