@@ -232,6 +232,7 @@ from zerver.views.users import (
     deactivate_user_backend,
     deactivate_user_own_backend,
     get_bots_backend,
+    get_member_backend,
     get_members_backend,
     get_profile_backend,
     get_subscription_backend,
@@ -323,7 +324,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
     rest_path(
         "users/<int:user_id>",
-        GET=get_members_backend,
+        GET=get_member_backend,
         PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),

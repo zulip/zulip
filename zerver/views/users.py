@@ -753,22 +753,32 @@ def get_user_data(
 
 
 @typed_endpoint
-def get_members_backend(
+def get_member_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_id: int | None = None,
+    user_id: int,
     *,
     include_custom_profile_fields: Json[bool] = False,
     client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
-    target_user = None
-    if user_id is not None:
-        target_user = access_user_by_id(
-            user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
-        )
-
+    target_user = access_user_by_id(
+        user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
+    )
     data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
+    return json_success(request, data)
 
+
+@typed_endpoint
+def get_members_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    include_custom_profile_fields: Json[bool] = False,
+    client_gravatar: Json[bool] = True,
+) -> HttpResponse:
+    data = get_user_data(
+        user_profile, include_custom_profile_fields, client_gravatar
+    )
     return json_success(request, data)
 
 
