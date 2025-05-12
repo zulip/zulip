@@ -19,6 +19,7 @@ import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 import {detached_uploads_api_response_schema} from "./attachments.ts";
 import * as attachments_ui from "./attachments_ui.ts";
 import * as blueslip from "./blueslip.ts";
+import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -429,15 +430,18 @@ function handle_message_row_edit_escape(e: JQuery.KeyDownEvent): void {
     e.preventDefault();
 }
 
-function handle_inline_topic_edit_keydown(this: HTMLElement, e: JQuery.KeyDownEvent): void {
+function handle_inline_topic_edit_keydown(
+    $form: JQuery,
+    typeahead: Typeahead<string>,
+    e: JQuery.KeyDownEvent,
+): void {
     e.stopPropagation();
-    const $form = $(this);
     const $form_inline_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
 
     if ($form_inline_input.is(":focus") && keydown_util.is_enter_event(e)) {
         // Handle Enter key event in the inline topic edit UI.
         e.preventDefault();
-        if ($(".typeahead:visible").length > 0) {
+        if (typeahead.shown) {
             // Accepting a suggestion from the typeahead should not trigger a save.
             return;
         }
@@ -996,13 +1000,15 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
     update_inline_topic_edit_input_max_width($inline_topic_edit_input);
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-    composebox_typeahead.initialize_topic_edit_typeahead(
+    const typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
         stream_name,
         false,
     );
 
-    $form.on("keydown", handle_inline_topic_edit_keydown);
+    $form.on("keydown", (event) => {
+        handle_inline_topic_edit_keydown($form, typeahead, event);
+    });
 
     $inline_topic_edit_input.on("input", handle_inline_topic_edit_change);
 
