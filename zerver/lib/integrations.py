@@ -472,11 +472,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         stream_name="github",
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
-            WebhookUrlOption(
-                name="ignore_private_repositories",
-                label="Exclude notifications from private repositories",
-                validator=check_bool,
-            ),
+            WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
         ],
     ),
     WebhookIntegration(
