@@ -58,7 +58,7 @@ as an empty string.
 
 ## Changes
 
-* In Zulip 10.0 (feature level ZF-f80735), support was added for a new
+* In Zulip 10.0 (feature level 366), support was added for a new
   `is:muted` operator combination, matching messages in topics and
   channels that the user has [muted](/help/mute-a-topic).
 
