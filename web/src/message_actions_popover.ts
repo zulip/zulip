@@ -25,7 +25,7 @@ import {the} from "./util.ts";
 let message_actions_popover_keyboard_toggle = false;
 
 function get_action_menu_menu_items(): JQuery {
-    return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider):visible a");
+    return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
 }
 
 function focus_first_action_popover_item(): void {
