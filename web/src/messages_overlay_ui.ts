@@ -88,16 +88,16 @@ export function set_initial_element(element_id: string | undefined, context: Con
 
 function row_before_focus(context: Context): JQuery {
     const $focused_row = row_with_focus(context);
-    const $prev_row = $focused_row.prev(`.${CSS.escape(context.row_item_selector)}:visible`);
+    const $prev_row = $focused_row.prev(`.${CSS.escape(context.row_item_selector)}`);
     // The draft modal can have two sub-sections. This handles the edge case
     // when the user moves from the second "Other drafts" section to the first
     // section which contains drafts from a particular narrow.
     if (
         $prev_row.length === 0 &&
         $focused_row.parent().attr("id") === "other-drafts" &&
-        $("#drafts-from-conversation").is(":visible")
+        $("#drafts-from-conversation").css("display") !== "none"
     ) {
-        return $($("#drafts-from-conversation").children(".overlay-message-row:visible").last());
+        return $($("#drafts-from-conversation").children(".overlay-message-row").last());
     }
 
     return $prev_row;
@@ -105,16 +105,16 @@ function row_before_focus(context: Context): JQuery {
 
 function row_after_focus(context: Context): JQuery {
     const $focused_row = row_with_focus(context);
-    const $next_row = $focused_row.next(`.${CSS.escape(context.row_item_selector)}:visible`);
+    const $next_row = $focused_row.next(`.${CSS.escape(context.row_item_selector)}`);
     // The draft modal can have two sub-sections. This handles the edge case
     // when the user moves from the first section (drafts from a particular
     // narrow) to the second section which contains the rest of the drafts.
     if (
         $next_row.length === 0 &&
         $focused_row.parent().attr("id") === "drafts-from-conversation" &&
-        $("#other-drafts").is(":visible")
+        $("#other-drafts").css("display") !== "none"
     ) {
-        return $("#other-drafts").children(".overlay-message-row:visible").first();
+        return $("#other-drafts").children(".overlay-message-row").first();
     }
     return $next_row;
 }
