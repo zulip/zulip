@@ -2,14 +2,6 @@
     {{#unless is_owner}}
     <div class='tip'>{{t "Only organization owners can edit these settings."}}</div>
     {{/unless}}
-    {{#unless user_has_email_set}}
-    <div class="tip">
-        {{#tr}}
-            You must <z-link>configure your email</z-link> to access this feature.
-            {{#*inline "z-link"}}<a href="/help/demo-organizations#configure-email-for-demo-organization-owner" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
-        {{/tr}}
-    </div>
-    {{/unless}}
     <form class="admin-realm-form org-authentications-form">
         <div id="org-auth_settings" class="settings-subsection-parent">
             <div class ="subsection-header">
