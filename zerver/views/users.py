@@ -725,6 +725,7 @@ def get_user_data(
     user_profile: UserProfile,
     include_custom_profile_fields: bool,
     client_gravatar: bool,
+    *,
     target_user: UserProfile | None = None,
     user_ids: list[int] | None = None,
 ) -> dict[str, Any]:
@@ -767,7 +768,12 @@ def get_member_backend(
     target_user = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
     )
-    data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
+    data = get_user_data(
+        user_profile,
+        include_custom_profile_fields,
+        client_gravatar,
+        target_user=target_user,
+    )
     return json_success(request, data)
 
 
@@ -781,7 +787,10 @@ def get_members_backend(
     client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
     data = get_user_data(
-        user_profile, include_custom_profile_fields, client_gravatar, None, user_ids
+        user_profile,
+        include_custom_profile_fields,
+        client_gravatar,
+        user_ids=user_ids,
     )
     return json_success(request, data)
 
@@ -893,5 +902,10 @@ def get_user_by_email(
         user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=False
     )
 
-    data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
+    data = get_user_data(
+        user_profile,
+        include_custom_profile_fields,
+        client_gravatar,
+        target_user=target_user,
+    )
     return json_success(request, data)
