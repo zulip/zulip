@@ -209,7 +209,7 @@ async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Verona",
-        "Channel",
+        "#Verona",
         expect_verona_stream,
         "#Verona - Zulip Dev - Zulip",
     );
@@ -217,7 +217,7 @@ async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Cordelia",
-        "Direct",
+        "dm:",
         expect_cordelia_direct_messages,
         "Cordelia, Lear's daughter - Zulip Dev - Zulip",
     );
