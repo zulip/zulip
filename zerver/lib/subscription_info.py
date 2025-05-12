@@ -1,11 +1,14 @@
 import itertools
 from collections.abc import Callable, Collection, Iterable, Mapping
+from datetime import timedelta
 from operator import itemgetter
 from typing import Any, Literal
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import QuerySet
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 
@@ -41,7 +44,7 @@ from zerver.lib.user_groups import (
     get_members_and_subgroups_of_groups,
     get_recursive_membership_groups,
 )
-from zerver.models import Realm, Stream, Subscription, UserGroup, UserProfile
+from zerver.models import Realm, Stream, Subscription, UserGroup, UserPresence, UserProfile
 from zerver.models.streams import StreamTopicsPolicyEnum, get_all_streams
 
 
@@ -830,21 +833,60 @@ def gather_subscriptions_helper(
             subscribed_stream_ids,
         )
 
-        # Eventually "partial subscribers" will return (at minimum):
-        # (1) all subscriptions for recently active users (for the buddy list)
-        # (2) subscriptions for all bots
-        #
-        # For now, we're only doing (2).
-        send_partial_subscribers = include_subscribers == "partial"
+        # `partial_subscribers` returns:
+        #  * Any subscriber that would show up in `buddy_data.get_filtered_user_id_list`,
+        #    which determines who is shown in the buddy list. This ensures we show them
+        #    in the correct section. We should be careful to keep this code in sync with
+        #    that buddy list logic.
+        #  * Subscriptions for all bots, so that we can calculate human subscriber
+        #    counts on the client.
         partial_subscriber_map: dict[int, list[int]] = dict()
+
+        # This constant should stay in sync with prescence.ts
+        # (send it from the server?)
+        BIG_REALM_COUNT = 250
+        active_users = list(user_profile.realm.get_active_users())
+        send_partial_subscribers = (
+            include_subscribers == "partial" and len(active_users) >= BIG_REALM_COUNT
+        )
+
+        def get_recently_active_user_ids() -> set[int]:
+            recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
+            rows = UserPresence.objects.filter(
+                last_connected_time__gte=recent,
+            ).values("user_profile_id")
+            online_user_ids = {row["user_profile_id"] for row in rows}
+            return set(online_user_ids)
+
         if send_partial_subscribers:
+            # This constant should stay in sync with buddy_data.ts
+            # (send it from the server?)
+            MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS = 75
             bot_users = set(
                 UserProfile.objects.filter(
                     is_bot=True, realm=user_profile.realm, is_active=True
                 ).values_list("id", flat=True)
             )
+            online_users = get_recently_active_user_ids()
+
+            def include_subscriber(user_id: int, stream_id: int) -> bool:
+                # Always include ourselves.
+                if user_id == user_profile.id:
+                    return True
+                if user_id in bot_users:
+                    return True
+                if user_id in online_users:
+                    return True
+                # We want to show subscribers even if they're inactive, if there are few
+                # enough subscribers in the channel.
+                if len(subscriber_map[stream_id]) <= MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS:
+                    return True
+                return False
+
             for stream_id, users in subscriber_map.items():
-                partial_subscribers = [user_id for user_id in users if user_id in bot_users]
+                partial_subscribers = [
+                    user_id for user_id in users if include_subscriber(user_id, stream_id)
+                ]
                 if len(partial_subscribers) != len(subscriber_map[stream_id]):
                     partial_subscriber_map[stream_id] = partial_subscribers
 
