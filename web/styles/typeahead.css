@@ -64,7 +64,7 @@
             }
 
             &.topic-typeahead-link {
-                gap: 0;
+                gap: 5px;
             }
 
             &.topic-edit-typeahead {
