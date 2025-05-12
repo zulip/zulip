@@ -297,6 +297,13 @@ Currently configured preset URL options:
   input `main` and `dev` for the branches of their repository, then
   `&branches=main%2Cdev` would be appended to the generated integration URL.
 
+- **`IGNORE_PRIVATE_REPOSITORIES`**: This preset is intended to be used for
+  [version control integrations](/integrations/version-control), and adds UI
+  for the user exclude private repositories from triggering Zulip
+  notification messages. When the user selects this option, the
+  `ignore_private_repositories` boolean parameter will be added to the
+  [generated integration URL](/help/generate-integration-url).
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an
