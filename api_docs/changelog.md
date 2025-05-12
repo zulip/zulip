@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 384**
+
+* [`GET /users`](/api/get-users): Added `user_ids` query parameter to
+  fetch data only for the provided `user_ids`.
+
 **Feature level 383**
 
 * [`POST /register`](/api/register-queue), [`PATCH

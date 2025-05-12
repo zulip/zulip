@@ -2915,7 +2915,7 @@ class GetProfileTest(ZulipTestCase):
         # 1. Hamlet and Iago - they are subscribed to common streams.
         # 2. Prospero - Because Polonius sent a DM to Prospero when
         # they were allowed to access all users.
-        # 3. Aaron and Zoe - Because they are particapting in a
+        # 3. Aaron and Zoe - Because they are participating in a
         # group DM with Polonius.
         # 4. Shiva - Because Shiva sent a DM to Polonius.
         # 5. Polonius - A user can obviously access themselves.
@@ -2961,6 +2961,66 @@ class GetProfileTest(ZulipTestCase):
         inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
         self.assertCountEqual(
             inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id, hamlet.id]
+        )
+
+    def test_get_user_dicts_with_ids(self) -> None:
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        zoe = self.example_user("ZOE")
+        aaron = self.example_user("aaron")
+        webhook_bot = self.example_user("webhook_bot")
+
+        self.set_up_db_for_testing_user_access()
+        # Test the /json/users endpoint with user_ids query parameter.
+        self.login("polonius")
+        # These users are accessible to Polonius because:
+        # 1. Hamlet and Iago - they are subscribed to common streams.
+        # 3. Aaron and Zoe - Because they are participating in a
+        # group DM with Polonius.
+        accessible_user_ids_subset = [hamlet.id, iago.id, aaron.id, zoe.id, webhook_bot.id]
+        inaccessible_user_ids_subset = [cordelia.id, desdemona.id]
+        user_ids_to_fetch = accessible_user_ids_subset + inaccessible_user_ids_subset
+        with self.assert_database_query_count(9):
+            result = orjson.loads(
+                self.client_get(
+                    "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
+                ).content
+            )
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        self.assert_length(accessible_users, len(accessible_user_ids_subset))
+        accessible_user_ids = [user["user_id"] for user in accessible_users]
+        self.assertCountEqual(
+            accessible_user_ids,
+            accessible_user_ids_subset,
+        )
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        self.assert_length(accessible_human_users, 4)
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(inaccessible_user_ids, inaccessible_user_ids_subset)
+
+        # Desdemona can access all users since she is an admin.
+        self.login("desdemona")
+        with self.assert_database_query_count(4):
+            result = orjson.loads(
+                self.client_get(
+                    "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
+                ).content
+            )
+        all_fetched_users = result["members"]
+        self.assertCountEqual(
+            [user["user_id"] for user in all_fetched_users],
+            user_ids_to_fetch,
         )
 
     def test_get_user_with_restricted_access(self) -> None:

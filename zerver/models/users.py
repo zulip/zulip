@@ -1101,6 +1101,15 @@ def get_realm_user_dicts(realm_id: int) -> list[RawUserDict]:
     )
 
 
+def get_realm_user_dicts_from_ids(realm_id: int, user_ids: list[int]) -> list[RawUserDict]:
+    return list(
+        UserProfile.objects.filter(
+            realm_id=realm_id,
+            id__in=user_ids,
+        ).values(*realm_user_dict_fields)
+    )
+
+
 @cache_with_key(active_user_ids_cache_key, timeout=3600 * 24 * 7)
 def active_user_ids(realm_id: int) -> list[int]:
     query = UserProfile.objects.filter(

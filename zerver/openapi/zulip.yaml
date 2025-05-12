@@ -9514,11 +9514,16 @@ paths:
   /users:
     get:
       operationId: get-users
-      summary: Get all users
+      summary: Get users
       tags: ["users"]
       description: |
-        Retrieve details on all users in the organization. Optionally
-        includes values of [custom profile fields](/help/custom-profile-fields).
+        Retrieve details on users in the organization.
+
+        By default, returns all accessible users in the organization.
+        The `user_ids` query parameter can be used to limit the
+        results to a specific set of user IDs.
+
+        Optionally includes values of [custom profile fields](/help/custom-profile-fields).
 
         You can also [fetch details on a single user](/api/get-user).
       x-curl-examples-parameters:
@@ -9536,6 +9541,22 @@ paths:
       parameters:
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
+        - name: user_ids
+          in: query
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [1, 2, 3]
+          required: false
+          description: |
+            Limits the results to the specified user IDs. If not
+            provided, the server will return all accessible users in
+            the organization.
+
+            **Changes**: New in Zulip 11.0 (feature level 384).
       responses:
         "200":
           description: Success.

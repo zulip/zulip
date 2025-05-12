@@ -69,7 +69,7 @@
 * [Get a user](/api/get-user)
 * [Get a user by email](/api/get-user-by-email)
 * [Get own user](/api/get-own-user)
-* [Get all users](/api/get-users)
+* [Get users](/api/get-users)
 * [Create a user](/api/create-user)
 * [Update a user](/api/update-user)
 * [Update a user by email](/api/update-user-by-email)

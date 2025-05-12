@@ -726,6 +726,7 @@ def get_user_data(
     include_custom_profile_fields: bool,
     client_gravatar: bool,
     target_user: UserProfile | None = None,
+    user_ids: list[int] | None = None,
 ) -> dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
@@ -742,9 +743,11 @@ def get_user_data(
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=False,
         include_custom_profile_fields=include_custom_profile_fields,
+        user_ids=user_ids,
     )
 
     if target_user is not None:
+        assert user_ids is None
         data: dict[str, Any] = {"user": members[target_user.id]}
     else:
         data = {"members": [members[k] for k in members]}
@@ -773,11 +776,12 @@ def get_members_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    user_ids: Json[list[int]] | None = None,
     include_custom_profile_fields: Json[bool] = False,
     client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
     data = get_user_data(
-        user_profile, include_custom_profile_fields, client_gravatar
+        user_profile, include_custom_profile_fields, client_gravatar, None, user_ids
     )
     return json_success(request, data)
 
