@@ -113,7 +113,7 @@ In Zulip 10.0 (feature level 319), added Markdown syntax
 for linking to a specific message in a conversation. Declared the
 `data-stream-id` field to be deprecated as detailed above.
 
-In Zulip 11.0 (feature level ZF-93627a), clients can decide what
+In Zulip 11.0 (feature level 383), clients can decide what
 channel view a.stream channel link elements take you to -- i.e.,
 the href for those is the default behavior of the link that also
 encodes the channel alongside the data-stream-id field, but clients
