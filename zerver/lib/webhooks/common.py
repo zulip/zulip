@@ -58,6 +58,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 
 class PresetConfigOption(str, Enum):
     BRANCHES = "branches"
+    IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
 
 
 @dataclass
@@ -81,6 +82,12 @@ class WebhookConfigOption:
                     name=config.value,
                     description="",
                     validator=check_string,
+                )
+            case PresetConfigOption.IGNORE_PRIVATE_REPOSITORIES:
+                return cls(
+                    name=config.value,
+                    description="Exclude notifications from private repositories",
+                    validator=check_bool,
                 )
 
         raise AssertionError(_("Unknown 'PresetConfigOption': {config}").format(config=config))

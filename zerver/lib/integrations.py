@@ -12,7 +12,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
-from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import PresetConfigOption, WebhookConfigOption
 
 """This module declares all of the (documented) integrations available
@@ -458,11 +457,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         stream_name="github",
         config_options=[
             WebhookConfigOption.build_preset_config(PresetConfigOption.BRANCHES),
-            WebhookConfigOption(
-                name="ignore_private_repositories",
-                description="Exclude notifications from private repositories",
-                validator=check_bool,
-            ),
+            WebhookConfigOption.build_preset_config(PresetConfigOption.IGNORE_PRIVATE_REPOSITORIES),
         ],
     ),
     WebhookIntegration(
