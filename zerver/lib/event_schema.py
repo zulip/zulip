@@ -460,7 +460,11 @@ def check_realm_default_update(
     assert prop in RealmUserDefault.property_types
 
     prop_type = RealmUserDefault.property_types[prop]
-    assert isinstance(event["value"], prop_type)
+    value = event["value"]
+    if inspect.isclass(prop_type) and issubclass(prop_type, Enum):
+        assert isinstance(value, str)
+    else:
+        assert isinstance(value, prop_type)
 
 
 def check_realm_update_dict(
@@ -620,7 +624,10 @@ def check_user_settings_update(
         assert isinstance(value, str)
     else:
         setting_type = UserProfile.property_types[setting_name]
-        assert isinstance(value, setting_type)
+        if inspect.isclass(setting_type) and issubclass(setting_type, Enum):
+            assert isinstance(value, str)
+        else:
+            assert isinstance(value, setting_type)
 
     if setting_name == "default_language":
         assert "language_name" in event

@@ -4538,6 +4538,7 @@ class RealmPropertyActionTest(BaseAction):
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -4574,7 +4575,12 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                 )
 
-            old_value = vals[count]
+            if isinstance(val, Enum):
+                old_value = vals[count].value
+                new_value = val.value
+            else:
+                old_value = vals[count]
+                new_value = val
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
@@ -4583,7 +4589,7 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                     extra_data={
                         RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: val,
+                        RealmAuditLog.NEW_VALUE: new_value,
                         "property": name,
                     },
                 ).count(),
@@ -4665,6 +4671,7 @@ class UserDisplayActionTest(BaseAction):
             web_line_height_percent=[105, 120, 160],
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         user_settings_object = True

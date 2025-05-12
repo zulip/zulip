@@ -1909,6 +1909,15 @@ class RealmAPITest(ZulipTestCase):
         super().setUp()
         self.login("desdemona")
 
+    def process_value_for_enum_settings(self, raw_value: Any) -> tuple[Any, Any]:
+        if isinstance(raw_value, Enum):
+            api_value = raw_value.name
+            value = raw_value.value
+        else:
+            api_value = raw_value
+            value = raw_value
+        return (api_value, value)
+
     def update_with_api(self, name: str, value: int | str) -> Realm:
         if not isinstance(value, str):
             value = orjson.dumps(value).decode()
@@ -1967,22 +1976,14 @@ class RealmAPITest(ZulipTestCase):
 
         do_set_realm_property(get_realm("zulip"), name, vals[0], acting_user=None)
 
-        if isinstance(vals[0], Enum):
-            for val in vals[1:]:
-                raw_value = val.name
-                value = val.value
-                realm = self.update_with_api(name, raw_value)
-                self.assertEqual(getattr(realm, name), value)
-            realm = self.update_with_api(name, vals[0].name)
-            self.assertEqual(getattr(realm, name), vals[0].value)
-            return
-
         for val in vals[1:]:
-            realm = self.update_with_api(name, val)
-            self.assertEqual(getattr(realm, name), val)
+            api_value, value = self.process_value_for_enum_settings(val)
+            realm = self.update_with_api(name, api_value)
+            self.assertEqual(getattr(realm, name), value)
 
-        realm = self.update_with_api(name, vals[0])
-        self.assertEqual(getattr(realm, name), vals[0])
+        api_value, value = self.process_value_for_enum_settings(vals[0])
+        realm = self.update_with_api(name, api_value)
+        self.assertEqual(getattr(realm, name), value)
 
     def do_test_realm_permission_group_setting_update_api(self, setting_name: str) -> None:
         realm = get_realm("zulip")
@@ -2367,6 +2368,7 @@ class RealmAPITest(ZulipTestCase):
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_follow_topics_where_mentioned=[True, False],
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -2383,13 +2385,15 @@ class RealmAPITest(ZulipTestCase):
         do_set_realm_user_default_setting(realm_user_default, name, vals[0], acting_user=None)
 
         for val in vals[1:]:
-            self.update_with_realm_default_api(name, val)
+            api_value, value = self.process_value_for_enum_settings(val)
+            self.update_with_realm_default_api(name, api_value)
             realm_user_default = RealmUserDefault.objects.get(realm=realm)
-            self.assertEqual(getattr(realm_user_default, name), val)
+            self.assertEqual(getattr(realm_user_default, name), value)
 
-        self.update_with_realm_default_api(name, vals[0])
+        api_value, value = self.process_value_for_enum_settings(vals[0])
+        self.update_with_realm_default_api(name, api_value)
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
-        self.assertEqual(getattr(realm_user_default, name), vals[0])
+        self.assertEqual(getattr(realm_user_default, name), value)
 
     def test_update_default_realm_settings(self) -> None:
         for prop in RealmUserDefault.property_types:
@@ -2485,6 +2489,13 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_error(
             result, "Invalid emojiset: Value error, Not in the list of possible values"
         )
+
+    def test_invalid_resolved_topic_notice_auto_read_policy(self) -> None:
+        result = self.client_patch(
+            "/json/realm/user_settings_defaults",
+            {"resolved_topic_notice_auto_read_policy": "invalid"},
+        )
+        self.assert_json_error(result, "Invalid resolved_topic_notice_auto_read_policy")
 
     def test_ignored_parameters_in_realm_default_endpoint(self) -> None:
         params = {"starred_message_counts": orjson.dumps(False).decode(), "emoji_set": "twitter"}

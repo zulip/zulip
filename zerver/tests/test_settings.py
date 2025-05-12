@@ -12,7 +12,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.models import Draft, ScheduledMessageNotificationEmail, UserProfile
 from zerver.models.scheduled_jobs import NotificationTriggers
-from zerver.models.users import get_user_profile_by_api_key
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_user_profile_by_api_key
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -374,6 +374,7 @@ class ChangeSettingsTest(ZulipTestCase):
             realm_name_in_email_notifications_policy=2,
             automatically_follow_topics_policy=1,
             automatically_unmute_topics_in_muted_streams_policy=1,
+            resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum.always.name,
         )
 
         self.login("hamlet")
@@ -397,6 +398,8 @@ class ChangeSettingsTest(ZulipTestCase):
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
         user_profile = self.example_user("hamlet")
+        if setting_name == "resolved_topic_notice_auto_read_policy":
+            test_value = ResolvedTopicNoticeAutoReadPolicyEnum.always.value
         self.assertEqual(getattr(user_profile, setting_name), test_value)
 
     def test_change_user_setting(self) -> None:
@@ -474,6 +477,11 @@ class ChangeSettingsTest(ZulipTestCase):
                 "setting_name": "desktop_icon_count_display",
                 "value": 10,
                 "error_msg": "Invalid desktop_icon_count_display: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "resolved_topic_notice_auto_read_policy",
+                "value": "invalid",
+                "error_msg": "Invalid resolved_topic_notice_auto_read_policy",
             },
         ]
         self.login("hamlet")

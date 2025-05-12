@@ -14,6 +14,7 @@ from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from pydantic import Json
+from pydantic.functional_validators import AfterValidator
 
 from confirmation.models import (
     Confirmation,
@@ -48,11 +49,13 @@ from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_par
 from zerver.lib.typed_endpoint_validators import (
     check_int_in_validator,
     check_string_in_validator,
+    parse_enum_from_string_value,
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import EmailChangeStatus, UserProfile
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
@@ -307,6 +310,16 @@ def json_change_settings(
     web_navigate_to_sent_message: Json[bool] | None = None,
     web_suggest_update_timezone: Json[bool] | None = None,
     hide_ai_features: Json[bool] | None = None,
+    resolved_topic_notice_auto_read_policy: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "resolved_topic_notice_auto_read_policy",
+                ResolvedTopicNoticeAutoReadPolicyEnum,
+            )
+        ),
+    ] = None,
 ) -> HttpResponse:
     # UserProfile object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a

@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from datetime import timedelta
+from enum import Enum
 
 from django.conf import settings
 from django.db import transaction
@@ -433,20 +434,33 @@ def update_scheduled_email_notifications_time(
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
-    setting_value: bool | str | int,
+    setting_value: bool | str | int | Enum,
     *,
     acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(user_profile, setting_name)
     event_time = timezone_now()
 
+    if isinstance(setting_value, Enum):
+        db_setting_value = setting_value.value
+        event_value = setting_value.name
+    else:
+        db_setting_value = setting_value
+        event_value = db_setting_value
+
     if setting_name == "timezone":
-        assert isinstance(setting_value, str)
-        setting_value = canonicalize_timezone(setting_value)
+        assert isinstance(db_setting_value, str)
+        assert isinstance(event_value, str)
+        db_setting_value = canonicalize_timezone(db_setting_value)
     else:
         property_type = UserProfile.property_types[setting_name]
-        assert isinstance(setting_value, property_type)
-    setattr(user_profile, setting_name, setting_value)
+        if isinstance(setting_value, Enum):
+            assert isinstance(setting_value, property_type)
+            assert isinstance(event_value, str)
+        else:
+            assert isinstance(db_setting_value, property_type)
+            assert isinstance(event_value, property_type)
+    setattr(user_profile, setting_name, db_setting_value)
 
     # TODO: Move these database actions into a transaction.atomic block.
     user_profile.save(update_fields=[setting_name])
@@ -459,29 +473,30 @@ def do_change_user_setting(
         modified_user=user_profile,
         extra_data={
             RealmAuditLog.OLD_VALUE: old_value,
-            RealmAuditLog.NEW_VALUE: setting_value,
+            RealmAuditLog.NEW_VALUE: db_setting_value,
             "property": setting_name,
         },
     )
 
     # Disabling digest emails should clear a user's email queue
-    if setting_name == "enable_digest_emails" and not setting_value:
+    if setting_name == "enable_digest_emails" and not db_setting_value:
         clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
 
     if setting_name == "email_notifications_batching_period_seconds":
         assert isinstance(old_value, int)
-        assert isinstance(setting_value, int)
-        update_scheduled_email_notifications_time(user_profile, old_value, setting_value)
+        assert isinstance(db_setting_value, int)
+        update_scheduled_email_notifications_time(user_profile, old_value, db_setting_value)
 
     event = {
         "type": "user_settings",
         "op": "update",
         "property": setting_name,
-        "value": setting_value,
+        "value": event_value,
     }
+
     if setting_name == "default_language":
-        assert isinstance(setting_value, str)
-        event["language_name"] = get_language_name(setting_value)
+        assert isinstance(db_setting_value, str)
+        event["language_name"] = get_language_name(db_setting_value)
 
     transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
 
@@ -495,7 +510,7 @@ def do_change_user_setting(
             "type": "update_global_notifications",
             "user": user_profile.email,
             "notification_name": setting_name,
-            "setting": setting_value,
+            "setting": event_value,
         }
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
@@ -507,23 +522,23 @@ def do_change_user_setting(
             "type": "update_display_settings",
             "user": user_profile.email,
             "setting_name": setting_name,
-            "setting": setting_value,
+            "setting": event_value,
         }
         if setting_name == "default_language":
-            assert isinstance(setting_value, str)
-            legacy_event["language_name"] = get_language_name(setting_value)
+            assert isinstance(db_setting_value, str)
+            legacy_event["language_name"] = get_language_name(db_setting_value)
 
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     if setting_name == "allow_private_data_export":
-        event = {
+        realm_export_event = {
             "type": "realm_export_consent",
             "user_id": user_profile.id,
-            "consented": setting_value,
+            "consented": event_value,
         }
         send_event_on_commit(
             user_profile.realm,
-            event,
+            realm_export_event,
             list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
         )
 
@@ -546,7 +561,7 @@ def do_change_user_setting(
             user_profile, old_value, user_profile.email_address_visibility
         )
 
-        if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, setting_value]:
+        if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, db_setting_value]:
             # We use real email addresses on UserProfile.email only if
             # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
             # changes between values that will not require changing
@@ -559,7 +574,7 @@ def do_change_user_setting(
         send_user_email_update_event(user_profile)
         notify_avatar_url_change(user_profile)
 
-    if setting_name == "enable_drafts_synchronization" and setting_value is False:
+    if setting_name == "enable_drafts_synchronization" and db_setting_value is False:
         # Delete all of the drafts from the backend but don't send delete events
         # for them since all that's happened is that we stopped syncing changes,
         # not deleted every previously synced draft - to do that use the DELETE
@@ -575,7 +590,7 @@ def do_change_user_setting(
         # user's current presence state as consistent with the new
         # setting; not doing so can make it look like the settings
         # change didn't have any effect.
-        if setting_value:
+        if db_setting_value:
             status = UserPresence.LEGACY_STATUS_ACTIVE_INT
             presence_time = timezone_now()
         else:

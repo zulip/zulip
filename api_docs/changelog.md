@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 385**
+
+* [`POST /register`](/api/register-queue), [`PATCH/settings`](/api/update-settings),
+  [`PATCH/realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `resolved_topic_notice_auto_read_policy` setting, which controls
+  how resolved-topic notices are marked as read for a user.
+
 **Feature level 384**
 
 * [`GET /users`](/api/get-users): Added `user_ids` query parameter to

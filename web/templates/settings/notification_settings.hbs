@@ -96,6 +96,13 @@
                 {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
             </select>
         </div>
+
+        <div class="input-group">
+            <label for="{{prefix}}resolved_topic_notice_auto_read_policy" class="settings-field-label">{{t "Automatically mark resolved topic notices as read" }}</label>
+            <select name="resolved_topic_notice_auto_read_policy" class="setting_resolved_topic_notice_auto_read_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}resolved_topic_notice_auto_read_policy" data-setting-widget-type="string">
+                {{> dropdown_options_widget option_values=resolved_topic_notice_auto_read_policy_values}}
+            </select>
+        </div>
     </div>
 
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">

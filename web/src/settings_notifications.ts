@@ -252,6 +252,10 @@ export function set_up(settings_panel: SettingsPanel): void {
         settings_object.automatically_follow_topics_policy,
     );
 
+    $container
+        .find(".setting_resolved_topic_notice_auto_read_policy")
+        .val(settings_object.resolved_topic_notice_auto_read_policy);
+
     const $automatically_unmute_topics_in_muted_streams_policy_dropdown = $container.find(
         ".setting_automatically_unmute_topics_in_muted_streams_policy",
     );
