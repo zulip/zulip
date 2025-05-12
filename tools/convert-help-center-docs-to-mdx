@@ -172,11 +172,27 @@ def insert_frontmatter(markdown_string: str) -> str:
     return title + markdown_string.split("\n", 1)[-1]
 
 
-def convert_string_to_mdx(markdown_string: str) -> str:
+def get_markdown_string_from_file(markdown_file_path: str) -> str:
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
+    if markdown_file_path.startswith("/"):
+        with open(markdown_file_path) as fp:
+            return fp.read()
+
+    return jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+
+def convert_help_center_file_to_mdx(
+    markdown_file_path: str,
+) -> str:
+    """
+    Given a path to a Markdown file, return the equivalent MDX file.
+    """
+    result = get_markdown_string_from_file(markdown_file_path)
+
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
-    result = markdown_string
     result = fix_file_imports(result, import_statement_set)
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
@@ -186,23 +202,6 @@ def convert_string_to_mdx(markdown_string: str) -> str:
     result = insert_imports(result, import_statement_set)
     result = insert_frontmatter(result)
     return result
-
-
-def convert_file_to_mdx(
-    markdown_file_path: str,
-) -> str:
-    """
-    Given a path to a Markdown file, return the equivalent MDX file.
-    """
-    jinja = engines["Jinja2"]
-    assert isinstance(jinja, Jinja2)
-    if markdown_file_path.startswith("/"):
-        with open(markdown_file_path) as fp:
-            markdown_string = fp.read()
-    else:
-        markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
-
-    return convert_string_to_mdx(markdown_string)
 
 
 def run() -> None:
@@ -220,7 +219,7 @@ def run() -> None:
     for name in os.listdir(input_dir):
         if os.path.isfile(os.path.join(input_dir, name)):
             converted_count += 1
-            mdx = convert_file_to_mdx(os.path.join(input_dir, name))
+            mdx = convert_help_center_file_to_mdx(os.path.join(input_dir, name))
             with open(
                 os.path.join(
                     BASE_DIR,
