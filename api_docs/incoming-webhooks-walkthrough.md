@@ -270,6 +270,7 @@ unique to each setting, and are usually tailored for a category of integration.
 
 - To construct commonly used `WebhookUrlOption` settings. These presets construct
 normal configuration options, they are abstracted as presets mainly to be easily reusable.
+For example, `PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES`.
 
 Using configuration option preset:
 
@@ -305,6 +306,12 @@ Here are the details of each `PresetUrlOption`:
 
     Integrations using this: AzureDevOps, Bitbucket, Bitbucket Server, Gitea, GitHub,
     GitLab, Gogs, RhodeCode.
+
+  1. **`IGNORE_PRIVATE_REPOSITORIES`**: Preset for a normal `WebhookUrlOption` object
+    that adds a check box field called "Exclude notifications from private repositories".
+    This setting is meant to be used by "version-control" integrations such as GitHub.
+
+    Integration using this: GitHub.
 
 ## Step 4: Manually testing the webhook
 
