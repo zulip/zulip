@@ -112,6 +112,24 @@ export function get_edit_container(group: UserGroup): JQuery {
     );
 }
 
+export function update_group_creation_ui(): void {
+    const $left_panel_icon_button = $("#add_new_user_group .create_user_group_button");
+    const $right_panel_permission_text = $("#groups_overlay .right .creation-permission-text");
+    if (settings_data.user_can_create_user_groups()) {
+        $left_panel_icon_button.show();
+        $right_panel_permission_text.hide();
+    } else {
+        $left_panel_icon_button.hide();
+        $right_panel_permission_text.show();
+    }
+
+    $left_panel_icon_button.prop("disabled", !realm.zulip_plan_is_not_limited);
+    $("#groups_overlay .right .create_user_group_button").prop(
+        "disabled",
+        !realm.zulip_plan_is_not_limited || !settings_data.user_can_create_user_groups(),
+    );
+}
+
 function update_add_members_elements(group: UserGroup): void {
     if (!is_editing_group(group.id)) {
         return;
@@ -1828,7 +1846,6 @@ export function setup_page(callback: () => void): void {
 
     function populate_and_fill(): void {
         const template_data = {
-            can_create_user_groups: settings_data.user_can_create_user_groups(),
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
             is_business_type_org:
@@ -2250,6 +2267,7 @@ export function launch(
         });
         change_state(section, left_side_tab, right_side_tab);
         resize.resize_settings_overlay();
+        update_group_creation_ui();
     });
     if (!get_active_data().id) {
         if (section === "new") {
