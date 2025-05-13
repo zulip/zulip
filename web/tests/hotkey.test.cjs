@@ -195,6 +195,8 @@ run_test("mappings", () => {
     assert.equal(map_down(".", false, true).name, "narrow_to_compose_target");
 
     assert.equal(map_down("p", false, false, false, true).name, "toggle_compose_preview"); // Alt + P
+    assert.equal(map_down("+", false).name, "thumbs_up_emoji");
+    assert.equal(map_down("+", true).name, "thumbs_up_emoji");
 
     // More negative tests.
     assert.equal(map_down("Escape", true), undefined);
@@ -217,12 +219,14 @@ run_test("mappings", () => {
     assert.equal(map_down("S", true, true), undefined);
     assert.equal(map_down("[", true, true, false), undefined);
     assert.equal(map_down("P", true, false, false, true), undefined);
+    assert.equal(map_down("+", false, true), undefined);
 
     // Cmd tests for MacOS
     navigator.platform = "MacIntel";
     assert.equal(map_down("[", false, true, false).name, "escape");
     assert.equal(map_down("[", false, false, true), undefined);
-    assert.equal(map_down("c", false, true, true).name, "copy_with_c");
+    assert.equal(map_down("c", false, false, true).name, "copy_with_c");
+    assert.equal(map_down("c", false, true, true), undefined);
     assert.equal(map_down("c", false, true, false), undefined);
     assert.equal(map_down("k", false, false, true).name, "search_with_k");
     assert.equal(map_down("k", false, true, false), undefined);
@@ -232,6 +236,12 @@ run_test("mappings", () => {
     assert.equal(map_down(".", false, true, false), undefined);
     // Reset platform
     navigator.platform = "";
+
+    // Caps Lock doesn't interfere with shortcuts.
+    assert.equal(map_down("A").name, "open_combined_feed");
+    assert.equal(map_down("A", true).name, "stream_cycle_backward");
+    assert.equal(map_down("C", false, true).name, "copy_with_c");
+    assert.equal(map_down("P", false, false, false, true).name, "toggle_compose_preview");
 });
 
 function process(s, shiftKey) {
@@ -260,7 +270,8 @@ function assert_mapping(c, module, func_name, shiftKey) {
 
 function assert_unmapped(s) {
     for (const c of s) {
-        assert.equal(process(c), false);
+        const shiftKey = /^[A-Z]$/.test(c);
+        assert.equal(process(c, shiftKey), false);
     }
 }
 
@@ -308,7 +319,7 @@ test_while_not_editing_text("streams", ({override}) => {
     delete settings_data.user_can_create_web_public_streams;
     override(overlays, "streams_open", () => true);
     override(overlays, "any_active", () => true);
-    assert_mapping("S", stream_settings_ui, "keyboard_sub");
+    assert_mapping("S", stream_settings_ui, "keyboard_sub", true);
     assert_mapping("V", stream_settings_ui, "view_stream", true);
     assert_mapping("n", stream_settings_ui, "open_create_stream");
     settings_data.user_can_create_private_streams = () => false;
@@ -323,12 +334,12 @@ test_while_not_editing_text("basic mappings", () => {
     assert_mapping("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
-    assert_mapping("A", message_view, "stream_cycle_backward");
-    assert_mapping("D", message_view, "stream_cycle_forward");
+    assert_mapping("A", message_view, "stream_cycle_backward", true);
+    assert_mapping("D", message_view, "stream_cycle_forward", true);
 
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
-    assert_mapping("P", message_view, "show");
+    assert_mapping("P", message_view, "show", true);
     assert_mapping("g", gear_menu, "toggle");
 });
 
@@ -381,9 +392,9 @@ test_while_not_editing_text("misc", ({override}) => {
     assert_mapping("r", compose_reply, "respond_to_message");
     assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
-    assert_mapping("J", navigate, "page_down");
+    assert_mapping("J", navigate, "page_down", true);
     assert_mapping("k", navigate, "up");
-    assert_mapping("K", navigate, "page_up");
+    assert_mapping("K", navigate, "page_up", true);
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
@@ -446,8 +457,8 @@ run_test("emoji picker", ({override}) => {
 
 test_while_not_editing_text("G/M keys", () => {
     // TODO: move
-    assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", user_topics_ui, "toggle_topic_visibility_policy");
+    assert_mapping("G", navigate, "to_end", true);
+    assert_mapping("M", user_topics_ui, "toggle_topic_visibility_policy", true);
 });
 
 test_while_not_editing_text("n/p keys", () => {
