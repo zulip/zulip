@@ -5,14 +5,14 @@
 # Translators:
 # jens_hymoller, 2023-2024
 # jens_hymoller, 2023-2024
-# Jesper Nissen, 2024
+# Jesper Nissen, 2024-2025
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: jens_hymoller, 2023-2024\n"
+"Last-Translator: Jesper Nissen, 2024-2025\n"
 "Language-Team: Danish (http://app.transifex.com/zulip/zulip/language/da/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -232,7 +232,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:3135
 msgid "Nothing to change."
-msgstr ""
+msgstr "Intet at ændre."
 
 #: corporate/lib/stripe.py:3395
 msgid "No customer for this organization!"
@@ -240,7 +240,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:3404
 msgid "Session not found"
-msgstr ""
+msgstr "Session ikke fundet"
 
 #: corporate/lib/stripe.py:3410 zerver/decorator.py:209
 #: zerver/decorator.py:708 zerver/lib/streams.py:1327
@@ -363,12 +363,12 @@ msgstr ""
 
 #: templates/4xx.html:35
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "Metode ikke tilladt (405)"
 
 #: templates/500.html:4 templates/500.html:16
 #: zerver/actions/scheduled_messages.py:404 zerver/middleware.py:407
 msgid "Internal server error"
-msgstr ""
+msgstr "Intern serverfejl"
 
 #: templates/500.html:18
 msgid ""
@@ -433,7 +433,7 @@ msgstr ""
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
-msgstr ""
+msgstr "Antal brugere"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
@@ -441,7 +441,7 @@ msgstr ""
 
 #: templates/analytics/stats.html:29
 msgid "Number of guests"
-msgstr ""
+msgstr "Antal gæster"
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
@@ -1698,11 +1698,11 @@ msgstr "Afslut"
 
 #: templates/zerver/desktop_login.html:24
 msgid "Incorrect token."
-msgstr ""
+msgstr "Forkert token."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr ""
+msgstr "Token godkendt. Logger dig ind..."
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -1711,7 +1711,7 @@ msgstr ""
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
-msgstr ""
+msgstr "Kopier denne token og gå tilbage til din Zulip app for at færdiggøre dit login:"
 
 #: templates/zerver/desktop_redirect.html:17
 msgid "Copy"
@@ -1727,7 +1727,7 @@ msgstr ""
 
 #: templates/zerver/development/dev_login.html:26
 msgid "Anonymous user"
-msgstr ""
+msgstr "Anonym bruger"
 
 #: templates/zerver/development/dev_login.html:32 zerver/models/groups.py:23
 msgid "Owners"
@@ -1834,7 +1834,7 @@ msgstr ""
 
 #: templates/zerver/emails/account_registered.html:45
 msgid "Go to organization"
-msgstr ""
+msgstr "Gå til organisation"
 
 #: templates/zerver/emails/account_registered.html:49
 #, python-format
@@ -2387,7 +2387,7 @@ msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
+msgid "Group DMs with %(huddle_display_name)s"
 msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:3

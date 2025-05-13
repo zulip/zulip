@@ -2396,8 +2396,8 @@ msgstr "\nBu e-postaya cevap vermeyin. Bu Zulip sunucusu gelen e-postaları alma
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "%(direct_message_group_display_name)s ile olan Grup DM'leri"
+msgid "Group DMs with %(huddle_display_name)s"
+msgstr "%(huddle_display_name)s ile olan Grup DM'leri"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
