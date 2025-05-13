@@ -594,6 +594,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
                 settings_components.realm_authentication_methods_to_boolean_dict(),
             );
             break;
+        case "realm_moderation_request_channel_id":
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
@@ -1218,6 +1219,14 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
 }
 
 export let init_dropdown_widgets = (): void => {
+    const disabled_option = {
+        is_setting_disabled: true,
+        show_disabled_icon: true,
+        show_disabled_option_name: false,
+        unique_id: DISABLED_STATE_ID,
+        name: $t({defaultMessage: "Disabled"}),
+    };
+
     const notification_stream_options = (): dropdown_widget.Option[] => {
         const streams = stream_settings_data.get_streams_for_settings_page();
         const options: dropdown_widget.Option[] = streams.map((stream) => ({
@@ -1226,18 +1235,29 @@ export let init_dropdown_widgets = (): void => {
             stream,
         }));
 
-        const disabled_option = {
-            is_setting_disabled: true,
-            show_disabled_icon: true,
-            show_disabled_option_name: false,
-            unique_id: DISABLED_STATE_ID,
-            name: $t({defaultMessage: "Disabled"}),
-        };
+        options.unshift(disabled_option);
+        return options;
+    };
+
+    const moderation_request_channel_options = (): dropdown_widget.Option[] => {
+        const streams = stream_settings_data.get_streams_for_settings_page();
+        const options: dropdown_widget.Option[] = streams
+            .filter((stream) => stream.invite_only)
+            .map((stream) => ({
+                name: stream.name,
+                unique_id: stream.stream_id,
+                stream,
+            }));
 
         options.unshift(disabled_option);
         return options;
     };
 
+    set_up_dropdown_widget(
+        "realm_moderation_request_channel_id",
+        moderation_request_channel_options,
+        "channel",
+    );
     set_up_dropdown_widget(
         "realm_new_stream_announcements_stream_id",
         notification_stream_options,

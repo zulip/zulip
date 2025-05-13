@@ -268,6 +268,7 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.stream_ids.length, 2);
+    override(realm, "realm_moderation_request_channel_id", event.stream_ids[0]);
     override(realm, "realm_new_stream_announcements_stream_id", event.stream_ids[0]);
     override(realm, "realm_signup_announcements_stream_id", event.stream_ids[1]);
     override(realm, "realm_zulip_update_announcements_stream_id", event.stream_ids[0]);
@@ -285,6 +286,7 @@ test("stream delete (special streams)", ({override}) => {
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
+    assert.equal(realm.realm_moderation_request_channel_id, event.stream_ids[0]);
     assert.equal(realm.realm_new_stream_announcements_stream_id, event.stream_ids[0]);
     assert.equal(realm.realm_signup_announcements_stream_id, event.stream_ids[1]);
     assert.equal(realm.realm_zulip_update_announcements_stream_id, event.stream_ids[0]);

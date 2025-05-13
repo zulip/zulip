@@ -421,6 +421,7 @@ export const realm_schema = z.object({
     realm_message_content_delete_limit_seconds: z.nullable(z.number()),
     realm_message_edit_history_visibility_policy: z.enum(["all", "moves", "none"]),
     realm_message_retention_days: z.number(),
+    realm_moderation_request_channel_id: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.nullable(z.number()),
     realm_move_messages_within_stream_limit_seconds: z.nullable(z.number()),
     realm_name_changes_disabled: z.boolean(),
