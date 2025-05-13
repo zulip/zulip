@@ -12,10 +12,11 @@ export default defineConfig({
             // eslint-disable-next-line new-cap
             Icons({
                 compiler: "astro",
-                // Icons had a default scale of 1.2, which was making
-                // them look larger than the text around them.
-                scale: 1,
-                defaultStyle: "display: inline; vertical-align: text-bottom;",
+                // unplugin-icons sets height and width by itself.
+                // It was setting the height to 1024 and 960 for some
+                // icons. It is better to set the height explicitly.
+                defaultStyle:
+                    "display: inline; vertical-align: text-bottom; height: 1em; width: 1em;",
                 customCollections: {
                     // unplugin-icons has a FileSystemIconLoader which is more
                     // versatile. But it only supports one directory path for
