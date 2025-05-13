@@ -41,7 +41,7 @@
         .pill-image {
             height: var(--length-input-pill-image);
             width: var(--length-input-pill-image);
-            border-radius: 4px 0 0 4px;
+            border-radius: 4px;
         }
 
         .zulip-icon {
