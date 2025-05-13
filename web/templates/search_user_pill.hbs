@@ -6,6 +6,7 @@
     {{#each users}}
         <div class="pill{{#if deactivated}} deactivated-pill{{/if}}" data-user-id="{{this.user_id}}">
             <img class="pill-image" src="{{this.img_src}}" />
+            <div class="pill-image-border"></div>
             {{#if deactivated}}
             <span class="fa fa-ban slashed-circle-icon"></span>
             {{/if}}
