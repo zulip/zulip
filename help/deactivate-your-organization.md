@@ -1,5 +1,11 @@
 # Deactivate your organization
 
+If you are no longer using a Zulip organization, you can deactivate it. When you
+deactivate an organization, you can specify the time period after which the
+organization's data will be permanently deleted.
+
+## Deactivate an organization
+
 {!owner-only.md!}
 
 {start_tabs}
@@ -15,15 +21,12 @@
 
 {end_tabs}
 
-!!! warn ""
+## Restore a deactivated organization
 
-    **Note**: This action cannot be undone by anyone in the organization. If you
-    deactivated your organization by accident, please contact your server
-    administrator ({{ support_email }}) as soon as possible, before the
-    deactivated organization's data is permanently deleted.
+A deactivated organization can be restored until its data is deleted.
+If you deactivated your organization by accident, please contact
+[{{ support_email }}](mailto:support@zulip.com) as soon as possible.
 
-!!! warn ""
+## Related articles
 
-    **Note**: You cannot create a new organization using the subdomain of a
-    deactivated one. If you need to reuse a subdomain, ask your server
-    administrator to change the subdomain of the deactivated organization first.
+* [Deactivate your account](/help/deactivate-your-account)
