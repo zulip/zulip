@@ -912,7 +912,8 @@ function render_channel_view(channel_id: number): void {
             INBOX_SEARCH_ID,
         }),
     );
-    show_empty_inbox_text(false);
+    // Hide any empty inbox text by default.
+    show_empty_inbox_text(true);
     channel_view_topic_widget = new InboxTopicListWidget(
         $("#inbox-list"),
         channel_id,
