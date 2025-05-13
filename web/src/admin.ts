@@ -36,6 +36,7 @@ const admin_settings_label = {
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
+    realm_moderation_request_channel: $t({defaultMessage: "Moderation requests"}),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
     }),
@@ -179,6 +180,7 @@ export function build_page(): void {
         realm_default_language_name: get_language_name(realm.realm_default_language),
         realm_default_language_code: realm.realm_default_language,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
+        realm_moderation_request_channel_id: realm.realm_moderation_request_channel_id,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
         realm_zulip_update_announcements_stream_id:
