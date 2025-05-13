@@ -250,6 +250,10 @@ Files: web/shared/icons/file-text.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 
+Files: web/shared/icons/flag.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/flag)
+License: ISC License
+
 Files: web/shared/icons/folder.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder)
 License: ISC License

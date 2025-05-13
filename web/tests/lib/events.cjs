@@ -409,6 +409,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__moderation_request_channel_id: {
+        type: "realm",
+        op: "update",
+        property: "moderation_request_channel_id",
+        value: 43,
+    },
+
     realm__update__name: {
         type: "realm",
         op: "update",

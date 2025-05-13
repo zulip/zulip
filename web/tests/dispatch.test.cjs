@@ -701,6 +701,12 @@ run_test("realm settings", ({override, override_rewire}) => {
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, "realm_disallow_disposable_email_addresses");
 
+    event = event_fixtures.realm__update__moderation_request_channel_id;
+    dispatch(event);
+    assert_same(realm.realm_moderation_request_channel_id, 43);
+    // make sure to reset for future tests
+    override(realm, "realm_moderation_request_channel_id", -1);
+
     event = event_fixtures.realm__update__new_stream_announcements_stream_id;
     dispatch(event);
     assert_same(realm.realm_new_stream_announcements_stream_id, 42);
