@@ -1,3 +1,5 @@
+// Keep this synchronized with zerver/lib/topic_link_util.py
+
 import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util.ts";
