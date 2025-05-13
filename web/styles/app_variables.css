@@ -569,7 +569,7 @@
        preserve an apparent border around
        them, and a square aspect-ratio, even under
        `box-sizing: border-box` in the area. */
-    --length-input-pill-image: calc(var(--height-input-pill) - 2px);
+    --length-search-input-pill-image: calc(var(--height-input-pill) - 2px);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
@@ -1811,6 +1811,10 @@
     --color-background-input-pill-hover: light-dark(
         hsl(240deg 70% 70% / 30%),
         hsl(240deg 52% 60% / 45%)
+    );
+    --color-border-input-pill-image: light-dark(
+        hsl(237deg 68% 94% / 50%),
+        hsl(240deg 65% 60% / 60%)
     );
     --color-focus-outline-input-pill: light-dark(
         hsl(240deg 50% 50%),

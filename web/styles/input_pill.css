@@ -27,7 +27,6 @@
         margin: 0;
 
         color: inherit;
-        border: 1px solid transparent;
 
         border-radius: 4px;
         background-color: var(--color-background-input-pill);
@@ -39,9 +38,19 @@
         }
 
         .pill-image {
-            height: var(--length-input-pill-image);
-            width: var(--length-input-pill-image);
+            height: var(--height-input-pill);
+            width: var(--height-input-pill);
             border-radius: 4px;
+        }
+
+        .pill-image-border {
+            height: var(--height-input-pill);
+            width: var(--height-input-pill);
+            position: absolute;
+            box-sizing: border-box;
+            border: 1px solid;
+            border-radius: 4px;
+            border-color: var(--color-border-input-pill-image);
         }
 
         .zulip-icon {
