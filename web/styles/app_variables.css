@@ -1611,7 +1611,7 @@
     --color-user-circle-offline: light-dark(#bcc0cf, #545764);
     --color-user-circle-offline-typeahead-highlight: light-dark(
         #adb2c5,
-        #737582
+        #646671
     );
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     --gradient-user-circle-idle: linear-gradient(
