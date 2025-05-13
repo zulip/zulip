@@ -449,7 +449,10 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#user_email_address_dropdown_container.disabled_setting_tooltip",
+        target: [
+            "#user_email_address_dropdown_container.disabled_setting_tooltip",
+            "#realm_invite_required_container.disabled_setting_tooltip",
+        ].join(","),
         content: $t({
             defaultMessage: "Configure your email to access this feature.",
         }),
