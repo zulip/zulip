@@ -2097,8 +2097,8 @@
         hsl(220deg 12% 100% / 7%)
     );
     --background-color-active-typeahead-item: light-dark(
-        hsl(221.14deg 89.74% 92.35%),
-        hsl(226.35deg 82.53% 55.1% / 38.82%)
+        hsl(220deg 12% 4.9% / 5%),
+        hsl(220deg 12% 100% / 7%)
     );
     --color-typeahead-option-label: light-dark(
         var(--grey-500),
