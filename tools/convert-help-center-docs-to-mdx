@@ -91,10 +91,10 @@ def fix_relative_path(markdown_string: str) -> str:
     return markdown_string.replace("help/", "help-beta/")
 
 
-def append_str_to_line(text: str, destination_str: str, n: int) -> str:
+def insert_string_at_line(text: str, destination_str: str, n: int) -> str:
     lines = destination_str.splitlines()
     if 1 <= n <= len(lines):
-        lines[n - 1] += "\n" + text
+        lines.insert(n - 1, text)
     return "\n".join(lines)
 
 
@@ -151,10 +151,10 @@ def insert_imports(markdown_string: str, import_statement_set: set[str]) -> str:
     # the conversion when inserting frontmatter. For this reason, we
     # add the imports to the second line.
     for import_statement in import_statement_set:
-        markdown_string = append_str_to_line(import_statement, markdown_string, 2)
+        markdown_string = insert_string_at_line(import_statement, markdown_string, 2)
 
     # Add empty line at the end of import statement list.
-    markdown_string = append_str_to_line("", markdown_string, 2 + len(import_statement_set))
+    markdown_string = insert_string_at_line("", markdown_string, 2 + len(import_statement_set))
     return markdown_string
 
 
