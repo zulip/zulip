@@ -295,9 +295,15 @@ function update_group_membership_button(group_id: number): void {
         true,
     );
     if (is_direct_member) {
-        $group_settings_button.text($t({defaultMessage: "Leave group"}));
+        $group_settings_button
+            .text($t({defaultMessage: "Leave group"}))
+            .removeClass("action-button-quiet-brand")
+            .addClass("action-button-neutral");
     } else {
-        $group_settings_button.text($t({defaultMessage: "Join group"}));
+        $group_settings_button
+            .text($t({defaultMessage: "Join group"}))
+            .removeClass("action-button-quiet-neutral")
+            .addClass("action-button-quiet-brand");
     }
 
     const can_join_group = settings_data.can_join_user_group(group_id);
