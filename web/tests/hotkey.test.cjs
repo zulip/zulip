@@ -286,7 +286,7 @@ test_while_not_editing_text("unmapped keys return false easily", () => {
     // calling any functions outside of hotkey.js.
     // (unless we are editing text)
     assert_unmapped("bfoyz");
-    assert_unmapped("BEFHLNOQTWXYZ");
+    assert_unmapped("BEFLOQTWXYZ");
 });
 
 run_test("allow normal typing when editing text", ({override, override_rewire}) => {
