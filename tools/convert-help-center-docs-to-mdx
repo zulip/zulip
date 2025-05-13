@@ -136,7 +136,7 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
             match, "zulip-icon", "ZulipIcons", import_statement_set
         )
 
-    result = re.sub(zulip_icon_pattern, replace_zulip_icon_with_unplugin_component, markdown_string)
+    result = re.sub(zulip_icon_pattern, replace_zulip_icon_with_unplugin_component, result)
 
     return result
 
