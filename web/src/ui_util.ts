@@ -302,12 +302,11 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
 }
 
 export function restore_ublockorigin_hidden_img($img: JQuery): void {
-    /* Use this function on any visible `img` elements that may have just been
-       changed from a gravatar URL to a non-gravatar URL. It will make sure
-       that it is still visible to users of uBlock Origin on Firefox who block
-       gravatar.
+    /* Use this function on any `img` elements that may have just been changed
+       from a gravatar URL to a non-gravatar URL. It will make sure that it is
+       still visible to users of uBlock Origin on Firefox who block gravatar.
 
-       * `$img` should correspond to a single `img` tag.
+       * `$img` should correspond to a single `img` element.
 
        Some details:
 
