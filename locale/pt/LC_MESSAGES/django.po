@@ -2397,8 +2397,8 @@ msgstr "\n    Não responda a este e-mail. Este servidor Zulip não está config
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "DMs de grupo com %(direct_message_group_display_name)s"
+msgid "Group DMs with %(huddle_display_name)s"
+msgstr "DMs de grupo com %(huddle_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format

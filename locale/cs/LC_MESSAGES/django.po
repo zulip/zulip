@@ -2393,8 +2393,8 @@ msgstr "\n    Neodpovídejte na tento elektronický dopis. Tento server Zulipu n
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "Seskupit PM s %(direct_message_group_display_name)s"
+msgid "Group DMs with %(huddle_display_name)s"
+msgstr "Seskupit PM s %(huddle_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format

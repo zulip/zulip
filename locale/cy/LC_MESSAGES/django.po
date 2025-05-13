@@ -2386,7 +2386,7 @@ msgstr "\nPeidiwch ag ymateb i'r e-bost hwn. Nid yw'r gweinydd Zulip hwn wedi'i 
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
+msgid "Group DMs with %(huddle_display_name)s"
 msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:3

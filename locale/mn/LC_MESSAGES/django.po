@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # Batbuyan G, 2022
 # Batbuyan G, 2022
@@ -2395,8 +2395,8 @@ msgstr "\nЭнэ имэйлд хариу бичих хэрэггүй. Энэ Zul
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "Групп DM-үүд %(direct_message_group_display_name)s"
+msgid "Group DMs with %(huddle_display_name)s"
+msgstr "Групп DM-үүд %(huddle_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format

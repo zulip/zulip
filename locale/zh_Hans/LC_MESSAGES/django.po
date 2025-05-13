@@ -2399,7 +2399,7 @@ msgstr "\n    请勿回复此电子邮件。 (<a href=\"%(url)s\">help</a>).\n  
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
+msgid "Group DMs with %(huddle_display_name)s"
 msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:3

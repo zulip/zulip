@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 # R S <renatke@gmail.com>, 2020
 msgid ""
@@ -2385,7 +2385,7 @@ msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
+msgid "Group DMs with %(huddle_display_name)s"
 msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:3

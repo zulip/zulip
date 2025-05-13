@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Mitesh Savani, 2025
 # prince patel, 2024
 # prince patel, 2024
 msgid ""
@@ -11,7 +12,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: prince patel, 2024\n"
+"Last-Translator: Mitesh Savani, 2025\n"
 "Language-Team: Gujarati (http://app.transifex.com/zulip/zulip/language/gu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,11 +31,11 @@ msgstr "અયોગ્ય સંસ્થા"
 
 #: analytics/views/stats.py:391
 msgid "Public channels"
-msgstr ""
+msgstr "જાહેર ચેનલો"
 
 #: analytics/views/stats.py:392
 msgid "Private channels"
-msgstr ""
+msgstr "ખાનગી ચેનલો"
 
 #: analytics/views/stats.py:393
 msgid "Direct messages"
@@ -47,7 +48,7 @@ msgstr "ગ્રૂપ ડાયરેક્ટ સંદેશો"
 #: analytics/views/stats.py:417
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "ચાર્ટ માટે ચેનલ ઉપલબ્ધ નથી: {chart_name}"
 
 #: analytics/views/stats.py:425
 #, python-brace-format
@@ -106,19 +107,19 @@ msgid ""
 "have enough Zulip licenses. To allow new users to join, make sure that the "
 "[number of licenses for the current and next billing "
 "period]({billing_page_link}) is greater than the current number of users."
-msgstr ""
+msgstr "નવો વપરાશકર્તા ({email}) જોડાઈ શક્યો નહીં કારણ કે તમારી સંસ્થા પાસે પૂરતા Zulip લાયસન્સો ઉપલબ્ધ નથી. નવા વપરાશકર્તાઓને જોડાવા દેવા માટે ખાતરી કરો કે [હાલની અને આગામી બિલિંગ અવધિ માટેની લાયસન્સ સંખ્યા]({billing_page_link}) હમણાં હાજર વપરાશકર્તાઓની સંખ્યાથી વધુ હોય."
 
 #: corporate/lib/registration.py:119
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
-msgstr ""
+msgstr "તમારી સંસ્થા પાસે પૂરતું Zulip લાઇસન્સ નથી. આમંત્રણો મોકલેલા નથી."
 
 #: corporate/lib/registration.py:133
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
-msgstr ""
+msgstr "તમારા સંસ્થામાં મહેમાન યુઝરની ભૂમિકા બદલવા માટે પૂરતું Zulip લાઇસન્સ નથી."
 
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
@@ -227,7 +228,7 @@ msgstr "તમારી યોજના પહેલેથી નિયત ક�
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
-msgstr ""
+msgstr "તમે આગલી બિલિંગ અવધિ માટે પહેલેથી જ {licenses_at_next_renewal} લાઇસન્સ ખરીદ્યા છે."
 
 #: corporate/lib/stripe.py:3135
 msgid "Nothing to change."
@@ -2386,8 +2387,8 @@ msgstr "\nઆ ઇમેઇલને જવાબ આપતા ન રહેવ�
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "સાથે %(direct_message_group_display_name)s સાથે સમૂહ DMs"
+msgid "Group DMs with %(huddle_display_name)s"
+msgstr "સાથે %(huddle_display_name)s સાથે સમૂહ DMs"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
