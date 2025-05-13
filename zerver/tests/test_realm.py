@@ -244,6 +244,37 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertNotEqual(realm.description, new_description)
 
+    def test_demo_organization_invite_required(self) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(realm.invite_required)
+
+        self.login("desdemona")
+        data = dict(invite_required="true")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertTrue(realm.invite_required)
+
+        # Update realm to be a demo organization
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
+        realm.save()
+
+        # Demo organization owner's don't have an email address set initially
+        desdemona = self.example_user("desdemona")
+        desdemona.delivery_email = ""
+        desdemona.save()
+
+        data = dict(invite_required="false")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Configure owner account email address.")
+
+        desdemona.delivery_email = "desdemona@zulip.com"
+        desdemona.save()
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertFalse(realm.invite_required)
+
     def test_realm_convert_demo_realm(self) -> None:
         data = dict(string_id="coolrealm")
 

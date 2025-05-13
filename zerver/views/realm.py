@@ -254,6 +254,9 @@ def update_realm(
     if waiting_period_threshold is not None and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
 
+    if realm.demo_organization_scheduled_deletion_date is not None and invite_required is not None:
+        check_demo_organization_has_set_email(realm)
+
     if enable_spectator_access:
         realm.ensure_not_on_limited_plan()
 
