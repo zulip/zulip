@@ -197,7 +197,7 @@
         /* 3.5px at 16px/1em */
         margin: 0 0.2188em var(--markdown-interelement-space-px) 0;
         border-left: unset;
-        border-right: 4px solid hsl(0deg 0% 65%);
+        border-right: 4px solid var(--color-text-message-blockquote-border);
     }
 
     /* Formatting for Markdown tables */
