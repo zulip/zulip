@@ -40,7 +40,7 @@ def replace_emoticon_translation_table(markdown_string: str, import_statement_se
     return result
 
 
-def replace_image_path(markdown_string: str) -> str:
+def replace_image_path(markdown_string: str, replacement_path: str) -> str:
     """
     We will point to the existing image folder till
     the cutover. After that, we will copy the images
@@ -51,11 +51,13 @@ def replace_image_path(markdown_string: str) -> str:
     # We do not replace /static/images directly since there are a few
     # instances in the documentation where zulip.com links are
     # referenced with that blurb as a part of the url.
-    result = markdown_string.replace("(/static/images/help-beta", "(../../../../static/images/help")
-    return result.replace('="/static/images/help-beta', '="../../../../static/images/help')
+    result = markdown_string.replace("(/static/images/help-beta", f"({replacement_path}")
+    return result.replace('="/static/images/help-beta', f'="{replacement_path}')
 
 
-def fix_file_imports(markdown_string: str, import_statement_set: set[str]) -> str:
+def fix_file_imports(
+    markdown_string: str, import_statement_set: set[str], import_relative_base_path: str
+) -> str:
     def convert_to_pascal(text: str) -> str:
         return to_pascal(text).replace("-", "").replace(".Md", "")
 
@@ -67,7 +69,9 @@ def fix_file_imports(markdown_string: str, import_statement_set: set[str]) -> st
     matches = RE.findall(markdown_string)
 
     for match in matches:
-        import_statement_set.add(f'import {convert_to_pascal(match)} from "./include/_{match}"')
+        import_statement_set.add(
+            f'import {convert_to_pascal(match)} from "{import_relative_base_path}/_{match}x"'
+        )
 
     return result
 
@@ -141,7 +145,7 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     return result
 
 
-def insert_imports(markdown_string: str, import_statement_set: set[str]) -> str:
+def insert_imports(markdown_string: str, import_statement_set: set[str], line_number: int) -> str:
     if len(import_statement_set) == 0:
         return markdown_string
 
@@ -151,10 +155,12 @@ def insert_imports(markdown_string: str, import_statement_set: set[str]) -> str:
     # the conversion when inserting frontmatter. For this reason, we
     # add the imports to the second line.
     for import_statement in import_statement_set:
-        markdown_string = insert_string_at_line(import_statement, markdown_string, 2)
+        markdown_string = insert_string_at_line(import_statement, markdown_string, line_number)
 
     # Add empty line at the end of import statement list.
-    markdown_string = insert_string_at_line("", markdown_string, 2 + len(import_statement_set))
+    markdown_string = insert_string_at_line(
+        "", markdown_string, line_number + len(import_statement_set)
+    )
     return markdown_string
 
 
@@ -193,14 +199,42 @@ def convert_help_center_file_to_mdx(
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
-    result = fix_file_imports(result, import_statement_set)
+    result = fix_file_imports(result, import_statement_set, "./include")
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
     result = replace_emoticon_translation_table(result, import_statement_set)
-    result = replace_image_path(result)
+    result = replace_image_path(result, "../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
-    result = insert_imports(result, import_statement_set)
+    result = insert_imports(result, import_statement_set, 2)
     result = insert_frontmatter(result)
+    return result
+
+
+def convert_include_file_to_mdx(
+    markdown_file_path: str,
+) -> str:
+    """
+    Given a path to a Markdown file, return the equivalent MDX file.
+    We do not do certain operations that we do on a normal help file
+    since these files are not to be served standalone but instead as
+    macros in other files.
+    - replace_emoticon_translation_table is skipped since that
+    function only applies to one file, and that file is not an include
+    file.
+    - insert_frontmatter is skipped since frontmatter is not needed
+    in files that are not served standalone.
+    """
+    result = get_markdown_string_from_file(markdown_file_path)
+
+    # All imports inserted during conversion should be tracked here.
+    import_statement_set: set[str] = set()
+
+    result = fix_file_imports(result, import_statement_set, ".")
+    result = escape_curly_braces(result)
+    result = fix_relative_path(result)
+    result = replace_image_path(result, "../../../../../static/images/help")
+    result = replace_icons(result, import_statement_set)
+    result = insert_imports(result, import_statement_set, 1)
     return result
 
 
@@ -228,23 +262,25 @@ def run() -> None:
                 "w",
             ) as mdx_file:
                 mdx_file.write(mdx)
-    print(f"Converted {converted_count} files. Conversion completed.")
+    print(f"Converted {converted_count} files. Proceeding to the conversion of include files ...")
 
-    # All files in the `include` folder will only be imports and not
-    # standalone files. Therefore we do not do any manipulation or
-    # them to mdx.
-    include_source_dir = os.path.join(BASE_DIR, "help/include")
-    include_destination_dir = os.path.join(BASE_DIR, "help-beta/src/content/docs/include")
-    shutil.copytree(include_source_dir, include_destination_dir)
-
-    # We do not want Astro to render these include files as standalone
-    # files, prefixing them with an underscore accomplishes that.
-    # https://docs.astro.build/en/guides/routing/#excluding-pages
-    for name in os.listdir(include_destination_dir):
-        os.rename(
-            os.path.join(include_destination_dir, name),
-            os.path.join(include_destination_dir, "_" + name),
-        )
+    include_converted_count = 0
+    include_input_dir = os.path.join(input_dir, "include")
+    include_output_dir = os.path.join(output_dir, "include")
+    os.makedirs(include_output_dir, exist_ok=True)
+    for name in os.listdir(include_input_dir):
+        if os.path.isfile(os.path.join(include_input_dir, name)):
+            include_converted_count += 1
+            mdx = convert_include_file_to_mdx(os.path.join(include_input_dir, name))
+            with open(
+                os.path.join(
+                    include_output_dir,
+                    "_" + os.path.basename(name).split(".")[0] + ".mdx",
+                ),
+                "w",
+            ) as mdx_file:
+                mdx_file.write(mdx)
+    print(f"Converted {include_converted_count} include files. Conversion completed.")
 
 
 run()
