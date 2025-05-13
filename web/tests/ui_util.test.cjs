@@ -105,7 +105,7 @@ run_test("ublockorigin_hidden_img_restored", () => {
             filter(param) {
                 filter_called = true;
                 assert.equal(param, ":hidden");
-                return $img;
+                return $i;
             },
             each(f) {
                 f(0, img_element);
