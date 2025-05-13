@@ -84,6 +84,7 @@ from zerver.lib.topic import (
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
+from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color
 from zerver.lib.types import UserGroupMembersData
@@ -855,7 +856,9 @@ def send_messages_for_new_subscribers(
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),
-                new_channels=", ".join(f"#**{s.name}**" for s in created_streams),
+                new_channels=", ".join(
+                    f"{get_stream_link_syntax(s.id, s.name)}" for s in created_streams
+                ),
             )
 
             sender = get_system_bot(

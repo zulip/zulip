@@ -72,6 +72,7 @@ from zerver.lib.topic import (
     update_edit_history,
     update_messages_for_topic_edit,
 )
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
@@ -286,8 +287,8 @@ def send_message_moved_breadcrumbs(
     old_topic_name = message_edit_request.orig_topic_name
     new_stream = message_edit_request.target_stream
     new_topic_name = message_edit_request.target_topic_name
-    old_topic_link = f"#**{old_stream.name}>{old_topic_name}**"
-    new_topic_link = f"#**{new_stream.name}>{new_topic_name}**"
+    old_topic_link = get_stream_topic_link_syntax(old_stream.id, old_stream.name, old_topic_name)
+    new_topic_link = get_stream_topic_link_syntax(new_stream.id, new_stream.name, new_topic_name)
     message = {
         "id": target_message.id,
         "stream_id": new_stream.id,
