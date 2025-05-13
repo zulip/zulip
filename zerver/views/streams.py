@@ -29,16 +29,18 @@ from zerver.actions.message_send import (
     internal_prep_stream_message,
 )
 from zerver.actions.streams import (
-    bulk_add_subscriptions,
-    bulk_remove_subscriptions,
     do_change_stream_description,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
-    do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
     get_subscriber_ids,
+)
+from zerver.actions.subscriptions import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_change_subscription_property,
 )
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.context_processors import get_valid_realm_from_request
