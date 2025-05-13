@@ -1,5 +1,3 @@
-from typing_extensions import override
-
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic_link_util import get_stream_link_syntax, get_stream_topic_link_syntax
 
