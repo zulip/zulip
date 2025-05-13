@@ -11219,6 +11219,17 @@ paths:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
                   $ref: "#/components/schemas/CanSubscribeGroup"
+                folder_id:
+                  description: |
+                    This parameter determines the folder to which the newly
+                    created channel will be added.
+
+                    If the value is `None`, the channel will not be added to
+                    any folder.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-919531).
+                  type: integer
+                  example: 1
               required:
                 - subscriptions
             encoding:
@@ -11247,6 +11258,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              folder_id:
                 contentType: application/json
       responses:
         "200":

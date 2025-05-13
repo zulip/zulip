@@ -48,6 +48,7 @@ from zerver.decorator import (
     require_non_guest_user,
     require_realm_admin,
 )
+from zerver.lib.channel_folders import get_channel_folder_by_id
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
@@ -103,7 +104,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import ChannelFolder, Realm, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
 
@@ -624,6 +625,7 @@ def add_subscriptions_backend(
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
+    folder_id: Json[int] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -668,6 +670,10 @@ def add_subscriptions_backend(
                     UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
                 )
 
+    folder: ChannelFolder | None = None
+    if folder_id is not None:
+        folder = get_channel_folder_by_id(folder_id, realm)
+
     for stream_obj in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -698,6 +704,7 @@ def add_subscriptions_backend(
             "can_remove_subscribers_group"
         ]
         stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
+        stream_dict_copy["folder"] = folder
 
         stream_dicts.append(stream_dict_copy)
 

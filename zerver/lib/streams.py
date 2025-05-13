@@ -35,6 +35,7 @@ from zerver.lib.user_groups import (
     user_has_permission_for_group_setting,
 )
 from zerver.models import (
+    ChannelFolder,
     DefaultStreamGroup,
     Message,
     NamedUserGroup,
@@ -88,6 +89,7 @@ class StreamDict(TypedDict, total=False):
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
     can_subscribe_group: UserGroup | None
+    folder: ChannelFolder | None
 
 
 def get_stream_permission_policy_key(
@@ -265,6 +267,7 @@ def create_stream_if_needed(
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
+    folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[Stream, bool]:
@@ -304,6 +307,7 @@ def create_stream_if_needed(
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
+            folder=folder,
             **group_setting_values,
         ),
     )
@@ -383,6 +387,7 @@ def create_streams_if_needed(
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
+            folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
         )
