@@ -15,6 +15,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.bots import do_change_bot_owner
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -951,6 +952,56 @@ class TestCreateStreams(ZulipTestCase):
 
             self.assert_length(channel_events_messages, 1)
             self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
+
+    def test_adding_channels_to_folder_during_creation(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        channel_folder = check_add_channel_folder("Backend", "", acting_user=iago)
+
+        subscriptions = [
+            {"name": "new_stream", "description": "New stream"},
+            {"name": "new_stream_2", "description": "New stream 2"},
+        ]
+        extra_post_data = {}
+
+        extra_post_data["folder_id"] = orjson.dumps(99).decode()
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_error(result, "Invalid channel folder ID")
+
+        extra_post_data["folder_id"] = orjson.dumps(channel_folder.id).decode()
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+            subdomain="zulip",
+        )
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(stream.folder, channel_folder)
+        stream = get_stream("new_stream_2", realm)
+        self.assertEqual(stream.folder, channel_folder)
+
+        subscriptions = [
+            {"name": "new_stream_3", "description": "New stream 3"},
+            {"name": "new_stream_4", "description": "New stream 4"},
+        ]
+        extra_post_data = {}
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+            subdomain="zulip",
+        )
+        stream = get_stream("new_stream_3", realm)
+        self.assertIsNone(stream.folder)
+        stream = get_stream("new_stream_4", realm)
+        self.assertIsNone(stream.folder)
 
 
 class RecipientTest(ZulipTestCase):
