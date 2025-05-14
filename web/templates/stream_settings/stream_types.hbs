@@ -45,8 +45,10 @@
 
 <div id="stream-advanced-configurations" class="advanced-configurations-container stream-permissions {{#if is_stream_edit}}settings-subsection-parent{{/if}}">
     <div class="advance-config-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
-        <i class="fa fa-sm fa-caret-right toggle-advanced-configurations-icon" aria-hidden="true"></i>
-        <h4 class="stream_setting_subsection_title"><span>{{t 'Advanced configurations' }}</span></h4>
+        <div class="advance-config-toggle-area">
+            <i class="fa fa-sm fa-caret-right toggle-advanced-configurations-icon" aria-hidden="true"></i>
+            <h4 class="stream_setting_subsection_title"><span>{{t 'Advanced configurations' }}</span></h4>
+        </div>
         {{#if is_stream_edit}}
             {{> ../settings/settings_save_discard_widget section_name="stream-permissions" }}
         {{/if}}

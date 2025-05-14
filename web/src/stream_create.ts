@@ -238,7 +238,7 @@ $("body").on(
     },
 );
 
-$("body").on("click", ".advanced-configurations-container .advance-config-title-container", (e) => {
+$("body").on("click", ".advanced-configurations-container .advance-config-toggle-area", (e) => {
     e.stopPropagation();
     toggle_advanced_configurations();
 });
