@@ -52,6 +52,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_stream_folder,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
@@ -823,6 +824,63 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
         self.assertEqual(stream.name, "updated name")
+
+    def test_change_stream_folder(self) -> None:
+        user = self.example_user("iago")
+        stream = self.make_stream("test", user.realm)
+        frontend_folder = check_add_channel_folder("Frontend", "", acting_user=user)
+        backend_folder = check_add_channel_folder("Backend", "", acting_user=user)
+
+        now = timezone_now()
+        do_change_stream_folder(stream, frontend_folder, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                modified_stream=stream,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: None,
+                    RealmAuditLog.NEW_VALUE: frontend_folder.id,
+                },
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_change_stream_folder(stream, backend_folder, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                modified_stream=stream,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: frontend_folder.id,
+                    RealmAuditLog.NEW_VALUE: backend_folder.id,
+                },
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_change_stream_folder(stream, None, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                modified_stream=stream,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: backend_folder.id,
+                    RealmAuditLog.NEW_VALUE: None,
+                },
+            ).count(),
+            1,
+        )
 
     def test_change_user_settings(self) -> None:
         user = self.example_user("hamlet")

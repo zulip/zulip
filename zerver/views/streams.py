@@ -11,6 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from pydantic import BaseModel, Field, Json, NonNegativeInt, StringConstraints, model_validator
+from pydantic_partials import Missing, MissingType
 
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -32,6 +33,7 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
+    do_change_stream_folder,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -277,6 +279,7 @@ def update_stream_backend(
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
+    folder: Json[int | None] | MissingType = Missing,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -416,6 +419,13 @@ def update_stream_backend(
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
+
+    if folder is not Missing:
+        assert not isinstance(folder, MissingType)
+        channel_folder: ChannelFolder | None = None
+        if folder is not None:
+            channel_folder = get_channel_folder_by_id(folder, user_profile.realm)
+        do_change_stream_folder(stream, channel_folder, acting_user=user_profile)
 
     nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     request_settings_dict = locals()

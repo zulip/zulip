@@ -113,6 +113,7 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
+    do_change_stream_folder,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -4945,6 +4946,19 @@ class SubscribeActionTest(BaseAction):
             )
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
+
+        channel_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
+        with self.verify_action(include_subscribers=include_subscribers) as events:
+            do_change_stream_folder(stream, channel_folder, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "folder_id")
+        self.assertEqual(events[0]["value"], channel_folder.id)
+
+        with self.verify_action(include_subscribers=include_subscribers) as events:
+            do_change_stream_folder(stream, None, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "folder_id")
+        self.assertIsNone(events[0]["value"])
 
         # Update stream privacy - make stream web-public
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
