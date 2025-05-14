@@ -120,21 +120,19 @@ const update_integrations = _.debounce(() => {
             $integration.removeClass("without-category");
         }
 
-        if (!$integration.hasClass("integration-create-your-own")) {
-            const display_name = INTEGRATIONS.get($integration.attr("data-name")!) ?? "";
-            const integration_categories = categories_schema.parse(
-                JSON.parse($integration.attr("data-categories")!),
-            );
-            const display =
-                common.phrase_match(state.query, display_name) &&
-                (integration_categories.includes(CATEGORIES.get(state.category) ?? "") ||
-                    state.category === "all");
+        const display_name = INTEGRATIONS.get($integration.attr("data-name")!) ?? "";
+        const integration_categories = categories_schema.parse(
+            JSON.parse($integration.attr("data-categories")!),
+        );
+        const display =
+            common.phrase_match(state.query, display_name) &&
+            (integration_categories.includes(CATEGORIES.get(state.category) ?? "") ||
+                state.category === "all");
 
-            if (display) {
-                $integration.css("display", "inline-block");
-            } else {
-                $integration.css("display", "none");
-            }
+        if (display) {
+            $integration.css("display", "inline-block");
+        } else {
+            $integration.css("display", "none");
         }
 
         document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
@@ -310,12 +308,10 @@ function integration_events(): void {
     });
 
     $(".integrations a .integration-lozenge").on("click", function (e) {
-        if (!$(this).hasClass("integration-create-your-own")) {
-            e.preventDefault();
-            const integration = $(this).attr("data-name")!;
-            render({...state, integration});
-            update_path();
-        }
+        e.preventDefault();
+        const integration = $(this).attr("data-name")!;
+        render({...state, integration});
+        update_path();
     });
 
     $("a#integration-list-link span, a#integration-list-link i").on("click", (e) => {
