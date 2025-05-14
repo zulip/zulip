@@ -22,6 +22,10 @@ mock_esm("../src/buttons", {
     modify_action_button_style: noop,
 });
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
+mock_esm("../src/ui_util", {
+    disable_element_and_add_tooltip: noop,
+    enable_element_and_remove_tooltip: noop,
+});
 set_global("document", "document-stub");
 
 set_global("requestAnimationFrame", (func) => func());
@@ -95,6 +99,7 @@ function createSaveButtons(subsection) {
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
     $stub_save_button_header.set_find_results(".pill-container", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
+    $stub_save_button_header.set_find_results(".save-button", $stub_save_button);
 
     return {
         props,
