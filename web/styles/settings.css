@@ -495,8 +495,11 @@ input[type="checkbox"] {
 }
 
 .advanced-configurations-container {
-    .advance-config-title-container {
+    .advance-config-toggle-area {
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0 0.625em;
 
         .stream_setting_subsection_title {
             margin: 4px 0;
