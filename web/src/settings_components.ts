@@ -1450,7 +1450,10 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         time_limit_settings.length > 0 &&
         should_disable_save_button_for_time_limit_settings(time_limit_settings)
     ) {
-        if ($subsection_elem.attr("id") === "org-message-retention") {
+        if (
+            $subsection_elem.attr("id") === "org-message-retention" ||
+            $subsection_elem.attr("id") === "stream-advanced-configurations"
+        ) {
             ui_util.disable_element_and_add_tooltip(
                 $save_button,
                 $t({
