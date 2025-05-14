@@ -545,6 +545,7 @@ def check_stream_update(
         "stream_id",
         "first_message_id",
         "is_archived",
+        "folder_id",
     }
 
     if prop == "description":
@@ -584,6 +585,9 @@ def check_stream_update(
     elif prop == "is_archived":
         assert extra_keys == set()
         assert isinstance(value, bool)
+    elif prop == "folder_id":
+        assert extra_keys == set()
+        assert value is None or isinstance(value, int)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 
