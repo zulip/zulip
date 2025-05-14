@@ -21,6 +21,7 @@ import * as stream_popover from "./stream_popover.ts";
 import {parse_html} from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {the} from "./util.ts";
+import * as message_report from "./message_report.ts";
 
 let message_actions_popover_keyboard_toggle = false;
 
@@ -210,6 +211,17 @@ export function initialize(): void {
             $popper.one("click", ".delete_message", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 message_edit.delete_message(message_id);
+                e.preventDefault();
+                e.stopPropagation();
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".popover_report_message", (e) => {
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
+                message_lists.current.select_id(message_id);
+                const message = message_lists.current.get(message_id);
+                void message_report.show_message_report_modal(message);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
