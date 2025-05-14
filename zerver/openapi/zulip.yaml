@@ -1495,7 +1495,10 @@ paths:
                                   description: |
                                     The new value of the changed property.
 
-                                    **Changes**: Starting with Zulip 10.0 (feature level 320), this
+                                    **Changes**: Starting with Zulip 11.0 (feature level ZF-57cda6),
+                                    this value can be `null` when a channel is removed from the folder.
+
+                                    Starting with Zulip 10.0 (feature level 320), this
                                     field can be an object for `can_remove_subscribers_group` property,
                                     which is a [group-setting value][setting-values], when the setting
                                     is set to a combination of users and groups.
@@ -1524,6 +1527,7 @@ paths:
                                     - type: integer
                                     - type: boolean
                                     - type: string
+                                      nullable: true
                                 rendered_description:
                                   type: string
                                   description: |
@@ -21372,6 +21376,17 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 388).
                   type: boolean
                   example: true
+                folder_id:
+                  description: |
+                    ID of the new folder to which the channel should belong.
+
+                    It can be `None` if the user wants to just remove the channel
+                    from its existing folder.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-57cda6).
+                  type: integer
+                  nullable: true
+                  example: 1
                 can_add_subscribers_group:
                   allOf:
                     - description: |
@@ -21521,6 +21536,8 @@ paths:
               history_public_to_subscribers:
                 contentType: application/json
               is_default_stream:
+                contentType: application/json
+              folder_id:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
