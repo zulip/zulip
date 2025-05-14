@@ -101,7 +101,7 @@ $(() => {
         if ($(".help-inline:not(:empty)").length === 0) {
             // Find the first input field present in the form that is
             // not hidden and disabled and store it in a variable.
-            const $firstInputElement = $("input:not(:hidden, :disabled)").first();
+            const $firstInputElement = $("input:not([type=hidden], :disabled)").first();
             // Focus on the first input field in the form.
             $firstInputElement.trigger("focus");
             // Override the automatic scroll to the focused
