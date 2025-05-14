@@ -34,6 +34,11 @@ export default defineConfig({
                         throw new Error("Zulip icon not found.");
                     },
                 },
+                transform(svg, _collection, _icon) {
+                    // unplugin-icons suggests to set the fill color,
+                    // there were some cases were it was being set to none.
+                    return svg.replace(/^<svg /, '<svg fill="currentColor" ');
+                },
             }),
         ],
     },
