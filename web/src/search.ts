@@ -281,11 +281,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 
             // Record this on keydown before the typeahead code closes the
             // typeahead, so we can use this information on keyup.
-            if (keydown_util.is_enter_event(e) && $("#searchbox_form .typeahead").is(":visible")) {
-                typeahead_was_open_on_enter = true;
-            } else {
-                typeahead_was_open_on_enter = false;
-            }
+            typeahead_was_open_on_enter = keydown_util.is_enter_event(e) && search_typeahead.shown;
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
             if (is_using_input_method) {
