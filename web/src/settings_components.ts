@@ -371,9 +371,6 @@ function get_message_retention_setting_value(
         .parent()
         .find<HTMLInputElement>(".message-retention-setting-custom-input")
         .val()!;
-    if (custom_input_val.length === 0) {
-        return settings_config.retain_message_forever;
-    }
     return util.check_time_input(custom_input_val);
 }
 
