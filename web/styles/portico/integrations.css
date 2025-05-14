@@ -313,7 +313,6 @@
     }
 
     .integration-lozenge {
-        display: inline-block;
         vertical-align: top;
         width: 153px;
         height: 200px;
@@ -325,6 +324,10 @@
         text-align: center;
         transition: 0.3s ease;
         transition-property: border-color;
+
+        &:not([hidden]) {
+            display: inline-block;
+        }
 
         &:hover {
             border-color: var(--color-integrations-border-green);
