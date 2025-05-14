@@ -278,11 +278,16 @@ export function disable_element_and_add_tooltip($element: JQuery, tooltip_text: 
     // tippy tooltips on disabled elements. So, as a workaround, we wrap the
     // disabled element in a span and show the tooltip on this wrapper instead.
     // https://atomiks.github.io/tippyjs/v6/constructor/#disabled-elements
-    if ($element.prop("disabled")) {
-        // If already disabled, there's nothing to do.
+    $element.prop("disabled", true);
+    const $disabled_tooltip_wrapper = $element.parent(".disabled-tooltip");
+    if ($disabled_tooltip_wrapper.length > 0) {
+        // If element is already wrapped in a disabled-tooltip wrapper,
+        // only update the tooltip text if it has changed.
+        if ($disabled_tooltip_wrapper.attr("data-tippy-content") !== tooltip_text) {
+            $disabled_tooltip_wrapper.attr("data-tippy-content", tooltip_text);
+        }
         return;
     }
-    $element.prop("disabled", true);
     const $tooltip_target_wrapper = $("<span>");
     $tooltip_target_wrapper.addClass("disabled-tooltip");
     $tooltip_target_wrapper.attr("data-tippy-content", tooltip_text).attr("tabindex", "0");
