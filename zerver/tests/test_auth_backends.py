@@ -8032,12 +8032,14 @@ class LDAPGroupSyncTest(ZulipTestCase):
         self.assertEqual(
             zulip_ldap_log.output,
             [
-                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
-                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: set()",
-                f"DEBUG:zulip.ldap:add {hamlet.id} to ['cool_test_group']",
-                f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}",
-                "DEBUG:zulip.ldap:intended groups: set(); zulip groups: {'cool_test_group'}",
-                f"DEBUG:zulip.ldap:removing groups {{'cool_test_group'}} from {cordelia.id}",
+                f"DEBUG:zulip.ldap:Starting group sync for user {hamlet.id} in realm {hamlet.realm.string_id}",
+                f"DEBUG:zulip.ldap:intended groups for user <{hamlet.id}>: {{'cool_test_group'}}; current groups: set()",
+                f"DEBUG:zulip.ldap:Adding user {hamlet.id} to groups {{'cool_test_group'}}",
+                f"DEBUG:zulip.ldap:Finished group sync for user {hamlet.id}",
+                f"DEBUG:zulip.ldap:Starting group sync for user {cordelia.id} in realm {cordelia.realm.string_id}",
+                f"DEBUG:zulip.ldap:intended groups for user <{cordelia.id}>: set(); current groups: {{'cool_test_group'}}",
+                f"DEBUG:zulip.ldap:Removing user {cordelia.id} from groups {{'cool_test_group'}}",
+                f"DEBUG:zulip.ldap:Finished group sync for user {cordelia.id}",
             ],
         )
 
@@ -8057,17 +8059,12 @@ class LDAPGroupSyncTest(ZulipTestCase):
                 LDAP_APPEND_DOMAIN="zulip.com",
             ),
             self.assertLogs("django_auth_ldap", "DEBUG") as django_ldap_log,
-            self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
             self.assertRaises(
                 PopulateUserLDAPError, msg="populate_user unexpectedly returned None"
             ),
         ):
             sync_user_from_ldap(cordelia, mock.Mock())
 
-        self.assertEqual(
-            zulip_ldap_log.output,
-            [f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}"],
-        )
         self.assertIn(
             'DEBUG:django_auth_ldap:Failed to populate user cordelia: search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0)',
             django_ldap_log.output,
