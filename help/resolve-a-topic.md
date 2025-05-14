@@ -11,9 +11,10 @@ Marking a topic as resolved:
 * Puts a ✔ at the beginning of the topic name, e.g., `example topic`
   becomes `✔ example topic`.
 * Triggers an automated notice from the [notification
-  bot](/help/configure-automated-notices) indicating that
-  you resolved the topic. This message will be marked as unread
-  only for users who had participated in the topic.
+  bot](/help/configure-automated-notices) indicating that you resolved the
+  topic. Users can
+  [configure](/help/marking-messages-as-read#configure-whether-resolved-topic-notices-are-marked-as-read)
+  whether these notices are automatically marked as read.
 * Changes whether the topic appears when using the `is:resolved` and
   `-is:resolved` [search filters](/help/search-for-messages#search-filters).
 
