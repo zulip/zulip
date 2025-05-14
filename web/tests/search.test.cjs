@@ -232,6 +232,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                 search_pill.set_search_bar_contents(
                     terms,
                     search.search_pill_widget,
+                    false,
                     $search_query_box.text,
                 );
             };
@@ -315,6 +316,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         search_pill.set_search_bar_contents(
             terms,
             search.search_pill_widget,
+            false,
             $search_query_box.text,
         );
     };
