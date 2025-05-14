@@ -35,6 +35,7 @@ import {stream_subscription_schema} from "./sub_store.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import {group_setting_value_schema} from "./types.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_util from "./ui_util.ts";
 import * as user_group_pill from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
@@ -1448,45 +1449,40 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
 }
 
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
+    const $save_button = $subsection_elem.find(".save-button");
+
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
-
-    let disable_save_button = false;
-    if (time_limit_settings.length > 0) {
-        disable_save_button =
-            should_disable_save_button_for_time_limit_settings(time_limit_settings);
-    } else if ($subsection_elem.attr("id") === "org-compose-settings") {
-        disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
-        const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
-            ".subsection-changes-save",
-        );
-        const tippy_instance = util.the($button_wrapper)._tippy;
-        if (disable_save_button) {
-            // avoid duplication of tippy
-            if (!tippy_instance) {
-                const opts: Partial<tippy.Props> = {placement: "top"};
-                initialize_disable_button_hint_popover(
-                    $button_wrapper,
-                    $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
-                    opts,
-                );
-            }
-        } else {
-            if (tippy_instance) {
-                tippy_instance.destroy();
-            }
-        }
+    if (
+        time_limit_settings.length > 0 &&
+        should_disable_save_button_for_time_limit_settings(time_limit_settings)
+    ) {
+        $save_button.prop("disabled", true);
+        return;
     }
 
-    if (!disable_save_button) {
-        const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
-            extract_property_name($(elem)),
+    if (
+        $subsection_elem.attr("id") === "org-compose-settings" &&
+        should_disable_save_button_for_jitsi_server_url_setting()
+    ) {
+        ui_util.disable_element_and_add_tooltip(
+            $save_button,
+            $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
         );
-        if (group_settings.length > 0) {
-            disable_save_button = should_disable_save_button_for_group_settings(group_settings);
-        }
+        return;
     }
 
-    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_button);
+    const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
+        extract_property_name($(elem)),
+    );
+    if (
+        group_settings.length > 0 &&
+        should_disable_save_button_for_group_settings(group_settings)
+    ) {
+        $save_button.prop("disabled", true);
+        return;
+    }
+
+    ui_util.enable_element_and_remove_tooltip($save_button);
 }
 
 export function initialize_disable_button_hint_popover(
