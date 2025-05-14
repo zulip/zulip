@@ -1,0 +1,94 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Partner program | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Zulip works with a variety of partners to deliver the
+  product to customers, and integrate it with other tools in their workplace
+  suite." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page partners-page">
+    <div class="hero bg-pycon partners">
+        <div class="bg-dimmer"></div>
+        <h1 class="center">Partner program</h1>
+        <p>Zulip works with a variety of partners to deliver the product,<br />
+            and integrate it with other tools in the customer's workplace
+            suite.
+        </p>
+        <div class="hero-buttons center">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScBoUMw8Nm2pWwh2RcNa_t_X-V9gXcuhAl-UVR_FxCReXHg4g/viewform?usp=sharing" class="button">
+                Become a partner
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-row">
+            <div class="feature-box">
+                <div class="feature-text">
+                    <h1>
+                        Resellers
+                    </h1>
+                    <p>
+                        Help customers discover how Zulip can address their
+                        needs. Our partner onboarding kit helps you get started.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-text">
+                    <h1>
+                        Value Added Resellers (VARs)
+                    </h1>
+                    <p>
+                        Support customer deployments. Build custom integrations
+                        with our <a href="/api">easy-to-use APIs</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="feature-row">
+            <div class="feature-box">
+                <div class="feature-text">
+                    <h1>
+                        Managed Service Providers
+                    </h1>
+                    <p>
+                        Host and manage Zulip deployments, and customize Zulip's
+                        open-source software.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-text">
+                    <h1>
+                        Hosting providers
+                    </h1>
+                    <p>
+                        Host Zulip's secure, easy to deploy software. Efficient
+                        multi-tenant hosting available.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-end">
+            <div class="bottom-register-buttons extra_margin_before_footer">
+                <div class="hero-buttons center">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLScBoUMw8Nm2pWwh2RcNa_t_X-V9gXcuhAl-UVR_FxCReXHg4g/viewform?usp=sharing" class="button">
+                        Become a partner
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

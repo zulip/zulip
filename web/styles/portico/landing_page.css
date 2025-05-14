@@ -1274,6 +1274,10 @@ button {
     background-image: url("../../images/landing-page/why-zulip/why-zulip-threads.jpg");
 }
 
+.portico-landing.why-page .bg-pycon.partners {
+    background-image: url("../../images/landing-page/hands.jpg");
+}
+
 .portico-landing.why-page .bg-dimmer {
     position: absolute;
     width: 100%;
@@ -2698,6 +2702,7 @@ button {
     }
 }
 
+.partners-page,
 .self-hosting-page {
     & p {
         font-size: 18px !important;
@@ -2859,6 +2864,12 @@ button {
         /* Based on height required to fit all content in the box at 768px. */
         height: 480px;
     }
+}
+
+.partners-page .feature-grid .feature-row .feature-box {
+    height: 200px;
+    padding: 0 30px;
+    justify-content: center;
 }
 
 .apps .apps-page-link {
