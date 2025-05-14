@@ -17,6 +17,12 @@
             </a>
         </li>
         {{/if}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" data-message-id="{{message_id}}" class="message-reminder popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-reminder-bell" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Remind me about this" }}</span>
+            </a>
+        </li>
         {{!-- Group 2 --}}
         {{#if (or editability_menu_item move_message_menu_item should_display_delete_option)}}
         <li role="separator" class="popover-menu-separator"></li>
