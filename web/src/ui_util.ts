@@ -299,9 +299,12 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
     // and explicitly removes any attached tooltips on the wrapper to prevent
     // ghost tooltips.
     $element.prop("disabled", false);
-    const tooltip_wrapper: tippy.ReferenceElement = $element.parent(".disabled-tooltip")[0]!;
-    if (tooltip_wrapper?._tippy) {
-        tooltip_wrapper._tippy.destroy();
+    const tooltip_wrapper: tippy.ReferenceElement | undefined =
+        $element.parent(".disabled-tooltip")[0];
+    if (tooltip_wrapper) {
+        if (tooltip_wrapper._tippy) {
+            tooltip_wrapper._tippy.destroy();
+        }
+        $element.unwrap(".disabled-tooltip");
     }
-    $element.unwrap(".disabled-tooltip");
 }
