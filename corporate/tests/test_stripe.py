@@ -860,17 +860,17 @@ class StripeTest(StripeTestCase):
 
         response = self.client_get(f"/customer_portal/?tier={CustomerPlan.TIER_CLOUD_STANDARD}")
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com/"))
 
         self.upgrade(invoice=True)
 
         response = self.client_get("/customer_portal/?return_to_billing_page=true")
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com/"))
 
         response = self.client_get("/invoices/")
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com/"))
 
     @mock_stripe()
     def test_upgrade_by_card_to_plus_plan(self, *mocks: Mock) -> None:
@@ -7210,14 +7210,14 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             f"{self.billing_session.billing_base_url}/invoices/", subdomain="selfhosting"
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com/"))
 
         response = self.client_get(
             f"{self.billing_session.billing_base_url}/customer_portal/?return_to_billing_page=true",
             subdomain="selfhosting",
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com/"))
 
     @responses.activate
     @mock_stripe()
@@ -9690,14 +9690,14 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             f"{self.billing_session.billing_base_url}/invoices/", subdomain="selfhosting"
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com/"))
 
         response = self.client_get(
             f"{self.billing_session.billing_base_url}/customer_portal/?return_to_billing_page=true",
             subdomain="selfhosting",
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
+        self.assertTrue(response["Location"].startswith("https://billing.stripe.com/"))
 
     @responses.activate
     @mock_stripe()
