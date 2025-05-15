@@ -36,7 +36,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
   contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
   to get started. We have invested in making Zulip’s code highly
   readable, thoughtfully tested, and easy to modify. Beyond that, we
-  have written an extraordinary 150K words of documentation for Zulip
+  have written an extraordinary 150,000 words of documentation for Zulip
   contributors.
 
 - **Contributing non-code**. [Report an
