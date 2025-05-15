@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from datetime import timedelta
-from enum import Enum
 from email.headerregistry import Address
+from enum import Enum
 
 from django.conf import settings
 from django.db import transaction
