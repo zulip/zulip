@@ -473,7 +473,7 @@ export function canonicalized_name(stream_name: string): string {
     return stream_name.toString().toLowerCase();
 }
 
-export let get_color = (stream_id: number | undefined): string => {
+export function get_color(stream_id: number | undefined): string {
     if (stream_id === undefined) {
         return DEFAULT_COLOR;
     }
@@ -482,10 +482,6 @@ export let get_color = (stream_id: number | undefined): string => {
         return DEFAULT_COLOR;
     }
     return sub.color;
-};
-
-export function rewire_get_color(value: typeof get_color): void {
-    get_color = value;
 }
 
 export function is_muted(stream_id: number): boolean {
