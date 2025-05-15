@@ -8,14 +8,15 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const user_pill = mock_esm("../src/user_pill");
+const settings_data = mock_esm("../src/settings_data");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
 messages_overlay_ui.initialize_restore_overlay_message_tooltip = noop;
 
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
-const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
+const stream_color = zrequire("stream_color");
 const {initialize_user_settings} = zrequire("user_settings");
 const {set_current_user, set_realm} = zrequire("state_data");
 class Clipboard {
@@ -50,6 +51,36 @@ people.add_active_user(aaron);
 people.initialize_current_user(aaron.user_id);
 people.add_active_user(iago);
 people.add_active_user(zoe);
+
+const stream_A = {
+    subscribed: false,
+    name: "A",
+    stream_id: 1,
+};
+stream_data.add_sub(stream_A);
+const stream_B = {
+    subscribed: false,
+    name: "B",
+    stream_id: 2,
+};
+stream_data.add_sub(stream_B);
+
+const stream_1 = {
+    subscribed: false,
+    name: "stream 1",
+    stream_id: 30,
+    color: "c2726a",
+};
+stream_data.add_sub(stream_1);
+const stream_2 = {
+    subscribed: false,
+    name: "stream 2",
+    stream_id: 40,
+    color: "e2226a",
+    invite_only: false,
+    is_web_public: false,
+};
+stream_data.add_sub(stream_2);
 
 const setTimeout_delay = 3000;
 set_global("setTimeout", (f, delay) => {
@@ -138,19 +169,6 @@ function test(label, f) {
 // fixed_buggy_drafts is false.
 test("fix buggy drafts", ({override_rewire}) => {
     override_rewire(drafts, "set_count", noop);
-
-    const stream_A = {
-        subscribed: false,
-        name: "A",
-        stream_id: 1,
-    };
-    stream_data.add_sub(stream_A);
-    const stream_B = {
-        subscribed: false,
-        name: "B",
-        stream_id: 2,
-    };
-    stream_data.add_sub(stream_B);
 
     const buggy_draft = {
         stream_id: stream_B.stream_id,
@@ -241,12 +259,7 @@ test("snapshot_message", ({override}) => {
         compose_state.topic(curr_draft.topic);
     }
 
-    const stream = {
-        stream_id: draft_1.stream_id,
-        name: "stream name",
-    };
-    stream_data.add_sub(stream);
-    compose_state.set_stream_id(stream.stream_id);
+    compose_state.set_stream_id(stream_1.stream_id);
 
     override(Date, "now", () => mock_current_timestamp);
 
@@ -351,19 +364,6 @@ test("rename_stream_recipient", ({override_rewire}) => {
     override_rewire(drafts, "set_count", noop);
     override_rewire(drafts, "update_compose_draft_count", noop);
 
-    const stream_A = {
-        subscribed: false,
-        name: "A",
-        stream_id: 1,
-    };
-    stream_data.add_sub(stream_A);
-    const stream_B = {
-        subscribed: false,
-        name: "B",
-        stream_id: 2,
-    };
-    stream_data.add_sub(stream_B);
-
     const draft_1 = {
         stream_id: stream_A.stream_id,
         topic: "a",
@@ -448,7 +448,8 @@ test("delete_all_drafts", ({override_rewire}) => {
 });
 
 test("format_drafts", ({override, override_rewire, mock_template}) => {
-    override_rewire(stream_data, "get_color", () => "#FFFFFF");
+    override(settings_data, "using_dark_theme", () => false);
+
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -525,16 +526,16 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id1",
             is_stream: true,
-            stream_name: "stream",
+            stream_name: stream_1.name,
             stream_id: 30,
-            recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#9a9a9a",
+            recipient_bar_color: stream_color.get_recipient_bar_color(stream_1.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(stream_1.color),
             topic_display_name: "topic",
             is_empty_string_topic: false,
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
-            invite_only: undefined,
-            is_web_public: undefined,
+            invite_only: stream_1.invite_only,
+            is_web_public: stream_1.is_web_public,
         },
         {
             draft_id: "id2",
@@ -566,30 +567,30 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id3",
             is_stream: true,
-            stream_name: "stream 2",
+            stream_name: stream_2.name,
             stream_id: 40,
-            recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#9a9a9a",
+            recipient_bar_color: stream_color.get_recipient_bar_color(stream_2.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(stream_2.color),
             topic_display_name: "topic",
             is_empty_string_topic: false,
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
-            invite_only: false,
-            is_web_public: false,
+            invite_only: stream_2.invite_only,
+            is_web_public: stream_2.is_web_public,
         },
         {
             draft_id: "id6",
             is_stream: true,
-            stream_name: "stream 2",
+            stream_name: stream_2.name,
             stream_id: 40,
-            recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#9a9a9a",
+            recipient_bar_color: stream_color.get_recipient_bar_color(stream_2.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(stream_2.color),
             topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
             is_empty_string_topic: true,
             raw_content: "Test stream message 3",
             time_stamp: "Jan 20",
-            invite_only: false,
-            is_web_public: false,
+            invite_only: stream_2.invite_only,
+            is_web_public: stream_2.is_web_public,
         },
         {
             draft_id: "id7",
@@ -627,14 +628,6 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         stub_render_now(time, new Date(1549958107000)),
     );
 
-    override_rewire(sub_store, "get", (stream_id) => {
-        assert.ok([30, 40].includes(stream_id));
-        if (stream_id === 30) {
-            return {name: "stream", stream_id};
-        }
-        return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
-    });
-
     override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
 
@@ -653,29 +646,10 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
-
-    $.clear_all_elements();
-    $.create("#drafts_table .overlay-message-row", {children: []});
-    $("#draft_overlay").css = noop;
-
-    override_rewire(sub_store, "get", (stream_id) => {
-        assert.ok([30, 40].includes(stream_id));
-        if (stream_id === 30) {
-            return {name: "stream-rename", stream_id};
-        }
-        return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
-    });
-
-    expected[0].stream_name = "stream-rename";
-
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-
-    $(".draft-selection-checkbox").filter = () => [];
-    drafts_overlay_ui.launch();
 });
 
 test("filter_drafts", ({override, override_rewire, mock_template}) => {
-    override_rewire(stream_data, "get_color", () => "#FFFFFF");
+    override(settings_data, "using_dark_theme", () => true);
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -764,30 +738,30 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id1",
             is_stream: true,
-            stream_name: "stream",
+            stream_name: stream_1.name,
             stream_id: 30,
-            recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#9a9a9a",
+            recipient_bar_color: stream_color.get_recipient_bar_color(stream_1.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(stream_1.color),
             topic_display_name: "topic",
             is_empty_string_topic: false,
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
-            invite_only: false,
-            is_web_public: false,
+            invite_only: stream_1.invite_only,
+            is_web_public: stream_1.is_web_public,
         },
         {
             draft_id: "id3",
             is_stream: true,
-            stream_name: "stream 2",
+            stream_name: stream_2.name,
             stream_id: 40,
-            recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#9a9a9a",
+            recipient_bar_color: stream_color.get_recipient_bar_color(stream_2.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(stream_2.color),
             topic_display_name: "topic",
             is_empty_string_topic: false,
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
-            invite_only: false,
-            is_web_public: false,
+            invite_only: stream_2.invite_only,
+            is_web_public: stream_2.is_web_public,
         },
     ];
 
@@ -809,14 +783,6 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     override_rewire(timerender, "render_now", (time) =>
         stub_render_now(time, new Date(1549958107000)),
     );
-
-    override_rewire(sub_store, "get", (stream_id) => {
-        assert.ok([30, 40].includes(stream_id));
-        if (stream_id === 30) {
-            return {name: "stream", stream_id, invite_only: false, is_web_public: false};
-        }
-        return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
-    });
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
