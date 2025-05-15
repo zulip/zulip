@@ -191,3 +191,21 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
             ]
             Subscription.objects.bulk_create(subs_to_create)
         return direct_message_group
+
+
+def get_direct_message_group(id_list: list[int]) -> DirectMessageGroup | None:
+    """
+    Takes a list of user IDs and returns the DirectMessageGroup
+    object for the group consisting of these users if exists. If
+    the DirectMessageGroup object does not yet exist, it will
+    return None.
+    """
+
+    try:
+        direct_message_group_hash = get_direct_message_group_hash(id_list)
+        return DirectMessageGroup.objects.get(
+            huddle_hash=direct_message_group_hash,
+            group_size=len(id_list),
+        )
+    except DirectMessageGroup.DoesNotExist:
+        return None
