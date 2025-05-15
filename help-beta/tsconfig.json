@@ -26,5 +26,7 @@
 
         /* Projects */
         "composite": true,
+
+        "types": ["unplugin-icons/types/astro"],
     },
 }
