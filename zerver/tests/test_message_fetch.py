@@ -2471,6 +2471,52 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertNotEqual(result["messages"], [])
 
+    def test_get_1_to_1_messages_with_existent_group_dm(self) -> None:
+        me = self.example_user("hamlet")
+        other_user = self.example_user("iago")
+
+        user_ids = [me.id, other_user.id]
+        direct_message_group = get_or_create_direct_message_group(user_ids)
+
+        self.login_user(me)
+        narrow = [dict(operator="dm", operand=user_ids)]
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual(result["messages"], [])
+
+        message_ids = [
+            self.send_group_direct_message(me, [other_user]),
+            self.send_group_direct_message(other_user, [me]),
+            self.send_personal_message(me, other_user),
+            self.send_personal_message(other_user, me),
+        ]
+
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        for message in result["messages"]:
+            self.assertIn(message["id"], message_ids)
+            self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
+
+    def test_get_messages_to_self_with_existent_group_dm(self) -> None:
+        me = self.example_user("hamlet")
+
+        user_ids = [me.id]
+        direct_message_group = get_or_create_direct_message_group(user_ids)
+
+        self.login_user(me)
+        narrow = [dict(operator="dm", operand=user_ids)]
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual(result["messages"], [])
+
+        message_ids = [
+            self.send_group_direct_message(me, [me]),
+            self.send_personal_message(me, me),
+        ]
+
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        for message in result["messages"]:
+            self.assertIn(message["id"], message_ids)
+            self.assertEqual(message["sender_id"], me.id)
+            self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
+
     def test_get_visible_messages_with_narrow_dm(self) -> None:
         me = self.example_user("hamlet")
         self.login_user(me)
