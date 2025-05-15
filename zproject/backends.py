@@ -100,6 +100,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -1656,6 +1657,11 @@ def sync_groups(
     The idea is that intended_group_names is the set of names of groups to which
     the user should belong, within the universe specified by all_group_names.
     """
+    for system_group_name in SystemGroups.GROUP_DISPLAY_NAME_MAP:
+        # system groups are not allowed to be synced.
+        assert system_group_name not in all_group_names
+        assert system_group_name not in intended_group_names
+
     user_id = user_profile.id
     realm = user_profile.realm
     logger.debug("Starting group sync for user %s in realm %s", user_id, realm.string_id)
@@ -1664,6 +1670,7 @@ def sync_groups(
         UserGroupMembership.objects.filter(
             user_group__realm=realm,
             user_group__named_user_group__name__in=all_group_names,
+            user_group__named_user_group__is_system_group=False,
             user_profile__id=user_id,
         ).values_list("user_group__named_user_group__name", flat=True)
     )
