@@ -36,6 +36,24 @@ You can deactivate groups you no longer plan to use. Deactivated groups cannot b
 
 {end_tabs}
 
+## Reactivate a user group
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|group|all}
+
+1. Select **Deactivated groups** from the dropdown next to the **Filter** box
+   above the list of groups.
+
+1. Select a user group.
+
+1. Click the **Reactivate group** (<i class="zulip-icon zulip-icon-user-group-plus"></i>) button in the
+   upper right corner of the user group settings panel.
+
+{end_tabs}
+
 ## Related articles
 
 * [User groups](/help/user-groups)
