@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 387**
+
+* [`GET /users`](/api/get-users): This endpoint no longer requires
+  authentication for organizations using the [public access
+  option](/help/public-access-option).
+
 **Feature level 386**
 
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):

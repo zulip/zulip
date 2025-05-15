@@ -9526,6 +9526,11 @@ paths:
         Optionally includes values of [custom profile fields](/help/custom-profile-fields).
 
         You can also [fetch details on a single user](/api/get-user).
+
+        **Changes**: This endpoint did not support unauthenticated
+        access in organizations using the [public access
+        option](/help/public-access-option) prior to Zulip 11.0
+        (feature level 387).
       x-curl-examples-parameters:
         oneOf:
           - type: include
