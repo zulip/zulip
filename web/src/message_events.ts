@@ -628,7 +628,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
             // Remove the stream_topic_entry for the old topics;
             // must be called after we call set message topic since
-            // it calls `get_messages_in_topic` which thinks that
+            // it calls `get_loaded_messages_in_topic` which thinks that
             // `topic` and `stream` of the messages are correctly set.
             const num_messages = event_messages.length;
             if (num_messages > 0) {

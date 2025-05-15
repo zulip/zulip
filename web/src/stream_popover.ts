@@ -528,7 +528,7 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        const locally_cached_conversation_messages = message_util.get_messages_in_topic(
+        const locally_cached_conversation_messages = message_util.get_loaded_messages_in_topic(
             current_stream_id,
             topic_name,
         );
@@ -837,7 +837,7 @@ export async function build_move_topic_to_stream_popover(
                 message_id,
             );
         }
-        return message_util.get_messages_in_topic(current_stream_id, topic_name).length;
+        return message_util.get_loaded_messages_in_topic(current_stream_id, topic_name).length;
     }
 
     function update_move_messages_count_text(selected_option: string, message_id?: number): void {
