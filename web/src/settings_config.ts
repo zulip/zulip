@@ -292,6 +292,17 @@ export const message_edit_history_visibility_policy_values = {
     },
 };
 
+export const realm_topics_policy_values = {
+    allow_empty_topic: {
+        code: "allow_empty_topic",
+        description: $t({defaultMessage: "General chat topic allowed"}),
+    },
+    disable_empty_topic: {
+        code: "disable_empty_topic",
+        description: $t({defaultMessage: "No general chat topic"}),
+    },
+};
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),

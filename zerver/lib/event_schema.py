@@ -113,6 +113,7 @@ from zerver.lib.event_types import (
     PersonRole,
     PersonTimezone,
     PlanTypeData,
+    RealmTopicsPolicyData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.lib.types import UserGroupMembersDict
@@ -489,6 +490,8 @@ def check_realm_update_dict(
             sub_type = GroupSettingUpdateData
         elif "plan_type" in event["data"]:
             sub_type = PlanTypeData
+        elif "topics_policy" in event["data"]:
+            sub_type = RealmTopicsPolicyData
         else:
             raise AssertionError("unhandled fields in data")
 

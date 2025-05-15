@@ -114,13 +114,13 @@ run_test("want_normal_display", ({override}) => {
 
     // Focused recipient is a valid stream with no topic set
     // when topics are mandatory
-    override(realm, "realm_mandatory_topics", true);
+    override(realm, "realm_topics_policy", "disable_empty_topic");
     stream_data.add_sub(sub);
     assert.ok(compose_fade_helper.want_normal_display());
 
     // Focused recipient is a valid stream with no topic set
     // when topics are not mandatory. Focused to input box.
-    override(realm, "realm_mandatory_topics", false);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     assert.ok(compose_fade_helper.want_normal_display());
 
     // If we're focused to a topic, then we do want to fade.
