@@ -305,7 +305,7 @@ export function remove_messages(opts: {
 
     // Update max_message_id in topic
     if (existing_topic.message_id <= max_removed_msg_id) {
-        const msgs_in_topic = message_util.get_messages_in_topic(stream_id, topic_name);
+        const msgs_in_topic = message_util.get_loaded_messages_in_topic(stream_id, topic_name);
         let max_message_id = 0;
         for (const msg of msgs_in_topic) {
             if (msg.id > max_message_id) {
