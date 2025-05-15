@@ -11146,6 +11146,8 @@ paths:
                   $ref: "#/components/schemas/HistoryPublicToSubscribers"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                topics_policy:
+                  $ref: "#/components/schemas/TopicsPolicy"
                 can_add_subscribers_group:
                   $ref: "#/components/schemas/ChannelCanAddSubscribersGroup"
                 can_remove_subscribers_group:
@@ -11174,6 +11176,8 @@ paths:
               is_default_stream:
                 contentType: application/json
               history_public_to_subscribers:
+                contentType: application/json
+              topics_policy:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
@@ -15774,6 +15778,7 @@ paths:
                                 message_retention_days:
                                   nullable: true
                                 history_public_to_subscribers: {}
+                                topics_policy: {}
                                 first_message_id:
                                   nullable: true
                                 is_recently_active: {}
@@ -20996,6 +21001,7 @@ paths:
                                 message_retention_days:
                                   nullable: true
                                 history_public_to_subscribers: {}
+                                topics_policy: {}
                                 first_message_id:
                                   nullable: true
                                 is_recently_active: {}
@@ -21311,6 +21317,8 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 388).
                   type: boolean
                   example: true
+                topics_policy:
+                  $ref: "#/components/schemas/TopicsPolicy"
                 can_add_subscribers_group:
                   allOf:
                     - description: |
@@ -23239,6 +23247,7 @@ components:
             message_retention_days:
               nullable: true
             history_public_to_subscribers: {}
+            topics_policy: {}
             first_message_id:
               nullable: true
             is_recently_active: {}
@@ -23397,6 +23406,8 @@ components:
             Currently always true for public channels (i.e. `"invite_only": false` implies
             `"history_public_to_subscribers": true`), but clients should not make that
             assumption, as we may change that behavior in the future.
+        topics_policy:
+          $ref: "#/components/schemas/TopicsPolicy"
         first_message_id:
           type: integer
           nullable: true
@@ -24476,6 +24487,8 @@ components:
             has older history that can be accessed.
 
             Is `null` for channels with no message history.
+        topics_policy:
+          $ref: "#/components/schemas/TopicsPolicy"
         is_recently_active:
           type: boolean
           description: |
@@ -26170,6 +26183,20 @@ components:
         - type: string
         - type: integer
       example: "20"
+    TopicsPolicy:
+      type: string
+      enum:
+        - inherit
+        - allow_empty_topic
+        - disable_empty_topic
+      description: |
+        Configuration defining the default policy for sending messages in the empty topic.
+
+        - inherit - Channel will inherit the organization-level setting, `realm_topics_policy`.
+        - allow_empty_topic - Topics are not required to send messages in the channel.
+        - disable_empty_topic - Topics are required to send messages in the channel.
+
+        **Changes**: New in Zulip 10.0 (feature level ZF-263011).
     ChannelCanAddSubscribersGroup:
       allOf:
         - $ref: "#/components/schemas/GroupSettingValue"

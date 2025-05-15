@@ -118,6 +118,7 @@ from zerver.lib.event_types import (
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.lib.types import UserGroupMembersDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
+from zerver.models.streams import StreamTopicsPolicyEnum
 
 
 def validate_with_model(data: dict[str, object], model: type[BaseModel]) -> None:
@@ -567,6 +568,9 @@ def check_stream_update(
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)
+    elif prop == "topics_policy":
+        assert extra_keys == set()
+        assert value in [e.name for e in StreamTopicsPolicyEnum]
     elif prop == "is_recently_active":
         assert extra_keys == set()
         assert isinstance(value, bool)

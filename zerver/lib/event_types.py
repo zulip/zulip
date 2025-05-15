@@ -781,6 +781,7 @@ class BasicStreamFields(BaseModel):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    topics_policy: str
 
 
 class EventStreamCreate(BaseEvent):
@@ -852,6 +853,7 @@ class SingleSubscription(BaseModel):
     pin_to_top: bool
     push_notifications: bool | None
     subscribers: list[int]
+    topics_policy: str
     wildcard_mentions_notify: bool | None
 
 

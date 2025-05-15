@@ -303,6 +303,20 @@ export const realm_topics_policy_values = {
     },
 };
 
+export const stream_topics_policy_values = {
+    inherit: {
+        code: "inherit",
+        description: $t({defaultMessage: "Automatic"}),
+    },
+    ...realm_topics_policy_values,
+};
+
+export const stream_topics_policy_label = new Handlebars.SafeString(
+    $t_html({
+        defaultMessage: "Allow posting to the <i>general chat</i> topic?",
+    }),
+);
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),

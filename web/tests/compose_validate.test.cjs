@@ -416,6 +416,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         name: "special",
         subscribed: true,
         can_send_message_group: everyone.id,
+        topics_policy: "inherit",
     };
     stream_data.add_sub(special_sub);
 
