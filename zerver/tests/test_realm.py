@@ -255,11 +255,22 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", data)
         self.assert_json_error(result, "Must be a demo organization.")
 
-        data = dict(string_id="lear")
-        self.login("desdemona")
         realm = get_realm("zulip")
         realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
         realm.save()
+
+        # Demo organization owner must have added an email before converting.
+        desdemona = self.example_user("desdemona")
+        desdemona.delivery_email = ""
+        desdemona.save()
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Configure owner account email address.")
+
+        desdemona.delivery_email = "desdemona@zulip.com"
+        desdemona.save()
+
+        # Subdomain must be available to convert demo organization.
+        data = dict(string_id="lear")
         result = self.client_patch("/json/realm", data)
         self.assert_json_error(
             result, "Subdomain is already in use. Please choose a different one."
