@@ -1619,12 +1619,14 @@ class RealmImportExportTest(ExportFile):
             flags=OnboardingUserMessage.flags.starred,
         )
 
-        ChannelFolder.objects.create(
+        channel_folder = ChannelFolder.objects.create(
             realm=original_realm,
             name="Frontend",
             description="Frontend channels",
             creator=self.example_user("iago"),
         )
+        stream.folder = channel_folder
+        stream.save()
 
         # We want to have an extra, malformed RealmEmoji with no .author
         # to test that upon import that gets fixed.
@@ -1758,6 +1760,15 @@ class RealmImportExportTest(ExportFile):
                 stream.recipient_id,
                 Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id).id,
             )
+
+        # Check folder field for imported streams
+        for stream in Stream.objects.filter(realm=imported_realm):
+            if stream.name == "Verona":
+                # Folder was only set for "Verona" stream in original realm.
+                assert stream.folder is not None
+                self.assertEqual(stream.folder.name, "Frontend")
+            else:
+                self.assertIsNone(stream.folder_id)
 
         for dm_group in DirectMessageGroup.objects.all():
             # Direct Message groups don't have a realm column, so we just test all
