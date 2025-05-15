@@ -2164,7 +2164,7 @@ class ActivateTest(ZulipTestCase):
         session_key = self.client.session.session_key
         self.assertTrue(session_key)
 
-        result = self.client_get("/json/users")
+        result = self.client_get("/json/attachments")
         self.assert_json_success(result)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
 
@@ -2172,7 +2172,7 @@ class ActivateTest(ZulipTestCase):
             do_deactivate_user(user, acting_user=None)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
 
-        result = self.client_get("/json/users")
+        result = self.client_get("/json/attachments")
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401
         )
@@ -3194,6 +3194,43 @@ class GetProfileTest(ZulipTestCase):
             [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
         )
         self.assertEqual(inaccessible_user_ids, {othello.id})
+
+    def test_get_users_for_spectators(self) -> None:
+        # Checks that spectators can fetch users data.
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Try with a realm with no web-public channels.
+        with self.assert_database_query_count(2):
+            result = self.client_get("/json/users", subdomain="lear")
+            self.assert_json_error(
+                result,
+                "Not logged in: API authentication or user session required",
+                status_code=401,
+            )
+
+        with self.assert_database_query_count(4):
+            result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        result_dict = orjson.loads(result.content)
+
+        all_fetched_users = result_dict["members"]
+        self.assertEqual(
+            len(all_fetched_users), UserProfile.objects.filter(realm=hamlet.realm).count()
+        )
+
+        user_ids_to_fetch = [hamlet.id, othello.id]
+        with self.assert_database_query_count(4):
+            result_dict = orjson.loads(
+                self.client_get(
+                    "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
+                ).content
+            )
+        all_fetched_users = result_dict["members"]
+        self.assertCountEqual(
+            [user["user_id"] for user in all_fetched_users],
+            user_ids_to_fetch,
+        )
 
 
 class DeleteUserTest(ZulipTestCase):

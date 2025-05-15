@@ -322,7 +322,9 @@ v1_api_and_json_patterns = [
     # realm/deactivate -> zerver.views.deactivate_realm
     rest_path("realm/deactivate", POST=deactivate_realm),
     # users -> zerver.views.users
-    rest_path("users", GET=get_members_backend, POST=create_user_backend),
+    rest_path(
+        "users", GET=(get_members_backend, {"allow_anonymous_user_web"}), POST=create_user_backend
+    ),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),
     rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
     rest_path(

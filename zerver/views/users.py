@@ -91,6 +91,7 @@ from zerver.models.realms import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
+    Realm,
 )
 from zerver.models.users import (
     get_user_by_delivery_email,
@@ -722,12 +723,13 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
 
 def get_user_data(
-    user_profile: UserProfile,
+    user_profile: UserProfile | None,
     include_custom_profile_fields: bool,
     client_gravatar: bool,
     *,
     target_user: UserProfile | None = None,
     user_ids: list[int] | None = None,
+    realm: Realm | None = None,
 ) -> dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
@@ -735,7 +737,9 @@ def get_user_data(
     an optimization than it might seem because gravatar URLs contain MD5 hashes that
     compress very poorly compared to other data.
     """
-    realm = user_profile.realm
+    if realm is None:
+        assert user_profile is not None
+        realm = user_profile.realm
 
     members = get_users_for_api(
         realm,
@@ -780,17 +784,28 @@ def get_member_backend(
 @typed_endpoint
 def get_members_backend(
     request: HttpRequest,
-    user_profile: UserProfile,
+    maybe_user_profile: UserProfile | AnonymousUser,
     *,
     user_ids: Json[list[int]] | None = None,
     include_custom_profile_fields: Json[bool] = False,
     client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
+    if isinstance(maybe_user_profile, UserProfile):
+        user_profile = maybe_user_profile
+        realm = user_profile.realm
+    else:
+        realm = get_valid_realm_from_request(request)
+        if not realm.allow_web_public_streams_access():
+            raise MissingAuthenticationError
+
+        user_profile = None
+
     data = get_user_data(
         user_profile,
         include_custom_profile_fields,
         client_gravatar,
         user_ids=user_ids,
+        realm=realm,
     )
     return json_success(request, data)
 
