@@ -692,6 +692,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": true,
                                         "first_message_id": null,
+                                        "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -1358,6 +1359,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
+                                        "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -15837,6 +15839,8 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                folder_id:
+                                  nullable: true
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
@@ -21036,6 +21040,8 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                folder_id:
+                                  nullable: true
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
@@ -21082,6 +21088,7 @@ paths:
                                 - message_retention_days
                                 - history_public_to_subscribers
                                 - first_message_id
+                                - folder_id
                                 - is_announcement_only
                                 - can_remove_subscribers_group
                                 - can_subscribe_group
@@ -21101,6 +21108,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A private channel",
                               "first_message_id": 18,
+                              "folder_id": 1,
                               "is_recently_active": true,
                               "history_public_to_subscribers": false,
                               "invite_only": true,
@@ -21123,6 +21131,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A default public channel",
                               "first_message_id": 21,
+                              "folder_id": null,
                               "is_recently_active": true,
                               "history_public_to_subscribers": true,
                               "invite_only": false,
@@ -21173,6 +21182,7 @@ paths:
                           {
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
+                            "folder_id": 1,
                             "is_recently_active": true,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
@@ -23477,6 +23487,8 @@ components:
             history_public_to_subscribers: {}
             first_message_id:
               nullable: true
+            folder_id:
+              nullable: true
             is_recently_active: {}
             is_announcement_only: {}
             can_add_subscribers_group: {}
@@ -23513,6 +23525,7 @@ components:
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
+            - folder_id
             - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
@@ -23646,6 +23659,8 @@ components:
             Is `null` for channels with no message history.
 
             **Changes**: New in Zulip 2.1.0.
+        folder_id:
+          $ref: "#/components/schemas/FolderId"
         is_recently_active:
           type: boolean
           description: |
@@ -24712,6 +24727,8 @@ components:
             has older history that can be accessed.
 
             Is `null` for channels with no message history.
+        folder_id:
+          $ref: "#/components/schemas/FolderId"
         is_recently_active:
           type: boolean
           description: |
@@ -26578,6 +26595,15 @@ components:
         named groups' content could be inserted with `%(name_of_group)s`.
       type: string
       example: https://github.com/zulip/zulip/issues/{id}
+    FolderId:
+      type: integer
+      nullable: true
+      description: |
+        The ID of the folder to which the channel belongs.
+
+        Is `null` if channel does not belong to any folder.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-2f0879).
 
   ###################
   # Shared responses
