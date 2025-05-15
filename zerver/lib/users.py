@@ -16,6 +16,7 @@ from django_otp.middleware import is_verified
 from typing_extensions import NotRequired
 from zulip_bots.custom_exceptions import ConfigValidationError
 
+from zerver.forms import CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.create_user import get_dummy_email_address_for_display_regex
@@ -48,6 +49,8 @@ from zerver.models.users import (
     base_bulk_get_user_queryset,
     base_get_user_queryset,
     get_realm_user_dicts,
+    get_realm_user_dicts_from_ids,
+    get_user_by_delivery_email,
     get_realm_user_dicts_from_ids,
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
