@@ -39,6 +39,8 @@ special
 access](https://slack.com/help/articles/204897248-Guide-to-Slack-import-and-export-tools#options-by-plan)
 in order to export direct message data.
 
+#### Export message history
+
 {start_tabs}
 
 1. Make sure that you are an owner or admin of your Slack
@@ -46,13 +48,22 @@ in order to export direct message data.
    that in your profile, in a banner covering the bottom of your
    avatar.
 
-2. [Export your Slack message history](https://my.slack.com/services/export).
+1. [Export your Slack message history](https://my.slack.com/services/export).
    You should be able to download a `zip` file with your data a few minutes
    after you start the export process.
 
-3. You will also need to export your workspace's user data and custom emoji.
-   To do so, start
-   by [creating a new Slack app](https://api.slack.com/apps). Choose the "From
+{end_tabs}
+
+#### Export user data and custom emoji
+
+{start_tabs}
+
+1. Make sure that you are an owner or admin of your Slack
+   workspace. If you are one, the Slack web application will display
+   that in your profile, in a banner covering the bottom of your
+   avatar.
+
+1. [Create a new Slack app](https://api.slack.com/apps). Choose the "From
    scratch" creation option.
 
 4. [Create a
@@ -67,8 +78,8 @@ in order to export direct message data.
    to your Slack workspace.
 
 6. You will immediately see a **Bot User OAuth Token**, which is a long
-   string of numbers and characters starting with `xoxb-`. Copy this token. You
-   will use it to download user and emoji data from your Slack workspace.
+   string of numbers and characters starting with `xoxb-`. Copy this token. It
+   grants access to download user and emoji data from your Slack workspace.
 
 !!! warn ""
 
