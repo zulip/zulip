@@ -16,7 +16,6 @@ from django_otp.middleware import is_verified
 from typing_extensions import NotRequired
 from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.forms import CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.create_user import get_dummy_email_address_for_display_regex
@@ -119,6 +118,9 @@ def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bo
 
 
 def check_bot_email_available(full_name: str, email: str, realm: Realm) -> None:
+    # Import here to avoid circular imports.
+    from zerver.forms import CreateUserForm
+
     form = CreateUserForm({"full_name": full_name, "email": email})
     if not form.is_valid():  # nocoverage
         # coverage note: The similar block above covers the most
