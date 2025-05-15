@@ -30,6 +30,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
+from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success
@@ -496,10 +497,9 @@ def update_realm(
     if string_id is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
-
         if realm.demo_organization_scheduled_deletion_date is None:
             raise JsonableError(_("Must be a demo organization."))
-
+        check_demo_organization_has_set_email(realm)
         try:
             check_subdomain(string_id)
         except ValidationError as err:
