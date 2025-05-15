@@ -145,6 +145,99 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     return result
 
 
+def detab(text: str) -> tuple[str, str]:
+    """
+    Remove a tab from the front of each line of the given text.
+    Taken directly from
+    https://github.com/Python-Markdown/markdown/blob/64a3c0fbc00327fbfee1fd6b44da0e5453287fe4/markdown/blockprocessors.py#L85
+    We need this function for converting admonitions to asides, it is
+    okay to be duplicating this code for this script.
+    """
+    tab_length = 4
+    newtext = []
+    lines = text.split("\n")
+    for line in lines:
+        if line.startswith(" " * tab_length):
+            newtext.append(line[tab_length:])
+        elif not line.strip():
+            newtext.append("")
+        else:
+            break
+    return "\n".join(newtext), "\n".join(lines[len(newtext) :])
+
+
+def convert_admonitions_to_asides(
+    markdown_string: str, import_statement_set: set[str], components_dir_path: str
+) -> str:
+    """
+    Lots of code in this function is taken from
+    https://github.com/Python-Markdown/markdown/blob/64a3c0fbc00327fbfee1fd6b44da0e5453287fe4/markdown/extensions/admonition.py
+    """
+    RE = re.compile(r'(?:^|\n)!!! ?([\w\-]+(?: +[\w\-]+)*)(?: +"(.*?)")? *(?:\n|$)')
+    RE_SPACES = re.compile("  +")
+
+    def get_admonition_class_and_title(match: re.Match[str]) -> tuple[str, str | None]:
+        klass, title = match.group(1).lower(), match.group(2)
+        klass = RE_SPACES.sub(" ", klass)
+        if title is None:
+            # no title was provided, use the capitalized class name as title
+            title = klass.split(" ", 1)[0].capitalize()
+        elif title == "":
+            # an explicit blank title should not be rendered
+            title = None
+        return klass, title
+
+    def replace_with_mdx_syntax(text: str) -> str:
+        match = RE.search(text)
+        if match:
+            pre_admonition_declaration_text = text[: match.start()]
+            post_admonition_declaration_text = text[match.end() :]  # removes the first line
+            admonition_content, post_admonition_content_text = detab(
+                post_admonition_declaration_text
+            )
+
+            klass, title = get_admonition_class_and_title(match)
+            # We ignore the title obtained above in each of the if
+            # block since in our current help center files, we do not
+            # specify the title anywhere. This script only handles cases
+            # that exist in our help center files, nothing more than that
+            # is handled.
+            if klass == "warn":
+                # We have converted `warn` to `note` since that was the
+                # translation that remains most faithful to how we
+                # display `warn` admonitions in our current help center
+                # implementation.
+                # See https://chat.zulip.org/#narrow/channel/19-documentation/topic/Stage.202.3A.20New.20syntax.20for.20!!!tip.20in.20help-beta/near/2174415
+                # for more details.
+                type = "note"
+                title = ""
+                replacement = (
+                    f'\n<Aside type="{type}" title="{title}">\n{admonition_content}\n</Aside>\n'
+                )
+                import_statement_set.add("import { Aside } from '@astrojs/starlight/components'")
+            elif klass == "tip":
+                type = "tip"
+                title = "Tip"
+                replacement = (
+                    f'\n<Aside type="{type}" title="{title}">\n{admonition_content}\n</Aside>\n'
+                )
+                import_statement_set.add("import { Aside } from '@astrojs/starlight/components'")
+            elif klass == "keyboard_tip":
+                replacement = f"\n<KeyboardTip>\n{admonition_content}\n</KeyboardTip>\n"
+                import_statement_set.add(
+                    f"import KeyboardTip from '{components_dir_path}/KeyboardTip.astro';"
+                )
+            else:
+                raise Exception(f"Unexpected admonition class during conversion: {klass}")
+
+            text = pre_admonition_declaration_text + replacement + post_admonition_content_text
+            return replace_with_mdx_syntax(text)
+        else:
+            return text
+
+    return replace_with_mdx_syntax(markdown_string)
+
+
 def insert_imports(markdown_string: str, import_statement_set: set[str], line_number: int) -> str:
     if len(import_statement_set) == 0:
         return markdown_string
@@ -205,6 +298,7 @@ def convert_help_center_file_to_mdx(
     result = replace_emoticon_translation_table(result, import_statement_set)
     result = replace_image_path(result, "../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
+    result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
     result = insert_imports(result, import_statement_set, 2)
     result = insert_frontmatter(result)
     return result
@@ -234,6 +328,7 @@ def convert_include_file_to_mdx(
     result = fix_relative_path(result)
     result = replace_image_path(result, "../../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
+    result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = insert_imports(result, import_statement_set, 1)
     return result
 
