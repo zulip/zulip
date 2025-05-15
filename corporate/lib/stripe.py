@@ -3216,6 +3216,10 @@ class BillingSession(ABC):
                 licenses_base = plan.invoiced_through.licenses
                 invoiced_through_id = plan.invoiced_through.id
 
+            # Mark the plan for start of invoicing process.
+            plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
+            plan.save(update_fields=["invoicing_status"])
+
             # Invoice Variables
             stripe_invoice: stripe.Invoice | None = None
             need_to_invoice = False
@@ -3317,6 +3321,7 @@ class BillingSession(ABC):
                 # Update license base per ledger_entry.
                 licenses_base = ledger_entry.licenses
                 plan.invoiced_through = ledger_entry
+                plan.save(update_fields=["invoiced_through"])
 
             flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
             if stripe_invoice is not None:
@@ -3354,7 +3359,6 @@ class BillingSession(ABC):
                 "next_invoice_date",
                 "invoice_overdue_email_sent",
                 "invoicing_status",
-                "invoiced_through",
             ]
         )
 
