@@ -6,9 +6,13 @@
             <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
-        <div class="input-group email_change_container">
-            <label for="email" class="modal-field-label">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+        <div class="input-group">
+            <label for="edit_bot_short_name" class="modal-field-label">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
+            <input type="text" name="short_name" id="edit_bot_short_name" class="bot_local_part modal_text_input" value="{{ short_name }}" />
+            -bot@{{ realm_bot_domain }}
+            <div>
+                <label for="edit_bot_short_name" generated="true" class="text-error"></label>
+            </div>
         </div>
         <div class="input-group user_id_container">
             <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
