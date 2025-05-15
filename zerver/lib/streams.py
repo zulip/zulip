@@ -1507,6 +1507,7 @@ def stream_to_dict(
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
         first_message_id=stream.first_message_id,
+        folder_id=stream.folder_id,
         is_recently_active=stream.is_recently_active,
         history_public_to_subscribers=stream.history_public_to_subscribers,
         invite_only=stream.invite_only,
