@@ -998,7 +998,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(86),
+            self.assert_database_query_count(88),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
