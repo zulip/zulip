@@ -200,6 +200,9 @@ prod = [
 
   # SMTP server for accepting incoming email
   "aiosmtpd>=1.4.6",
+
+  # For using Missing sentinel
+  "pydantic-partials",
 ]
 docs = [
   # Needed to build RTD docs

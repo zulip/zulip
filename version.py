@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 388
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (326, 5)  # bumped 2025-05-15 for aiosmtpd
+PROVISION_VERSION = (326, 6)  # bumped 2025-05-20 to add pydantic-partials

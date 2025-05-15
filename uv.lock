@@ -3162,6 +3162,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pydantic-partials"
+version = "2.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "xsentinels" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b8/84/54a03c593947cdd48201748cb7804df1bbc7cc8b7608ca55264f38b5d3a8/pydantic_partials-2.0.2.tar.gz", hash = "sha256:7aeed90c305a22c4ba74d9e18ea0ee8e6b3a0bad7e8c6a9b35e8124b88bd54ab", size = 13449, upload-time = "2025-03-12T20:37:10.411Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/dd/0151517c8bc470c336e6b36129e074bfa7de1228ae5b6dfbef7d726faed6/pydantic_partials-2.0.2-py3-none-any.whl", hash = "sha256:526613bee354ef324d273daff5f7ab73b977bc9c0f417f1541f230f02cb1dc4b", size = 12617, upload-time = "2025-03-12T20:37:09.461Z" },
+]
+
+[[package]]
 name = "pydispatcher"
 version = "2.0.7"
 source = { registry = "https://pypi.org/simple" }
@@ -4811,6 +4824,19 @@ wheels = [
 ]
 
 [[package]]
+name = "typing-inspect"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mypy-extensions" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/dc/74/1789779d91f1961fa9438e9a8710cdae6bd138c80d7303996933d117264a/typing_inspect-0.9.0.tar.gz", hash = "sha256:b23fc42ff6f6ef6954e4852c1fb512cdd18dbea03134f91f856a95ccc9461f78", size = 13825, upload-time = "2023-05-24T20:25:47.612Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/65/f3/107a22063bf27bdccf2024833d3445f4eea42b2e598abfbd46f6a63b6cb0/typing_inspect-0.9.0-py3-none-any.whl", hash = "sha256:9ee6fc59062311ef8547596ab6b955e1b8aa46242d854bfc78f4f6b0eff35f9f", size = 8827, upload-time = "2023-05-24T20:25:45.287Z" },
+]
+
+[[package]]
 name = "typing-inspection"
 version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4963,6 +4989,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/50/05/51dcca9a9bf5e1bce52582683ce50980bcadbc4fa5143b9f2b19ab99958f/xmltodict-0.14.2.tar.gz", hash = "sha256:201e7c28bb210e374999d1dde6382923ab0ed1a8a5faeece48ab525b7810a553", size = 51942, upload-time = "2024-10-16T06:10:29.683Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d6/45/fc303eb433e8a2a271739c98e953728422fa61a3c1f36077a49e395c972e/xmltodict-0.14.2-py2.py3-none-any.whl", hash = "sha256:20cc7d723ed729276e808f26fb6b3599f786cbc37e06c65e192ba77c40f20aac", size = 9981, upload-time = "2024-10-16T06:10:27.649Z" },
+]
+
+[[package]]
+name = "xsentinels"
+version = "1.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-inspect" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b3/a2/420de554d9fd3670561e171415a2bd5fcd97d72d0ca68b9abb0942ded1ae/xsentinels-1.3.1.tar.gz", hash = "sha256:65e857643a0237296346c468a6762d242b2f3a970cc93aa0325127aba89a789a", size = 5657, upload-time = "2025-01-30T20:17:06.409Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2d/a5/4eaa5dc8d9e7dc575ec8289136e3fd943734a12cc88b93a2ce4dcae6a56e/xsentinels-1.3.1-py3-none-any.whl", hash = "sha256:f3a68cb3e070cdd00c61856f20f3fc9c2df0339f0ad0e621a4ba2a07e023e6a2", size = 7385, upload-time = "2025-01-30T20:17:03.93Z" },
 ]
 
 [[package]]
@@ -5233,6 +5271,7 @@ dev = [
     { name = "pyahocorasick" },
     { name = "pyasyncore" },
     { name = "pydantic" },
+    { name = "pydantic-partials" },
     { name = "pygments" },
     { name = "pyinotify" },
     { name = "pyjwt" },
@@ -5352,6 +5391,7 @@ prod = [
     { name = "psycopg2" },
     { name = "pyahocorasick" },
     { name = "pydantic" },
+    { name = "pydantic-partials" },
     { name = "pygments" },
     { name = "pyjwt" },
     { name = "pymongo" },
@@ -5451,6 +5491,7 @@ dev = [
     { name = "pyahocorasick" },
     { name = "pyasyncore" },
     { name = "pydantic" },
+    { name = "pydantic-partials" },
     { name = "pygments" },
     { name = "pyinotify" },
     { name = "pyjwt" },
@@ -5571,6 +5612,7 @@ prod = [
     { name = "psycopg2" },
     { name = "pyahocorasick" },
     { name = "pydantic" },
+    { name = "pydantic-partials" },
     { name = "pygments" },
     { name = "pyjwt" },
     { name = "pymongo" },
