@@ -462,7 +462,8 @@
     }
 }
 
-#create_bot_short_name {
+#create_bot_short_name,
+#edit_bot_short_name {
     /* A shorter dropdown width (~200px at 14px em)
        to ensure the email all fits on one line. */
     width: 14em;

@@ -794,6 +794,11 @@ function handle_remove_stream_subscription(
     }
 }
 
+function is_local_part(value: string): boolean {
+    // Adapted from Django's EmailValidator
+    return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
+}
+
 export function show_edit_bot_info_modal(user_id: number, $container: JQuery): void {
     const bot = people.maybe_get_user_by_id(user_id);
     const bot_user = bot_data.get(user_id);
@@ -804,6 +809,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     const owner_id = bot_user.owner_id;
     assert(owner_id !== null);
     const is_active = people.is_person_active(user_id);
+    const short_name = bot.email.split("-bot@")[0];
 
     assert(bot.is_bot);
     const html_body = render_edit_bot_form({
@@ -811,10 +817,12 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         is_active,
         email: bot.email,
         full_name: bot.full_name,
+        short_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        realm_bot_domain: realm.realm_bot_domain,
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -848,12 +856,25 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             10,
         );
         const $full_name = $("#bot-edit-form").find<HTMLInputElement>("input[name='full_name']");
+        const $short_name = $("#bot-edit-form").find<HTMLInputElement>("input[name='short_name']");
         const url = "/json/bots/" + encodeURIComponent(bot.user_id);
+
+        if ($short_name.length > 0 && !is_local_part($short_name.val()!)) {
+            ui_report.error(
+                $t_html({
+                    defaultMessage: "Please only use characters that are valid in an email address",
+                }),
+                undefined,
+                $("#bot-edit-form-error"),
+            );
+            return;
+        }
 
         const formData = new FormData();
         assert(csrf_token !== undefined);
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val()!);
+        formData.append("short_name", $short_name.val()!);
         formData.append("role", JSON.stringify(role));
         const new_bot_owner_id = bot_owner_dropdown_widget!.value();
         if (new_bot_owner_id) {
