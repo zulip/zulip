@@ -8,6 +8,7 @@
         {{stream.stream_name}}
         <i class="zulip-icon zulip-icon-mute unmute_stream" data-tippy-content="{{t 'Unmute' }}"
           {{#unless muted}}style="display: none;"{{/unless}}></i>
+        <i class="zulip-icon zulip-icon-trash reset_stream_notifications" data-tippy-content="{{t 'Reset channel to default notifications' }}"></i>
     </td>
     {{#each stream_specific_notification_settings}}
         {{> notification_settings_checkboxes

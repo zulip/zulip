@@ -272,6 +272,7 @@ export function initialize(): void {
             "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
             "#stream-specific-notify-table .unmute_stream",
+            "#stream-specific-notify-table .reset_stream_notifications",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",
