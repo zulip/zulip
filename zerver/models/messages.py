@@ -74,6 +74,9 @@ class AbstractMessage(models.Model):
     # The HTML rendered content resulting from rendering the content
     # with the Markdown processor.
     rendered_content = models.TextField(null=True)
+    # The HTML rendered content resulting from rendering the topic
+    # with the Markdown processor.
+    rendered_topic = models.TextField(null=True)
     # A rarely-incremented version number, theoretically useful for
     # tracking which messages have been already rerendered when making
     # major changes to the markup rendering process.

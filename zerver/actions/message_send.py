@@ -636,6 +636,7 @@ def build_message_send_dict(
         no_previews=no_previews,
     )
     message.rendered_content = rendering_result.rendered_content
+    message.rendered_topic = rendering_result.rendered_topic
     message.rendered_content_version = markdown_version
     links_for_embed = rendering_result.links_for_preview
 
