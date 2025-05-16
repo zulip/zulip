@@ -33,6 +33,7 @@ from zerver.data_import.slack import (
     AddedMPIMsT,
     DMMembersT,
     SlackBotEmail,
+    SlackBotNotFoundError,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
     check_token_access,
@@ -264,9 +265,8 @@ class SlackImporter(ZulipTestCase):
         # Bot info
         slack_bots_info_url = "https://slack.com/api/bots.info"
         responses.add_callback(responses.GET, slack_bots_info_url, callback=request_callback)
-        with self.assertRaises(Exception) as invalid:
+        with self.assertRaises(SlackBotNotFoundError):
             get_slack_api_data(slack_bots_info_url, "XXXYYYZZZ", token=token)
-        self.assertEqual(invalid.exception.args, ("Error accessing Slack API: bot_not_found",))
 
         # Api test
         api_test_info_url = "https://slack.com/api/api.test"
