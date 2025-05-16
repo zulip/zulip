@@ -1232,7 +1232,11 @@ def send_change_stream_permission_notification(
             new_policy=new_policy_name,
         )
         internal_send_stream_message(
-            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME), notification_string
+            sender,
+            stream,
+            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            notification_string,
+            archived_channel_notice=stream.deactivated,
         )
 
 
@@ -1462,7 +1466,11 @@ def send_stream_posting_permission_update_notification(
             new_setting_description=new_setting_description,
         )
         internal_send_stream_message(
-            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME), notification_string
+            sender,
+            stream,
+            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            notification_string,
+            archived_channel_notice=stream.deactivated,
         )
 
 
@@ -1521,6 +1529,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
                 old_channel_name=f"**{old_name}**",
                 new_channel_name=f"**{new_name}**",
             ),
+            archived_channel_notice=stream.deactivated,
         )
 
 
@@ -1549,7 +1558,11 @@ def send_change_stream_description_notification(
         )
 
         internal_send_stream_message(
-            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME), notification_string
+            sender,
+            stream,
+            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            notification_string,
+            archived_channel_notice=stream.deactivated,
         )
 
 
@@ -1639,7 +1652,11 @@ def send_change_stream_message_retention_days_notification(
             summary_line=summary_line,
         )
         internal_send_stream_message(
-            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME), notification_string
+            sender,
+            stream,
+            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            notification_string,
+            archived_channel_notice=stream.deactivated,
         )
 
 
