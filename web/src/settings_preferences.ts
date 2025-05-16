@@ -230,6 +230,9 @@ export function set_up(settings_panel: SettingsPanel): void {
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
     $container
+        .find(".setting_auto_collapse_views")
+        .val(JSON.stringify(settings_object.auto_collapse_views));
+    $container
         .find(".setting_web_mark_read_on_scroll_policy")
         .val(settings_object.web_mark_read_on_scroll_policy);
     $container
@@ -453,10 +456,10 @@ export function update_page(property: UserSettingsProperty): void {
         return;
     }
 
-    // The twenty_four_hour_time setting is represented as a boolean
+    // The twenty_four_hour_time, auto_collapse_views setting is represented as a boolean
     // in the API, but a dropdown with "true"/"false" as strings in
     // the UI, so we need to convert its format here.
-    if (property === "twenty_four_hour_time") {
+    if (property === "twenty_four_hour_time" || property === "auto_collapse_views") {
         value = value.toString();
     }
 
