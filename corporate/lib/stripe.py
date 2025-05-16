@@ -5667,7 +5667,8 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
             billing_session.void_all_open_invoices()
             context: dict[str, str | Realm] = {
                 "upgrade_url": f"{realm.url}{reverse('upgrade_page')}",
-                "realm": realm,
+                "realm_url": realm.url,
+                "string_id": realm.string_id,
             }
             send_email_to_users_with_billing_access_and_realm_owners(
                 "zerver/emails/realm_auto_downgraded",
