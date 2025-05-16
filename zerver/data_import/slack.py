@@ -1213,6 +1213,7 @@ def build_reactions(
         merged_reactions[emoji_name].update(slack_reaction["users"])
     reactions = [{"name": k, "users": v, "count": len(v)} for k, v in merged_reactions.items()]
 
+    processed_reactions: set[tuple[int, int, str, str]] = set()
     # For the Unicode emoji codes, we use equivalent of
     # function 'get_emoji_data' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
@@ -1249,7 +1250,17 @@ def build_reactions(
 
             reaction_dict = model_to_dict(reaction, exclude=["message", "user_profile"])
             reaction_dict["message"] = message_id
-            reaction_dict["user_profile"] = slack_user_id_to_zulip_user_id[slack_user_id]
+            zulip_user_id = slack_user_id_to_zulip_user_id[slack_user_id]
+            reaction_dict["user_profile"] = zulip_user_id
+
+            reaction_tuple = (zulip_user_id, message_id, reaction_type, emoji_code)
+            if reaction_tuple in processed_reactions:
+                # Due to possible merging of Slack accounts into a single Zulip account,
+                # we need to ensure reactions don't get duplicated, violating the unique
+                # constraint on the (user_profile_id, message_id, reaction_type, emoji_code)
+                # index.
+                continue
+            processed_reactions.add(reaction_tuple)
 
             reaction_list.append(reaction_dict)
 
