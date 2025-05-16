@@ -216,7 +216,7 @@ function test(label, f) {
     });
 }
 
-test("sort_streams", ({override, override_rewire}) => {
+test("sort_streams", ({override}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -281,7 +281,7 @@ test("sort_streams", ({override, override_rewire}) => {
     );
 
     stream_list_sort.set_filter_out_inactives();
-    override_rewire(compose_state, "stream_name", () => "Dev");
+    compose_state.set_selected_recipient_id(dev_sub.stream_id);
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dev"); // Stream being composed to
@@ -300,7 +300,8 @@ test("sort_streams", ({override, override_rewire}) => {
     assert.deepEqual(test_streams[4].name, "Dev");
     assert.deepEqual(test_streams[5].name, "Docs");
 
-    override_rewire(compose_state, "stream_name", () => "Different");
+    compose_state.set_selected_recipient_id(linux_sub.stream_id);
+
     // Test sort streams with description
     test_streams = [
         {
