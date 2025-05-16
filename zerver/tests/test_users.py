@@ -43,6 +43,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     get_test_image_file,
+    get_user_sent_messages,
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
@@ -1949,6 +1950,154 @@ class ActivateTest(ZulipTestCase):
         self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], "noreply@testserver")
         self.assertIn("Dear Hamlet,", msg.body)
+
+    def test_api_with_message_delete_action(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("cordelia")
+
+        self.send_personal_message(user, admin, content="private message 1")
+        self.send_personal_message(user, admin, content="private message 2")
+        self.send_stream_message(user, "Verona", topic_name="topic1", content="stream message 1")
+        self.send_stream_message(user, "Verona", topic_name="topic1", content="stream message 2")
+        self.send_stream_message(user, "Verona", topic_name="topic2")
+        self.send_stream_message(user, "Verona")
+
+        private_stream = self.make_stream("PrivateStream", invite_only=True)
+        self.subscribe(user, private_stream.name)
+        self.send_stream_message(
+            user, private_stream.name, topic_name="topic1", content="private stream message 1"
+        )
+        self.send_stream_message(
+            user, private_stream.name, topic_name="topic2", content="private stream message 2"
+        )
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 8)
+
+        # Case 1: NO_DELETE_ACTION
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {
+                "message_delete_action": orjson.dumps(Message.NO_DELETE_ACTION).decode(),
+                "is_spammer": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 8)  # No messages should be deleted
+
+        do_reactivate_user(user, acting_user=None)
+
+        # Case 2: DELETE_PUBLIC_STREAM_MESSAGES
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {
+                "message_delete_action": orjson.dumps(
+                    Message.DELETE_PUBLIC_STREAM_MESSAGES
+                ).decode(),
+                "is_spammer": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 4)
+        self.assertTrue(all(message.is_stream_message for message in user_messages))
+
+        do_reactivate_user(user, acting_user=None)
+
+        # Case 3: DELETE_ALL_MESSAGES
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {
+                "message_delete_action": orjson.dumps(Message.DELETE_ALL_MESSAGES).decode(),
+                "is_spammer": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 2)  # We do not delete DMs in any case.
+
+    def test_name_change_on_deactiation(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("cordelia")
+        self.assertNotEqual(user.full_name, "Deleted user")
+
+        bot = do_create_user(
+            email="bot@zulip.com",
+            password="",
+            realm=user.realm,
+            full_name="Bot 1",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=user,
+            acting_user=user,
+        )
+        self.assertNotEqual(bot.full_name, "Deactivated bot")
+
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {
+                "message_delete_action": orjson.dumps(Message.NO_DELETE_ACTION).decode(),
+                "is_spammer": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        bot.refresh_from_db()
+
+        # Test deactivated user's name change
+        self.assertEqual(user.full_name, "Deleted user")
+        # Test deactivated bot's name change
+        self.assertEqual(bot.full_name, "Deactivated bot")
+
+    def test_avatar_replaced_with_gravatar_on_deactivation(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("cordelia")
+        user.avatar_source = UserProfile.AVATAR_FROM_USER
+        user.save(update_fields=["avatar_source"])
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        bot = do_create_user(
+            email="bot@zulip.com",
+            password="",
+            realm=user.realm,
+            full_name="Bot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=user,
+            acting_user=user,
+        )
+        bot.avatar_source = UserProfile.AVATAR_FROM_USER
+        bot.save(update_fields=["avatar_source"])
+        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            {
+                "message_delete_action": orjson.dumps(Message.NO_DELETE_ACTION).decode(),
+                "is_spammer": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        bot.refresh_from_db()
+
+        # Test deactivated user's avatar removal
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertGreater(user.avatar_version, 0)
+        # Test deactivated bot's avatar removal
+        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertGreater(bot.avatar_version, 0)
 
     def test_api_with_nonexistent_user(self) -> None:
         self.login("iago")

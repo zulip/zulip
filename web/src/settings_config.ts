@@ -1256,3 +1256,18 @@ export const realm_plan_types = {
     standard_free: {code: 4},
     plus: {code: 10},
 };
+
+export const message_delete_action_values = {
+    no_delete_action: {
+        code: 0,
+        value: "nothing",
+    },
+    delete_public_stream_messages: {
+        code: 1,
+        value: "delete-public",
+    },
+    delete_all_messages: {
+        code: 2,
+        value: "delete-all",
+    },
+};
