@@ -40,4 +40,18 @@
             {{> dropdown_options_widget option_values=web_channel_default_view_values}}
         </select>
     </div>
+
+    <div class="input-group">
+        <label for="{{prefix}}auto_collapse_views" class="settings-field-label">
+            {{t "Automatically collapse views section in the left sidebar" }}
+        </label>
+        <select name="auto_collapse_views"
+          class="setting_auto_collapse_views prop-element settings_select bootstrap-focus-style"
+          id="{{prefix}}auto_collapse_views"
+          data-setting-widget-type="string">
+            {{> dropdown_options_widget option_values=auto_collapse_views_values }}
+        </select>
+    </div>
+
+
 </div>
