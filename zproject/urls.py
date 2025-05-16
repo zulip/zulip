@@ -833,10 +833,6 @@ urls += [
         r"^scim/v2/Groups/.search$",
         scim_views.SCIMView.as_view(implemented=False),
     ),
-    re_path(
-        r"^scim/v2/Groups(?:/(?P<uuid>[^/]+))?$",
-        scim_views.SCIMView.as_view(implemented=False),
-    ),
     re_path(r"^scim/v2/Me$", scim_views.SCIMView.as_view(implemented=False)),
     re_path(
         r"^scim/v2/ServiceProviderConfig$",
