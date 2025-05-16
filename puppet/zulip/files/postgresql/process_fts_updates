@@ -248,13 +248,13 @@ while True:
             # Catch up on any historical columns
             update_all_rows("Caught up", conn)
 
-        # TODO: If we go back into recovery, we should stop processing updates
         if select.select([conn], [], [], 30) != ([], [], []):
             conn.poll()
             conn.notifies.clear()
             update_all_rows("Updated", conn)
 
     except psycopg2.OperationalError as e:
+        # We will end up here if the database is restarted, or becomes read-only.
         retries -= 1
         if retries <= 0:
             raise
