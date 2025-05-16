@@ -314,6 +314,7 @@ def json_change_settings(
     web_navigate_to_sent_message: Json[bool] | None = None,
     web_suggest_update_timezone: Json[bool] | None = None,
     hide_ai_features: Json[bool] | None = None,
+    auto_collapse_views: Json[bool] | None = None,
     resolved_topic_notice_auto_read_policy: Annotated[
         str | None,
         AfterValidator(
