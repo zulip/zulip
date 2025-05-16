@@ -46,6 +46,7 @@ frontend:
 
 Now the Zulip server should be running and accessible. Verify this by
 navigating to <http://localhost:9991/devlogin> in the browser on your main machine.
+Note: These links will **only work** when you have set up and are running a Zulip development server on your local machine. They are **not** for public or production use.
 
 You should see something like this:
 
