@@ -6,6 +6,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -297,7 +298,8 @@ export function validate_group_settings_hash(hash: string): string {
     const hash_components = hash.slice(1).split(/\//);
     const section = hash_components[1];
 
-    const can_create_groups = settings_data.user_can_create_user_groups();
+    const can_create_groups =
+        settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited;
     if (section === "new" && !can_create_groups) {
         return "#groups/your";
     }
