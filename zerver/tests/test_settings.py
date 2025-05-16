@@ -618,6 +618,21 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(hamlet.web_font_size_px, 14)
         self.assertEqual(hamlet.web_line_height_percent, 122)
 
+    def test_change_auto_collapse_views_setting(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        self.assertTrue(user.auto_collapse_views)
+
+        result = self.client_patch(
+            "/json/settings",
+            {"auto_collapse_views": "false"},
+        )
+        self.assert_json_success(result)
+
+        user.refresh_from_db()
+        self.assertFalse(user.auto_collapse_views)
+
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:

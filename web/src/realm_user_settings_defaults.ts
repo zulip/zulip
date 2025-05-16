@@ -53,6 +53,7 @@ export const realm_default_settings_schema = z.object({
     starred_message_counts: z.boolean(),
     translate_emoticons: z.boolean(),
     twenty_four_hour_time: z.boolean(),
+    auto_collapse_views: z.boolean(),
     user_list_style: z.number(),
     web_animate_image_previews: z.string(),
     web_channel_default_view: z.number(),

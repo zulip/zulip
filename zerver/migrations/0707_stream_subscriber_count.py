@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0703_realmuserdefault_resolved_topic_notice_auto_read_policy_and_more"),
+        ("zerver", "0706_stream_subscriber_count_data_migration"),
     ]
 
     operations = [
