@@ -137,3 +137,7 @@ body {
     width: min(100%, 800px);
     margin: 0 auto;
 }
+
+.showroom-filter-input-container {
+    width: clamp(200px, 100%, 400px);
+}
