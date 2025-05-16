@@ -24,13 +24,52 @@ export function do_unread_count_updates(messages: Message[], expect_no_new_unrea
     }
 }
 
-export function get_count_of_messages_in_topic_sent_after_current_message(
+export function get_count_of_messages_in_view_sent_after_current_message(
     stream_id: number,
     topic: string,
     message_id: number,
 ): number {
-    const all_messages = get_messages_in_topic(stream_id, topic);
-    return all_messages.filter((msg) => msg.id >= message_id).length;
+    let all_messages = get_messages_in_view_currently_focused(stream_id, topic);
+    let count = all_messages.filter((msg) => msg.id >= message_id).length;
+
+    if (count === 0) {
+        // If we have no messages in the view, we should check if we have
+        // messages in the all_messages_data store.
+        all_messages = get_messages_in_topic(stream_id, topic);
+        count = all_messages.filter((msg) => msg.id >= message_id).length;
+    }
+    return count;
+}
+
+export function get_count_of_messages_in_view_currently_focused(
+    stream_id: number,
+    topic: string,
+): number {
+    let count = get_messages_in_view_currently_focused(stream_id, topic).length;
+    if (count === 0) {
+        // If we have no messages in the view, we should check if we have
+        // messages in the all_messages_data store.
+        count = get_messages_in_topic(stream_id, topic).length;
+    }
+    return count;
+}
+
+export function get_messages_in_view_currently_focused(
+    stream_id: number,
+    topic: string,
+): Message[] {
+    const current_view_messages = message_lists.current?.data.all_messages();
+
+    if (!current_view_messages) {
+        return [];
+    }
+
+    return current_view_messages.filter(
+        (x) =>
+            x.type === "stream" &&
+            x.stream_id === stream_id &&
+            x.topic.toLowerCase() === topic.toLowerCase(),
+    );
 }
 
 export function get_messages_in_topic(stream_id: number, topic: string): Message[] {

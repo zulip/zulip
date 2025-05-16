@@ -4,14 +4,25 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const message_edit = zrequire("message_edit");
 const people = zrequire("people");
+const stream_popover = zrequire("stream_popover");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
 
 const settings_data = mock_esm("../src/settings_data");
+const message_util = mock_esm("../src/message_util");
+const message_lists = mock_esm("../src/message_lists");
+const narrow_state = mock_esm("../src/narrow_state");
+
+message_lists.current = {
+    data: {
+        fetch_status: {},
+    },
+};
 
 const realm = {};
 set_realm(realm);
@@ -374,4 +385,184 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         ),
         false,
     );
+});
+
+run_test("test_get_count_of_messages_to_be_moved", ({override}) => {
+    const current_stream_id = 100;
+    const topic_name = "test_topic";
+    const message_id = 42;
+
+    // Case 1: selected_option === "change_one"
+    assert.equal(
+        stream_popover.get_count_of_messages_to_be_moved(
+            "change_one",
+            current_stream_id,
+            topic_name,
+        ),
+        1,
+    );
+
+    // Case 2: selected_option === "change_later"
+    override(
+        message_util,
+        "get_count_of_messages_in_view_sent_after_current_message",
+        (stream_id, topic, msg_id) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            assert.equal(msg_id, message_id);
+            return 3;
+        },
+    );
+    assert.equal(
+        stream_popover.get_count_of_messages_to_be_moved(
+            "change_later",
+            current_stream_id,
+            topic_name,
+            message_id,
+        ),
+        3,
+    );
+
+    // Case 3: selected_option === "change_all"
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 5;
+        },
+    );
+    assert.equal(
+        stream_popover.get_count_of_messages_to_be_moved(
+            "change_all",
+            current_stream_id,
+            topic_name,
+        ),
+        5,
+    );
+});
+
+run_test("test_update_move_messages_count_text", ({override}) => {
+    const current_stream_id = 100;
+    const topic_name = "test_topic";
+    const message_id = 42;
+
+    // Case 1: selected_option === "change_one"
+    stream_popover.update_move_messages_count_text("change_one", current_stream_id, topic_name);
+    assert.equal($("#move_messages_count").text(), "translated: 1 message will be moved.");
+
+    // Case 2: selected_option === "change_later"
+
+    // This is the general case when we are in topic narrow.
+    override(narrow_state, "narrowed_by_topic_reply", () => true);
+    override(narrow_state, "narrowed_by_stream_reply", () => false);
+    override(narrow_state, "stream_id", () => current_stream_id);
+    override(narrow_state, "topic", () => topic_name);
+
+    override(message_lists.current.data.fetch_status, "has_found_newest", () => true);
+    override(message_lists.current.data.fetch_status, "has_found_oldest", () => true);
+
+    override(
+        message_util,
+        "get_count_of_messages_in_view_sent_after_current_message",
+        (stream_id, topic, msg_id) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            assert.equal(msg_id, message_id);
+            return 3;
+        },
+    );
+    stream_popover.update_move_messages_count_text(
+        "change_later",
+        current_stream_id,
+        topic_name,
+        message_id,
+    );
+    assert.equal($("#move_messages_count").text(), "translated: 3 messages will be moved.");
+
+    // This is the case when we are in an interleaved view..
+    override(narrow_state, "narrowed_by_topic_reply", () => false);
+    override(narrow_state, "narrowed_by_stream_reply", () => false);
+    override(narrow_state, "stream_id", () => 12);
+    override(narrow_state, "topic", () => "no_test_topic");
+
+    override(
+        message_util,
+        "get_count_of_messages_in_view_sent_after_current_message",
+        (stream_id, topic, msg_id) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            assert.equal(msg_id, message_id);
+            return 2;
+        },
+    );
+
+    stream_popover.update_move_messages_count_text(
+        "change_later",
+        current_stream_id,
+        topic_name,
+        message_id,
+    );
+    assert.equal($("#move_messages_count").text(), "translated: 2+ messages will be moved.");
+
+    // Case 3: selected_option === "change_all"
+    override(narrow_state, "narrowed_by_topic_reply", () => true);
+    override(narrow_state, "narrowed_by_stream_reply", () => false);
+    override(narrow_state, "stream_id", () => current_stream_id);
+    override(narrow_state, "topic", () => topic_name);
+
+    override(message_lists.current.data.fetch_status, "has_found_newest", () => true);
+    override(message_lists.current.data.fetch_status, "has_found_oldest", () => true);
+
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 5;
+        },
+    );
+
+    stream_popover.update_move_messages_count_text("change_all", current_stream_id, topic_name);
+    assert.equal($("#move_messages_count").text(), "translated: 5 messages will be moved.");
+
+    // This is case when we are in stream narrow and the topic is not the same.
+    override(narrow_state, "narrowed_by_topic_reply", () => true);
+    override(narrow_state, "narrowed_by_stream_reply", () => false);
+    override(narrow_state, "stream_id", () => current_stream_id);
+    override(narrow_state, "topic", () => "no_test_topic");
+
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 4;
+        },
+    );
+
+    stream_popover.update_move_messages_count_text("change_all", current_stream_id, topic_name);
+    assert.equal($("#move_messages_count").text(), "translated: 4+ messages will be moved.");
+
+    // This is the case when we are in an interleaved view..
+    override(narrow_state, "narrowed_by_topic_reply", () => false);
+    override(narrow_state, "narrowed_by_stream_reply", () => false);
+    override(narrow_state, "stream_id", () => 12);
+    override(narrow_state, "topic", () => "no_test_topic");
+
+    override(
+        message_util,
+        "get_count_of_messages_in_view_currently_focused",
+        (stream_id, topic) => {
+            assert.equal(stream_id, current_stream_id);
+            assert.equal(topic, topic_name);
+            return 4;
+        },
+    );
+
+    stream_popover.update_move_messages_count_text("change_all", current_stream_id, topic_name);
+    assert.equal($("#move_messages_count").text(), "translated: 4+ messages will be moved.");
 });
