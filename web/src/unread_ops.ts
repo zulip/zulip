@@ -817,7 +817,7 @@ export function viewport_is_visible_and_focused(): boolean {
         overlays.any_active() ||
         modals.any_active() ||
         !is_window_focused() ||
-        !$("#message_feed_container").is(":visible")
+        $("#message_feed_container").css("display") === "none"
     ) {
         return false;
     }
