@@ -227,7 +227,7 @@ export function resize_settings_overlay(): void {
         "height",
         height_of($(".two-pane-settings-container")) -
             height_of($(".two-pane-settings-header")) -
-            height_of($(".two-pane-settings-overlay .display-type")) -
+            height_of($(".two-pane-settings-subheader")) -
             height_of($(".two-pane-settings-search")),
     );
 
@@ -235,7 +235,7 @@ export function resize_settings_overlay(): void {
         "height",
         height_of($(".two-pane-settings-container")) -
             height_of($(".two-pane-settings-header")) -
-            height_of($(".two-pane-settings-overlay .display-type")),
+            height_of($(".two-pane-settings-subheader")),
     );
 }
 
@@ -248,7 +248,7 @@ export function resize_settings_creation_overlay(): void {
         "height",
         height_of($(".two-pane-settings-container")) -
             height_of($(".two-pane-settings-header")) -
-            height_of($(".two-pane-settings-overlay .display-type")) -
+            height_of($(".two-pane-settings-subheader")) -
             height_of($(".settings-sticky-footer")),
     );
 }
