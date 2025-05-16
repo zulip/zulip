@@ -104,6 +104,7 @@
         margin-bottom: 0.5rem;
 
         .stackframe {
+            overflow-wrap: break-word;
             padding-left: calc(3.3rem - 14px);
             padding-right: 1rem;
         }
