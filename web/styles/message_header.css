@@ -20,6 +20,14 @@
         border: 1px solid var(--color-message-header-contents-border);
         border-bottom-color: var(--color-message-header-contents-border-bottom);
         border-radius: 7px 7px 0 0;
+
+        .channel-topic-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            overflow: hidden;
+        }
     }
 
     &.message_header_stream {
