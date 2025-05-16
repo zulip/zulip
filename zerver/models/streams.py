@@ -32,6 +32,7 @@ class Stream(models.Model):
     deactivated = models.BooleanField(default=False)
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default="")
     rendered_description = models.TextField(default="")
+    default_color = models.CharField(max_length=10, null=True, default=None)
 
     # Total number of non-deactivated users who are subscribed to the channel.
     # It's obvious to be a positive field but also in case it becomes negative
