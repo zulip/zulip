@@ -45,6 +45,7 @@ type ActionPopoverContext = {
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
     should_display_add_reaction_option: boolean;
+    is_stream_archived: boolean;
 };
 
 type TopicPopoverContext = {
@@ -69,6 +70,7 @@ type TopicPopoverContext = {
     all_visibility_policies: AllVisibilityPolicies;
     can_summarize_topics: boolean;
     show_ai_features: boolean;
+    is_stream_archived: boolean;
 };
 
 type VisibilityChangePopoverContext = {
@@ -220,6 +222,8 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         return $message_row.find(".message_controls .reaction_button").is(":visible");
     }
 
+    const is_stream_archived = stream_id !== undefined && stream_data.is_stream_archived(stream_id);
+
     // Since we only display msg actions and star icons on windows smaller than
     // `media_breakpoints.sm_min`, we need to include the reaction button in the
     // popover if it is not displayed.
@@ -227,7 +231,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         !message.is_me_message &&
         !is_add_reaction_icon_visible() &&
         not_spectator &&
-        !(stream_id && stream_data.is_stream_archived(stream_id));
+        !is_stream_archived;
 
     return {
         message_id: message.id,
@@ -244,6 +248,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_message,
+        is_stream_archived,
     };
 }
 
@@ -270,6 +275,7 @@ export function get_topic_popover_content_context({
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
     const is_topic_empty = is_topic_definitely_empty(stream_id, topic_name);
+    const is_stream_archived = stream_data.is_stream_archived(stream_id);
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -292,6 +298,7 @@ export function get_topic_popover_content_context({
         all_visibility_policies,
         can_summarize_topics: settings_data.user_can_summarize_topics(),
         show_ai_features: !user_settings.hide_ai_features,
+        is_stream_archived,
     };
 }
 
