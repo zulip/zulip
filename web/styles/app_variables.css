@@ -1616,7 +1616,11 @@
     --color-tab-picker-icon: light-dark(hsl(200deg 100% 40%), hsl(0deg 0% 80%));
     --color-user-circle-active: light-dark(#43a35e, #4cdc75);
     --color-user-circle-idle: light-dark(#f5b266, #ae640a);
-    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-offline: light-dark(#bcc0cf, #545764);
+    --color-user-circle-offline-typeahead-highlight: light-dark(
+        #adb2c5,
+        #646671
+    );
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     --gradient-user-circle-idle: linear-gradient(
         to right,
@@ -2093,8 +2097,8 @@
         hsl(220deg 12% 100% / 7%)
     );
     --background-color-active-typeahead-item: light-dark(
-        hsl(221.14deg 89.74% 92.35%),
-        hsl(226.35deg 82.53% 55.1% / 38.82%)
+        hsl(220deg 12% 4.9% / 5%),
+        hsl(220deg 12% 100% / 7%)
     );
     --color-typeahead-option-label: light-dark(
         var(--grey-500),
