@@ -1176,7 +1176,7 @@ Output:
         read_by_sender: bool = True,
     ) -> int:
         to_user_ids = [u.id for u in to_users]
-        assert len(to_user_ids) >= 2
+        assert len(to_user_ids) >= 1
 
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
