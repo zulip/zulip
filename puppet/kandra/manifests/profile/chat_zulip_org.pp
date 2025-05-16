@@ -1,6 +1,6 @@
 class kandra::profile::chat_zulip_org inherits kandra::profile::base {
   include zulip::profile::standalone
-  include zulip::postfix_localmail
+  include zulip::local_mailserver
   include zulip::hooks::sentry
   include zulip::hooks::zulip_notify
 
