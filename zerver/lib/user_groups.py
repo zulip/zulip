@@ -416,12 +416,15 @@ def check_setting_configuration_for_system_groups(
 
 
 def update_or_create_user_group_for_setting(
-    user_profile: UserProfile,
+    user_profile: UserProfile | None,
+    realm: Realm,
     direct_members: list[int],
     direct_subgroups: list[int],
     current_setting_value: UserGroup | None,
 ) -> UserGroup:
-    realm = user_profile.realm
+    if user_profile is not None:
+        assert realm == user_profile.realm
+
     if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
         # We do not create a new group if the setting was already set
         # to an anonymous group. The memberships of existing group
@@ -447,13 +450,16 @@ def update_or_create_user_group_for_setting(
             _("Invalid user group ID: {group_id}").format(group_id=group_ids_not_found[0])
         )
 
-    for subgroup in potential_subgroups:
-        # At this time, we only do a check on the realm ID of the subgroup and
-        # whether the group is deactivated or not. Realm ID error would be caught
-        # above and in case the user group is deactivated the error will be raised
-        # in has_user_group_access_for_subgroup itself, so there is no coverage here.
-        if not has_user_group_access_for_subgroup(subgroup, user_profile):
-            raise JsonableError(_("Insufficient permission"))  # nocoverage
+    if user_profile is not None:
+        # If no user_profile is passed, it means that we're not processing some user's request
+        # and thus we don't care about checking permissions for this action.
+        for subgroup in potential_subgroups:
+            # At this time, we only do a check on the realm ID of the subgroup and
+            # whether the group is deactivated or not. Realm ID error would be caught
+            # above and in case the user group is deactivated the error will be raised
+            # in has_user_group_access_for_subgroup itself, so there is no coverage here.
+            if not has_user_group_access_for_subgroup(subgroup, user_profile):
+                raise JsonableError(_("Insufficient permission"))  # nocoverage
 
     user_group.direct_subgroups.set(group_ids_found)
 
@@ -487,7 +493,8 @@ def access_user_group_api_value_for_setting(
 
 def access_user_group_for_setting(
     setting_user_group: int | UserGroupMembersData,
-    user_profile: UserProfile,
+    user_profile: UserProfile | None,
+    realm: Realm,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
@@ -499,7 +506,7 @@ def access_user_group_for_setting(
     """
     user_group_api_value_for_setting = access_user_group_api_value_for_setting(
         setting_user_group,
-        user_profile.realm,
+        realm,
         setting_name=setting_name,
         permission_configuration=permission_configuration,
     )
@@ -508,6 +515,7 @@ def access_user_group_for_setting(
 
     user_group = update_or_create_user_group_for_setting(
         user_profile,
+        realm,
         user_group_api_value_for_setting.direct_members,
         user_group_api_value_for_setting.direct_subgroups,
         current_setting_value,

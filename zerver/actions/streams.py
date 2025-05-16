@@ -1717,6 +1717,7 @@ def do_change_stream_group_based_setting(
     else:
         user_group = update_or_create_user_group_for_setting(
             acting_user,
+            stream.realm,
             new_setting_value.direct_members,
             new_setting_value.direct_subgroups,
             old_user_group,
