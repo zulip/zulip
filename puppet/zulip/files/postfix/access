@@ -1,9 +1,0 @@
-# This is the list of email addresses that are accepted via SMTP;
-# these consist of only the addresses in `virtual`, as well as the
-# RFC822-specified postmaster.
-
-/\+.*@/         OK
-/\..*@/         OK
-/^mm.{32}@/     OK
-
-/^postmaster@/  OK

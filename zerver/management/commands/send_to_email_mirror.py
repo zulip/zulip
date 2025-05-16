@@ -10,9 +10,10 @@ from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
-from zerver.lib.email_mirror import mirror_email_message
+from zerver.lib.email_mirror import validate_to_address
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -99,9 +100,15 @@ Example:
             )
         self._prepare_message(message, realm, stream, creator, sender)
 
-        mirror_email_message(
-            message["To"].addresses[0].addr_spec,
-            base64.b64encode(message.as_bytes()).decode(),
+        rcpt_to = message["To"].addresses[0].addr_spec
+        validate_to_address(rcpt_to, rate_limit=False)
+
+        queue_json_publish_rollback_unsafe(
+            "email_mirror",
+            {
+                "rcpt_to": rcpt_to,
+                "msg_base64": base64.b64encode(message.as_bytes()).decode(),
+            },
         )
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
