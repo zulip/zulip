@@ -6,7 +6,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import ChannelFolder, Realm, UserProfile
+from zerver.models import ChannelFolder, Realm, Stream, UserProfile
 
 
 class ChannelFolderDict(TypedDict):
@@ -71,3 +71,25 @@ def get_channel_folder_by_id(channel_folder_id: int, realm: Realm) -> ChannelFol
         return channel_folder
     except ChannelFolder.DoesNotExist:
         raise JsonableError(_("Invalid channel folder ID"))
+
+
+def get_channel_folders_for_spectators(
+    realm: Realm, include_archived: bool = False
+) -> list[ChannelFolderDict]:
+    folder_ids_for_web_public_streams = set(
+        Stream.objects.filter(
+            realm=realm,
+            is_web_public=True,
+            # In theory, is_web_public=True implies invite_only=False and
+            # history_public_to_subscribers=True, but it's safer to include
+            # these in the query.
+            invite_only=False,
+            history_public_to_subscribers=True,
+        ).values_list("folder_id", flat=True)
+    )
+    folders = ChannelFolder.objects.filter(id__in=folder_ids_for_web_public_streams)
+    if not include_archived:
+        folders = folders.exclude(is_archived=True)
+
+    channel_folders = [get_channel_folder_dict(channel_folder) for channel_folder in folders]
+    return sorted(channel_folders, key=lambda folder: folder["id"])
