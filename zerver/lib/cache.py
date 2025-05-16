@@ -507,6 +507,10 @@ def realm_user_dicts_cache_key(realm_id: int) -> str:
     return f"realm_user_dicts:{realm_id}"
 
 
+def partial_realm_user_dicts_cache_key(realm_id: int) -> str:
+    return f"partial_realm_user_dicts:{realm_id}"
+
+
 def get_muting_users_cache_key(muted_user_id: int) -> str:
     return f"muting_users_list:{muted_user_id}"
 

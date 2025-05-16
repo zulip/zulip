@@ -111,6 +111,7 @@ def build_page_params_for_home_page_load(
         client = RequestNotes.get_notes(request).client
         assert client is not None
         partial_subscribers = os.environ.get("PARTIAL_SUBSCRIBERS") is not None
+        partial_users = os.environ.get("PARTIAL_USERS") is not None
         state_data = do_events_register(
             user_profile,
             realm,
@@ -124,6 +125,7 @@ def build_page_params_for_home_page_load(
             narrow=narrow,
             include_streams=False,
             include_subscribers="partial" if partial_subscribers else True,
+            include_users="partial" if partial_users else True,
         )
         queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
