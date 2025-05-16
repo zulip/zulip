@@ -976,7 +976,9 @@ def do_send_password_reset_email(
             delivery_email__iexact=email, is_active=True
         )
         if active_accounts_in_other_realms:
-            context["active_accounts_in_other_realms"] = active_accounts_in_other_realms
+            context["other_realm_urls"] = [
+                active_account.realm.url for active_account in active_accounts_in_other_realms
+            ]
         language = get_language()
 
         send_email(
