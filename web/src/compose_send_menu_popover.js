@@ -12,6 +12,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as modals from "./modals.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -28,8 +29,8 @@ function set_compose_box_schedule(element) {
     return selected_send_at_time;
 }
 
-export function open_send_later_menu() {
-    if (!compose_validate.validate(true)) {
+export function open_send_later_menu(remind_message_id = undefined) {
+    if (remind_message_id === undefined && !compose_validate.validate(true)) {
         return;
     }
 
@@ -38,6 +39,7 @@ export function open_send_later_menu() {
     const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
     $("body").append($(render_send_later_modal(filtered_send_opts)));
     let interval;
+    const message_schedule_callback = (time) => do_schedule_message(time, remind_message_id);
 
     modals.open("send_later_modal", {
         autoremove: true,
@@ -67,7 +69,7 @@ export function open_send_later_menu() {
                 const current_time = new Date();
                 flatpickr.show_flatpickr(
                     $(".send_later_custom")[0],
-                    do_schedule_message,
+                    message_schedule_callback,
                     new Date(current_time.getTime() + 60 * 60 * 1000),
                     {
                         minDate: new Date(
@@ -101,7 +103,7 @@ export function open_send_later_menu() {
                 ".send_later_today, .send_later_tomorrow, .send_later_monday",
                 (e) => {
                     const send_at_time = set_compose_box_schedule(e.currentTarget);
-                    do_schedule_message(send_at_time);
+                    message_schedule_callback(send_at_time);
                     e.preventDefault();
                     e.stopPropagation();
                 },
@@ -118,13 +120,19 @@ export function open_send_later_menu() {
     });
 }
 
-export function do_schedule_message(send_at_time) {
+export function do_schedule_message(send_at_time, remind_message_id) {
     modals.close_if_open("send_later_modal");
 
     if (!Number.isInteger(send_at_time)) {
         // Convert to timestamp if this is not a timestamp.
         send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
     }
+
+    if (remind_message_id !== undefined) {
+        message_reminder.set_message_reminder(send_at_time, remind_message_id);
+        return;
+    }
+
     scheduled_messages.set_selected_schedule_timestamp(send_at_time);
     compose.finish(true);
 }

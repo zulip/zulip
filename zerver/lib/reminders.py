@@ -23,11 +23,12 @@ def get_reminder_formatted_content(message: Message, current_user: UserProfile) 
             topic_name=message.topic_name(),
         )
         content = _(
-            "You requested a reminder for the following message sent to [{stream_name} > {topic_name}]({narrow_link})."
+            "You requested a reminder for the following message sent to [{stream_name} > {topic_name}]({narrow_link}/with/{message_id})."
         ).format(
             stream_name=stream.name,
             topic_name=message.topic_name(),
             narrow_link=narrow_link,
+            message_id=message.id,
         )
     else:
         content = _("You requested a reminder for the following direct message.")

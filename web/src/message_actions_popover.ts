@@ -64,7 +64,11 @@ export function toggle_message_actions_menu(message: Message): boolean {
     return true;
 }
 
-export function initialize(): void {
+export function initialize({
+    message_reminder_click_handler,
+}: {
+    message_reminder_click_handler: (remind_message_id: number) => void;
+}): void {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
         theme: "popover-menu",
         placement: "bottom",
@@ -136,6 +140,14 @@ export function initialize(): void {
                 assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 message_edit.start($row);
+                e.preventDefault();
+                e.stopPropagation();
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".message-reminder", (e) => {
+                const remind_message_id = Number($(e.currentTarget).attr("data-message-id"));
+                message_reminder_click_handler(remind_message_id);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
