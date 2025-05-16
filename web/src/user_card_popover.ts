@@ -275,11 +275,20 @@ export let fetch_presence_for_popover = (user_id: number): void => {
                 $(selector_to_update).text(buddy_data.user_last_seen_time_status(user_id));
             }
         },
-        error(xhr: JQuery.jqXHR) {
-            // Fallback logic for users who haven't generated any
-            // presence data. We want to show the normal "Not active
-            // in last year" text.
-            blueslip.error(channel.xhr_error_message("Error fetching presence", xhr));
+        error() {
+            // Fallback logic for users who haven't generated any presence data.
+            // A non-bot active user account might have no presence data either
+            // because they have always been in "invisible mode" or because the
+            // account was imported from another chat system.
+            //
+            // Store the fact that this user hasn't been online since
+            // account creation, to avoid uselessly asking the server
+            // again in this session.
+            const user = people.get_by_user_id(user_id);
+            presence.presence_info.set(user_id, {
+                status: "offline",
+                last_active: new Date(user.date_joined).getTime() / 1000,
+            });
             $(selector_to_update).text(buddy_data.user_last_seen_time_status(user_id));
         },
     });
