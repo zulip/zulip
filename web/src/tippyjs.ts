@@ -657,7 +657,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             let template = "show-userlist-tooltip-template";
-            if ($("#right-sidebar-container").is(":visible")) {
+            if ($("#right-sidebar-container").css("display") !== "none") {
                 template = "hide-userlist-tooltip-template";
             }
             $(instance.reference).attr("data-tooltip-template-id", template);
