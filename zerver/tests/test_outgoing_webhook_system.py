@@ -20,6 +20,7 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.users import add_service
 from zerver.models import Recipient, Service, UserProfile
+from zerver.models.bots import ServiceBotTriggerTypeEnum
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -397,6 +398,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             service_name="foo-service",
             payload_url='"https://bot.example.com/"',
+            message_trigger_type="MENTION_ONLY",
         )
 
     @responses.activate
@@ -419,6 +421,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             interface=Service.GENERIC,
             base_url="https://weather.example.com/",
             token="weather_token",
+            message_trigger_type=ServiceBotTriggerTypeEnum.MENTION_ONLY,
         )
 
         add_service(
@@ -427,6 +430,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             interface=Service.GENERIC,
             base_url="https://qotd.example.com/",
             token="qotd_token",
+            message_trigger_type=ServiceBotTriggerTypeEnum.MENTION_ONLY,
         )
 
         sender = self.example_user("hamlet")

@@ -86,6 +86,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import ServiceBotTriggerTypeEnum
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -549,6 +550,13 @@ def regenerate_bot_api_key(
     return json_success(request, data=json_result)
 
 
+def parse_service_bot_message_trigger_type(message_trigger_type: str) -> ServiceBotTriggerTypeEnum:
+    try:
+        return ServiceBotTriggerTypeEnum[message_trigger_type]
+    except KeyError:
+        raise JsonableError(_("Invalid {var_name}").format(var_name="message_trigger_type"))
+
+
 @require_member_or_admin
 @typed_endpoint
 def add_bot_backend(
@@ -569,6 +577,11 @@ def add_bot_backend(
         str | None, ApiParamConfig("default_events_register_stream")
     ] = None,
     default_all_public_streams: Json[bool] | None = None,
+    message_trigger_type: Annotated[
+        str,
+        AfterValidator(lambda val: parse_service_bot_message_trigger_type(val)),
+    ]
+    | None = None,
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
@@ -608,6 +621,9 @@ def add_bot_backend(
         raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
+
+    if bot_type in UserProfile.SERVICE_BOT_TYPES and message_trigger_type is None:
+        raise JsonableError(_("Service bots must have a trigger type."))
 
     check_bot_name_available(
         realm_id=user_profile.realm_id,
@@ -660,14 +676,16 @@ def add_bot_backend(
         assert user_file.size is not None
         upload_avatar_image(user_file, bot_profile, future=False)
 
-    if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+    if bot_type in UserProfile.SERVICE_BOT_TYPES:
         assert isinstance(service_name, str)
+        assert message_trigger_type is not None
         add_service(
             name=service_name,
             user_profile=bot_profile,
             base_url=payload_url,
             interface=interface_type,
             token=generate_api_key(),
+            message_trigger_type=message_trigger_type,
         )
 
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:

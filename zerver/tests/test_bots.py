@@ -1836,6 +1836,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://foo.bar.com").decode(),
             "interface_type": Service.GENERIC,
+            "message_trigger_type": "MENTION_ONLY",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1862,6 +1863,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="giphy",
             config_data=orjson.dumps({"key": "12345678"}).decode(),
+            message_trigger_type="MENTION_ONLY",
         )
         bot_info = {"config_data": orjson.dumps({"key": "87654321"}).decode()}
         email = "test-bot@zulip.testserver"
@@ -1878,6 +1880,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
             "interface_type": -1,
+            "message_trigger_type": "MENTION_ONLY",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid interface type")
@@ -1893,6 +1896,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "outgoingservicebot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
+            "message_trigger_type": "MENTION_ONLY",
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
@@ -1938,6 +1942,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
             "interface_type": -1,
+            "message_trigger_type": "MENTION_ONLY",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid interface type")
@@ -1966,6 +1971,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="followup",
             config_data=orjson.dumps(bot_config_info).decode(),
+            message_trigger_type="MENTION_ONLY",
             **extras,
         )
         bot_email = "embeddedservicebot-bot@zulip.testserver"
@@ -2005,6 +2011,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.EMBEDDED_BOT,
             "service_name": "giphy",
             "config_data": orjson.dumps(incorrect_bot_config_info).decode(),
+            "message_trigger_type": "MENTION_ONLY",
         }
         bot_info.update(extras)
         with patch(
