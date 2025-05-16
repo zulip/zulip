@@ -23,7 +23,11 @@ const typeahead_helper = zrequire("typeahead_helper");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = {
+    custom_profile_field_types: {
+        PRONOUNS: {id: 8},
+    },
+};
 set_realm(realm);
 
 // set global test variables.
@@ -35,10 +39,16 @@ const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
 
-function override_typeahead_helper(override_rewire) {
-    override_rewire(typeahead_helper, "render_person", () => $fake_rendered_person);
-    override_rewire(typeahead_helper, "render_user_group", () => $fake_rendered_group);
-    override_rewire(typeahead_helper, "render_stream", () => $fake_rendered_stream);
+function override_typeahead_helper({mock_template, override_rewire}) {
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        if (args.stream) {
+            return $fake_rendered_stream;
+        } else if (args.is_user_group) {
+            return $fake_rendered_group;
+        }
+        assert.ok(args.is_person);
+        return $fake_rendered_person;
+    });
     override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
     });
@@ -141,7 +151,10 @@ for (const sub of subs) {
 }
 
 run_test("set_up_user", ({mock_template, override, override_rewire}) => {
-    override_rewire(typeahead_helper, "render_person", () => $fake_rendered_person);
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.ok(args.is_person);
+        return $fake_rendered_person;
+    });
     override_rewire(typeahead_helper, "sort_recipients", ({users}) => {
         sort_recipients_called = true;
         return users;
@@ -230,7 +243,10 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
 });
 
 run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
-    override_rewire(typeahead_helper, "render_stream", () => $fake_rendered_stream);
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.ok(args.stream !== undefined);
+        return $fake_rendered_stream;
+    });
     override_rewire(typeahead_helper, "sort_streams_by_name", ({streams}) => {
         sort_streams_called = true;
         return streams;
@@ -407,7 +423,7 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
 });
 
 run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
-    override_typeahead_helper(override_rewire);
+    override_typeahead_helper({mock_template, override_rewire});
     mock_template("input_pill.hbs", true, (_data, html) => html);
     let input_pill_typeahead_called = false;
     const $fake_input = $.create(".input");
@@ -663,8 +679,13 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
 });
 
 run_test("set_up_group_setting_typeahead", ({mock_template, override, override_rewire}) => {
-    override_rewire(typeahead_helper, "render_person", () => $fake_rendered_person);
-    override_rewire(typeahead_helper, "render_user_group", () => $fake_rendered_group);
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        if (args.is_user_group) {
+            return $fake_rendered_group;
+        }
+        assert.ok(args.is_person);
+        return $fake_rendered_person;
+    });
     override_rewire(typeahead_helper, "sort_group_setting_options", () => {
         sort_group_setting_options_called = true;
     });
