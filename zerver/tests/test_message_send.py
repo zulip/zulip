@@ -102,6 +102,29 @@ class MessagePOSTTest(ZulipTestCase):
                     user, stream_name, allow_unsubscribed_sender=allow_unsubscribed_sender
                 )
 
+    def test_message_idempotency(self) -> None:
+        """
+        Sending duplicate POST request, to simulate an http request replay,
+        we should ensure message idempotency.
+        """
+        self.login("hamlet")
+        post_data = {
+            "type": "channel",
+            "to": orjson.dumps("Verona").decode(),
+            "content": "Test message",
+            "topic": "Test topic",
+            "local_id": "10.01",
+            "queue_id": "15:11",
+        }
+
+        # original request
+        result = self.client_post("/json/messages", post_data)
+        self.assert_json_success(result)
+
+        # replayed request
+        result = self.client_post("/json/messages", post_data)
+        self.assert_json_error(result, "Duplicate message")
+
     def test_message_to_stream_by_name(self) -> None:
         """
         Sending a message to a stream to which you are subscribed is

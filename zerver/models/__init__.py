@@ -25,6 +25,7 @@ from zerver.models.messages import ArchivedSubMessage as ArchivedSubMessage
 from zerver.models.messages import ArchivedUserMessage as ArchivedUserMessage
 from zerver.models.messages import ArchiveTransaction as ArchiveTransaction
 from zerver.models.messages import Attachment as Attachment
+from zerver.models.messages import IdempotentMessage as IdempotentMessage
 from zerver.models.messages import ImageAttachment as ImageAttachment
 from zerver.models.messages import Message as Message
 from zerver.models.messages import OnboardingUserMessage as OnboardingUserMessage
