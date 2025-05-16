@@ -32,12 +32,12 @@ export function rewire_max_size_before_shrinking(value: typeof max_size_before_s
     max_size_before_shrinking = value;
 }
 
-export let max_channel_size_to_show_all_subscribers = 75;
+export let MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS = 75;
 
-export function rewire_max_channel_size_to_show_all_subscribers(
-    value: typeof max_channel_size_to_show_all_subscribers,
+export function rewire_MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS(
+    value: typeof MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS,
 ): void {
-    max_channel_size_to_show_all_subscribers = value;
+    MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS = value;
 }
 
 let is_searching_users = false;
@@ -365,7 +365,7 @@ function maybe_shrink_list(
     const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const filter_by_stream_id =
         stream_id &&
-        peer_data.get_subscriber_count(stream_id) <= max_channel_size_to_show_all_subscribers;
+        peer_data.get_subscriber_count(stream_id) <= MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS;
 
     user_ids = user_ids.filter(
         (user_id) =>
@@ -454,7 +454,7 @@ function get_filtered_user_id_list(
         const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         if (stream_id) {
             const subscribers = peer_data.get_subscribers(stream_id);
-            if (subscribers.length <= max_channel_size_to_show_all_subscribers) {
+            if (subscribers.length <= MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS) {
                 const base_user_id_set = new Set([...base_user_id_list, ...subscribers]);
                 base_user_id_list = [...base_user_id_set];
             }
