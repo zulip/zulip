@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -34,6 +35,12 @@ from zerver.models import UserProfile
 TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
 DESIGN_COMMENT_MESSAGE_TEMPLATE = (
     "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
+)
+
+FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} **{action}** the [{name}]({url}) feature flag."
+
+ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE = (
+    "The access token [{name}]({url}) is going to expire on **{date}**"
 )
 
 
@@ -408,6 +415,46 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
     return body
 
 
+def get_feature_flag_event_body(payload: WildValue, include_title: bool) -> str:
+    repo_url = payload["project"]["web_url"].tame(check_string)
+    feature_flag = payload["object_attributes"]
+    action = "activated" if feature_flag["active"] else "deactivated"
+
+    return FEATURE_FLAG_MESSAGE_TEMPLATE.format(
+        user=payload["user"]["name"].tame(check_string),
+        action=action,
+        name=feature_flag["name"].tame(check_string),
+        url=f"{repo_url}/-/feature_flags",
+    )
+
+
+def get_access_token_page_url(payload: WildValue) -> str:
+    if payload.get("group"):
+        group_path = payload["group"]["group_path"].tame(check_string)
+        return f"https://gitlab.com/groups/{group_path}/-/settings/access_tokens"
+
+    # The access token expiry event payload contains either a group field
+    # or a project field, depending on where the access token exists.
+    project_url = payload["project"]["web_url"].tame(check_string)
+    return f"{project_url}/-/settings/access_tokens"
+
+
+def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
+    access_token = payload["object_attributes"]
+    expiry_date = access_token["expires_at"].tame(check_string)
+    formatted_date = (
+        datetime.strptime(expiry_date, "%Y-%m-%d")
+        .replace(tzinfo=timezone.utc)
+        .strftime("%b %d, %Y")
+    )
+
+    return ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE.format(
+        name=access_token["name"].tame(check_string),
+        url=get_access_token_page_url(payload),
+        date=formatted_date,
+    )
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -495,6 +542,8 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
+    "Feature Flag Hook": get_feature_flag_event_body,
+    "Resource Access Token Hook": get_resource_access_token_expiry_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -603,6 +652,9 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             id=payload["snippet"]["id"].tame(check_int),
             title=payload["snippet"]["title"].tame(check_string),
         )
+
+    elif event == "Resource Access Token Hook" and payload.get("group"):
+        return payload["group"]["group_name"].tame(check_string)
     return get_repo_name(payload)
 
 
