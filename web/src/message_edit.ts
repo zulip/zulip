@@ -170,40 +170,43 @@ export function is_message_editable_ignoring_permissions(message: Message): bool
     return true;
 }
 
-export function is_content_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
+export function remaining_content_edit_time(
+    message: Message,
+    edit_limit_seconds_buffer = 0,
+): number {
     if (!is_message_editable_ignoring_permissions(message)) {
-        return false;
+        return 0;
     }
 
     if (!realm.realm_allow_message_editing) {
-        return false;
+        return 0;
     }
 
     if (!message.sent_by_me) {
-        return false;
+        return 0;
     }
 
     if (is_widget_message(message)) {
-        return false;
+        return 0;
     }
 
     if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
-        return false;
+        return 0;
     }
 
     if (realm.realm_message_content_edit_limit_seconds === null) {
-        return true;
+        return Infinity;
     }
 
-    if (
+    return (
         realm.realm_message_content_edit_limit_seconds +
-            edit_limit_seconds_buffer +
-            (message.timestamp - Date.now() / 1000) >
-        0
-    ) {
-        return true;
-    }
-    return false;
+        edit_limit_seconds_buffer +
+        (message.timestamp - Date.now() / 1000)
+    );
+}
+
+export function is_content_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
+    return remaining_content_edit_time(message, edit_limit_seconds_buffer) > 0;
 }
 
 export function is_message_sent_by_my_bot(message: Message): boolean {
