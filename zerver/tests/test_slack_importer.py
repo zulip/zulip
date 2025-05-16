@@ -1253,6 +1253,14 @@ class SlackImporter(ZulipTestCase):
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
+        realm_id = 2
+        realm_subdomain = "test-realm"
+        time = float(timezone_now().timestamp())
+        test_realm: list[dict[str, Any]] = build_zerver_realm(
+            realm_id, realm_subdomain, time, "Slack"
+        )
+        realm = dict(zerver_realm=test_realm)
+
         (
             zerver_message,
             zerver_usermessage,
@@ -1261,6 +1269,7 @@ class SlackImporter(ZulipTestCase):
             reaction,
         ) = channel_message_to_zerver_message(
             1,
+            realm,
             user_data,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -1377,10 +1386,10 @@ class SlackImporter(ZulipTestCase):
                 "channel_name": "random",
             },
             {
-                "text": "random",
+                "text": "message body text",
                 "user": "U061A5N1G",
-                "ts": "1439868294.000006",
-                # Thread!
+                "ts": "1434139102.000002",
+                # Start of thread 1!
                 "thread_ts": "1434139102.000002",
                 "channel_name": "random",
             },
@@ -1388,23 +1397,62 @@ class SlackImporter(ZulipTestCase):
                 "text": "random",
                 "user": "U061A5N1G",
                 "ts": "1439868294.000007",
+                # A reply to thread 1
+                "parent_user_id": "U061A5N1G",
                 "thread_ts": "1434139102.000002",
                 "channel_name": "random",
             },
             {
-                "text": "random",
+                "text": "random message but it's too long for the thread topic name",
                 "user": "U061A5N1G",
                 "ts": "1439868294.000008",
-                # A different Thread!
+                # Start of thread 2!
                 "thread_ts": "1439868294.000008",
                 "channel_name": "random",
             },
             {
-                "text": "random",
+                "text": "replying to the second thread :)",
+                "user": "U061A1R2R",
+                "ts": "1439869294.000008",
+                # A reply to thread 2
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1439868294.000008",
+                "channel_name": "random",
+            },
+            {
+                "text": "message body text",
                 "user": "U061A5N1G",
-                "ts": "1439868295.000008",
-                # Another different Thread!
-                "thread_ts": "1439868295.000008",
+                "ts": "1434139200.000002",
+                # Start of thread 3!
+                "thread_ts": "1434139200.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "The first reply to the third thread",
+                "user": "U061A1R2R",
+                "ts": "1439869295.000008",
+                # A reply to thread 3!
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139200.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "second reply to the third thread",
+                "user": "U061A1R2R",
+                "ts": "1439869300.000008",
+                # Another reply to thread 3!
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139200.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "broadcasted reply in the third thread",
+                "user": "U061A1R2R",
+                "ts": "1439869300.000008",
+                "subtype": "thread_broadcast",
+                # A broadcasted thread reply in thread 3!
+                "root": {"user": "U061A5N1G"},
+                "thread_ts": "1434139200.000002",
                 "channel_name": "random",
             },
         ]
@@ -1419,6 +1467,14 @@ class SlackImporter(ZulipTestCase):
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
+        realm_id = 2
+        realm_subdomain = "test-realm"
+        time = float(timezone_now().timestamp())
+        test_realm: list[dict[str, Any]] = build_zerver_realm(
+            realm_id, realm_subdomain, time, "Slack"
+        )
+        realm = dict(zerver_realm=test_realm)
+
         (
             zerver_message,
             zerver_usermessage,
@@ -1427,6 +1483,7 @@ class SlackImporter(ZulipTestCase):
             reaction,
         ) = channel_message_to_zerver_message(
             1,
+            realm,
             user_data,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -1442,7 +1499,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 5)
+        self.assert_length(zerver_message, 10)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -1450,17 +1507,75 @@ class SlackImporter(ZulipTestCase):
         # Message conversion already tested in tests.test_slack_message_conversion
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
-        self.assertEqual(zerver_message[1]["content"], "random")
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
-        # A new thread with a different date from 2015-06-12, starts the counter from 1.
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 1")
-        # A new thread with a different timestamp, but the same date as 2015-08-18, starts the
-        # counter from 2.
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 2")
+
         self.assertEqual(
             zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
         )
+        main_import_topic = "imported from Slack"
+        # Test thread topic name contains message snippet
+        thread1_topic_name = "2015-06-12 message body text"
+        original_thread1_message = (
+            f"message body text\n\n*1 reply in #**random>{thread1_topic_name}***"
+        )
+        original_thread1_message_id = zerver_message[1]["id"]
+        self.assertEqual(zerver_message[1]["content"], original_thread1_message)
+        # Original thread message will be sent to the main import topic.
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], main_import_topic)
+        # Thread reply is in the correct thread topic and its first message quotes
+        # back to the original thread message in the main import topic.
+        thread1_reply_1 = f"""
+@_**Jane** [said](http://test-realm.testserver/#narrow/channel/2-random/topic/imported.20from.20Slack/near/{original_thread1_message_id}):
+``` quote
+message body text
+```
+random
+"""
+        self.assertEqual(zerver_message[2]["content"], thread1_reply_1)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], thread1_topic_name)
+
+        # Test thread topic name cut off
+        thread2_topic_name = "2015-08-18 random message but it's too long for the t..."
+        original_thread2_message = f"random message but it's too long for the thread topic name\n\n*1 reply in #**random>{thread2_topic_name}***"
+        original_thread2_message_id = zerver_message[3]["id"]
+        self.assertEqual(zerver_message[3]["content"], original_thread2_message)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], main_import_topic)
+        # First Slack reply should have a quote-and-reply to the original thread
+        # message.
+        thread2_reply_1 = f"""
+@_**Jane** [said](http://test-realm.testserver/#narrow/channel/2-random/topic/imported.20from.20Slack/near/{original_thread2_message_id}):
+``` quote
+random message but it's too long for the thread topic name
+```
+replying to the second thread :)
+"""
+        self.assertEqual(zerver_message[4]["content"], thread2_reply_1)
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], thread2_topic_name)
+
+        # Test thread topic name collision
+        thread3_topic_name = "2015-06-12 message body text (2)"
+        original_thread3_message = (
+            f"message body text\n\n*3 replies in #**random>{thread3_topic_name}***"
+        )
+
+        self.assertEqual(zerver_message[5]["content"], original_thread3_message)
+        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], main_import_topic)
+        # The second reply in thread doesn't have any formatting like the first one.
+        thread3_reply_2 = "second reply to the third thread"
+        self.assertEqual(zerver_message[7]["content"], thread3_reply_2)
+        self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], thread3_topic_name)
+        # Slack thread broadcast should be sent to the main import topic
+        thread3_reply_3_content = "broadcasted reply in the third thread"
+        self.assertEqual(zerver_message[8]["content"], thread3_reply_3_content)
+        self.assertEqual(zerver_message[8][EXPORT_TOPIC_NAME], thread3_topic_name)
+        thread3_reply3_message_id = zerver_message[8]["id"]
+        thread3_broadcasted_reply = f"""
+*replied to a Slack thread: [{thread3_topic_name}](http://test-realm.testserver/#narrow/channel/2-random/topic/2015-06-12.20message.20body.20text.20.282.29/near/{thread3_reply3_message_id})*
+
+{thread3_reply_3_content}
+"""
+        self.assertEqual(zerver_message[9]["content"], thread3_broadcasted_reply)
+        self.assertEqual(zerver_message[9][EXPORT_TOPIC_NAME], main_import_topic)
+        self.assertIn(thread3_reply_3_content, zerver_message[9]["content"])
 
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
