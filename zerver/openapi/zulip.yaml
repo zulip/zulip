@@ -15915,6 +15915,9 @@ paths:
                           An array of dictionaries where each dictionary describes one
                           of the channel folders in the organization.
 
+                          Only channel folders with one or more public web channels are
+                          visible to spectators.
+
                           **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
                       unread_msgs:
                         type: object
