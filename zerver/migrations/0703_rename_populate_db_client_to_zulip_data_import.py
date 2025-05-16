@@ -15,7 +15,7 @@ def rename_populate_db_client(apps: StateApps, schema_editor: BaseDatabaseSchema
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0701_merge"),
+        ("zerver", "0702_merge"),
     ]
 
     operations = [

@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0698_scheduledmessage_request_timestamp"),
+        ("zerver", "0698_userprofile_auto_collapse_views"),
     ]
 
     operations = [

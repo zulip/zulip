@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     except_followed = 2
     dependencies = [
-        ("zerver", "0702_rename_populate_db_client_to_zulip_data_import"),
+        ("zerver", "0704_realmuserdefault_auto_collapse_views"),
     ]
 
     operations = [
