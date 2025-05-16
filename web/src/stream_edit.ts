@@ -353,10 +353,15 @@ function stream_setting_changed(elem: HTMLInputElement): void {
 }
 
 export function archive_stream(stream_id: number, $alert_element: JQuery): void {
+    dialog_widget.show_dialog_spinner();
     channel.del({
         url: "/json/streams/" + stream_id,
+        success() {
+            dialog_widget.hide_dialog_spinner();
+        },
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
+            dialog_widget.hide_dialog_spinner();
         },
     });
 }
@@ -754,15 +759,20 @@ export function initialize(): void {
         e.stopPropagation();
         const stream_id = get_stream_id(this);
         function do_unarchive_stream(): void {
+            dialog_widget.show_dialog_spinner();
             channel.patch({
                 url: `/json/streams/${stream_id}`,
                 data: {is_archived: false},
+                success() {
+                    dialog_widget.hide_dialog_spinner();
+                },
                 error(xhr) {
                     ui_report.error(
                         $t_html({defaultMessage: "Failed"}),
                         xhr,
                         $(".stream_change_property_info"),
                     );
+                    dialog_widget.hide_dialog_spinner();
                 },
             });
         }
