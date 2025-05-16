@@ -89,15 +89,15 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
             $web_public_stream_elem.prop("disabled", true);
             return;
         }
-        $web_public_stream_elem.closest(".settings-radio-input-parent").hide();
+        $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", true);
         $container
-            .find(".stream-privacy-values .settings-radio-input-parent:visible")
+            .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
             .last()
             .css("border-bottom", "none");
     } else {
-        if (!$web_public_stream_elem.is(":visible")) {
+        if ($web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden")) {
             $container
-                .find(".stream-privacy-values .settings-radio-input-parent:visible")
+                .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
                 .last()
                 .css("border-bottom", "");
             $web_public_stream_elem.closest(".settings-radio-input-parent").show();

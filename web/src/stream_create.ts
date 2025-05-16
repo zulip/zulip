@@ -173,7 +173,7 @@ function toggle_advanced_configurations(): void {
     const $advanced_configurations_view = $(".advanced-configurations-collapase-view");
     const $toggle_button = $(".toggle-advanced-configurations-icon");
 
-    if ($advanced_configurations_view.is(":visible")) {
+    if (!$advanced_configurations_view.hasClass("hide")) {
         // Toggle into the condensed state
         $advanced_configurations_view.addClass("hide");
         $toggle_button.addClass("fa-caret-right");
@@ -464,7 +464,11 @@ export function show_new_stream_modal(): void {
     stream_create_subscribers.build_widgets();
 
     // Select the first visible and enabled choice for stream privacy.
-    $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
+    $(
+        "#stream_creation_form .stream-privacy-values .settings-radio-input-parent:not([hidden]) input:not(:disabled)",
+    )
+        .first()
+        .prop("checked", true);
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
