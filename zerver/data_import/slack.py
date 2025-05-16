@@ -707,10 +707,18 @@ def get_subscription(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
     subscription_id: int,
 ) -> int:
+    processed_zulip_user_ids = set()
     for slack_user_id in channel_members:
-        sub = build_subscription(
-            recipient_id, slack_user_id_to_zulip_user_id[slack_user_id], subscription_id
-        )
+        zulip_user_id = slack_user_id_to_zulip_user_id[slack_user_id]
+        if zulip_user_id in processed_zulip_user_ids:
+            # Multiple slack user ids can map to the same Zulip user id,
+            # due to merging of accounts which share the same email address.
+            # We don't want to create duplicate subscriptions for a user,
+            # so if we've already seen this zulip_user_id, we skip ahead.
+            continue
+
+        processed_zulip_user_ids.add(zulip_user_id)
+        sub = build_subscription(recipient_id, zulip_user_id, subscription_id)
         zerver_subscription.append(sub)
         subscription_id += 1
     return subscription_id
