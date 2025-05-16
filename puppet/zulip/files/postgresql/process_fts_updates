@@ -86,7 +86,8 @@ def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
                 (message_id,),
             )
             ids.append(id)
-        cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
+        if ids:
+            cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
         conn.commit()
         return len(ids)
 
