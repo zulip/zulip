@@ -16,6 +16,7 @@ const message_user_ids = mock_esm("../src/message_user_ids");
 const settings_data = mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
+const channel = mock_esm("../src/channel");
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -1350,6 +1351,11 @@ test_people("initialize", () => {
             user_id: 16,
             full_name: "Alice",
         },
+        {
+            email: "my_email@example.com",
+            user_id: 42,
+            full_name: "Me Myself",
+        },
     ];
     params.cross_realm_bots = [
         {
@@ -1358,9 +1364,16 @@ test_people("initialize", () => {
             full_name: "Test Bot",
         },
     ];
-
+    const user_group_params = {
+        realm_user_groups: [
+            {
+                is_system_group: true,
+                members: [42, 17, 16, 15],
+            },
+        ],
+    };
     const my_user_id = 42;
-    people.initialize(my_user_id, params);
+    people.initialize(my_user_id, params, user_group_params);
 
     assert.equal(people.is_active_user_for_popover(17), true);
     assert.ok(people.is_cross_realm_email("bot@example.com"));
@@ -1608,4 +1621,118 @@ test_people("user_can_initiate_direct_message_thread", ({override}) => {
 // reset to native Date()
 run_test("reset MockDate", () => {
     MockDate.reset();
+});
+
+test_people("fetch_users", async ({override}) => {
+    people.init();
+
+    // Valid users missing from params data sent by server.
+    const users_in_response = [
+        {
+            email: "retiree@example.com",
+            user_id: 15,
+            full_name: "Retiree",
+            delivery_email: "",
+            date_joined: "",
+            is_active: true,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+        {
+            email: "alice@example.com",
+            user_id: 16,
+            full_name: "Alice",
+            delivery_email: "",
+            date_joined: "",
+            is_active: false,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+    ];
+
+    const params = {};
+    params.realm_users = [
+        {
+            email: "my_email@example.com",
+            user_id: 42,
+            full_name: "Me Myself",
+        },
+    ];
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [
+        {
+            email: "bot@example.com",
+            user_id: 17,
+            full_name: "Test Bot",
+        },
+    ];
+    const user_group_params = {
+        realm_user_groups: [
+            {
+                is_system_group: true,
+                members: [42, 17, 16, 15],
+            },
+        ],
+    };
+    const my_user_id = 42;
+
+    override(channel, "get", ({url, data, success, _error}) => {
+        assert.equal(url, "/json/users");
+        assert.ok(data.user_ids.includes("15"));
+        assert.ok(data.user_ids.includes("16"));
+        assert.ok(!data.user_ids.includes("42"));
+        assert.ok(!data.user_ids.includes("17"));
+        success({
+            members: users_in_response,
+            result: "success",
+            msg: "",
+        });
+    });
+
+    await people.initialize(my_user_id, params, user_group_params);
+
+    const retiree = people.get_by_user_id(15);
+    const alice = people.get_by_user_id(16);
+    assert.equal(retiree.full_name, "Retiree");
+    assert.equal(alice.full_name, "Alice");
+    assert.ok(people.is_valid_user_id(15));
+    assert.ok(people.is_valid_user_id(16));
+    assert.ok(people.is_valid_user_id(42));
+    assert.ok(people.is_valid_user_id(17));
+    assert.equal(people.get_by_email("alice@example.com").user_id, 16);
+    assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
+
+    override(channel, "get", ({url, _data, _success, error}) => {
+        assert.equal(url, "/json/users");
+        // Return error response.
+        error({responseJSON: {msg: "test error"}});
+    });
+
+    // fetch_users should reject with an Error object
+    blueslip.expect("error", "test error");
+    await assert.rejects(
+        async () => {
+            await people.fetch_users(new Set([15, 16]));
+        },
+        (err) => {
+            // Check that the error is an instance of Error and has the correct message
+            assert.ok(err instanceof Error);
+            assert.equal(err.message, "test error");
+            return true;
+        },
+    );
+
+    // Just for coverage, not actually checked by blueslip.
+    blueslip.expect("info", "Ignored invalid user_ids: 1, 2");
+    await people.fetch_users(new Set([1, 2]));
 });

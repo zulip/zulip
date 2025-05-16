@@ -216,9 +216,17 @@ run_test("build_display_recipient", ({override}) => {
             user_id: 21,
         },
     ];
+    const user_group_params = {
+        realm_user_groups: [
+            {
+                is_system_group: true,
+                members: [123, 21],
+            },
+        ],
+    };
     params.realm_non_active_users = [];
     params.cross_realm_bots = [];
-    people.initialize(current_user.user_id, params);
+    people.initialize(current_user.user_id, params, user_group_params);
 
     let message = {
         type: "stream",
@@ -232,6 +240,7 @@ run_test("build_display_recipient", ({override}) => {
 
     message = {
         type: "private",
+        to_user_ids: "21",
         private_message_recipient: "cordelia@zulip.com",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
@@ -252,6 +261,7 @@ run_test("build_display_recipient", ({override}) => {
 
     message = {
         type: "private",
+        to_user_ids: "123",
         private_message_recipient: "iago@zulip.com",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
@@ -342,10 +352,24 @@ run_test("insert_local_message direct message", ({override}) => {
             full_name: "Iago",
             email: "iago@zulip.com",
         },
+        {
+            email: "cordelia@zulip.com",
+            full_name: "Cordelia",
+            user_id: 21,
+        },
     ];
+    const user_group_params = {
+        realm_user_groups: [
+            {
+                is_system_group: true,
+                members: [123, 21],
+            },
+        ],
+    };
     params.realm_non_active_users = [];
     params.cross_realm_bots = [];
-    people.initialize(current_user.user_id, params);
+    people.init();
+    people.initialize(current_user.user_id, params, user_group_params);
 
     let render_called = false;
     let insert_message_called = false;
@@ -362,6 +386,7 @@ run_test("insert_local_message direct message", ({override}) => {
 
     const message_request = {
         private_message_recipient: "cordelia@zulip.com",
+        to_user_ids: "21",
         type: "private",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
