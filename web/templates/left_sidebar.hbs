@@ -1,5 +1,8 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
-    <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area">
+
+    {{~!-- squash whitespace --~}}
+    <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1">
+        {{!-- <div id="left-sidebar-navigation-area" class="left-sidebar-navigation-area"> --}}
         <div id="views-label-container" class="showing-expanded-navigation {{#if is_spectator}}remove-pointer-for-spectator{{/if}}">
             <i id="toggle-top-left-navigation-area-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down views-tooltip-target hidden-for-spectators" aria-hidden="true" tabindex="0" role="button"></i>
             {{~!-- squash whitespace --~}}
@@ -144,34 +147,32 @@
                 </a>
             </li>
         </ul>
-    </div>
+        {{!-- </div> --}}
 
-    <div id="direct-messages-section-header" class="direct-messages-container hidden-for-spectators zoom-out zoom-in-sticky">
-        <i id="toggle-direct-messages-section-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
-        <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
-        <div class="left-sidebar-controls">
-            <a id="show-all-direct-messages" class="tippy-left-sidebar-tooltip-no-label-delay" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
-                <i class="zulip-icon zulip-icon-all-messages" aria-label="{{t 'Direct message feed' }}"></i>
+        <div id="direct-messages-section-header" class="direct-messages-container hidden-for-spectators zoom-out zoom-in-sticky">
+            <i id="toggle-direct-messages-section-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
+            <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
+            <div class="left-sidebar-controls">
+                <a id="show-all-direct-messages" class="tippy-left-sidebar-tooltip-no-label-delay" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
+                    <i class="zulip-icon zulip-icon-all-messages" aria-label="{{t 'Direct message feed' }}"></i>
+                </a>
+                <span id="compose-new-direct-message" class="tippy-left-sidebar-tooltip-no-label-delay auto-hide-left-sidebar-overlay" data-tooltip-template-id="new_direct_message_button_tooltip_template">
+                    <i class="left-sidebar-new-direct-message-icon zulip-icon zulip-icon-square-plus" aria-label="{{t 'New direct message' }}"></i>
+                </span>
+            </div>
+            <div class="heading-markers-and-unreads">
+                <span class="unread_count"></span>
+            </div>
+            <a class="zoom-out-hide" id="hide-more-direct-messages">
+                <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
             </a>
-            <span id="compose-new-direct-message" class="tippy-left-sidebar-tooltip-no-label-delay auto-hide-left-sidebar-overlay" data-tooltip-template-id="new_direct_message_button_tooltip_template">
-                <i class="left-sidebar-new-direct-message-icon zulip-icon zulip-icon-square-plus" aria-label="{{t 'New direct message' }}"></i>
-            </span>
+            <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-row">
+                <input class="direct-messages-list-filter filter_text_input home-page-input" type="text" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
+                <button type="button" class="clear_search_button" id="clear-direct-messages-search-button">
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
-        <div class="heading-markers-and-unreads">
-            <span class="unread_count"></span>
-        </div>
-        <a class="zoom-out-hide" id="hide-more-direct-messages">
-            <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
-        </a>
-        <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-row">
-            <input class="direct-messages-list-filter filter_text_input home-page-input" type="text" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
-            <button type="button" class="clear_search_button" id="clear-direct-messages-search-button">
-                <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-            </button>
-        </div>
-    </div>
-    {{~!-- squash whitespace --~}}
-    <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1">
         <div class="direct-messages-container zoom-out hidden-for-spectators">
             <div id="direct-messages-list"></div>
         </div>
