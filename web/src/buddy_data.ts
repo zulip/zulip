@@ -465,7 +465,7 @@ function get_filtered_user_id_list(
     const user_ids_set = new Set([...base_user_id_list, ...conversation_participants]);
     return filter_user_ids(user_filter_text, [...user_ids_set]);
 }
-
+// get participants of the current viewed conversation.
 export function get_conversation_participants_callback(): () => Set<number> {
     return () => {
         if (

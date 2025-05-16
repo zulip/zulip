@@ -808,11 +808,11 @@ export function process_topic_edit(
     // logic behind this and important notes on use of this function.
     recent_view_data.conversations.delete(recent_view_util.get_topic_key(old_stream_id, old_topic));
 
-    const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
+    const old_topic_msgs = message_util.get_loaded_messages_in_topic(old_stream_id, old_topic);
     process_messages(old_topic_msgs);
 
     new_stream_id = new_stream_id || old_stream_id;
-    const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
+    const new_topic_msgs = message_util.get_loaded_messages_in_topic(new_stream_id, new_topic);
     process_messages(new_topic_msgs);
 }
 
@@ -834,7 +834,7 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
     const msgs_to_process = [];
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         recent_view_data.conversations.delete(recent_view_util.get_topic_key(stream_id, topic));
-        const msgs = message_util.get_messages_in_topic(stream_id, topic);
+        const msgs = message_util.get_loaded_messages_in_topic(stream_id, topic);
         msgs_to_process.push(...msgs);
     }
 
