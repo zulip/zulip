@@ -902,6 +902,12 @@ button#register_auth_button_gitlab {
         text-decoration: none;
         color: hsl(156deg 62% 61%);
     }
+
+    /* The 'register-link' class is only scoped to sign up page not applied on the login page, declared here to use it on the login page */
+    &.register-link {
+        font-size: 17px;
+        margin-left: 5px;
+    }
 }
 
 #realm-import-post-process,
