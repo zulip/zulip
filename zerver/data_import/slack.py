@@ -471,7 +471,7 @@ def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str]
         avatar_hash = user["profile"]["avatar_hash"]
         avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
         avatar_source = UserProfile.AVATAR_FROM_USER
-    elif user.get("is_integration_bot"):
+    elif user.get("is_integration_bot") and "image_72" in user["profile"]:
         # Unlike other Slack user types, Slacks integration bot avatar URL ends with
         # a file type extension (.png, in this case).
         # e.g https://avatars.slack-edge.com/2024-05-01/7218497908_deb94eac4c_512.png
@@ -1316,9 +1316,30 @@ def convert_bot_info_to_slack_user(bot_info: dict[str, Any]) -> ZerverFieldsT:
         "real_name": bot_info["name"],
         "is_integration_bot": True,
         "profile": {
-            "image_72": bot_info["icons"]["image_72"],
             "bot_id": bot_info["id"],
             "first_name": bot_info["name"],
+        },
+    }
+    if "image_72" in bot_info["icons"]:
+        # Otherwise, gravatar will be used.
+        bot_user["profile"]["image_72"] = bot_info["icons"]["image_72"]
+
+    return bot_user
+
+
+def make_deleted_placeholder(bot_id: str) -> ZerverFieldsT:
+    name = f"Deleted Slack Bot {bot_id}"
+    bot_user = {
+        "id": bot_id,
+        "name": name,
+        "deleted": True,
+        "is_mirror_dummy": False,
+        "real_name": name,
+        "is_integration_bot": True,
+        "profile": {
+            # Intentionally skip image_72. Gravatar should be used.
+            "bot_id": bot_id,
+            "first_name": name,
         },
     }
     return bot_user
@@ -1366,10 +1387,15 @@ def fetch_shared_channel_users(
             bot_id = message["bot_id"]
             if bot_id in integration_bot_users:
                 continue
-            bot_info = get_slack_api_data(
-                "https://slack.com/api/bots.info", "bot", token=token, bot=bot_id
-            )
-            bot_user = convert_bot_info_to_slack_user(bot_info)
+            try:
+                bot_info = get_slack_api_data(
+                    "https://slack.com/api/bots.info", "bot", token=token, bot=bot_id
+                )
+            except SlackBotNotFoundError:
+                logging.info("Bot %s not found, creating a deleted placeholder", bot_id)
+                bot_user = make_deleted_placeholder(bot_id)
+            else:
+                bot_user = convert_bot_info_to_slack_user(bot_info)
 
             user_list.append(bot_user)
             integration_bot_users.append(bot_id)
@@ -1688,6 +1714,9 @@ def get_slack_api_data(
 
         result = response.json()
         if not result["ok"]:
+            if result["error"] == "bot_not_found":
+                raise SlackBotNotFoundError
+
             raise Exception("Error accessing Slack API: {}".format(result["error"]))
 
         result_data = result[get_param]
@@ -1704,3 +1733,7 @@ def get_slack_api_data(
         cursor = result["response_metadata"]["next_cursor"]
 
     return accumulated_result
+
+
+class SlackBotNotFoundError(Exception):
+    pass
