@@ -43,6 +43,7 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload.s3 import get_bucket
+from zerver.lib.users import get_missing_consent_users
 from zerver.lib.utils import get_fk_field_name
 from zerver.models import (
     AlertWord,
@@ -2894,11 +2895,32 @@ def export_realm_wrapper(
         export_row.date_started = timezone_now()
         export_row.save(update_fields=["status", "date_started"])
 
+        stats: dict[str, Any] = {}
         exportable_user_ids = None
         if export_row.type == RealmExport.EXPORT_FULL_WITH_CONSENT:
             exportable_user_ids = get_consented_user_ids(export_row.realm)
-
-        tarball_path, stats = do_export_realm(
+            missing_users = get_missing_consent_users(export_row.realm, exportable_user_ids)
+            stats["missing_emails"] = {
+                "count": len(missing_users),
+                "admins": [
+                    {
+                        "id": user["id"],
+                        "full_name": user["full_name"],
+                        "email": user["email"],
+                        "role": user["role"],
+                    }
+                    for user in missing_users
+                    if user["role"]
+                    in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_REALM_ADMINISTRATOR]
+                ],
+                "regular_users": [
+                    {"id": user["id"], "full_name": user["full_name"], "email": user["email"]}
+                    for user in missing_users
+                    if user["role"]
+                    not in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_REALM_ADMINISTRATOR]
+                ],
+            }
+        tarball_path, export_stats = do_export_realm(
             realm=export_row.realm,
             output_dir=output_dir,
             threads=threads,
@@ -2912,7 +2934,10 @@ def export_realm_wrapper(
             realm=export_row.realm,
             event_type=AuditLogEventType.REALM_EXPORTED,
             event_time=timezone_now(),
-            extra_data={"realm_export_id": export_row.id},
+            extra_data={
+                "realm_export_id": export_row.id,
+                "missing_email_data": stats.get("missing_emails", {}),
+            },
         )
 
         shutil.rmtree(output_dir)
