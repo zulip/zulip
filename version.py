@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 388
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (326, 4)  # bumped 2025-05-14 to upgrade stripe
+PROVISION_VERSION = (327, 1)  # bumped 2025-05-16 to add @swc/plugin-formatjs
