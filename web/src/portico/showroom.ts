@@ -3,6 +3,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_banner from "../../templates/components/banner.hbs";
+import render_text_input from "../../templates/components/filter_input.hbs";
 import {$t, $t_html} from "../i18n.ts";
 import type {HTMLSelectOneElement} from "../types.ts";
 
@@ -675,4 +676,17 @@ $(window).on("load", () => {
             $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
+
+    if (window.location.pathname === "/devtools/inputs/") {
+        const $filter_input_container = $<HTMLInputElement>(".showroom-filter-input-container");
+        $filter_input_container.html(
+            render_text_input({
+                id: "showroom_filter_input",
+                custom_classes: "showroom-filter-input",
+                icon: "search",
+                placeholder: $t({defaultMessage: "Filter component"}),
+                clear_button: true,
+            }),
+        );
+    }
 });
