@@ -1694,10 +1694,10 @@ def do_change_stream_message_retention_days(
 def do_change_stream_group_based_setting(
     stream: Stream,
     setting_name: str,
-    new_setting_value: NamedUserGroup | UserGroupMembersData,
+    new_setting_value: int | NamedUserGroup | UserGroupMembersData,
     *,
     old_setting_api_value: int | UserGroupMembersData | None = None,
-    acting_user: UserProfile,
+    acting_user: UserProfile | None,
 ) -> None:
     old_user_group = getattr(stream, setting_name)
 
@@ -1712,8 +1712,10 @@ def do_change_stream_group_based_setting(
     if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
         old_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
 
-    if isinstance(new_setting_value, NamedUserGroup):
-        user_group: UserGroup = new_setting_value
+    if isinstance(new_setting_value, int):
+        user_group = UserGroup.objects.get(id=new_setting_value)
+    elif isinstance(new_setting_value, NamedUserGroup):
+        user_group = new_setting_value
     else:
         user_group = update_or_create_user_group_for_setting(
             acting_user,
@@ -1824,7 +1826,6 @@ def do_change_stream_group_based_setting(
             )
             send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
-        assert acting_user is not None
         send_stream_posting_permission_update_notification(
             stream,
             old_setting_value=old_setting_api_value,
