@@ -1438,27 +1438,41 @@ def send_stream_posting_permission_update_notification(
     *,
     old_setting_value: int | UserGroupMembersData,
     new_setting_value: int | UserGroupMembersData,
-    acting_user: UserProfile,
+    acting_user: UserProfile | None,
 ) -> None:
-    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
-    user_mention = silent_mention_syntax_for_user(acting_user)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
 
     old_setting_description = get_users_string_with_permission(old_setting_value)
     new_setting_description = get_users_string_with_permission(new_setting_value)
 
     with override_language(stream.realm.default_language):
-        notification_string = _(
-            "{user} changed the [posting permissions]({help_link}) "
-            "for this channel:\n\n"
-            "* **Old**: {old_setting_description}\n"
-            "* **New**: {new_setting_description}\n"
-        )
-        notification_string = notification_string.format(
-            user=user_mention,
-            help_link="/help/channel-posting-policy",
-            old_setting_description=old_setting_description,
-            new_setting_description=new_setting_description,
-        )
+        if acting_user is not None:
+            user_mention = silent_mention_syntax_for_user(acting_user)
+            template = _(
+                "{user} changed the [posting permissions]({help_link}) for this channel:\n\n"
+                "* **Old**: {old_setting_description}\n"
+                "* **New**: {new_setting_description}\n"
+            )
+            notification_string = template.format(
+                user=user_mention,
+                help_link="/help/channel-posting-policy",
+                old_setting_description=old_setting_description,
+                new_setting_description=new_setting_description,
+            )
+        else:  # nocoverage
+            # TODO: remove nocoverage tag in follow-up commits, which will exercise
+            # this codepath and test this string.
+            template = _(
+                "The [posting permissions]({help_link}) for this channel were changed:\n\n"
+                "* **Old**: {old_setting_description}\n"
+                "* **New**: {new_setting_description}\n"
+            )
+            notification_string = template.format(
+                help_link="/help/channel-posting-policy",
+                old_setting_description=old_setting_description,
+                new_setting_description=new_setting_description,
+            )
+
         internal_send_stream_message(
             sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME), notification_string
         )
