@@ -21,6 +21,7 @@ from zerver.lib.cache import (
     bot_profile_cache_key,
     cache_with_key,
     flush_user_profile,
+    partial_realm_user_dicts_cache_key,
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
     user_profile_by_api_key_cache_key,
@@ -1112,6 +1113,17 @@ def get_realm_user_dicts(realm_id: int) -> list[RawUserDict]:
     return list(
         UserProfile.objects.filter(
             realm_id=realm_id,
+        ).values(*realm_user_dict_fields)
+    )
+
+
+@cache_with_key(partial_realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
+def get_partial_realm_user_dicts(realm_id: int) -> list[RawUserDict]:
+    "Only returns realm bots in the RawUserDict format."
+    return list(
+        UserProfile.objects.filter(
+            realm_id=realm_id,
+            is_bot=True,
         ).values(*realm_user_dict_fields)
     )
 

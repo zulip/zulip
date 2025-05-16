@@ -43,6 +43,7 @@ from zerver.models.users import (
     active_user_ids,
     base_bulk_get_user_queryset,
     base_get_user_queryset,
+    get_partial_realm_user_dicts,
     get_realm_user_dicts,
     get_realm_user_dicts_from_ids,
     get_user_by_id_in_realm_including_cross_realm,
@@ -1054,10 +1055,20 @@ def get_accessible_user_ids(
 
 
 def get_user_dicts_in_realm(
-    realm: Realm, user_profile: UserProfile | None, user_ids: list[int] | None = None
+    realm: Realm,
+    user_profile: UserProfile | None,
+    user_ids: list[int] | None = None,
+    include_partial_data: bool = False,
 ) -> tuple[list[RawUserDict], list[APIUserDict]]:
     if user_ids is not None:
+        assert include_partial_data is False
         all_user_dicts = get_realm_user_dicts_from_ids(realm.id, user_ids)
+    elif include_partial_data:
+        # This just includes bot data.
+        all_user_dicts = get_partial_realm_user_dicts(realm.id)
+        # Add current user data if not spectator
+        if user_profile is not None:
+            all_user_dicts.append(user_profile_to_user_row(user_profile))
     else:
         all_user_dicts = get_realm_user_dicts(realm.id)
     if check_user_can_access_all_users(user_profile):
@@ -1107,6 +1118,7 @@ def get_users_for_api(
     include_custom_profile_fields: bool = True,
     user_list_incomplete: bool = False,
     user_ids: list[int] | None = None,
+    include_partial_data: bool = False,
 ) -> dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
@@ -1120,10 +1132,14 @@ def get_users_for_api(
     inaccessible_user_dicts: list[APIUserDict] = []
     if target_user is not None:
         assert user_ids is None
+        assert include_partial_data is False
         accessible_user_dicts = [user_profile_to_user_row(target_user)]
     else:
         accessible_user_dicts, inaccessible_user_dicts = get_user_dicts_in_realm(
-            realm, acting_user, user_ids
+            realm,
+            acting_user,
+            user_ids,
+            include_partial_data,
         )
 
     if include_custom_profile_fields:

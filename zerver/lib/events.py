@@ -160,6 +160,7 @@ def fetch_initial_state_data(
     presence_last_update_id_fetched_by_client: int | None = None,
     presence_history_limit_days: int | None = None,
     include_subscribers: bool | Literal["partial"] = True,
+    include_users: bool | Literal["partial"] = True,
     include_streams: bool = True,
     spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
@@ -637,6 +638,9 @@ def fetch_initial_state_data(
         )
 
     if want("realm_user"):
+        # Only send settings_user and organization bots data if
+        # include_users is set to `partial`.
+        include_partial_data = include_users == "partial"
         state["raw_users"] = get_users_for_api(
             realm,
             user_profile,
@@ -645,6 +649,7 @@ def fetch_initial_state_data(
             # Don't send custom profile field values to spectators.
             include_custom_profile_fields=user_profile is not None,
             user_list_incomplete=user_list_incomplete,
+            include_partial_data=include_partial_data,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 
@@ -1902,6 +1907,7 @@ class ClientCapabilities(TypedDict):
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
     empty_topic_name: NotRequired[bool]
+    partial_user_data: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -1920,6 +1926,7 @@ def do_events_register(
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
     include_subscribers: bool | Literal["partial"] = True,
+    include_users: bool | Literal["partial"] = True,
     include_streams: bool = True,
     client_capabilities: ClientCapabilities = DEFAULT_CLIENT_CAPABILITIES,
     narrow: Collection[NeverNegatedNarrowTerm] = [],
@@ -1975,6 +1982,7 @@ def do_events_register(
             presence_history_limit_days=None,
             # Force include_subscribers=False for security reasons.
             include_subscribers=include_subscribers,
+            include_users=include_users,
             # Force include_streams=False for security reasons.
             include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
@@ -2032,6 +2040,7 @@ def do_events_register(
         presence_last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
         presence_history_limit_days=presence_history_limit_days,
         include_subscribers=include_subscribers,
+        include_users=include_users,
         include_streams=include_streams,
         pronouns_field_type_supported=pronouns_field_type_supported,
         linkifier_url_template=linkifier_url_template,

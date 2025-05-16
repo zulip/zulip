@@ -1,3 +1,4 @@
+import os
 from typing import Annotated, TypeAlias
 
 from annotated_types import Len
@@ -110,6 +111,7 @@ def events_register_backend(
     #       but we will still need to support tuples for a long time.
     modern_narrow = narrow_dataclasses_from_tuples(narrow)
 
+    partial_users = os.environ.get("PARTIAL_USERS") is not None
     ret = do_events_register(
         user_profile,
         realm,
@@ -129,5 +131,6 @@ def events_register_backend(
         fetch_event_types=fetch_event_types,
         spectator_requested_language=spectator_requested_language,
         pronouns_field_type_supported=pronouns_field_type_supported,
+        include_users="partial" if partial_users else True,
     )
     return json_success(request, data=ret)
