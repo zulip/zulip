@@ -23,6 +23,10 @@ const pre_open_hooks: Hook[] = [];
 const pre_close_hooks: Hook[] = [];
 
 function reset_state(): void {
+    // Stop listening to the keydown events on trappers when
+    // the overlay is closed.
+    $(".top-focus-trapper").off("keydown");
+    $(".bottom-focus-trapper").off("keydown");
     active_overlay = undefined;
     open_overlay_name = undefined;
 }
@@ -119,6 +123,9 @@ export function open_overlay(opts: OverlayOptions): void {
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
     $("#navbar-fixed-container").attr("aria-hidden", "true");
+
+    // Trap the focus to prevent it from escaping the overlay.
+    overlay_util.trap_focus(opts.$overlay);
 }
 
 export function close_overlay(name: string): void {

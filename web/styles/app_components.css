@@ -283,8 +283,9 @@ input::placeholder {
         justify-content: center;
         align-items: center;
 
-        &:focus {
-            outline: none;
+        &:focus-visible {
+            outline: 1px solid var(--color-outline-focus);
+            outline-offset: -2px;
         }
 
         &:not(.selected) {

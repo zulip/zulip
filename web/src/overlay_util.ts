@@ -13,3 +13,26 @@ export function disable_scrolling(): void {
 export function enable_scrolling(): void {
     $("html").css({"overflow-y": "scroll", "--disabled-scrollbar-width": "0px"});
 }
+
+export function trap_focus(overlay: JQuery): void {
+    // Add these classes with tabindex="0" at top and bottom of the
+    // overlays to enable the focus trapping.
+    const $top_focus_trapper = overlay.find(".top-focus-trapper");
+    const $bottom_focus_trapper = overlay.find(".bottom-focus-trapper");
+
+    // Traps the Shift + Tab key to loop to the bottom
+    $top_focus_trapper.on("keydown", (e: JQuery.KeyDownEvent) => {
+        if (e.key === "Tab" && e.shiftKey) {
+            e.preventDefault();
+            $bottom_focus_trapper.trigger("focus");
+        }
+    });
+
+    // Traps the Tab key to loop to the top
+    $bottom_focus_trapper.on("keydown", (e: JQuery.KeyDownEvent) => {
+        if (e.key === "Tab" && !e.shiftKey) {
+            e.preventDefault();
+            $top_focus_trapper.trigger("focus");
+        }
+    });
+}
