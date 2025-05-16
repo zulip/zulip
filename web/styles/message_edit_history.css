@@ -36,7 +36,6 @@
             background-color: var(
                 --color-message-edit-history-background-deleted
             );
-            text-decoration: line-through;
             word-break: break-all;
         }
     }
