@@ -1336,6 +1336,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # Handle rendering of stream descriptions for import from non-Zulip
         for stream in data["zerver_stream"]:
             stream["rendered_description"] = render_stream_description(stream["description"], realm)
+            stream["name"] = stream["name"][: Stream.MAX_NAME_LENGTH]
         bulk_import_model(data, Stream)
 
         if "zerver_usergroup" not in data:
