@@ -276,7 +276,9 @@ function bulk_update_read_flags_for_narrow(
                             term.negated === false
                         ),
                 );
-                if (message_lists.current?.data.filter.equals(new Filter(filter_terms))) {
+                // Current narrow may have "with" operator around a message target which
+                // we would want to ignore for bulk reading a message list.
+                if (message_lists.current?.data.filter.equals(new Filter(filter_terms), ["with"])) {
                     message_lists.current?.resume_reading();
                     unread_ui.hide_unread_banner();
                 }
@@ -604,6 +606,10 @@ export function process_read_messages_event(message_ids: number[]): void {
         if (message) {
             process_newly_read_message(message, options);
         }
+    }
+
+    if (message_lists.current !== undefined && !message_lists.current.has_unread_messages()) {
+        unread_ui.hide_unread_banner();
     }
 
     unread_ui.update_unread_counts();
