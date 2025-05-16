@@ -176,6 +176,15 @@ export function rewire_render_person(value: typeof render_person): void {
     render_person = value;
 }
 
+export let render_topic_state = (state: string): string =>
+    render_typeahead_item({
+        primary: state,
+    });
+
+export function rewire_render_topic_state(value: typeof render_topic_state): void {
+    render_topic_state = value;
+}
+
 export let render_user_group = (user_group: {name: string; description: string}): string =>
     render_typeahead_item({
         primary: user_groups.get_display_group_name(user_group.name),
