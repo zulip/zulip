@@ -2072,3 +2072,62 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
 
             redacted_message = redact_email_address(error_message)
             self.assertEqual(redacted_message, expected_message)
+
+
+class TestStreamEmailMessagesSubjectLength(ZulipTestCase):
+    def test_long_subject_included_in_body(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        # Create a subject that's longer than 60 characters
+        long_subject = "This is a very long subject line that exceeds the 60 character limit and should be included in the body"
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+
+        incoming_valid_message["Subject"] = long_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        # Verify the subject is truncated in the topic
+        self.assertEqual(message.topic_name(), long_subject[:60])
+        
+        # Verify the full subject is included in the body
+        expected_body = f"Subject: {long_subject}\n\nTestStreamEmailMessages body"
+        self.assertEqual(message.content, expected_body)
+
+    def test_short_subject_not_included_in_body(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        # Create a subject that's shorter than 60 characters
+        short_subject = "Short subject"
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+
+        incoming_valid_message["Subject"] = short_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        # Verify the subject is used as-is in the topic
+        self.assertEqual(message.topic_name(), short_subject)
+        
+        # Verify the subject is not included in the body
+        self.assertEqual(message.content, "TestStreamEmailMessages body")
