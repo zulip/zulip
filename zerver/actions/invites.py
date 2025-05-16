@@ -332,6 +332,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
+        streams = invitee.streams.all()
+        stream_ids = [stream.id for stream in streams]
         invites.append(
             dict(
                 email=invitee.email,
@@ -342,6 +344,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
                 notify_referrer_on_join=invitee.notify_referrer_on_join,
+                stream_ids=stream_ids,
+                include_realm_default_subscriptions=invitee.include_realm_default_subscriptions,
             )
         )
 
@@ -374,9 +378,31 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 link_url=confirmation_url_for(confirmation_obj),
                 invited_as=invite.invited_as,
                 is_multiuse=True,
+                stream_ids=list(invite.streams.values_list("id", flat=True)),
+                include_realm_default_subscriptions=invite.include_realm_default_subscriptions,
             )
         )
     return invites
+
+
+@transaction.atomic(durable=True)
+def do_edit_multiuse_invite_link(
+    multiuse_invite: MultiuseInvite,
+    invited_as: int | None,
+    streams: Collection[Stream] | None,
+    include_realm_default_subscriptions: bool | None,
+) -> None:
+    # The `streams` and `invited_as` fields of a `multiuse_invite` can be edited.
+    if streams is not None:
+        multiuse_invite.streams.set(streams)
+    if invited_as is not None:
+        multiuse_invite.invited_as = invited_as
+    if include_realm_default_subscriptions is not None:
+        multiuse_invite.include_realm_default_subscriptions = include_realm_default_subscriptions
+    multiuse_invite.save()
+
+    realm = multiuse_invite.referred_by.realm
+    notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
 @transaction.atomic(durable=True)
