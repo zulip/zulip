@@ -523,6 +523,7 @@ def patch_bot_backend(
         raise JsonableError(_("You may only upload one file at a time"))
 
     json_result = dict(
+        username=bot.email,
         full_name=bot.full_name,
         avatar_url=avatar_url(bot),
         service_interface=service_interface,
