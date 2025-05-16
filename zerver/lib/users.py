@@ -133,10 +133,9 @@ def check_valid_bot_config(
                     option.name: option.validator for option in integration.config_options
                 }
                 break
+
         if not config_options:
-            raise JsonableError(
-                _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
-            )
+            return
 
         missing_keys = set(config_options.keys()) - set(config_data.keys())
         if missing_keys:
