@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("zerver", "0704_stream_subscriber_count"),
+        ("zerver", "0705_realmuserdefault_resolved_topic_notice_auto_read_policy_and_more"),
     ]
 
     operations = [
