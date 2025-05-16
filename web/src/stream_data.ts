@@ -628,14 +628,28 @@ export function can_administer_channel(sub: StreamSubscription): boolean {
     );
 }
 
+export function can_unsubscribe(sub: StreamSubscription): boolean {
+    if (can_unsubscribe_others(sub)) {
+        return true;
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        sub.can_unsubscribe_group,
+        "can_unsubscribe_group",
+        "stream",
+    );
+}
+
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
     if (page_params.is_spectator) {
         return false;
     }
 
-    // Currently, you can always remove your subscription if you're subscribed.
+    // If the user is subscribed, they can unsubscribe themselves only if they are
+    // an organization admin, or in one of these groups: can_administer_channel_group,
+    // can_remove_subscribers_group, or can_unsubscribe_group.
     if (sub.subscribed) {
-        return true;
+        return can_unsubscribe(sub);
     }
 
     if (has_content_access(sub)) {
