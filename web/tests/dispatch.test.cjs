@@ -86,10 +86,11 @@ const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
     update_announce_stream_option() {},
 });
 const submessage = mock_esm("../src/submessage");
-mock_esm("../src/left_sidebar_navigation_area", {
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
     handle_home_view_changed() {},
+    initialize_auto_collapse_setting() {},
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
@@ -1211,7 +1212,19 @@ run_test("user_settings", ({override}) => {
         assert.equal(stub.num_calls, 1);
         assert_same(user_settings.demote_inactive_streams, 2);
     }
-
+    {
+        const stub = make_stub();
+        event = {
+            type: "user_settings",
+            property: "auto_collapse_views",
+            value: true,
+        };
+        override(user_settings, "auto_collapse_views", false);
+        override(left_sidebar_navigation_area, "initialize_auto_collapse_setting", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        assert.equal(user_settings.auto_collapse_views, true);
+    }
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__web_stream_unreads_count_display_policy;
