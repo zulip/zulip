@@ -1,10 +1,11 @@
 import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import {z} from "zod";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 
 import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {$t} from "./i18n.ts";
 import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store.ts";
@@ -14,8 +15,8 @@ import {page_params} from "./page_params.ts";
 import * as reload_state from "./reload_state.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {CurrentUser, StateData, profile_datum_schema, user_schema} from "./state_data.ts";
-import {current_user, realm} from "./state_data.ts";
+import type {CurrentUser, StateData, profile_datum_schema} from "./state_data.ts";
+import {current_user, realm, user_schema} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {is_user_in_setting_group} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
@@ -48,6 +49,7 @@ let cross_realm_dict: Map<number, User>;
 let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
+let valid_user_ids: Set<number>;
 
 export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
@@ -71,6 +73,7 @@ export function init(): void {
     non_active_user_dict = new Map();
     cross_realm_dict = new Map(); // keyed by user_id
     pm_recipient_count_dict = new Map();
+    valid_user_ids = new Set();
 
     // This maintains a set of ids of people with same full names.
     duplicate_full_name_data = new FoldDict();
@@ -80,6 +83,30 @@ export function init(): void {
 
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
+
+export const user_fetch_response_schema = z.object({
+    members: z.array(user_schema),
+    result: z.string(),
+    msg: z.string(),
+});
+
+type UsersFetchResponse = z.infer<typeof user_fetch_response_schema>;
+
+type FetchUserDataParams = {
+    user_ids: string;
+    client_gravatar?: boolean;
+    include_custom_profile_fields?: boolean;
+    success?: (users: UsersFetchResponse["members"]) => void;
+    error?: (xhr?: JQuery.jqXHR) => void;
+};
+
+export function add_valid_user_id(user_id: number): void {
+    valid_user_ids.add(user_id);
+}
+
+export function is_valid_user_id(user_id: number): boolean {
+    return valid_user_ids.has(user_id);
+}
 
 export function split_to_ints(lst: string): number[] {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
@@ -1495,7 +1522,13 @@ export function _add_user(person: User): void {
     people_by_name_dict.set(person.full_name, person);
 }
 
-export function add_active_user(person: User): void {
+export function add_active_user(person: User, source = "inital_fetch"): void {
+    // To maintain the valid_user_ids data structure, we must add new
+    // users to that set when we learn about them.
+    if (source === "server_events") {
+        add_valid_user_id(person.user_id);
+    }
+
     active_user_dict.set(person.user_id, person);
     _add_user(person);
     non_active_user_dict.delete(person.user_id);
@@ -1849,19 +1882,112 @@ export function is_displayable_conversation_participant(user_id: number): boolea
     return !is_valid_bot_user(user_id) && is_person_active(user_id);
 }
 
-export function initialize(my_user_id: number, params: StateData["people"]): void {
-    for (const person of params.realm_users) {
-        add_active_user(person);
+export function populate_valid_user_ids(params: StateData["user_groups"]): void {
+    // Every valid user ID is guaranteed to exist in at least one
+    // system group, so we can us that to compute the set of valid
+    // user IDs in the realm.
+    for (const user_group of params.realm_user_groups) {
+        if (user_group.is_system_group) {
+            valid_user_ids = valid_user_ids.union(new Set(user_group.members));
+        }
+    }
+}
+
+export function fetch_users_from_server(opts: FetchUserDataParams): void {
+    const params = {
+        user_ids: opts.user_ids,
+        client_gravatar: opts.client_gravatar,
+        include_custom_profile_fields: opts.include_custom_profile_fields,
+    };
+
+    channel.get({
+        url: "/json/users",
+        data: params,
+        success(data) {
+            if (opts.success) {
+                const members = user_fetch_response_schema.parse(data).members;
+                opts.success(members);
+            }
+        },
+        error(xhr: JQuery.jqXHR<unknown>) {
+            if (opts.error) {
+                opts.error(xhr);
+            }
+        },
+    });
+}
+
+export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResponse["members"]> {
+    // Requested users outside the set of known valid user IDs likely
+    // reflect some sort of Zulip bug, so fetch and log them.
+    const invalid_user_ids = user_ids.difference(valid_user_ids);
+    if (invalid_user_ids.size > 0) {
+        blueslip.error("Ignored invalid user_ids: " + [...invalid_user_ids].join(", "));
     }
 
-    for (const person of params.realm_non_active_users) {
+    const user_ids_to_fetch = valid_user_ids.intersection(user_ids);
+    if (user_ids_to_fetch.size === 0) {
+        return [];
+    }
+    return new Promise((resolve, reject) => {
+        fetch_users_from_server({
+            user_ids: JSON.stringify([...user_ids_to_fetch]),
+            success(users) {
+                resolve(users);
+            },
+            error(xhr) {
+                let error_message = "Failed to fetch users.";
+                if (xhr) {
+                    const error = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
+                    if (error.msg) {
+                        error_message = error.msg;
+                    }
+                }
+                blueslip.error(error_message);
+                reject(new Error(error_message));
+            },
+        });
+    });
+}
+
+export async function initialize(
+    my_user_id: number,
+    people_params: StateData["people"],
+    user_group_params: StateData["user_groups"],
+): Promise<void> {
+    initialize_current_user(my_user_id);
+    populate_valid_user_ids(user_group_params);
+
+    // Compute the set of user IDs that we know are valid in the
+    // organization, but do not have a copy of.
+    const user_ids_to_fetch = new Set(valid_user_ids);
+    for (const person of people_params.realm_users) {
+        add_active_user(person);
+        user_ids_to_fetch.delete(person.user_id);
+    }
+
+    for (const person of people_params.realm_non_active_users) {
         non_active_user_dict.set(person.user_id, person);
         _add_user(person);
+        user_ids_to_fetch.delete(person.user_id);
     }
 
-    for (const person of params.cross_realm_bots) {
+    for (const person of people_params.cross_realm_bots) {
         add_cross_realm_user(person);
+        user_ids_to_fetch.delete(person.user_id);
     }
 
-    initialize_current_user(my_user_id);
+    // Fetch all the missing users. This code path is temporary: We
+    // plan to move to a model where the web app expects to have an
+    // incomplete users dataset in large organizations.
+    await fetch_users(user_ids_to_fetch).then((users) => {
+        for (const user of users) {
+            if (user.is_active) {
+                add_active_user(user);
+            } else {
+                non_active_user_dict.set(user.user_id, user);
+                _add_user(user);
+            }
+        }
+    });
 }
