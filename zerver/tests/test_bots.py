@@ -1178,6 +1178,82 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch("/json/bots/{}".format(self.example_user("hamlet").id), bot_info)
         self.assert_json_error(result, "No such bot")
 
+    def test_patch_bot_short_name(self) -> None:
+        self.login("hamlet")
+        bot = self.create_bot()  # hambot
+
+        new_short_name = "botham"
+        bot_info = {
+            "short_name": new_short_name,
+        }
+        result = self.client_patch(f"/json/bots/{bot['user_id']}", bot_info)
+        response_dict = self.assert_json_success(result)
+
+        bot_email = f"{new_short_name}-bot@zulip.testserver"
+        self.assertEqual(bot_email, response_dict["username"])
+
+        bot = self.get_bot()
+        self.assertEqual(bot_email, bot["username"])
+
+    def test_patch_bot_short_name_in_use(self) -> None:
+        self.login("hamlet")
+
+        original_short_name = "other_hambot"
+        bot_info = {
+            "full_name": "The Other Bot of Hamlet",
+            "short_name": original_short_name,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = f"{original_short_name}-bot@zulip.testserver"
+        bot = self.get_bot_user(bot_email)
+
+        self.create_bot()  # hambot
+
+        already_taken_short_name = "hambot"
+        bot_info = {
+            "short_name": already_taken_short_name,
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "Email is already in use.")
+
+        bot_email = f"{original_short_name}-bot@zulip.testserver"
+        # Assert that the email has not changed.
+        self.assertEqual(bot_email, bot.email)
+
+    def test_patch_bot_invalid_short_name(self) -> None:
+        self.login("hamlet")
+        bot = self.create_bot()
+        bot_id = bot["user_id"]
+        bot_info = dict()
+        invalid_short_names = [
+            "",
+            " ",
+            "bot of ham",
+            "bot\nof\nham",
+        ]
+        for invalid_short_name in invalid_short_names:
+            bot_info["short_name"] = invalid_short_name
+            result = self.client_patch(f"/json/bots/{bot_id}", bot_info)
+            self.assert_json_error(result, "Bad name or username")
+            bot = self.get_bot()
+            # Assert that the email has not changed.
+            self.assertEqual("hambot-bot@zulip.testserver", bot["username"])
+
+    def test_patch_bot_unchanged_short_name(self) -> None:
+        self.login("hamlet")
+        bot = self.create_bot()
+        bot_info = {
+            "short_name": "hambot"  # the same short_name from create_bot()
+        }
+        # This should silently fail instead of raising an error.
+        self.client_patch(f"/json/bots/{bot['user_id']}", bot_info)
+
+        bot = self.get_bot()
+        # Assert that the email has not changed.
+        self.assertEqual("hambot-bot@zulip.testserver", bot["username"])
+
     def test_patch_bot_owner(self) -> None:
         self.login("hamlet")
         othello = self.example_user("othello")
