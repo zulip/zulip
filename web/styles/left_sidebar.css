@@ -14,6 +14,10 @@
     text-overflow: ellipsis;
 }
 
+#left-sidebar {
+    height: 100vh;
+}
+
 #left-sidebar .unread_count {
     user-select: none;
 }
@@ -162,10 +166,12 @@
 
 #left_sidebar_scroll_container {
     outline: none;
-    overflow: hidden auto;
+    overflow-y: auto;
     position: relative;
     z-index: 0;
     width: 100%;
+
+    max-height: 90vh !important;
 
     .direct-messages-container {
         margin-left: 0;
@@ -183,6 +189,28 @@
     cursor: pointer;
     white-space: nowrap;
     border-radius: 4px;
+
+    /* Stick to the views-label-container on scroll */
+    position: sticky;
+    background: var(--color-background);
+    z-index: 5;
+
+    &:not(.keep_views_expanded) {
+        top: 27px;
+    }
+
+    &.keep_views_expanded {
+        top: 203.4px;
+    }
+
+    &.scrolled,
+    &.scrolled-when-views-expanded {
+        box-shadow:
+            0 1px 1px -1px hsl(0deg 0% 0% / 100%),
+            0 3px 4px -5px hsl(0deg 0% 0% / 100%),
+            0 4px 9px -10px hsl(0deg 0% 0% / 100%),
+            0 12px 12px -13px hsl(0deg 0% 0% / 100%);
+    }
 
     /* Prevent hover styles set on other rows when zoomed in. */
     &:not(.zoom-in):hover {
@@ -729,7 +757,7 @@ li.active-sub-filter {
         }
     }
 
-    .top-left-active-filter {
+    . {
         /* Don't display a background on condensed icons. */
         background: unset;
     }
@@ -757,6 +785,14 @@ li.active-sub-filter {
        to appear out of alignment. This grid feature should
        only apply in the expanded-navigation view. */
     grid-auto-rows: var(--line-height-sidebar-row);
+    background: var(--color-background);
+
+    &.keep_views_expanded {
+        position: sticky;
+        top: 27px;
+        z-index: 4;
+        background: var(--color-background);
+    }
 
     .left-sidebar-navigation-label-container {
         .left-sidebar-navigation-label {
@@ -995,6 +1031,15 @@ li.top_left_scheduled_messages {
         ".               filter-box              filter-box       filter-box  filter-box filter-box          filter-box            .            ";
 }
 
+#left_sidebar_scroll_container .simplebar-content-wrapper {
+    position: relative;
+}
+
+#left-sidebar-navigation-area {
+    top: 0;
+    position: sticky;
+}
+
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
@@ -1005,6 +1050,12 @@ li.top_left_scheduled_messages {
     grid-template-rows: 1.75em;
     cursor: pointer;
     border-radius: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: var(--color-background);
+    transition: box-shadow 0.5s ease;
+    background-repeat: repeat;
 
     &:not(.remove-pointer-for-spectator):hover,
     &:has(.left-sidebar-navigation-menu-icon[aria-expanded="true"]) {
@@ -1017,11 +1068,25 @@ li.top_left_scheduled_messages {
         }
     }
 
+    &:hover,
+    &.more-options-active {
+        .left-sidebar-navigation-menu-icon {
+            opacity: 1;
+        }
+    }
+
+    &.scrolled:not(.keep_views_expanded) {
+        box-shadow:
+            0 1px 1px -1px hsl(0deg 0% 0% / 100%),
+            0 3px 4px -5px hsl(0deg 0% 0% / 100%),
+            0 4px 9px -10px hsl(0deg 0% 0% / 100%),
+            0 12px 12px -13px hsl(0deg 0% 0% / 100%);
+    }
+
     &.showing-expanded-navigation {
         /* When the expanded navigation is visible,
            hide the condensed navigation's controls. */
-        #left-sidebar-navigation-list-condensed,
-        .left-sidebar-navigation-menu-icon {
+        #left-sidebar-navigation-list-condensed {
             display: none;
         }
         /* Give the sidebar title through the end of the markers
@@ -1094,10 +1159,15 @@ li.top_left_scheduled_messages {
         margin-right: 2px;
         border-radius: 3px;
         color: var(--color-vdots-visible);
+        opacity: 0;
 
         &:hover {
             color: var(--color-vdots-hover);
             background-color: var(--color-background-sidebar-action-hover);
+        }
+
+        @media (hover: none) {
+            opacity: 0.9;
         }
     }
 }
@@ -1659,9 +1729,24 @@ li.topic-list-item {
     /* Keep sticky within SimpleBar context. The -0.25px
     offset ensures that no gap is present between the
     direct-messages-section-header and the streams-header */
-    top: -0.25px;
-    z-index: 2;
+    z-index: 5;
     background-color: var(--color-background);
+
+    &:not(.keep_views_expanded) {
+        top: 54px;
+    }
+
+    &.keep_views_expanded {
+        top: 230.4px;
+    }
+
+    &.scrolled {
+        box-shadow:
+            0 1px 1px -1px hsl(0deg 0% 0% / 100%),
+            0 3px 4px -5px hsl(0deg 0% 0% / 100%),
+            0 4px 9px -10px hsl(0deg 0% 0% / 100%),
+            0 12px 12px -13px hsl(0deg 0% 0% / 100%);
+    }
 
     &.showing-stream-search-section {
         /* Open up the stream-search rows. The 3px gap + 7px
