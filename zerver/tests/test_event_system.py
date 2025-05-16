@@ -11,9 +11,11 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
+from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
@@ -171,7 +173,7 @@ class EventsEndpointTest(ZulipTestCase):
                 status_code=401,
             )
 
-        with self.assert_database_query_count(14):
+        with self.assert_database_query_count(15):
             result = self.client_post("/json/register")
             result_dict = self.assert_json_success(result)
             self.assertEqual(result_dict["queue_id"], None)
@@ -197,6 +199,32 @@ class EventsEndpointTest(ZulipTestCase):
             "Invalid 'include_subscribers' parameter for anonymous request",
             status_code=400,
         )
+
+    def test_channel_folders_for_spectators(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+
+        frontend_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
+        backend_folder = check_add_channel_folder("Backend", "", acting_user=iago)
+
+        result = self.client_post("/json/register")
+        self.assertEqual(result.status_code, 200)
+
+        channel_folders_data = orjson.loads(result.content)["channel_folders"]
+        self.assert_length(channel_folders_data, 0)
+
+        web_public_stream = get_stream("Rome", realm)
+        do_change_stream_folder(web_public_stream, frontend_folder, acting_user=iago)
+
+        public_stream = get_stream("Verona", realm)
+        do_change_stream_folder(public_stream, backend_folder, acting_user=iago)
+
+        result = self.client_post("/json/register")
+        self.assertEqual(result.status_code, 200)
+
+        channel_folders_data = orjson.loads(result.content)["channel_folders"]
+        self.assert_length(channel_folders_data, 1)
+        self.assertEqual(channel_folders_data[0]["name"], "Frontend")
 
     def test_events_register_endpoint_all_public_streams_access(self) -> None:
         guest_user = self.example_user("polonius")
