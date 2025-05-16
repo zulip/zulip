@@ -87,7 +87,7 @@ function get_playground_links_popover_items(): JQuery | undefined {
         return undefined;
     }
 
-    return $("li:not(.divider):visible a", $popover);
+    return $popover.find(".popover_playground_link");
 }
 
 export function handle_keyboard(key: string): void {

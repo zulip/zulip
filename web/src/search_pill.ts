@@ -171,6 +171,7 @@ const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
 export function set_search_bar_contents(
     search_terms: NarrowTerm[],
     pill_widget: SearchPillWidget,
+    is_typeahead_visible: boolean,
     set_search_bar_text: (text: string) => void,
 ): void {
     pill_widget.clear(true);
@@ -189,18 +190,16 @@ export function set_search_bar_contents(
         // typeahead to show operand suggestions.
         // Note: We make a pill for `topic:` as it represents empty string topic
         // except the case where it suggests `topic` operator.
-        if (input.at(-1) === ":" && term.operand === "" && term === search_terms.at(-1)) {
-            const is_topic_operator_suggestion = (): boolean => {
-                const is_typeahead_visible = $("#searchbox_form .typeahead").is(":visible");
-                return (
-                    is_typeahead_visible &&
-                    $("#searchbox_form .typeahead-item.active .empty-topic-display").length === 0
-                );
-            };
-            if (term.operator !== "topic" || is_topic_operator_suggestion()) {
-                partial_pill = input;
-                continue;
-            }
+        if (
+            input.at(-1) === ":" &&
+            term.operand === "" &&
+            term === search_terms.at(-1) &&
+            (term.operator !== "topic" ||
+                (is_typeahead_visible &&
+                    $("#searchbox_form .typeahead-item.active .empty-topic-display").length === 0))
+        ) {
+            partial_pill = input;
+            continue;
         }
 
         if (!Filter.is_valid_search_term(term)) {

@@ -156,17 +156,20 @@ export class SettingsPanelMenu {
     }
 
     prev(): boolean {
+        // eslint-disable-next-line no-jquery/no-sizzle
         this.$curr_li.prevAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
     next(): boolean {
+        // eslint-disable-next-line no-jquery/no-sizzle
         this.$curr_li.nextAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
     enter_panel(): boolean {
         const $panel = this.get_panel();
+        // eslint-disable-next-line no-jquery/no-sizzle
         const $panel_elem = $panel.find("input:visible,button:visible,select:visible").first();
 
         $panel_elem.trigger("focus");

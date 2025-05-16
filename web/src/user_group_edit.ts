@@ -1671,11 +1671,15 @@ export function update_empty_left_panel_message(): void {
         FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
 
     // When the dropdown menu is hidden.
-    if ($("#user-group-edit-filter-options").is(":hidden")) {
+    if ($("#user-group-edit-filter-options").css("display") === "none") {
         current_group_filter = FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
     }
 
-    if ($(".user-groups-list").find(".group-row:visible").length > 0) {
+    if (
+        $(".user-groups-list").find(
+            ".user-groups-list:not(.hide-deactived-user-groups) .group-row.deactivated-group, .user-groups-list:not(.hide-active-user-groups) .group-row:not(.deactivated-group)",
+        ).length > 0
+    ) {
         $(".no-groups-to-show").hide();
         return;
     }

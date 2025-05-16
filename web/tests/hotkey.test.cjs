@@ -108,7 +108,9 @@ message_lists.current = {
     selected_row() {
         const $row = $.create("selected-row-stub");
         $row.set_find_results(".message-actions-menu-button", []);
-        $row.set_find_results(".emoji-message-control-button-container", {is: () => false});
+        $row.set_find_results(".emoji-message-control-button-container", {
+            closest: () => ({css: () => "none"}),
+        });
         return $row;
     },
     selected_message() {
@@ -292,6 +294,8 @@ run_test("allow normal typing when editing text", ({override, override_rewire}) 
     override(overlays, "settings_open", () => settings_open);
     override(overlays, "info_overlay_open", () => info_overlay_open);
 
+    $.create(".navbar-item:focus", {children: []});
+
     for (settings_open of [true, false]) {
         for (any_active of [true, false]) {
             for (info_overlay_open of [true, false]) {
@@ -455,6 +459,8 @@ test_while_not_editing_text("narrow next unread followed topic", () => {
 });
 
 test_while_not_editing_text("motion_keys", () => {
+    $.create(".navbar-item:focus", {children: []});
+
     const codes = {
         down_arrow: 40,
         end: 35,

@@ -89,11 +89,7 @@ export function initialize() {
         }
 
         // The poll widget requires an empty compose box.
-        if (compose_text_length > 0) {
-            $(".needs-empty-compose").parent().addClass("disabled-on-hover");
-        } else {
-            $(".needs-empty-compose").parent().removeClass("disabled-on-hover");
-        }
+        $(".needs-empty-compose").toggleClass("disabled-on-hover", compose_text_length > 0);
 
         if (compose_state.get_is_content_unedited_restored_draft()) {
             compose_state.set_is_content_unedited_restored_draft(false);

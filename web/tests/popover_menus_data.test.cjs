@@ -28,9 +28,15 @@ function MessageListView() {
         prepend: noop,
         clear_rendering_state: noop,
         get_row: () => ({
-            find: () => ({
-                is: () => false,
-            }),
+            find(selector) {
+                assert.equal(selector, ".message_controls .reaction_button");
+                return {
+                    css(property) {
+                        assert.equal(property, "display");
+                        return "none";
+                    },
+                };
+            },
         }),
         message_containers: new Map(),
     };

@@ -70,12 +70,26 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         }
     }
 
-    override(bootstrap_typeahead, "Typeahead", (input_element, opts) => {
+    let opts;
+    override(bootstrap_typeahead, "Typeahead", (input_element, opts_) => {
+        opts = opts_;
         assert.equal(input_element.$element, $search_query_box);
         assert.equal(opts.items, 999);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
 
+        return {
+            lookup() {
+                typeahead_forced_open = true;
+            },
+        };
+    });
+
+    search.initialize({
+        on_narrow_search() {},
+    });
+
+    {
         {
             const search_suggestions = {
                 lookup_table: new Map([
@@ -218,6 +232,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                 search_pill.set_search_bar_contents(
                     terms,
                     search.search_pill_widget,
+                    false,
                     $search_query_box.text,
                 );
             };
@@ -259,16 +274,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
             assert.ok(input_pill_displayed);
         }
-        return {
-            lookup() {
-                typeahead_forced_open = true;
-            },
-        };
-    });
-
-    search.initialize({
-        on_narrow_search() {},
-    });
+    }
 
     $search_query_box.text("test string");
 
@@ -310,6 +316,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         search_pill.set_search_bar_contents(
             terms,
             search.search_pill_widget,
+            false,
             $search_query_box.text,
         );
     };

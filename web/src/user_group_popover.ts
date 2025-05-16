@@ -46,6 +46,7 @@ function get_user_group_popover_items(): JQuery | undefined {
         return undefined;
     }
 
+    // eslint-disable-next-line no-jquery/no-sizzle
     return $("li:not(.divider):visible a", $popover);
 }
 
