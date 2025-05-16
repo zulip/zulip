@@ -6,7 +6,7 @@
 # the `zulip::profile::postgresql` class applied, or a cloud-managed
 # database is used (e.g. AWS RDS).
 #
-# @see https://zulip.readthedocs.io/en/latest/production/deployment.html#using-zulip-with-amazon-rds-as-the-database
+# @see https://zulip.readthedocs.io/en/latest/production/postgresql.html
 class zulip::profile::standalone_nodb {
   include zulip::profile::app_frontend
   include zulip::profile::memcached
