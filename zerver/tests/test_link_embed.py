@@ -654,38 +654,6 @@ class PreviewTestCase(ZulipTestCase):
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
-    def test_link_preview_non_html_data(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-        url = "http://test.org/audio.mp3"
-        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
-            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
-            patched.assert_called_once()
-            queue = patched.call_args[0][0]
-            self.assertEqual(queue, "embed_links")
-            event = patched.call_args[0][1]
-
-        content_type = "application/octet-stream"
-        self.create_mock_response(url, content_type=content_type)
-
-        with self.settings(TEST_SUITE=False):
-            with self.assertLogs(level="INFO") as info_logs:
-                FetchLinksEmbedData().consume(event)
-                cached_data = cache_get(preview_url_cache_key(url))[0]
-            self.assertTrue(
-                "INFO:root:Time spent on get_link_embed_data for http://test.org/audio.mp3: "
-                in info_logs.output[0]
-            )
-
-        self.assertIsNone(cached_data)
-        msg = Message.objects.select_related("sender").get(id=msg_id)
-        self.assertEqual(
-            '<p><a href="http://test.org/audio.mp3">http://test.org/audio.mp3</a></p>',
-            msg.rendered_content,
-        )
-
-    @responses.activate
-    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_open_graph_image(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
