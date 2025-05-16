@@ -91,6 +91,23 @@ def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
         return len(ids)
 
 
+def update_all_rows(msg: str, conn: psycopg2.extensions.connection) -> None:
+    while True:
+        start_time = time.perf_counter()
+        rows_updated = update_fts_columns(conn)
+        if rows_updated:
+            logger.log(
+                logging.INFO,
+                "process_fts_updates: %s %d rows, %d rows/sec",
+                msg,
+                rows_updated,
+                rows_updated / (time.perf_counter() - start_time),
+            )
+
+        if rows_updated != BATCH_SIZE:
+            return
+
+
 def am_master(conn: psycopg2.extensions.connection) -> bool:
     with conn.cursor() as cursor:
         cursor.execute("SELECT pg_is_in_recovery()")
@@ -223,24 +240,14 @@ while True:
                 conn.commit()
 
             # Catch up on any historical columns
-            while True:
-                rows_updated = update_fts_columns(conn)
-                logger.log(
-                    logging.INFO if rows_updated > 0 else logging.DEBUG,
-                    "process_fts_updates: Processed %d rows catching up",
-                    rows_updated,
-                )
-
-                if rows_updated != BATCH_SIZE:
-                    # We're caught up, so proceed to the listening for updates phase.
-                    break
+            update_all_rows("Caught up", conn)
 
         # TODO: If we go back into recovery, we should stop processing updates
         if select.select([conn], [], [], 30) != ([], [], []):
             conn.poll()
-            while conn.notifies:
-                conn.notifies.pop()
-                update_fts_columns(cursor)
+            conn.notifies.clear()
+            update_all_rows("Updated", conn)
+
     except psycopg2.OperationalError as e:
         retries -= 1
         if retries <= 0:
