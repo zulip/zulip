@@ -318,7 +318,8 @@ class TestStoreThumbnail(ZulipTestCase):
                 response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
                 )
-            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            path_id = response["url"].removeprefix("/user_uploads/")
             self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
 
             image_attachment = ImageAttachment.objects.get(path_id=path_id)
@@ -419,7 +420,8 @@ class TestStoreThumbnail(ZulipTestCase):
                     response = self.assert_json_success(
                         self.client_post("/json/user_uploads", {"file": image_file})
                     )
-                    path_id = re.sub(r"/user_uploads/", "", response["url"])
+                    assert response["url"].startswith("/user_uploads/")
+                    path_id = response["url"].removeprefix("/user_uploads/")
                     self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
 
                     image_attachment = ImageAttachment.objects.get(path_id=path_id)
@@ -449,7 +451,8 @@ class TestStoreThumbnail(ZulipTestCase):
                     response = self.assert_json_success(
                         self.client_post("/json/user_uploads", {"file": image_file})
                     )
-                    path_id = re.sub(r"/user_uploads/", "", response["url"])
+                    assert response["url"].startswith("/user_uploads/")
+                    path_id = response["url"].removeprefix("/user_uploads/")
                     self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
                     self.assertEqual(ImageAttachment.objects.filter(path_id=path_id).count(), 1)
                 with BytesIO() as fh:
@@ -469,7 +472,8 @@ class TestStoreThumbnail(ZulipTestCase):
                 response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
                 )
-                path_id = re.sub(r"/user_uploads/", "", response["url"])
+                assert response["url"].startswith("/user_uploads/")
+                path_id = response["url"].removeprefix("/user_uploads/")
                 self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
                 self.assertEqual(ImageAttachment.objects.filter(path_id=path_id).count(), 0)
 
@@ -484,7 +488,8 @@ class TestStoreThumbnail(ZulipTestCase):
                 response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
                 )
-            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            path_id = response["url"].removeprefix("/user_uploads/")
             self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
 
             image_attachment = ImageAttachment.objects.get(path_id=path_id)
@@ -535,7 +540,8 @@ class TestStoreThumbnail(ZulipTestCase):
                 response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
                 )
-            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            path_id = response["url"].removeprefix("/user_uploads/")
             self.assertTrue(Attachment.objects.filter(path_id=path_id).exists())
             self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
 
@@ -556,7 +562,8 @@ class TestStoreThumbnail(ZulipTestCase):
             response = self.assert_json_success(
                 self.client_post("/json/user_uploads", {"file": image_file})
             )
-            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            path_id = response["url"].removeprefix("/user_uploads/")
             self.assertTrue(Attachment.objects.filter(path_id=path_id).exists())
             self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
 
@@ -567,7 +574,8 @@ class TestStoreThumbnail(ZulipTestCase):
             response = self.assert_json_success(
                 self.client_post("/json/user_uploads", {"file": image_file})
             )
-            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            path_id = response["url"].removeprefix("/user_uploads/")
             self.assertTrue(Attachment.objects.filter(path_id=path_id).exists())
             self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
 
@@ -581,7 +589,8 @@ class TestStoreThumbnail(ZulipTestCase):
                 response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
                 )
-            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            path_id = response["url"].removeprefix("/user_uploads/")
             self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 1)
 
             # This doesn't generate an ImageAttachment row because it's corrupted
@@ -767,7 +776,8 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 json_response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
                 )
-                path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+                assert json_response["url"].startswith("/user_uploads/")
+                path_id = json_response["url"].removeprefix("/user_uploads/")
 
                 # Image itself is available immediately
                 response = self.client_get(f"/user_uploads/{path_id}")
@@ -817,7 +827,8 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 json_response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": text_file})
                 )
-                text_path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+                assert json_response["url"].startswith("/user_uploads/")
+                text_path_id = json_response["url"].removeprefix("/user_uploads/")
             response = self.client_get(f"/user_uploads/thumbnail/{text_path_id}/{webp_still!s}")
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.headers["Content-Type"], "image/png")
@@ -872,7 +883,8 @@ class TestThumbnailRetrieval(ZulipTestCase):
                 json_response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": image_file})
                 )
-                path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+                assert json_response["url"].startswith("/user_uploads/")
+                path_id = json_response["url"].removeprefix("/user_uploads/")
                 # Exit the block, triggering the thumbnailing worker
 
             still_response = self.client_get(f"/user_uploads/thumbnail/{path_id}/{webp_still!s}")
@@ -913,7 +925,8 @@ class TestThumbnailRetrieval(ZulipTestCase):
             json_response = self.assert_json_success(
                 self.client_post("/json/user_uploads", {"file": image_file})
             )
-            path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+            assert json_response["url"].startswith("/user_uploads/")
+            path_id = json_response["url"].removeprefix("/user_uploads/")
             # Exit the block, triggering the thumbnailing worker
 
         image_attachment = ImageAttachment.objects.get(path_id=path_id)
