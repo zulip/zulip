@@ -68,6 +68,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
     ensure_stream,
+    get_stream_topics_policy,
     notify_stream_is_recently_active_update,
     subscribed_to_stream,
 )
@@ -110,6 +111,7 @@ from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
+    StreamTopicsPolicyEnum,
     get_stream_by_id_for_sending_message,
     get_stream_by_name_for_sending_message,
 )
@@ -1782,8 +1784,14 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        if realm.mandatory_topics and topic_name == "":
-            raise JsonableError(_("Topics are required in this organization"))
+        if (
+            get_stream_topics_policy(realm, stream)
+            == StreamTopicsPolicyEnum.disable_empty_topic.value
+            and topic_name == ""
+        ):
+            raise JsonableError(
+                _("Sending messages to the empty topic is not allowed in this channel")
+            )
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()

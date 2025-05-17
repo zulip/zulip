@@ -292,6 +292,31 @@ export const message_edit_history_visibility_policy_values = {
     },
 };
 
+export const realm_topics_policy_values = {
+    allow_empty_topic: {
+        code: "allow_empty_topic",
+        description: $t({defaultMessage: "General chat topic allowed"}),
+    },
+    disable_empty_topic: {
+        code: "disable_empty_topic",
+        description: $t({defaultMessage: "No general chat topic"}),
+    },
+};
+
+export const stream_topics_policy_values = {
+    inherit: {
+        code: "inherit",
+        description: $t({defaultMessage: "Automatic"}),
+    },
+    ...realm_topics_policy_values,
+};
+
+export const stream_topics_policy_label = new Handlebars.SafeString(
+    $t_html({
+        defaultMessage: "Allow posting to the <i>general chat</i> topic?",
+    }),
+);
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
@@ -690,6 +715,12 @@ export const all_group_setting_labels = {
         can_mention_many_users_group: $t({
             defaultMessage: "Who can notify a large number of users with a wildcard mention",
         }),
+        can_set_topics_policy_group: new Handlebars.SafeString(
+            $t_html({
+                defaultMessage:
+                    "Who can configure per-channel topic settings <i>(also requires being a channel administrator)</i>",
+            }),
+        ),
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
@@ -732,6 +763,7 @@ export const realm_group_permission_settings: {
             "can_create_private_channel_group",
             "can_add_subscribers_group",
             "can_mention_many_users_group",
+            "can_set_topics_policy_group",
         ],
     },
     {
