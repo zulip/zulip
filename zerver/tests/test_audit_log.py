@@ -42,12 +42,11 @@ from zerver.actions.realm_settings import (
     do_set_realm_signup_announcements_stream,
     do_set_realm_zulip_update_announcements_stream,
 )
-from zerver.actions.streams import (
+from zerver.actions.streams import do_deactivate_stream, do_rename_stream
+from zerver.actions.subscriptions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_subscription_property,
-    do_deactivate_stream,
-    do_rename_stream,
 )
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,

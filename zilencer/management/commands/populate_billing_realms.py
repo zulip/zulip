@@ -24,7 +24,7 @@ from corporate.models.plans import CustomerPlan
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
-from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.subscriptions import bulk_add_subscriptions
 from zerver.apps import flush_cache
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.remote_server import get_realms_info_for_push_bouncer

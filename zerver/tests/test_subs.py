@@ -33,14 +33,13 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.actions.streams import (
-    bulk_add_subscriptions,
-    bulk_remove_subscriptions,
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_change_stream_permission,
     do_deactivate_stream,
     do_unarchive_stream,
 )
+from zerver.actions.subscriptions import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_groups,

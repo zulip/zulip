@@ -37,7 +37,7 @@ from zerver.actions.message_edit import check_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.message_send import do_send_messages, internal_prep_stream_message
 from zerver.actions.reactions import do_add_reaction
-from zerver.actions.streams import bulk_add_subscriptions, do_change_subscription_property
+from zerver.actions.subscriptions import bulk_add_subscriptions, do_change_subscription_property
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.emoji import get_emoji_data

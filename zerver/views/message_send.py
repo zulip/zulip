@@ -151,6 +151,7 @@ def send_message_backend(
         Json[float] | None, ApiParamConfig("time", documentation_status=DOCUMENTATION_PENDING)
     ] = None,
     read_by_sender: Json[bool] | None = None,
+    autosubscribe_stream: Json[bool] | None = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -262,6 +263,7 @@ def send_message_backend(
         sender_queue_id=queue_id,
         widget_content=widget_content,
         read_by_sender=read_by_sender,
+        autosubscribe_stream=autosubscribe_stream or False,
     )
     data["id"] = sent_message_result.message_id
     if sent_message_result.automatic_new_visibility_policy:

@@ -330,6 +330,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 draft_id: 100,
                 local_id: "123.04",
                 locally_echoed: true,
+                autosubscribe_stream: true,
             };
 
             assert.deepEqual(payload, single_msg);
@@ -349,7 +350,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         fake_compose_box.blur_textarea();
         fake_compose_box.show_submit_button_spinner();
 
-        compose.send_message();
+        compose.send_message(true);
 
         const state = {
             get_events_running_called: 1,

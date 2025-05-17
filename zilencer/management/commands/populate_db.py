@@ -32,7 +32,7 @@ from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
 from zerver.actions.scheduled_messages import check_schedule_message
-from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.subscriptions import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role

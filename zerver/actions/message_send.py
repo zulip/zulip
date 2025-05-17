@@ -17,6 +17,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
+from zerver.actions.subscriptions import bulk_add_subscriptions
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_topics import (
     bulk_do_set_user_topic_visibility_policy,
@@ -1432,6 +1433,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    autosubscribe_stream: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
@@ -1448,6 +1450,7 @@ def check_send_message(
             sender_queue_id,
             widget_content,
             skip_stream_access_check=skip_stream_access_check,
+            autosubscribe_stream=autosubscribe_stream,
         )
     except ZephyrMessageAlreadySentError as e:
         return SentMessageResult(message_id=e.message_id)
@@ -1725,6 +1728,7 @@ def check_message(
     archived_channel_notice: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    autosubscribe_stream: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1752,6 +1756,9 @@ def check_message(
         else:
             stream = addressee.stream()
         assert stream is not None
+
+        if autosubscribe_stream and not subscribed_to_stream(sender, stream.id):
+            bulk_add_subscriptions(realm, [stream], [sender], acting_user=acting_user)
 
         # To save a database round trip, we construct the Recipient
         # object for the Stream rather than fetching it from the
