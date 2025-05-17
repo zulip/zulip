@@ -49,6 +49,7 @@ from zerver.models import (
     Attachment,
     BotConfigData,
     BotStorageData,
+    ChannelFolder,
     Client,
     CustomProfileField,
     CustomProfileFieldValue,
@@ -147,6 +148,7 @@ ALL_ZULIP_TABLES = {
     "zerver_botconfigdata",
     "zerver_botstoragedata",
     "zerver_channelemailaddress",
+    "zerver_channelfolder",
     "zerver_client",
     "zerver_customprofilefield",
     "zerver_customprofilefieldvalue",
@@ -327,6 +329,7 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "analytics_streamcount": ["end_time"],
     "analytics_usercount": ["end_time"],
     "zerver_attachment": ["create_time"],
+    "zerver_channelfolder": ["date_created"],
     "zerver_message": ["last_edit_time", "date_sent"],
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
@@ -1079,6 +1082,13 @@ def get_realm_config() -> Config:
             "_huddle_subscription",
         ],
         custom_process_results=custom_process_subscription_in_realm_config,
+    )
+
+    Config(
+        table="zerver_channelfolder",
+        model=ChannelFolder,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
     )
 
     add_user_profile_child_configs(user_profile_config)

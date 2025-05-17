@@ -66,6 +66,7 @@ from zerver.models import (
     ArchivedAttachment,
     Attachment,
     ChannelEmailAddress,
+    ChannelFolder,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -462,6 +463,7 @@ def send_subscription_add_events(
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
+                folder_id=stream_dict["folder_id"],
                 is_recently_active=stream_dict["is_recently_active"],
                 history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
                 invite_only=stream_dict["invite_only"],
@@ -1826,3 +1828,33 @@ def do_change_stream_group_based_setting(
         # object would be created if the setting is later set to
         # a combination of users and groups.
         old_user_group.delete()
+
+
+@transaction.atomic(durable=True)
+def do_change_stream_folder(
+    stream: Stream, folder: ChannelFolder | None, *, acting_user: UserProfile
+) -> None:
+    old_folder_id = stream.folder_id
+    stream.folder = folder
+    stream.save(update_fields=["folder"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_folder_id,
+            RealmAuditLog.NEW_VALUE: stream.folder_id,
+        },
+    )
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="folder_id",
+        value=stream.folder_id,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))

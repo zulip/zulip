@@ -692,6 +692,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": true,
                                         "first_message_id": null,
+                                        "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -1358,6 +1359,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
+                                        "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -1493,7 +1495,10 @@ paths:
                                   description: |
                                     The new value of the changed property.
 
-                                    **Changes**: Starting with Zulip 10.0 (feature level 320), this
+                                    **Changes**: Starting with Zulip 11.0 (feature level ZF-57cda6),
+                                    this value can be `null` when a channel is removed from the folder.
+
+                                    Starting with Zulip 10.0 (feature level 320), this
                                     field can be an object for `can_remove_subscribers_group` property,
                                     which is a [group-setting value][setting-values], when the setting
                                     is set to a combination of users and groups.
@@ -1522,6 +1527,7 @@ paths:
                                     - type: integer
                                     - type: boolean
                                     - type: string
+                                      nullable: true
                                 rendered_description:
                                   type: string
                                   description: |
@@ -5715,6 +5721,97 @@ paths:
                                   "type": "scheduled_messages",
                                   "op": "remove",
                                   "scheduled_message_id": 17,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when a channel folder is created.
+
+                                **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                channel_folder:
+                                  $ref: "#/components/schemas/ChannelFolder"
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "add",
+                                  "channel_folder":
+                                    {
+                                      "name": "fronted",
+                                      "creator_id": 9,
+                                      "date_created": 1717484476,
+                                      "description": "Channels for frontend discussions",
+                                      "rendered_description": "<p>Channels for frontend discussions</p>",
+                                      "id": 2,
+                                      "is_archived": false,
+                                    },
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when a channel folder is updated.
+
+                                **Changes**: New in Zulip 11.0 (feature level ZF-7b788e).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                channel_folder_id:
+                                  type: number
+                                  description: |
+                                    ID of the updated channel folder.
+                                data:
+                                  type: object
+                                  additionalProperties: false
+                                  description: |
+                                    Dictionary containing the changed details of the channel folder.
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: |
+                                        The new name of the channel folder. Only present if the channel
+                                        folder's name changed.
+                                    description:
+                                      type: string
+                                      description: |
+                                        The new description of the channel folder. Only present if the
+                                        description changed.
+                                    rendered_description:
+                                      type: string
+                                      description: |
+                                        The new rendered description of the channel folder. Only present
+                                        if the description changed.
+                                    is_archived:
+                                      type: boolean
+                                      description: |
+                                        Whether the channel folder is archived or not. Only present if
+                                        the channel folder is archived or unarchived.
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "update",
+                                  "data": {"name": "New frontend"},
+                                  "id": 0,
                                 }
                       queue_id:
                         type: string
@@ -11126,6 +11223,17 @@ paths:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
                   $ref: "#/components/schemas/CanSubscribeGroup"
+                folder:
+                  description: |
+                    This parameter determines the folder to which the newly
+                    created channel will be added.
+
+                    If the value is `None`, the channel will not be added to
+                    any folder.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-919531).
+                  type: integer
+                  example: 1
               required:
                 - subscriptions
             encoding:
@@ -15746,6 +15854,8 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                folder_id:
+                                  nullable: true
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
@@ -15793,6 +15903,20 @@ paths:
                           in `can_administer_channel_group` of a channel that they never
                           subscribed to, but not an organization administrator, the channel
                           in question would not be part of this array.
+                      channel_folders:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ChannelFolder"
+                        description: |
+                          Present if `channel_folders` is present in `fetch_event_types`.
+
+                          An array of dictionaries where each dictionary describes one
+                          of the channel folders in the organization.
+
+                          Only channel folders with one or more public web channels are
+                          visible to spectators.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
                       unread_msgs:
                         type: object
                         description: |
@@ -20934,6 +21058,8 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                folder_id:
+                                  nullable: true
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
@@ -20980,6 +21106,7 @@ paths:
                                 - message_retention_days
                                 - history_public_to_subscribers
                                 - first_message_id
+                                - folder_id
                                 - is_announcement_only
                                 - can_remove_subscribers_group
                                 - can_subscribe_group
@@ -20999,6 +21126,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A private channel",
                               "first_message_id": 18,
+                              "folder_id": 1,
                               "is_recently_active": true,
                               "history_public_to_subscribers": false,
                               "invite_only": true,
@@ -21021,6 +21149,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A default public channel",
                               "first_message_id": 21,
+                              "folder_id": null,
                               "is_recently_active": true,
                               "history_public_to_subscribers": true,
                               "invite_only": false,
@@ -21071,6 +21200,7 @@ paths:
                           {
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
+                            "folder_id": 1,
                             "is_recently_active": true,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
@@ -21247,6 +21377,17 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 388).
                   type: boolean
                   example: true
+                folder:
+                  description: |
+                    ID of the new folder to which the channel should belong.
+
+                    It can be `None` if the user wants to just remove the channel
+                    from its existing folder.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-57cda6).
+                  type: integer
+                  nullable: true
+                  example: 1
                 can_add_subscribers_group:
                   allOf:
                     - description: |
@@ -21396,6 +21537,8 @@ paths:
               history_public_to_subscribers:
                 contentType: application/json
               is_default_stream:
+                contentType: application/json
+              folder:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
@@ -22819,6 +22962,198 @@ paths:
 
                           **Changes**: New in Zulip 10.0 (feature level 298). Previously,
                           this error returned the `"BAD_REQUEST"` code.
+  /channel_folders/create:
+    post:
+      operationId: create-channel-folder
+      summary: Create a channel folder
+      tags: ["channels"]
+      description: |
+        Create a new channel folder, that will be used to organize
+        channels in left sidebar.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: |
+                    The name of the channel folder.
+                  type: string
+                  example: marketing
+                description:
+                  description: |
+                    The description of the channel folder.
+                  type: string
+                  example: Channels for marketing.
+      responses:
+        "200":
+          description: |
+            A success response containing the unique ID of the channel folder.
+            This field provides a straightforward way to reference the
+            newly created channel folder.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - channel_folder_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      channel_folder_id:
+                        type: integer
+                        description: |
+                          The unique ID of the created channel folder.
+                    example:
+                      {"msg": "", "result": "success", "channel_folder_id": 123}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be an organization administrator",
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to create a channel folder:
+  /channel_folders:
+    get:
+      operationId: get-channel-folders
+      summary: Get channel folders
+      tags: ["channels"]
+      description: |
+        Fetches all of the channel folders in the organization.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-2a4adb).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                include_archived:
+                  description: |
+                    Whether to include archived channel folders in the response.
+                  type: boolean
+                  example: true
+                  default: false
+            encoding:
+              include_archived:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      channel_folders:
+                        type: array
+                        description: |
+                          A list of channel folder objects.
+                        items:
+                          $ref: "#/components/schemas/ChannelFolder"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "channel_folders":
+                          [
+                            {
+                              "description": "Channels for frontend discussions",
+                              "rendered_description": "<p>Channels for frontend discussions</p>",
+                              "id": 1,
+                              "creator_id": 1,
+                              "date_created": 1691057093,
+                              "name": "Frontend",
+                              "is_archived": false,
+                            },
+                            {
+                              "description": "Channels for **backend** discussions",
+                              "rendered_description": "<p>Channels for <strong>backend</strong> discussions</p>",
+                              "id": 2,
+                              "creator_id": 1,
+                              "date_created": 1791057093,
+                              "name": "Backend",
+                              "is_archived": false,
+                            },
+                          ],
+                      }
+  /channel_folders/{channel_folder_id}:
+    patch:
+      operationId: update-channel-folder
+      summary: Update a channel folder
+      tags: ["channels"]
+      description: |
+        Update the name or description of a channel folder.
+
+        This endpoint is also used to archive and unarchive
+        a channel folder.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-7b788e).
+      parameters:
+        - $ref: "#/components/parameters/ChannelFolderId"
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: |
+                    The new name of the channel folder.
+                  type: string
+                  example: backend
+                description:
+                  description: |
+                    The new description of the channel folder.
+                  type: string
+                  example: Backend channels.
+                is_archived:
+                  description: |
+                    Whether to archive or unarchive the channel folder.
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid channel folder ID",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the channel folder ID is invalid:
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -23177,6 +23512,8 @@ components:
             history_public_to_subscribers: {}
             first_message_id:
               nullable: true
+            folder_id:
+              nullable: true
             is_recently_active: {}
             is_announcement_only: {}
             can_add_subscribers_group: {}
@@ -23213,6 +23550,7 @@ components:
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
+            - folder_id
             - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
@@ -23346,6 +23684,8 @@ components:
             Is `null` for channels with no message history.
 
             **Changes**: New in Zulip 2.1.0.
+        folder_id:
+          $ref: "#/components/schemas/FolderId"
         is_recently_active:
           type: boolean
           description: |
@@ -24412,6 +24752,8 @@ components:
             has older history that can be accessed.
 
             Is `null` for channels with no message history.
+        folder_id:
+          $ref: "#/components/schemas/FolderId"
         is_recently_active:
           type: boolean
           description: |
@@ -25490,6 +25832,51 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
+    ChannelFolder:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing the channel folder's attributes.
+      properties:
+        name:
+          type: string
+          description: |
+            The name of the channel folder.
+        date_created:
+          type: integer
+          nullable: true
+          description: |
+            The UNIX timestamp for when the channel folder was created,
+            in UTC seconds.
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this channel folder.
+        description:
+          type: string
+          description: |
+            The description of the channel folder.
+        rendered_description:
+          type: string
+          description: |
+            The description of the channel folder rendered as HTML,
+            intended to be used when displaying the channel folder
+            description in a UI.
+
+            One should use the standard Zulip rendered_markdown CSS when
+            displaying this content so that emoji, LaTeX, and other syntax
+            work correctly. And any client-side security logic for
+            user-generated message content should be applied when displaying
+            this HTML as though it were the body of a Zulip message.
+        id:
+          type: integer
+          description: |
+            The ID of the channel folder.
+        is_archived:
+          type: boolean
+          description: |
+            Whether the channel folder is archived or not.
     JsonResponseBase:
       type: object
       properties:
@@ -26233,6 +26620,15 @@ components:
         named groups' content could be inserted with `%(name_of_group)s`.
       type: string
       example: https://github.com/zulip/zulip/issues/{id}
+    FolderId:
+      type: integer
+      nullable: true
+      description: |
+        The ID of the folder to which the channel belongs.
+
+        Is `null` if channel does not belong to any folder.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-2f0879).
 
   ###################
   # Shared responses
@@ -26432,3 +26828,12 @@ components:
         type: boolean
       example: false
       required: false
+    ChannelFolderId:
+      name: channel_folder_id
+      in: path
+      description: |
+        The ID of the target channel folder.
+      schema:
+        type: integer
+      example: 1
+      required: true

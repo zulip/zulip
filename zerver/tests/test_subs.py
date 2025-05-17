@@ -15,6 +15,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.bots import do_change_bot_owner
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -951,6 +952,56 @@ class TestCreateStreams(ZulipTestCase):
 
             self.assert_length(channel_events_messages, 1)
             self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
+
+    def test_adding_channels_to_folder_during_creation(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        channel_folder = check_add_channel_folder("Backend", "", acting_user=iago)
+
+        subscriptions = [
+            {"name": "new_stream", "description": "New stream"},
+            {"name": "new_stream_2", "description": "New stream 2"},
+        ]
+        extra_post_data = {}
+
+        extra_post_data["folder"] = orjson.dumps(99).decode()
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_error(result, "Invalid channel folder ID")
+
+        extra_post_data["folder"] = orjson.dumps(channel_folder.id).decode()
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+            subdomain="zulip",
+        )
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(stream.folder, channel_folder)
+        stream = get_stream("new_stream_2", realm)
+        self.assertEqual(stream.folder, channel_folder)
+
+        subscriptions = [
+            {"name": "new_stream_3", "description": "New stream 3"},
+            {"name": "new_stream_4", "description": "New stream 4"},
+        ]
+        extra_post_data = {}
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+            subdomain="zulip",
+        )
+        stream = get_stream("new_stream_3", realm)
+        self.assertIsNone(stream.folder)
+        stream = get_stream("new_stream_4", realm)
+        self.assertIsNone(stream.folder)
 
 
 class RecipientTest(ZulipTestCase):
@@ -3666,6 +3717,86 @@ class StreamAdminTest(ZulipTestCase):
             "privstream", subscribed=False, invite_only=True
         )
         self.archive_stream(priv_stream, expect_can_subscribe=False)
+
+    def test_updating_stream_folder(self) -> None:
+        iago = self.example_user("iago")
+        channel_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
+        stream = self.make_stream("test_stream")
+
+        self.assertIsNone(stream.folder_id)
+
+        self.login("desdemona")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"folder": orjson.dumps(channel_folder.id).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("test_stream", iago.realm)
+        self.assertEqual(stream.folder_id, channel_folder.id)
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"folder": orjson.dumps(None).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("test_stream", iago.realm)
+        self.assertIsNone(stream.folder_id)
+
+        # Test invalid value.
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"folder": orjson.dumps(99).decode()},
+        )
+        self.assert_json_error(result, "Invalid channel folder ID")
+
+    def test_permission_to_change_stream_folder(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+        channel_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
+        stream = self.make_stream("test_stream")
+
+        self.assertIsNone(stream.folder_id)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            nobody_group,
+            acting_user=iago,
+        )
+
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"folder": orjson.dumps(channel_folder.id).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("test_stream", realm)
+        self.assertEqual(stream.folder_id, channel_folder.id)
+
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"folder": orjson.dumps(None).decode()},
+        )
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"folder": orjson.dumps(None).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("test_stream", realm)
+        self.assertIsNone(stream.folder_id)
 
     def attempt_unsubscribe_of_principal(
         self,

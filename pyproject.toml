@@ -197,6 +197,9 @@ prod = [
 
   # For captchas on unauth'd pages which can generate emails
   "altcha",
+
+  # For using Missing sentinel
+  "pydantic-partials",
 ]
 docs = [
   # Needed to build RTD docs

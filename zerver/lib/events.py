@@ -19,6 +19,10 @@ from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
+from zerver.lib.channel_folders import (
+    get_channel_folders_for_spectators,
+    get_channel_folders_in_realm,
+)
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
@@ -763,6 +767,12 @@ def fetch_initial_state_data(
         state["subscriptions"] = sub_info.subscriptions
         state["unsubscribed"] = sub_info.unsubscribed
         state["never_subscribed"] = sub_info.never_subscribed
+
+    if want("channel_folders"):
+        if user_profile is None:
+            state["channel_folders"] = get_channel_folders_for_spectators(realm, True)
+        else:
+            state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
 
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and
@@ -1870,6 +1880,16 @@ def apply_event(
         else:
             fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
             state["user_topics"].append({x: event[x] for x in fields})
+    elif event["type"] == "channel_folder":
+        if event["op"] == "add":
+            state["channel_folders"].append(event["channel_folder"])
+            state["channel_folders"].sort(key=lambda folder: folder["id"])
+        elif event["op"] == "update":
+            for channel_folder in state["channel_folders"]:
+                if channel_folder["id"] == event["channel_folder_id"]:
+                    channel_folder.update(event["data"])
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
     elif event["type"] == "web_reload_client":

@@ -11,6 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from pydantic import BaseModel, Field, Json, NonNegativeInt, StringConstraints, model_validator
+from pydantic_partials import Missing, MissingType
 
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -32,6 +33,7 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
+    do_change_stream_folder,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -48,6 +50,7 @@ from zerver.decorator import (
     require_non_guest_user,
     require_realm_admin,
 )
+from zerver.lib.channel_folders import get_channel_folder_by_id
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
@@ -103,7 +106,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import ChannelFolder, Realm, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
 
@@ -276,6 +279,7 @@ def update_stream_backend(
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
+    folder: Json[int | None] | MissingType = Missing,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -415,6 +419,13 @@ def update_stream_backend(
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
+
+    if folder is not Missing:
+        assert not isinstance(folder, MissingType)
+        channel_folder: ChannelFolder | None = None
+        if folder is not None:
+            channel_folder = get_channel_folder_by_id(folder, user_profile.realm)
+        do_change_stream_folder(stream, channel_folder, acting_user=user_profile)
 
     nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     request_settings_dict = locals()
@@ -624,6 +635,7 @@ def add_subscriptions_backend(
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
+    folder: Json[int] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -668,6 +680,10 @@ def add_subscriptions_backend(
                     UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
                 )
 
+    channel_folder: ChannelFolder | None = None
+    if folder is not None:
+        channel_folder = get_channel_folder_by_id(folder, realm)
+
     for stream_obj in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -698,6 +714,7 @@ def add_subscriptions_backend(
             "can_remove_subscribers_group"
         ]
         stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
+        stream_dict_copy["folder"] = channel_folder
 
         stream_dicts.append(stream_dict_copy)
 

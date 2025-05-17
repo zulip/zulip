@@ -12,6 +12,13 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
+from zerver.actions.channel_folders import (
+    check_add_channel_folder,
+    do_archive_channel_folder,
+    do_change_channel_folder_description,
+    do_change_channel_folder_name,
+    do_unarchive_channel_folder,
+)
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
@@ -45,6 +52,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_stream_folder,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
@@ -817,6 +825,63 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assertEqual(stream.name, "updated name")
 
+    def test_change_stream_folder(self) -> None:
+        user = self.example_user("iago")
+        stream = self.make_stream("test", user.realm)
+        frontend_folder = check_add_channel_folder("Frontend", "", acting_user=user)
+        backend_folder = check_add_channel_folder("Backend", "", acting_user=user)
+
+        now = timezone_now()
+        do_change_stream_folder(stream, frontend_folder, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                modified_stream=stream,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: None,
+                    RealmAuditLog.NEW_VALUE: frontend_folder.id,
+                },
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_change_stream_folder(stream, backend_folder, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                modified_stream=stream,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: frontend_folder.id,
+                    RealmAuditLog.NEW_VALUE: backend_folder.id,
+                },
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_change_stream_folder(stream, None, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                modified_stream=stream,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: backend_folder.id,
+                    RealmAuditLog.NEW_VALUE: None,
+                },
+            ).count(),
+            1,
+        )
+
     def test_change_user_settings(self) -> None:
         user = self.example_user("hamlet")
         value: bool | int | str | Enum
@@ -1537,3 +1602,90 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 1)
         self.assertIsNone(audit_log_entries[0].modified_user)
         self.assertEqual(audit_log_entries[0].modified_user_group, user_group)
+
+    def test_channel_folders(self) -> None:
+        iago = self.example_user("iago")
+        now = timezone_now()
+        channel_folder = check_add_channel_folder(
+            "Frontend",
+            "Channels for frontend discussions",
+            acting_user=iago,
+        )
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_CREATED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+
+        do_change_channel_folder_name(
+            channel_folder,
+            "Web frontend",
+            acting_user=iago,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_NAME_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {RealmAuditLog.OLD_VALUE: "Frontend", RealmAuditLog.NEW_VALUE: "Web frontend"},
+        )
+
+        do_change_channel_folder_description(
+            channel_folder,
+            "Channels for web frontend discussion",
+            acting_user=iago,
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_DESCRIPTION_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: "Channels for frontend discussions",
+                RealmAuditLog.NEW_VALUE: "Channels for web frontend discussion",
+            },
+        )
+
+        do_archive_channel_folder(channel_folder, acting_user=iago)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_ARCHIVED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)
+
+        do_unarchive_channel_folder(channel_folder, acting_user=iago)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=iago.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_FOLDER_UNARCHIVED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertIsNone(audit_log_entries[0].modified_user_group)
+        self.assertEqual(audit_log_entries[0].modified_channel_folder, channel_folder)

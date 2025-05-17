@@ -66,6 +66,36 @@ class EventAttachmentUpdate(BaseEvent):
     upload_space_used: int
 
 
+class ChannelFolderForEventChannelFolderAdd(BaseModel):
+    id: int
+    name: str
+    description: str
+    rendered_description: str
+    date_created: int
+    creator_id: int
+    is_archived: bool
+
+
+class EventChannelFolderAdd(BaseEvent):
+    type: Literal["channel_folder"]
+    op: Literal["add"]
+    channel_folder: ChannelFolderForEventChannelFolderAdd
+
+
+class ChannelFolderDataForUpdate(BaseModel):
+    # TODO: fix types to avoid optional fields
+    name: str | None = None
+    description: str | None = None
+    is_archived: bool | None = None
+
+
+class EventChannelFolderUpdate(BaseEvent):
+    type: Literal["channel_folder"]
+    op: Literal["update"]
+    channel_folder_id: int
+    data: ChannelFolderDataForUpdate
+
+
 class DetailedCustomProfileCore(BaseModel):
     id: int
     type: int
