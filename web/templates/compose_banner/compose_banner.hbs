@@ -12,6 +12,9 @@
         {{#if button_text}}
         <button class="main-view-banner-action-button{{#if hide_close_button}} right_edge{{/if}}" {{#if scheduling_message}}data-validation-trigger="schedule"{{/if}}>{{button_text}}</button>
         {{/if}}
+        {{#if is_user_not_subscribed_banner}}
+        <button class="main-view-banner-action-button right_edge" data-action="subscribe-and-send">{{t "Subscribe and send"}}</button>
+        {{/if}}
         {{#if is_onboarding_banner}}
         <button class="main-view-banner-action-button right_edge" data-action="mark-as-read">{{t "Got it"}}</button>
         {{/if}}

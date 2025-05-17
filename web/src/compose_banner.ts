@@ -251,12 +251,13 @@ export function show_stream_not_subscribed_error(
         banner_type: ERROR,
         banner_text,
         button_text: stream_data.can_toggle_subscription(sub)
-            ? $t({defaultMessage: "Subscribe"})
+            ? $t({defaultMessage: "Send without subscribing"})
             : null,
         classname: CLASSNAMES.user_not_subscribed,
         // The message cannot be sent until the user subscribes to the stream, so
         // closing the banner would be more confusing than helpful.
         hide_close_button: true,
+        is_user_not_subscribed_banner: true,
     });
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
 }

@@ -7637,6 +7637,13 @@ paths:
 
                     **Changes**: New in Zulip 8.0 (feature level 236).
                   example: true
+                autosubscribe_stream:
+                  type: boolean
+                  description: |
+                    This parameter specifies whether to automatically subscribe the sender
+                    to the channel if they are not already subscribed.
+
+                    **Changes**: New in Zulip 11.0 (feature level 383).
               required:
                 - type
                 - to
