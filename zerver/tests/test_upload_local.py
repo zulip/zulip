@@ -34,9 +34,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
-        base = "/user_uploads/"
-        self.assertEqual(base, url[: len(base)])
-        path_id = re.sub(r"/user_uploads/", "", url)
+        assert url.startswith("/user_uploads/")
+        path_id = url.removeprefix("/user_uploads/")
         assert settings.LOCAL_UPLOADS_DIR is not None
         assert settings.LOCAL_FILES_DIR is not None
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -49,7 +48,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
-        path_id = re.sub(r"/user_uploads/", "", url)
+        assert url.startswith("/user_uploads/")
+        path_id = url.removeprefix("/user_uploads/")
         output = BytesIO()
         save_attachment_contents(path_id, output)
         self.assertEqual(output.getvalue(), b"zulip!")
@@ -59,7 +59,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         url = upload_message_attachment(
             "img.png", "image/png", read_test_image_file("img.png"), user_profile
         )[0]
-        path_id = re.sub(r"/user_uploads/", "", url)
+        assert url.startswith("/user_uploads/")
+        path_id = url.removeprefix("/user_uploads/")
 
         source = attachment_vips_source(path_id)
         self.assertIsInstance(source, StreamingSourceWithSize)
@@ -93,7 +94,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["uri"], response_dict["url"])
-        path_id = re.sub(r"/user_uploads/", "", response_dict["url"])
+        assert response_dict["url"].startswith("/user_uploads/")
+        path_id = response_dict["url"].removeprefix("/user_uploads/")
 
         assert settings.LOCAL_FILES_DIR is not None
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -110,9 +112,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         path_ids = []
         for n in range(1, 1005):
             url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
-            base = "/user_uploads/"
-            self.assertEqual(base, url[: len(base)])
-            path_id = re.sub(r"/user_uploads/", "", url)
+            assert url.startswith("/user_uploads/")
+            path_id = url.removeprefix("/user_uploads/")
             path_ids.append(path_id)
             file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
             self.assertTrue(os.path.isfile(file_path))

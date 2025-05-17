@@ -1,5 +1,4 @@
 import os
-import re
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
@@ -33,7 +32,8 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
                 response = self.assert_json_success(
                     self.client_post("/json/user_uploads", {"file": file_obj})
                 )
-            path_id = re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            path_id = response["url"].removeprefix("/user_uploads/")
             return Attachment.objects.get(path_id=path_id)
 
     def assert_exists(

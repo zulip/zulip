@@ -2252,7 +2252,8 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             response = self.assert_json_success(
                 self.client_post("/json/user_uploads", {"file": image_file})
             )
-            return re.sub(r"/user_uploads/", "", response["url"])
+            assert response["url"].startswith("/user_uploads/")
+            return response["url"].removeprefix("/user_uploads/")
 
     def upload_and_thumbnail_image(self, image_name: str) -> str:
         with self.captureOnCommitCallbacks(execute=True):
