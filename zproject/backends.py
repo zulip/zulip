@@ -1674,7 +1674,7 @@ def sync_groups(
             user_profile__id=user_id,
         ).values_list("user_group__named_user_group__name", flat=True)
     )
-    ldap_logger.debug(
+    logger.debug(
         "intended groups for user <%s>: %s; current groups: %s",
         user_id,
         intended_group_names,
