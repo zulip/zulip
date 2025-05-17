@@ -441,8 +441,8 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         "attr_username": "email",
         "attr_email": "email",
         ## List of additional attributes to fetch from the SAMLResponse.
-        ## These attributes will be available for synchronizing custom profile fields.
-        ## in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.
+        ## These attributes will be available for synchronizing user profile fields.
+        ## in SOCIAL_AUTH_SYNC_ATTRS_DICT.
         # "extra_attrs": ["title", "mobilePhone", "zulip_role"],
         ##
         ## The "x509cert" attribute is automatically read from
