@@ -28,5 +28,8 @@ if __name__ == "__main__":
         f"""Created an empty API changelog file.
 If you've made changes to the API, document them here:
 {file_path}
+
+For help, see:
+    https://zulip.readthedocs.io/en/latest/documentation/api.html#step-by-step-guide
 """
     )
