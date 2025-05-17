@@ -334,14 +334,20 @@ above.
    post an example of the output in the pull request.
 
 1. Run `./tools/create-api-changelog` which will create a new empty
-   changelog file in `api_docs/unmerged.d/` directory. Open this
+   markdown file in `api_docs/unmerged.d/` directory. The file will be
+   named in the format `ZF-...` (e.g., `ZF-1f4a39.md`). Open this
    file and document the API changes. The content of this file will be
    merged into `api_docs/changelog.md` when your commit is merged into the
    `main` branch.
 
 1. Add a `**Changes**` entry in the description of the new API/event in
    `zerver/openapi/zulip.yaml`, and mention the name of the file generated
-   in the previous step in place of the API feature level.
+   in the previous step without the `.md` extension in place of the API
+   feature level, for example:
+
+   ```yaml
+   **Changes**: New in Zulip 11.0 (feature level ZF-1f4a39).
+   ```
 
 ## Why a custom system?
 
