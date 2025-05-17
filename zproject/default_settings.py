@@ -112,7 +112,6 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
-SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
 SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
 
 # Other auth

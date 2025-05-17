@@ -142,6 +142,8 @@ _Unreleased_
 - Zulip's incoming email integration was simplified to no longer use
   `postfix`. Installations using the integration will automatically
   uninstall `postfix` when upgraded.
+- The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting has been removed.
+  It was deprecated in favor of `SOCIAL_AUTH_SYNC_ATTRS_DICT` in 10.0.
 
 ## Zulip Server 10.x series
 
