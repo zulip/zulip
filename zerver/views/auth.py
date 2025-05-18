@@ -165,6 +165,7 @@ def maybe_send_to_registration(
     desktop_flow_otp: str | None = None,
     full_name: str = "",
     full_name_validated: bool = False,
+    group_memberships_sync_map: dict[str, bool] | None = None,
     is_signup: bool = False,
     mobile_flow_otp: str | None = None,
     multiuse_object_key: str = "",
@@ -226,6 +227,18 @@ def maybe_send_to_registration(
                 orjson.dumps(params_to_store_in_authenticated_session).decode(),
                 expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
             )
+
+    if group_memberships_sync_map:
+        set_expirable_session_var(
+            request.session,
+            "registration_group_memberships_sync_map",
+            orjson.dumps(group_memberships_sync_map).decode(),
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+        )
+    elif "registration_group_memberships_sync_map" in request.session:  # nocoverage
+        # Ensure it isn't possible to leak this state across
+        # registration attempts.
+        del request.session["registration_group_memberships_sync_map"]
 
     try:
         # TODO: This should use get_realm_from_request, but a bunch of tests
@@ -360,6 +373,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         "email",
         "full_name",
         "role",
+        "group_memberships_sync_map",
         "mobile_flow_otp",
         "desktop_flow_otp",
         "is_signup",

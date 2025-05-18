@@ -610,6 +610,7 @@ other IdPs (identity providers). You can configure it as follows:
 
 [saml-help-center]: https://zulip.com/help/saml-authentication
 [user-role-help-center]: https://zulip.com/help/user-roles
+[user-groups-help-center]: https://zulip.com/help/user-groups
 
 ### IdP-initiated SSO
 
@@ -656,7 +657,7 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
-### Synchronizing user role or custom profile fields during login
+### Synchronizing data during login
 
 In contrast with SCIM or LDAP, the SAML protocol only allows Zulip to
 access data about a user when that user authenticates to Zulip using
@@ -670,15 +671,17 @@ offer SCIM or the fields one is interested in syncing change rarely
 enough that asking users to logout and then login again to resync
 their metadata might feel reasonable.
 
-Specifically, Zulip supports synchronizing the [user
+Specifically, Zulip supports synchronizing
+[group memberships][user-groups-help-center], the [user
 role][user-role-help-center] and [custom profile
 fields][custom-profile-fields] from the SAML provider.
 
-In order to use this functionality, configure
-`SOCIAL_AUTH_SYNC_ATTRS_DICT` in `/etc/zulip/settings.py` according to
-the instructions in the inline documentation in the file. Servers
-installed before Zulip 10.0 may want to [update inline comment
-documentation][update-inline-comments] first in order to access it.
+In order to use this functionality, configure `SOCIAL_AUTH_SYNC_ATTRS_DICT` in
+`/etc/zulip/settings.py` according to the instructions in the inline
+documentation in the file. Servers installed before Zulip 10.0 may want to
+[update inline comment documentation][update-inline-comments] first in order to
+access it. For configuring syncing of groups see
+[below][configure-saml-group-sync].
 
 Custom profile fields are only synchronized during login, not during
 account creation; we consider this [a
@@ -690,6 +693,46 @@ When user role is provided by the SAML IdP during signup of a
 user who's coming from an invitation link, the IdP-provided role will
 take precedence over the role set in the invitation.
 :::
+
+[configure-saml-group-sync]: #synchronizing-group-membership-with-saml
+
+#### Synchronizing group membership with SAML
+
+Zulip 11.0+ includes support for syncing group memberships upon user
+login. To activate this feature, uncomment the `groups` field in the
+config in `SOCIAL_AUTH_SYNC_ATTRS_DICT` and configure the list as
+explained below. An example configuration might look like this:
+
+```python
+SOCIAL_AUTH_SYNC_ATTRS_DICT = {
+    "your_subdomain": {
+        "saml": {
+            "groups": ["group1", ("samlgroup2", "zulipgroup2"), "group3"],
+        }
+    }
+}
+```
+
+The tuple syntax (`("samlgroup2", "zulipgroup2")`) should be used when
+the Zulip group that you'd like to sync does not have exactly the same
+name as the SAML group.
+
+Your SAML IdP will need to provide the list of SAML group names in the
+`zulip_groups` attribute of the `SAMLResponse`. When a user logs in
+using SAML, groups are synced as follows:
+
+1. If a Zulip group name does not occur in the
+   `SOCIAL_AUTH_SYNC_ATTRS_DICT` groups list, that group's membership
+   is managed entirely in Zulip.
+1. Otherwise, if the group appears in `zulip_groups` in the
+   `SAMLResponse`, the user is added to that group (if not already a
+   member).
+1. Otherwise, the user is removed from that group (if currently a
+   member).
+
+Only direct membership of groups is synced through this protocol;
+subgroups of Zulip groups are managed entirely [inside
+Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
 
 ### SCIM
 
