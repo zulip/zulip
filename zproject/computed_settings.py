@@ -1221,6 +1221,13 @@ for subdomain, dict_for_subdomain in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.items():
                 source_attr_name
             )
 
+for subdomain, dict_for_subdomain in SOCIAL_AUTH_SYNC_ATTRS_DICT.items():
+    for backend_name, attrs_map in dict_for_subdomain.items():
+        if "zulip_groups" in attrs_map.values():
+            raise AssertionError(
+                "zulip_groups can't be listed as a SAML attribute in SOCIAL_AUTH_SYNC_ATTRS_DICT"
+            )
+
 SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_details",
     "zproject.backends.social_auth_associate_user",
