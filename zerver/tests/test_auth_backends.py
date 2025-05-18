@@ -3375,6 +3375,165 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.user_profile.refresh_from_db()
         self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
 
+    def test_social_auth_group_sync(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=hamlet)
+        testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=hamlet)
+
+        saml_synchronized_groups_by_realm_dict = {
+            "zulip": {
+                "samlgroup1": "testgroup1",
+                "samlgroup2": "testgroup2",
+            },
+        }
+
+        with self.settings(
+            SAML_SYNCHRONIZED_GROUPS_BY_REALM=saml_synchronized_groups_by_realm_dict,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes=dict(zulip_groups=["samlgroup1", "samlgroup2"]),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        self.assertTrue(
+            is_user_in_group(
+                testgroup1.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertTrue(
+            is_user_in_group(
+                testgroup2.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
+        with self.settings(
+            SAML_SYNCHRONIZED_GROUPS_BY_REALM=saml_synchronized_groups_by_realm_dict,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes=dict(zulip_groups=["samlgroup1"]),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        self.assertTrue(
+            is_user_in_group(
+                testgroup1.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertFalse(
+            is_user_in_group(
+                testgroup2.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
+        with self.settings(
+            SAML_SYNCHRONIZED_GROUPS_BY_REALM=saml_synchronized_groups_by_realm_dict,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes=dict(zulip_groups=[]),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        self.assertFalse(
+            is_user_in_group(
+                testgroup1.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertFalse(
+            is_user_in_group(
+                testgroup2.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
+        bulk_add_members_to_user_groups([testgroup1, testgroup2], [hamlet.id], acting_user=None)
+
+        with self.settings(
+            # If the realm is not configured for group sync, group memberships of course should be
+            # unaffected by zulip_groups attr.
+            SAML_SYNCHRONIZED_GROUPS_BY_REALM={},
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes=dict(zulip_groups=[]),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        self.assertTrue(
+            is_user_in_group(
+                testgroup1.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertTrue(
+            is_user_in_group(
+                testgroup2.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
+        with self.settings(
+            SAML_SYNCHRONIZED_GROUPS_BY_REALM=saml_synchronized_groups_by_realm_dict,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            # Simulate a SAMLResponse without zulip_groups attribute being specified in it at all.
+            # As the realm is configured for group sync, that should be treated as
+            # "user should not be a member of any of the groups configured for sync"
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        self.assertFalse(
+            is_user_in_group(
+                testgroup1.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertFalse(
+            is_user_in_group(
+                testgroup2.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_create_user_with_synced_role(self) -> None:
         email = "newuser@zulip.com"
