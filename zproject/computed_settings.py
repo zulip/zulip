@@ -1215,6 +1215,13 @@ def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:
         d = d[key]
 
 
+for dict_for_subdomain in SOCIAL_AUTH_SYNC_ATTRS_DICT.values():
+    for attrs_map in dict_for_subdomain.values():
+        if "zulip_groups" in attrs_map.values():
+            raise AssertionError(
+                "zulip_groups can't be listed as a SAML attribute in SOCIAL_AUTH_SYNC_ATTRS_DICT"
+            )
+
 SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_details",
     "zproject.backends.social_auth_associate_user",

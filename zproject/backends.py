@@ -17,6 +17,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import Any, TypedDict, TypeVar, cast
 
@@ -1434,6 +1435,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: str | None
     multiuse_object_key: str
     full_name_validated: bool
+    group_memberships_sync_map: dict[str, bool] | None
     # The mobile app doesn't actually use a session, so this
     # data is not applicable there.
     params_to_store_in_authenticated_session: dict[str, str]
@@ -1696,9 +1698,15 @@ def sync_groups(
     logger.debug("Finished group sync for user %s", user_id)
 
 
+@dataclass
+class SocialAuthSyncNewUserInfo:
+    role: int | None
+    group_memberships_sync_map: dict[str, bool]
+
+
 def social_auth_sync_user_attributes(
     realm: Realm, user_profile: UserProfile | None, extra_attrs: dict[str, Any], backend: Any
-) -> int | None:
+) -> SocialAuthSyncNewUserInfo | None:
     """
     Syncs user attributes based on the SOCIAL_AUTH_SYNC_ATTRS_DICT setting.
     Only supports:
@@ -1714,11 +1722,81 @@ def social_auth_sync_user_attributes(
     # Unlike LDAP or SCIM, this hook can only do syncing during the authentication
     # flow, as that's when the data is provided and we don't have a way to query
     # for it otherwise.
-    assert backend.name == "saml"
+    if backend.name != "saml":
+        assert not extra_attrs
+        return None
 
     attrs_by_backend = settings.SOCIAL_AUTH_SYNC_ATTRS_DICT.get(realm.subdomain, {})
-    profile_field_name_to_attr_name = attrs_by_backend.get(backend.name, {})
-    if not extra_attrs or not profile_field_name_to_attr_name:
+    attrs_config = attrs_by_backend.get(backend.name, {})
+    external_group_name_to_zulip_group_name: dict[str, str] = {}
+    groups_config_list = cast(list[str | tuple[str, str]], attrs_config.get("groups", []))
+    if groups_config_list:
+        # Group sync is only supported for SAML for the foreseeable time.
+        assert backend.name == "saml"
+
+        for group_name in groups_config_list:
+            # the objects in the config are either straight-forward group names
+            # or tuples (<saml group name>, <zulip group name>) indicating the
+            # obvious mapping.
+            if isinstance(group_name, str):
+                external_group_name_to_zulip_group_name[group_name] = group_name
+            else:
+                saml_group_name, zulip_group_name = group_name
+                external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
+
+    should_sync_groups = bool(external_group_name_to_zulip_group_name)
+
+    profile_field_name_to_attr_name = cast(
+        dict[str, str], {key: value for key, value in attrs_config.items() if key != "groups"}
+    )
+
+    if should_sync_groups:
+        syncable_group_names = set(external_group_name_to_zulip_group_name.values())
+
+        # pop zulip_groups from extra_attrs, so that only user attribute sync
+        # values remain there.
+        # zulip_groups being absent should be treated as if no group memberships
+        # are desired. That's because Okta doesn't send the SAML attribute at all
+        # if the user has no group memberships. Thus we treat this absence as
+        # an empty list.
+        all_received_group_names = extra_attrs.pop("zulip_groups", [])
+        external_group_names = [
+            name
+            for name in all_received_group_names
+            # Ignore group names which aren't configured.
+            if name in external_group_name_to_zulip_group_name
+        ]
+        intended_group_names = {
+            external_group_name_to_zulip_group_name[external_name]
+            for external_name in external_group_names
+        }
+
+        # It's important to log the information about what we received in the request and what Zulip groups
+        # that was translated to based on the configuration - otherwise debugging a misconfiguration would be
+        # a very painful process.
+        #
+        # Notably, it's generally expected for the list of received groups to be shorter than the "translated"
+        # list of intended Zulip groups. The expected way for admins to configure what is sent in zulip_groups
+        # is to send *all* the groups the user belongs to in their user directory. That is very likely to contain
+        # some groups that are irrelevant to their Zulip setup and thus shouldn't be translated into any
+        # Zulip group memberships.
+        # For example, Okta sends the Everyone group, which is just a built-in group inside of Okta described
+        # in their documentation as
+        # "catch-all group where every single user in the Okta instance automatically lands".
+        # That obviously will be irrelevant to Zulip group memberships in almost all configurations.
+        user_string = (
+            f"<user:{user_profile.id}>" if user_profile is not None else "<new user signup>"
+        )
+        backend.logger.info(
+            "social_auth_sync_user_attributes:%s: received group names: %s|intended Zulip groups: %s. group mapping used: %s",
+            user_string,
+            sorted(all_received_group_names),
+            sorted(intended_group_names),
+            external_group_name_to_zulip_group_name,
+        )
+
+    should_sync_user_attrs = extra_attrs and profile_field_name_to_attr_name
+    if not (should_sync_user_attrs or should_sync_groups):
         return None
 
     user_id = None
@@ -1753,12 +1831,22 @@ def social_auth_sync_user_attributes(
 
     if user_profile is None:
         # We don't support user creation with custom profile fields, so just
-        # return role so that it can be plumbed through to the signup flow.
+        # return role and group memberships so that it can be plumbed through to the signup flow.
         if new_role is not None:
             backend.logger.info(
                 "Returning role %s for user creation", UserProfile.ROLE_ID_TO_API_NAME[new_role]
             )
-        return new_role
+        if should_sync_groups:
+            group_memberships_sync_map = {
+                group_name: (group_name in intended_group_names)
+                for group_name in syncable_group_names
+            }
+        else:
+            group_memberships_sync_map = {}
+
+        return SocialAuthSyncNewUserInfo(
+            role=new_role, group_memberships_sync_map=group_memberships_sync_map
+        )
 
     # Based on the information collected above, sync what's needed for the user_profile.
     old_role = user_profile.role
@@ -1775,6 +1863,14 @@ def social_auth_sync_user_attributes(
             "Exception while syncing custom profile fields for user %s: %s",
             user_profile.id,
             str(e),
+        )
+
+    if should_sync_groups:
+        sync_groups(
+            all_group_names=syncable_group_names,
+            intended_group_names=intended_group_names,
+            user_profile=user_profile,
+            logger=backend.logger,
         )
 
     return None
@@ -2037,11 +2133,9 @@ def social_auth_finish(
         is_signup = False
 
     extra_attrs = return_data.get("extra_attrs", {})
-    role_for_new_user = None
-    if extra_attrs:
-        role_for_new_user = social_auth_sync_user_attributes(
-            realm, user_profile, extra_attrs, backend
-        )
+    social_auth_sync_new_user_info = social_auth_sync_user_attributes(
+        realm, user_profile, extra_attrs, backend
+    )
 
     if user_profile:
         # This call to authenticate() is just to get to invoke the custom_auth_decorator logic.
@@ -2101,7 +2195,19 @@ def social_auth_finish(
         params_to_store_in_authenticated_session=backend.get_params_to_store_in_authenticated_session(),
     )
     if user_profile is None:
-        data_dict.update(dict(full_name=full_name, email=email_address, role=role_for_new_user))
+        data_dict.update(
+            dict(
+                full_name=full_name,
+                email=email_address,
+            )
+        )
+        if social_auth_sync_new_user_info is not None:
+            data_dict.update(
+                dict(
+                    role=social_auth_sync_new_user_info.role,
+                    group_memberships_sync_map=social_auth_sync_new_user_info.group_memberships_sync_map,
+                )
+            )
 
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
@@ -2547,6 +2653,10 @@ class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
 
         extra_attr_names = self.conf.get("extra_attrs", [])
         result["extra_attrs"] = {}
+
+        if (groups_list := attributes.get("zulip_groups")) is not None:
+            result["extra_attrs"]["zulip_groups"] = groups_list
+
         for extra_attr_name in extra_attr_names:
             result["extra_attrs"][extra_attr_name] = self.get_attr(
                 attributes=attributes, conf_key=None, default_attribute=extra_attr_name
