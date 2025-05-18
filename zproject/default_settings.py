@@ -93,6 +93,7 @@ SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {}
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {}
+
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
@@ -112,7 +113,7 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
-SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
+SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str | list[str | tuple[str, str]]]]] = {}
 
 # Other auth
 SSO_APPEND_DOMAIN: str | None = None
