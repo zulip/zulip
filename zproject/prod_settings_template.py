@@ -519,6 +519,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #             # Specify custom profile fields with a custom__ prefix for the
 #             # Zulip field name.
 #             "custom__title": "title",
+#             # Sync the membership of the listed Zulip groups with
+#             # the list of group names sent in the "zulip_groups"
+#             # attribute in the SAMLResponse.
+#             "groups": ["group1", "group2", ("samlgroup3", "zulipgroup3"), "group4"],
 #         }
 #     }
 # }
