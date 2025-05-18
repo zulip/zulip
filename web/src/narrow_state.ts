@@ -201,14 +201,10 @@ export function pm_ids_string(filter?: Filter): string | undefined {
     return user_ids_string;
 }
 
-export let pm_ids_set = (filter?: Filter): Set<number> => {
+export function pm_ids_set(filter?: Filter): Set<number> {
     const ids_string = pm_ids_string(filter);
     const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
     return new Set(pm_ids_list);
-};
-
-export function rewire_pm_ids_set(value: typeof pm_ids_set): void {
-    pm_ids_set = value;
 }
 
 export function pm_emails_string(
