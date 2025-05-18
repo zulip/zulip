@@ -424,7 +424,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
 });
 
-test("get_conversation_participants", ({override_rewire}) => {
+test("get_conversation_participants", () => {
     people.add_active_user(selma);
 
     const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
@@ -432,7 +432,7 @@ test("get_conversation_participants", ({override_rewire}) => {
     peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
     const filter = new Filter([
-        {operator: "channel", operand: rome_sub.channel_id},
+        {operator: "channel", operand: rome_sub.stream_id},
         {operator: "topic", operand: "Foo"},
     ]);
     message_lists.set_current({
@@ -443,8 +443,6 @@ test("get_conversation_participants", ({override_rewire}) => {
             },
         },
     });
-    override_rewire(narrow_state, "stream_id", () => rome_sub.stream_id);
-    override_rewire(narrow_state, "topic", () => "Foo");
 
     activity_ui.rerender_user_sidebar_participants();
     assert.deepEqual(

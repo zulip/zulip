@@ -178,7 +178,7 @@ export function stream_sub(
     return stream_data.get_sub_by_id(id);
 }
 
-export let topic = (current_filter: Filter | undefined = filter()): string | undefined => {
+export function topic(current_filter: Filter | undefined = filter()): string | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -187,10 +187,6 @@ export let topic = (current_filter: Filter | undefined = filter()): string | und
         return operands[0];
     }
     return undefined;
-};
-
-export function rewire_topic(value: typeof topic): void {
-    topic = value;
 }
 
 export function pm_ids_string(filter?: Filter): string | undefined {
