@@ -96,8 +96,7 @@
     input:not([type="radio"]):read-only,
     textarea:read-only,
     #organization-permissions .dropdown-widget-button:disabled,
-    #organization-settings .dropdown-widget-button:disabled,
-    #stream-advanced-configurations .dropdown-widget-button:disabled {
+    #organization-settings .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
     }
@@ -119,8 +118,7 @@
     .user-status-content-wrapper,
     .custom-time-input-value,
     #organization-permissions .dropdown-widget-button,
-    #organization-settings .dropdown-widget-button,
-    #stream-advanced-configurations .dropdown-widget-button {
+    #organization-settings .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;

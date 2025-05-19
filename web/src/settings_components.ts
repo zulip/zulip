@@ -1452,7 +1452,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     ) {
         if (
             $subsection_elem.attr("id") === "org-message-retention" ||
-            $subsection_elem.attr("id") === "stream-advanced-configurations"
+            $subsection_elem.hasClass("advanced-configurations-container")
         ) {
             ui_util.disable_element_and_add_tooltip(
                 $save_button,
