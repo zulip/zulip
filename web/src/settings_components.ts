@@ -1281,7 +1281,7 @@ export function save_discard_stream_settings_widget_status_handler(
         !sub.subscribed &&
         switching_to_private(properties_elements)
     ) {
-        if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+        if ($("#stream_settings .stream_privacy_warning").length > 0) {
             return;
         }
         const context = {
@@ -1294,11 +1294,11 @@ export function save_discard_stream_settings_widget_status_handler(
             classname: "stream_privacy_warning",
             stream_id: sub.stream_id,
         };
-        $("#stream_permission_settings .stream-permissions-warning-banner").append(
+        $("#stream_settings .stream-permissions-warning-banner").append(
             $(render_compose_banner(context)),
         );
     } else {
-        $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+        $("#stream_settings .stream-permissions-warning-banner").empty();
     }
 }
 
