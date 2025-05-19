@@ -1676,7 +1676,7 @@ export function update_empty_left_panel_message(): void {
     }
 
     if (
-        $(".user-groups-list").find(
+        $("#groups_overlay").find(
             ".user-groups-list:not(.hide-deactivated-user-groups) .group-row.deactivated-group, .user-groups-list:not(.hide-active-user-groups) .group-row:not(.deactivated-group)",
         ).length > 0
     ) {
