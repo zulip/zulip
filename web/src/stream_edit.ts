@@ -586,7 +586,7 @@ export function initialize(): void {
         ".stream-permissions-warning-banner .main-view-banner-close-button",
         (event) => {
             event.preventDefault();
-            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+            $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
 
@@ -608,7 +608,7 @@ export function initialize(): void {
             const sub = sub_store.get(stream_id);
             assert(sub !== undefined);
             stream_settings_components.sub_or_unsub(sub, $stream_row);
-            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+            $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
 
@@ -844,8 +844,10 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
-            if (sub && $subsection.attr("id") === "stream_permission_settings") {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            if (sub && $subsection.hasClass("stream-permissions")) {
+                stream_ui_updates.update_default_stream_and_stream_privacy_state(
+                    $("#stream_settings"),
+                );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
@@ -908,8 +910,10 @@ export function initialize(): void {
 
             const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
-            if ($subsection.attr("id") === "stream_permission_settings") {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            if ($subsection.hasClass("stream-permissions")) {
+                stream_ui_updates.update_default_stream_and_stream_privacy_state(
+                    $("#stream_settings"),
+                );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }

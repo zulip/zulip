@@ -66,10 +66,10 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
         )}']`,
     );
 
-    const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
+    const for_stream_edit_panel = $container.attr("id") === "stream_settings";
     if (for_stream_edit_panel) {
         const stream_id = Number.parseInt(
-            $container.closest(".subscription_settings.show").attr("data-stream-id")!,
+            $container.find(".subscription_settings.show").attr("data-stream-id")!,
             10,
         );
         const sub = sub_store.get(stream_id);
@@ -334,7 +334,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
+    const $general_settings_container = $stream_settings.find(".stream-permissions");
     $general_settings_container
         .find("input, button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
@@ -370,7 +370,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         $advanced_configurations_container,
     );
 
-    update_default_stream_and_stream_privacy_state($stream_settings);
+    update_default_stream_and_stream_privacy_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -381,10 +381,8 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find(".message-retention-setting-custom-input")
         .prop("disabled", disable_message_retention_setting);
 
-    const $stream_permission_settings = $("#stream_permission_settings");
-
-    update_web_public_stream_privacy_option_state($stream_permission_settings);
-    update_public_stream_privacy_option_state($stream_permission_settings);
+    update_web_public_stream_privacy_option_state($("#stream_settings"));
+    update_public_stream_privacy_option_state($("#stream_settings"));
 
     if (!sub.can_change_stream_permissions_requiring_content_access) {
         const $stream_privacy_values = $stream_settings
@@ -590,17 +588,13 @@ export function update_stream_privacy_choices(policy: string): void {
     if (!overlays.streams_open()) {
         return;
     }
-    // eslint-disable-next-line no-jquery/no-sizzle
-    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
-    // eslint-disable-next-line no-jquery/no-sizzle
-    const stream_creation_form_opened = $("#stream-creation").is(":visible");
 
-    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
+    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
         return;
     }
     let $container = $("#stream-creation");
-    if (stream_edit_panel_opened) {
-        $container = $("#stream_permission_settings");
+    if ($("#stream_settings").css("display") !== "none") {
+        $container = $("#stream_settings");
     }
 
     if (policy === "can_create_private_channel_group") {

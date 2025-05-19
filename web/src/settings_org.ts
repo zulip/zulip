@@ -617,7 +617,7 @@ export function discard_stream_property_element_changes(
 
             // Hide stream privacy warning banner
             const $stream_permissions_warning_banner = $(
-                "#stream_permission_settings .stream-permissions-warning-banner",
+                "#stream_settings .stream-permissions-warning-banner",
             );
             if (!$stream_permissions_warning_banner.is(":empty")) {
                 $stream_permissions_warning_banner.empty();
