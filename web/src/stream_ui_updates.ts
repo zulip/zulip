@@ -100,7 +100,7 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
                 .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
                 .last()
                 .css("border-bottom", "");
-            $web_public_stream_elem.closest(".settings-radio-input-parent").show();
+            $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", false);
         }
         $web_public_stream_elem.prop(
             "disabled",
