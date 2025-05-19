@@ -1116,6 +1116,27 @@ def get_realm_user_dicts(realm_id: int) -> list[RawUserDict]:
     )
 
 
+def get_partial_realm_user_dicts(
+    realm_id: int, user_profile: UserProfile | None
+) -> list[RawUserDict]:
+    """Returns a subset of the users in the realm, guaranteed to
+    include the current user as well as all bots in the realm.
+    """
+
+    # Currently, we send the minimum set of users permitted by the API.
+    user_selection_clause = Q(is_bot=True)
+    if user_profile is not None:
+        user_selection_clause |= Q(id=user_profile.id)
+
+    return list(
+        UserProfile.objects.filter(realm_id=realm_id)
+        .filter(
+            user_selection_clause,
+        )
+        .values(*realm_user_dict_fields)
+    )
+
+
 def get_realm_user_dicts_from_ids(realm_id: int, user_ids: list[int]) -> list[RawUserDict]:
     return list(
         UserProfile.objects.filter(

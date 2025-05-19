@@ -3165,6 +3165,17 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(9):
+            result = self.client_get("/json/users")
+        self.assert_json_success(result)
+
+        result_dict = orjson.loads(result.content)
+        all_fetched_users = result_dict["members"]
+        self.assertEqual(
+            len(all_fetched_users),
+            UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count() + 1,
+        )
+
     def test_get_inaccessible_user_ids(self) -> None:
         polonius = self.example_user("polonius")
         bot = self.example_user("default_bot")
@@ -3230,6 +3241,16 @@ class GetProfileTest(ZulipTestCase):
         self.assertCountEqual(
             [user["user_id"] for user in all_fetched_users],
             user_ids_to_fetch,
+        )
+
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(4):
+            result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        result_dict = orjson.loads(result.content)
+        all_fetched_users = result_dict["members"]
+        self.assertEqual(
+            len(all_fetched_users),
+            UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count(),
         )
 
 
