@@ -880,7 +880,7 @@ def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
         # these in the query.
         invite_only=False,
         history_public_to_subscribers=True,
-    ).select_related("can_send_message_group", "can_send_message_group__named_user_group")
+    )
 
 
 def check_stream_name_available(realm: Realm, name: str) -> None:
@@ -1530,7 +1530,13 @@ def stream_to_dict(
 def get_web_public_streams(
     realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersData]
 ) -> list[APIStreamDict]:  # nocoverage
-    query = get_web_public_streams_queryset(realm)
+    query = get_web_public_streams_queryset(realm).select_related(
+        # TODO: We need these fields to compute stream_post_policy; we
+        # can drop this select_related clause once that legacy field
+        # is removed from the API.
+        "can_send_message_group",
+        "can_send_message_group__named_user_group",
+    )
     streams = query.only(*Stream.API_FIELDS)
     stream_dicts = [stream_to_dict(stream, None, anonymous_group_membership) for stream in streams]
     return stream_dicts

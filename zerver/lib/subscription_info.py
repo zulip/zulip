@@ -57,7 +57,9 @@ def get_web_public_subs(
         return color
 
     subscribed = []
-    streams = get_web_public_streams_queryset(realm)
+    streams = get_web_public_streams_queryset(realm).select_related(
+        "can_send_message_group", "can_send_message_group__named_user_group"
+    )
 
     for stream in streams:
         # Add Stream fields.
