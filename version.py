@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 387
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (326, 4)  # bumped 2025-05-14 to upgrade stripe
+PROVISION_VERSION = (326, 5)  # bumped 2025-05-19 to add vite to help-beta

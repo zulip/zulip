@@ -40,7 +40,7 @@ def replace_emoticon_translation_table(markdown_string: str, import_statement_se
     return result
 
 
-def replace_image_path(markdown_string: str, replacement_path: str) -> str:
+def replace_image_path(markdown_string: str) -> str:
     """
     We will point to the existing image folder till
     the cutover. After that, we will copy the images
@@ -51,27 +51,27 @@ def replace_image_path(markdown_string: str, replacement_path: str) -> str:
     # We do not replace /static/images directly since there are a few
     # instances in the documentation where zulip.com links are
     # referenced with that blurb as a part of the url.
-    result = markdown_string.replace("(/static/images/help-beta", f"({replacement_path}")
-    return result.replace('="/static/images/help-beta', f'="{replacement_path}')
+    result = markdown_string.replace("(/static/images/help-beta", "../../../../static/images/help")
+    return result.replace('="/static/images/help-beta', '="../../../../static/images/help')
 
 
-def fix_file_imports(
-    markdown_string: str, import_statement_set: set[str], import_relative_base_path: str
-) -> str:
-    def convert_to_pascal(text: str) -> str:
-        return to_pascal(text).replace("-", "").replace(".Md", "")
+def fix_file_imports(markdown_string: str) -> str:
+    """
+    While we can make things work with acorn, since our vite plugin for
+    MDX includes will handle it well, we still want to change the
+    acorns to dash symbols since acorns are used to specify JS
+    expressions in MDX. Using acorns can confuse a person who knows
+    MDX syntax but is not super familiar with our system.
+    """
 
-    def convert_to_astro_tag(match: re.Match[str]) -> str:
-        return "<" + convert_to_pascal(match.group(1)) + " />"
+    def fix_file_name(match: re.Match[str]) -> str:
+        # We add the underscore to reflect our renaming of include
+        # files in the conversion step and the extra `x` is added to
+        # reflect the MDX file extension.
+        return "-!_" + match.group(1) + "x!-"
 
     RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
-    result = RE.sub(convert_to_astro_tag, markdown_string)
-    matches = RE.findall(markdown_string)
-
-    for match in matches:
-        import_statement_set.add(
-            f'import {convert_to_pascal(match)} from "{import_relative_base_path}/_{match}x"'
-        )
+    result = RE.sub(fix_file_name, markdown_string)
 
     return result
 
@@ -166,9 +166,7 @@ def detab(text: str) -> tuple[str, str]:
     return "\n".join(newtext), "\n".join(lines[len(newtext) :])
 
 
-def convert_admonitions_to_asides(
-    markdown_string: str, import_statement_set: set[str], components_dir_path: str
-) -> str:
+def convert_admonitions_to_asides(markdown_string: str, import_statement_set: set[str]) -> str:
     """
     Lots of code in this function is taken from
     https://github.com/Python-Markdown/markdown/blob/64a3c0fbc00327fbfee1fd6b44da0e5453287fe4/markdown/extensions/admonition.py
@@ -225,7 +223,7 @@ def convert_admonitions_to_asides(
             elif klass == "keyboard_tip":
                 replacement = f"\n<KeyboardTip>\n{admonition_content}\n</KeyboardTip>\n"
                 import_statement_set.add(
-                    f"import KeyboardTip from '{components_dir_path}/KeyboardTip.astro';"
+                    "import KeyboardTip from '../../components/KeyboardTip.astro';"
                 )
             else:
                 raise Exception(f"Unexpected admonition class during conversion: {klass}")
@@ -292,13 +290,13 @@ def convert_help_center_file_to_mdx(
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
-    result = fix_file_imports(result, import_statement_set, "./include")
+    result = fix_file_imports(result)
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
     result = replace_emoticon_translation_table(result, import_statement_set)
-    result = replace_image_path(result, "../../../../static/images/help")
+    result = replace_image_path(result)
     result = replace_icons(result, import_statement_set)
-    result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
+    result = convert_admonitions_to_asides(result, import_statement_set)
     result = insert_imports(result, import_statement_set, 2)
     result = insert_frontmatter(result)
     return result
@@ -317,18 +315,22 @@ def convert_include_file_to_mdx(
     file.
     - insert_frontmatter is skipped since frontmatter is not needed
     in files that are not served standalone.
+
+    All paths are referenced as if they are in the src/content/docs
+    directory since we use a vite plugin to make the included file
+    part of the parent file before it goes to Astro for rendering.
     """
     result = get_markdown_string_from_file(markdown_file_path)
 
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
-    result = fix_file_imports(result, import_statement_set, ".")
+    result = fix_file_imports(result)
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
-    result = replace_image_path(result, "../../../../../static/images/help")
+    result = replace_image_path(result)
     result = replace_icons(result, import_statement_set)
-    result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
+    result = convert_admonitions_to_asides(result, import_statement_set)
     result = insert_imports(result, import_statement_set, 1)
     return result
 

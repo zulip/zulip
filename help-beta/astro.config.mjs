@@ -4,11 +4,14 @@ import starlight from "@astrojs/starlight";
 import {defineConfig} from "astro/config";
 import Icons from "unplugin-icons/vite";
 
+import preProcessMDXIncludePlugin from "./vite-plugins/pre_process_mdx_include.ts";
+
 // https://astro.build/config
 export default defineConfig({
     base: "help-beta",
     vite: {
         plugins: [
+            preProcessMDXIncludePlugin(),
             // eslint-disable-next-line new-cap
             Icons({
                 compiler: "astro",

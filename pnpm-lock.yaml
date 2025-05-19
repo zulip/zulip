@@ -530,6 +530,9 @@ importers:
       unplugin-icons:
         specifier: ^22.1.0
         version: 22.1.0
+      vite:
+        specifier: ^6.3.5
+        version: 6.3.5(@types/node@22.15.6)(jiti@1.21.7)(sass@1.87.0)(terser@5.39.0)(yaml@2.7.1)
 
 packages:
 
