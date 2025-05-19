@@ -340,7 +340,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     const $advanced_configurations_container = $stream_settings.find(
-        $("#stream-advanced-configurations"),
+        $(".advanced-configurations-container"),
     );
     $advanced_configurations_container
         .find("input, select, button")
