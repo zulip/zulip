@@ -23,21 +23,21 @@
         }
     }
 
-    .message_edit_history_content {
-        .highlight_text_inserted {
-            color: var(--color-message-edit-history-text-inserted);
-            background-color: var(
-                --color-message-edit-history-background-inserted
-            );
-        }
+    .highlight_text_inserted {
+        color: var(--color-message-edit-history-text-inserted);
+        background-color: var(--color-message-edit-history-background-inserted);
+    }
 
-        .highlight_text_deleted {
-            color: var(--color-message-edit-history-text-deleted);
-            background-color: var(
-                --color-message-edit-history-background-deleted
-            );
-            word-break: break-all;
-        }
+    .highlight_text_deleted {
+        color: var(--color-message-edit-history-text-deleted);
+        background-color: var(--color-message-edit-history-background-deleted);
+        text-decoration: line-through;
+        word-break: break-all;
+    }
+
+    .highlight_prev_stream_topic {
+        color: var(--color-message-edit-history-text-deleted);
+        background-color: var(--color-message-edit-history-background-deleted);
     }
 
     .messagebox-content {

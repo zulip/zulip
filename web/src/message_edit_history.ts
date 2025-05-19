@@ -2,11 +2,13 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
+import {is_resolved} from "../shared/src/resolved_topic.ts";
 import render_message_edit_history from "../templates/message_edit_history.hbs";
 import render_message_history_overlay from "../templates/message_history_overlay.hbs";
 
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import {by_stream_topic_url} from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
@@ -44,6 +46,10 @@ type EditHistoryEntry = {
     prev_stream: string | undefined;
     prev_stream_id: number | undefined;
     new_stream: string | undefined;
+    prev_stream_topic_url: string | undefined;
+    new_stream_topic_url: string | undefined;
+    topic_resolved: boolean | undefined;
+    topic_resolved_unresolved: string | undefined;
 };
 
 const server_message_history_schema = z.object({
@@ -162,7 +168,10 @@ export function fetch_and_render_message_history(message: Message): void {
                 let prev_stream;
                 let prev_stream_id;
                 let initial_entry_for_move_history = false;
-
+                let prev_stream_topic_url;
+                let new_stream_topic_url;
+                let topic_resolved;
+                let topic_resolved_unresolved;
                 if (index === 0) {
                     edited_by_notice = $t({defaultMessage: "Posted by {full_name}"}, {full_name});
                     if (move_history_only) {
@@ -192,6 +201,20 @@ export function fetch_and_render_message_history(message: Message): void {
                     stream_changed = true;
                     prev_stream_id = msg.prev_stream;
                     prev_stream = get_display_stream_name(msg.prev_stream);
+                    prev_stream_topic_url = by_stream_topic_url(
+                        prev_stream_id,
+                        prev_topic_display_name,
+                    );
+                    if (
+                        message.is_stream &&
+                        message.stream_id !== undefined &&
+                        new_topic_display_name !== undefined
+                    ) {
+                        new_stream_topic_url = by_stream_topic_url(
+                            message.stream_id,
+                            new_topic_display_name,
+                        );
+                    }
                     if (prev_stream_item !== null) {
                         prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
                     }
@@ -202,14 +225,54 @@ export function fetch_and_render_message_history(message: Message): void {
                     new_topic_display_name = util.get_final_topic_display_name(msg.topic);
                     is_empty_string_prev_topic = msg.prev_topic === "";
                     is_empty_string_new_topic = msg.topic === "";
+                    if (is_resolved(new_topic_display_name)) {
+                        edited_by_notice = $t(
+                            {defaultMessage: "Topic resolved by {full_name}"},
+                            {full_name},
+                        );
+                        topic_resolved_unresolved = $t({defaultMessage: "was marked as resolved"});
+                        topic_resolved = true;
+                    } else if (
+                        is_resolved(prev_topic_display_name) &&
+                        !is_resolved(new_topic_display_name)
+                    ) {
+                        edited_by_notice = $t(
+                            {defaultMessage: "Topic unresolved by {full_name}"},
+                            {full_name},
+                        );
+                        topic_resolved_unresolved = $t({
+                            defaultMessage: "was marked as unresolved",
+                        });
+                        topic_resolved = false;
+                    }
                     if (message.is_stream && message.stream_id !== undefined) {
                         prev_stream = get_display_stream_name(message.stream_id);
+                        new_stream_topic_url = by_stream_topic_url(
+                            message.stream_id,
+                            new_topic_display_name,
+                        );
+                        prev_stream_topic_url = by_stream_topic_url(
+                            message.stream_id,
+                            prev_topic_display_name,
+                        );
                     }
                 } else if (msg.prev_stream) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     stream_changed = true;
                     prev_stream_id = msg.prev_stream;
                     prev_stream = get_display_stream_name(msg.prev_stream);
+                    prev_topic_display_name = util.get_final_topic_display_name(msg.topic);
+                    new_topic_display_name = prev_topic_display_name;
+                    prev_stream_topic_url = by_stream_topic_url(
+                        prev_stream_id,
+                        prev_topic_display_name,
+                    );
+                    if (message.is_stream && message.stream_id !== undefined) {
+                        new_stream_topic_url = by_stream_topic_url(
+                            message.stream_id,
+                            new_topic_display_name,
+                        );
+                    }
                     if (prev_stream_item !== null) {
                         prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
                     }
@@ -235,6 +298,10 @@ export function fetch_and_render_message_history(message: Message): void {
                     prev_stream,
                     prev_stream_id,
                     new_stream: undefined,
+                    prev_stream_topic_url,
+                    new_stream_topic_url,
+                    topic_resolved,
+                    topic_resolved_unresolved,
                 };
 
                 if (msg.prev_stream) {

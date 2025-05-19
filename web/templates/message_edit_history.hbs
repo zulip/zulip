@@ -1,5 +1,3 @@
-{{! Client-side Handlebars template for viewing message edit history. }}
-
 {{#each edited_messages}}
     <div class="message-edit-message-row overlay-message-row" data-message-edit-history-id="{{timestamp}}">
         <div class="message-edit-message-info-box overlay-message-info-box" tabindex="0">
@@ -29,17 +27,25 @@
                         {{#if (or stream_changed topic_edited)}}
                             <div class="message_content message_edit_history_content">
                                 <p>
-                                    {{#if initial_entry_for_move_history}}
-                                        {{t "Moved to"}}
-                                        <span class="highlight_text_inserted">#{{new_stream}}> {{new_topic_display_name}}</span>
+                                    {{#if topic_resolved_unresolved}}
+                                        <a href="{{new_stream_topic_url}}" class="{{#if topic_resolved}}highlight_text_inserted{{else}}highlight_prev_stream_topic{{/if}}">
+                                            #{{prev_stream}} > <span class="{{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{prev_topic_display_name}}</span>
+                                        </a>
+                                        &nbsp;{{topic_resolved_unresolved}}<span>.</span>
                                     {{else}}
                                         {{t "Moved from"}}
-                                        <span class="highlight_text_deleted">#{{prev_stream}}> {{prev_topic_display_name}}</span>
-                                        {{t "To"}}
+                                        <a href="{{prev_stream_topic_url}}" class="highlight_prev_stream_topic">
+                                            #{{prev_stream}} > <span class="{{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{prev_topic_display_name}}</span>
+                                        </a>
+                                        &nbsp;{{t "To"}}&nbsp;
                                         {{#if stream_changed}}
-                                        <span class="highlight_text_inserted">#{{new_stream}} > {{new_topic_display_name}}</span>
+                                        <a href="{{new_stream_topic_url}}" class="highlight_text_inserted">
+                                            #{{new_stream}} > <span class="{{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{new_topic_display_name}}</span>
+                                        </a><span>.</span>
                                         {{else}}
-                                        <span class="highlight_text_inserted">#{{prev_stream}}> {{new_topic_display_name}}</span>
+                                        <a href="{{new_stream_topic_url}}" class="highlight_text_inserted">
+                                            #{{prev_stream}} > <span class="{{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{new_topic_display_name}}</span>
+                                        </a><span>.</span>
                                         {{/if}}
                                     {{/if}}
                                 </p>
@@ -49,6 +55,11 @@
                         <div class="message_content rendered_markdown message_edit_history_content">
                             {{ rendered_markdown body_to_render}}
                         </div>
+                        {{else if initial_entry_for_move_history}}
+                        {{t "Posted in "}}
+                        <a href="{{new_stream_topic_url}}" class="highlight_text_inserted">
+                            #{{new_stream}} > <span class="{{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{new_topic_display_name}}</span>
+                        </a>
                         {{/if}}
                     </div>
                 </div>
@@ -56,4 +67,3 @@
         </div>
     </div>
 {{/each}}
-
