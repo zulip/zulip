@@ -465,8 +465,10 @@ export function format_array_as_list_with_highlighted_elements(
     const formatted_parts = list_formatter.formatToParts(array);
     return formatted_parts
         .map((part) => {
+            // There are two types of parts: elements (the actual
+            // items), and literals (commas, etc.). We need to
+            // HTML-escape the elements, but not the literals.
             if (part.type === "element") {
-                // Only highlight the values passed in array and not commas, etc.
                 return `<b>${Handlebars.Utils.escapeExpression(part.value)}</b>`;
             }
             return part.value;
