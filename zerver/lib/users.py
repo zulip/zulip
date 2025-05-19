@@ -43,6 +43,7 @@ from zerver.models.users import (
     active_user_ids,
     base_bulk_get_user_queryset,
     base_get_user_queryset,
+    get_partial_realm_user_dicts,
     get_realm_user_dicts,
     get_realm_user_dicts_from_ids,
     get_user_by_id_in_realm_including_cross_realm,
@@ -1058,6 +1059,8 @@ def get_user_dicts_in_realm(
 ) -> tuple[list[RawUserDict], list[APIUserDict]]:
     if user_ids is not None:
         all_user_dicts = get_realm_user_dicts_from_ids(realm.id, user_ids)
+    elif settings.PARTIAL_USERS:
+        all_user_dicts = get_partial_realm_user_dicts(realm.id, user_profile)
     else:
         all_user_dicts = get_realm_user_dicts(realm.id)
     if check_user_can_access_all_users(user_profile):
