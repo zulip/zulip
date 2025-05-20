@@ -68,23 +68,13 @@ function get_target_navbar_menu(
     event_name: string,
     $current_navbar_menu: JQuery,
 ): string | undefined {
-    // eslint-disable-next-line no-jquery/no-sizzle
-    const $visible_navbar_menus = $(".navbar-item:visible");
-    const index = $visible_navbar_menus.index($current_navbar_menu);
-    let $target_navbar_menu;
-
-    if (event_name === "left_arrow" && index === 0) {
-        return undefined;
-    } else if (event_name === "right_arrow" && index === $visible_navbar_menus.length - 1) {
-        return undefined;
-    }
-
-    if (event_name === "left_arrow") {
-        $target_navbar_menu = $visible_navbar_menus.eq(index - 1);
-        return $target_navbar_menu.attr("id");
-    } else if (event_name === "right_arrow") {
-        $target_navbar_menu = $visible_navbar_menus.eq(index + 1);
-        return $target_navbar_menu.attr("id");
+    const $navbar_menus = $(".navbar-item");
+    const index = $navbar_menus.index($current_navbar_menu);
+    if (event_name === "left_arrow" && index !== -1) {
+        return [...$navbar_menus].slice(0, index).findLast((menu) => menu.getClientRects().length)
+            ?.id;
+    } else if (event_name === "right_arrow" && index !== -1) {
+        return [...$navbar_menus].slice(index + 1).find((menu) => menu.getClientRects().length)?.id;
     }
     return undefined;
 }
