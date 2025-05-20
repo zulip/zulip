@@ -1677,7 +1677,7 @@ export function update_empty_left_panel_message(): void {
 
     if (
         $(".user-groups-list").find(
-            ".user-groups-list:not(.hide-deactived-user-groups) .group-row.deactivated-group, .user-groups-list:not(.hide-active-user-groups) .group-row:not(.deactivated-group)",
+            ".user-groups-list:not(.hide-deactivated-user-groups) .group-row.deactivated-group, .user-groups-list:not(.hide-active-user-groups) .group-row:not(.deactivated-group)",
         ).length > 0
     ) {
         $(".no-groups-to-show").hide();
@@ -1737,13 +1737,13 @@ export function remove_deactivated_user_from_all_groups(user_id: number): void {
 
 export function update_displayed_groups(filter_id: string): void {
     if (filter_id === FILTERS.ACTIVE_GROUPS) {
-        $(".user-groups-list").addClass("hide-deactived-user-groups");
+        $(".user-groups-list").addClass("hide-deactivated-user-groups");
         $(".user-groups-list").removeClass("hide-active-user-groups");
     } else if (filter_id === FILTERS.DEACTIVATED_GROUPS) {
-        $(".user-groups-list").removeClass("hide-deactived-user-groups");
+        $(".user-groups-list").removeClass("hide-deactivated-user-groups");
         $(".user-groups-list").addClass("hide-active-user-groups");
     } else {
-        $(".user-groups-list").removeClass("hide-deactived-user-groups");
+        $(".user-groups-list").removeClass("hide-deactivated-user-groups");
         $(".user-groups-list").removeClass("hide-active-user-groups");
     }
 }

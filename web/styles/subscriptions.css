@@ -685,7 +685,7 @@ h4.user_group_setting_subsection_title {
     align-items: center;
 }
 
-.user-groups-list.hide-deactived-user-groups .deactivated-group {
+.user-groups-list.hide-deactivated-user-groups .deactivated-group {
     display: none;
 }
 
