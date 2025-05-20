@@ -217,7 +217,7 @@ export let upload_files = (
     // We implement this transition through triggering a click on the
     // toggle button to take advantage of the existing plumbing for
     // handling the compose and edit UIs.
-    if (config.markdown_preview_hide_button().is(":visible")) {
+    if (config.markdown_preview_hide_button().css("display") !== "none") {
         config.markdown_preview_hide_button().trigger("click");
     }
 
