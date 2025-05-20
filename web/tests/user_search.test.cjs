@@ -33,15 +33,19 @@ function mock_setTimeout() {
     });
 }
 
+const channel = mock_esm("../src/channel");
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const activity_ui = zrequire("activity_ui");
 const buddy_data = zrequire("buddy_data");
+const {Filter} = zrequire("../src/filter");
+const message_lists = zrequire("message_lists");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const {set_realm} = zrequire("state_data");
+const stream_data = zrequire("stream_data");
 
 const realm = {};
 set_realm(realm);
@@ -81,7 +85,7 @@ function test(label, f) {
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
         activity_ui.set_cursor_and_filter();
-        f(opts);
+        return f(opts);
     });
 }
 
@@ -95,10 +99,11 @@ function stub_buddy_list_empty_list_message_lengths() {
     $("#buddy-list-other-users .empty-list-message").length = 0;
 }
 
-test("clear_search", ({override}) => {
+test("clear_search with button", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
+    $("#buddy-list-loading-subscribers").css = noop;
 
     stub_buddy_list_empty_list_message_lengths();
 
@@ -119,6 +124,7 @@ test("clear_search", ({override}) => {
 
 test("clear_search", ({override}) => {
     override(realm, "realm_presence_disabled", true);
+    $("#buddy-list-loading-subscribers").css = noop;
 
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
@@ -129,6 +135,69 @@ test("clear_search", ({override}) => {
     activity_ui.clear_search();
 
     // We need to reset this because the unit tests aren't isolated from each other.
+    set_input_val("");
+});
+
+test("fetch on search", async ({override}) => {
+    override(presence, "get_user_ids", () => all_user_ids);
+    override(presence, "get_status", () => "active");
+    let populate_call_count = 0;
+    override(fake_buddy_list, "populate", () => {
+        populate_call_count += 1;
+    });
+    $("#buddy-list-loading-subscribers").css = noop;
+    override(popovers, "hide_all", noop);
+    stub_buddy_list_empty_list_message_lengths();
+
+    const office = {stream_id: 23, name: "office", subscribed: true};
+    stream_data.add_sub(office);
+    message_lists.set_current({
+        data: {
+            filter: new Filter([{operator: "stream", operand: office.stream_id}]),
+        },
+    });
+    let get_call_count = 0;
+    channel.get = () => {
+        get_call_count += 1;
+        return {
+            subscribers: [1, 2, 3, 4],
+        };
+    };
+    // Only one fetch should happen.
+    set_input_val("somevalu");
+    set_input_val("somevalue");
+    await activity_ui.await_pending_promise_for_testing();
+    assert.equal(get_call_count, 1);
+    assert.equal(populate_call_count, 1);
+
+    // Now try updating the narrow and starting a new search, before the old search
+    // is resolved. We should make two requests but only only update populate the
+    // buddy list for the second fetch (the first fetch returns early).
+    get_call_count = 0;
+    populate_call_count = 0;
+    const kitchen = {stream_id: 25, name: "kitchen", subscribed: true};
+    stream_data.add_sub(kitchen);
+    const living_room = {stream_id: 26, name: "living_room", subscribed: true};
+    stream_data.add_sub(living_room);
+    message_lists.set_current({
+        data: {
+            filter: new Filter([{operator: "stream", operand: kitchen.stream_id}]),
+        },
+    });
+    set_input_val("somevalue");
+    message_lists.set_current({
+        data: {
+            filter: new Filter([{operator: "stream", operand: living_room.stream_id}]),
+        },
+    });
+    set_input_val("somevalue");
+    await activity_ui.await_pending_promise_for_testing();
+    assert.equal(get_call_count, 2);
+    assert.equal(populate_call_count, 1);
+
+    // We need to reset these because the unit tests aren't isolated from each other.
+    message_lists.set_current(undefined);
+    activity_ui.clear_search();
     set_input_val("");
 });
 

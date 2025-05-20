@@ -646,3 +646,9 @@
         }
     }
 }
+
+#buddy-list-loading-subscribers {
+    margin: auto;
+    padding-right: var(--width-simplebar-scroll-hover);
+    padding-top: 30px;
+}
