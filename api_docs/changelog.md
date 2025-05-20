@@ -691,6 +691,12 @@ deactivated groups.
   `realm_incoming_webhook_bots` with a new `config_options` key,
   defining which options should be offered when creating URLs for this
   integration.
+* [`GET /avatar/{user_id}`](/api/get-user-avatar), [`GET /avatar/{email}`]
+  (/api/get-user-avatar-by-email), [`GET /avatar/{user_id}/medium`]
+  (/api/get-user-medium-avatar-by-id), [`GET /avatar/{email}/medium`]
+  (/api/get-user-medium-avatar-by-email): Replaced the `GET /avatar/{email_or_id}`
+  endpoint with two distinct endpoints for retrieving avatars, one by email
+  and one by user ID.
 
 **Feature level 317**
 

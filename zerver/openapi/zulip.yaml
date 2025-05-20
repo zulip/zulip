@@ -9465,6 +9465,7 @@ paths:
       operationId: get-file-temporary-url
       summary: Get public temporary URL
       tags: ["messages"]
+      x-non-api-v1-path: true
       description: |
         Get a temporary URL for access to the file that doesn't require authentication.
 
@@ -13376,31 +13377,7 @@ paths:
             description: |
               You may pass the `client_gravatar` or `include_custom_profile_fields` query parameter as follows:
       parameters:
-        - name: email
-          in: path
-          description: |
-            The email address of the user to fetch. Two forms are supported:
-
-            - The real email address of the user (`delivery_email`). The lookup will
-              succeed if and only if the user exists and their email address visibility
-              setting permits the client to see the email address.
-
-            - The dummy Zulip API email address of the form `user{user_id}@{realm_host}`. This
-              is identical to simply [getting user by ID](/api/get-user). If the server or
-              realm change domains, the dummy email address used has to be adjustment to
-              match the new realm domain. This is legacy behavior for
-              backwards-compatibility, and will be removed in a future release.
-
-            **Changes**: Starting with Zulip 10.0 (feature level 302), lookups by real email
-            address match the semantics of the target's email visibility setting and dummy
-            email addresses work for all users, independently of their email visibility
-            setting.
-
-            Previously, lookups were done only using the Zulip API email addresses.
-          schema:
-            type: string
-          example: iago@zulip.com
-          required: true
+        - $ref: "#/components/parameters/UserEmail"
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
       responses:
@@ -23061,6 +23038,176 @@ paths:
                         "result": "success",
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
                       }
+  /avatar/{user_id}:
+    get:
+      operationId: get-user-avatar
+      summary: Get a user's avatar
+      tags: ["users"]
+      x-non-api-v1-path: true
+      description: |
+        Fetch the avatar for a single user in the organization, identified by their
+        user ID. This endpoint responds with an HTTP redirect to the avatar's URL,
+        the client can retrieve the actual avatar by following the redirect.
+
+        The avatar URL or file may originate from one of the following sources:
+
+        - **User-uploaded** file, if the user has uploaded their own avatar.
+        - **Gravatar** URL, used as the default option.
+        - **Static files**, for system bots.
+
+        You can also fetch a users avatar [by their Zulip API email](/api/get-user
+        -avatar-by-email).
+
+        **File size**: `100x100` px (default).
+
+        For all types of avatars, there's a larger `500x500` px (medium) version of
+        it. You can call the [GET /avatar/{user_id}/medium](get-user-medium-avatar)
+        endpoint to get it.
+
+        Alternatively, for user-uploaded and static avatars you can get the medium
+        version by modify the default-sized avatar URL. This is done by inserting a
+        `-medium` string immediately after the file hash and before the file type
+        extension, like this:
+
+            # For user uploaded avatar
+            http://example.zulipchat.com/user_avatars/2/s641fe6b0cdcaf29f1ad583f63
+            88kl72bf8ab64dd8-medium.png
+
+            # For static avatar
+            http://example.zulipchat.com/static/images/static_avatars/emailgateway.
+            2f97461a9420-medium.png
+
+        To modify the size of Gravatar avatars, refer to the [Gravatar documentation
+        ](https://docs.gravatar.com/api/avatars/images/).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        Gravatar URLs can also support an optional `.jpg` extension. Refer to the
+        [Gravatar documentation](https://docs.gravatar.com/api/avatars/images/) for
+        details on customizing Gravatar URLs.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
+
+  /avatar/{email}:
+    get:
+      operationId: get-user-avatar-by-email
+      summary: Get a user's avatar by email
+      tags: ["users"]
+      x-non-api-v1-path: true
+      description: |
+        Fetch the avatar for a single user in the organization, identified by their
+        email. This endpoint responds with an HTTP redirect to the avatar's URL,
+        the client can retrieve the actual avatar by following the redirect.
+
+        **File size**: `100x100` px (default).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        For more details such as fetching medium avatar size, types of avatar URL
+        , and customizing Gravatar URL, you can read the description in the
+        [**Get a user's avatar**](/api/get-user-avatar) documentation
+
+        Fetching by user ID is generally recommended when possible,
+        as a user might [change their email address](/help/change-your-email-address)
+        or change their [email address visibility](/help/configure-email-visibility),
+        either of which could change the client's ability to look them up by that
+        email address.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserEmail"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
+
+  /avatar/{user_id}/medium:
+    get:
+      operationId: get-user-medium-avatar
+      summary: Get a user's medium avatar
+      tags: ["users"]
+      x-non-api-v1-path: true
+      description: |
+        Fetch the medium-sized avatar for a single user in the organization,
+        identified by their email. This endpoint responds with an HTTP redirect
+        to the avatar's URL, the client can retrieve the actual avatar by
+        following the redirect.
+
+        **File size**: `500x500` px (medium).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        For more details such as fetching default avatar size, types of avatar URL
+        , and customizing Gravatar URL, you can read the description in the
+        [**Get a user's avatar**](/api/get-user-avatar) documentation
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
+
+  /avatar/{email}/medium:
+    get:
+      operationId: get-user-medium-avatar-by-email
+      summary: Get a user's medium avatar by email
+      tags: ["users"]
+      x-non-api-v1-path: true
+      description: |
+        Fetch the medium-sized avatar for a single user in the organization,
+        identified by their email. This endpoint responds with an HTTP redirect
+        to the avatar's URL, the client can retrieve the actual avatar by
+        following the redirect.
+
+        **File size**: `500x500` px (medium).
+
+        **File types**: Avatar files are served in `.png` format.
+
+        For more details such as fetching default avatar size, types of avatar URL
+        , and customizing Gravatar URL, you can read the description in the
+        [**Get a user's avatar**](/api/get-user-avatar) documentation
+
+        Fetching by user ID is generally recommended when possible,
+        as a user might [change their email address](/help/change-your-email-address)
+        or change their [email address visibility](/help/configure-email-visibility),
+        either of which could change the client's ability to look them up by that
+        email address.
+
+        **Changes**: New in Zulip 10.0 (feature level 318).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+      parameters:
+        - $ref: "#/components/parameters/UserEmail"
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessRedirect"
 
 components:
   #######################
@@ -24643,6 +24790,10 @@ components:
             sender's email address, which corresponds in this case to their
             real email address.
 
+            The avatar size will be `100x100` px (default) and a larger avatar
+            size is available. See the [**Get a user's avatar**](/api/get-user-avatar)
+            page on how to get larger avatar size and other details.
+
             **Changes**: Before Zulip 7.0 (feature level 163), access to a
             user's real email address was a realm-level setting. As of this
             feature level, `email_address_visibility` is a user setting.
@@ -25445,6 +25596,10 @@ components:
             this user's real email address, and this user's avatar is hosted by
             the Gravatar provider (i.e. this user has never uploaded an avatar).
 
+            The avatar size will be `100x100` px (default) and a larger avatar
+            size is available. See the [**Get a user's avatar**](/api/get-user-avatar)
+            page on how to get larger avatar size and other details.
+
             **Changes**: Before Zulip 7.0 (feature level 163), access to a
             user's real email address was a realm-level setting. As of this
             feature level, `email_address_visibility` is a user setting.
@@ -25490,6 +25645,16 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
+    RedirectResponse:
+      description: |
+        The response will be a simple redirect to a specific URL, so there
+        will be no response body. Refer to the provided Python or curl example
+        above for how best to handle the response from this endpoint.
+      properties:
+        result: {}
+        msg: {}
+        ignored_parameters_unsupported: {}
+      x-no-response-body: true
     JsonResponseBase:
       type: object
       properties:
@@ -26251,6 +26416,12 @@ components:
           schema:
             allOf:
               - $ref: "#/components/schemas/IgnoredParametersSuccess"
+    SuccessRedirect:
+      description: Success.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RedirectResponse"
 
   ################
   # Shared request bodies
@@ -26432,3 +26603,29 @@ components:
         type: boolean
       example: false
       required: false
+    UserEmail:
+      name: email
+      in: path
+      description: |
+        The email address of the user to fetch. Two forms are supported:
+
+        - The real email address of the user (`delivery_email`). The lookup will
+          succeed if and only if the user exists and their email address visibility
+          setting permits the client to see the email address.
+
+        - The dummy Zulip API email address of the form `user{user_id}@{realm_host}`. This
+          is identical to simply [getting user by ID](/api/get-user). If the server or
+          realm change domains, the dummy email address used has to be adjustment to
+          match the new realm domain. This is legacy behavior for
+          backwards-compatibility, and will be removed in a future release.
+
+        **Changes**: Starting with Zulip 10.0 (feature level 302), lookups by real email
+        address match the semantics of the target's email visibility setting and dummy
+        email addresses work for all users, independently of their email visibility
+        setting.
+
+        Previously, lookups were done only using the Zulip API email addresses.
+      schema:
+        type: string
+      example: iago@zulip.com
+      required: true

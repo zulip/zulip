@@ -284,6 +284,17 @@ def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
                 subschema_status_code = status_code + "_" + str(subschema_index)
             else:
                 subschema_status_code = status_code
+
+            if get_schema(endpoint, method, status_code).get("x-no-response-body", False):
+                # For endpoints endpoints that redirects the caller, there
+                # won't be any request body so we skip building the JSON
+                # body response example.
+                # Response schemas that uses the "x-no-response-body" field
+                # can trigger this behavior.
+                description = get_schema(endpoint, method, status_code)["description"]
+                fixture.extend(description.strip().splitlines())
+                continue
+
             fixture_dict = get_openapi_fixture(endpoint, method, subschema_status_code)
             for example in fixture_dict:
                 fixture_json = json.dumps(
@@ -323,6 +334,15 @@ def get_endpoint_from_operationid(operationid: str) -> tuple[str, str]:
 
 def get_openapi_paths() -> set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
+
+
+def check_non_v1_api_pattern(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint is not v1_api_and_json_patterns."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get("x-non-api-v1-path", False)
+
+
+def is_avatar_endpoint(path: str, method: str) -> bool:
+    return path.startswith("/avatar/") and method.upper() == "GET"
 
 
 NO_EXAMPLE = object()
