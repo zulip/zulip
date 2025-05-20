@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
 import * as rows from "./rows.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
@@ -35,27 +36,28 @@ export function message_hover($message_row: JQuery): void {
         return;
     }
 
+    change_edit_content_button($message_row, message);
+}
+
+function change_edit_content_button($message_row: JQuery, message: Message): void {
     // But the message edit hover icon is determined by whether the message is still editable
     const is_content_editable = message_edit.is_content_editable(message);
     const can_move_message = message_edit.can_move_message(message);
-    const args = {
-        is_content_editable,
-        can_move_message,
-    };
+
     const $edit_content = $message_row.find(".edit_content");
-    if (args.is_content_editable && !$edit_content.hasClass("can-edit-content")) {
+    if (is_content_editable && !$edit_content.hasClass("can-edit-content")) {
         $edit_content.addClass("can-edit-content");
         $edit_content.removeClass("can-move-message");
         $edit_content.attr("data-tooltip-template-id", "edit-content-tooltip-template");
     } else if (
-        !args.is_content_editable &&
-        args.can_move_message &&
+        !is_content_editable &&
+        can_move_message &&
         !$edit_content.hasClass("can-move-message")
     ) {
         $edit_content.addClass("can-move-message");
         $edit_content.removeClass("can-edit-content");
         $edit_content.attr("data-tooltip-template-id", "move-message-tooltip-template");
-    } else if (!args.is_content_editable && !args.can_move_message) {
+    } else if (!is_content_editable && !can_move_message) {
         $edit_content.removeClass("can-edit-content can-move-message");
     }
 }
