@@ -1249,6 +1249,7 @@ function hide_membership_toggle_spinner($group_row: JQuery): void {
 
 function empty_right_panel(): void {
     $(".group-row.active").removeClass("active");
+    $("#groups_overlay .right").removeClass("show");
     user_group_components.show_user_group_settings_pane.nothing_selected();
 }
 
