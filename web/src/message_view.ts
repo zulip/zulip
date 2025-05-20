@@ -1509,7 +1509,8 @@ function handle_post_view_change(
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
-    activity_ui.build_user_sidebar();
+    // This also builds the user sidebar.
+    activity_ui.clear_search();
 }
 
 export function rerender_combined_feed(combined_feed_msg_list: MessageList): void {
