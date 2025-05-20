@@ -377,8 +377,8 @@ def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> list[Use
                 except Exception:  # nocoverage
                     logger.exception(
                         "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
-                    )  # nocoverage
-                    failures.append(user_profile)  # nocoverage
+                    )
+                    failures.append(user_profile)
     logger.info("Caught up %d soft-deactivated users", len(users_caught_up))
     if failures:
         logger.error("Failed to catch up %d soft-deactivated users", len(failures))  # nocoverage
