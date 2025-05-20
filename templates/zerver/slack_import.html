@@ -32,7 +32,9 @@
                     </div>
                     <div class="input-box slack-import-extra-info">
                         <div class="not-editable-realm-field">
-                            {{ _("You will immediately see a bot user OAuth token, which is a long string of numbers and characters starting with xoxb-. Copy this token. You will use it to download user and emoji data from your Slack workspace.") }}
+                            {% trans %}
+                            Follow <a href="https://zulip.com/help//import-from-slack#export-your-slack-data:~:text=Export%20user%20data%20and%20custom%20emoji" rel="noopener noreferrer" target="_blank">these instructions</a> to obtain a <strong>Bot User OAuth Token</strong>.
+                            {% endtrans %}
                         </div>
                     </div>
                     <div class="input-box">

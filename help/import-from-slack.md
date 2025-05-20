@@ -20,7 +20,7 @@ following steps, which are described in more detail below:
 {end_tabs}
 
 ## Import your organization from Slack into Zulip
-
+<!-- Update link in slack_import.html when changing title below. -->
 ### Export your Slack data
 
 Slack's [data export
