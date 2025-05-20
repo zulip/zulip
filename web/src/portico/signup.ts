@@ -417,7 +417,7 @@ $(() => {
                 },
             },
         });
-        uppy.use(Tus, {endpoint: "/api/v1/tus/", removeFingerprintOnSuccess: true});
+        uppy.use(Tus, {endpoint: "/api/v1/tus/"});
         uppy.on("upload-error", (_file, error) => {
             $("#slack-import-file-upload-error").text(error.message);
         });
