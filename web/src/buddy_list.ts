@@ -723,8 +723,9 @@ export class BuddyList extends BuddyListConf {
 
         // After the `await`, we might have changed to a different channel view.
         // If so, we shouldn't update the DOM anymore, and should let the newer `populate`
-        // call set things up with fresh data.
-        if (current_sub !== this.render_data.current_sub) {
+        // call set things up with fresh data. We also want to make sure not to show
+        // the links when searching users, which might have changed since fetching data.
+        if (current_sub !== this.render_data.current_sub || buddy_data.get_is_searching_users()) {
             return;
         }
 

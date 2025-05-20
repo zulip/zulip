@@ -8,7 +8,9 @@ import * as buddy_data from "./buddy_data.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as keydown_util from "./keydown_util.ts";
 import {ListCursor} from "./list_cursor.ts";
+import * as loading from "./loading.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
@@ -141,9 +143,22 @@ function do_update_users_for_search(): void {
     // Hide all the popovers but not userlist sidebar
     // when the user is searching.
     popovers.hide_all();
-    build_user_sidebar();
-    assert(user_cursor !== undefined);
-    user_cursor.reset();
+    const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
+    void (async () => {
+        if (stream_id && !peer_data.has_full_subscriber_data(stream_id)) {
+            // We need to make sure we have all subscribers before displaying
+            // users during search, because we show all matching users and
+            // sort them by if they're subscribed.
+            $("#buddy_list_wrapper").hide();
+            loading.make_indicator($("#buddy-list-loading-subscribers"));
+            await peer_data.maybe_fetch_stream_subscribers(stream_id);
+            loading.destroy_indicator($("#buddy-list-loading-subscribers"));
+            $("#buddy_list_wrapper").show();
+        }
+        build_user_sidebar();
+        assert(user_cursor !== undefined);
+        user_cursor.reset();
+    })();
 }
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);

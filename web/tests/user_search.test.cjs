@@ -33,15 +33,19 @@ function mock_setTimeout() {
     });
 }
 
+const channel = mock_esm("../src/channel");
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const activity_ui = zrequire("activity_ui");
 const buddy_data = zrequire("buddy_data");
+const {Filter} = zrequire("../src/filter");
+const message_lists = zrequire("message_lists");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const {set_realm} = zrequire("state_data");
+const stream_data = zrequire("stream_data");
 
 const realm = {};
 set_realm(realm);
@@ -95,10 +99,11 @@ function stub_buddy_list_empty_list_message_lengths() {
     $("#buddy-list-other-users .empty-list-message").length = 0;
 }
 
-test("clear_search", ({override}) => {
+test("clear_search with button", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
+    $("#buddy-list-loading-subscribers").css = noop;
 
     stub_buddy_list_empty_list_message_lengths();
 
@@ -119,6 +124,7 @@ test("clear_search", ({override}) => {
 
 test("clear_search", ({override}) => {
     override(realm, "realm_presence_disabled", true);
+    $("#buddy-list-loading-subscribers").css = noop;
 
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
@@ -129,6 +135,36 @@ test("clear_search", ({override}) => {
     activity_ui.clear_search();
 
     // We need to reset this because the unit tests aren't isolated from each other.
+    set_input_val("");
+});
+
+test("fetch on search", ({override}) => {
+    $("#buddy-list-loading-subscribers").css = noop;
+    override(popovers, "hide_all", noop);
+    stub_buddy_list_empty_list_message_lengths();
+
+    const office_id = 23;
+    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    const filter = new Filter([{operator: "stream", operand: office_id}]);
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+    });
+    let get_called = false;
+    channel.get = (opts) => {
+        assert.equal(opts.url, `/json/streams/${office_id}/members`);
+        get_called = true;
+        return {
+            subscribers: [1, 2, 3, 4],
+        };
+    };
+    set_input_val("somevalue");
+    assert.ok(get_called);
+
+    // We need to reset these because the unit tests aren't isolated from each other.
+    message_lists.set_current(undefined);
+    activity_ui.clear_search();
     set_input_val("");
 });
 
