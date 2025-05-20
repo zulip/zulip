@@ -362,7 +362,10 @@ def registration_helper(
 
             saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
             if saved_slack_access_token or slack_access_token is not None:
-                if slack_access_token is not None and slack_access_token != saved_slack_access_token:
+                if (
+                    slack_access_token is not None
+                    and slack_access_token != saved_slack_access_token
+                ):
                     # Verify slack token access.
                     from zerver.data_import.slack import (
                         SLACK_IMPORT_TOKEN_SCOPES,
