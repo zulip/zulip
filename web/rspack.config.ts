@@ -3,7 +3,7 @@ import * as url from "node:url";
 
 import type {ZopfliOptions} from "@gfx/zopfli";
 import {gzip} from "@gfx/zopfli";
-import type {Configuration} from "@rspack/core";
+import type {Configuration, SwcLoaderOptions} from "@rspack/core";
 import {rspack} from "@rspack/core";
 import CompressionPlugin from "compression-webpack-plugin";
 import BundleTracker from "webpack-bundle-tracker";
@@ -110,14 +110,63 @@ const config = (
                     ],
                     type: "javascript/auto",
                 },
-                // Transpile .js and .ts files with Babel
+                // Transpile .js and .ts files with SWC
                 {
-                    test: /\.[cm]?[jt]s$/,
+                    test: /\.[cm]?js$/,
                     include: [
                         path.resolve(import.meta.dirname, "shared/src"),
                         path.resolve(import.meta.dirname, "src"),
                     ],
-                    loader: "babel-loader",
+                    loader: "builtin:swc-loader",
+                    options: {
+                        env: {
+                            mode: "usage",
+                            coreJs: "3.41",
+                        },
+                        jsc: {
+                            experimental: {
+                                plugins: [
+                                    [
+                                        "@swc/plugin-formatjs",
+                                        {
+                                            additionalFunctionNames: ["$t", "$t_html"],
+                                        },
+                                    ],
+                                ],
+                            },
+                        },
+                    } satisfies SwcLoaderOptions,
+                    type: "javascript/auto",
+                },
+                {
+                    test: /\.[cm]?ts$/,
+                    include: [
+                        path.resolve(import.meta.dirname, "shared/src"),
+                        path.resolve(import.meta.dirname, "src"),
+                    ],
+                    loader: "builtin:swc-loader",
+                    options: {
+                        env: {
+                            mode: "usage",
+                            coreJs: "3.41",
+                        },
+                        jsc: {
+                            experimental: {
+                                plugins: [
+                                    [
+                                        "@swc/plugin-formatjs",
+                                        {
+                                            additionalFunctionNames: ["$t", "$t_html"],
+                                        },
+                                    ],
+                                ],
+                            },
+                            parser: {
+                                syntax: "typescript",
+                            },
+                        },
+                    } satisfies SwcLoaderOptions,
+                    type: "javascript/auto",
                 },
                 // regular css files
                 {
