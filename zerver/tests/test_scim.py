@@ -8,10 +8,12 @@ import orjson
 from django.conf import settings
 from typing_extensions import override
 
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserProfile
+from zerver.models import NamedUserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
@@ -677,6 +679,26 @@ class TestSCIMUser(SCIMTestCase):
             "userName": hamlet.delivery_email,
             "active": False,
         }
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            hamlet.realm, "can_manage_all_groups", setting_group, acting_user=None
+        )
+        result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 400)
+        expected_response_schema = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+            "detail": "Cannot deactivate last user with permission.",
+            "status": 400,
+        }
+        self.assertEqual(orjson.loads(result.content), expected_response_schema)
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=hamlet.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            hamlet.realm, "can_manage_all_groups", admins_group, acting_user=None
+        )
         result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
