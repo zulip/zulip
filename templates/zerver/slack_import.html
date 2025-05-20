@@ -41,7 +41,7 @@
                         <label for="slack_access_token" class="inline-block label-title">{{ _('Slack bot user OAuth token') }}</label>
                         <input id="slack-access-token" type="text"
                           placeholder="xoxb-…"
-                          maxlength="100" name="slack_access_token" required {% if slack_access_token %} value="{{ slack_access_token }}" {% endif %} />
+                          maxlength="100" name="slack_access_token" {% if slack_access_token %} value="{{ slack_access_token }}" {% endif %} />
                         {% if slack_access_token_validation_error %}
                         <p id="slack-access-token-validation-error" class="help-inline text-error">{{ slack_access_token_validation_error }}</p>
                         {% endif %}
