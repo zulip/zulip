@@ -1618,18 +1618,19 @@ export function switch_group_tab(tab_name: string): void {
 
 export function add_or_remove_from_group(group: UserGroup, $group_row: JQuery): void {
     const user_id = people.my_current_user_id();
+    const is_direct_member = user_groups.is_direct_member_of(user_id, group.id);
     function success_callback(): void {
         if ($group_row.length > 0) {
             hide_membership_toggle_spinner($group_row);
             // This should only be triggered when a user is on another group
             // edit panel and they join a group via the left panel plus button.
             // In that case, the edit panel of the newly joined group should
-            // open. `is_user_in_group` with direct_members_only set to true acts
-            // as a proxy to check if it's an `add_members` event.
-            if (
-                !is_editing_group(group.id) &&
-                user_groups.is_user_in_group(group.id, user_id, true)
-            ) {
+            // open. We cannot use `is_user_in_group` or `is_direct_member_of`
+            // since that will only give correct result after the data has been
+            // updated on receiving the `add_members` event. We instead check
+            // if user was a direct member of the group or not before making
+            // the request.
+            if (!is_editing_group(group.id) && !is_direct_member) {
                 open_group_edit_panel_for_row(util.the($group_row));
             }
         }
@@ -1644,7 +1645,7 @@ export function add_or_remove_from_group(group: UserGroup, $group_row: JQuery): 
     if ($group_row.length > 0) {
         display_membership_toggle_spinner($group_row);
     }
-    if (user_groups.is_direct_member_of(user_id, group.id)) {
+    if (is_direct_member) {
         user_group_edit_members.edit_user_group_membership({
             group,
             removed: [user_id],
@@ -2145,43 +2146,52 @@ export function initialize(): void {
         $("#groups_overlay_container .two-pane-settings-header").removeClass("slide-left");
     });
 
-    $("#groups_overlay_container").on("click", ".join_leave_button", function (this: HTMLElement) {
-        if ($(this).hasClass("disabled") || $(this).hasClass("not-direct-member")) {
-            // We return early if user is not allowed to join or leave a group.
-            return;
-        }
+    $("#groups_overlay_container").on(
+        "click",
+        ".join_leave_button",
+        function (this: HTMLElement, e) {
+            if ($(this).hasClass("disabled") || $(this).hasClass("not-direct-member")) {
+                // We return early if user is not allowed to join or leave a group.
+                return;
+            }
 
-        const user_group_id = get_user_group_id(this);
-        const user_group = user_groups.get_user_group_from_id(user_group_id);
-        const is_member = user_groups.is_user_in_group(user_group_id, people.my_current_user_id());
-        const is_direct_member = user_groups.is_direct_member_of(
-            people.my_current_user_id(),
-            user_group_id,
-        );
-
-        if (is_member && !is_direct_member) {
-            const associated_subgroups = user_groups.get_associated_subgroups(
-                user_group,
+            const user_group_id = get_user_group_id(this);
+            const user_group = user_groups.get_user_group_from_id(user_group_id);
+            const is_member = user_groups.is_user_in_group(
+                user_group_id,
                 people.my_current_user_id(),
             );
-            const associated_subgroup_names = user_groups.format_group_list(associated_subgroups);
+            const is_direct_member = user_groups.is_direct_member_of(
+                people.my_current_user_id(),
+                user_group_id,
+            );
 
-            confirm_dialog.launch({
-                html_heading: $t_html({defaultMessage: "Join group?"}),
-                html_body: render_confirm_join_group_direct_member({
-                    associated_subgroup_names,
-                }),
-                id: "confirm_join_group_direct_member",
-                on_click() {
-                    const $group_row = row_for_group_id(user_group_id);
-                    add_or_remove_from_group(user_group, $group_row);
-                },
-            });
-        } else {
-            const $group_row = row_for_group_id(user_group_id);
-            add_or_remove_from_group(user_group, $group_row);
-        }
-    });
+            if (is_member && !is_direct_member) {
+                const associated_subgroups = user_groups.get_associated_subgroups(
+                    user_group,
+                    people.my_current_user_id(),
+                );
+                const associated_subgroup_names =
+                    user_groups.format_group_list(associated_subgroups);
+
+                confirm_dialog.launch({
+                    html_heading: $t_html({defaultMessage: "Join group?"}),
+                    html_body: render_confirm_join_group_direct_member({
+                        associated_subgroup_names,
+                    }),
+                    id: "confirm_join_group_direct_member",
+                    on_click() {
+                        const $group_row = row_for_group_id(user_group_id);
+                        add_or_remove_from_group(user_group, $group_row);
+                    },
+                });
+            } else {
+                const $group_row = row_for_group_id(user_group_id);
+                add_or_remove_from_group(user_group, $group_row);
+            }
+            e.stopPropagation();
+        },
+    );
 
     $("#groups_overlay_container").on(
         "click",
