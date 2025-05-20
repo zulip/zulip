@@ -103,18 +103,20 @@ from zerver.actions.scheduled_messages import (
     edit_scheduled_message,
 )
 from zerver.actions.streams import (
-    bulk_add_subscriptions,
-    bulk_remove_subscriptions,
     do_change_stream_description,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
-    do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
     do_unarchive_stream,
 )
 from zerver.actions.submessage import do_add_submessage
+from zerver.actions.subscriptions import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_change_subscription_property,
+)
 from zerver.actions.typing import (
     check_send_typing_notification,
     do_send_direct_message_edit_typing_notification,

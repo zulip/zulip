@@ -166,7 +166,10 @@ export function send_message_success(request, data) {
     }
 }
 
-export let send_message = (request = create_message_object()) => {
+export let send_message = (send_anyway, request = create_message_object()) => {
+    if (send_anyway !== undefined) {
+        request.autosubscribe_stream = send_anyway;
+    }
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
@@ -287,7 +290,7 @@ export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false) 
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export let finish = (scheduling_message = false) => {
+export let finish = (scheduling_message = false, send_anyway = false) => {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -321,7 +324,7 @@ export let finish = (scheduling_message = false) => {
     if (scheduling_message) {
         schedule_message_to_custom_date();
     } else {
-        send_message();
+        send_message(send_anyway);
     }
     do_post_send_tasks();
     return true;

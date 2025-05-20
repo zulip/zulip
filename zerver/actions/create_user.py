@@ -16,7 +16,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
     internal_send_stream_message,
 )
-from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
+from zerver.actions.subscriptions import bulk_add_subscriptions, send_peer_subscriber_events
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     do_send_user_group_members_update_event,

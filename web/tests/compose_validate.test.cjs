@@ -206,7 +206,9 @@ test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
         user_not_subscribed_rendered = true;
         return html;
     });
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
+    // A message to an unsubscribed stream is not invalid - though it can't directly
+    // be sent, we provide some actions through the banner.
+    assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
     assert.ok(user_not_subscribed_rendered);
 
     party_sub.name = "Frontend";
@@ -214,7 +216,7 @@ test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
     stream_data.add_sub(party_sub);
     user_not_subscribed_rendered = false;
 
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
+    assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
 
     assert.ok(user_not_subscribed_rendered);
 });

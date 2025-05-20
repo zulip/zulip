@@ -809,14 +809,13 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
         }
         return false;
     }
-    if (sub.subscribed) {
-        return true;
+    if (!sub.subscribed) {
+        compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
+        }
     }
-    compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
-    if (is_validating_compose_box) {
-        disabled_send_tooltip_message = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
-    }
-    return false;
+    return true;
 }
 
 function validate_stream_message(scheduling_message: boolean, show_banner = true): boolean {
@@ -1105,7 +1104,6 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         is_validating_compose_box = false;
         return false;
     }
-
     if (compose_state.get_message_type() === "private" && !validate_private_message(show_banner)) {
         blueslip.debug("Invalid compose state: Private message validation failed");
         is_validating_compose_box = false;
