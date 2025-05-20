@@ -133,7 +133,7 @@ from zerver.models.users import (
     get_user,
     get_user_profile_by_id_in_realm,
 )
-from zerver.views.streams import compose_views
+from zerver.views.streams import compose_views, set_max_subs_for_notification
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -588,6 +588,7 @@ class TestCreateStreams(ZulipTestCase):
                 "8": ["brand new stream"],
             },
             "already_subscribed": {},
+            "notification_bot_dms_sent": True,
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(orjson.loads(response.content), expected_response)
@@ -951,6 +952,51 @@ class TestCreateStreams(ZulipTestCase):
 
             self.assert_length(channel_events_messages, 1)
             self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
+
+    def test_notification_bot_dm_on_user_addition(self) -> None:
+        """
+        Besides checking the parameter `send_notification_to_new_users`,
+        if the number of newly subscribed users is more than
+        `MAX_SUBS_FOR_NOTIFICATION`, then we do not send notification bot dms.
+        """
+
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        self.login_user(desdemona)
+
+        data = {
+            "subscriptions": '[{"name":"brand new stream 1","description":""}]',
+            "history_public_to_subscribers": "true",
+            "invite_only": "false",
+            "announce": "true",
+            "principals": orjson.dumps([iago.id, aaron.id, cordelia.id, hamlet.id]).decode(),
+            "stream_post_policy": "1",
+            "send_notification_to_new_users": "false",
+        }
+
+        response = self.client_post("/json/users/me/subscriptions", data)
+
+        # This field is only present if `send_notification_to_new_users` is true.
+        self.assertNotIn("notification_bot_dms_sent", orjson.loads(response.content))
+
+        data["send_notification_to_new_users"] = "true"
+        data["subscriptions"] = '[{"name":"brand new stream 2","description":""}]'
+
+        response = self.client_post("/json/users/me/subscriptions", data)
+
+        # The number of new subscribers is 4, which is less than `MAX_SUBS_FOR_NOTIFICATION` (by default 100).
+        self.assertEqual(orjson.loads(response.content)["notification_bot_dms_sent"], True)
+
+        set_max_subs_for_notification(3)
+        data["subscriptions"] = '[{"name":"brand new stream 3","description":""}]'
+
+        response = self.client_post("/json/users/me/subscriptions", data)
+
+        self.assertEqual(orjson.loads(response.content)["notification_bot_dms_sent"], False)
 
 
 class RecipientTest(ZulipTestCase):
