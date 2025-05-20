@@ -10,6 +10,7 @@ import {user_settings} from "./user_settings.ts";
 
 let $current_message_hover: JQuery | undefined;
 let edit_timeout: ReturnType<typeof setTimeout> | undefined;
+let move_timeout: ReturnType<typeof setTimeout> | undefined;
 export function message_unhover(): void {
     if ($current_message_hover === undefined) {
         return;
@@ -17,6 +18,8 @@ export function message_unhover(): void {
 
     clearTimeout(edit_timeout);
     edit_timeout = undefined;
+    clearTimeout(move_timeout);
+    move_timeout = undefined;
     $current_message_hover.removeClass("can-edit-content can-move-message");
     $current_message_hover = undefined;
 }
@@ -71,6 +74,15 @@ function change_edit_content_button($message_row: JQuery, message: Message): voi
             edit_timeout = setTimeout(() => {
                 change_edit_content_button($message_row, message);
             }, remaining_edit_time);
+        }
+    }
+
+    if (move_timeout === undefined) {
+        const remaining_move_time = message_edit.remaining_move_time(message) * 1000;
+        if (remaining_move_time > 0) {
+            move_timeout = setTimeout(() => {
+                change_edit_content_button($message_row, message);
+            }, remaining_move_time);
         }
     }
 }
