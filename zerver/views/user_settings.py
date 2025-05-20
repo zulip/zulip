@@ -34,6 +34,7 @@ from zerver.actions.user_settings import (
 from zerver.actions.users import generate_password_reset_url
 from zerver.decorator import human_users_only
 from zerver.lib.avatar import avatar_url
+from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
@@ -135,6 +136,9 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
             user_profile.realm.demo_organization_scheduled_deletion_date is not None
             and user_profile.is_realm_owner
         )
+        # Schedule onboarding emails for demo organization owner now that we have an
+        # email address for their account.
+        enqueue_welcome_emails(user_profile, demo_organization_creator=True)
         # Because demo organizations are created without setting an email and password
         # we want to redirect to setting a password after configuring and confirming
         # an email for the owner's account.
