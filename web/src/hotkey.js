@@ -850,9 +850,9 @@ export function process_hotkey(e, hotkey) {
 
         if (compose_state.composing()) {
             if ($("#compose").hasClass("preview_mode")) {
-                compose.show_preview_area();
-            } else {
                 compose.clear_preview_area();
+            } else {
+                compose.show_preview_area();
             }
             return true;
         }
