@@ -20,6 +20,31 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 389**
+
+* [`POST /channel_folders/create`](/api/create-channel-folder): Added
+  a new endpoint for creating a new channel folder.
+* [`GET /channel_folders`](/api/get-channel-folders): Added a new endpoint
+  to get all channel folders in the realm.
+* [`PATCH /channel_folders/{channel_folder_id}`](/api/update-channel-folder):
+  Added a new endpoint to update channel folder.
+* [`POST /register`](/api/register-queue): Added `channel_folders` field to
+  response.
+* [`GET /events`](/api/get-events): An event with `type: "channel_folder"` is
+  sent to all users when a channel folder is created.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `folder_id` field
+  to Stream and Subscription objects.
+* [`POST /users/me/subscriptions`](/api/subscribe): Added support to add
+  newly created channels to folder using `folder_id` parameter.
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added support
+  for updating folder to which the channel belongs.
+* [`GET /events`](/api/get-events): An event with `type: "channel_folder"` is
+  sent to all users when a channel folder is updated.
+* [`GET /events`](/api/get-events): `value` field in `stream/update`
+  events can have `null` when channel is removed from a folder.
+
 **Feature level 388**
 
 * [`PATCH /streams/{stream_id}`](/api/update-stream): Added

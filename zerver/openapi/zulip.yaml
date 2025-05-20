@@ -1495,7 +1495,7 @@ paths:
                                   description: |
                                     The new value of the changed property.
 
-                                    **Changes**: Starting with Zulip 11.0 (feature level ZF-57cda6),
+                                    **Changes**: Starting with Zulip 11.0 (feature level 389),
                                     this value can be `null` when a channel is removed from the folder.
 
                                     Starting with Zulip 10.0 (feature level 320), this
@@ -5727,7 +5727,7 @@ paths:
                               description: |
                                 Event sent to users in an organization when a channel folder is created.
 
-                                **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
+                                **Changes**: New in Zulip 11.0 (feature level 389).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -5763,7 +5763,7 @@ paths:
                               description: |
                                 Event sent to users in an organization when a channel folder is updated.
 
-                                **Changes**: New in Zulip 11.0 (feature level ZF-7b788e).
+                                **Changes**: New in Zulip 11.0 (feature level 389).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -11231,7 +11231,7 @@ paths:
                     If the value is `None`, the channel will not be added to
                     any folder.
 
-                    **Changes**: New in Zulip 11.0 (feature level ZF-919531).
+                    **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
                   example: 1
               required:
@@ -15918,7 +15918,7 @@ paths:
                           Only channel folders with one or more public web channels are
                           visible to spectators.
 
-                          **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
+                          **Changes**: New in Zulip 11.0 (feature level 389).
                       unread_msgs:
                         type: object
                         description: |
@@ -21386,7 +21386,7 @@ paths:
                     It can be `None` if the user wants to just remove the channel
                     from its existing folder.
 
-                    **Changes**: New in Zulip 11.0 (feature level ZF-57cda6).
+                    **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
                   nullable: true
                   example: 1
@@ -22976,7 +22976,7 @@ paths:
         Only organization administrators can create a new channel
         folder.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-392de9).
+        **Changes**: New in Zulip 11.0 (feature level 389).
       requestBody:
         required: true
         content:
@@ -23042,7 +23042,7 @@ paths:
       description: |
         Fetches all of the channel folders in the organization.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-2a4adb).
+        **Changes**: New in Zulip 11.0 (feature level 389).
       requestBody:
         required: false
         content:
@@ -23118,7 +23118,7 @@ paths:
         Only organization administrators can update a
         channel folder.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-7b788e).
+        **Changes**: New in Zulip 11.0 (feature level 389).
       parameters:
         - $ref: "#/components/parameters/ChannelFolderId"
       requestBody:
@@ -26636,7 +26636,7 @@ components:
 
         Is `null` if channel does not belong to any folder.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-2f0879).
+        **Changes**: New in Zulip 11.0 (feature level 389).
 
   ###################
   # Shared responses
