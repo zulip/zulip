@@ -14,6 +14,11 @@ process_names:
       - python3
     cmdline:
       - /usr/local/bin/process_fts_updates
+  - name: email_server
+    comm:
+      - python3
+    cmdline:
+      - /home/zulip/deployments/current/manage.py email_server
   - name: "worker-{{.Matches.Queue}}"
     comm:
       - python3
