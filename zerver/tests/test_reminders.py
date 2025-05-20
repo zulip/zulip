@@ -61,7 +61,7 @@ class RemindersTest(ZulipTestCase):
 
     def get_channel_message_reminder_content(self, msg_content: str, msg_id: int) -> str:
         return (
-            "You requested a reminder for the following message sent to [Verona > test](http://zulip.testserver/#narrow/channel/3-Verona/topic/test).\n\n"
+            f"You requested a reminder for #**Verona>test@{msg_id}**.\n\n"
             f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}):\n```quote\n{msg_content}\n```"
         )
 
