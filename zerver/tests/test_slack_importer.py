@@ -366,13 +366,14 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(
             exception_for("xoxq-unknown"),
-            "Enter a token. Valid tokens start with xoxb-.",
+            "Invalid token. Valid tokens start with xoxb-.",
         )
 
-        self.assertEqual(
-            exception_for("xoxb-invalid-token"),
-            "Invalid Slack token: xoxb-invalid-token, invalid_auth",
-        )
+        with self.assertLogs(level="ERROR"):
+            self.assertEqual(
+                exception_for("xoxb-invalid-token"),
+                "Invalid token: xoxb-invalid-token",
+            )
 
         self.assertEqual(
             exception_for("xoxb-broken-request"),

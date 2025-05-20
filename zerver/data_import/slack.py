@@ -1667,7 +1667,8 @@ def check_token_access(token: str, required_scopes: set[str]) -> None:
         if not data.json()["ok"]:
             error = data.json()["error"]
             if error != "missing_scope":
-                raise ValueError(f"Invalid Slack token: {token}, {error}")
+                logging.error("Slack token is invalid: %s", error)
+                raise ValueError(f"Invalid token: {token}")
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         missing_scopes = required_scopes - has_scopes
         if missing_scopes:
@@ -1675,7 +1676,7 @@ def check_token_access(token: str, required_scopes: set[str]) -> None:
                 f"Slack token is missing the following required scopes: {sorted(missing_scopes)}"
             )
     else:
-        raise Exception("Enter a token. Valid tokens start with xoxb-.")
+        raise Exception("Invalid token. Valid tokens start with xoxb-.")
 
 
 def get_slack_api_data(
