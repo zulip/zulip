@@ -94,8 +94,7 @@ class PopoverMenu {
 
         const $popover = $(this.instance.popper);
 
-        // eslint-disable-next-line no-jquery/no-sizzle
-        const $items = $("[tabindex='0']", $popover).filter(":visible");
+        const $items = $("[tabindex='0']", $popover);
 
         popover_items_handle_keyboard_with_overrides(key, $items);
     }
@@ -113,10 +112,8 @@ function popover_items_handle_keyboard_with_overrides(key: string, $items: JQuer
     const index = $items.index($items.filter(":focus"));
 
     if (index === -1) {
-        const first_menu_option_index = $items.index(
-            $items.filter(".link-item .popover-menu-link"),
-        );
-        $items.eq(first_menu_option_index).trigger("focus");
+        const $menu_options = $items.filter(".link-item .popover-menu-link");
+        [...$menu_options].find((option) => option.getClientRects().length)?.focus();
         return;
     }
 
@@ -615,7 +612,7 @@ function focus_user_card_popover_item(): void {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_card_popover_for_message_items();
-    popover_menus.focus_first_popover_item($items);
+    [...($items ?? [])].find((item) => item.getClientRects().length)?.focus();
 }
 
 function get_user_card_popover_for_message_items(): JQuery | undefined {
@@ -632,8 +629,7 @@ function get_user_card_popover_for_message_items(): JQuery | undefined {
 
     // Return only the popover menu options that are visible, and not the
     // copy buttons or the link items in the custom profile fields.
-    // eslint-disable-next-line no-jquery/no-sizzle
-    return $(".link-item .popover-menu-link", $popover).filter(":visible");
+    return $(".link-item .popover-menu-link", $popover);
 }
 
 // Functions related to the user card popover in the user sidebar.
