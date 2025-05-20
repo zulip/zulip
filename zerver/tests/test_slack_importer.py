@@ -366,7 +366,7 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(
             exception_for("xoxq-unknown"),
-            "Unknown token type -- must start with xoxb- or xoxp-",
+            "Enter a token. Valid tokens start with xoxb-.",
         )
 
         self.assertEqual(
