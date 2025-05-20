@@ -5,7 +5,8 @@ from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.url_encoding import near_message_url, topic_narrow_url
+from zerver.lib.topic_link_util import get_message_link_syntax
+from zerver.lib.url_encoding import near_message_url
 from zerver.models import Message, Stream, UserProfile
 
 
@@ -17,17 +18,13 @@ def get_reminder_formatted_content(message: Message, current_user: UserProfile) 
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
-        narrow_link = topic_narrow_url(
-            realm=current_user.realm,
-            stream=stream,
-            topic_name=message.topic_name(),
-        )
-        content = _(
-            "You requested a reminder for the following message sent to [{stream_name} > {topic_name}]({narrow_link})."
-        ).format(
-            stream_name=stream.name,
-            topic_name=message.topic_name(),
-            narrow_link=narrow_link,
+        content = _("You requested a reminder for {message_pretty_link}.").format(
+            message_pretty_link=get_message_link_syntax(
+                stream_id=stream.id,
+                stream_name=stream.name,
+                topic_name=message.topic_name(),
+                message_id=message.id,
+            )
         )
     else:
         content = _("You requested a reminder for the following direct message.")
