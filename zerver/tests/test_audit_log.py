@@ -833,8 +833,8 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_stream_folder(self) -> None:
         user = self.example_user("iago")
         stream = self.make_stream("test", user.realm)
-        frontend_folder = check_add_channel_folder("Frontend", "", acting_user=user)
-        backend_folder = check_add_channel_folder("Backend", "", acting_user=user)
+        frontend_folder = check_add_channel_folder(user.realm, "Frontend", "", acting_user=user)
+        backend_folder = check_add_channel_folder(user.realm, "Backend", "", acting_user=user)
 
         now = timezone_now()
         do_change_stream_folder(stream, frontend_folder, acting_user=user)
@@ -1612,6 +1612,7 @@ class TestRealmAuditLog(ZulipTestCase):
         iago = self.example_user("iago")
         now = timezone_now()
         channel_folder = check_add_channel_folder(
+            iago.realm,
             "Frontend",
             "Channels for frontend discussions",
             acting_user=iago,

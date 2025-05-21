@@ -79,18 +79,21 @@ class GetChannelFoldersTest(ZulipTestCase):
     def test_get_channel_folders(self) -> None:
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
+        zulip_realm = iago.realm
         frontend_folder = check_add_channel_folder(
-            "Frontend", "Channels for frontend discussions", acting_user=iago
+            zulip_realm, "Frontend", "Channels for frontend discussions", acting_user=iago
         )
         backend_folder = check_add_channel_folder(
-            "Backend", "Channels for **backend** discussions", acting_user=iago
+            zulip_realm, "Backend", "Channels for **backend** discussions", acting_user=iago
         )
         marketing_folder = check_add_channel_folder(
-            "Marketing", "Channels for marketing discussions", acting_user=desdemona
+            zulip_realm, "Marketing", "Channels for marketing discussions", acting_user=desdemona
         )
 
         lear_user = self.lear_user("cordelia")
-        check_add_channel_folder("Devops", "Channels for devops discussions", acting_user=lear_user)
+        check_add_channel_folder(
+            lear_user.realm, "Devops", "Channels for devops discussions", acting_user=lear_user
+        )
 
         def check_channel_folders_in_zulip_realm(
             channel_folders: list[dict[str, Any]], marketing_folder_included: bool = True
@@ -168,12 +171,14 @@ class GetChannelFoldersTest(ZulipTestCase):
 
 class UpdateChannelFoldersTest(ZulipTestCase):
     def test_updating_channel_folder_name(self) -> None:
+        realm = get_realm("zulip")
         channel_folder = check_add_channel_folder(
+            realm,
             "Frontend",
             "Channels for frontend discussions",
             acting_user=self.example_user("desdemona"),
         )
-        check_add_channel_folder("Backend", "", acting_user=self.example_user("desdemona"))
+        check_add_channel_folder(realm, "Backend", "", acting_user=self.example_user("desdemona"))
         channel_folder_id = channel_folder.id
 
         self.login("hamlet")
@@ -208,6 +213,7 @@ class UpdateChannelFoldersTest(ZulipTestCase):
 
     def test_updating_channel_folder_description(self) -> None:
         channel_folder = check_add_channel_folder(
+            get_realm("zulip"),
             "Frontend",
             "Channels for frontend discussions",
             acting_user=self.example_user("desdemona"),
@@ -245,6 +251,7 @@ class UpdateChannelFoldersTest(ZulipTestCase):
 
     def test_archiving_and_unarchiving_channel_folder(self) -> None:
         channel_folder = check_add_channel_folder(
+            get_realm("zulip"),
             "Frontend",
             "Channels for frontend discussions",
             acting_user=self.example_user("desdemona"),
