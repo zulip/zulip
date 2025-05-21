@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import re
 import secrets
 from collections.abc import Callable
@@ -30,13 +31,14 @@ def process_list_in_batches(
     lst: list[T], chunk_size: int, process_batch: Callable[[list[T]], None]
 ) -> None:
     offset = 0
-
+    total_message_length = len(lst)
     while True:
         items = lst[offset : offset + chunk_size]
         if not items:
             break
         process_batch(items)
-        offset += chunk_size
+        offset = min(offset + chunk_size, total_message_length)
+        logging.info("Processed messages up to %s / %s", offset, total_message_length)
 
 
 def optional_bytes_to_mib(value: int | None) -> int | None:
