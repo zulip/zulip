@@ -2920,7 +2920,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_updating_stream_folder(self) -> None:
         iago = self.example_user("iago")
-        channel_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
+        channel_folder = check_add_channel_folder(iago.realm, "Frontend", "", acting_user=iago)
         stream = self.make_stream("test_stream")
 
         self.assertIsNone(stream.folder_id)
@@ -2953,7 +2953,7 @@ class StreamAdminTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         realm = iago.realm
-        channel_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
+        channel_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
         stream = self.make_stream("test_stream")
 
         self.assertIsNone(stream.folder_id)

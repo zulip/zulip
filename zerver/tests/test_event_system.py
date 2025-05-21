@@ -204,8 +204,8 @@ class EventsEndpointTest(ZulipTestCase):
         realm = get_realm("zulip")
         iago = self.example_user("iago")
 
-        frontend_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
-        backend_folder = check_add_channel_folder("Backend", "", acting_user=iago)
+        frontend_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
+        backend_folder = check_add_channel_folder(realm, "Backend", "", acting_user=iago)
 
         result = self.client_post("/json/register")
         self.assertEqual(result.status_code, 200)

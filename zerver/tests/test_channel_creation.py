@@ -696,7 +696,7 @@ class TestCreateStreams(ZulipTestCase):
         realm = get_realm("zulip")
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
-        channel_folder = check_add_channel_folder("Backend", "", acting_user=iago)
+        channel_folder = check_add_channel_folder(realm, "Backend", "", acting_user=iago)
 
         subscriptions = [
             {"name": "new_stream", "description": "New stream"},
