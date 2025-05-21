@@ -31,8 +31,9 @@ def create_channel_folder(
     name: Annotated[str, StringConstraints(max_length=ChannelFolder.MAX_NAME_LENGTH)],
     description: Annotated[str, StringConstraints(max_length=ChannelFolder.MAX_DESCRIPTION_LENGTH)],
 ) -> HttpResponse:
-    check_channel_folder_name(name, user_profile.realm)
-    channel_folder = check_add_channel_folder(name, description, acting_user=user_profile)
+    realm = user_profile.realm
+    check_channel_folder_name(name, realm)
+    channel_folder = check_add_channel_folder(realm, name, description, acting_user=user_profile)
 
     return json_success(request, data={"channel_folder_id": channel_folder.id})
 
