@@ -654,15 +654,10 @@
 
     .message_inline_ref {
         margin-bottom: var(--markdown-interelement-space-px);
-        margin-left: 5px;
+        margin-inline-start: 5px;
         height: 50px;
         display: block !important;
         border: none !important;
-    }
-
-    &.rtl .message_inline_ref {
-        margin-left: unset;
-        margin-right: 5px;
     }
 
     .message_inline_image .media-image-element {
@@ -764,7 +759,7 @@
            text works as expected. */
         height: calc(var(--length-message-preview-embeds) + 10px);
         padding: 5px;
-        border-left: 3px solid hsl(0deg 0% 93%);
+        border-inline-start: 3px solid hsl(0deg 0% 93%);
 
         .message_embed_title {
             font-size: 1.2em;
@@ -815,14 +810,6 @@
             grid-area: data-container;
             overflow: hidden;
         }
-    }
-
-    /* Although grid will automatically respond to
-       RTL languages, we still need to manually fix
-       the border here, which is not part of grid. */
-    &.rtl .message_embed {
-        border-left: unset;
-        border-right: 3px solid hsl(0deg 0% 93%);
     }
 
     & a {
