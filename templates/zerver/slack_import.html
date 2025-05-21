@@ -70,6 +70,7 @@
                         {% endtrans %}
                     </div>
                     <div id="slack-import-drag-and-drop" data-max-file-size="{{max_file_size}}"></div>
+                    <p id="slack-import-file-upload-error" class="help-inline text-error"></p>
                 </div>
                 <form id="slack-import-start-upload-wrapper" method="post" class="form-inline {% if uploaded_import_file_name %}{% else %}hidden{% endif %}" action="{{ url('import_realm_from_slack') }}">
                     {{ csrf_input }}
