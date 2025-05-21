@@ -183,21 +183,15 @@
         /* This keeps the blockquote text block
            aligned with list-item text blocks.
            12.4px at 16px/1em */
-        padding: 0 0 0 0.775em;
+        padding: 0;
+        padding-inline-start: 0.775em;
         /* We want to keep the border roughly centered
            with bullets and single-digit list markers.
            3.5px at 16px/1em */
-        margin: 0 0 var(--markdown-interelement-space-px) 0.2188em;
-        border-left: 4px solid var(--color-text-message-blockquote-border);
-    }
-
-    &.rtl blockquote {
-        /* 12.4px at 16px/1em */
-        padding: 0 0.775em 0 0;
-        /* 3.5px at 16px/1em */
-        margin: 0 0.2188em var(--markdown-interelement-space-px) 0;
-        border-left: unset;
-        border-right: 4px solid var(--color-text-message-blockquote-border);
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 0.2188em;
+        border-inline-start: 4px solid
+            var(--color-text-message-blockquote-border);
     }
 
     /* Formatting for Markdown tables */
