@@ -7,7 +7,7 @@ from zerver.lib.markdown import markdown_convert
 from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import ChannelFolder, Realm, UserProfile
+from zerver.models import ChannelFolder, Realm, Stream, UserProfile
 
 
 class ChannelFolderDict(TypedDict):
@@ -81,3 +81,9 @@ def get_channel_folders_for_spectators(realm: Realm) -> list[ChannelFolderDict]:
     folders = ChannelFolder.objects.filter(id__in=folder_ids_for_web_public_streams)
     channel_folders = [get_channel_folder_dict(channel_folder) for channel_folder in folders]
     return sorted(channel_folders, key=lambda folder: folder["id"])
+
+
+def check_channel_folder_in_use(channel_folder: ChannelFolder) -> bool:
+    if Stream.objects.filter(folder=channel_folder).exists():
+        return True
+    return False
