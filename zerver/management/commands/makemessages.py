@@ -43,8 +43,11 @@ from typing import Any
 import orjson
 from django.core.management.base import CommandParser
 from django.core.management.commands import makemessages
+from django.template import engines
+from django.template.backends.jinja2 import Jinja2
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
+from jinja2.environment import Environment
 from typing_extensions import override
 
 strip_whitespace_right = re.compile(
@@ -52,6 +55,11 @@ strip_whitespace_right = re.compile(
 )
 strip_whitespace_left = re.compile(
     rf"\s+({BLOCK_TAG_START}-\s*(endtrans|pluralize).*?-?{BLOCK_TAG_END})"
+)
+trim_blocks = re.compile(rf"({BLOCK_TAG_START}[-+]?\s*(trans|pluralize)[^+]*?{BLOCK_TAG_END})\n")
+lstrip_blocks = re.compile(
+    rf"^[ \t]+({BLOCK_TAG_START}\s*(endtrans|pluralize).*?[-+]?{BLOCK_TAG_END})",
+    re.MULTILINE,
 )
 
 regexes = [
@@ -71,10 +79,30 @@ multiline_js_comment = re.compile(r"/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile(r"//.*?\n")
 
 
-def strip_whitespaces(src: str) -> str:
-    src = strip_whitespace_left.sub("\\1", src)
-    src = strip_whitespace_right.sub("\\1", src)
+def strip_whitespaces(src: str, env: Environment) -> str:
+    src = strip_whitespace_left.sub(r"\1", src)
+    src = strip_whitespace_right.sub(r"\1", src)
+    if env.trim_blocks:
+        src = trim_blocks.sub(r"\1", src)
+    if env.lstrip_blocks:
+        src = lstrip_blocks.sub(r"\1", src)
     return src
+
+
+# this regex looks for {% trans %} blocks that don't have 'trimmed' or 'notrimmed' set.
+# capturing {% endtrans %} ensures this doesn't affect DTL {% trans %} tags.
+trans_block_re = re.compile(
+    rf"({BLOCK_TAG_START}[-+]?\s*trans)(?!\s+(?:no)?trimmed)"
+    rf"(.*?{BLOCK_TAG_END}.*?{BLOCK_TAG_START}[-+]?\s*?endtrans\s*?[-+]?{BLOCK_TAG_END})",
+    re.DOTALL,
+)
+
+
+def apply_i18n_trimmed_policy(src: str, env: Environment) -> str:
+    # if env.policies["ext.i18n.trimmed"]: insert 'trimmed' flag on jinja {% trans %} blocks.
+    if not env.policies.get("ext.i18n.trimmed", False):
+        return src
+    return trans_block_re.sub(r"\1 trimmed \2", src)
 
 
 class Command(makemessages.Command):
@@ -136,18 +164,24 @@ class Command(makemessages.Command):
         # Extend the regular expressions that are used to detect
         # translation blocks with an "OR jinja-syntax" clause.
         template.endblock_re = re.compile(
-            template.endblock_re.pattern + r"|" + r"""^-?\s*endtrans\s*-?$"""
+            template.endblock_re.pattern + "|" + r"""^[-+]?\s*endtrans\s*[-+]?$"""
         )
         template.block_re = re.compile(
-            template.block_re.pattern + r"|" + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
+            template.block_re.pattern
+            + "|"
+            + r"""^[-+]?\s*trans(?:\s+(?:no)?trimmed)?(?:\s+(?!'|")(?=.*?=.*?)|\s*[-+]?$)"""
         )
         template.plural_re = re.compile(
-            template.plural_re.pattern + r"|" + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
+            template.plural_re.pattern + "|" + r"""^[-+]?\s*pluralize(?:\s+.+|[-+]?$)"""
         )
-        template.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
+        template.constant_re = re.compile(r""".*?_\(((?:".*?(?<!\\)")|(?:'.*?(?<!\\)')).*?\)""")
+
+        jinja_engine = engines["Jinja2"]
+        assert isinstance(jinja_engine, Jinja2)
 
         def my_templatize(src: str, *args: Any, **kwargs: Any) -> str:
-            new_src = strip_whitespaces(src)
+            new_src = strip_whitespaces(src, jinja_engine.env)
+            new_src = apply_i18n_trimmed_policy(new_src, jinja_engine.env)
             return old_templatize(new_src, *args, **kwargs)
 
         template.templatize = my_templatize
