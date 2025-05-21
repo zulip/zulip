@@ -420,8 +420,7 @@ def update_stream_backend(
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
 
-    if folder_id is not Missing:
-        assert not isinstance(folder_id, MissingType)
+    if not isinstance(folder_id, MissingType):
         folder: ChannelFolder | None = None
         if folder_id is not None:
             folder = get_channel_folder_by_id(folder_id, user_profile.realm)
