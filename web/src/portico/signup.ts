@@ -426,6 +426,10 @@ $(() => {
             $("#slack-import-start-upload-wrapper").removeClass("hidden");
             $("#slack-import-uploaded-file-name").text(file.name!);
         });
+        // Reset uppy state to allow user replace existing uploaded file.
+        uppy.on("complete", () => {
+            uppy.clear();
+        });
     }
 
     if ($("#slack-import-poll-status").length > 0) {
