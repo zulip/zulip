@@ -37,7 +37,12 @@ class ChannelFolderCreationTest(ZulipTestCase):
         self.assertTrue(ChannelFolder.objects.filter(realm=realm, name="Frontend").exists())
 
         result = self.client_post("/json/channel_folders/create", params)
-        self.assert_json_error(result, "Channel folder 'Frontend' already exists")
+        self.assert_json_error(result, "Channel folder name already in use")
+
+        # Folder names should be unique case-insensitively.
+        params["name"] = "frontEND"
+        result = self.client_post("/json/channel_folders/create", params)
+        self.assert_json_error(result, "Channel folder name already in use")
 
     def test_rendered_description_for_channel_folder(self) -> None:
         self.login("iago")
@@ -204,7 +209,12 @@ class UpdateChannelFoldersTest(ZulipTestCase):
 
         params = {"name": "Backend"}
         result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
-        self.assert_json_error(result, "Channel folder 'Backend' already exists")
+        self.assert_json_error(result, "Channel folder name already in use")
+
+        # Folder names should be unique case-insensitively.
+        params = {"name": "backEND"}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Channel folder name already in use")
 
         invalid_name = "abc\000"
         params = {"name": invalid_name}
