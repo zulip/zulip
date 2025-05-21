@@ -43,11 +43,11 @@ cp -a \
     package.json pnpm-lock.yaml \
     /tmp/production-build
 
-# Check that webpack bundles use only ES2020 syntax.
+# Check that webpack bundles use only ES2022 syntax.
 # Use the pnpm binary installed by tools/provision.
 PNPM="/usr/local/bin/pnpm"
 tar -C /tmp -xzf /tmp/production-build/zulip-server-test.tar.gz zulip-server-test/prod-static/serve/webpack-bundles
 (
     GLOBIGNORE="/tmp/zulip-server-test/prod-static/serve/webpack-bundles/katex*.js"
-    "$PNPM" exec es-check es2020 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
+    "$PNPM" exec es-check es2022 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
 )
