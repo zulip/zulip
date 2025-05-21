@@ -371,6 +371,19 @@ feature highlights in Zulip Server 10.0, and other Zulip project updates.
             blog_post_10_0_url="https://blog.zulip.com/zulip-server-10-0",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=16,
+        message="""
+- You can now [configure]({resolved_topic_notice_url}) whether notices sent when
+  topics are resolved are automatically marked as read for you.
+- You can now restore [deactivated groups]({deactivate_a_group_url}) and
+  [archived channels]({archive_a_channel_url}) if you need to use them again.
+""".format(
+            resolved_topic_notice_url="/help/marking-messages-as-read#configure-whether-resolved-topic-notices-are-marked-as-read",
+            archive_a_channel_url="/help/archive-a-channel",
+            deactivate_a_group_url="/help/deactivate-a-user-group",
+        ),
+    ),
 ]
 
 
