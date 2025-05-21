@@ -4675,7 +4675,7 @@ msgstr ""
 "Valitettavasti linkki, jonka annoit on virheellinen tai se on jo käytetty."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "Uusi salasnaa asetettu"
 
 #: templates/zerver/reset_done.html:13

@@ -4300,7 +4300,7 @@ msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "Bu e-posta adresini zaten kaydetmişsiniz. Lutfen aşağıdan giriş yapın."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "Yeni parola başarıyla ayarlandı"
 
 #: templates/zerver/reset_done.html:13

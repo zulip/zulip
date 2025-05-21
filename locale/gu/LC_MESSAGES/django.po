@@ -4231,7 +4231,7 @@ msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "ખેડૂત, તમે આપેલી લિંક અમાન્ય છે અથવા પહેલાથી વપરાયેલ છે."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "નવો પાસવર્ડ સફળતાથી સેટ કરવામાં આવ્યો"
 
 #: templates/zerver/reset_done.html:13

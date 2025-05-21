@@ -4799,7 +4799,7 @@ msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "К сожалению, эта ссылка неверна или уже использовалась."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "Новый пароль успешно установлен"
 
 #: templates/zerver/reset_done.html:13

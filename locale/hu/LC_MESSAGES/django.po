@@ -4033,7 +4033,7 @@ msgstr ""
 "Sajnos az általad használt link érvénytelen vagy már felhasználásra került."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr ""
 
 #: templates/zerver/reset_done.html:13

@@ -4262,7 +4262,7 @@ msgstr ""
 "Désolé, le lien que vous avez fourni est invalide ou a déjà été utilisé."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "Nouveau mot de passe correctement créé"
 
 #: templates/zerver/reset_done.html:13

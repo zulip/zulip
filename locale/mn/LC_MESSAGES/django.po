@@ -4165,7 +4165,7 @@ msgstr ""
 "Уучлаарай, таны оруулсан холбоос буруу эсвэл аль хэдийн ашиглагдсан байна."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "Шинэ нууц үгийг амжилттай тохирууллаа"
 
 #: templates/zerver/reset_done.html:13

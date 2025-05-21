@@ -3889,7 +3889,7 @@ msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "කණගාටුයි, ඔබ ලබා දුන් සබැඳිය වලංගු නැත හෝ දැනටමත් භාවිතා කර ඇත."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr ""
 
 #: templates/zerver/reset_done.html:13

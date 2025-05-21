@@ -4249,7 +4249,7 @@ msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "对不起，您提供的链接不正确，或者已经使用过了"
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "新密码已设置成功"
 
 #: templates/zerver/reset_done.html:13
