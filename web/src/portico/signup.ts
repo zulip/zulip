@@ -418,6 +418,9 @@ $(() => {
             },
         });
         uppy.use(Tus, {endpoint: "/api/v1/tus/"});
+        uppy.on("restriction-failed", (_file, error) => {
+            $("#slack-import-file-upload-error").text(error.message);
+        });
         uppy.on("upload-error", (_file, error) => {
             $("#slack-import-file-upload-error").text(error.message);
         });
@@ -425,6 +428,7 @@ $(() => {
             assert(file !== undefined);
             $("#slack-import-start-upload-wrapper").removeClass("hidden");
             $("#slack-import-uploaded-file-name").text(file.name!);
+            $("#slack-import-file-upload-error").text("");
         });
         // Reset uppy state to allow user replace existing uploaded file.
         uppy.on("complete", () => {
