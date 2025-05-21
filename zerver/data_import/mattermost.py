@@ -393,6 +393,11 @@ def process_message_attachments(
     return content, has_image
 
 
+def convert_html_to_text(content: str) -> str:
+    # html2text is GPL licensed, so run it as a subprocess.
+    return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
+
+
 def process_raw_message_batch(
     realm_id: int,
     raw_messages: list[dict[str, Any]],
@@ -439,8 +444,11 @@ def process_raw_message_batch(
             mention_user_ids=mention_user_ids,
         )
 
-        # html2text is GPL licensed, so run it as a subprocess.
-        content = subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
+        try:
+            content = convert_html_to_text(content)
+        except Exception:
+            logging.warning("Error converting HTML to text for message: '%s'; continuing", content)
+            logging.warning(str(raw_message))
 
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]
