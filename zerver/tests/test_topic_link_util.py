@@ -68,3 +68,11 @@ class TestTopicLinkUtil(ZulipTestCase):
             get_stream_topic_link_syntax(sweden_id, "Sweden", "&a[b"),
             f"[#Sweden > &amp;a&#91;b](#narrow/channel/{sweden_id}-Sweden/topic/.26a.5Bb)",
         )
+        self.assertEqual(
+            get_stream_topic_link_syntax(sweden_id, "Sweden", ""),
+            "#**Sweden>**",
+        )
+        self.assertEqual(
+            get_stream_topic_link_syntax(sweden_id, "Sw*den", ""),
+            f"[#Sw&#42;den > general chat](#narrow/channel/{sweden_id}-Sw*den/topic/)",
+        )
