@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util.ts";
 import * as stream_data from "./stream_data.ts";
+import * as util from "./util.ts";
 
 const invalid_stream_topic_regex = /[`>*&[\]]|(\$\$)/g;
 
@@ -64,14 +65,15 @@ export function get_topic_link_content(
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
+        const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (message_id !== undefined) {
             return {
-                text: `#${escape(stream_name)} > ${escape(topic_name)} @ 💬`,
+                text: `#${escape(stream_name)} > ${escape(topic_display_name)} @ 💬`,
                 url: `${stream_topic_url}/near/${message_id}`,
             };
         }
         return {
-            text: `#${escape(stream_name)} > ${escape(topic_name)}`,
+            text: `#${escape(stream_name)} > ${escape(topic_display_name)}`,
             url: stream_topic_url,
         };
     }
