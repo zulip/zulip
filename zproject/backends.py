@@ -17,6 +17,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import Any, TypedDict, TypeVar, cast
 from urllib.parse import urlencode
@@ -1434,6 +1435,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: str | None
     multiuse_object_key: str
     full_name_validated: bool
+    group_memberships_sync_map: dict[str, bool] | None
     # The mobile app doesn't actually use a session, so this
     # data is not applicable there.
     params_to_store_in_authenticated_session: dict[str, str]
@@ -1697,9 +1699,15 @@ def sync_groups(
     logger.debug("Finished group sync for user %s", user_id)
 
 
+@dataclass
+class SocialAuthSyncNewUserInfo:
+    role: int | None
+    group_memberships_sync_map: dict[str, bool]
+
+
 def social_auth_sync_user_attributes(
     realm: Realm, user_profile: UserProfile | None, extra_attrs: dict[str, Any], backend: Any
-) -> int | None:
+) -> SocialAuthSyncNewUserInfo | None:
     """
     Syncs user attributes based on the SOCIAL_AUTH_SYNC_ATTRS_DICT setting.
     Only supports:
@@ -1733,16 +1741,17 @@ def social_auth_sync_user_attributes(
     # Ignore group names which aren't configured.
     if should_sync_groups:
         syncable_group_names = set(external_group_name_to_zulip_group_name.values())
-        external_group_names = filter(
-            lambda name: name in external_group_name_to_zulip_group_name,
+        external_group_names = [
             # pop zulip_groups from extra_attrs, so that only user attribute sync
             # values remain there.
             # zulip_groups being absent should be treated as if no group memberships
             # are desired. That's because Okta doesn't send the SAML attribute at all
             # if the user has no group memberships. Thus we treat this absence as
             # an empty list.
-            extra_attrs.pop("zulip_groups", []),
-        )
+            name
+            for name in extra_attrs.pop("zulip_groups", [])
+            if name in external_group_name_to_zulip_group_name
+        ]
         intended_group_names = {
             external_group_name_to_zulip_group_name[external_name]
             for external_name in external_group_names
@@ -1783,13 +1792,23 @@ def social_auth_sync_user_attributes(
             )
 
     if user_profile is None:
-        # We don't support user creation with custom profile fields or groups, so just
-        # return role so that it can be plumbed through to the signup flow.
+        # We don't support user creation with custom profile fields, so just
+        # return role and group memberships so that it can be plumbed through to the signup flow.
         if new_role is not None:
             backend.logger.info(
                 "Returning role %s for user creation", UserProfile.ROLE_ID_TO_API_NAME[new_role]
             )
-        return new_role
+        if should_sync_groups:
+            group_memberships_sync_map = {
+                group_name: (group_name in intended_group_names)
+                for group_name in syncable_group_names
+            }
+        else:
+            group_memberships_sync_map = {}
+
+        return SocialAuthSyncNewUserInfo(
+            role=new_role, group_memberships_sync_map=group_memberships_sync_map
+        )
 
     # Based on the information collected above, sync what's needed for the user_profile.
     old_role = user_profile.role
@@ -2076,7 +2095,9 @@ def social_auth_finish(
         is_signup = False
 
     extra_attrs = return_data.get("extra_attrs", {})
-    role_for_new_user = social_auth_sync_user_attributes(realm, user_profile, extra_attrs, backend)
+    social_auth_sync_new_user_info = social_auth_sync_user_attributes(
+        realm, user_profile, extra_attrs, backend
+    )
 
     if user_profile:
         # This call to authenticate() is just to get to invoke the custom_auth_decorator logic.
@@ -2136,7 +2157,19 @@ def social_auth_finish(
         params_to_store_in_authenticated_session=backend.get_params_to_store_in_authenticated_session(),
     )
     if user_profile is None:
-        data_dict.update(dict(full_name=full_name, email=email_address, role=role_for_new_user))
+        data_dict.update(
+            dict(
+                full_name=full_name,
+                email=email_address,
+            )
+        )
+        if social_auth_sync_new_user_info is not None:
+            data_dict.update(
+                dict(
+                    role=social_auth_sync_new_user_info.role,
+                    group_memberships_sync_map=social_auth_sync_new_user_info.group_memberships_sync_map,
+                )
+            )
 
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
