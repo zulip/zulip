@@ -1,6 +1,7 @@
 import random
 import re
 from collections.abc import Sequence
+from datetime import timedelta
 from email.headerregistry import Address
 from unittest import mock
 from unittest.mock import patch
@@ -11,9 +12,11 @@ from django.conf import settings
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from django_stubs_ext import StrPromise
 
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -85,6 +88,35 @@ class TestMessageNotificationEmails(ZulipTestCase):
         ) as m:
             handle_missedmessage_emails(
                 hamlet.id,
+                {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+            )
+        m.assert_not_called()
+
+    def test_demo_organization_owner_email_not_set(self) -> None:
+        realm = get_realm("zulip")
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
+        realm.save()
+
+        # Demo organization owner's don't have an email address set initially
+        desdemona = self.example_user("desdemona")
+        desdemona.delivery_email = ""
+        desdemona.save()
+
+        notification_bot = self.notification_bot(realm)
+        internal_send_private_message(
+            sender=notification_bot,
+            recipient_user=desdemona,
+            content="Notification bot message",
+        )
+        message = self.get_last_message()
+        self.assertEqual(message.sender.id, notification_bot.id)
+        self.assertEqual(message.content, "Notification bot message")
+
+        with mock.patch(
+            "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
+        ) as m:
+            handle_missedmessage_emails(
+                desdemona.id,
                 {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_not_called()

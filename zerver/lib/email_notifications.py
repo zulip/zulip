@@ -621,6 +621,18 @@ def handle_missedmessage_emails(
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
+    if user_profile.delivery_email == "":
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user_profile.realm.demo_organization_scheduled_deletion_date is not None
+            and user_profile.is_realm_owner
+        )
+        # Because demo organizations are created without setting an email, we can't
+        # send any missed message emails until they add an email to their account,
+        # e.g., they receive a direct message from the Welcome or Notification bot.
+        return
+
     # Note: This query structure automatically filters out any
     # messages that were permanently deleted, since those would now be
     # in the ArchivedMessage table, not the Message table.
