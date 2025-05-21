@@ -4250,7 +4250,7 @@ msgstr ""
 "Извините, веза коју сте доставили је неисправна или је већ искоришћена."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "Нова лозинка је успешно постављена"
 
 #: templates/zerver/reset_done.html:13

@@ -4700,7 +4700,7 @@ msgstr ""
 "Pedimos desculpa, a ligação que forneceu não é válida ou já foi utilizada."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "Nova palavra-passe definida com sucesso"
 
 #: templates/zerver/reset_done.html:13

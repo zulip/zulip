@@ -4413,7 +4413,7 @@ msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "عذرًا، الرابط الذي قدمته غير صالح أو تم استخدامه بالفعل."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr "تم تعيين كلمة مرور جديدة بنجاح"
 
 #: templates/zerver/reset_done.html:13

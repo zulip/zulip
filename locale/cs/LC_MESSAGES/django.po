@@ -4174,7 +4174,7 @@ msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "Je nám líto, vámi zadaný odkaz je neplatný nebo již byl použit."
 
 #: templates/zerver/reset_done.html:4
-msgid " New password successfully set"
+msgid "New password successfully set"
 msgstr ""
 
 #: templates/zerver/reset_done.html:13
