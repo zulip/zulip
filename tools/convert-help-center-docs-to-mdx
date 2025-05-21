@@ -5,6 +5,7 @@ import re
 import shutil
 import sys
 from textwrap import indent
+from typing import TypedDict
 
 import django
 from django.template import engines
@@ -24,6 +25,10 @@ django.setup()
 from zerver.lib.markdown.tabbed_sections import generate_content_blocks, parse_tabs
 
 INDENT_SPACES = "    "
+
+
+class IncludeFileInfo(TypedDict):
+    is_only_ordered_list: bool
 
 
 def convert_kebab_to_pascal(text: str) -> str:
@@ -241,6 +246,98 @@ def detab(text: str) -> tuple[str, str]:
     return "\n".join(newtext), "\n".join(lines[len(newtext) :])
 
 
+def is_include_only_ordered_list(markdown_string: str) -> bool:
+    """
+    Check if a given markdown string is only an ordered list and does not
+    contain other components. After stripping down whitespace, the
+    string should start with `1.`. There can be a lot of other
+    components in the markdown string, but since we are running this
+    only on the include files, the only other component that we have there
+    for files starting with `1.` is a tip component.
+    """
+    markdown_string = markdown_string.strip()
+    return markdown_string.startswith("1.") and "!!!" not in markdown_string
+
+
+def is_line_part_of_an_ordered_list(line: str) -> bool:
+    """
+    Everywhere is our markdown, we use `1.` for our lists instead of
+    explicit numbers, so we only check for that here. A single item
+    in a list can be spread across multiple lines with some indentation.
+    So if the line starts with at least two spaces, we consider it part
+    of the list for this conversion script. Newlines can be part of a
+    list, so we return true for those too.
+    """
+    return line.startswith(("  ", "1.")) or line.strip() == ""
+
+
+def insert_flattened_steps_component(
+    markdown_string: str,
+    include_files_info: dict[str, IncludeFileInfo],
+    import_statement_set: set[str],
+) -> str:
+    """
+    We insert FlattenList components where include files
+    are being treated as part of ordered lists. Astro renders
+    included files as it's own component, which would result in
+    multiple ordered lists instead of a single list if we did
+    not use this component. See the astro component file itself
+    to know more how FlattenList works.
+
+    We are not inserting FlattenList components for files
+    with !!! tip components, since we need to do it inside the
+    include file. There are 4 such files at the time of writing
+    this comment. `is_include_only_ordered_list` makes sure of
+    that. We can do the conversion for it manually during cutover
+    or in a followup PR.
+    """
+    file_include_pattern = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
+    lines = markdown_string.splitlines()
+
+    def traverse_to_boundary(start: int, step: int) -> int:
+        index = start
+        while 0 <= index < len(lines):
+            line = lines[index]
+            if is_line_part_of_an_ordered_list(line):
+                index += step
+                continue
+            file_match = file_include_pattern.match(line)
+            if file_match:
+                filename = file_match.group(1)
+                if include_files_info[filename]["is_only_ordered_list"]:
+                    index += step
+                    continue
+            break
+        return index
+
+    # If a file with `is_only_ordered_list` set to True is followed
+    # immediately by a similar file with it set to true, our loop
+    # will try to insert the same text at the same position twice
+    # resulting in two opening <FlattenList> one after the other.
+    # Using a set avoids this problem.
+    insertions = set()
+    for match in file_include_pattern.finditer(markdown_string):
+        filename = match.group(1)
+        if not include_files_info[filename]["is_only_ordered_list"]:
+            continue
+
+        match_line_index = markdown_string[: match.start()].count("\n")
+
+        upper_bound = traverse_to_boundary(match_line_index - 1, step=-1)
+        insertions.add((upper_bound + 1, "<FlattenList>"))
+
+        lower_bound = traverse_to_boundary(match_line_index + 1, step=1)
+        insertions.add((lower_bound, "</FlattenList>"))
+
+    if insertions:
+        import_statement_set.add("import FlattenList from '../../components/FlattenList.astro';")
+        # Insert tags in reverse order to avoid index shifting
+        for index, tag in sorted(insertions, reverse=True):
+            lines.insert(index, tag)
+
+    return "\n".join(lines)
+
+
 def convert_admonitions_to_asides(
     markdown_string: str, import_statement_set: set[str], components_dir_path: str
 ) -> str:
@@ -358,7 +455,7 @@ def get_markdown_string_from_file(markdown_file_path: str) -> str:
 
 
 def convert_help_center_file_to_mdx(
-    markdown_file_path: str,
+    markdown_file_path: str, include_files_info: dict[str, IncludeFileInfo]
 ) -> str:
     """
     Given a path to a Markdown file, return the equivalent MDX file.
@@ -367,6 +464,15 @@ def convert_help_center_file_to_mdx(
 
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
+
+    # We are not inserting FlattenList components for files
+    # with !!! tip components, since we need to do it inside the
+    # include file. We can do it during the cutover manually or
+    # in a followup PR.
+    # All unordered lists at the time of writing this comment are
+    # standalone components and we do not need to do any transformation
+    # for them.
+    result = insert_flattened_steps_component(result, include_files_info, import_statement_set)
 
     result = fix_file_imports(result, import_statement_set, "./include")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
@@ -384,7 +490,7 @@ def convert_help_center_file_to_mdx(
 
 def convert_include_file_to_mdx(
     markdown_file_path: str,
-) -> str:
+) -> tuple[IncludeFileInfo, str]:
     """
     Given a path to a Markdown file, return the equivalent MDX file.
     We do not do certain operations that we do on a normal help file
@@ -397,6 +503,9 @@ def convert_include_file_to_mdx(
     in files that are not served standalone.
     """
     result = get_markdown_string_from_file(markdown_file_path)
+    include_file_info: IncludeFileInfo = {
+        "is_only_ordered_list": is_include_only_ordered_list(result)
+    }
 
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
@@ -410,43 +519,33 @@ def convert_include_file_to_mdx(
     result = replace_icons(result, import_statement_set)
     result = convert_comments(result)
     result = insert_imports(result, import_statement_set, 1)
-    return result
+    return include_file_info, result
 
 
 def run() -> None:
     input_dir = os.path.join(BASE_DIR, "help")
     output_dir = os.path.join(BASE_DIR, "help-beta/src/content/docs")
+    include_input_dir = os.path.join(input_dir, "include")
+    include_output_dir = os.path.join(output_dir, "include")
     print("Starting the conversion from MD to MDX...")
-
-    converted_count = 0
 
     # We delete the directory first to remove any stale files
     # that might have been deleted in the `help` folder but
     # their converted mdx files stay around
     shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)
-    for name in os.listdir(input_dir):
-        if os.path.isfile(os.path.join(input_dir, name)):
-            converted_count += 1
-            mdx = convert_help_center_file_to_mdx(os.path.join(input_dir, name))
-            with open(
-                os.path.join(
-                    output_dir,
-                    os.path.basename(name).split(".")[0] + ".mdx",
-                ),
-                "w",
-            ) as mdx_file:
-                mdx_file.write(mdx)
-    print(f"Converted {converted_count} files. Proceeding to the conversion of include files ...")
 
-    include_converted_count = 0
-    include_input_dir = os.path.join(input_dir, "include")
-    include_output_dir = os.path.join(output_dir, "include")
+    converted_count = 0
     os.makedirs(include_output_dir, exist_ok=True)
+
+    include_files_info: dict[str, IncludeFileInfo] = {}
     for name in os.listdir(include_input_dir):
         if os.path.isfile(os.path.join(include_input_dir, name)):
-            include_converted_count += 1
-            mdx = convert_include_file_to_mdx(os.path.join(include_input_dir, name))
+            converted_count += 1
+            include_file_info, mdx = convert_include_file_to_mdx(
+                os.path.join(include_input_dir, name)
+            )
+            include_files_info[name] = include_file_info
             with open(
                 os.path.join(
                     include_output_dir,
@@ -455,7 +554,24 @@ def run() -> None:
                 "w",
             ) as mdx_file:
                 mdx_file.write(mdx)
-    print(f"Converted {include_converted_count} include files. Conversion completed.")
+    print(
+        f"Converted {converted_count} include files. Proceeding to the conversion of main help files ..."
+    )
+
+    converted_count = 0
+    for name in os.listdir(input_dir):
+        if os.path.isfile(os.path.join(input_dir, name)):
+            converted_count += 1
+            mdx = convert_help_center_file_to_mdx(os.path.join(input_dir, name), include_files_info)
+            with open(
+                os.path.join(
+                    output_dir,
+                    os.path.basename(name).split(".")[0] + ".mdx",
+                ),
+                "w",
+            ) as mdx_file:
+                mdx_file.write(mdx)
+    print(f"Converted {converted_count} main help files. Conversion completed.")
 
 
 run()
