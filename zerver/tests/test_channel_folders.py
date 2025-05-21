@@ -3,9 +3,11 @@ from typing import Any
 import orjson
 
 from zerver.actions.channel_folders import check_add_channel_folder
+from zerver.actions.streams import do_change_stream_folder, do_deactivate_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import ChannelFolder
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class ChannelFolderCreationTest(ZulipTestCase):
@@ -260,8 +262,10 @@ class UpdateChannelFoldersTest(ZulipTestCase):
         self.assertEqual(channel_folder.rendered_description, "")
 
     def test_archiving_and_unarchiving_channel_folder(self) -> None:
+        desdemona = self.example_user("desdemona")
+        realm = get_realm("zulip")
         channel_folder = check_add_channel_folder(
-            get_realm("zulip"),
+            realm,
             "Frontend",
             "Channels for frontend discussions",
             acting_user=self.example_user("desdemona"),
@@ -290,3 +294,24 @@ class UpdateChannelFoldersTest(ZulipTestCase):
         self.assert_json_success(result)
         channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
         self.assertFalse(channel_folder.is_archived)
+
+        # Folder containing channels cannot be archived.
+        stream = get_stream("Verona", realm)
+        do_change_stream_folder(stream, channel_folder, acting_user=desdemona)
+        params = {"is_archived": orjson.dumps(True).decode()}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(
+            result, "You need to remove all the channels from this folder to archive it."
+        )
+
+        do_deactivate_stream(stream, acting_user=desdemona)
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(
+            result, "You need to remove all the channels from this folder to archive it."
+        )
+
+        do_change_stream_folder(stream, None, acting_user=desdemona)
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_success(result)
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
+        self.assertTrue(channel_folder.is_archived)
