@@ -33,7 +33,7 @@ def check_channel_folder_name(name: str, realm: Realm) -> None:
         )
 
     if ChannelFolder.objects.filter(name__iexact=name, realm=realm).exists():
-        raise JsonableError(_("Channel folder '{name}' already exists").format(name=name))
+        raise JsonableError(_("Channel folder name already in use"))
 
 
 def render_channel_folder_description(text: str, realm: Realm, *, acting_user: UserProfile) -> str:
