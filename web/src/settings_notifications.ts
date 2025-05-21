@@ -95,7 +95,9 @@ function update_notification_banner(): void {
         const permission = Notification.permission;
 
         if (permission === "granted") {
-            banners.close($(".desktop-notification-settings-banners .desktop-setting-notifications"));
+            banners.close(
+                $(".desktop-notification-settings-banners .desktop-setting-notifications"),
+            );
             $(".send_test_notification").show();
         } else {
             if ($banner_container.find(".desktop-setting-notifications").length === 0) {
