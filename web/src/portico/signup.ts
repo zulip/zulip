@@ -400,6 +400,23 @@ $(() => {
             meta: {
                 key,
             },
+            locale: {
+                strings: {
+                    youCanOnlyUploadFileTypes: $t({
+                        defaultMessage: "Upload your Slack export zip file.",
+                    }),
+                },
+                // Copied from
+                // https://github.com/transloadit/uppy/blob/d1a3345263b3421a06389aa2e84c66e894b3f29d/packages/%40uppy/utils/src/Translator.ts#L122
+                // since we don't want to override the default function.
+                // Defining pluralize is required by typescript.
+                pluralize(n: number): 0 | 1 {
+                    if (n === 1) {
+                        return 0;
+                    }
+                    return 1;
+                },
+            },
         });
         uppy.use(DragDrop, {
             target: "#slack-import-drag-and-drop",
