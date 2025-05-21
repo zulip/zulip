@@ -1,5 +1,9 @@
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.topic_link_util import get_stream_link_syntax, get_stream_topic_link_syntax
+from zerver.lib.topic_link_util import (
+    get_message_link_syntax,
+    get_stream_link_syntax,
+    get_stream_topic_link_syntax,
+)
 
 
 class TestTopicLinkUtil(ZulipTestCase):
@@ -75,4 +79,23 @@ class TestTopicLinkUtil(ZulipTestCase):
         self.assertEqual(
             get_stream_topic_link_syntax(sweden_id, "Sw*den", ""),
             f"[#Sw&#42;den > general chat](#narrow/channel/{sweden_id}-Sw*den/topic/)",
+        )
+
+    def test_message_link_syntax(self) -> None:
+        sweden_id = self.make_stream("Sweden").id
+        self.assertEqual(
+            get_message_link_syntax(sweden_id, "Sweden", "topic", 123),
+            "#**Sweden>topic@123**",
+        )
+        self.assertEqual(
+            get_message_link_syntax(sweden_id, "Sweden", "", 123),
+            "#**Sweden>@123**",
+        )
+        self.assertEqual(
+            get_message_link_syntax(sweden_id, "Sw*den", "topic", 123),
+            f"[#Sw&#42;den > topic @ 💬](#narrow/channel/{sweden_id}-Sw*den/topic/topic/near/123)",
+        )
+        self.assertEqual(
+            get_message_link_syntax(sweden_id, "Sw*den", "", 123),
+            f"[#Sw&#42;den > general chat @ 💬](#narrow/channel/{sweden_id}-Sw*den/topic//near/123)",
         )
