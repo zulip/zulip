@@ -498,18 +498,6 @@
         transition: background 0.3s ease;
         background: var(--color-background-image-thumbnail);
 
-        /* Inline videos also take the dinky color, as they
-           currently display a larger clickable area than
-           necessary. */
-        &.message_inline_video,
-        &:has(.dinky-thumbnail, .extreme-aspect-ratio) {
-            background: var(--color-background-image-thumbnail-dinky);
-
-            &:hover {
-                background: var(--color-background-image-thumbnail-dinky-hover);
-            }
-        }
-
         &:hover {
             background: var(--color-background-image-thumbnail-hover);
         }
