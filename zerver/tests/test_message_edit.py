@@ -189,6 +189,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(response_dict["message"]["id"], msg_id)
         self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
         self.assertEqual(response_dict["message"]["flags"], ["read"])
+        self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 
         msg_id = self.send_personal_message(
             from_user=cordelia, to_user=hamlet, content="Incoming direct message"
@@ -200,6 +201,7 @@ class EditMessageTest(ZulipTestCase):
         # Incoming DMs show the recipient_id that outgoing DMs would.
         self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
         self.assertEqual(response_dict["message"]["flags"], [])
+        self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 
         # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access

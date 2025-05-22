@@ -90,6 +90,7 @@ class RemindersTest(ZulipTestCase):
             scheduled_message.reminder_target_message_id,
             message_id,
         )
+        self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 
         # Scheduling a direct message with user IDs is successful.
         self.example_user("othello")
@@ -110,6 +111,7 @@ class RemindersTest(ZulipTestCase):
             scheduled_message.reminder_target_message_id,
             message_id,
         )
+        self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 
     def test_schedule_reminder_with_bad_timestamp(self) -> None:
         self.login("hamlet")
