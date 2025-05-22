@@ -1728,7 +1728,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         stream_to_address = encode_email_address(stream.name, email_token)
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestStreamEmailMessages body")
-        incoming_valid_message["Subject"] = "Re: Fwd: Re: AW: Test"
+        incoming_valid_message["Subject"] = "Re: Fwd: Re: AW: Re[12]: Test"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
