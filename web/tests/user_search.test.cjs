@@ -85,7 +85,7 @@ function test(label, f) {
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
         activity_ui.set_cursor_and_filter();
-        f(opts);
+        return f(opts);
     });
 }
 
@@ -138,29 +138,62 @@ test("clear_search", ({override}) => {
     set_input_val("");
 });
 
-test("fetch on search", ({override}) => {
+test("fetch on search", async ({override}) => {
+    override(presence, "get_user_ids", () => all_user_ids);
+    override(presence, "get_status", () => "active");
+    let populate_call_count = 0;
+    override(fake_buddy_list, "populate", () => {
+        populate_call_count += 1;
+    });
     $("#buddy-list-loading-subscribers").css = noop;
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
 
-    const office_id = 23;
-    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
-    const filter = new Filter([{operator: "stream", operand: office_id}]);
+    const office = {stream_id: 23, name: "office", subscribed: true};
+    stream_data.add_sub(office);
     message_lists.set_current({
         data: {
-            filter,
+            filter: new Filter([{operator: "stream", operand: office.stream_id}]),
         },
     });
-    let get_called = false;
-    channel.get = (opts) => {
-        assert.equal(opts.url, `/json/streams/${office_id}/members`);
-        get_called = true;
+    let get_call_count = 0;
+    channel.get = () => {
+        get_call_count += 1;
         return {
             subscribers: [1, 2, 3, 4],
         };
     };
+    // Only one fetch should happen.
+    set_input_val("somevalu");
     set_input_val("somevalue");
-    assert.ok(get_called);
+    await activity_ui.await_promises_for_testing();
+    assert.equal(get_call_count, 1);
+    assert.equal(populate_call_count, 1);
+
+    // Now try updating the narrow and starting a new search, before the old search
+    // is resolved. We should make two requests but only only update populate the
+    // buddy list for the second fetch (the first fetch returns early).
+    get_call_count = 0;
+    populate_call_count = 0;
+    const kitchen = {stream_id: 25, name: "kitchen", subscribed: true};
+    stream_data.add_sub(kitchen);
+    const living_room = {stream_id: 26, name: "living_room", subscribed: true};
+    stream_data.add_sub(living_room);
+    message_lists.set_current({
+        data: {
+            filter: new Filter([{operator: "stream", operand: kitchen.stream_id}]),
+        },
+    });
+    set_input_val("somevalue");
+    message_lists.set_current({
+        data: {
+            filter: new Filter([{operator: "stream", operand: living_room.stream_id}]),
+        },
+    });
+    set_input_val("somevalue");
+    await activity_ui.await_promises_for_testing();
+    assert.equal(get_call_count, 2);
+    assert.equal(populate_call_count, 1);
 
     // We need to reset these because the unit tests aren't isolated from each other.
     message_lists.set_current(undefined);

@@ -139,26 +139,64 @@ export function rewire_build_user_sidebar(value: typeof build_user_sidebar): voi
     build_user_sidebar = value;
 }
 
+export function remove_loading_indicator_for_search(): void {
+    loading.destroy_indicator($("#buddy-list-loading-subscribers"));
+    $("#buddy_list_wrapper").show();
+}
+
+// We need to make sure we have all subscribers before displaying
+// users during search, because we show all matching users and
+// sort them by if they're subscribed.
+let pending_fetch_for_search:
+    | {
+          stream_id: number;
+          promise: Promise<void>;
+      }
+    | undefined;
+
+export async function await_promises_for_testing(): Promise<void> {
+    assert(pending_fetch_for_search !== undefined);
+    await pending_fetch_for_search.promise;
+}
+
 function do_update_users_for_search(): void {
     // Hide all the popovers but not userlist sidebar
     // when the user is searching.
     popovers.hide_all();
+    // If we're already fetching for this stream, we don't need to wait for
+    // another promise. The sidebar will be updated once that promise resolves.
     const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
-    void (async () => {
+    if (pending_fetch_for_search && pending_fetch_for_search.stream_id === stream_id) {
+        return;
+    }
+    const promise = (async () => {
         if (stream_id && !peer_data.has_full_subscriber_data(stream_id)) {
-            // We need to make sure we have all subscribers before displaying
-            // users during search, because we show all matching users and
-            // sort them by if they're subscribed.
             $("#buddy_list_wrapper").hide();
             loading.make_indicator($("#buddy-list-loading-subscribers"));
             await peer_data.maybe_fetch_stream_subscribers(stream_id);
-            loading.destroy_indicator($("#buddy-list-loading-subscribers"));
-            $("#buddy_list_wrapper").show();
+            // If we changed narrows during the fetch, don't rebuild the sidebar anymore.
+            // Let the new narrow handle its own state. The loading indicator should have
+            // already been removed on narrow change.
+            if (pending_fetch_for_search?.stream_id !== stream_id) {
+                return;
+            }
+            remove_loading_indicator_for_search();
         }
+        pending_fetch_for_search = undefined;
         build_user_sidebar();
         assert(user_cursor !== undefined);
         user_cursor.reset();
     })();
+    // We only need to save the promise for stream narrows, because
+    // otherwise the promise should resolve right away since there's no
+    // `await`.
+    if (stream_id) {
+        pending_fetch_for_search = {
+            stream_id,
+            promise,
+        };
+    }
+    void promise;
 }
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
@@ -296,6 +334,7 @@ export function initiate_search(): void {
 export function clear_search(): void {
     if (user_filter) {
         user_filter.clear_search();
+        remove_loading_indicator_for_search();
     }
 }
 
