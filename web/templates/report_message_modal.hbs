@@ -1,0 +1,13 @@
+<form id="message_report_form">
+    <div class="input-group">
+        <label class="report-type-wrapper modal-field-label">{{t "What's the problem with this message?" }}</label>
+        {{> dropdown_widget_wrapper widget_name="report_type_options"}}
+    </div>
+    <div class="input-group">
+        <label for="message-report-description" class="modal-field-label">{{t "Can you provide more details ?" }}</label>
+        <div id="move-topic-new-topic-input-wrapper">
+            <textarea id="message-report-description" class="modal_text_input" rows="4" maxlength=1000></textarea>
+        </div>
+    </div>
+</form>
+
