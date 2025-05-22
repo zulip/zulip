@@ -123,7 +123,9 @@ feel excessive.
 
 ## Low-traffic newsletter
 
-{!cloud-only.md!}
+!!! warn ""
+
+    This feature is only available on Zulip Cloud.
 
 Zulip sends out a low-traffic newsletter (expect 2-4 emails a year)
 to Zulip Cloud users announcing major changes in Zulip.
