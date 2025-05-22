@@ -1,0 +1,40 @@
+---
+title: Report a message
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import MessageActions from "../include/_MessageActions.mdx";
+
+import FlagIcon from "~icons/zulip-icon/flag";
+
+Zulip lets you report any messages if **moderation requests** is allowed
+in your organization. Server administrators will be notified of message
+reports. The server administrators can configure which channel reported
+messages are sent to, the channel must be
+[private](/help/channel-permissions#private-channels).
+
+## Report a message
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <MessageActions />
+
+      1. Click the **report message** (<FlagIcon />) icon. If you do not
+         see this option, that means **moderation request** is disabled in
+         your [organization settings](customize-organization-settings).
+      1. Select the report type.
+      1. *(optional)* Include context about why you think the message is
+         problematic.
+      1. Click **Submit** to report the message.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Delete a message](/help/delete-a-message)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Message actions](/help/message-actions)
