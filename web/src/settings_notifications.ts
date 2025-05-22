@@ -85,10 +85,10 @@ function rerender_ui(): void {
     } else {
         $unmatched_streams_table.css("display", "table-row-group");
     }
-    update_notification_banner();
+    update_desktop_notification_banner();
 }
 
-function update_notification_banner(): void {
+function update_desktop_notification_banner(): void {
     // As is also noted in `navbar_alerts.ts`, notifications *basically*
     // don't work on any mobile platforms, so don't event show the banners.
     // This prevents trying to access things that don't exist, like
@@ -389,7 +389,7 @@ export function set_up(settings_panel: SettingsPanel): void {
         // not shown in a mobile context anyway.
         void Notification.requestPermission().then((permission) => {
             if (permission === "granted") {
-                update_notification_banner();
+                update_desktop_notification_banner();
             } else if (permission === "denied") {
                 window.open(
                     "/help/desktop-notifications#check-platform-settings",
