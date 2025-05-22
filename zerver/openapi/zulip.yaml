@@ -4908,6 +4908,14 @@ paths:
                                       type: string
                                       description: |
                                         The default language for the organization.
+                                    default_welcome_bot_custom_message:
+                                      type: string
+                                      description: |
+                                        The default value of Welcome Bot custom message provided by the
+                                        Administrators to be included in the welcome message sent by the
+                                        Welcome Bot to new users upon invitation.
+
+                                        **Changes**: New in Zulip 11.0 (feature level ZF-0992cf).
                                     description:
                                       type: string
                                       description: |
@@ -5287,6 +5295,14 @@ paths:
 
                                         **Changes**: New in Zulip 9.0 (feature level 246). Previously, the Zulip
                                         server could not be configured to enforce unique names.
+                                    send_invite_welcome_bot_custom_message:
+                                      type: boolean
+                                      description: |
+                                        Indicates whether the organization is configured to include a custom message
+                                        from Administrators in the welcome message sent by the Welcome Bot to new
+                                        users upon invitation.
+
+                                        **Changes**: New in Zulip 11.0 (feature level ZF-0992cf).
                                     send_welcome_emails:
                                       type: boolean
                                       description: |
@@ -14438,6 +14454,15 @@ paths:
                   type: boolean
                   example: false
                   default: true
+                welcome_bot_custom_message:
+                  description: |
+                    The Welcome Bot custom message provided by the Administrators
+                    to be included in the welcome message sent by the Welcome Bot
+                    to new users upon invitation.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-0992cf).
+                  type: string
+                  example: "Welcome to Zulip! We're excited to have you on board."
               required:
                 - invitee_emails
                 - stream_ids
@@ -14628,6 +14653,15 @@ paths:
                   type: boolean
                   default: false
                   example: false
+                welcome_bot_custom_message:
+                  description: |
+                    The Welcome Bot custom message provided by the Administrators
+                    to be included in the welcome message sent by the Welcome Bot
+                    to new users upon invitation.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-0992cf).
+                  type: string
+                  example: "Welcome to Zulip! We're excited to have you on board."
             encoding:
               invite_expires_in_minutes:
                 contentType: application/json
@@ -14827,6 +14861,52 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
+  /realm/test_welcome_bot_custom_message:
+    post:
+      operationId: test-welcome-bot-custom-message
+      summary: Test welcome bot custom message
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Send a preview of a welcome bot custom message to the organization administrators.
+        This allows administrators to visualize how the welcome message will appear when
+        received by new users upon joining the organization.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-0992cf).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                welcome_bot_custom_message:
+                  description: |
+                    This is the welcome message provided by administrators to be included
+                    in the message sent by the Welcome Bot to new users.
+                  type: string
+                  maxLength: 1000
+                  example: "Welcome to Zulip! We're excited to have you on board."
+              required:
+                - welcome_bot_custom_message
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      message_id:
+                        type: integer
+                        description: |
+                          The message_id of the test welcome bot custom message.
+                    example: {"result": "success", "msg": "", "message_id": 1}
   /register:
     post:
       operationId: register-queue
@@ -17808,6 +17888,26 @@ paths:
                           The [organization language][org-lang] for automated messages and invitation emails.
 
                           [org-lang]: /help/configure-organization-language
+                      realm_default_welcome_bot_custom_message:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The default value of Welcome Bot custom message provided by the
+                          Administrators to be included in the welcome message sent by the
+                          Welcome Bot to new users upon invitation.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-0992cf).
+                      realm_send_invite_welcome_bot_custom_message:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Indicates whether the organization is configured to include a custom
+                          message from Administrators in the welcome message sent by the Welcome
+                          Bot to new users upon invitation.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-0992cf).
                       realm_description:
                         type: string
                         description: |

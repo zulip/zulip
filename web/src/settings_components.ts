@@ -1442,6 +1442,19 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
     return false;
 }
 
+function should_disable_save_button_for_welcome_bot_custom_message_setting(): boolean {
+    const is_welcome_bot_custom_message_enabled = util.the(
+        $<HTMLInputElement>("input#id_realm_send_invite_welcome_bot_custom_message"),
+    ).checked;
+    const default_welcome_bot_custom_message_value = $<HTMLTextAreaElement>(
+        "#id_realm_default_welcome_bot_custom_message",
+    )
+        .val()!
+        .trim();
+
+    return is_welcome_bot_custom_message_enabled && default_welcome_bot_custom_message_value === "";
+}
+
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const $save_button = $subsection_elem.find(".save-button");
 
@@ -1485,6 +1498,17 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         should_disable_save_button_for_group_settings(group_settings)
     ) {
         $save_button.prop("disabled", true);
+        return;
+    }
+
+    if (
+        $subsection_elem.attr("id") === "org-notifications" &&
+        should_disable_save_button_for_welcome_bot_custom_message_setting()
+    ) {
+        ui_util.disable_element_and_add_tooltip(
+            $save_button,
+            $t({defaultMessage: "Welcome Bot message text is required."}),
+        );
         return;
     }
 
