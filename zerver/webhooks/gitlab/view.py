@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -37,6 +38,8 @@ DESIGN_COMMENT_MESSAGE_TEMPLATE = (
 )
 
 FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
+
+ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE = "The access token [{name}]({url}) will expire on {date}."
 
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
@@ -423,6 +426,35 @@ def get_feature_flag_event_body(payload: WildValue, include_title: bool) -> str:
     )
 
 
+def get_access_token_page_url(payload: WildValue) -> str:
+    """
+    Generate the URL for the access tokens based on whether it's
+    for a group or a project.
+    """
+    if "group" in payload:
+        group_path = payload["group"]["group_path"].tame(check_string)
+        return f"https://gitlab.com/groups/{group_path}/-/settings/access_tokens"
+
+    project_url = payload["project"]["web_url"].tame(check_string)
+    return f"{project_url}/-/settings/access_tokens"
+
+
+def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
+    access_token = payload["object_attributes"]
+    expiry_date = access_token["expires_at"].tame(check_string)
+    formatted_date = (
+        datetime.strptime(expiry_date, "%Y-%m-%d")
+        .replace(tzinfo=timezone.utc)
+        .strftime("%b %d, %Y")
+    )
+
+    return ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE.format(
+        name=access_token["name"].tame(check_string),
+        url=get_access_token_page_url(payload),
+        date=formatted_date,
+    )
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -511,6 +543,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
     "Feature Flag Hook": get_feature_flag_event_body,
+    "Resource Access Token Hook": get_resource_access_token_expiry_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -619,6 +652,9 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             id=payload["snippet"]["id"].tame(check_int),
             title=payload["snippet"]["title"].tame(check_string),
         )
+
+    elif event == "Resource Access Token Hook" and payload.get("group"):
+        return payload["group"]["group_name"].tame(check_string)
     return get_repo_name(payload)
 
 

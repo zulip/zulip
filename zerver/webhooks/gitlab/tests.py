@@ -697,3 +697,19 @@ A trivial change that should probably be ignored.
         expected_message = "kolanuvarun739 deactivated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
 
         self.check_webhook("feature_flag_hook__deactivated", expected_topic_name, expected_message)
+
+    def test_resource_access_token_project_expiry(self) -> None:
+        expected_topic_name = "Flight"
+        expected_message = "The access token [acd](https://example.com/flightjs/Flight/-/settings/access_tokens) will expire on Jan 26, 2024."
+
+        self.check_webhook(
+            "resource_access_token_hook__project_expiry", expected_topic_name, expected_message
+        )
+
+    def test_resource_access_token_group_expiry(self) -> None:
+        expected_topic_name = "Twitter"
+        expected_message = "The access token [acd](https://gitlab.com/groups/twitter/-/settings/access_tokens) will expire on Jan 26, 2024."
+
+        self.check_webhook(
+            "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
+        )
