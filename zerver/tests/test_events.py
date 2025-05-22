@@ -630,13 +630,14 @@ class NormalActionsTest(BaseAction):
                 )
 
     def test_pm_send_message_events(self) -> None:
-        with self.verify_action():
+        with self.verify_action() as events:
             self.send_personal_message(
                 self.example_user("cordelia"),
                 self.example_user("hamlet"),
                 "hola",
                 skip_capture_on_commit_callbacks=True,
             )
+        self.assertEqual(events[0]["message"][TOPIC_NAME], "")
 
         # Verify direct message editing - content only edit
         pm = Message.objects.order_by("-id")[0]
@@ -684,13 +685,14 @@ class NormalActionsTest(BaseAction):
             self.example_user("hamlet"),
             self.example_user("othello"),
         ]
-        with self.verify_action():
+        with self.verify_action() as events:
             self.send_group_direct_message(
                 self.example_user("cordelia"),
                 direct_message_group,
                 "hola",
                 skip_capture_on_commit_callbacks=True,
             )
+        self.assertEqual(events[0]["message"][TOPIC_NAME], "")
 
     def test_user_creation_events_on_sending_messages(self) -> None:
         self.set_up_db_for_testing_user_access()

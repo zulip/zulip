@@ -1297,11 +1297,13 @@ def generate_and_send_messages(
         if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(direct_message_group_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
+            message.subject = Message.DM_TOPIC
         elif recipient_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(
                 type=Recipient.PERSONAL, type_id=personals_pair[0]
             )
             message.sender = get_user_profile_by_id(personals_pair[1])
+            message.subject = Message.DM_TOPIC
             saved_data["personals_pair"] = personals_pair
         elif recipient_type == Recipient.STREAM:
             # Pick a random subscriber to the stream

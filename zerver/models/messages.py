@@ -58,6 +58,26 @@ class AbstractMessage(models.Model):
         db_default=MessageType.NORMAL,
     )
 
+    # For DMs and group DMs, this unique topic value is used,
+    # which cannot be used for channel messages, as we do not
+    # allow unprintable characters in topics.
+    #
+    # This helps in avoiding having an empty string value as
+    # topic for DMs, which is also used for "general chat"
+    # channel messages, as large number of DMs in the realm
+    # resulted in PostgreSQL query planner thinking that there
+    # are too many "general chat" messages.
+    #
+    # Note that the message objects sent to clients via API
+    # still have "subject" field value set to empty string ""
+    # for DMs and group DMs.
+    #
+    # The choice of "BEL" character, of all the unprintable
+    # characters, is arbitrary here, but it suits here given
+    # that it vaguely represents the direct, notification
+    # like nature of a DM.
+    DM_TOPIC = "\x07"
+
     # The message's topic.
     #
     # Early versions of Zulip called this concept a "subject", as in an email
@@ -105,6 +125,9 @@ class AbstractMessage(models.Model):
 
     @override
     def __str__(self) -> str:
+        if not self.is_channel_message:
+            return f"{self.recipient.label()} /  / {self.sender!r}"
+
         return f"{self.recipient.label()} / {self.subject} / {self.sender!r}"
 
 
