@@ -642,6 +642,41 @@ class EditMessageTest(ZulipTestCase):
             "<p>content before edit, line 1</p>\n<p>content before edit, line 3</p>",
         )
 
+    def test_edit_direct_message_history(self) -> None:
+        msg_id = self.send_personal_message(
+            self.example_user("hamlet"),
+            self.example_user("othello"),
+            content="content before edit",
+        )
+
+        self.login("hamlet")
+        new_content = "content after edit"
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": new_content,
+            },
+        )
+        self.assert_json_success(result)
+
+        message_edit_history = self.client_get(f"/json/messages/{msg_id}/history")
+        json_response = orjson.loads(message_edit_history.content)
+        message_history = json_response["message_history"]
+        self.assertEqual(message_history[0]["content"], "content before edit")
+        self.assertEqual(message_history[0]["rendered_content"], "<p>content before edit</p>")
+        self.assertEqual(message_history[0]["topic"], "")
+
+        self.assertEqual(message_history[1]["prev_content"], "content before edit")
+        self.assertEqual(message_history[1]["prev_rendered_content"], "<p>content before edit</p>")
+        self.assertEqual(message_history[1]["content"], "content after edit")
+        self.assertEqual(message_history[1]["rendered_content"], "<p>content after edit</p>")
+        self.assertEqual(message_history[1]["topic"], "")
+
+        self.assertEqual(
+            message_history[1]["content_html_diff"],
+            '<div><p>content <span class="highlight_text_inserted">after</span> <span class="highlight_text_deleted">before</span> edit</p></div>',
+        )
+
     def test_empty_message_edit(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
