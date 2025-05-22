@@ -1546,7 +1546,13 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 key = user.delivery_email.lower()
                 context.setdefault(key, {})
                 context[key].setdefault("realms", [])
-                context[key]["realms"].append([user.realm.name, user.realm.url])
+                context[key]["realms"].append(
+                    {
+                        "name": user.realm.name,
+                        "host": user.realm.host,
+                        "url": user.realm.url,
+                    }
+                )
                 # This value will end up being the last user ID among
                 # matching accounts; since it's only used for minor
                 # details like language, that arbitrary choice is OK.
