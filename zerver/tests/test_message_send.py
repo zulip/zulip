@@ -948,6 +948,19 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid character in topic, at position 5!")
 
+        # Make sure that a stream message cannot be sent with topic set
+        # to Message.DM_TOPIC.
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "channel",
+                "to": "Verona",
+                "topic": f"{Message.DM_TOPIC}",
+                "content": "Test message",
+            },
+        )
+        self.assert_json_error(result, "Invalid character in topic, at position 1!")
+
     def test_invalid_recipient_type(self) -> None:
         """
         Messages other than the type of "direct", "private", "channel" or "stream" are invalid.
@@ -2610,6 +2623,8 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         self.assertEqual(most_recent_message(sender).recipient, recipient)
         self.assertEqual(most_recent_message(receiver).recipient, recipient)
+        self.assertEqual(most_recent_message(sender).topic_name(), Message.DM_TOPIC)
+        self.assertEqual(most_recent_message(receiver).topic_name(), Message.DM_TOPIC)
 
     def test_personal(self) -> None:
         """

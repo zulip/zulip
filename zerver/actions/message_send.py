@@ -1837,6 +1837,7 @@ def check_message(
         message.set_topic_name(topic_name)
         message.is_channel_message = True
     else:
+        message.set_topic_name(Message.DM_TOPIC)
         message.is_channel_message = False
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
