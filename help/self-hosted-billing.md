@@ -82,7 +82,9 @@ discount](#apply-for-a-paid-plan-discount).
 
 {tab|organization-billing}
 
-{!self-hosted-billing-admin-only.md!}
+!!! warn ""
+
+    This feature is only available to organization [owners](/help/user-roles) and billing administrators.
 
 1. Your Zulip server administrator should register the server with Zulip's
    Mobile Push Notification Service, following [these
