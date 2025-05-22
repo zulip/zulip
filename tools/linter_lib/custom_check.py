@@ -966,6 +966,18 @@ txt_rules = RuleList(
     langs=["txt", "text", "yaml", "yml"],
     rules=whitespace_rules,
 )
+
+svg_rules = RuleList(
+    langs=["svg"],
+    rules=[
+        {
+            "pattern": r"fill=(['\"])(.*?)\1",
+            "description": "System icons ignore fill values, so do not include the fill property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+    ],
+)
+
 non_py_rules = [
     handlebars_rules,
     jinja2_rules,
@@ -978,4 +990,5 @@ non_py_rules = [
     txt_rules,
     puppet_rules,
     openapi_rules,
+    svg_rules,
 ]
