@@ -89,6 +89,16 @@ function rerender_ui(): void {
 }
 
 function update_notification_banner(): void {
+    // As is also noted in `navbar_alerts.ts`, notifications *basically*
+    // don't work on any mobile platforms, so don't event show the banners.
+    // This prevents trying to access things that don't exist, like
+    // `Notification.permission` in a mobile context, in which we'll also
+    // hide the ability to send a test notification before exiting with an
+    // early return.
+    if (util.is_mobile()) {
+        $(".send_test_notification").hide();
+        return;
+    }
     const permission = Notification.permission;
     const $banner_container = $(".desktop-notification-settings-banners");
     if (permission === "granted") {
@@ -374,6 +384,9 @@ export function set_up(settings_panel: SettingsPanel): void {
 
     $("#settings_content").on("click", ".request-desktop-notifications", (e) => {
         e.preventDefault();
+        // This is only accessed via the notifications banner, so we
+        // do not need to do a mobile check here--as that banner is
+        // not shown in a mobile context anyway.
         void Notification.requestPermission().then((permission) => {
             if (permission === "granted") {
                 update_notification_banner();
