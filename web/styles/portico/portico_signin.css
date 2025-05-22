@@ -1532,3 +1532,9 @@ button#register_auth_button_gitlab {
         outline: 1px solid hsl(213deg 81% 79%);
     }
 }
+
+#realm-import-owner {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
