@@ -702,7 +702,7 @@ i.zulip-icon:focus-visible,
 }
 
 /* List of text-like input types taken from Bootstrap */
-input {
+input:not(.input-element) {
     &[type="text"],
     &[type="password"],
     &[type="datetime"],

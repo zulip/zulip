@@ -105,12 +105,6 @@
         opacity: 0.4;
     }
 
-    & input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"],
-    input[type="url"],
-    input[type="date"],
     textarea,
     select,
     .pill-container,
@@ -120,6 +114,22 @@
     #organization-settings .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
+    }
+
+    input:not(.input-element) {
+        &[type="text"],
+        &[type="email"],
+        &[type="password"],
+        &[type="number"],
+        &[type="url"],
+        &[type="date"] {
+            background-color: hsl(0deg 0% 0% / 20%);
+            border-color: hsl(0deg 0% 0% / 60%);
+
+            &:focus {
+                border-color: hsl(0deg 0% 0% / 90%);
+            }
+        }
     }
 
     .popover-filter-input-wrapper .popover-filter-input:focus {
@@ -148,9 +158,6 @@
         }
     }
 
-    & input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="number"]:focus,
     textarea:focus,
     textarea.new_message_textarea:focus,
     #compose_recipient_box:focus {
