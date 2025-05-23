@@ -1311,12 +1311,14 @@ export class MessageListView {
     _render_group(opts: {message_groups: MessageGroup[]; use_match_properties: boolean}): JQuery {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
+        const hide_channel_name = this.list.data.filter.should_hide_channel_name_in_recipient_row();
 
         return $(
             render_message_group({
                 message_groups,
                 use_match_properties,
                 message_list_id: this.list.id,
+                hide_channel_name,
             }),
         );
     }
@@ -1848,7 +1850,8 @@ export class MessageListView {
             preserved_properties,
         );
 
-        const $rendered_recipient_row = $(render_recipient_row(group));
+        const hide_channel_name = this.list.data.filter.should_hide_channel_name_in_recipient_row();
+        const $rendered_recipient_row = $(render_recipient_row({...group, hide_channel_name}));
 
         $header.replaceWith($rendered_recipient_row);
     }

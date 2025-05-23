@@ -423,6 +423,13 @@ export function try_rendering_locally_for_same_narrow(
     }
 
     message_lists.current.data.filter = filter;
+    if (
+        filter.should_hide_channel_name_in_recipient_row() !==
+        current_filter.should_hide_channel_name_in_recipient_row()
+    ) {
+        // The recipient bars were rendered for the old filter.
+        message_lists.current.rerender_view();
+    }
     const remove_current_hash_from_history = opts.remove_current_hash_from_history ?? false;
     update_hash_to_match_filter(
         filter,
