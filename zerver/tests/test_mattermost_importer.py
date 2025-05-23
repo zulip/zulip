@@ -1,6 +1,5 @@
 import filecmp
 import os
-import subprocess
 from typing import Any
 from unittest.mock import call, patch
 
@@ -53,7 +52,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(mattermost_data["user"][1]["username"], "harry")
         self.assert_length(mattermost_data["user"][1]["teams"], 1)
 
-        self.assert_length(mattermost_data["post"]["channel_post"], 20)
+        self.assert_length(mattermost_data["post"]["channel_post"], 21)
         self.assertEqual(mattermost_data["post"]["channel_post"][0]["team"], "gryffindor")
         self.assertEqual(mattermost_data["post"]["channel_post"][0]["channel"], "dumbledores-army")
         self.assertEqual(mattermost_data["post"]["channel_post"][0]["user"], "harry")
@@ -689,6 +688,9 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                # Check error log when trying to process a message with faulty HTML.
+                "WARNING:root:Error converting HTML to text for message: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
+                "WARNING:root:{'sender_id': 2, 'content': 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -936,6 +938,8 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -963,6 +967,8 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -982,28 +988,3 @@ class MatterMostImporter(ZulipTestCase):
             self.assertIsNotNone(message.rendered_content)
 
         self.verify_emoji_code_foreign_keys()
-
-    def test_fail_process_raw_message_batch(self) -> None:
-        # TODO: Once we have a sample of message content that can trigger this error
-        # we should add that as fixture instead of mocking `convert_html_to_text`.
-        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
-        output_dir = self.make_import_output_dir("mattermost")
-
-        with (
-            patch("builtins.print"),
-            patch("zerver.data_import.mattermost.convert_html_to_text") as mock_html2text,
-            self.assertLogs(level="WARNING") as warn_log,
-        ):
-            mock_html2text.side_effect = subprocess.CalledProcessError(
-                returncode=1, cmd="html2text", output="mocked failure"
-            )
-            do_convert_data(
-                mattermost_data_dir=mattermost_data_dir,
-                output_dir=output_dir,
-                masking_content=True,
-            )
-        mock_html2text.assert_called()
-        self.assertIn(
-            "WARNING:root:Error converting HTML to text for message: 'Xxxxxxx!'; continuing",
-            warn_log.output,
-        )
