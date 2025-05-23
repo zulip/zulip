@@ -1,0 +1,86 @@
+.input-element-wrapper {
+    display: grid;
+    grid-template: "icon input button" auto / auto minmax(0, 1fr) auto;
+    grid-template-rows: 1fr;
+    align-items: center;
+}
+
+.input-icon {
+    pointer-events: none;
+    grid-area: icon;
+    margin-left: 0.5em;
+    color: var(--color-text-input);
+    z-index: 1;
+}
+
+.input-active-styles {
+    color: var(--color-text-input-focus);
+    background-color: var(--color-background-input-focus);
+    border-color: var(--color-border-input-focus);
+}
+
+.input-element-wrapper .input-element {
+    grid-column: icon-start / button-end;
+    grid-row: 1;
+    box-sizing: border-box;
+    border: 1px solid var(--color-border-input);
+    padding: 0.1875em 0.5em;
+    outline: none;
+    background: var(--color-background-input);
+    font-family: "Source Sans 3 VF", sans-serif;
+    font-size: var(--base-font-size-px);
+    line-height: 1.25;
+    border-radius: 4px;
+    color: var(--color-text-input);
+    text-overflow: ellipsis;
+    transition: all 0.1s linear;
+    transition-property: border-color, box-shadow;
+
+    &:hover {
+        border-color: var(--color-border-input-hover);
+    }
+
+    &:focus {
+        box-shadow: 0 0 6px 1px var(--color-box-shadow-input-focus);
+    }
+
+    &:focus,
+    &.input-element-active {
+        @extend .input-active-styles;
+    }
+}
+
+.input-action-button {
+    grid-area: button;
+    padding: 0.25em;
+    z-index: 1;
+    margin-right: 0.125em;
+}
+
+.input-icon ~ .input-element {
+    padding-left: 2em;
+}
+
+.input-element:has(~ .input-action-button) {
+    padding-right: 2em;
+}
+
+.filter-input {
+    .input-action-button {
+        display: none;
+    }
+
+    .input-element {
+        padding-right: 0.5em;
+    }
+
+    .input-element:not(:placeholder-shown) {
+        @extend .input-active-styles;
+
+        padding-right: 2em;
+
+        ~ .input-action-button {
+            display: flex;
+        }
+    }
+}
