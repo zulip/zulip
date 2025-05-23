@@ -494,6 +494,7 @@ export async function send_multiple_messages(page: Page, msgs: Message[]): Promi
  * This method returns a array, which is formatted as:
  *  [
  *    ['stream > topic', ['message 1', 'message 2']],
+ *    ['topic', ['message 1', 'message 2']],
  *    ['You and Cordelia, Lear's daughter', ['message 1', 'message 2']]
  *  ]
  *
@@ -509,16 +510,33 @@ export async function get_rendered_messages(
     return Promise.all(
         recipient_rows.map(async (element): Promise<[string, string[]]> => {
             const stream_label = await element.$(".stream_label");
-            const stream_name = (await get_element_text(stream_label!)).trim();
+            const stream_name =
+                stream_label === null ? "" : (await get_element_text(stream_label)).trim();
+            const channel_view =
+                (await page.$$(".message-header-stream-settings-button")).length > 0;
             const topic_label = await element.$(".stream_topic a");
             const topic_name =
                 topic_label === null ? "" : (await get_element_text(topic_label)).trim();
-            let key = stream_name;
-            if (topic_name !== "") {
+            let key;
+            if (channel_view && topic_name !== "") {
+                // We use only topic_name when we are in stream narrow and
+                // stream header button is visible.
+                key = topic_name;
+            } else if (topic_name !== "" && stream_name !== "") {
                 // If topic_name is '', then this is direct messages, so only
-                // append > topic_name if we are not in 1:1 or group direct
-                // messages.
+                // append > topic_name if we are in combined feed and not in
+                // 1:1 or group direct messages.
                 key = `${stream_name} > ${topic_name}`;
+            } else {
+                key = stream_name;
+            }
+            if (topic_name !== "") {
+                // If topic_name is '', then this is direct messages, so we
+                // use topic_name with possibly stream_name on combined feed.
+                key =
+                    (await page.title()) === "Combined feed - Zulip Dev - Zulip"
+                        ? `${stream_name} > ${topic_name}`
+                        : topic_name;
             }
 
             const messages = await Promise.all(
@@ -534,7 +552,7 @@ export async function get_rendered_messages(
 
 // This method takes in page, table to fetch the messages
 // from, and expected messages. The format of expected
-// message is { "stream > topic": [messages] }.
+// message is { "topic": [messages] }.
 // The method will only check that all the messages in the
 // messages array passed exist in the order they are passed.
 export async function check_messages_sent(
