@@ -34,9 +34,9 @@ async function copy_messages({
             send_copied_plain_text?: boolean,
         ) => {
             function get_message_node(message: string): Element {
-                return [...document.querySelectorAll(".message-list .message_content")].find(
-                    (node) => node.textContent?.trim() === message,
-                )!;
+                return [
+                    ...document.querySelectorAll(".focused-message-list .message_content"),
+                ].find((node) => node.textContent?.trim() === message)!;
             }
 
             // select messages from start_message to end_message
@@ -201,6 +201,33 @@ async function test_copying_all_from_prev_first_from_next(page: Page): Promise<v
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
         "copy paste test A",
+        "Desdemona:",
+        "copy paste test B",
+        "Verona > copy-paste-topic #2 | Today",
+        "Desdemona:",
+        "copy paste test C",
+    ];
+    assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
+}
+
+async function test_copying_from_channel_view(page: Page): Promise<void> {
+    // Recipient rows omit the channel name in channel views, but
+    // copied recipient headers should still include it.
+    const stream_id = await common.get_stream_id(page, "Verona");
+    await page.goto(`http://zulip.zulipdev.com:9981/#narrow/channel/${stream_id}-Verona`);
+    await page.waitForSelector(
+        '.focused-message-list .message_header[data-topic-name="copy-paste-topic #2"]',
+        {visible: true},
+    );
+    assert.equal(await page.$(".focused-message-list .stream_label"), null);
+
+    const actual_copied_lines = await copy_messages({
+        page,
+        start_message: "copy paste test B",
+        end_message: "copy paste test C",
+    });
+    const expected_copied_lines = [
+        "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
         "copy paste test B",
         "Verona > copy-paste-topic #2 | Today",
@@ -735,6 +762,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_multiple_message_selection_with_partially_selected_bookend_messages(page);
     await test_copying_plain_text(page);
     await test_copying_plain_text_from_two_topics(page);
+    await test_copying_from_channel_view(page);
 }
 
 await common.run_test(copy_paste_test);

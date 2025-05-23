@@ -953,6 +953,35 @@ test("can_mark_messages_read", () => {
     assert.ok(!filter.calc_can_mark_messages_read_called);
 });
 
+test("should_show_channel_name_in_recipient_row", () => {
+    const channel_term = {operator: "channel", operand: foo_stream_id.toString()};
+    const topic_term = {operator: "topic", operand: "bar"};
+
+    // The navbar title displays the channel name in these views.
+    let filter = new Filter([channel_term]);
+    assert.ok(!filter.should_show_channel_name_in_recipient_row());
+    filter = new Filter([channel_term, topic_term]);
+    assert.ok(!filter.should_show_channel_name_in_recipient_row());
+    filter = new Filter([channel_term, topic_term, {operator: "with", operand: "12"}]);
+    assert.ok(!filter.should_show_channel_name_in_recipient_row());
+
+    // `near` views open the search bar in place of the navbar title.
+    filter = new Filter([channel_term, topic_term, {operator: "near", operand: "12"}]);
+    assert.ok(!filter.is_common_narrow());
+    assert.ok(filter.should_show_channel_name_in_recipient_row());
+
+    // Other views either can contain messages from multiple channels,
+    // or show the search bar in place of the navbar title.
+    filter = new Filter([]);
+    assert.ok(filter.should_show_channel_name_in_recipient_row());
+    filter = new Filter([{operator: "is", operand: "starred"}]);
+    assert.ok(filter.should_show_channel_name_in_recipient_row());
+    filter = new Filter([{...channel_term, negated: true}]);
+    assert.ok(filter.should_show_channel_name_in_recipient_row());
+    filter = new Filter([channel_term, {operator: "search", operand: "keyword"}]);
+    assert.ok(filter.should_show_channel_name_in_recipient_row());
+});
+
 test("show_first_unread", () => {
     let terms = [{operator: "is", operand: "any"}];
     let filter = new Filter(terms);
