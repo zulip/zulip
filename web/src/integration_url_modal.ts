@@ -9,6 +9,7 @@ import render_generate_integration_url_filter_branches_modal from "../templates/
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
 
+import * as bot_data from "./bot_data.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -33,7 +34,7 @@ const config_option_schema = z.object({
 
 const config_options_schema = z.array(config_option_schema);
 
-export function show_generate_integration_url_modal(api_key: string): void {
+export function show_generate_integration_url_modal(api_key: string, bot_id: number): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
     const default_integration_option = {
@@ -49,6 +50,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
         default_url_message,
         max_topic_length: realm.max_topic_length,
     });
+
+    const services = bot_data.get_services(bot_id);
+    const saved_integration =
+        services?.[0] && "integration_name" in services[0] ? services[0].integration_name : "";
 
     function generate_integration_url_post_render(): void {
         let selected_integration = "";
@@ -283,7 +288,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             get_options: get_options_for_integration_input_dropdown_widget,
             item_click_callback: integration_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
-            default_id: default_integration_option.unique_id,
+            default_id: saved_integration || default_integration_option.unique_id,
             unique_id_type: "string",
         });
         integration_input_dropdown_widget.setup();
@@ -403,6 +408,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
             stream_input_dropdown_widget.render(direct_messages_option.unique_id);
             $config_container.empty();
             branch_pill_widget = undefined;
+        }
+
+        if (saved_integration) {
+            const saved_integration_data = realm.realm_incoming_webhook_bots.find(
+                (bot) => bot.name === saved_integration,
+            );
+            if (saved_integration_data?.config_options) {
+                render_config(saved_integration_data.config_options);
+            }
+            update_url();
         }
     }
 
