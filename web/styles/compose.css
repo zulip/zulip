@@ -1194,7 +1194,9 @@ textarea.new_message_textarea {
     border-color: var(--color-compose-recipient-box-border-color);
 
     &.dropdown-widget-button {
-        padding: 0 6px;
+        /* We control the surrounding space through the
+           grid on `.dropdown_widget_value`. */
+        padding: 0;
         border-radius: 4px;
     }
 
@@ -1547,23 +1549,36 @@ textarea.new_message_textarea {
 
     .dropdown_widget_value {
         flex-grow: 1;
-        display: flex;
+        display: grid;
         align-items: baseline;
-        /* This gap matches a single space character,
-           as used previously in the icon-stream name
-           layout. */
-        gap: 0.4ch;
+        /* This is a bit of eyeball work, based on balancing
+           out the size and spatial relationships between the
+           privacy icon and the channel name, and the
+           surrounding negative space. */
+        /* 7px at 20px/1em; 4px at 20px/1em. */
+        grid-template:
+            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em auto 0.2em minmax(
+                0,
+                1fr
+            )
+            0.35em;
 
         .channel-privacy-type-icon {
-            font-size: 0.9286em; /* 13px at 14px em */
+            grid-area: privacy-icon;
+            place-self: center;
+            font-size: 0.95em; /* 19px at 20px/1em */
+            margin-top: -0.0625em; /* 2px at 16px/1em */
+            /* Eliminate inherited component styles. */
+            position: static;
+            padding: 0;
             width: 1em;
             height: 1em;
-            position: relative;
-            top: 0.1538em; /* 2px at 13px/em */
         }
 
+        .select-channel-label,
+        .decorated-dm-label,
         .decorated-channel-name {
-            flex: 1 1 auto;
+            grid-area: channel-name;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
