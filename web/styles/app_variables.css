@@ -680,6 +680,14 @@
     /* Popup banner related variables */
     --popup-banner-translate-y-distance: 100px;
 
+    /* Input grid layout variables */
+    --input-icon-starting-offset: 0.5em; /* 8px at 16px/1em */
+    --input-icon-width: 1em; /* 16px at 16px/1em */
+    --input-icon-content-gap: 0.4375em; /* 7px at 16px/1em */
+    --input-button-content-gap: 0.25em; /* 4px at 16px/1em */
+    --input-button-width: 1.5em; /* 24px at 16px/1em */
+    --input-button-ending-offset: 0.125em; /* 2px at 16px/1em */
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(
@@ -1406,15 +1414,6 @@
     --color-border-settings-plus-button: light-dark(
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
-    );
-    /* TODO: Light mode uses browser-default white
-       backgrounds; we should extend the use of this
-       color variable to 1) explicitly set the
-       background color of inputs, and 2) clean up a
-       lingering stack of selectors in dark_theme.css. */
-    --color-background-input: light-dark(
-        hsl(0deg 0% 100%),
-        hsl(0deg 0% 0% / 20%)
     );
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
@@ -2624,6 +2623,39 @@
     --color-background-danger-banner: light-dark(
         hsl(0deg 35% 92%),
         hsl(0deg 52% 18%)
+    );
+
+    /* Inputs */
+    --color-text-input: light-dark(
+        color-mix(in oklch, hsl(0deg 0% 15%) 50%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 83%) 50%, transparent)
+    );
+    --color-text-input-focus: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 83%));
+    /* TODO: Light mode uses browser-default white
+       backgrounds; we should extend the use of this
+       color variable to 1) explicitly set the
+       background color of inputs, and 2) clean up a
+       lingering stack of selectors in dark_theme.css. */
+    --color-background-input: light-dark(hsl(0deg 0% 100%), hsl(220deg 6% 10%));
+    --color-background-input-focus: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(240deg 6% 7%)
+    );
+    --color-border-input: light-dark(
+        color-mix(in oklch, hsl(229deg 22% 10%) 30%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 20%, transparent)
+    );
+    --color-border-input-hover: light-dark(
+        color-mix(in oklch, hsl(229deg 22% 10%) 30%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 20%, transparent)
+    );
+    --color-border-input-focus: light-dark(
+        color-mix(in oklch, hsl(229deg 22% 10%) 80%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 50%, transparent)
+    );
+    --color-box-shadow-input-focus: light-dark(
+        color-mix(in oklch, hsl(228deg 10% 20%) 30%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
     );
 
     /* .main-view-banner colors */
