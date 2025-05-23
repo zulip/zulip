@@ -191,6 +191,8 @@ export function initialize(): void {
             // Don't show "Go to channel" narrow tooltip in the recipient
             // row if we're currently narrowed to that channel and the
             // user's web_channel_default_view isn't the list of topics.
+            // In channel views, only the report message modal's preview
+            // has a recipient row with a channel link.
             if (
                 current_filter.is_channel_view() &&
                 instance.reference.matches(".narrows_by_recipient") &&
