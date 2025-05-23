@@ -30,7 +30,7 @@ async function toggle_test_star_message(page: Page): Promise<void> {
 async function test_narrow_to_starred_messages(page: Page): Promise<void> {
     await page.click('#left-sidebar-navigation-list a[href^="#narrow/is/starred"]');
     const message_list_id = await common.get_current_msg_list_id(page, true);
-    await common.check_messages_sent(page, message_list_id, [["Verona > stars", [message]]]);
+    await common.check_messages_sent(page, message_list_id, [["stars", [message]]]);
 
     // Go back to the combined feed view.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
