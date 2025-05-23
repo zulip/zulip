@@ -69,7 +69,7 @@
                             {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
                                 <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have unmuted this topic.'}}" role="button"></i>
                             {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                                <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have muted this topic.'}}" role="button"></i>
+                                <i class="zulip-icon zulip-icon-mute recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have muted this topic.'}}" role="button"></i>
                             {{else}}
                                 <i class="zulip-icon zulip-icon-more-vertical recent-view-row-topic-menu visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" role="button"></i>
                             {{/if}}
