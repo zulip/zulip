@@ -149,8 +149,9 @@ function switch_message_type(message_type: MessageType): void {
 function update_recipient_label(stream_id?: number): void {
     const stream = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
     if (stream === undefined) {
-        $("#compose_select_recipient_widget .dropdown_widget_value").text(
-            $t({defaultMessage: "Select a channel"}),
+        const select_channel_label = $t({defaultMessage: "Select a channel"});
+        $("#compose_select_recipient_widget .dropdown_widget_value").html(
+            `<span class="select-channel-label">${select_channel_label}</span>`,
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
@@ -179,7 +180,8 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
         // it here.
         const direct_message_label = $t({defaultMessage: "DM"});
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
-            `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> ${direct_message_label}`,
+            `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i>
+            <span class="decorated-dm-label">${direct_message_label}</span>`,
         );
     }
     compose_banner.clear_errors();
