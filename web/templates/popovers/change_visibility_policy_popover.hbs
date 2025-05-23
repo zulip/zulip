@@ -15,7 +15,7 @@
                 {{#if (or stream_muted topic_unmuted)}}
                 <input type="radio" id="select-unmuted-policy" class="tab-option" name="visibility-policy-select" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content" for="select-unmuted-policy" tabindex="0">
-                    <i class="zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
                     <span class="popover-menu-label">{{t "Unmute"}}</span>
                 </label>
                 {{/if}}
