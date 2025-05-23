@@ -1084,12 +1084,15 @@ export class MessageListView {
     _render_group(opts: {message_groups: MessageGroup[]; use_match_properties: boolean}): JQuery {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
+        const current_filter = narrow_state.filter();
+        const channel_view = current_filter?.can_show_next_unread_topic_conversation_button();
 
         return $(
             render_message_group({
                 message_groups,
                 use_match_properties,
                 message_list_id: this.list.id,
+                channel_view,
             }),
         );
     }
