@@ -1,5 +1,4 @@
 import "../sentry.ts";
-import "../../debug-require.cjs";
 import "../alert_popup.ts";
 import "../csrf.ts";
 import "../blueslip.ts";
