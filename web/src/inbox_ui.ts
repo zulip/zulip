@@ -1803,7 +1803,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
     );
 
     $("body").on(
-        "keyup",
+        "input",
         "#inbox-search",
         _.debounce(() => {
             search_and_update();
@@ -1917,12 +1917,6 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         const $elt = $(this);
         col_focus = COLUMNS.TOPIC_VISIBILITY;
         focus_clicked_list_element($elt);
-    });
-
-    $("body").on("click", "#inbox-clear-search", () => {
-        $("#inbox-search").val("");
-        search_and_update();
-        focus_inbox_search();
     });
 
     $("body").on("click", "#inbox-search", () => {
