@@ -8734,7 +8734,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(message.to[0], "sales@zulip.com")
         self.assertEqual(
             message.subject,
-            f"Invoice overdue for {self.billing_session.billing_entity_display_name} due to stale data",
+            f"Stale audit log data for {self.billing_session.billing_entity_display_name}'s plan",
         )
         self.assertIn(
             f"Support URL: {self.billing_session.support_url()}",
@@ -8744,7 +8744,10 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             f"Internal billing notice for {self.billing_session.billing_entity_display_name}.",
             message.body,
         )
-        self.assertIn("Recent invoice is overdue for payment.", message.body)
+        self.assertIn(
+            "Unable to verify current licenses in use, which delays invoicing for this customer.",
+            message.body,
+        )
         self.assertIn(
             f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
         )
@@ -10272,7 +10275,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(message.to[0], "sales@zulip.com")
         self.assertEqual(
             message.subject,
-            f"Invoice overdue for {self.billing_session.billing_entity_display_name} due to stale data",
+            f"Stale audit log data for {self.billing_session.billing_entity_display_name}'s plan",
         )
         self.assertIn(
             f"Support URL: {self.billing_session.support_url()}",
@@ -10282,7 +10285,10 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             f"Internal billing notice for {self.billing_session.billing_entity_display_name}.",
             message.body,
         )
-        self.assertIn("Recent invoice is overdue for payment.", message.body)
+        self.assertIn(
+            "Unable to verify current licenses in use, which delays invoicing for this customer.",
+            message.body,
+        )
         self.assertIn(
             f"Last data upload: {last_audit_log_upload.strftime('%Y-%m-%d')}", message.body
         )
