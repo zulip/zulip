@@ -135,7 +135,10 @@ from zproject.backends import (
     get_external_method_dicts,
     ldap_auth_enabled,
     password_auth_enabled,
+    sync_groups,
 )
+
+logger = logging.getLogger("")
 
 
 @typed_endpoint
@@ -501,7 +504,7 @@ def registration_helper(
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
                     except NoMatchingLDAPUserError:
-                        logging.warning("New account email %s could not be found in LDAP", email)
+                        logger.warning("New account email %s could not be found in LDAP", email)
                         break
 
                     # Note that this `ldap_user` object is not a
@@ -831,6 +834,8 @@ def registration_helper(
                 # duplicate email address.  Redirect them to the login
                 # form.
                 return redirect_to_email_login_url(email)
+            else:
+                sync_groups_post_registration(request=request, user_profile=user_profile)
 
         if realm_creation:
             # Because for realm creation, registration happens on the
@@ -851,7 +856,7 @@ def registration_helper(
         )
         if return_data.get("invalid_subdomain"):
             # By construction, this should never happen.
-            logging.error(
+            logger.error(
                 "Subdomain mismatch in registration %s: %s",
                 realm.subdomain,
                 user_profile.delivery_email,
@@ -901,6 +906,34 @@ def registration_helper(
         context.update(get_realm_create_form_context())
 
     return TemplateResponse(request, "zerver/register.html", context=context)
+
+
+def sync_groups_post_registration(request: HttpRequest, user_profile: UserProfile) -> None:
+    group_memberships_sync_data = get_expirable_session_var(
+        request.session, "registration_group_memberships_sync_map", delete=True
+    )
+    if not group_memberships_sync_data:
+        return
+
+    group_memberships_sync_map = orjson.loads(group_memberships_sync_data)
+    if group_memberships_sync_map:
+        logger.info(
+            "Syncing groups post-registration for new user %s in realm %s: %s",
+            user_profile.id,
+            user_profile.realm_id,
+            group_memberships_sync_map,
+        )
+        assert isinstance(group_memberships_sync_map, dict)
+        sync_groups(
+            all_group_names=set(group_memberships_sync_map.keys()),
+            intended_group_names={
+                group_name
+                for group_name, is_member in group_memberships_sync_map.items()
+                if is_member
+            },
+            user_profile=user_profile,
+            logger=logger,
+        )
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -1295,7 +1328,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
                     request=request,
                 )
             except EmailNotDeliveredError:
-                logging.exception("Failed to deliver email during realm creation")
+                logger.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
@@ -1461,7 +1494,7 @@ def accounts_home(
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
-                logging.exception("Failed to deliver email during user registration")
+                logger.exception("Failed to deliver email during user registration")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
