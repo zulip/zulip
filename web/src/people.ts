@@ -1292,18 +1292,27 @@ export function get_people_for_search_bar(query: string): User[] {
     return filter_all_persons(pred);
 }
 
+export function maybe_remove_diacritics_from_name(lower_case_query: string, user: User): string {
+    // Strip diacritics from `full_name` only if `lower_case_query` contains
+    // only ASCII lowercase letters (a–z).
+    // This prevents incorrect matches when `lower_case_query`
+    // includes diacritic-sensitive characters.
+    const should_remove_diacritics = /^[a-z]+$/.test(lower_case_query);
+    if (should_remove_diacritics) {
+        // Reuse removed diacritics version of the `full_name` if present
+        // else compute and cache it.
+        user.name_with_diacritics_removed ??= typeahead.remove_diacritics(user.full_name);
+        return user.name_with_diacritics_removed;
+    }
+    return user.full_name;
+}
+
 export function build_termlet_matcher(termlet: string): (user: User) => boolean {
     termlet = termlet.trim();
 
-    const is_ascii = /^[a-z]+$/.test(termlet);
-
     return function (user: User): boolean {
-        let full_name = user.full_name;
-        // Only ignore diacritics if the query is plain ascii
-        if (is_ascii) {
-            user.name_with_diacritics_removed ??= typeahead.remove_diacritics(full_name);
-            full_name = user.name_with_diacritics_removed;
-        }
+        const full_name = maybe_remove_diacritics_from_name(termlet, user);
+
         const names = full_name.toLowerCase().split(" ");
 
         return names.some((name) => name.startsWith(termlet));
