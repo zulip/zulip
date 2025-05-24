@@ -170,7 +170,7 @@ importers:
         specifier: ^1.2.4
         version: 1.2.4
       jquery:
-        specifier: ^3.6.3
+        specifier: ^3.7.1
         version: 3.7.1
       jquery-caret-plugin:
         specifier: ^1.5.2
@@ -333,7 +333,7 @@ importers:
         specifier: ^1.2.32
         version: 1.2.32
       '@types/jquery':
-        specifier: ^3.3.31
+        specifier: ^3.5.32
         version: 3.5.32
       '@types/jquery.validation':
         specifier: ^1.16.7
@@ -351,7 +351,7 @@ importers:
         specifier: ^4.14.172
         version: 4.17.16
       '@types/micromodal':
-        specifier: ^0.3.3
+        specifier: ^0.3.5
         version: 0.3.5
       '@types/minimalistic-assert':
         specifier: ^1.0.1
