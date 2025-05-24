@@ -166,7 +166,7 @@ export function close_for_hash_change(): void {
 }
 
 export function initialize(): void {
-    $("body").on("click", "div.overlay, div.overlay .exit", (e) => {
+    $("body").on("click", "div.overlay .exit", (e) => {
         let $target = $(e.target);
 
         if (document.getSelection()?.type === "Range") {
