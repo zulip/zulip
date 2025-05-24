@@ -36,6 +36,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.bots import ServiceBotTriggerTypeEnum
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
@@ -180,9 +181,15 @@ def add_service(
     base_url: str,
     interface: int,
     token: str,
+    message_trigger_type: ServiceBotTriggerTypeEnum,
 ) -> None:
     Service.objects.create(
-        name=name, user_profile=user_profile, base_url=base_url, interface=interface, token=token
+        name=name,
+        user_profile=user_profile,
+        base_url=base_url,
+        interface=interface,
+        token=token,
+        message_trigger_type=message_trigger_type.value,
     )
 
 

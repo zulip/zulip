@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 from django.db import models
 from django.db.models import CASCADE
 
@@ -8,6 +10,11 @@ from zerver.models.users import UserProfile
 # and parsing the response.
 GENERIC_INTERFACE = "GenericService"
 SLACK_INTERFACE = "SlackOutgoingWebhookService"
+
+
+class ServiceBotTriggerTypeEnum(IntEnum):
+    MENTION_ONLY = 0
+    RECIPIENT = 1
 
 
 # A Service corresponds to either an outgoing webhook bot or an embedded bot.
@@ -48,6 +55,10 @@ class Service(models.Model):
         GENERIC: GENERIC_INTERFACE,
         SLACK: SLACK_INTERFACE,
     }
+
+    message_trigger_type = models.PositiveSmallIntegerField(
+        default=ServiceBotTriggerTypeEnum.MENTION_ONLY.value
+    )
 
     def interface_name(self) -> str:
         # Raises KeyError if invalid

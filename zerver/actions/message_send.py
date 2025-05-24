@@ -105,6 +105,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.bots import Service, ServiceBotTriggerTypeEnum
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import get_direct_message_group_user_ids
@@ -522,7 +523,26 @@ def get_service_bot_events(
     if sender.is_bot:
         return event_dict
 
-    def maybe_add_event(user_profile_id: int, bot_type: int) -> None:
+    if len(service_bot_tuples) == 0:
+        return event_dict
+
+    service_bot_data = {tuple[0]: {"bot_type": tuple[1]} for tuple in service_bot_tuples}
+
+    # Early return if service bots isn't relevant to message.
+    if (
+        service_bot_data.keys() - (mentioned_user_ids | active_user_ids)
+    ) == service_bot_data.keys():
+        return event_dict
+
+    for bot_id, message_trigger_type in set(
+        Service.objects.filter(user_profile__id__in=service_bot_data.keys()).values_list(
+            "user_profile", "message_trigger_type"
+        )
+    ):
+        assert "message_trigger_type" not in service_bot_data[bot_id]
+        service_bot_data[bot_id]["message_trigger_type"] = message_trigger_type
+
+    def maybe_add_event(user_profile_id: int, bot_type: int, bot_trigger: int) -> None:
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             queue_name = "outgoing_webhooks"
         elif bot_type == UserProfile.EMBEDDED_BOT:
@@ -537,39 +557,69 @@ def get_service_bot_events(
 
         is_stream = recipient_type == Recipient.STREAM
 
-        # Important note: service_bot_tuples may contain service bots
-        # who were not actually mentioned in the message (e.g. if
-        # mention syntax for that bot appeared in a code block).
-        # Thus, it is important to filter any users who aren't part of
-        # either mentioned_user_ids (the actual mentioned users) or
-        # active_user_ids (the actual recipients).
-        #
-        # So even though this is implied by the logic below, we filter
-        # these not-actually-mentioned users here, to help keep this
-        # function future-proof.
-        if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
-            return
+        match bot_trigger:
+            case ServiceBotTriggerTypeEnum.MENTION_ONLY.value:
+                # Important note: service_bot_tuples may contain service bots
+                # who were not actually mentioned in the message (e.g. if
+                # mention syntax for that bot appeared in a code block).
+                # Thus, it is important to filter any users who aren't part of
+                # either mentioned_user_ids (the actual mentioned users) or
+                # active_user_ids (the actual recipients).
+                #
+                # So even though this is implied by the logic below, we filter
+                # these not-actually-mentioned users here, to help keep this
+                # function future-proof.
+                if (
+                    user_profile_id not in mentioned_user_ids
+                    and user_profile_id not in active_user_ids
+                ):
+                    return
 
-        # Mention triggers, for stream messages
-        if is_stream and user_profile_id in mentioned_user_ids:
-            trigger = "mention"
-        # Direct message triggers for personal and group direct messages
-        elif not is_stream and user_profile_id in active_user_ids:
-            trigger = NotificationTriggers.DIRECT_MESSAGE
-        else:
-            return
+                # Mention triggers, for stream messages
+                if is_stream and user_profile_id in mentioned_user_ids:
+                    trigger = "mention"
+                # Direct message triggers for personal and group direct messages
+                elif not is_stream and user_profile_id in active_user_ids:
+                    trigger = NotificationTriggers.DIRECT_MESSAGE
+                else:
+                    return
 
-        event_dict[queue_name].append(
-            {
-                "trigger": trigger,
-                "user_profile_id": user_profile_id,
-            }
-        )
+                event_dict[queue_name].append(
+                    {
+                        "trigger": trigger,
+                        "user_profile_id": user_profile_id,
+                    }
+                )
+            case ServiceBotTriggerTypeEnum.RECIPIENT.value:
+                if user_profile_id not in active_user_ids:
+                    return
 
-    for user_profile_id, bot_type in service_bot_tuples:
+                # Message recipient trigger be it channel or direct message.
+                event_dict[queue_name].append(
+                    {
+                        "trigger": "recipient",
+                        "user_profile_id": user_profile_id,
+                    }
+                )
+
+    for bot_id, bot_data in service_bot_data.items():
+        bot_trigger_type = bot_data.get("message_trigger_type")
+        if bot_trigger_type is None:
+            # Defaults back to MENTION_ONLY for service bots with missing
+            # message_trigger_type field, they are probably old service bots.
+            #
+            # TODO: Add custom migration to update message_trigger_type of
+            # existing bots
+            bot_trigger_type = ServiceBotTriggerTypeEnum.MENTION_ONLY.value
+            logging.error(
+                "Missing message_trigger_type for Service bot id=%s",
+                bot_id,
+            )
+
         maybe_add_event(
-            user_profile_id=user_profile_id,
-            bot_type=bot_type,
+            user_profile_id=bot_id,
+            bot_type=bot_data["bot_type"],
+            bot_trigger=bot_trigger_type,
         )
 
     return event_dict
