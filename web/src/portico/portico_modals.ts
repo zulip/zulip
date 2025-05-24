@@ -2,6 +2,7 @@ import $ from "jquery";
 import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
+
 import * as blueslip from "../blueslip.ts";
 
 function is_open(): boolean {
@@ -77,36 +78,39 @@ export function open(modal_id: string, recursive_call_count = 0): void {
     const id_selector = `#${CSS.escape(modal_id)}`;
     const $micromodal = $(id_selector);
 
-    $micromodal.find(".modal__container").on("animationend", (event) => {
-        assert(event.originalEvent instanceof AnimationEvent);
-        const animation_name = event.originalEvent.animationName;
+   $micromodal.find(".modal__container").on("animationend", (event: JQuery.TriggeredEvent) => {
+    const originalEvent = event.originalEvent;
+
+    // Check if the originalEvent exists and is an AnimationEvent
+    if (originalEvent instanceof AnimationEvent) {
+        const animation_name = originalEvent.animationName;
+
         if (animation_name === "mmfadeIn") {
-            // Micromodal adds the is-open class before the modal animation
-            // is complete, which isn't really helpful since a modal is open after the
-            // animation is complete. So, we manually add a class after the
-            // animation is complete.
             $micromodal.addClass("modal--open");
             $micromodal.removeClass("modal--opening");
         } else if (animation_name === "mmfadeOut") {
             $micromodal.removeClass("modal--open");
         }
-    });
+    } else {
+        // Optional: log or handle unexpected event types
+        console.warn("Unexpected event type in animationend handler", originalEvent);
+    }
+});
 
-    $micromodal.find(".modal__overlay").on("click", (e) => {
-        /* Micromodal's data-micromodal-close feature doesn't check for
-           range selections; this means dragging a selection of text in an
-           input inside the modal too far will weirdly close the modal.
-           See https://github.com/ghosh/Micromodal/issues/505.
-           Work around this with our own implementation. */
-        if (!$(e.target).is(".modal__overlay")) {
-            return;
-        }
 
-        if (document.getSelection()?.type === "Range") {
-            return;
-        }
-        close(modal_id);
-    });
+ $micromodal.find(".modal__overlay").on("click", (event: JQuery.ClickEvent) => {
+    if (!$(event.target).is(".modal__overlay")) {
+        return;
+    }
+
+    if (document.getSelection()?.type === "Range") {
+        return;
+    }
+
+    close(modal_id);
+});
+
+
 
     Micromodal.show(modal_id, {
         disableFocus: true,
@@ -134,3 +138,21 @@ export function close(modal_id: string): void {
 
     Micromodal.close(modal_id);
 }
+// Attach event handlers for keyboard and mouse interactions on account selectors
+$(function () {
+    $(".choose-email-box").on("click", function (this: HTMLElement) {
+        $(this).closest("form").trigger("submit");
+    });
+
+    $(".choose-email-box").on("keydown", function (
+        this: HTMLElement,
+        event:KeyboardEvent
+    ) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault(); // prevent scrolling
+            $(this).closest("form").trigger("submit");
+        }
+    });
+});
+
+
