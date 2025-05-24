@@ -125,6 +125,7 @@ from zerver.actions.streams import (
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
+    do_set_stream_property,
     do_unarchive_stream,
 )
 from zerver.actions.submessage import do_add_submessage
@@ -299,7 +300,7 @@ from zerver.models import (
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.django_api import send_event_rollback_unsafe
@@ -4259,6 +4260,7 @@ class RealmPropertyActionTest(BaseAction):
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
+            topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -4326,6 +4328,7 @@ class RealmPropertyActionTest(BaseAction):
             if name in [
                 "allow_message_editing",
                 "message_content_edit_limit_seconds",
+                "topics_policy",
             ]:
                 check_realm_update_dict("events[0]", events[0])
             else:
@@ -5083,6 +5086,15 @@ class SubscribeActionTest(BaseAction):
         self.user_profile = self.example_user("hamlet")
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
             do_change_stream_message_retention_days(stream, self.example_user("hamlet"), -1)
+        check_stream_update("events[0]", events[0])
+
+        with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
+            do_set_stream_property(
+                stream,
+                "topics_policy",
+                StreamTopicsPolicyEnum.allow_empty_topic.value,
+                self.example_user("hamlet"),
+            )
         check_stream_update("events[0]", events[0])
 
         for setting_name in Stream.stream_permission_group_settings:
