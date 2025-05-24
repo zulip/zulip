@@ -55,6 +55,7 @@ $(() => {
         });
     }
 
+
     common.setup_password_visibility_toggle("#id_password", "#id_password ~ .password_visibility_toggle");
     common.setup_password_visibility_toggle("#id_new_password1", "#id_new_password1 ~ .password_visibility_toggle");
     common.setup_password_visibility_toggle("#id_new_password2", "#id_new_password2 ~ .password_visibility_toggle");
@@ -93,13 +94,41 @@ $(() => {
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
-    $("#registration").on("submit", () => {
-        if (($("#registration") as any).valid()) {
-            $(".register-button .loader").css("display", "inline-block");
-            $(".register-button").prop("disabled", true);
-            $(".register-button span").hide();
-        }
-    });
+    const extractFormData = (form: HTMLFormElement) => {
+    const formData = new FormData(form);
+    return {
+        email: formData.get("email"),
+        password: formData.get("password"),
+        full_name: formData.get("full_name"),
+        // add other fields as needed
+    };
+};
+
+const formatErrorMap = (error_map: Record<string, unknown>) => {
+    const formatted: string[] = [];
+    for (const [field, error] of Object.entries(error_map)) {
+        formatted.push(`${field}: ${String(error)}`);
+    }
+    return { errors: formatted };
+};
+
+
+  $("#registration").on("submit", () => {
+    const form = document.querySelector("#registration") as HTMLFormElement;
+
+    if ($(form).valid()) {
+        const data = extractFormData(form);
+        console.log("Form Data:", data);
+
+        $(".register-button .loader").css("display", "inline-block");
+        $(".register-button").prop("disabled", true);
+        $(".register-button span").hide();
+    } else {
+        const errorMap: Record<string, unknown> = {}; // you could fill this based on `.validate().errorList`
+        console.log("Formatted Errors:", formatErrorMap(errorMap));
+    }
+});
+
 
     const altcha = document.querySelector<HTMLElement & { configure?: Function }>("altcha-widget");
     if (altcha && typeof altcha.configure === "function") {

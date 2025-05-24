@@ -1,11 +1,11 @@
-$(() => {
-    $(".choose-email-box").on("click", function () {
-        $(this).closest("form").trigger("submit");
-    });
 
-    $(".choose-email-box").on("keydown", function (event) {
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault(); // prevent page scroll on space
+
+$(() => {
+    $(".choose-email-box").on("click keypress", function (event) {
+        if (
+            event.type === "click" ||
+            (event.type === "keypress" && (event.key === "Enter" || event.key === " "))
+        ) {
             $(this).closest("form").trigger("submit");
         }
     });

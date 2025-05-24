@@ -20,9 +20,7 @@
     <div class="white-box">
         <form method="post" class="select-email-form" action="/complete/{{ backend }}/">
             <input type="hidden" name="email" value="{{ primary_email }}" />
-            <div class="choose-email-box" tabindex="0" role="button"
-                 onclick="this.closest('form').submit()"
-                 onkeypress="if (event.key === 'Enter' || event.key === ' ') this.closest('form').submit();">
+            <div class="choose-email-box" tabindex="0" role="button" data-email="{{ email }}">
                 {% if avatar_urls[primary_email] %}
                 <img src="{{ avatar_urls[primary_email] }}" alt=""/>
                 {% else %}
