@@ -176,7 +176,7 @@ importers:
         specifier: ^1.5.2
         version: 1.5.3
       jquery-validation:
-        specifier: ^1.19.0
+        specifier: ^1.21.0
         version: 1.21.0(jquery@3.7.1)
       js-cookie:
         specifier: ^3.0.1
@@ -348,8 +348,8 @@ importers:
         specifier: ^2.15.0
         version: 2.15.0
       '@types/lodash':
-        specifier: ^4.14.172
-        version: 4.17.16
+        specifier: ^4.17.17
+        version: 4.17.17
       '@types/micromodal':
         specifier: ^0.3.5
         version: 0.3.5
@@ -2695,8 +2695,8 @@ packages:
   '@types/less@3.0.8':
     resolution: {integrity: sha512-Gjm4+H9noDJgu5EdT3rUw5MhPBag46fiOy27BefvWkNL8mlZnKnCaVVVTLKj6RYXed9b62CPKnPav9govyQDzA==}
 
-  '@types/lodash@4.17.16':
-    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
+  '@types/lodash@4.17.17':
+    resolution: {integrity: sha512-RRVJ+J3J+WmyOTqnz3PiBLA501eKwXl2noseKOrNo/6+XEHjTAxO4xHvxQB6QuNm+s4WRbn6rSiap8+EA+ykFQ==}
 
   '@types/mapbox__point-geometry@0.1.4':
     resolution: {integrity: sha512-mUWlSxAmYLfwnRBmgYV86tgYmMIICX4kza8YnE/eIlywGe2XoOxlpVnXWwir92xRLjwyarqwpu2EJKD2pk0IUA==}
@@ -12087,7 +12087,7 @@ snapshots:
 
   '@types/less@3.0.8': {}
 
-  '@types/lodash@4.17.16': {}
+  '@types/lodash@4.17.17': {}
 
   '@types/mapbox__point-geometry@0.1.4': {}
 
