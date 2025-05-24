@@ -1,6 +1,7 @@
+import $ from "jquery";
 
 
-$(() => {
+(() => {
     $(".choose-email-box").on("click keypress", function (event) {
         if (
             event.type === "click" ||
