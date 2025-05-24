@@ -43,9 +43,7 @@
         {% for email in verified_non_primary_emails %}
         <form method="post" class="select-email-form" action="/complete/{{ backend }}/">
             <input type="hidden" name="email" value="{{ email }}" />
-            <div class="choose-email-box" tabindex="0" role="button"
-                 onclick="this.closest('form').submit()"
-                 onkeypress="if (event.key === 'Enter' || event.key === ' ') this.closest('form').submit();">
+            <div class="choose-email-box" tabindex="0" role="button" data-email="{{ email }}">
                 {% if avatar_urls[email] %}
                 <img src="{{ avatar_urls[email] }}" alt="" class="no-drag"/>
                 {% else %}

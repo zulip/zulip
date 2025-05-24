@@ -2,11 +2,11 @@ import $ from "jquery";
 import "jquery-validation";
 import _ from "lodash";
 import { z } from "zod";
-import { password_quality, password_warning } from "../password_quality";
-import * as common from "../common";
-import * as settings_config from "../settings_config";
-import { $t } from "../i18n";
-import * as portico_modals from "./portico_modals";
+import { password_quality, password_warning } from "./password_quality.ts";
+import * as common from "./common.ts";
+import * as settings_config from "./settings_config.ts";
+import { $t } from "./i18n.ts";
+import * as portico_modals from "./portico_modals.ts";
 
 declare global {
     interface JQuery {

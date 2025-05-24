@@ -517,7 +517,7 @@ export function set_up(): void {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
             void (async () => {
-                password_quality = (await import("./password_quality.ts")).password_quality;
+                password_quality = (await import("./portico/password_quality.ts")).password_quality;
                 $("#pw_strength .bar").removeClass("hide");
 
                 $("#new_password").on("input", () => {
