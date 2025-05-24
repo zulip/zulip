@@ -15,6 +15,7 @@ from zerver.lib.exceptions import (
     IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
+    StreamExistsError,
 )
 from zerver.lib.stream_subscription import (
     get_guest_user_ids_for_streams,
@@ -159,6 +160,38 @@ def send_stream_creation_event(
         for_unarchiving=for_unarchiving,
     )
     send_event_on_commit(realm, event, user_ids)
+
+
+def ensure_stream_does_not_exist_already(stream_name: str, realm: Realm) -> None:
+    try:
+        get_realm_stream(stream_name, realm.id)
+        raise StreamExistsError(stream_name)
+    except Stream.DoesNotExist:
+        return
+
+
+def check_channel_creation_permissions(
+    user_profile: UserProfile, stream_dict: StreamDict, is_default_stream: bool
+) -> None:
+    if stream_dict["invite_only"] and not user_profile.can_create_private_streams():
+        raise JsonableError(_("Insufficient permission"))
+    if not stream_dict["invite_only"] and not user_profile.can_create_public_streams():
+        raise JsonableError(_("Insufficient permission"))
+    if is_default_stream and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
+    if stream_dict["invite_only"] and is_default_stream:
+        raise JsonableError(_("A default channel cannot be private."))
+    if stream_dict["is_web_public"]:
+        if not user_profile.realm.web_public_streams_enabled():
+            raise JsonableError(_("Web-public channels are not enabled."))
+        if not user_profile.can_create_web_public_streams():
+            # We set can_create_web_public_channel_group to allow only organization
+            # owners to create web-public streams, because of their sensitive nature.
+            raise JsonableError(_("Insufficient permission"))
+    if stream_dict["message_retention_days"] is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequiredError
+        user_profile.realm.ensure_not_on_limited_plan()
 
 
 def get_stream_permission_default_group(
