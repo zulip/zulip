@@ -21,6 +21,7 @@ const config = ({file}) => ({
         postcssSimpleVars({variables: {...container_breakpoints, ...media_breakpoints}}),
         postcssPresetEnv({
             features: {
+                "is-pseudo-class": true, // Needed for postcss-extend-rule
                 "nesting-rules": true,
             },
         }),
