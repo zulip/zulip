@@ -38,6 +38,9 @@ The Zulip server-side configuration is straightforward:
    For example, `apg -m20` will generate some passwords of minimum length 20
    for you.
 
+   Make sure to restart the server after editing your settings, by running
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
    The SCIM IdP will authenticate its requests to your Zulip server by
    sending a `WWW-Authenticate` header like this:
    `WWW-Authenticate: Bearer <secret token>`. `name_formatted_included` needs to be set
