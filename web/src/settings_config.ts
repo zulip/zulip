@@ -1012,6 +1012,22 @@ export function get_notifications_table_row_data(
     });
 }
 
+export function get_custom_stream_specific_notifications_table_row_data(): NotificationSettingCheckbox[] {
+    return stream_specific_notification_settings.map((setting_name) => {
+        const checkbox = {
+            setting_name,
+            is_disabled: true,
+            is_checked: false,
+            is_mobile_checkbox: false,
+            push_notifications_disabled: !realm.realm_push_notifications_enabled,
+        };
+        if (setting_name === "push_notifications") {
+            checkbox.is_mobile_checkbox = true;
+        }
+        return checkbox;
+    });
+}
+
 export type AllNotifications = {
     general_settings: {
         label: string;
