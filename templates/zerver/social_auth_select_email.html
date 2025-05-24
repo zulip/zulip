@@ -4,6 +4,11 @@
 <title>{{ _("Select account for authentication") }} | Zulip</title>
 {% endblock %}
 
+{% block portico_js %}
+<script src="{{ static('js/portico/social_auth_select_email.js') }}"></script>
+{% endblock %}
+
+
 {% block portico_content %}
 <div class="register-account flex full-page new-style" id="choose_email">
     <div class="lead">

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import  $ from "jquery";
 import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
