@@ -57,6 +57,20 @@ function get_list_info(zoom, search) {
     );
 }
 
+test("filter_topics_by_search_term with resolved topics_state", () => {
+    const topic_names = ["topic 1", "✔ resolved topic", "topic 2"];
+    const search_term = "";
+    const topics_state = "is: resolved";
+
+    const result = topic_list_data.filter_topics_by_search_term(
+        topic_names,
+        search_term,
+        topics_state,
+    );
+
+    assert.deepEqual(result, ["✔ resolved topic"]);
+});
+
 function test(label, f) {
     run_test(label, (helpers) => {
         stream_topic_history.reset();

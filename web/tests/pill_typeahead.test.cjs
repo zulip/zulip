@@ -38,6 +38,7 @@ let sort_stream_or_group_members_options_called = false;
 const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
+const $fake_rendered_topic_state = $.create("fake-rendered-topic-state");
 
 function override_typeahead_helper({mock_template, override_rewire}) {
     mock_template("typeahead_list_item.hbs", false, (args) => {
@@ -420,6 +421,21 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
 
     pill_typeahead.set_up_user_group($fake_input, $pill_widget, {user_group_source});
     assert.ok(input_pill_typeahead_called);
+});
+
+run_test("render_topic_state", ({override_rewire}) => {
+    override_rewire(typeahead_helper, "render_typeahead_item", (args) => {
+        assert.equal(args.primary, "Resolved");
+        return $fake_rendered_topic_state;
+    });
+
+    const result = typeahead_helper.render_topic_state("Resolved");
+    assert.equal(result, $fake_rendered_topic_state);
+
+    override_rewire(typeahead_helper, "render_topic_state", (state) => `${state}`);
+
+    const new_result = typeahead_helper.render_topic_state("Unresolved");
+    assert.equal(new_result, "Unresolved");
 });
 
 run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
