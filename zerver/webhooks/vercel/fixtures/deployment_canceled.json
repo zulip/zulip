@@ -1,0 +1,53 @@
+{
+    "id": "AXSLmTSc9ShdEIaFLyNBt",
+    "payload": {
+        "user": {
+            "id": "f0Ls96Zaxrzu6E6A8gBfE8jW"
+        },
+        "team": {
+            "id": "team_IXf0JVlfXDnlJiHaXZM7VIWv"
+        },
+        "deployment": {
+            "id": "dpl_4eQ1GvKsPdb5EerGyL7C9313nBPM",
+            "meta": {
+                "githubCommitAuthorName": "apoorvapendse",
+                "githubCommitMessage": "Update page.tsx",
+                "githubCommitOrg": "apoorvapendse",
+                "githubCommitRef": "main",
+                "githubCommitRepo": "sample-test-project",
+                "githubCommitSha": "5af715d255d94d94fafee1d2254315e2b233c21c",
+                "githubDeployment": "1",
+                "githubOrg": "apoorvapendse",
+                "githubRepo": "sample-test-project",
+                "githubRepoOwnerType": "User",
+                "githubCommitRepoId": "827777144",
+                "githubRepoId": "827777144",
+                "githubRepoVisibility": "private",
+                "githubCommitAuthorLogin": "apoorvapendse",
+                "branchAlias": "sample-test-project-git-main-apoorvapendses-projects.vercel.app",
+                "action": "redeploy",
+                "originalDeploymentId": "dpl_9mgbkQCUoQ36KykmXnkGtwCtAqSV"
+            },
+            "name": "sample-test-project",
+            "url": "sample-test-project-jyhkhrtkb-apoorvapendses-projects.vercel.app",
+            "inspectorUrl": "https://vercel.com/apoorvapendses-projects/sample-test-project/4eQ1GvKsPdb5EerGyL7C9313nBPM"
+        },
+        "links": {
+            "deployment": "https://vercel.com/apoorvapendses-projects/sample-test-project/4eQ1GvKsPdb5EerGyL7C9313nBPM",
+            "project": "https://vercel.com/apoorvapendses-projects/sample-test-project"
+        },
+        "name": "sample-test-project",
+        "plan": "hobby",
+        "project": {
+            "id": "prj_uQnRYJu4sqQ5ycL9cGQ94LeJP9JH"
+        },
+        "regions": [
+            "iad1"
+        ],
+        "target": "production",
+        "type": "LAMBDAS",
+        "url": "sample-test-project-jyhkhrtkb-apoorvapendses-projects.vercel.app"
+    },
+    "createdAt": 1737554136714,
+    "type": "deployment.canceled"
+}
