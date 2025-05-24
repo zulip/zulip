@@ -4978,7 +4978,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
 
-        channel_folder = check_add_channel_folder("Frontend", "", acting_user=iago)
+        channel_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
         with self.verify_action(include_subscribers=include_subscribers) as events:
             do_change_stream_folder(stream, channel_folder, acting_user=iago)
         check_stream_update("events[0]", events[0])
@@ -5494,12 +5494,20 @@ class ChannelFolderActionTest(BaseAction):
         folder_name = "Frontend"
         folder_description = "Channels for **frontend** discussions"
         with self.verify_action() as events:
-            check_add_channel_folder(folder_name, folder_description, acting_user=self.user_profile)
+            check_add_channel_folder(
+                self.user_profile.realm,
+                folder_name,
+                folder_description,
+                acting_user=self.user_profile,
+            )
         check_channel_folder_add("events[0]", events[0])
 
     def test_channel_folder_update_event(self) -> None:
         channel_folder = check_add_channel_folder(
-            "Frontend", "Channels for frontend discussion", acting_user=self.user_profile
+            self.user_profile.realm,
+            "Frontend",
+            "Channels for frontend discussion",
+            acting_user=self.user_profile,
         )
         iago = self.example_user("iago")
 

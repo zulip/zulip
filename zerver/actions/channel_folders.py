@@ -2,7 +2,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.channel_folders import get_channel_folder_dict, render_channel_folder_description
-from zerver.models import ChannelFolder, RealmAuditLog, UserProfile
+from zerver.models import ChannelFolder, Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
@@ -10,9 +10,8 @@ from zerver.tornado.django_api import send_event_on_commit
 
 @transaction.atomic(durable=True)
 def check_add_channel_folder(
-    name: str, description: str, *, acting_user: UserProfile
+    realm: Realm, name: str, description: str, *, acting_user: UserProfile
 ) -> ChannelFolder:
-    realm = acting_user.realm
     rendered_description = render_channel_folder_description(
         description, realm, acting_user=acting_user
     )

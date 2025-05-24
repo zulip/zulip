@@ -16,6 +16,8 @@ rules:
     paths:
       include:
         - zerver/views/
+      exclude:
+        - zerver/views/channel_folders.py
 
   - id: time-machine-travel-specify-tick
     patterns:

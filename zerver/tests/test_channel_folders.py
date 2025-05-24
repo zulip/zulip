@@ -3,9 +3,11 @@ from typing import Any
 import orjson
 
 from zerver.actions.channel_folders import check_add_channel_folder
+from zerver.actions.streams import do_change_stream_folder, do_deactivate_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import ChannelFolder
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 
 class ChannelFolderCreationTest(ZulipTestCase):
@@ -37,7 +39,12 @@ class ChannelFolderCreationTest(ZulipTestCase):
         self.assertTrue(ChannelFolder.objects.filter(realm=realm, name="Frontend").exists())
 
         result = self.client_post("/json/channel_folders/create", params)
-        self.assert_json_error(result, "Channel folder 'Frontend' already exists")
+        self.assert_json_error(result, "Channel folder name already in use")
+
+        # Folder names should be unique case-insensitively.
+        params["name"] = "frontEND"
+        result = self.client_post("/json/channel_folders/create", params)
+        self.assert_json_error(result, "Channel folder name already in use")
 
     def test_rendered_description_for_channel_folder(self) -> None:
         self.login("iago")
@@ -79,18 +86,21 @@ class GetChannelFoldersTest(ZulipTestCase):
     def test_get_channel_folders(self) -> None:
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
+        zulip_realm = iago.realm
         frontend_folder = check_add_channel_folder(
-            "Frontend", "Channels for frontend discussions", acting_user=iago
+            zulip_realm, "Frontend", "Channels for frontend discussions", acting_user=iago
         )
         backend_folder = check_add_channel_folder(
-            "Backend", "Channels for **backend** discussions", acting_user=iago
+            zulip_realm, "Backend", "Channels for **backend** discussions", acting_user=iago
         )
         marketing_folder = check_add_channel_folder(
-            "Marketing", "Channels for marketing discussions", acting_user=desdemona
+            zulip_realm, "Marketing", "Channels for marketing discussions", acting_user=desdemona
         )
 
         lear_user = self.lear_user("cordelia")
-        check_add_channel_folder("Devops", "Channels for devops discussions", acting_user=lear_user)
+        check_add_channel_folder(
+            lear_user.realm, "Devops", "Channels for devops discussions", acting_user=lear_user
+        )
 
         def check_channel_folders_in_zulip_realm(
             channel_folders: list[dict[str, Any]], marketing_folder_included: bool = True
@@ -168,12 +178,14 @@ class GetChannelFoldersTest(ZulipTestCase):
 
 class UpdateChannelFoldersTest(ZulipTestCase):
     def test_updating_channel_folder_name(self) -> None:
+        realm = get_realm("zulip")
         channel_folder = check_add_channel_folder(
+            realm,
             "Frontend",
             "Channels for frontend discussions",
             acting_user=self.example_user("desdemona"),
         )
-        check_add_channel_folder("Backend", "", acting_user=self.example_user("desdemona"))
+        check_add_channel_folder(realm, "Backend", "", acting_user=self.example_user("desdemona"))
         channel_folder_id = channel_folder.id
 
         self.login("hamlet")
@@ -199,7 +211,12 @@ class UpdateChannelFoldersTest(ZulipTestCase):
 
         params = {"name": "Backend"}
         result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
-        self.assert_json_error(result, "Channel folder 'Backend' already exists")
+        self.assert_json_error(result, "Channel folder name already in use")
+
+        # Folder names should be unique case-insensitively.
+        params = {"name": "backEND"}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(result, "Channel folder name already in use")
 
         invalid_name = "abc\000"
         params = {"name": invalid_name}
@@ -208,6 +225,7 @@ class UpdateChannelFoldersTest(ZulipTestCase):
 
     def test_updating_channel_folder_description(self) -> None:
         channel_folder = check_add_channel_folder(
+            get_realm("zulip"),
             "Frontend",
             "Channels for frontend discussions",
             acting_user=self.example_user("desdemona"),
@@ -244,7 +262,10 @@ class UpdateChannelFoldersTest(ZulipTestCase):
         self.assertEqual(channel_folder.rendered_description, "")
 
     def test_archiving_and_unarchiving_channel_folder(self) -> None:
+        desdemona = self.example_user("desdemona")
+        realm = get_realm("zulip")
         channel_folder = check_add_channel_folder(
+            realm,
             "Frontend",
             "Channels for frontend discussions",
             acting_user=self.example_user("desdemona"),
@@ -273,3 +294,24 @@ class UpdateChannelFoldersTest(ZulipTestCase):
         self.assert_json_success(result)
         channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
         self.assertFalse(channel_folder.is_archived)
+
+        # Folder containing channels cannot be archived.
+        stream = get_stream("Verona", realm)
+        do_change_stream_folder(stream, channel_folder, acting_user=desdemona)
+        params = {"is_archived": orjson.dumps(True).decode()}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(
+            result, "You need to remove all the channels from this folder to archive it."
+        )
+
+        do_deactivate_stream(stream, acting_user=desdemona)
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(
+            result, "You need to remove all the channels from this folder to archive it."
+        )
+
+        do_change_stream_folder(stream, None, acting_user=desdemona)
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_success(result)
+        channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
+        self.assertTrue(channel_folder.is_archived)
