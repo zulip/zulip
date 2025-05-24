@@ -2392,3 +2392,12 @@ body:not(.spectator-view) {
         right: -2px;
     }
 }
+
+button.choose-email-box {
+    all: unset; /* remove default button styles */
+    display: block;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+

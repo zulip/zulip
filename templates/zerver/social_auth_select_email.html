@@ -14,17 +14,17 @@
 
     <div class="white-box">
         <form method="post" class="select-email-form" action="/complete/{{ backend }}/">
-            <div class="choose-email-box">
-                <input type="hidden" name="email" value="{{ primary_email }}" />
+            <input type="hidden" name="email" value="{{ primary_email }}" />
+            <div class="choose-email-box" tabindex="0" role="button"
+                 onclick="this.closest('form').submit()"
+                 onkeypress="if (event.key === 'Enter' || event.key === ' ') this.closest('form').submit();">
                 {% if avatar_urls[primary_email] %}
                 <img src="{{ avatar_urls[primary_email] }}" alt=""/>
                 {% else %}
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 {% endif %}
                 <div>
-                    <p class="email">
-                        {{ primary_email }}
-                    </p>
+                    <p class="email">{{ primary_email }}</p>
                     <p>
                         GitHub primary
                         {% if avatar_urls[primary_email] %}
@@ -36,19 +36,20 @@
                 </div>
             </div>
         </form>
+
         {% for email in verified_non_primary_emails %}
         <form method="post" class="select-email-form" action="/complete/{{ backend }}/">
-            <div class="choose-email-box">
-                <input type="hidden" name="email" value="{{ email }}" />
+            <input type="hidden" name="email" value="{{ email }}" />
+            <div class="choose-email-box" tabindex="0" role="button"
+                 onclick="this.closest('form').submit()"
+                 onkeypress="if (event.key === 'Enter' || event.key === ' ') this.closest('form').submit();">
                 {% if avatar_urls[email] %}
                 <img src="{{ avatar_urls[email] }}" alt="" class="no-drag"/>
                 {% else %}
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 {% endif %}
                 <div>
-                    <p class="email">
-                        {{ email }}
-                    </p>
+                    <p class="email">{{ email }}</p>
                     <p>
                         {% if avatar_urls[email] %}
                         Log in
@@ -61,6 +62,7 @@
         </form>
         {% endfor %}
     </div>
+
     {% if unverified_emails %}
     <div class="bottom-text">
         <p>
