@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard";
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -108,6 +109,16 @@ export function get_display_text_for_realm_message_retention_setting(): string {
         {message_retention_days: realm_message_retention_days},
     );
 }
+
+export const get_stream_topics_policy_label = (): Handlebars.SafeString =>
+    new Handlebars.SafeString(
+        $t_html(
+            {
+                defaultMessage: "Allow posting to the <i>{empty_topic_name}</i> topic?",
+            },
+            {empty_topic_name: util.get_final_topic_display_name("")},
+        ),
+    );
 
 function get_stream_id(target: HTMLElement): number {
     const $row = $(target).closest(
@@ -262,6 +273,7 @@ export function show_settings_for(node: HTMLElement): void {
         other_settings,
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
+        stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
@@ -272,6 +284,7 @@ export function show_settings_for(node: HTMLElement): void {
         can_access_stream_email: stream_data.can_access_stream_email(sub),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
+        stream_topics_policy_label: get_stream_topics_policy_label(),
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -282,6 +295,7 @@ export function show_settings_for(node: HTMLElement): void {
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
+    $("#id_topics_policy").val(sub.topics_policy);
 
     $edit_container.addClass("show");
 
