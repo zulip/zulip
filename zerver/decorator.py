@@ -52,7 +52,10 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format
-from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
+from zerver.lib.webhooks.common import (
+    MissingHTTPEventHeaderError,
+    notify_bot_owner_about_invalid_json,
+)
 from zerver.models import UserProfile
 from zerver.models.clients import get_client
 from zerver.models.users import get_user_profile_by_api_key
@@ -335,6 +338,12 @@ def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
 
 def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
     extra = {"request": request}
+
+    # We deliberately skip logging this client error, as it results from a malformed request
+    # and doesn't indicate an issue on our end.
+    if isinstance(err, MissingHTTPEventHeaderError):
+        return
+
     # We intentionally omit the stack_info for these events, where
     # they are intentionally raised, and the stack_info between that
     # point and this one is not interesting.
