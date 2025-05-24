@@ -36,6 +36,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
+from zerver.models.realms import RealmTopicsPolicyEnum
 from zerver.models.streams import Stream
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 
@@ -133,10 +134,15 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name=original_topic_name,
         )
 
-        # Verify with mandatory_topics=True:
+        # Verify with topics_policy=disable_empty_topic:
         # * A topic can't be moved to an empty topic
         # * A topic can be moved to a non-empty topic
-        do_set_realm_property(realm, "mandatory_topics", True, acting_user=admin_user)
+        do_set_realm_property(
+            realm,
+            "topics_policy",
+            RealmTopicsPolicyEnum.disable_empty_topic,
+            acting_user=admin_user,
+        )
 
         for topic_name in ["(no topic)", ""]:
             result = self.client_patch(
@@ -158,10 +164,12 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_json_success(result)
         self.check_topic(message_id, new_topic_name)
 
-        # Verify with mandatory_topics=False:
+        # Verify with topics_policy=allow_empty_topic:
         # * A topic can be moved to an empty topic
         # * A topic can be moved to a non-empty topic
-        do_set_realm_property(realm, "mandatory_topics", False, acting_user=admin_user)
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.allow_empty_topic, acting_user=admin_user
+        )
 
         for topic_name in ["(no topic)", "", "non-empty topic"]:
             result = self.client_patch(
