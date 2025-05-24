@@ -23,7 +23,10 @@
     visibility: hidden;
 }
 
-kbd {
+kbd,
+.overlay-keyboard-shortcuts
+    .popover-menu-hotkey-hints
+    .popover-menu-hotkey-hint {
     display: inline-block;
     border: 1px solid var(--color-kbd-border);
     border-radius: 4px;
