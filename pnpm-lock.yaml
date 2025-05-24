@@ -377,6 +377,9 @@ importers:
       '@types/turndown':
         specifier: ^5.0.1
         version: 5.0.5
+      '@types/winchan':
+        specifier: ^0.2.0
+        version: 0.2.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.2.0
         version: 8.32.0(@typescript-eslint/parser@8.32.0(eslint@9.26.0(jiti@1.21.7))(typescript@5.8.3))(eslint@9.26.0(jiti@1.21.7))(typescript@5.8.3)
@@ -2809,6 +2812,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/winchan@0.2.0':
+    resolution: {integrity: sha512-1NyyjFkmpFf9T5hpyB1KgS4kljPwy45nxaq/I6CndEU2kw6BpxzFIAa0SXs620EtnEsvkFljquX+yRdlLxqDkA==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -12189,6 +12195,8 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
+
+  '@types/winchan@0.2.0': {}
 
   '@types/ws@8.18.1':
     dependencies:

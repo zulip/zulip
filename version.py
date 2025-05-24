@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 390
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (326, 6)  # bumped 2025-05-20 to add pydantic-partials
+PROVISION_VERSION = (326, 7)  # bumped 2025-05-23 to add @types/winchan

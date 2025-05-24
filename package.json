@@ -120,6 +120,7 @@
     "@types/throttle-debounce": "^5.0.2",
     "@types/tinycolor2": "^1.4.5",
     "@types/turndown": "^5.0.1",
+    "@types/winchan": "^0.2.0",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
     "babel-plugin-istanbul": "^7.0.0",
