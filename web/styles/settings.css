@@ -415,6 +415,26 @@ input[type="checkbox"] {
     }
 }
 
+.decorated-stream-name-dropdown-widget {
+    .dropdown_widget_value {
+        /* The max-width should account for the
+           16px-square box (at 16px/1em) for the
+           chevron icon. */
+        max-width: calc(100% - 1em);
+        display: flex;
+        align-items: baseline;
+        /* Mimic the space from the previous inline
+           layout. */
+        gap: 0.4ch;
+    }
+
+    .decorated-channel-name {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 .allow-subdomains,
 .new-realm-domain-allow-subdomains {
     margin: 0 !important;
@@ -486,6 +506,19 @@ input[type="checkbox"] {
     &:hover {
         color: var(--color-unmute-stream-hover);
         cursor: pointer;
+    }
+}
+
+#customizable_stream_notifications_table .dropdown-widget-button {
+    /* 225px at 16px/1em */
+    width: 14.0625em;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
     }
 }
 
@@ -834,23 +867,6 @@ input[type="checkbox"] {
 #organization-settings {
     .dropdown-widget-button {
         color: hsl(0deg 0% 33%);
-
-        .dropdown_widget_value {
-            /* The max-width should account for the
-               16px-square box (at 16px/1em) for the
-               chevron icon. */
-            max-width: calc(100% - 1em);
-            display: flex;
-            align-items: baseline;
-            /* Mimic the space from the previous inline
-               layout. */
-            gap: 0.4ch;
-        }
-
-        .decorated-channel-name {
-            overflow-x: hidden;
-            text-overflow: ellipsis;
-        }
     }
 }
 
