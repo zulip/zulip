@@ -140,19 +140,17 @@ export function close(modal_id: string): void {
 }
 // Attach event handlers for keyboard and mouse interactions on account selectors
 $(function () {
-    $(".choose-email-box").on("click", function (this: HTMLElement) {
+    $(".choose-email-box").on("click", function () {
         $(this).closest("form").trigger("submit");
     });
 
-    $(".choose-email-box").on("keydown", function (
-        this: HTMLElement,
-        event:KeyboardEvent
-    ) {
+    $(".choose-email-box").on("keydown", function (event) {
         if (event.key === "Enter" || event.key === " ") {
             event.preventDefault(); // prevent scrolling
             $(this).closest("form").trigger("submit");
         }
     });
 });
+
 
 
