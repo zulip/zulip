@@ -304,6 +304,13 @@ export function initialize(): void {
         tippy_props: {
             offset: [-10, 5],
         },
+        keep_focus_on_search: true,
+        tab_moves_focus_to_target() {
+            if (compose_state.get_message_type() === "stream") {
+                return "#stream_message_recipient_topic";
+            }
+            return "#private_message_recipient";
+        },
     });
     compose_select_recipient_dropdown_widget.setup();
 
