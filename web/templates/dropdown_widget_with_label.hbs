@@ -1,4 +1,4 @@
-<div class="input-group" id="{{widget_name}}_widget_container">
+<div class="input-group {{#if custom_classes}}{{custom_classes}}{{/if}}" id="{{widget_name}}_widget_container">
     <label class="settings-field-label" for="{{widget_name}}_widget">{{label}}
         {{#if help_link}}{{> help_link_widget link=help_link }}{{/if}}
     </label>
