@@ -258,7 +258,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         # Because this will be backported to 10.x, we only depend on the last migration in 10.x
-        ("zerver", "0697_empty_topic_name_for_dms_from_third_party_imports"),
+        ("zerver", "0700_scheduledmessage_request_timestamp"),
     ]
 
     operations = [
