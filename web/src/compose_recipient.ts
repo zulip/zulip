@@ -45,6 +45,22 @@ function composing_to_current_private_message_narrow(): boolean {
     return _.isEqual(narrow_state_recipient, compose_state_recipient);
 }
 
+export let maybe_mute_recipient_row = (): void => {
+    if (composing_to_current_topic_narrow() && compose_state.has_full_recipient()) {
+        $("#compose-recipient").toggleClass("muted-recipient-row", true);
+    } else {
+        $("#compose-recipient").toggleClass("muted-recipient-row", false);
+    }
+};
+
+export function rewire_maybe_mute_recipient_row(value: typeof maybe_mute_recipient_row): void {
+    maybe_mute_recipient_row = value;
+}
+
+export function unmute_recipient_row(): void {
+    $("#compose-recipient").removeClass("muted-recipient-row");
+}
+
 export let update_narrow_to_recipient_visibility = (): void => {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
@@ -98,6 +114,7 @@ export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
+    maybe_mute_recipient_row();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
@@ -185,6 +202,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
+    maybe_mute_recipient_row();
 }
 
 export let on_compose_select_recipient_update = (): void => {
@@ -261,8 +279,13 @@ function focus_compose_recipient(): void {
     $("#compose_select_recipient_widget_wrapper").trigger("focus");
 }
 
+function on_show_callback(): void {
+    $("#compose_select_recipient_widget").addClass("widget-open");
+}
+
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
+    $("#compose_select_recipient_widget").removeClass("widget-open");
     if (!compose_select_recipient_dropdown_widget.item_clicked) {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
@@ -286,6 +309,7 @@ function on_hidden_callback(): void {
 export function handle_middle_pane_transition(): void {
     if (compose_state.composing()) {
         update_narrow_to_recipient_visibility();
+        maybe_mute_recipient_row();
     }
 }
 
@@ -298,6 +322,7 @@ export function initialize(): void {
         on_exit_with_escape_callback: focus_compose_recipient,
         // We want to focus on topic box if dropdown was closed via selecting an item.
         focus_target_on_hidden: false,
+        on_show_callback,
         on_hidden_callback,
         dropdown_input_visible_selector: "#compose_select_recipient_widget_wrapper",
         prefer_top_start_placement: true,
