@@ -602,6 +602,7 @@ def update_realm_user_settings_defaults(
         Annotated[int, check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)]
     ]
     | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     starred_message_counts: Json[bool] | None = None,
     receives_typing_notifications: Json[bool] | None = None,
     web_stream_unreads_count_display_policy: Json[
