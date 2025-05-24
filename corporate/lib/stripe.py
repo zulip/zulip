@@ -5470,7 +5470,7 @@ def maybe_send_invoice_overdue_email(
             "billing_entity": billing_session.billing_entity_display_name,
             "support_url": billing_session.support_url(),
             "last_audit_log_update": "Never uploaded",
-            "notice_reason": "invoice_overdue",
+            "notice_reason": "stale_audit_log_data",
         }
         send_email(
             "zerver/emails/internal_billing_notice",
@@ -5492,7 +5492,7 @@ def maybe_send_invoice_overdue_email(
         "billing_entity": billing_session.billing_entity_display_name,
         "support_url": billing_session.support_url(),
         "last_audit_log_update": last_audit_log_update.strftime("%Y-%m-%d"),
-        "notice_reason": "invoice_overdue",
+        "notice_reason": "stale_audit_log_data",
     }
     send_email(
         "zerver/emails/internal_billing_notice",
