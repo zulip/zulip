@@ -1,0 +1,29 @@
+{
+    "event": "taskUpdated",
+    "history_items": [
+      {
+        "id": "2800792714143635886",
+        "type": 1,
+        "date": "1642736394447",
+        "field": "due_date",
+        "parent_id": "162641062",
+        "data": {
+          "due_date_time": true,
+          "old_due_date_time": false
+        },
+        "source": null,
+        "user": {
+          "id": 183,
+          "username": "Pieter",
+          "email": "kwok.pieter@gmail.com",
+          "color": "#7b68ee",
+          "initials": "J",
+          "profilePicture": null
+        },
+        "before": "1642701600000",
+        "after": "1643608800000"
+      }
+    ],
+    "task_id": "86cvyxabb",
+    "webhook_id": "7fa3ec74-69a8-4530-a251-8a13730bd204"
+  }
