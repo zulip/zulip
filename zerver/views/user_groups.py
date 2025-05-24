@@ -86,6 +86,7 @@ def add_user_group(
             setting_value_group = access_user_group_for_setting(
                 setting_value,
                 user_profile,
+                user_profile.realm,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
             )
@@ -195,6 +196,7 @@ def edit_user_group(
             setting_value_group = access_user_group_for_setting(
                 new_setting_value,
                 user_profile,
+                user_profile.realm,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
                 current_setting_value=current_value,

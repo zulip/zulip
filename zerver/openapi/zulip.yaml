@@ -25993,6 +25993,12 @@ components:
           type: string
           description: |
             Name of the default group for the setting.
+        replacement_group_name:
+          type: string
+          nullable: true
+          description: |
+            Name of the replacement group for the setting. When a group to which the permission
+            is set to is deactivated, the permission will be set to the replacement group.
         default_for_system_groups:
           type: string
           nullable: true
