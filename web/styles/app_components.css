@@ -1074,6 +1074,10 @@ input.settings_text_input {
     }
 }
 
+.delete-selected-drafts-button-container {
+    display: flex;
+}
+
 .dropdown-widget-button {
     background-color: var(--color-background-dropdown-widget-button);
     padding: 4px 6px;
