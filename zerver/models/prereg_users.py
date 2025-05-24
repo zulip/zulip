@@ -81,6 +81,9 @@ class PreregistrationUser(models.Model):
     groups = models.ManyToManyField("zerver.NamedUserGroup")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)
+    welcome_bot_custom_message = models.TextField(
+        null=True, max_length=Realm.MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH
+    )
     # Indicates whether the user needs a password.  Users who were
     # created via SSO style auth (e.g. GitHub/Google) generally do not.
     password_required = models.BooleanField(default=True)
@@ -143,6 +146,9 @@ class MultiuseInvite(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
     include_realm_default_subscriptions = models.BooleanField(default=True)
+    welcome_bot_custom_message = models.TextField(
+        null=True, max_length=Realm.MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH
+    )
 
     # status for tracking whether the invite has been revoked.
     # If revoked, set to confirmation.settings.STATUS_REVOKED.

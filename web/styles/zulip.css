@@ -1341,6 +1341,11 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 100%;
 }
 
+#welcome_bot_custom_message {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .custom-time-input-value {
     width: 5ch;
     margin-right: 15px;
