@@ -396,7 +396,14 @@ class ChangeSettingsTest(ZulipTestCase):
             data = {setting_name: orjson.dumps(test_value).decode()}
 
         result = self.client_patch("/json/settings", data)
-        self.assert_json_success(result)
+        json_result = self.assert_json_success(result)
+        if setting_name == "default_language":
+            self.assertEqual(
+                json_result["msg"],
+                "Saved. Please <a class='reload_link'>reload</a> for the change to take effect.",
+            )
+        else:
+            self.assertEqual(json_result["msg"], "")
         user_profile = self.example_user("hamlet")
         if setting_name == "resolved_topic_notice_auto_read_policy":
             test_value = ResolvedTopicNoticeAutoReadPolicyEnum.always.value

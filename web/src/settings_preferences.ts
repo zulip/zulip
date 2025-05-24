@@ -22,6 +22,7 @@ import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import {user_settings, user_settings_schema} from "./user_settings.ts";
 import type {UserSettings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export type SettingsPanel = {
     container: string;
@@ -152,23 +153,29 @@ function user_default_language_modal_post_render(): void {
                 setting_value,
             );
 
-            change_display_setting(
+            const $spinner = $("#settings_content").find(".general-settings-status").expectOne();
+            $spinner.fadeTo(0, 1);
+            loading.make_indicator($spinner, {text: settings_ui.strings.saving});
+            const request_start_time = Date.now();
+            channel.patch({
+                url: "/json/settings",
                 data,
-                $("#settings_content").find(".general-settings-status"),
-                undefined,
-                undefined,
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a class='reload_link'>${content_html.join("")}</a>`,
-                    },
-                ),
-                true,
-            );
+                success(response_data) {
+                    const appear_after = 500;
+                    const data = z.object({msg: z.string()}).parse(response_data);
+                    const success_msg_html = data.msg;
+                    setTimeout(
+                        () => {
+                            ui_report.success(success_msg_html, $spinner);
+                            settings_ui.display_checkmark($spinner);
+                        },
+                        util.get_remaining_time(request_start_time, appear_after),
+                    );
+                },
+                error(xhr) {
+                    ui_report.error(settings_ui.strings.failure_html, xhr, $spinner);
+                },
+            });
         });
 }
 
