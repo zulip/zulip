@@ -7829,6 +7829,9 @@ paths:
                                 timestamp: {}
                                 topic_links: {}
                                 type: {}
+                                rendered_topic:
+                                  type: string
+                                  description: The rendered HTML version of the subject/topic.
                                 flags:
                                   type: array
                                   description: |
