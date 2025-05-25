@@ -524,6 +524,8 @@ def rewrite_thumbnailed_images(
     parsed_message = BeautifulSoup(rendered_content, "html.parser")
 
     changed = False
+
+    # Loading placeholder images for previews of linked images use this code path.
     for inline_image_div in parsed_message.find_all("div", class_="message_inline_image"):
         image_link = inline_image_div.find("a")
         if (
