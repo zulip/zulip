@@ -117,9 +117,9 @@ test("clear_search with button", ({override}) => {
     override(fake_buddy_list, "populate", (user_ids) => {
         assert.deepEqual(user_ids, {all_user_ids: ordered_user_ids});
     });
-    $("#clear_search_people_button").trigger("click");
+    $("#userlist-header-search .input-action-button").trigger("click");
     assert.equal($("input.user-list-filter").val(), "");
-    $("#clear_search_people_button").trigger("click");
+    $("#userlist-header-search .input-action-button").trigger("click");
 });
 
 test("clear_search", ({override}) => {
