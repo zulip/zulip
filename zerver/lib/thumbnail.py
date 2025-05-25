@@ -543,13 +543,14 @@ def process_inline_images_to_thumbnails(
     path_id: str,
     image_data: MarkdownImageMetadata | None,
     to_delete: set[str] | None,
-    inline_image_div: Tag,
-    image_link: Tag,
+    inline_image_div: Tag | None = None,
+    image_link: Tag | None = None,
 ) -> tuple[bool, str | None]:
     changed = False
     remaining_thumbnails_to_add = None
 
     if image_tag is None:
+        assert image_link is not None
         image_tag = cast(Tag | None, image_link.find("img", src=image_link["href"]))
         if image_tag and image_data is not None:
             # The <img> element has the same src as the link,
@@ -579,7 +580,12 @@ def process_inline_images_to_thumbnails(
         # Trim out the whole "message_inline_image" or the "image"
         # element, since it's not going be renderable by clients
         # either.
-        inline_image_div.decompose()
+        if inline_image_div is not None:
+            inline_image_div.decompose()
+        else:
+            assert image_tag is not None
+            image_tag.decompose()
+
         changed = True
         return changed, remaining_thumbnails_to_add
 
@@ -595,6 +601,10 @@ def process_inline_images_to_thumbnails(
     else:
         changed = True
         del image_tag["class"]
+
+        if inline_image_div is None:
+            image_tag["class"] = "inline-image"
+
         image_tag["src"] = image_data.url
         image_tag["data-original-dimensions"] = (
             f"{image_data.original_width_px}x{image_data.original_height_px}"
@@ -654,6 +664,8 @@ def rewrite_thumbnailed_images(
     parsed_message = BeautifulSoup(rendered_content, "html.parser")
 
     changed = False
+
+    # Loading placeholder images for previews of linked images use this code path.
     for inline_image_div in parsed_message.find_all("div", class_="message_inline_image"):
         processed_results = process_traditional_inline_images_to_thumbnails(
             images, to_delete, inline_image_div
@@ -663,6 +675,26 @@ def rewrite_thumbnailed_images(
             continue
 
         image_changed, remaining_thumbnails_to_add = processed_results
+
+        changed |= image_changed
+
+        if remaining_thumbnails_to_add is not None:
+            remaining_thumbnails.add(remaining_thumbnails_to_add)
+
+    # Loading placeholder images for modern Markdown images use this code path.
+    for inline_image in parsed_message.find_all(
+        "img", class_="inline-image image-loading-placeholder"
+    ):
+        image_src = inline_image.get("data-original-src")
+
+        assert image_src is not None
+
+        path_id = image_src.removeprefix("/user_uploads/")
+        image_data = images.get(path_id)
+
+        image_changed, remaining_thumbnails_to_add = process_inline_images_to_thumbnails(
+            inline_image, image_src, path_id, image_data, to_delete
+        )
 
         changed |= image_changed
 
