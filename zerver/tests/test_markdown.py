@@ -815,6 +815,29 @@ class MarkdownEmbedsTest(ZulipTestCase):
             f"""<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="{get_camo_url("https://i.ytimg.com/vi/nOJgD4fcZhI/mqdefault.jpg")}"></a></div>""",
         )
 
+    def test_inline_image(self) -> None:
+        image_url = "https://www.google.com/images/srpr/logo4w.png"
+        msg = f"The Google logo looks like this: ![Google logo]({image_url}) and..."
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            f"""<p>The Google logo looks like this: <img alt="Google logo" data-original-src="{image_url}" src="{get_camo_url(image_url)}"> and...</p>""",
+        )
+
+        msg = '![foo](/url "the title")'
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="foo" data-original-src="/url" src="/url" title="the title"></p>',
+        )
+
+        msg = "![](/url)"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="" data-original-src="/url" src="/url"></p>',
+        )
+
     def test_inline_image_preview(self) -> None:
         url = "http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"
         camo_url = get_camo_url(url)

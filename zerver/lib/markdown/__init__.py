@@ -2271,6 +2271,76 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
+class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
+    def __init__(self, pattern: str, zmd: "ZulipMarkdown") -> None:
+        super().__init__(pattern, zmd)
+        self.zmd = zmd
+
+    def zulip_specific_src_changes(self, img: Element) -> None | Element:
+        # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
+        src = img.get("src")
+        assert src is not None
+
+        # Sanitize URL or don't parse image. See linkify_tests in markdown_test_cases for banned syntax.
+        src = sanitize_url(self.unescape(src.strip()))
+        if src is None:
+            return None  # no-op; the image is not processed.
+
+        # Rewrite local links to be relative
+        db_data: DbData | None = self.zmd.zulip_db_data
+        src = rewrite_local_links_to_relative(db_data, src)
+        maybe_add_attachment_path_id(src, self.zmd)
+        img.set("data-original-src", src)
+
+        # We try to use image thumbnails for previews of the user
+        # upload images rather than original images when available.
+        if src.startswith("/user_uploads/") and db_data:
+            path_id = src[len("/user_uploads/") :]
+
+            # We should have pulled the preview data for this image
+            # (even if that's "no preview yet") from the database
+            # before rendering; Else, its header didn't parse as
+            # a valid image type which libvips handles.
+            if path_id not in db_data.user_upload_previews:
+                return None
+
+            metadata = db_data.user_upload_previews[path_id]
+
+            # Insert a placeholder image spinner.  We post-process
+            # this content (see rewrite_thumbnailed_images in
+            # zerver.lib.thumbnail), looking specifically for this
+            # tag, and may re-write it into the thumbnail URL if it
+            # already exists when the message is sent.
+            img.set("class", "message_inline_image image-loading-placeholder")
+            img.set("src", "/static/images/loading/loader-black.svg")
+            img.set(
+                "data-original-dimensions",
+                f"{metadata.original_width_px}x{metadata.original_height_px}",
+            )
+            if metadata.original_content_type:
+                img.set(
+                    "data-original-content-type",
+                    metadata.original_content_type,
+                )
+        else:
+            img.set("src", src)
+
+        return img
+
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> tuple[Element | str | None, int | None, int | None]:
+        ret = super().handleMatch(m, data)
+        if ret[0] is not None:
+            img, match_start, index = ret
+            assert isinstance(img, Element)
+            img = self.zulip_specific_src_changes(img)
+            if img is not None:
+                return img, match_start, index
+        return None, None, None
+
+
 def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -2434,6 +2504,7 @@ class ZulipMarkdown(markdown.Markdown):
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 58)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)

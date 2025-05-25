@@ -520,13 +520,14 @@ def process_inline_images_to_thumbnails(
     path_id: str,
     image_data: MarkdownImageMetadata | None,
     to_delete: set[str] | None,
-    inline_image_div: Tag,
-    image_link: Tag,
+    inline_image_div: Tag | None = None,
+    image_link: Tag | None = None,
 ) -> tuple[bool, bool]:
     changed = False
     add_to_remaining_thumbnails = False
 
     if image_tag is None:
+        assert image_link is not None
         image_tag = cast(Tag | None, image_link.find("img", src=image_link["href"]))
         if image_tag and image_data is not None:
             # The <img> element has the same src as the link,
@@ -556,7 +557,12 @@ def process_inline_images_to_thumbnails(
         # Trim out the whole "message_inline_image" or the "image"
         # element, since it's not going be renderable by clients
         # either.
-        inline_image_div.decompose()
+        if inline_image_div is not None:
+            inline_image_div.decompose()
+        else:
+            assert image_tag is not None
+            image_tag.decompose()
+
         changed = True
         return changed, add_to_remaining_thumbnails
 
@@ -572,6 +578,10 @@ def process_inline_images_to_thumbnails(
     else:
         changed = True
         del image_tag["class"]
+
+        if inline_image_div is None:
+            image_tag["class"] = "true_inline"
+
         image_tag["src"] = image_data.url
         image_tag["data-original-dimensions"] = (
             f"{image_data.original_width_px}x{image_data.original_height_px}"
@@ -622,6 +632,26 @@ def rewrite_thumbnailed_images(
             to_delete,
             inline_image_div,
             image_link,
+        )
+
+        changed |= image_changed
+
+        if add_to_remaining_thumbnails:
+            remaining_thumbnails.add(path_id)
+
+    # Loading placeholder images for modern Markdown images use this code path.
+    for inline_image in parsed_message.find_all(
+        "img", class_="message_inline_image image-loading-placeholder"
+    ):
+        image_src = inline_image.get("data-original-src")
+
+        assert image_src is not None
+
+        path_id = image_src.removeprefix("/user_uploads/")
+        image_data = images.get(path_id)
+
+        image_changed, add_to_remaining_thumbnails = process_inline_images_to_thumbnails(
+            inline_image, image_src, path_id, image_data, to_delete
         )
 
         changed |= image_changed
