@@ -141,7 +141,11 @@ def render_stream_description(
     from zerver.lib.markdown import markdown_convert
 
     return markdown_convert(
-        text, message_realm=realm, no_previews=True, acting_user=acting_user
+        text,
+        realm.default_code_block_language,
+        message_realm=realm,
+        no_previews=True,
+        acting_user=acting_user,
     ).rendered_content
 
 
@@ -310,6 +314,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             folder=folder,
+            default_code_block_language=default_code_block_language,
             **group_setting_values,
         ),
     )
