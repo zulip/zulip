@@ -4,9 +4,11 @@ import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
+from typing import cast
 
 import pyvips
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 from bs4.formatter import EntitySubstitution, HTMLFormatter
 from django.utils.translation import gettext as _
 from typing_extensions import Self, override
@@ -512,6 +514,78 @@ html_formatter = HTMLFormatter(
 )
 
 
+def process_inline_images_to_thumbnails(
+    image_tag: Tag | None,
+    image_src: str,
+    path_id: str,
+    image_data: MarkdownImageMetadata | None,
+    to_delete: set[str] | None,
+    inline_image_div: Tag,
+    image_link: Tag,
+) -> tuple[bool, bool]:
+    changed = False
+    add_to_remaining_thumbnails = False
+
+    if image_tag is None:
+        image_tag = cast(Tag | None, image_link.find("img", src=image_link["href"]))
+        if image_tag and image_data is not None:
+            # The <img> element has the same src as the link,
+            # which means this is an older, non-thumbnailed
+            # version.  Let's replace the image with a spinner,
+            # and mark it as a pending thumbnail.
+            changed = True
+            image_tag["src"] = "/static/images/loading/loader-black.svg"
+            image_tag["class"] = "image-loading-placeholder"
+            image_tag["data-original-dimensions"] = (
+                f"{image_data.original_width_px}x{image_data.original_height_px}"
+            )
+            if image_data.original_content_type:
+                image_tag["data-original-content-type"] = image_data.original_content_type
+
+            add_to_remaining_thumbnails = True
+        else:
+            # The placeholder was already replaced -- for instance,
+            # this is expected if multiple images are included in the
+            # same message.  The second time this is run, for the
+            # second image, the first image will have no placeholder.
+            pass
+        return changed, add_to_remaining_thumbnails
+
+    if to_delete and path_id in to_delete:
+        # This was not a valid thumbnail target, for some reason.
+        # Trim out the whole "message_inline_image" or the "image"
+        # element, since it's not going be renderable by clients
+        # either.
+        inline_image_div.decompose()
+        changed = True
+        return changed, add_to_remaining_thumbnails
+
+    if image_data is None:
+        # The message has multiple images, and we're updating just
+        # one image, and it's not this one.  Leave this one as-is.
+        add_to_remaining_thumbnails = True
+    elif image_data.url is None:
+        # We're re-rendering the whole message, so fetched all of
+        # the image metadata rows; this is one of the images we
+        # about, but is not thumbnailed yet.
+        add_to_remaining_thumbnails = True
+    else:
+        changed = True
+        del image_tag["class"]
+        image_tag["src"] = image_data.url
+        image_tag["data-original-dimensions"] = (
+            f"{image_data.original_width_px}x{image_data.original_height_px}"
+        )
+        if image_data.original_content_type is not None:
+            image_tag["data-original-content-type"] = image_data.original_content_type
+        if image_data.is_animated:
+            image_tag["data-animated"] = "true"
+        if image_data.transcoded_image is not None:
+            image_tag["data-transcoded-image"] = str(image_data.transcoded_image)
+
+    return changed, add_to_remaining_thumbnails
+
+
 def rewrite_thumbnailed_images(
     rendered_content: str,
     images: dict[str, MarkdownImageMetadata],
@@ -541,59 +615,21 @@ def rewrite_thumbnailed_images(
         image_data = images.get(path_id)
 
         image_tag = image_link.find("img", class_="image-loading-placeholder")
-        if image_tag is None:
-            image_tag = image_link.find("img", src=image_link["href"])
-            if image_tag and image_data is not None:
-                # The <img> element has the same src as the link,
-                # which means this is an older, non-thumbnailed
-                # version.  Let's replace the image with a spinner,
-                # and mark it as a pending thumbnail.
-                changed = True
-                image_tag["src"] = "/static/images/loading/loader-black.svg"
-                image_tag["class"] = "image-loading-placeholder"
-                image_tag["data-original-dimensions"] = (
-                    f"{image_data.original_width_px}x{image_data.original_height_px}"
-                )
-                if image_data.original_content_type:
-                    image_tag["data-original-content-type"] = image_data.original_content_type
-                remaining_thumbnails.add(path_id)
-                continue
-            else:
-                # The placeholder was already replaced -- for instance,
-                # this is expected if multiple images are included in the
-                # same message.  The second time this is run, for the
-                # second image, the first image will have no placeholder.
-                continue
 
-        if to_delete and path_id in to_delete:
-            # This was not a valid thumbnail target, for some reason.
-            # Trim out the whole "message_inline_image" element, since
-            # it's not going be renderable by clients either.
-            inline_image_div.decompose()
-            changed = True
-            continue
+        image_changed, add_to_remaining_thumbnails = process_inline_images_to_thumbnails(
+            image_tag,
+            image_link["href"],
+            path_id,
+            image_data,
+            to_delete,
+            inline_image_div,
+            image_link,
+        )
 
-        if image_data is None:
-            # The message has multiple images, and we're updating just
-            # one image, and it's not this one.  Leave this one as-is.
+        changed |= image_changed
+
+        if add_to_remaining_thumbnails:
             remaining_thumbnails.add(path_id)
-        elif image_data.url is None:
-            # We're re-rendering the whole message, so fetched all of
-            # the image metadata rows; this is one of the images we
-            # about, but is not thumbnailed yet.
-            remaining_thumbnails.add(path_id)
-        else:
-            changed = True
-            del image_tag["class"]
-            image_tag["src"] = image_data.url
-            image_tag["data-original-dimensions"] = (
-                f"{image_data.original_width_px}x{image_data.original_height_px}"
-            )
-            image_tag["data-original-content-type"] = image_data.original_content_type
-            if image_data.is_animated:
-                image_tag["data-animated"] = "true"
-            if image_data.transcoded_image is not None:
-                image_tag["data-transcoded-image"] = str(image_data.transcoded_image)
 
     if changed:
         return (
