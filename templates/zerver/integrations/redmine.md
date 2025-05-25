@@ -32,7 +32,7 @@ corner, then click on **Plugins**.
 3. Find the **Redmine Zulip** plugin, and click **Configure**. Fill
 out the following fields:
 
-    * Zulip URL (e.g `https://yourZulipDomain.zulipchat.com/`)
+    * Zulip URL (e.g `{{ zulip_url }}`)
     * Zulip Bot E-mail
     * Zulip Bot API key
     * Stream name __*__
