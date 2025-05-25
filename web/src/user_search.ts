@@ -21,14 +21,13 @@ export class UserSearch {
         this._update_list = opts.update_list;
         this._on_focus = opts.on_focus;
 
-        $("#clear_search_people_button").on("click", () => {
+        $("#userlist-header-search .input-button").on("click", () => {
             this.clear_search();
         });
 
         this.$input.on("input", () => {
             const input_is_empty = this.$input.val() === "";
             buddy_data.set_is_searching_users(!input_is_empty);
-            $("#clear_search_people_button").toggleClass("hidden", input_is_empty);
             opts.update_list();
         });
         this.$input.on("focus", (e) => {
@@ -54,7 +53,6 @@ export class UserSearch {
     // the search widget unless it was already empty.
     clear_search(): void {
         buddy_data.set_is_searching_users(false);
-        $("#clear_search_people_button").toggleClass("hidden", true);
 
         this.$input.val("");
         this.$input.trigger("blur");

@@ -2,12 +2,9 @@
     <div class="right-sidebar-items">
         <div id="user-list">
             <div id="userlist-header">
-                <div id="userlist-header-search">
-                    <input class="user-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter users' }}" />
-                    <button type="button" class="clear_search_button" id="clear_search_people_button">
-                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                    </button>
-                </div>
+                {{#> input input_type="filter-input" id="userlist-header-search" icon="search" input_button_icon="close"}}
+                    <input type="text" class="input-element user-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter users' }}" />
+                {{/input}}
                 <span id="buddy-list-menu-icon" class="user-list-sidebar-menu-icon">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
                 </span>

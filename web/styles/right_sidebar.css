@@ -511,28 +511,6 @@
     padding-right: var(--width-simplebar-scroll-hover);
     background-color: var(--color-background);
 
-    #userlist-header-search {
-        display: grid;
-        grid-template-rows: var(--line-height-sidebar-row-prominent);
-        grid-template-columns: minmax(0, 1fr) 30px;
-        align-items: center;
-
-        & .user-list-filter {
-            grid-area: 1 / 1 / 2 / 3;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            /* Prevent text from colliding with #clear_search_button */
-            padding-right: 28px;
-            height: var(--line-height-sidebar-row-prominent);
-            box-sizing: border-box;
-        }
-
-        .user-list-filter:placeholder-shown + #clear_search_people_button {
-            visibility: hidden;
-        }
-    }
-
     #buddy-list-menu-icon {
         color: var(--color-vdots-visible);
         justify-content: center;
