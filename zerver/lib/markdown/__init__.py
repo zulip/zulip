@@ -302,6 +302,25 @@ def rewrite_local_links_to_relative(db_data: DbData | None, link: str) -> str:
     return link
 
 
+def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
+    # Due to rewrite_local_links_to_relative, we need to
+    # handle both relative URLs beginning with
+    # `/user_uploads` and beginning with `user_uploads`.
+    # This urllib construction converts the latter into
+    # the former.
+    parsed_url = urlsplit(urljoin("/", url))
+    host = parsed_url.netloc
+
+    if host != "" and (zmd.zulip_realm is None or host != zmd.zulip_realm.host):
+        return
+
+    if not parsed_url.path.startswith("/user_uploads/"):
+        return
+
+    path_id = parsed_url.path[len("/user_uploads/") :]
+    zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
+
+
 def url_embed_preview_enabled(
     message: Message | None = None, realm: Realm | None = None, no_previews: bool = False
 ) -> bool:
@@ -1306,24 +1325,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             self.zmd.zulip_message.has_image = False  # This is updated in self.add_a
 
             for url in unique_urls:
-                # Due to rewrite_local_links_to_relative, we need to
-                # handle both relative URLs beginning with
-                # `/user_uploads` and beginning with `user_uploads`.
-                # This urllib construction converts the latter into
-                # the former.
-                parsed_url = urlsplit(urljoin("/", url))
-                host = parsed_url.netloc
-
-                if host != "" and (
-                    self.zmd.zulip_realm is None or host != self.zmd.zulip_realm.host
-                ):
-                    continue
-
-                if not parsed_url.path.startswith("/user_uploads/"):
-                    continue
-
-                path_id = parsed_url.path.removeprefix("/user_uploads/")
-                self.zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
+                maybe_add_attachment_path_id(url, self.zmd)
 
         if len(found_urls) == 0:
             return
