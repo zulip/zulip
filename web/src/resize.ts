@@ -218,39 +218,45 @@ function resize_navbar_alerts(): void {
     }
 }
 
-export function resize_settings_overlay(): void {
-    if ($(".two-pane-settings-overlay.show").length === 0) {
+export function resize_settings_overlay($container: JQuery): void {
+    if ($container.find(".two-pane-settings-overlay.show").length === 0) {
         return;
     }
 
-    $(".two-pane-settings-left-simplebar-container").css(
-        "height",
-        height_of($(".two-pane-settings-container")) -
-            height_of($(".two-pane-settings-header")) -
-            height_of($(".two-pane-settings-overlay .display-type")) -
-            height_of($(".two-pane-settings-search")),
-    );
+    $container
+        .find(".two-pane-settings-left-simplebar-container")
+        .css(
+            "height",
+            height_of($container.find(".two-pane-settings-container")) -
+                height_of($container.find(".two-pane-settings-header")) -
+                height_of($container.find(".two-pane-settings-overlay .display-type")) -
+                height_of($container.find(".two-pane-settings-search")),
+        );
 
-    $(".two-pane-settings-right-simplebar-container").css(
-        "height",
-        height_of($(".two-pane-settings-container")) -
-            height_of($(".two-pane-settings-header")) -
-            height_of($(".two-pane-settings-overlay .display-type")),
-    );
+    $container
+        .find(".two-pane-settings-right-simplebar-container")
+        .css(
+            "height",
+            height_of($container.find(".two-pane-settings-container")) -
+                height_of($container.find(".two-pane-settings-header")) -
+                height_of($container.find(".two-pane-settings-overlay .display-type")),
+        );
 }
 
-export function resize_settings_creation_overlay(): void {
-    if ($(".two-pane-settings-creation-simplebar-container").length === 0) {
+export function resize_settings_creation_overlay($container: JQuery): void {
+    if ($container.find(".two-pane-settings-creation-simplebar-container").length === 0) {
         return;
     }
 
-    $(".two-pane-settings-creation-simplebar-container").css(
-        "height",
-        height_of($(".two-pane-settings-container")) -
-            height_of($(".two-pane-settings-header")) -
-            height_of($(".two-pane-settings-overlay .display-type")) -
-            height_of($(".settings-sticky-footer")),
-    );
+    $container
+        .find(".two-pane-settings-creation-simplebar-container")
+        .css(
+            "height",
+            height_of($container.find(".two-pane-settings-container")) -
+                height_of($container.find(".two-pane-settings-header")) -
+                height_of($container.find(".display-type")) -
+                height_of($container.find(".settings-sticky-footer")),
+        );
 }
 
 export function resize_page_components(): void {
@@ -258,6 +264,8 @@ export function resize_page_components(): void {
     resize_sidebars();
     resize_bottom_whitespace();
     resize_stream_subscribers_list();
-    resize_settings_overlay();
-    resize_settings_creation_overlay();
+    resize_settings_overlay($("#groups_overlay_container"));
+    resize_settings_overlay($("#channels_overlay_container"));
+    resize_settings_creation_overlay($("#groups_overlay_container"));
+    resize_settings_creation_overlay($("#channels_overlay_container"));
 }
