@@ -9,6 +9,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile
 from zerver.models.bots import get_service_profile
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.users import get_user
 
 
@@ -36,6 +37,26 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         assert isinstance(display_recipient, list)
         self.assert_length(display_recipient, 1)
         self.assertEqual(display_recipient[0]["email"], self.user_profile.email)
+
+    def test_pm_to_embedded_bot_using_direct_group_message(self) -> None:
+        assert self.bot_profile is not None
+
+        direct_group_message = get_or_create_direct_message_group(
+            id_list=[self.user_profile.id, self.bot_profile.id]
+        )
+
+        self.send_personal_message(self.user_profile, self.bot_profile, content="help")
+
+        last_message = self.get_last_message()
+        self.assertEqual(last_message.content, "beep boop")
+        self.assertEqual(last_message.sender_id, self.bot_profile.id)
+        self.assertEqual(last_message.recipient, direct_group_message.recipient)
+
+        display_recipient = get_display_recipient(last_message.recipient)
+        assert isinstance(display_recipient, list)
+        self.assert_length(display_recipient, 2)
+        self.assertEqual(display_recipient[0]["email"], self.user_profile.email)
+        self.assertEqual(display_recipient[1]["email"], self.bot_profile.email)
 
     def test_stream_message_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None
