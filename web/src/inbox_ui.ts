@@ -21,6 +21,7 @@ import {$t_html} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as list_widget from "./list_widget.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -30,11 +31,11 @@ import * as pm_list from "./pm_list.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
-import type {ListInfoNode} from "./topic_list.ts";
 import {TopicListWidget} from "./topic_list.ts";
-import type {TopicInfo} from "./topic_list_data.ts";
+import * as topic_list_data from "./topic_list_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
@@ -837,37 +838,6 @@ export function update_channel_view(channel_id: number): void {
     }
 }
 
-function get_channel_view_formatter(channel_id: number): (conversation: TopicInfo) => ListInfoNode {
-    return (conversation: TopicInfo): ListInfoNode => {
-        const render = (): string => {
-            // Not used when rendering inbox rows.
-            const latest_msg_id = 0;
-            const topic_context = format_topic(
-                channel_id,
-                false,
-                conversation.topic_name,
-                conversation.unread,
-                latest_msg_id,
-                true,
-            );
-            return render_inbox_row(topic_context);
-        };
-
-        const eq = (other: ListInfoNode): boolean =>
-            other.type === "topic" && _.isEqual(conversation, other.conversation);
-
-        const key = "t:" + conversation.topic_name;
-
-        return {
-            key,
-            render,
-            type: "topic",
-            conversation,
-            eq,
-        };
-    };
-}
-
 function show_empty_inbox_channel_view_text(is_empty: boolean): void {
     if (is_empty) {
         $("#inbox-list").css("border-width", "0");
@@ -885,18 +855,76 @@ function show_empty_inbox_channel_view_text(is_empty: boolean): void {
     }
 }
 
+function get_min_load_count(already_rendered_count: number, load_count: number): number {
+    // Since inbox rows have a short height, we need a lot of
+    // rows to fill the screen if the updated row is at the top
+    // of the screen.
+    const extra_rows_for_viewing_pleasure = 50;
+    const ideal_rendered_rows_count = row_focus + extra_rows_for_viewing_pleasure;
+    if (ideal_rendered_rows_count > already_rendered_count + load_count) {
+        return ideal_rendered_rows_count - already_rendered_count;
+    }
+    return load_count;
+}
+
 class InboxTopicListWidget extends TopicListWidget {
     override topic_list_class_name = "inbox-channel-topic-list";
+    topics_widget?: list_widget.ListWidget<topic_list_data.TopicInfo>;
 
-    override build(show_spinner = false): this {
-        const formatter = get_channel_view_formatter(this.get_stream_id());
+    override build(): this {
+        // Hide any existing loading indicators.
+        $("#inbox-loading-indicator .searching-for-more-topics").hide();
         const is_zoomed = true;
-        super.build(show_spinner, formatter, is_zoomed);
+        const $container = $("#inbox-list");
+        const list_info = topic_list_data.get_list_info(
+            this.my_stream_id,
+            is_zoomed,
+            this.filter_topics,
+        );
+
+        const all_topics = list_info.items;
+        this.topics_widget = list_widget.create($container, all_topics, {
+            name: "inbox-channel-topics-list",
+            get_item: list_widget.default_get_item,
+            $parent_container: $("#inbox-view"),
+            modifier_html(item) {
+                const topic_context = format_topic(
+                    item.stream_id,
+                    false,
+                    item.topic_name,
+                    item.unread,
+                    -1,
+                    true,
+                );
+                return render_inbox_row(topic_context);
+            },
+            $simplebar_container: $("html"),
+            is_scroll_position_for_render: views_util.is_scroll_position_for_render,
+            get_min_load_count,
+        });
+
         show_empty_inbox_channel_view_text(this.is_empty());
+        if (!stream_topic_history.is_complete_for_stream_id(this.my_stream_id)) {
+            $("#inbox-loading-indicator .searching-for-more-topics").show();
+            stream_topic_history_util.get_server_history(this.my_stream_id, () => {
+                if (channel_view_topic_widget?.get_stream_id() !== this.my_stream_id) {
+                    return;
+                }
+
+                channel_view_topic_widget.build();
+            });
+        }
         setTimeout(() => {
             revive_current_focus();
         }, 0);
         return this;
+    }
+
+    override is_empty(): boolean {
+        if (this.topics_widget === undefined) {
+            return true;
+        }
+        return this.topics_widget.get_current_list().length === 0;
     }
 }
 
@@ -919,15 +947,7 @@ function render_channel_view(channel_id: number): void {
         channel_id,
         (topic_names: string[]) => filter_topics_in_channel(channel_id, topic_names),
     );
-    const show_spinner = true;
-    channel_view_topic_widget.build(show_spinner);
-    stream_topic_history_util.get_server_history(channel_id, () => {
-        if (channel_view_topic_widget?.get_stream_id() !== channel_id) {
-            return;
-        }
-
-        channel_view_topic_widget.build();
-    });
+    channel_view_topic_widget.build();
 }
 
 export function complete_rerender(): void {
