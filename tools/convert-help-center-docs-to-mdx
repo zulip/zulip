@@ -21,6 +21,8 @@ setup_path()
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 django.setup()
 
+from zerver.lib.markdown.tabbed_sections import generate_content_blocks, parse_tabs
+
 INDENT_SPACES = "    "
 
 
@@ -146,6 +148,66 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     result = re.sub(zulip_icon_pattern, replace_zulip_icon_with_unplugin_component, result)
 
     return result
+
+
+def convert_tab_syntax(markdown_string: str, import_statement_set: set[str]) -> str:
+    """
+    Convert our custom tab syntax to relevant MDX equivalent.
+    This function is inspired from `tabbed_section.py`'s run method.
+    """
+    TABBED_SECTION_TEMPLATE = """<Tabs>
+{blocks}
+</Tabs>"""
+
+    TAB_ITEM_TEMPLATE = """<TabItem label="{tab_label}">
+{content}
+</TabItem>"""
+
+    def indent_content_inside_blocks(content_block: str) -> str:
+        """
+        The original function `generate_content_blocks` does no
+        indenting, and we need the content in between our TabItems
+        to be indented. This is bit of string manipulation, but it
+        is a better alternative compared to duplicating the original
+        function here just to indent.
+        """
+        content_block_lines = content_block.splitlines()
+        result_lines = []
+        for line in content_block_lines:
+            if line.startswith(("<TabItem", "</TabItem>")):
+                result_lines.append(line)
+            else:
+                result_lines.append(INDENT_SPACES + line)
+
+        return "\n".join(result_lines)
+
+    lines = markdown_string.splitlines()
+    tab_section = parse_tabs(lines)
+    while tab_section:
+        if "tabs" in tab_section:
+            content_blocks = generate_content_blocks(tab_section, lines, TAB_ITEM_TEMPLATE)
+            content_blocks = indent_content_inside_blocks(content_blocks)
+            content_blocks = indent(content_blocks, INDENT_SPACES)
+            tabs_mdx = TABBED_SECTION_TEMPLATE.format(blocks=content_blocks)
+            import_statement_set.add(
+                "import { Tabs, TabItem } from '@astrojs/starlight/components'"
+            )
+        else:
+            # This is the case where we don't have any tabs but we were
+            # using the `start_tabs` and `end_tabs` syntax to create
+            # a border around the instructions. We just put the content
+            # as is in this case since we don't want to add that border
+            # anymore.
+            tabs_mdx = ("\n").join(
+                lines[(tab_section["start_tabs_index"] + 1) : (tab_section["end_tabs_index"])]
+            )
+
+        start = tab_section["start_tabs_index"]
+        end = tab_section["end_tabs_index"] + 1
+        lines = [*lines[:start], tabs_mdx, *lines[end:]]
+        tab_section = parse_tabs(lines)
+
+    return "\n".join(lines)
 
 
 def detab(text: str) -> tuple[str, str]:
@@ -297,12 +359,13 @@ def convert_help_center_file_to_mdx(
     import_statement_set: set[str] = set()
 
     result = fix_file_imports(result, import_statement_set, "./include")
+    result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
+    result = convert_tab_syntax(result, import_statement_set)
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
     result = replace_emoticon_translation_table(result, import_statement_set)
     result = replace_image_path(result, "../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
-    result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
     result = insert_imports(result, import_statement_set, 2)
     result = insert_frontmatter(result)
     return result
@@ -328,11 +391,12 @@ def convert_include_file_to_mdx(
     import_statement_set: set[str] = set()
 
     result = fix_file_imports(result, import_statement_set, ".")
+    result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
+    result = convert_tab_syntax(result, import_statement_set)
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
     result = replace_image_path(result, "../../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
-    result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = insert_imports(result, import_statement_set, 1)
     return result
 
