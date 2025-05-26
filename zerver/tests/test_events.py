@@ -296,6 +296,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.bots import get_bot_services
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -3495,7 +3496,21 @@ class NormalActionsTest(BaseAction):
         )
         with self.verify_action() as events:
             do_update_outgoing_webhook_service(bot, 2, "http://hostname.domain2.com")
+
         check_realm_bot_update("events[0]", events[0], "services")
+
+        # Check the Service data fired off by do_update_outgoing_webhook_service from
+        # updating the bot.
+        bot_service = get_bot_services(bot.id)[0]
+        event_data_service = events[0]["bot"]["services"][0]
+        self.assertEqual(
+            {
+                "base_url": bot_service.base_url,
+                "interface": bot_service.interface,
+                "token": bot_service.token,
+            },
+            event_data_service,
+        )
 
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")

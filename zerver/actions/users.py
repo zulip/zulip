@@ -22,6 +22,7 @@ from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
+from zerver.lib.event_types import BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import (
@@ -48,6 +49,7 @@ from zerver.lib.user_groups import (
     get_system_user_group_for_user,
 )
 from zerver.lib.users import (
+    check_valid_interface_type,
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
@@ -781,14 +783,28 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
 
 @transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
-    bot_profile: UserProfile, service_interface: int, service_payload_url: str
+    bot_profile: UserProfile,
+    service_interface: int | None,
+    service_payload_url: str | None,
 ) -> None:
     # TODO: First service is chosen because currently one bot can only have one service.
     # Update this once multiple services are supported.
     service = get_bot_services(bot_profile.id)[0]
-    service.base_url = service_payload_url
-    service.interface = service_interface
+    if service_interface is not None:
+        check_valid_interface_type(service_interface)
+        service.interface = service_interface
+    if service_payload_url is not None:
+        service.base_url = service_payload_url
+
     service.save()
+
+    # Keep the event payload of the updated bot service in sync with the
+    # schema expected by the web client's `bot_data.update` method.
+    updated_fields: dict[str, str | int] = BotServicesOutgoing(
+        base_url=service.base_url,
+        interface=service.interface,
+        token=service.token,
+    ).model_dump()
     send_event_on_commit(
         bot_profile.realm,
         dict(
@@ -796,11 +812,7 @@ def do_update_outgoing_webhook_service(
             op="update",
             bot=dict(
                 user_id=bot_profile.id,
-                services=[
-                    dict(
-                        base_url=service.base_url, interface=service.interface, token=service.token
-                    )
-                ],
+                services=[updated_fields],
             ),
         ),
         bot_owner_user_ids(bot_profile),
