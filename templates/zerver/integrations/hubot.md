@@ -20,7 +20,7 @@ Use Hubot to execute scripts and commands within Zulip!
     ```
     export HUBOT_ZULIP_SITE="{{ zulip_url }}"
     export HUBOT_ZULIP_BOT="hubot-bot@{{ zulip_url }}"
-    export HUBOT_ZULIP_API_KEY="<your_key>"
+    export HUBOT_ZULIP_API_KEY="0123456789abcdef0123456789abcdef"
     ```
 
 1. Run Hubot:
