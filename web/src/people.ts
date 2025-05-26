@@ -1950,44 +1950,24 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
     });
 }
 
-export async function initialize(
+export function initialize(
     my_user_id: number,
     people_params: StateData["people"],
     user_group_params: StateData["user_groups"],
-): Promise<void> {
+): void {
     initialize_current_user(my_user_id);
     populate_valid_user_ids(user_group_params);
 
-    // Compute the set of user IDs that we know are valid in the
-    // organization, but do not have a copy of.
-    const user_ids_to_fetch = new Set(valid_user_ids);
     for (const person of people_params.realm_users) {
         add_active_user(person);
-        user_ids_to_fetch.delete(person.user_id);
     }
 
     for (const person of people_params.realm_non_active_users) {
         non_active_user_dict.set(person.user_id, person);
         _add_user(person);
-        user_ids_to_fetch.delete(person.user_id);
     }
 
     for (const person of people_params.cross_realm_bots) {
         add_cross_realm_user(person);
-        user_ids_to_fetch.delete(person.user_id);
     }
-
-    // Fetch all the missing users. This code path is temporary: We
-    // plan to move to a model where the web app expects to have an
-    // incomplete users dataset in large organizations.
-    await fetch_users(user_ids_to_fetch).then((users) => {
-        for (const user of users) {
-            if (user.is_active) {
-                add_active_user(user);
-            } else {
-                non_active_user_dict.set(user.user_id, user);
-                _add_user(user);
-            }
-        }
-    });
 }

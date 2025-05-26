@@ -398,7 +398,7 @@ function initialize_unread_ui() {
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
-export async function initialize_everything(state_data) {
+export function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -460,7 +460,7 @@ export async function initialize_everything(state_data) {
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
-    await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
+    people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
     // The emoji module must be initialized before the right sidebar
