@@ -184,7 +184,7 @@ function clear_error_display(): void {
 export function show_new_user_group_modal(): void {
     $("#user-group-creation").removeClass("hide");
     $(".right .settings").hide();
-    resize.resize_settings_creation_overlay();
+    resize.resize_settings_creation_overlay($("#groups_overlay_container"));
 
     user_group_create_members.build_widgets();
 

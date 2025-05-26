@@ -1551,7 +1551,7 @@ export function change_state(
     if (section === "new") {
         do_open_create_user_group();
         redraw_user_group_list();
-        resize.resize_settings_creation_overlay();
+        resize.resize_settings_creation_overlay($("#groups_overlay_container"));
         return;
     }
 
@@ -2277,7 +2277,7 @@ export function launch(
             },
         });
         change_state(section, left_side_tab, right_side_tab);
-        resize.resize_settings_overlay();
+        resize.resize_settings_overlay($("#groups_overlay_container"));
         update_group_creation_ui();
     });
     if (!get_active_data().id) {

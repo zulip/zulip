@@ -459,7 +459,7 @@ export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
     stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
-    resize.resize_settings_creation_overlay();
+    resize.resize_settings_creation_overlay($("#channels_overlay_container"));
 
     stream_create_subscribers.build_widgets();
 
