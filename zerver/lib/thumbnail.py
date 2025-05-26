@@ -104,8 +104,8 @@ TRANSCODED_IMAGE_FORMAT = ThumbnailFormat("webp", 4032, 3024, animated=False)
 # this does not provide any *security*, since the content-type is
 # provided by the browser, and may not match the bytes they uploaded.
 #
-# This should be kept synced with the client-side image-picker in
-# web/upload_widget.ts.  Any additions below must be accompanied by
+# This should be kept synced with the client-side list in
+# web/src/upload.ts.  Any additions below must be accompanied by
 # changes to the pyvips block below as well.
 THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
     [

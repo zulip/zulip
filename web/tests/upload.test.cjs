@@ -458,6 +458,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     let state = {};
     const file = {
         name: "copenhagen.png",
+        type: "image/png",
         meta: {
             name: "copenhagen.png",
         },
@@ -485,6 +486,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
                 return {
                     ...file,
                     name: "modified-name-copenhagen.png",
+                    type: "image/png",
                     meta: {
                         ...file.meta,
                         zulip_url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
@@ -535,7 +537,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
-            "[modified-name-copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
+            "![modified-name-copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
         assert.equal($textarea, $("textarea#compose-textarea"));
     });
