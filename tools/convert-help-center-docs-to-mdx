@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import sys
+from textwrap import indent
 
 import django
 from django.template import engines
@@ -19,6 +20,8 @@ setup_path()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 django.setup()
+
+INDENT_SPACES = "    "
 
 
 def replace_emoticon_translation_table(markdown_string: str, import_statement_set: set[str]) -> str:
@@ -195,6 +198,7 @@ def convert_admonitions_to_asides(
             admonition_content, post_admonition_content_text = detab(
                 post_admonition_declaration_text
             )
+            admonition_content = indent(admonition_content, INDENT_SPACES)
 
             klass, title = get_admonition_class_and_title(match)
             # We ignore the title obtained above in each of the if
