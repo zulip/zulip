@@ -24439,6 +24439,7 @@ components:
                       - "all_mentions" = Any mention of the service bot, regardless of whether
                         the bot is part of the recipient or not. This does not include topic,
                         group and @-all mentions that includes the bot.
+                      - "all_received" = Whenever the bot receives any message.
                       - "dm_received" = Whenever the bot receives a direct message, whether
                         it be from direct message or group direct message.
 

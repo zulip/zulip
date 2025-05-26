@@ -452,6 +452,12 @@ def patch_queue_publish(
     return inner
 
 
+def get_last_event_dict_from_mock(mock_queue_event_on_commit: mock.Mock) -> dict[str, Any]:
+    queue_event_on_commit, _ = mock_queue_event_on_commit.call_args
+    _, event_dict, _ = queue_event_on_commit
+    return event_dict
+
+
 class TestServiceBotEventTriggers(ZulipTestCase):
     @override
     def setUp(self) -> None:
@@ -657,3 +663,147 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             user_profile=self.bot_profile, message=message_id
         )
         self.assertIn("read", bot_user_message.flags_list())
+
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_trigger_for_service_with_all_received_trigger(
+        self, mock_queue_event_on_commit: mock.Mock
+    ) -> None:
+        """
+        This tests the `Service.BOT_TRIGGER_ALL_RECEIVED` trigger type. Any message
+        where the bot is recipient will trigger the service bots' function.
+        """
+        foo_bot = self.bot_profile
+        do_update_outgoing_webhook_service(
+            foo_bot,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=[Service.BOT_TRIGGER_ALL_RECEIVED],
+            acting_user=None,
+        )
+        content = "this is a normal message"
+        public_channel = "Denmark"
+        self.subscribe(foo_bot, public_channel)
+
+        self.send_stream_message(self.user_profile, public_channel, content)
+        self.assertEqual(mock_queue_event_on_commit.call_count, 1)
+        event_dict = get_last_event_dict_from_mock(mock_queue_event_on_commit)
+        self.assertEqual(event_dict["trigger"], "received_message")
+        self.assertEqual(event_dict["message"]["type"], Recipient._type_names[Recipient.STREAM])
+
+        # Message in a private channel. Use self.subscribe to create the private
+        # channel instead of make_stream because this test will be run twice.
+        private_channel = "private"
+        self.subscribe(self.user_profile, private_channel, invite_only=True)
+        self.subscribe(foo_bot, private_channel, invite_only=True)
+        self.send_stream_message(self.user_profile, private_channel, content)
+        self.assertEqual(mock_queue_event_on_commit.call_count, 2)
+
+        # direct message it's a apart of.
+        self.send_personal_message(self.user_profile, foo_bot, "test")
+        self.send_group_direct_message(
+            self.user_profile,
+            [
+                self.user_profile,
+                self.example_user("ZOE"),
+                self.example_user("cordelia"),
+                foo_bot,
+            ],
+            "hai",
+        )
+        self.assertEqual(mock_queue_event_on_commit.call_count, 4)
+
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_no_trigger_for_service_with_all_received_trigger(
+        self, mock_queue_event_on_commit: mock.Mock
+    ) -> None:
+        """
+        This tests the `Service.BOT_TRIGGER_ALL_RECEIVED` trigger type. Messages
+        where the bot is not recipient won't trigger any event.
+        """
+        foo_bot = self.bot_profile
+        do_update_outgoing_webhook_service(
+            foo_bot,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=[Service.BOT_TRIGGER_ALL_RECEIVED],
+            acting_user=None,
+        )
+        content = "this is a normal message"
+        public_channel = "Denmark"
+
+        # Not subscribed means not part of recipient
+        self.unsubscribe(foo_bot, public_channel)
+        self.send_stream_message(self.user_profile, public_channel, content)
+        self.assertEqual(mock_queue_event_on_commit.call_count, 0)
+
+        # Message in a private channel without the bot won't trigger its function.
+        # Use self.subscribe to create the private channel instead of make_stream
+        # because this test will be run twice.
+        private_channel = "private"
+        self.subscribe(self.user_profile, private_channel, invite_only=True)
+        self.send_stream_message(self.user_profile, private_channel, content)
+        self.assertEqual(mock_queue_event_on_commit.call_count, 0)
+
+        # direct message it's not apart of.
+        self.send_personal_message(self.user_profile, self.example_user("cordelia"), "test")
+        self.send_group_direct_message(
+            self.user_profile,
+            [
+                self.user_profile,
+                self.example_user("ZOE"),
+                self.example_user("cordelia"),
+            ],
+            "so, yeah",
+        )
+        self.assertEqual(mock_queue_event_on_commit.call_count, 0)
+
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_multiple_trigger_types(self, mock_queue_event_on_commit: mock.Mock) -> None:
+        """
+        This tests that the resulting event trigger is accurate for bots with multiple
+        trigger types.
+        """
+        foo_bot = self.bot_profile
+        do_update_outgoing_webhook_service(
+            foo_bot,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=Service.BOT_TRIGGER_CHOICES,
+            acting_user=None,
+        )
+        content = "this is a normal message"
+        public_channel = "Denmark"
+        self.subscribe(foo_bot, public_channel)
+
+        # Normal message will result in "received_message".
+        self.send_stream_message(self.user_profile, public_channel, content)
+        self.assertEqual(mock_queue_event_on_commit.call_count, 1)
+        event_dict = get_last_event_dict_from_mock(mock_queue_event_on_commit)
+        self.assertEqual(event_dict["trigger"], "received_message")
+
+        # Mentioning the bot in channel message will result in "mention", overriding
+        # "received_message".
+        mention_content = f"@**{foo_bot.full_name}** foo bar!!!"
+        self.send_stream_message(self.user_profile, public_channel, mention_content)
+        event_dict = get_last_event_dict_from_mock(mock_queue_event_on_commit)
+        self.assertEqual(event_dict["trigger"], "mention")
+
+        # DM-ing the bot will result in "direct_message", overriding "received_message".
+        self.send_personal_message(self.user_profile, foo_bot, "test")
+        event_dict = get_last_event_dict_from_mock(mock_queue_event_on_commit)
+        self.assertEqual(event_dict["trigger"], "direct_message")
+        # Even if mentioned
+        self.send_group_direct_message(
+            self.user_profile,
+            [
+                self.user_profile,
+                self.second_bot_profile,
+                foo_bot,
+            ],
+            mention_content,
+        )
+        event_dict = get_last_event_dict_from_mock(mock_queue_event_on_commit)
+        self.assertEqual(event_dict["trigger"], "direct_message")

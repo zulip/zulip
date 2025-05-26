@@ -1269,6 +1269,11 @@ export const service_bot_trigger_options = [
         is_checked: false,
         label: $t_html({defaultMessage: "Direct messages the bot receives"}),
     },
+    {
+        setting_name: "all_received",
+        is_checked: false,
+        label: $t_html({defaultMessage: "Direct messages and channel messages the bot receives"}),
+    },
 ];
 
 export function get_service_bot_trigger_input(container_id: string): string[] {

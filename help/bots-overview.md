@@ -90,6 +90,7 @@ Trigger | Bot types | Description
 ---|---|---
 Mentions of the bot, whether or not it received the message | Outgoing webhook | Any message directly [mentioning](/help/mention-a-user-or-group) the bot, regardless of whether or not the bot actually receives it. This does not include topic, group and `@-all` mentions that includes the bot.
 Direct messages the bot receives | Outgoing webhook | Both direct messages and group direct messages to the bot.
+Direct messages and channel messages the bot receives | Outgoing webhook | Any message received by the bot.
 
 ## Related articles
 

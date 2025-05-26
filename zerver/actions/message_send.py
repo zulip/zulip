@@ -574,7 +574,10 @@ def get_service_bot_events(
 
         # The order of the following conditions matters. We must check for the narrow/
         # specific triggers first (e.g., mention, DM) before checking for the more
-        # general triggers.
+        # general triggers. For example, if a message mentions a bot configured with both
+        # "all_received" and "all_mentions", the resulting trigger cause should be
+        # "mention" and not "received_message" (even though it's also technically
+        # correct).
 
         # Mention triggers, for stream messages
         if (
@@ -599,6 +602,17 @@ def get_service_bot_events(
             event_dict[queue_name].append(
                 {
                     "trigger": NotificationTriggers.DIRECT_MESSAGE,
+                    "user_profile_id": user_profile_id,
+                }
+            )
+            return
+
+        # Message recipient trigger from any message where the bot is part
+        # of the recipient.
+        if Service.BOT_TRIGGER_ALL_RECEIVED in bot_triggers and user_profile_id in active_user_ids:
+            event_dict[queue_name].append(
+                {
+                    "trigger": "received_message",
                     "user_profile_id": user_profile_id,
                 }
             )

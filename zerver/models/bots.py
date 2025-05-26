@@ -51,10 +51,12 @@ class Service(models.Model):
 
     BOT_TRIGGER_ALL_MENTIONS = "all_mentions"
     BOT_TRIGGER_DM_RECEIVED = "dm_received"
+    BOT_TRIGGER_ALL_RECEIVED = "all_received"
 
     BOT_TRIGGER_CHOICES = [
         BOT_TRIGGER_ALL_MENTIONS,
         BOT_TRIGGER_DM_RECEIVED,
+        BOT_TRIGGER_ALL_RECEIVED,
     ]
 
     triggers = JSONField(default=list)
