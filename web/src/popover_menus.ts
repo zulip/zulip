@@ -77,14 +77,14 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
         return;
     }
 
-    if ((key === "down_arrow" || key === "vim_down") && index !== -1) {
+    if (key === "down_arrow" || key === "vim_down") {
         [...$items]
-            .slice(index + 1)
+            .slice(index === -1 ? 0 : index + 1)
             .find((item) => item.getClientRects().length)
             ?.focus();
-    } else if ((key === "up_arrow" || key === "vim_up") && index !== -1) {
+    } else if (key === "up_arrow" || key === "vim_up") {
         [...$items]
-            .slice(0, index)
+            .slice(0, index === -1 ? $items.length : index)
             .findLast((item) => item.getClientRects().length)
             ?.focus();
     }
