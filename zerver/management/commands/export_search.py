@@ -17,7 +17,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
 from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, Stream, UserProfile
-from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 
@@ -178,15 +178,23 @@ This is most often used for legal compliance.
             for user_profile in user_profiles:
                 reactivate_user_if_soft_deactivated(user_profile)
             if len(user_profiles) == 1:
-                limits &= Q(
-                    usermessage__user_profile_id=user_profiles[0].id,
-                    usermessage__flags__andnz=AbstractUserMessage.flags.is_private.mask,
-                )
+                direct_message_group = get_direct_message_group(id_list=[user_profiles[0].id])
+                if direct_message_group:
+                    limits &= Q(recipient=direct_message_group.recipient)
+                else:
+                    limits &= Q(
+                        usermessage__user_profile_id=user_profiles[0].id,
+                        usermessage__flags__andnz=AbstractUserMessage.flags.is_private.mask,
+                    )
             elif len(user_profiles) == 2:
-                user_a, user_b = user_profiles
-                limits &= Q(recipient=user_a.recipient, sender=user_b) | Q(
-                    recipient=user_b.recipient, sender=user_a
-                )
+                direct_message_group = get_direct_message_group(id_list=[user_profiles[0].id])
+                if direct_message_group:
+                    limits &= Q(recipient=direct_message_group.recipient)
+                else:
+                    user_a, user_b = user_profiles
+                    limits &= Q(recipient=user_a.recipient, sender=user_b) | Q(
+                        recipient=user_b.recipient, sender=user_a
+                    )
             else:
                 direct_message_group = get_or_create_direct_message_group(
                     [user.id for user in user_profiles]
