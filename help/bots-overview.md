@@ -90,6 +90,7 @@ Trigger | Bot types | Description
 ---|---|---
 All mentions | Outgoing webhook | Any message [mentioning](/help/mention-a-user-or-group) the bot, regardless of whether or not the bot actually receives it.
 Direct messages received | Outgoing webhook | Direct messages received by the bot, including group direct messages.
+All messages received | Outgoing webhook | Any message received by the bot.
 
 ## Related articles
 
