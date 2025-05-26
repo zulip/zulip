@@ -159,24 +159,9 @@
         background: var(--color-background);
     }
 
-    .search_group {
-        display: grid;
-        grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    #recent-view-search-wrapper {
         flex-grow: 1;
-        margin: 0 0 10px;
-    }
-
-    #recent_view_search:placeholder-shown + #recent_view_search_clear {
-        visibility: hidden;
-    }
-
-    #recent_view_search {
-        grid-column: search-input-start / clear-search-end;
-        grid-row: search-input;
-        padding-right: 28px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
+        margin-bottom: 10px;
     }
 
     .button-recent-filters {
