@@ -142,7 +142,7 @@ Here are a few common macros used to document Zulip's integrations:
   to generate URLs of the form:
 
   ```text
-  https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
+  https://bot_email:bot_api_key@your-org.zulipchat.com/api/v1/external/beanstalk
   ```
 
   For an example rendering, see
