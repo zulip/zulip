@@ -1965,19 +1965,13 @@ export function initialize({
 
     // Search for all table rows (this combines stream & topic names)
     $("body").on(
-        "keyup",
+        "input",
         "#recent_view_search",
         _.debounce(() => {
             update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),
     );
-
-    $("body").on("click", "#recent_view_search_clear", (e) => {
-        e.stopPropagation();
-        $("#recent_view_search").val("");
-        update_filters_view();
-    });
 
     $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
         $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
