@@ -781,13 +781,22 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
 
 @transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
-    bot_profile: UserProfile, service_interface: int, service_payload_url: str
+    bot_profile: UserProfile,
+    service_interface: int | None = None,
+    service_payload_url: str | None = None,
 ) -> None:
     # TODO: First service is chosen because currently one bot can only have one service.
     # Update this once multiple services are supported.
     service = get_bot_services(bot_profile.id)[0]
-    service.base_url = service_payload_url
-    service.interface = service_interface
+    updated_fields: dict[str, str | int] = {}
+    if service_payload_url is not None:
+        service.base_url = service_payload_url
+        updated_fields["base_url"] = service.base_url
+    if service_interface is not None:
+        service.interface = service_interface
+        updated_fields["interface"] = service.interface
+
+    updated_fields["token"] = service.token
     service.save()
     send_event_on_commit(
         bot_profile.realm,
@@ -796,11 +805,7 @@ def do_update_outgoing_webhook_service(
             op="update",
             bot=dict(
                 user_id=bot_profile.id,
-                services=[
-                    dict(
-                        base_url=service.base_url, interface=service.interface, token=service.token
-                    )
-                ],
+                services=[updated_fields],
             ),
         ),
         bot_owner_user_ids(bot_profile),
