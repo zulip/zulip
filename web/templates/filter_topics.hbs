@@ -1,6 +1,3 @@
-<div class="topic_search_section filter-topics left-sidebar-filter-row">
-    <input class="topic-list-filter home-page-input filter_text_input" id="left-sidebar-filter-topic-input" type="text" autocomplete="off" placeholder="{{t 'Filter topics'}}" />
-    <button type="button" class="clear_search_button" id="clear_search_topic_button">
-        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-    </button>
-</div>
+{{#> input input_type="filter-input" custom_classes="topic_search_section filter-topics" icon="search" input_button_icon="close"}}
+    <input type="text" id="left-sidebar-filter-topic-input" class="input-element home-page-input" autocomplete="off" placeholder="{{t 'Filter topics' }}" />
+{{/input}}
