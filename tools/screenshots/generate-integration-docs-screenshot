@@ -9,6 +9,8 @@ import sys
 from typing import Any
 from urllib.parse import parse_qsl, urlencode
 
+import zulip
+
 SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLS_DIR = os.path.abspath(os.path.dirname(SCREENSHOTS_DIR))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
@@ -39,6 +41,7 @@ from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
+    FixturelessScreenshotConfig,
     Integration,
     WebhookIntegration,
     WebhookScreenshotConfig,
@@ -205,6 +208,17 @@ def send_bot_payload_message(
         return True
 
 
+def send_bot_mock_message(bot: UserProfile, channel: str, topic: str, message: str) -> None:
+    # Delete all messages, so that the new message is the only one in its message group
+    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
+    assert bot.bot_owner is not None
+    url = f"{bot.bot_owner.realm.url}"
+    client = zulip.Client(email=bot.email, api_key=bot.api_key, site=url)
+
+    request = {"type": "stream", "to": channel, "topic": topic, "content": message}
+    client.send_message(request)
+
+
 def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     message = Message.objects.filter(realm_id=bot.realm_id, sender=bot).last()
     realm = get_realm("zulip")
@@ -217,15 +231,29 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
 
 
 def generate_screenshot_from_config(
-    integration_name: str, screenshot_config: WebhookScreenshotConfig
+    integration_name: str, screenshot_config: WebhookScreenshotConfig | FixturelessScreenshotConfig
 ) -> None:
     integration = INTEGRATIONS[integration_name]
-    assert isinstance(integration, WebhookIntegration)
-    fixture_path = get_fixture_path(integration, screenshot_config)
-    image_path = get_image_path(integration, screenshot_config)
     bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
-    if send_bot_payload_message(bot, integration, fixture_path, screenshot_config):
+    image_path = get_image_path(integration, screenshot_config)
+
+    if isinstance(integration, WebhookIntegration):
+        assert isinstance(screenshot_config, WebhookScreenshotConfig)
+        fixture_path = get_fixture_path(integration, screenshot_config)
+        message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
+    else:
+        assert isinstance(screenshot_config, FixturelessScreenshotConfig)
+        create_integration_stream(integration, bot)
+        send_bot_mock_message(
+            bot,
+            channel=screenshot_config.channel or integration.stream_name,
+            topic=screenshot_config.topic,
+            message=screenshot_config.message,
+        )
+        message_sent = True
+
+    if message_sent:
         capture_last_message_screenshot(bot, image_path)
         print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")
 
