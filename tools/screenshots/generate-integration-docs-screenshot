@@ -100,6 +100,10 @@ def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
     _, fixture_name = split_fixture_path(fixture_path)
 
     if fixture_name:
+        if not os.path.exists(fixture_path):
+            raise FileNotFoundError(
+                f"{BOLDRED}The fixture '{fixture_path}' does not exist. Please check the fixture file name and try again.{ENDC}"
+            )
         if json_fixture:
             with open(fixture_path, "rb") as fb:
                 data = orjson.loads(fb.read())
