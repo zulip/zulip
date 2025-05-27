@@ -973,13 +973,14 @@ export function set_event_handlers({
         }
     });
 
-    $("#clear_search_stream_button").on("click", clear_search);
-
     $("#streams_header")
         .expectOne()
         .on("click", (e) => {
             e.preventDefault();
-            if (e.target.id === "streams_inline_icon") {
+            if (
+                e.target.id === "streams_inline_icon" ||
+                $(e.target).parent().hasClass("input-button")
+            ) {
                 return;
             }
             toggle_filter_displayed(e);
@@ -1054,13 +1055,8 @@ export function searching(): boolean {
     return $(".stream-list-filter").expectOne().is(":focus");
 }
 
-export function clear_search(e: JQuery.ClickEvent): void {
-    e.stopPropagation();
+export function test_clear_search(): void {
     const $filter = $(".stream-list-filter").expectOne();
-    if ($filter.val() === "") {
-        clear_and_hide_search();
-        return;
-    }
     $filter.val("");
     $filter.trigger("blur");
     update_streams_for_search();
