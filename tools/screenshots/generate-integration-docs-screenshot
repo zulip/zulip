@@ -261,12 +261,14 @@ def generate_screenshot_from_config(
 
 
 parser = argparse.ArgumentParser()
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument("--all", action="store_true")
-group.add_argument(
+
+batch_group = parser.add_mutually_exclusive_group(required=True)
+batch_group.add_argument("--all", action="store_true")
+batch_group.add_argument(
     "--skip-until", help="Name of the integration whose predecessor are skipped. Similar to --all"
 )
-group.add_argument("--integration", nargs="+", help="Names of the integrations")
+batch_group.add_argument("--integration", nargs="+", help="Names of the integrations")
+
 parser.add_argument("--fixture", help="Name of the fixture file to use")
 parser.add_argument("--image-name", help="Name for the screenshot image")
 parser.add_argument("--image-dir", help="Directory name where to save the screenshot image")
