@@ -1892,20 +1892,6 @@ li.topic-list-item {
     }
 }
 
-.direct-messages-search-section {
-    .direct-messages-list-filter {
-        grid-area: filter-box;
-        padding-right: var(--line-height-sidebar-row-prominent);
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-
-        &:placeholder-shown + #clear-direct-messages-search-button {
-            visibility: hidden;
-        }
-    }
-}
-
 .zero_count {
     visibility: hidden;
 }

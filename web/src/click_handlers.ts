@@ -880,7 +880,7 @@ export function initialize(): void {
         window.location.hash = "narrow/is/dm";
     });
 
-    $("body").on("click", ".direct-messages-list-filter", (e) => {
+    $("body").on("click", ".direct-messages-search-section", (e) => {
         // We don't want clicking on the filter to trigger the DM
         // narrow defined on click for
         // `#direct-messages-section-header.zoom-in`.
