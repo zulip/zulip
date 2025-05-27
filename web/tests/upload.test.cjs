@@ -454,6 +454,14 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     const callbacks = {};
     let state = {};
+    const file = {
+        name: "copenhagen.png",
+        meta: {
+            name: "copenhagen.png",
+        },
+    };
+    let uppy_set_file_state_called = false;
+    let uppy_set_file_meta_called = false;
 
     uppy_stub = function () {
         return {
@@ -466,6 +474,21 @@ test("uppy_events", ({override_rewire, mock_template}) => {
             getFiles() {
                 return [];
             },
+            // This is currently only called in
+            // on_upload_success_callback, we return the modified name
+            // keeping in mind only that case. Although this isn't
+            // ideal, it seems better than the alternative of creating
+            // a file store in the tests.
+            getFile() {
+                return {
+                    ...file,
+                    name: "modified-name-copenhagen.png",
+                    meta: {
+                        ...file.meta,
+                        zulip_url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
+                    },
+                };
+            },
             getState: () => ({
                 info: [
                     {
@@ -475,21 +498,30 @@ test("uppy_events", ({override_rewire, mock_template}) => {
                     },
                 ],
             }),
+            setFileState(_file_id, {name}) {
+                uppy_set_file_state_called = true;
+                assert.equal(name, "modified-name-copenhagen.png");
+            },
+            setFileMeta(_file_id, {zulip_url}) {
+                uppy_set_file_meta_called = true;
+                assert.equal(
+                    zulip_url,
+                    "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
+                );
+            },
         };
     };
     upload.setup_upload(upload.compose_config);
     assert.equal(Object.keys(callbacks).length, 6);
 
     const on_upload_success_callback = callbacks["upload-success"];
-    const file = {
-        name: "copenhagen.png",
-    };
     let response = {
+        status: 200,
         body: {
             xhr: {
                 responseText: JSON.stringify({
                     url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
-                    filename: "copenhagen.png",
+                    filename: "modified-name-copenhagen.png",
                 }),
             },
         },
@@ -501,7 +533,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
-            "[copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
+            "[modified-name-copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
         assert.equal($textarea, $("textarea#compose-textarea"));
     });
@@ -513,6 +545,8 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     assert.ok(compose_ui_replace_syntax_called);
     assert.ok(compose_ui_autosize_textarea_called);
+    assert.ok(uppy_set_file_state_called);
+    assert.ok(uppy_set_file_meta_called);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
