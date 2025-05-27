@@ -295,6 +295,15 @@ webhook_group.add_argument(
     help="Any additional headers to be sent with the request.",
 )
 
+fixtureless_group = parser.add_argument_group("Fixtureless non-webhook integrations options")
+fixtureless_group.add_argument("-T", "--topic", help="Topic to use for the mock message")
+fixtureless_group.add_argument("-M", "--message", help="Message to use for the mock message")
+fixtureless_group.add_argument(
+    "-C",
+    "--channel",
+    help="Channel name to use for the mock message. Defaults to stream name. Ignored if --topic and --message are not specified.",
+)
+
 options = parser.parse_args()
 prepare_puppeteer_run()
 
@@ -347,6 +356,16 @@ elif options.fixture_name:
     config = build_config(options, webhook_options + common_options)
     screenshot_config = WebhookScreenshotConfig(**config)
     generate_screenshot_from_config(options.integration[0], screenshot_config)
+
+elif options.topic or options.message:
+    if not options.topic or not options.message:
+        parser.error("Both --topic and --message must be specified together")
+    validate_integration_count(options, parser, "topic")
+    fixtureless_options = [action.dest for action in webhook_group._group_actions]
+    common_options = [action.dest for action in common_group._group_actions]
+    config = build_config(options, fixtureless_options + common_options)
+    fixtureless_screenshot_config = FixturelessScreenshotConfig(**config)
+    generate_screenshot_from_config(options.integration[0], fixtureless_screenshot_config)
 
 elif options.integration:
     for integration in options.integration:
