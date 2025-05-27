@@ -825,6 +825,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
                 "project": "Zulip Mobile",
                 "language": "en",
                 "resource": "file",
+                "event": "review_completed",
                 "reviewed": "100",
             },
         )
