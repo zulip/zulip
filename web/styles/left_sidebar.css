@@ -1320,11 +1320,6 @@ li.top_left_scheduled_messages {
     }
 }
 
-.direct-messages-list-filter {
-    grid-area: filter-box;
-    padding-right: var(--line-height-sidebar-row-prominent);
-}
-
 .topic-list-filter {
     grid-area: filter-box;
     padding-right: var(--line-height-sidebar-row-prominent);
@@ -1832,23 +1827,6 @@ li.topic-list-item {
         grid-area: filter-box;
         white-space: nowrap;
     }
-
-    .stream-list-filter {
-        grid-area: filter-box;
-        padding-right: var(--line-height-sidebar-row-prominent);
-    }
-}
-
-.stream_search_section,
-.direct-messages-search-section {
-    .direct-messages-list-filter:placeholder-shown
-        + #clear-direct-messages-search-button {
-        visibility: hidden;
-    }
-
-    .stream-list-filter:placeholder-shown + #clear_search_stream_button {
-        visibility: hidden;
-    }
 }
 
 /* Prepare an adjusted grid for the logged-out state,
@@ -1914,11 +1892,18 @@ li.topic-list-item {
     }
 }
 
-.direct-messages-list-filter,
-.stream-list-filter {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+.direct-messages-search-section {
+    .direct-messages-list-filter {
+        grid-area: filter-box;
+        padding-right: var(--line-height-sidebar-row-prominent);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+
+        &:placeholder-shown + #clear-direct-messages-search-button {
+            visibility: hidden;
+        }
+    }
 }
 
 .zero_count {

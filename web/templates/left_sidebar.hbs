@@ -211,12 +211,9 @@
                     </span>
                 </div>
 
-                <div class="notdisplayed stream_search_section left-sidebar-filter-row">
-                    <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-                    <button type="button" class="clear_search_button" id="clear_search_stream_button">
-                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                    </button>
-                </div>
+                {{#> input input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
+                    <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
+                {{/input}}
             </div>
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
