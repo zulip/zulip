@@ -40,8 +40,8 @@ from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
     Integration,
-    ScreenshotConfig,
     WebhookIntegration,
+    WebhookScreenshotConfig,
     get_fixture_and_image_paths,
     split_fixture_path,
 )
@@ -138,7 +138,10 @@ def custom_headers(headers_json: str) -> dict[str, str]:
 
 
 def send_bot_payload_message(
-    bot: UserProfile, integration: WebhookIntegration, fixture_path: str, config: ScreenshotConfig
+    bot: UserProfile,
+    integration: WebhookIntegration,
+    fixture_path: str,
+    config: WebhookScreenshotConfig,
 ) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
@@ -213,7 +216,7 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
 
 
 def generate_screenshot_from_config(
-    integration_name: str, screenshot_config: ScreenshotConfig
+    integration_name: str, screenshot_config: WebhookScreenshotConfig
 ) -> None:
     integration = INTEGRATIONS[integration_name]
     assert isinstance(integration, WebhookIntegration)
@@ -312,7 +315,7 @@ elif options.fixture_name:
     webhook_options = [action.dest for action in webhook_group._group_actions]
     common_options = [action.dest for action in common_group._group_actions]
     config = build_config(options, webhook_options + common_options)
-    screenshot_config = ScreenshotConfig(**config)
+    screenshot_config = WebhookScreenshotConfig(**config)
     generate_screenshot_from_config(options.integration[0], screenshot_config)
 
 elif options.integration:

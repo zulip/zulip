@@ -5,8 +5,8 @@ from zerver.lib.integrations import (
     INTEGRATIONS,
     NO_SCREENSHOT_WEBHOOKS,
     WEBHOOK_INTEGRATIONS,
-    ScreenshotConfig,
     WebhookIntegration,
+    WebhookScreenshotConfig,
     get_fixture_and_image_paths,
     split_fixture_path,
 )
@@ -23,7 +23,7 @@ class IntegrationsTestCase(ZulipTestCase):
     def test_get_fixture_and_image_paths(self) -> None:
         integration = INTEGRATIONS["airbrake"]
         assert isinstance(integration, WebhookIntegration)
-        screenshot_config = ScreenshotConfig("error_message.json", "002.png", "ci")
+        screenshot_config = WebhookScreenshotConfig("error_message.json", "002.png", "ci")
         fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
         self.assertEqual(fixture_path, "zerver/webhooks/airbrake/fixtures/error_message.json")
         self.assertEqual(image_path, "static/images/integrations/ci/002.png")

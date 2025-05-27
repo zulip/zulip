@@ -302,7 +302,7 @@ def split_fixture_path(path: str) -> tuple[str, str]:
 
 
 @dataclass
-class ScreenshotConfig:
+class WebhookScreenshotConfig:
     fixture_name: str
     image_name: str = "001.png"
     image_dir: str | None = None
@@ -315,7 +315,7 @@ class ScreenshotConfig:
 
 
 def get_fixture_and_image_paths(
-    integration: WebhookIntegration, screenshot_config: ScreenshotConfig
+    integration: WebhookIntegration, screenshot_config: WebhookScreenshotConfig
 ) -> tuple[str, str]:
     fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
     fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
@@ -688,111 +688,121 @@ NO_SCREENSHOT_WEBHOOKS = {
 }
 
 
-DOC_SCREENSHOT_CONFIG: dict[str, list[ScreenshotConfig]] = {
-    "airbrake": [ScreenshotConfig("error_message.json")],
-    "airbyte": [ScreenshotConfig("airbyte_job_payload_success.json")],
+DOC_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
+    "airbrake": [WebhookScreenshotConfig("error_message.json")],
+    "airbyte": [WebhookScreenshotConfig("airbyte_job_payload_success.json")],
     "alertmanager": [
-        ScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
+        WebhookScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
     ],
-    "ansibletower": [ScreenshotConfig("job_successful_multiple_hosts.json")],
-    "appfollow": [ScreenshotConfig("review.json")],
-    "appveyor": [ScreenshotConfig("appveyor_build_success.json")],
-    "azuredevops": [ScreenshotConfig("code_push.json")],
-    "basecamp": [ScreenshotConfig("doc_active.json")],
+    "ansibletower": [WebhookScreenshotConfig("job_successful_multiple_hosts.json")],
+    "appfollow": [WebhookScreenshotConfig("review.json")],
+    "appveyor": [WebhookScreenshotConfig("appveyor_build_success.json")],
+    "azuredevops": [WebhookScreenshotConfig("code_push.json")],
+    "basecamp": [WebhookScreenshotConfig("doc_active.json")],
     "beanstalk": [
-        ScreenshotConfig("git_multiple.json", use_basic_auth=True, payload_as_query_param=True)
+        WebhookScreenshotConfig(
+            "git_multiple.json", use_basic_auth=True, payload_as_query_param=True
+        )
     ],
-    # 'beeminder': [ScreenshotConfig('derail_worried.json')],
+    # 'beeminder': [WebhookScreenshotConfig('derail_worried.json')],
     "bitbucket": [
-        ScreenshotConfig("push.json", "002.png", use_basic_auth=True, payload_as_query_param=True)
+        WebhookScreenshotConfig(
+            "push.json", "002.png", use_basic_auth=True, payload_as_query_param=True
+        )
     ],
     "bitbucket2": [
-        ScreenshotConfig("issue_created.json", "003.png", "bitbucket", bot_name="Bitbucket Bot")
+        WebhookScreenshotConfig(
+            "issue_created.json", "003.png", "bitbucket", bot_name="Bitbucket Bot"
+        )
     ],
     "bitbucket3": [
-        ScreenshotConfig(
+        WebhookScreenshotConfig(
             "repo_push_update_single_branch.json",
             "004.png",
             "bitbucket",
             bot_name="Bitbucket Server Bot",
         )
     ],
-    "buildbot": [ScreenshotConfig("started.json")],
-    "canarytoken": [ScreenshotConfig("canarytoken_real.json")],
-    "circleci": [ScreenshotConfig("github_job_completed.json")],
-    "clubhouse": [ScreenshotConfig("story_create.json")],
-    "codeship": [ScreenshotConfig("error_build.json")],
-    "crashlytics": [ScreenshotConfig("issue_message.json")],
-    "delighted": [ScreenshotConfig("survey_response_updated_promoter.json")],
-    "dialogflow": [ScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
-    "dropbox": [ScreenshotConfig("file_updated.json")],
-    "errbit": [ScreenshotConfig("error_message.json")],
-    "flock": [ScreenshotConfig("messages.json")],
-    "freshdesk": [
-        ScreenshotConfig("ticket_created.json", image_name="004.png", use_basic_auth=True)
+    "buildbot": [WebhookScreenshotConfig("started.json")],
+    "canarytoken": [WebhookScreenshotConfig("canarytoken_real.json")],
+    "circleci": [WebhookScreenshotConfig("github_job_completed.json")],
+    "clubhouse": [WebhookScreenshotConfig("story_create.json")],
+    "codeship": [WebhookScreenshotConfig("error_build.json")],
+    "crashlytics": [WebhookScreenshotConfig("issue_message.json")],
+    "delighted": [WebhookScreenshotConfig("survey_response_updated_promoter.json")],
+    "dialogflow": [
+        WebhookScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})
     ],
-    "freshping": [ScreenshotConfig("freshping_check_unreachable.json")],
-    "freshstatus": [ScreenshotConfig("freshstatus_incident_open.json")],
-    "front": [ScreenshotConfig("inbound_message.json")],
-    "gitea": [ScreenshotConfig("pull_request__merged.json")],
-    "github": [ScreenshotConfig("push__1_commit.json")],
-    "githubsponsors": [ScreenshotConfig("created.json")],
-    "gitlab": [ScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
-    "gocd": [ScreenshotConfig("pipeline_with_mixed_job_result.json")],
-    "gogs": [ScreenshotConfig("pull_request__opened.json")],
-    "gosquared": [ScreenshotConfig("traffic_spike.json")],
-    "grafana": [ScreenshotConfig("alert_values_v11.json")],
-    "greenhouse": [ScreenshotConfig("candidate_stage_change.json")],
-    "groove": [ScreenshotConfig("ticket_started.json")],
-    "harbor": [ScreenshotConfig("scanning_completed.json")],
+    "dropbox": [WebhookScreenshotConfig("file_updated.json")],
+    "errbit": [WebhookScreenshotConfig("error_message.json")],
+    "flock": [WebhookScreenshotConfig("messages.json")],
+    "freshdesk": [
+        WebhookScreenshotConfig("ticket_created.json", image_name="004.png", use_basic_auth=True)
+    ],
+    "freshping": [WebhookScreenshotConfig("freshping_check_unreachable.json")],
+    "freshstatus": [WebhookScreenshotConfig("freshstatus_incident_open.json")],
+    "front": [WebhookScreenshotConfig("inbound_message.json")],
+    "gitea": [WebhookScreenshotConfig("pull_request__merged.json")],
+    "github": [WebhookScreenshotConfig("push__1_commit.json")],
+    "githubsponsors": [WebhookScreenshotConfig("created.json")],
+    "gitlab": [WebhookScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
+    "gocd": [WebhookScreenshotConfig("pipeline_with_mixed_job_result.json")],
+    "gogs": [WebhookScreenshotConfig("pull_request__opened.json")],
+    "gosquared": [WebhookScreenshotConfig("traffic_spike.json")],
+    "grafana": [WebhookScreenshotConfig("alert_values_v11.json")],
+    "greenhouse": [WebhookScreenshotConfig("candidate_stage_change.json")],
+    "groove": [WebhookScreenshotConfig("ticket_started.json")],
+    "harbor": [WebhookScreenshotConfig("scanning_completed.json")],
     "hellosign": [
-        ScreenshotConfig(
+        WebhookScreenshotConfig(
             "signatures_signed_by_one_signatory.json",
             payload_as_query_param=True,
             payload_param_name="json",
         )
     ],
-    "helloworld": [ScreenshotConfig("hello.json")],
-    "heroku": [ScreenshotConfig("deploy.txt")],
-    "homeassistant": [ScreenshotConfig("reqwithtitle.json")],
-    "insping": [ScreenshotConfig("website_state_available.json")],
-    "intercom": [ScreenshotConfig("conversation_admin_replied.json")],
-    "jira": [ScreenshotConfig("created_v1.json")],
-    "jotform": [ScreenshotConfig("screenshot_response.multipart")],
-    "json": [ScreenshotConfig("json_github_push__1_commit.json")],
-    "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
-    "lidarr": [ScreenshotConfig("lidarr_album_grabbed.json")],
-    "linear": [ScreenshotConfig("issue_create_complex.json")],
-    "mention": [ScreenshotConfig("webfeeds.json")],
-    "netlify": [ScreenshotConfig("deploy_building.json")],
-    "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json")],
-    "opencollective": [ScreenshotConfig("one_time_donation.json")],
-    "openproject": [ScreenshotConfig("project_created__without_parent.json")],
-    "opensearch": [ScreenshotConfig("example_template.txt")],
-    "opsgenie": [ScreenshotConfig("addrecipient.json")],
-    "pagerduty": [ScreenshotConfig("trigger_v2.json")],
-    "papertrail": [ScreenshotConfig("short_post.json", payload_as_query_param=True)],
-    "patreon": [ScreenshotConfig("members_pledge_create.json")],
-    "pingdom": [ScreenshotConfig("http_up_to_down.json")],
-    "pivotal": [ScreenshotConfig("v5_type_changed.json")],
-    "radarr": [ScreenshotConfig("radarr_movie_grabbed.json")],
-    "raygun": [ScreenshotConfig("new_error.json")],
-    "reviewboard": [ScreenshotConfig("review_request_published.json")],
-    "rhodecode": [ScreenshotConfig("push.json")],
-    "rundeck": [ScreenshotConfig("start.json")],
-    "semaphore": [ScreenshotConfig("pull_request.json")],
-    "sentry": [ScreenshotConfig("event_for_exception_python.json")],
-    "slack": [ScreenshotConfig("message_with_normal_text.json")],
-    "sonarqube": [ScreenshotConfig("error.json")],
-    "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
-    "splunk": [ScreenshotConfig("search_one_result.json")],
-    "statuspage": [ScreenshotConfig("incident_created.json")],
-    "stripe": [ScreenshotConfig("charge_succeeded__card.json")],
-    "taiga": [ScreenshotConfig("userstory_changed_status.json")],
-    "teamcity": [ScreenshotConfig("success.json")],
-    "thinkst": [ScreenshotConfig("canary_consolidated_port_scan.json")],
+    "helloworld": [WebhookScreenshotConfig("hello.json")],
+    "heroku": [WebhookScreenshotConfig("deploy.txt")],
+    "homeassistant": [WebhookScreenshotConfig("reqwithtitle.json")],
+    "insping": [WebhookScreenshotConfig("website_state_available.json")],
+    "intercom": [WebhookScreenshotConfig("conversation_admin_replied.json")],
+    "jira": [WebhookScreenshotConfig("created_v1.json")],
+    "jotform": [WebhookScreenshotConfig("screenshot_response.multipart")],
+    "json": [WebhookScreenshotConfig("json_github_push__1_commit.json")],
+    "librato": [
+        WebhookScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)
+    ],
+    "lidarr": [WebhookScreenshotConfig("lidarr_album_grabbed.json")],
+    "linear": [WebhookScreenshotConfig("issue_create_complex.json")],
+    "mention": [WebhookScreenshotConfig("webfeeds.json")],
+    "netlify": [WebhookScreenshotConfig("deploy_building.json")],
+    "newrelic": [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
+    "opencollective": [WebhookScreenshotConfig("one_time_donation.json")],
+    "openproject": [WebhookScreenshotConfig("project_created__without_parent.json")],
+    "opensearch": [WebhookScreenshotConfig("example_template.txt")],
+    "opsgenie": [WebhookScreenshotConfig("addrecipient.json")],
+    "pagerduty": [WebhookScreenshotConfig("trigger_v2.json")],
+    "papertrail": [WebhookScreenshotConfig("short_post.json", payload_as_query_param=True)],
+    "patreon": [WebhookScreenshotConfig("members_pledge_create.json")],
+    "pingdom": [WebhookScreenshotConfig("http_up_to_down.json")],
+    "pivotal": [WebhookScreenshotConfig("v5_type_changed.json")],
+    "radarr": [WebhookScreenshotConfig("radarr_movie_grabbed.json")],
+    "raygun": [WebhookScreenshotConfig("new_error.json")],
+    "reviewboard": [WebhookScreenshotConfig("review_request_published.json")],
+    "rhodecode": [WebhookScreenshotConfig("push.json")],
+    "rundeck": [WebhookScreenshotConfig("start.json")],
+    "semaphore": [WebhookScreenshotConfig("pull_request.json")],
+    "sentry": [WebhookScreenshotConfig("event_for_exception_python.json")],
+    "slack": [WebhookScreenshotConfig("message_with_normal_text.json")],
+    "sonarqube": [WebhookScreenshotConfig("error.json")],
+    "sonarr": [WebhookScreenshotConfig("sonarr_episode_grabbed.json")],
+    "splunk": [WebhookScreenshotConfig("search_one_result.json")],
+    "statuspage": [WebhookScreenshotConfig("incident_created.json")],
+    "stripe": [WebhookScreenshotConfig("charge_succeeded__card.json")],
+    "taiga": [WebhookScreenshotConfig("userstory_changed_status.json")],
+    "teamcity": [WebhookScreenshotConfig("success.json")],
+    "thinkst": [WebhookScreenshotConfig("canary_consolidated_port_scan.json")],
     "transifex": [
-        ScreenshotConfig(
+        WebhookScreenshotConfig(
             "",
             extra_params={
                 "project": "Zulip Mobile",
@@ -802,15 +812,15 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[ScreenshotConfig]] = {
             },
         )
     ],
-    "travis": [ScreenshotConfig("build.json", payload_as_query_param=True)],
-    "trello": [ScreenshotConfig("adding_comment_to_card.json")],
-    "updown": [ScreenshotConfig("check_multiple_events.json")],
-    "uptimerobot": [ScreenshotConfig("uptimerobot_monitor_up.json")],
-    "wekan": [ScreenshotConfig("add_comment.json")],
-    "wordpress": [ScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
-    "zabbix": [ScreenshotConfig("zabbix_alert.json")],
+    "travis": [WebhookScreenshotConfig("build.json", payload_as_query_param=True)],
+    "trello": [WebhookScreenshotConfig("adding_comment_to_card.json")],
+    "updown": [WebhookScreenshotConfig("check_multiple_events.json")],
+    "uptimerobot": [WebhookScreenshotConfig("uptimerobot_monitor_up.json")],
+    "wekan": [WebhookScreenshotConfig("add_comment.json")],
+    "wordpress": [WebhookScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
+    "zabbix": [WebhookScreenshotConfig("zabbix_alert.json")],
     "zendesk": [
-        ScreenshotConfig(
+        WebhookScreenshotConfig(
             "",
             use_basic_auth=True,
             extra_params={
