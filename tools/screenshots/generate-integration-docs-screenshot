@@ -300,6 +300,23 @@ webhook_group.add_argument(
 options = parser.parse_args()
 prepare_puppeteer_run()
 
+
+def validate_integration_count(
+    options: argparse.Namespace, parser: argparse.ArgumentParser, option_name: str
+) -> None:
+    if len(options.integration) != 1:
+        parser.error(
+            f"Exactly one integration should be specified with --integration when --{option_name} is provided"
+        )
+
+
+def build_config(options: argparse.Namespace, config_keys: list[str]) -> dict[str, Any]:
+    config = {
+        key: getattr(options, key) for key in config_keys if getattr(options, key) is not None
+    }
+    return config
+
+
 if options.all:
     for key, value in vars(options).items():
         if key != "all" and value:
@@ -326,24 +343,10 @@ elif options.skip_until:
             generate_screenshot_from_config(integration_name, screenshot_config)
 
 elif options.fixture_name:
-    if len(options.integration) != 1:
-        parser.error(
-            "Exactly one integration should be specified for --integration when --fixture is provided"
-        )
-    config = dict(
-        fixture_name=options.fixture,
-        use_basic_auth=options.use_basic_auth,
-        custom_headers=options.custom_headers,
-        payload_as_query_param=options.payload_as_query_param,
-    )
-    if options.image_name:
-        config["image_name"] = options.image_name
-    if options.image_dir:
-        config["image_dir"] = options.image_dir
-    if options.bot_name:
-        config["bot_name"] = options.bot_name
-    if options.payload_param_name:
-        config["payload_param_name"] = options.payload_param_name
+    validate_integration_count(options, parser, "fixture-name")
+    webhook_options = [action.dest for action in webhook_group._group_actions]
+    common_options = [action.dest for action in common_group._group_actions]
+    config = build_config(options, webhook_options + common_options)
     screenshot_config = ScreenshotConfig(**config)
     generate_screenshot_from_config(options.integration[0], screenshot_config)
 
