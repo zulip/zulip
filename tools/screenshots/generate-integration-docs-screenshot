@@ -30,7 +30,6 @@ django.setup()
 
 import orjson
 import requests
-import zulip
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
@@ -40,7 +39,6 @@ from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
-    BaseScreenshotConfig,
     Integration,
     ScreenshotConfig,
     WebhookIntegration,
@@ -118,11 +116,6 @@ def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
     return data, json_fixture, multipart_fixture, fixture_name
 
 
-def get_integration(integration_name: str) -> Integration:
-    integration = INTEGRATIONS[integration_name]
-    return integration
-
-
 def get_requests_headers(integration_name: str, fixture_name: str) -> dict[str, Any]:
     headers = get_fixture_http_headers(integration_name, fixture_name)
 
@@ -142,31 +135,6 @@ def custom_headers(headers_json: str) -> dict[str, str]:
             f"Encountered an error while attempting to parse custom headers: {ve}\n"
             "Note: all strings must be enclosed within \"\" instead of ''"
         )
-
-
-def send_bot_mock_message(bot: UserProfile, integration: Integration, fixture_path: str) -> None:
-    # Delete all messages, so new message is the only one it's message group
-    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
-    data, _, _, _ = get_fixture_info(fixture_path)
-
-    assert bot.bot_owner is not None
-    url = f"{bot.bot_owner.realm.url}"
-    client = zulip.Client(email=bot.email, api_key=bot.api_key, site=url)
-
-    try:
-        request = {
-            "type": "stream",
-            "to": integration.stream_name,
-            "topic": data["subject"],
-            "content": data["body"],
-        }
-        client.send_message(request)
-    except KeyError:
-        print(
-            f"{fixture_path} contains invalid configuration. "
-            'Fields "subject" and "body" are required for non-webhook integrations.'
-        )
-        sys.exit(1)
 
 
 def send_bot_payload_message(
@@ -245,21 +213,14 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
 
 
 def generate_screenshot_from_config(
-    integration_name: str, screenshot_config: BaseScreenshotConfig
+    integration_name: str, screenshot_config: ScreenshotConfig
 ) -> None:
-    integration = get_integration(integration_name)
+    integration = INTEGRATIONS[integration_name]
+    assert isinstance(integration, WebhookIntegration)
     fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
     bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
-    if isinstance(integration, WebhookIntegration):
-        assert isinstance(screenshot_config, ScreenshotConfig), (
-            "Webhook integrations require ScreenshotConfig"
-        )
-        message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
-    else:
-        send_bot_mock_message(bot, integration, fixture_path)
-        message_sent = True
-    if message_sent:
+    if send_bot_payload_message(bot, integration, fixture_path, screenshot_config):
         capture_last_message_screenshot(bot, image_path)
         print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")
 

@@ -5,8 +5,6 @@ from zerver.lib.integrations import (
     INTEGRATIONS,
     NO_SCREENSHOT_WEBHOOKS,
     WEBHOOK_INTEGRATIONS,
-    BaseScreenshotConfig,
-    Integration,
     ScreenshotConfig,
     WebhookIntegration,
     get_fixture_and_image_paths,
@@ -29,14 +27,6 @@ class IntegrationsTestCase(ZulipTestCase):
         fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
         self.assertEqual(fixture_path, "zerver/webhooks/airbrake/fixtures/error_message.json")
         self.assertEqual(image_path, "static/images/integrations/ci/002.png")
-
-    def test_get_fixture_and_image_paths_non_webhook(self) -> None:
-        integration = INTEGRATIONS["nagios"]
-        assert isinstance(integration, Integration)
-        screenshot_config = BaseScreenshotConfig("service_notify.json", "001.png")
-        fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
-        self.assertEqual(fixture_path, "zerver/integration_fixtures/nagios/service_notify.json")
-        self.assertEqual(image_path, "static/images/integrations/nagios/001.png")
 
     def test_get_bot_avatar_path(self) -> None:
         integration = INTEGRATIONS["alertmanager"]
@@ -68,6 +58,7 @@ class IntegrationsTestCase(ZulipTestCase):
             configs = DOC_SCREENSHOT_CONFIG[integration_name]
             for screenshot_config in configs:
                 integration = INTEGRATIONS[integration_name]
+                assert isinstance(integration, WebhookIntegration)
                 if screenshot_config.fixture_name == "":
                     # Such screenshot configs only use a placeholder
                     # fixture_name.

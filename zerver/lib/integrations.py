@@ -302,15 +302,11 @@ def split_fixture_path(path: str) -> tuple[str, str]:
 
 
 @dataclass
-class BaseScreenshotConfig:
+class ScreenshotConfig:
     fixture_name: str
     image_name: str = "001.png"
     image_dir: str | None = None
     bot_name: str | None = None
-
-
-@dataclass
-class ScreenshotConfig(BaseScreenshotConfig):
     payload_as_query_param: bool = False
     payload_param_name: str = "payload"
     extra_params: dict[str, str] = field(default_factory=dict)
@@ -319,12 +315,9 @@ class ScreenshotConfig(BaseScreenshotConfig):
 
 
 def get_fixture_and_image_paths(
-    integration: Integration, screenshot_config: BaseScreenshotConfig
+    integration: WebhookIntegration, screenshot_config: ScreenshotConfig
 ) -> tuple[str, str]:
-    if isinstance(integration, WebhookIntegration):
-        fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
-    else:
-        fixture_dir = os.path.join("zerver", "integration_fixtures", integration.name)
+    fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
     fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
     image_dir = screenshot_config.image_dir or integration.name
     image_name = screenshot_config.image_name
@@ -695,7 +688,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 }
 
 
-DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
+DOC_SCREENSHOT_CONFIG: dict[str, list[ScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
     "airbyte": [ScreenshotConfig("airbyte_job_payload_success.json")],
     "alertmanager": [
