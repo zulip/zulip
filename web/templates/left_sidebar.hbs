@@ -182,12 +182,9 @@
         <a class="zoom-out-hide" id="hide-more-direct-messages">
             <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
         </a>
-        <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-row">
-            <input class="direct-messages-list-filter filter_text_input home-page-input" type="text" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
-            <button type="button" class="clear_search_button" id="clear-direct-messages-search-button">
-                <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-            </button>
-        </div>
+        {{#> input input_type="filter-input" custom_classes="zoom-out-hide direct-messages-search-section" icon="search" input_button_icon="close"}}
+            <input type="text" class="input-element direct-messages-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
+        {{/input}}
     </div>
     {{~!-- squash whitespace --~}}
     <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1">
