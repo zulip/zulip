@@ -271,7 +271,7 @@ batch_group.add_argument(
 batch_group.add_argument("--integration", nargs="+", help="Names of specific integrations")
 
 parser.add_argument(
-    "--fixture",
+    "--fixture-name",
     help="Name of the fixture file to use. All other webhook options are ignored if the fixture is not specified.",
 )
 parser.add_argument("--image-name", help="Name for the screenshot image")
@@ -322,7 +322,7 @@ elif options.skip_until:
         for screenshot_config in screenshot_configs:
             generate_screenshot_from_config(integration_name, screenshot_config)
 
-elif options.fixture:
+elif options.fixture_name:
     if len(options.integration) != 1:
         parser.error(
             "Exactly one integration should be specified for --integration when --fixture is provided"
