@@ -771,7 +771,6 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "lidarr": [ScreenshotConfig("lidarr_album_grabbed.json")],
     "linear": [ScreenshotConfig("issue_create_complex.json")],
     "mention": [ScreenshotConfig("webfeeds.json")],
-    "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
     "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
