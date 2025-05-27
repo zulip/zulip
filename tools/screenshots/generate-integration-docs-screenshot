@@ -270,24 +270,27 @@ batch_group.add_argument(
 )
 batch_group.add_argument("--integration", nargs="+", help="Names of specific integrations")
 
-parser.add_argument(
+common_group = parser.add_argument_group()
+common_group.add_argument("--image-name", help="Name for the screenshot image")
+common_group.add_argument("--image-dir", help="Directory name where to save the screenshot image")
+common_group.add_argument("--bot-name", help="Name to use for the bot")
+
+webhook_group = parser.add_argument_group("Webhook integrations options")
+webhook_group.add_argument(
     "--fixture-name",
     help="Name of the fixture file to use. All other webhook options are ignored if the fixture is not specified.",
 )
-parser.add_argument("--image-name", help="Name for the screenshot image")
-parser.add_argument("--image-dir", help="Directory name where to save the screenshot image")
-parser.add_argument("--bot-name", help="Name to use for the bot")
-parser.add_argument(
+webhook_group.add_argument(
     "-A", "--use-basic-auth", action="store_true", help="Add basic auth headers to the request"
 )
-parser.add_argument(
+webhook_group.add_argument(
     "-Q",
     "--payload-as-query-param",
     action="store_true",
     help="Send payload as query param instead of body",
 )
-parser.add_argument("-P", "--payload-param-name", help="Param name to use for the payload")
-parser.add_argument(
+webhook_group.add_argument("-P", "--payload-param-name", help="Param name to use for the payload")
+webhook_group.add_argument(
     "-H",
     "--custom-headers",
     type=custom_headers,
