@@ -1,10 +1,10 @@
 import os
 
 from zerver.lib.integrations import (
-    DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
     NO_SCREENSHOT_WEBHOOKS,
     WEBHOOK_INTEGRATIONS,
+    WEBHOOK_SCREENSHOT_CONFIG,
     WebhookIntegration,
     WebhookScreenshotConfig,
     get_fixture_path,
@@ -42,7 +42,7 @@ class IntegrationsTestCase(ZulipTestCase):
 
     def test_no_missing_doc_screenshot_config(self) -> None:
         webhook_names = {webhook.name for webhook in WEBHOOK_INTEGRATIONS}
-        webhooks_with_screenshot_config = set(DOC_SCREENSHOT_CONFIG.keys())
+        webhooks_with_screenshot_config = set(WEBHOOK_SCREENSHOT_CONFIG.keys())
         missing_webhooks = webhook_names - webhooks_with_screenshot_config - NO_SCREENSHOT_WEBHOOKS
         message = (
             f"These webhooks are missing screenshot config: {missing_webhooks}.\n"
@@ -56,8 +56,8 @@ class IntegrationsTestCase(ZulipTestCase):
             "Consider updating zerver.lib.integrations.DOC_SCREENSHOT_CONFIG\n"
             'and running "tools/screenshots/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
         )
-        for integration_name in DOC_SCREENSHOT_CONFIG:
-            configs = DOC_SCREENSHOT_CONFIG[integration_name]
+        for integration_name in WEBHOOK_SCREENSHOT_CONFIG:
+            configs = WEBHOOK_SCREENSHOT_CONFIG[integration_name]
             for screenshot_config in configs:
                 integration = INTEGRATIONS[integration_name]
                 assert isinstance(integration, WebhookIntegration)

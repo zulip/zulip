@@ -705,7 +705,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 }
 
 
-DOC_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
+WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "airbrake": [WebhookScreenshotConfig("error_message.json")],
     "airbyte": [WebhookScreenshotConfig("airbyte_job_payload_success.json")],
     "alertmanager": [
@@ -847,6 +847,15 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             },
         )
     ],
+}
+
+FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+
+DOC_SCREENSHOT_CONFIG: dict[
+    str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
+] = {
+    **WEBHOOK_SCREENSHOT_CONFIG,
+    **FIXTURELESS_SCREENSHOT_CONFIG,
 }
 
 
