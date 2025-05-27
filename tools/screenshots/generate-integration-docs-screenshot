@@ -265,11 +265,15 @@ parser = argparse.ArgumentParser()
 batch_group = parser.add_mutually_exclusive_group(required=True)
 batch_group.add_argument("--all", action="store_true")
 batch_group.add_argument(
-    "--skip-until", help="Name of the integration whose predecessor are skipped. Similar to --all"
+    "--skip-until",
+    help="Name of the integration to start processing from, including all that follow in alphabetical order. Similar to --all",
 )
-batch_group.add_argument("--integration", nargs="+", help="Names of the integrations")
+batch_group.add_argument("--integration", nargs="+", help="Names of specific integrations")
 
-parser.add_argument("--fixture", help="Name of the fixture file to use")
+parser.add_argument(
+    "--fixture",
+    help="Name of the fixture file to use. All other webhook options are ignored if the fixture is not specified.",
+)
 parser.add_argument("--image-name", help="Name for the screenshot image")
 parser.add_argument("--image-dir", help="Directory name where to save the screenshot image")
 parser.add_argument("--bot-name", help="Name to use for the bot")
@@ -306,7 +310,7 @@ elif options.skip_until:
     for key, value in vars(options).items():
         if key != "skip_until" and value:
             print(
-                f"Generating screenshots for all integrations skipping until {options.skip_until}. Ignoring all command-line options"
+                f"Generating screenshots for all integrations starting from {options.skip_until}. Ignoring all command-line options"
             )
             break
     skip = True
