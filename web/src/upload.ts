@@ -464,6 +464,12 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
+        if (response.status !== 200) {
+            blueslip.warn("Tus server returned an error, expected a 200 OK response code.", {
+                response,
+            });
+            return;
+        }
         let upload_response;
         try {
             upload_response = zulip_upload_response_schema.parse(
