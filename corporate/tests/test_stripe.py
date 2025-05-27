@@ -8724,7 +8724,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         invoice_plans_as_needed(self.next_month)
         plan.refresh_from_db()
         self.assertEqual(plan.next_invoice_date, self.next_month)
-        self.assertTrue(plan.invoice_overdue_email_sent)
+        self.assertTrue(plan.stale_audit_log_data_email_sent)
 
         from django.core.mail import outbox
 
@@ -8762,7 +8762,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         invoice_plans_as_needed(self.next_month)
         plan.refresh_from_db()
         self.assertEqual(plan.next_invoice_date, add_months(self.next_month, 1))
-        self.assertFalse(plan.invoice_overdue_email_sent)
+        self.assertFalse(plan.stale_audit_log_data_email_sent)
 
         assert customer.stripe_customer_id
         [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
@@ -10265,7 +10265,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         invoice_plans_as_needed(self.next_month)
         plan.refresh_from_db()
         self.assertEqual(plan.next_invoice_date, self.next_month)
-        self.assertTrue(plan.invoice_overdue_email_sent)
+        self.assertTrue(plan.stale_audit_log_data_email_sent)
 
         from django.core.mail import outbox
 
@@ -10303,7 +10303,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         invoice_plans_as_needed(self.next_month)
         plan.refresh_from_db()
         self.assertEqual(plan.next_invoice_date, add_months(self.next_month, 1))
-        self.assertFalse(plan.invoice_overdue_email_sent)
+        self.assertFalse(plan.stale_audit_log_data_email_sent)
 
         assert customer.stripe_customer_id
         [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))

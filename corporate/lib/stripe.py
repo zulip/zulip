@@ -3353,11 +3353,11 @@ class BillingSession(ABC):
 
         plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
         plan.next_invoice_date = next_invoice_date(plan)
-        plan.invoice_overdue_email_sent = False
+        plan.stale_audit_log_data_email_sent = False
         plan.save(
             update_fields=[
                 "next_invoice_date",
-                "invoice_overdue_email_sent",
+                "stale_audit_log_data_email_sent",
                 "invoicing_status",
             ]
         )
@@ -5456,7 +5456,7 @@ def maybe_send_fixed_price_plan_renewal_reminder_email(
         plan.save(update_fields=["reminder_to_review_plan_email_sent"])
 
 
-def maybe_send_invoice_overdue_email(
+def maybe_send_stale_audit_log_data_email(
     plan: CustomerPlan,
     billing_session: BillingSession,
     next_invoice_date: datetime,
@@ -5478,8 +5478,8 @@ def maybe_send_invoice_overdue_email(
             from_address=FromAddress.tokenized_no_reply_address(),
             context=context,
         )
-        plan.invoice_overdue_email_sent = True
-        plan.save(update_fields=["invoice_overdue_email_sent"])
+        plan.stale_audit_log_data_email_sent = True
+        plan.save(update_fields=["stale_audit_log_data_email_sent"])
         return
 
     if next_invoice_date - last_audit_log_update < timedelta(days=1):  # nocoverage
@@ -5500,8 +5500,8 @@ def maybe_send_invoice_overdue_email(
         from_address=FromAddress.tokenized_no_reply_address(),
         context=context,
     )
-    plan.invoice_overdue_email_sent = True
-    plan.save(update_fields=["invoice_overdue_email_sent"])
+    plan.stale_audit_log_data_email_sent = True
+    plan.save(update_fields=["stale_audit_log_data_email_sent"])
 
 
 def check_remote_server_audit_log_data(
@@ -5517,8 +5517,8 @@ def check_remote_server_audit_log_data(
     next_invoice_date = plan.next_invoice_date
     last_audit_log_update = remote_server.last_audit_log_update
     if last_audit_log_update is None or next_invoice_date > last_audit_log_update:
-        if not plan.invoice_overdue_email_sent:
-            maybe_send_invoice_overdue_email(
+        if not plan.stale_audit_log_data_email_sent:
+            maybe_send_stale_audit_log_data_email(
                 plan, billing_session, next_invoice_date, last_audit_log_update
             )
 
