@@ -653,7 +653,6 @@ li.active-sub-filter {
 }
 
 #stream_filters .narrow-filter.active-filter {
-    .topic-list .filter-topics,
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
         border-radius: 4px;
@@ -1254,20 +1253,6 @@ li.top_left_scheduled_messages {
 .direct-messages-list-filter {
     grid-area: filter-box;
     padding-right: var(--line-height-sidebar-row-prominent);
-}
-
-.topic-list-filter {
-    grid-area: filter-box;
-    padding-right: var(--line-height-sidebar-row-prominent);
-    box-shadow: none;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-#left-sidebar-filter-topic-input:placeholder-shown
-    + #clear_search_topic_button {
-    visibility: hidden;
 }
 
 .searching-for-more-topics img {
