@@ -980,6 +980,11 @@ svg_rules = RuleList(
             "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
             "include_only": {"web/shared/icons/", "web/images/icons/"},
         },
+        {
+            "pattern": r"stroke=(['\"])(.*?)\1",
+            "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
     ],
 )
 
