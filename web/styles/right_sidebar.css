@@ -82,11 +82,6 @@
         & i {
             /* 17px at 16px em */
             font-size: 1.0625em;
-            /* Ensure the icon takes the same baseline
-               as the rest of the row, for perfect
-               vertical alignment with the username and
-               status circle. */
-            line-height: inherit;
         }
 
         /*
@@ -501,6 +496,7 @@
 #userlist-header {
     cursor: pointer;
     display: grid;
+    gap: 5px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -513,17 +509,16 @@
 
     #buddy-list-menu-icon {
         color: var(--color-vdots-visible);
-        justify-content: center;
-        display: grid;
         width: var(--right-sidebar-vdots-width);
-        margin-left: 5px;
+        /* Match the height of the buddy list filter input */
+        height: 100%;
         /* Push back against default right-sidebar
            spacing for better vdots alignment. */
-        margin-right: 0;
-        padding-left: 0;
+        padding: 0;
 
         &:hover {
             color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
     }
 }
