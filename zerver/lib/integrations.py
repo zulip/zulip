@@ -314,6 +314,16 @@ class WebhookScreenshotConfig:
     custom_headers: dict[str, str] = field(default_factory=dict)
 
 
+@dataclass
+class FixturelessScreenshotConfig:
+    message: str
+    topic: str
+    channel: str | None = None
+    image_name: str = "001.png"
+    image_dir: str | None = None
+    bot_name: str | None = None
+
+
 def get_fixture_path(
     integration: WebhookIntegration, screenshot_config: WebhookScreenshotConfig
 ) -> str:
@@ -322,7 +332,10 @@ def get_fixture_path(
     return fixture_path
 
 
-def get_image_path(integration: Integration, screenshot_config: WebhookScreenshotConfig) -> str:
+def get_image_path(
+    integration: Integration,
+    screenshot_config: WebhookScreenshotConfig | FixturelessScreenshotConfig,
+) -> str:
     image_dir = screenshot_config.image_dir or integration.name
     image_name = screenshot_config.image_name
     image_path = os.path.join("static/images/integrations", image_dir, image_name)
