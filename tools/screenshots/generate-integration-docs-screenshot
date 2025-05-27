@@ -267,7 +267,6 @@ group.add_argument(
     "--skip-until", help="Name of the integration whose predecessor are skipped. Similar to --all"
 )
 group.add_argument("--integration", nargs="+", help="Names of the integrations")
-fixture_group = parser.add_argument_group("integration")
 parser.add_argument("--fixture", help="Name of the fixture file to use")
 parser.add_argument("--image-name", help="Name for the screenshot image")
 parser.add_argument("--image-dir", help="Directory name where to save the screenshot image")
