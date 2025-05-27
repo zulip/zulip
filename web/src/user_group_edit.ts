@@ -1945,7 +1945,7 @@ export function setup_page(callback: () => void): void {
                 },
             },
             init_sort: ["alphabetic", "name"],
-            $simplebar_container: $container,
+            $simplebar_container: $("#groups_overlay .user-groups-list-wrapper"),
         });
 
         initialize_components();
