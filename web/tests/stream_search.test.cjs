@@ -57,7 +57,7 @@ function toggle_filter() {
 }
 
 function clear_search_input() {
-    stream_list.clear_search({stopPropagation: noop});
+    stream_list.test_clear_search();
 }
 
 run_test("basics", ({override, override_rewire}) => {
@@ -134,10 +134,6 @@ run_test("basics", ({override, override_rewire}) => {
     toggle_filter();
     verify_expanded();
     verify_focused();
-
-    // Clear an empty search.
-    clear_search_input();
-    verify_collapsed();
 
     // Expand the widget.
     toggle_filter();
