@@ -394,8 +394,8 @@ their style guidelines.
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/
 [trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
-[formatjs]: https://formatjs.io/
-[icu messageformat]: https://formatjs.io/docs/intl-messageformat
+[formatjs]: https://formatjs.github.io/
+[icu messageformat]: https://formatjs.github.io/docs/core-concepts/icu-syntax#plural-format
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
 [transifex]: https://www.transifex.com
 [transifex-api-token]: https://app.transifex.com/user/settings/api/

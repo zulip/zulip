@@ -579,7 +579,7 @@ function get_avatars_context(all_senders: number[]): AvatarsContext {
         // and just display remaining number of senders.
         const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
         // Pluralization syntax from:
-        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
+        // https://formatjs.github.io/docs/core-concepts/icu-syntax#plural-format
         displayed_other_names.push(
             $t(
                 {
