@@ -40,7 +40,9 @@ from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
+    FIXTURELESS_SCREENSHOT_CONFIG,
     INTEGRATIONS,
+    WEBHOOK_SCREENSHOT_CONFIG,
     FixturelessScreenshotConfig,
     Integration,
     WebhookIntegration,
@@ -262,6 +264,8 @@ parser = argparse.ArgumentParser()
 
 batch_group = parser.add_mutually_exclusive_group(required=True)
 batch_group.add_argument("--all", action="store_true")
+batch_group.add_argument("--all-webhook", action="store_true")
+batch_group.add_argument("--all-fixtureless", action="store_true")
 batch_group.add_argument(
     "--skip-until",
     help="Name of the integration to start processing from, including all that follow in alphabetical order. Similar to --all",
@@ -324,15 +328,32 @@ def build_config(options: argparse.Namespace, config_keys: list[str]) -> dict[st
     return config
 
 
-if options.all:
+def generate_full_batch_screenshots(
+    option_key: str,
+    config_dict: dict[str, list[WebhookScreenshotConfig]]
+    | dict[str, list[FixturelessScreenshotConfig]]
+    | dict[str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]],
+    batch_type: str,
+) -> None:
     for key, value in vars(options).items():
-        if key != "all" and value:
-            print("Generating screenshots for all integrations. Ignoring all command-line options")
+        if key != option_key and value:
+            print(f"Generating screenshots for {batch_type}. Ignoring all command-line options")
             break
-    for integration_name, screenshot_configs in DOC_SCREENSHOT_CONFIG.items():
+    for integration_name, screenshot_configs in config_dict.items():
         for screenshot_config in screenshot_configs:
             generate_screenshot_from_config(integration_name, screenshot_config)
 
+
+if options.all:
+    generate_full_batch_screenshots("all", DOC_SCREENSHOT_CONFIG, "all integrations")
+elif options.all_webhook:
+    generate_full_batch_screenshots(
+        "all_webhook", WEBHOOK_SCREENSHOT_CONFIG, "all webhook integrations"
+    )
+elif options.all_fixtureless:
+    generate_full_batch_screenshots(
+        "all_fixtureless", FIXTURELESS_SCREENSHOT_CONFIG, "all fixtureless integrations"
+    )
 elif options.skip_until:
     for key, value in vars(options).items():
         if key != "skip_until" and value:
