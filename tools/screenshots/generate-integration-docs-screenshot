@@ -140,9 +140,7 @@ def custom_headers(headers_json: str) -> dict[str, str]:
         )
 
 
-def send_bot_mock_message(
-    bot: UserProfile, integration: Integration, fixture_path: str, config: BaseScreenshotConfig
-) -> None:
+def send_bot_mock_message(bot: UserProfile, integration: Integration, fixture_path: str) -> None:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
     data, _, _, _ = get_fixture_info(fixture_path)
@@ -255,7 +253,7 @@ def generate_screenshot_from_config(
         )
         message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
     else:
-        send_bot_mock_message(bot, integration, fixture_path, screenshot_config)
+        send_bot_mock_message(bot, integration, fixture_path)
         message_sent = True
     if message_sent:
         capture_last_message_screenshot(bot, image_path)
