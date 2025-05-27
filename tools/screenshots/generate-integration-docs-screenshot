@@ -42,7 +42,8 @@ from zerver.lib.integrations import (
     Integration,
     WebhookIntegration,
     WebhookScreenshotConfig,
-    get_fixture_and_image_paths,
+    get_fixture_path,
+    get_image_path,
     split_fixture_path,
 )
 from zerver.lib.storage import static_path
@@ -220,7 +221,8 @@ def generate_screenshot_from_config(
 ) -> None:
     integration = INTEGRATIONS[integration_name]
     assert isinstance(integration, WebhookIntegration)
-    fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
+    fixture_path = get_fixture_path(integration, screenshot_config)
+    image_path = get_image_path(integration, screenshot_config)
     bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
     if send_bot_payload_message(bot, integration, fixture_path, screenshot_config):

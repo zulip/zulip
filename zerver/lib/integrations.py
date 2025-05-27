@@ -314,15 +314,19 @@ class WebhookScreenshotConfig:
     custom_headers: dict[str, str] = field(default_factory=dict)
 
 
-def get_fixture_and_image_paths(
+def get_fixture_path(
     integration: WebhookIntegration, screenshot_config: WebhookScreenshotConfig
-) -> tuple[str, str]:
+) -> str:
     fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
     fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
+    return fixture_path
+
+
+def get_image_path(integration: Integration, screenshot_config: WebhookScreenshotConfig) -> str:
     image_dir = screenshot_config.image_dir or integration.name
     image_name = screenshot_config.image_name
     image_path = os.path.join("static/images/integrations", image_dir, image_name)
-    return fixture_path, image_path
+    return image_path
 
 
 class HubotIntegration(Integration):
