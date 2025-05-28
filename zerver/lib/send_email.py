@@ -778,6 +778,9 @@ def maybe_remove_from_suppression_list(email: str) -> None:
     import boto3
     import botocore
 
+    if boto3.session.Session().get_credentials() is None:
+        return
+
     with contextlib.suppress(botocore.exceptions.ClientError):
         boto3.client("sesv2", region_name=maybe_aws[1]).delete_suppressed_destination(
             EmailAddress=email
