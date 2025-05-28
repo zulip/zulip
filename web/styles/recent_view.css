@@ -171,8 +171,8 @@
         border-radius: 40px;
         /* Legacy 5px 10px at 14px/1em. */
         margin: 0 0.3571em 0.7142em 0;
-        /* Legacy 6px 12px at 14px/1em. */
-        padding: 0.4285em 0.8571em;
+        /* 5px at 16px/1em and legacy 12px at 14px/1em. */
+        padding: 0.3125em 0.8571em;
         line-height: 100%;
         display: inline-flex;
 
@@ -591,6 +591,8 @@
     width: 10.7142em; /* 150px at 14px em */
     /* Legacy 5px 10px at 14px/1em. */
     margin: 0 0.3571em 0.7142em 0;
+    /* 1.5px 6px at 16px/1em */
+    padding: 0.0937em 0.375em;
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);
