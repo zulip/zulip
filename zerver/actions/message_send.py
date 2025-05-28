@@ -613,8 +613,8 @@ def get_service_bot_events(
             # with missing `triggers` field, they are probably old service bots
             # before we add the `triggers` field.
             #
-            # TODO: Add custom migration to update `triggers` of existing service
-            # bots.
+            # In practice this should be rare because we have a custom migration
+            # that updates old service bots trigger field.
             bot_triggers = get_default_service_bot_triggers()
             logging.error(
                 "Missing triggers for Service bot id=%s",
