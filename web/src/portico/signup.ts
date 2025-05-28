@@ -457,4 +457,11 @@ $(() => {
     $("#slack-access-token").on("input", () => {
         $("#update-slack-access-token").show();
     });
+
+    $(".choose-email-box").on("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            $(this).closest("form").trigger("submit");
+        }
+    });
 });
