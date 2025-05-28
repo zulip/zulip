@@ -471,12 +471,12 @@
 
 #inbox-filter_widget {
     margin-right: 0.3571em; /* 5px / 14px em */
-    height: 2.1428em; /* 30px / 14px em */
     max-width: var(--width-inbox-filters-dropdown);
     border: 1px solid var(--color-border-inbox-search);
     background-color: var(--color-background-inbox-search);
     gap: 0.3571em; /* 5px / 14px em */
-    padding: 0.2857em 0.4285em; /* 4px 6px / 14px em */
+    /* 1.5px at 16px/1em and legacy 6px at 14px/1em. */
+    padding: 0.0937em 0.4285em;
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);
