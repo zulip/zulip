@@ -54,7 +54,7 @@
                 {{#if topic_is_resolved}}
                     {{> components/icon_button icon="check-x" intent="neutral" custom_classes="on_hover_topic_unresolve recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Mark as unresolved") aria-label=(t "Mark as unresolved") }}
                 {{else}}
-                    <i class="fa fa-check on_hover_topic_resolve recipient-bar-control recipient_bar_icon hidden-for-spectators" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as resolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as resolved' }}"></i>
+                    {{> components/icon_button icon="check" intent="neutral" custom_classes="on_hover_topic_resolve recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Mark as resolved") aria-label=(t "Mark as resolved") }}
                 {{/if}}
                 <div class="toggle_resolve_topic_spinner recipient_bar_icon" style="display: none"></div>
             {{/if}}
