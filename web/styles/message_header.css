@@ -283,15 +283,6 @@
     }
 }
 
-.on_hover_topic_resolve {
-    opacity: 0.2;
-
-    &:hover {
-        cursor: pointer;
-        opacity: 0.7;
-    }
-}
-
 .recipient_row_date {
     color: var(--color-date);
     font-size: calc(12em / 14);
