@@ -1535,6 +1535,11 @@ export function initialize({
             }
             return sorted;
         },
+        updater(item: string, _query: string): string {
+            $("textarea#compose-textarea").trigger("focus");
+            $nextFocus = undefined;
+            return item;
+        },
         option_label(matching_items: string[], item: string): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
