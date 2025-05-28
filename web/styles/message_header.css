@@ -283,7 +283,6 @@
     }
 }
 
-.on_hover_topic_edit,
 .on_hover_topic_unresolve,
 .on_hover_topic_resolve {
     opacity: 0.2;
