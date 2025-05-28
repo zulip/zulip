@@ -47,7 +47,7 @@
 
             {{! edit topic pencil icon }}
             {{#if is_topic_editable}}
-                <i class="fa fa-pencil on_hover_topic_edit recipient-bar-control recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
+                {{> components/icon_button icon="edit" intent="neutral" custom_classes="on_hover_topic_edit recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Edit topic") aria-label=(t "Edit topic") }}
             {{/if}}
 
             {{#if (and user_can_resolve_topic (not is_empty_string_topic))}}
