@@ -16,23 +16,24 @@
         <div class="inline-block">
 
             <div class="get-started">
-                {% if deactivated_redirect %}
-                    <h1>{{ _("Organization moved") }}</h1>
-                {% else %}
-                    <h1>{{ _("Deactivated organization") }}</h1>
-                {% endif %}
+                <h1>{{ _("Deactivated organization") }}</h1>
             </div>
 
             <div class="white-box deactivated-realm-container">
                 <p>
-                    {% if deactivated_redirect %}
-                        {% trans %}
-                        This organization has moved to <a href="{{ deactivated_redirect }}">{{ deactivated_redirect }}</a>.
-                        {% endtrans %}
+                    {% if realm_data_deleted %}
+                        {{ _("This organization has been deactivated, and all organization data has been deleted.") }}
+                        {% if corporate_enabled %}
+                            {% trans %}
+                            You can <a href="mailto:{{ support_email }}">contact Zulip support</a> to inquire about reusing this URL for a new organization.
+                            {% endtrans %}
+                        {% else %}
+                            {% trans %}
+                            You can <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a> to inquire about reusing this URL for a new organization.
+                            {% endtrans %}
+                        {% endif %}
                     {% else %}
-                        {% trans %}
-                        This organization has been deactivated.
-                        {% endtrans %}
+                        {{ _("This organization has been deactivated.") }}
                         {% if corporate_enabled %}
                             {% trans %}
                             If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact Zulip support</a> to reactivate it.

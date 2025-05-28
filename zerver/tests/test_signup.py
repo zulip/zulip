@@ -24,8 +24,10 @@ from zerver.actions.create_realm import do_change_realm_subdomain, do_create_rea
 from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
 from zerver.actions.invites import do_invite_users
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
+    do_scrub_realm,
     do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
@@ -180,7 +182,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         result = self.client_get("/login/", follow=True)
         self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
         self.assertIn("This organization has been deactivated.", result.content.decode())
-        self.assertNotIn("It has moved to", result.content.decode())
+        self.assertNotIn("and all organization data has been deleted", result.content.decode())
 
     def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
         realm = get_realm("zulip")
@@ -224,6 +226,30 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
         self.assertIn(result.request.get("SERVER_NAME"), ["new-name-2.testserver"])
+
+    def test_deactivation_notice_when_deactivated_and_scrubbed(self) -> None:
+        # We expect system bot messages when scrubbing a realm.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
+        hamlet = self.example_user("hamlet")
+        internal_send_private_message(notification_bot, hamlet, "test")
+        realm = get_realm("zulip")
+        do_deactivate_realm(
+            realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        realm.refresh_from_db()
+        assert realm.deactivated
+        assert realm.deactivated_redirect is None
+        with self.assertLogs(level="WARNING"):
+            do_scrub_realm(realm, acting_user=None)
+
+        result = self.client_get("/login/", follow=True)
+        self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
+        self.assertIn("This organization has been deactivated,", result.content.decode())
+        self.assertIn("and all organization data has been deleted", result.content.decode())
 
 
 class AddNewUserHistoryTest(ZulipTestCase):
