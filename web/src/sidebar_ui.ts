@@ -132,6 +132,17 @@ export function update_invite_user_option(): void {
     }
 }
 
+export function update_unread_counts_visibility(): void {
+    const hidden = !user_settings.web_left_sidebar_unreads_count_summary;
+
+    const $streams_header: JQuery = $("#streams_header");
+    const $home_view_li: JQuery = $(".top_left_row");
+
+    for (const $el of [$home_view_li, $streams_header]) {
+        $el.toggleClass("hide-unread-messages-count", hidden);
+    }
+}
+
 export function hide_all(): void {
     hide_streamlist_sidebar();
     hide_userlist_sidebar();
@@ -298,6 +309,7 @@ export function initialize_left_sidebar(): void {
     $("#left-sidebar-container").html(rendered_sidebar);
     // make sure home-view and left_sidebar order persists
     reorder_left_sidebar_navigation_list(user_settings.web_home_view);
+    update_unread_counts_visibility();
 }
 
 export function initialize_right_sidebar(): void {

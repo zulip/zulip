@@ -311,6 +311,7 @@ def json_change_settings(
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     web_font_size_px: Json[int] | None = None,
     web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,
     web_mark_read_on_scroll_policy: Annotated[
         Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
