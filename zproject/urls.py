@@ -181,6 +181,7 @@ from zerver.views.scheduled_messages import (
 from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
+    add_channel,
     add_default_stream,
     add_subscriptions_backend,
     create_default_stream_group,
@@ -517,6 +518,7 @@ v1_api_and_json_patterns = [
     # streams -> zerver.views.streams
     # (this API is only used externally)
     rest_path("streams", GET=get_streams_backend),
+    rest_path("channels/create", POST=add_channel),
     # GET returns `stream_id`, stream name should be encoded in the URL query (in `stream` param)
     rest_path("get_stream_id", GET=json_get_stream_id),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
