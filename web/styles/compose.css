@@ -1268,7 +1268,7 @@ textarea.new_message_textarea {
         .decorated-channel-name,
         .conversation-arrow,
         #stream_message_recipient_topic {
-            opacity: 0.7;
+            opacity: 0.9;
         }
 
         .zulip-icon-chevron-down {
