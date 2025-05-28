@@ -139,7 +139,7 @@ export function update_private_stream_privacy_option_state(
         .toggleClass("default_stream_private_tooltip", is_default_stream);
 }
 
-export function initialize_cant_subscribe_popover(): void {
+export function initialize_subscription_toggle_disabled_popover(): void {
     const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
     settings_components.initialize_disable_button_hint_popover($button_wrapper, undefined);
 }
@@ -220,7 +220,7 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
         $settings_button.addClass("toggle-subscription-tooltip");
     } else {
         $settings_button.attr("title", "");
-        initialize_cant_subscribe_popover();
+        initialize_subscription_toggle_disabled_popover();
         $settings_button.prop("disabled", true);
         $settings_button.removeClass("toggle-subscription-tooltip");
     }

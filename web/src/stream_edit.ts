@@ -172,7 +172,7 @@ function show_subscription_settings(sub: SettingsSubscription): void {
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
     if (!stream_data.can_toggle_subscription(sub)) {
-        stream_ui_updates.initialize_cant_subscribe_popover();
+        stream_ui_updates.initialize_subscription_toggle_disabled_popover();
     }
 
     const $subscriber_container = $edit_container.find(".edit_subscribers_for_stream");
