@@ -78,6 +78,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.prereg_users import filter_to_valid_prereg_users
+from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import get_realm
 from zerver.models.users import remote_user_to_email
 from zerver.signals import email_on_new_login
@@ -808,12 +809,16 @@ def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int)
 def show_deactivation_notice(request: HttpRequest, next: str = "/") -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
-        context = {"deactivated_domain_name": realm.name}
         if realm.deactivated_redirect is not None:
             # URL hash is automatically preserved by the browser.
             # See https://stackoverflow.com/a/5283739
             redirect_to = get_safe_redirect_to(next, realm.deactivated_redirect)
             return HttpResponseRedirect(redirect_to)
+
+        realm_data_scrubbed = RealmAuditLog.objects.filter(
+            realm=realm, event_type=AuditLogEventType.REALM_SCRUBBED
+        ).exists()
+        context = {"realm_data_deleted": realm_data_scrubbed}
         return render(request, "zerver/deactivated.html", context=context)
 
     return HttpResponseRedirect(reverse("login_page"))
