@@ -166,7 +166,7 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
     }
 }
 
-export function initialize_cant_subscribe_popover(): void {
+export function initialize_subscription_toggle_disabled_popover(): void {
     const $button_wrapper = $(
         "#subscription_overlay .stream-title-buttons .sub_unsub_button_wrapper",
     );
@@ -249,7 +249,7 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
         $settings_button.addClass("toggle-subscription-tooltip");
     } else {
         $settings_button.attr("title", "");
-        initialize_cant_subscribe_popover();
+        initialize_subscription_toggle_disabled_popover();
         $settings_button.prop("disabled", true);
         $settings_button.removeClass("toggle-subscription-tooltip");
     }
