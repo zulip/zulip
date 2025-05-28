@@ -49,6 +49,18 @@
                     <input id="request_demo_form_expected_user_count" class="required" type="text" name="expected_user_count" maxlength="{{ MAX_INPUT_LENGTH }}" required />
                 </div>
                 <div class="input-box support-form-field">
+                    <label for="request_demo_form_type_of_hosting" class="inline-block label-title">Are you interested in Zulip Cloud (SaaS) or self-hosting Zulip?</label>
+                    <select id="request_demo_form_type_of_hosting" name="type_of_hosting" class="required">
+                        <option value="" disabled selected>Select an option</option>
+                        {% for hosting_option in TYPE_OF_HOSTING_OPTIONS %}
+                            <option
+                              value="{{ hosting_option }}">
+                                {{ hosting_option }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-box support-form-field">
                     <label for="request_demo_form_message" class="inline-block label-title">How can we help?</label>
                     <textarea id="request_demo_form_message" name="message" cols="100" rows="5" required></textarea>
                 </div>
