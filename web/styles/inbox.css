@@ -195,14 +195,16 @@
                         padding-left: 4px;
                     }
 
-                    &:focus .inbox-header-name-focus-border {
+                    &:focus-visible .inbox-header-name-focus-border {
                         border-color: var(--color-outline-focus);
                     }
                 }
 
                 &:focus {
                     outline: 0;
+                }
 
+                &:focus-visible {
                     .inbox-focus-border {
                         border-color: var(--color-outline-focus);
                     }
@@ -271,7 +273,7 @@
                     background: var(--color-background-inbox-row-hover);
                 }
 
-                &:focus {
+                &:focus-visible {
                     .inbox-focus-border {
                         border: 2px solid var(--color-outline-focus);
                         border-radius: 3px;
@@ -314,7 +316,7 @@
                     border-radius: 3px;
                     margin-left: 3px;
 
-                    &:focus {
+                    &:focus-visible {
                         outline: 2px solid var(--color-outline-focus);
                     }
                 }
@@ -338,7 +340,7 @@
                    size as test scales up. */
                 align-self: stretch;
 
-                &:focus {
+                &:focus-visible {
                     outline: 2px solid var(--color-outline-focus);
                 }
             }
@@ -382,7 +384,7 @@
                 /* Since a direct message row can have span to multiple lines,
                    having an underline focus will not work very well.
                 */
-                .inbox-row:focus {
+                .inbox-row:focus-visible {
                     box-shadow: inset 0 0 0 2px var(--color-outline-focus);
                 }
             }
@@ -467,7 +469,7 @@
                 display: none;
             }
 
-            &:focus {
+            &:focus-visible {
                 box-shadow: 0 0 0 2px var(--color-outline-focus);
             }
 
