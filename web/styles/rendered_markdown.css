@@ -320,7 +320,6 @@
         background: hsl(0deg 0% 93%);
         border-radius: 3px;
         box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
-        white-space: nowrap;
         margin: 0 2px;
         /* Reduce the font-size to reduce the
            footprint of the timestamp block. */
@@ -332,13 +331,15 @@
                for the icon. */
             font-size: 1.0526em;
             padding: 0 0.2em;
-            display: inline-flex;
-            align-items: baseline;
-            gap: 3px;
         }
 
         .markdown-timestamp-icon {
-            align-self: center;
+            display: inline-block;
+            /* 3px at 16px/1em */
+            vertical-align: -0.1875em;
+            /* Match space to the right of the icon
+               with the lefthand padding on the wrapper. */
+            margin-right: 0.2em;
         }
     }
 
