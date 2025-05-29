@@ -137,6 +137,20 @@ exports.fixtures = {
         upload_space_used: 90000,
     },
 
+    channel_folder__add: {
+        type: "channel_folder",
+        op: "add",
+        channel_folder: {
+            id: 1,
+            name: "Frontend",
+            description: "Channels for frontend discussions",
+            rendered_description: "<p>Channels for frontend discussions</p>",
+            date_created: 1681662420,
+            creator_id: 10,
+            is_archived: false,
+        },
+    },
+
     channel_typing_edit_message__start: {
         type: "typing_edit_message",
         op: "start",
