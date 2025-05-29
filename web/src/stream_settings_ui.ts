@@ -869,6 +869,7 @@ function setup_page(callback: () => void): void {
             group_setting_labels: settings_config.all_group_setting_labels.stream,
             realm_has_archived_channels,
             has_billing_access: settings_data.user_has_billing_access(),
+            is_admin: current_user.is_admin,
         };
 
         const rendered = render_stream_settings_overlay(template_data);

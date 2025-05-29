@@ -1323,7 +1323,8 @@ div.settings-radio-input-parent {
 }
 
 #change_user_group_description,
-#change_stream_description {
+#change_stream_description,
+#new_channel_folder_description {
     width: 100%;
     height: 80px;
     margin-bottom: 4px;
@@ -1359,6 +1360,15 @@ div.settings-radio-input-parent {
 }
 
 #subscription_overlay .channel-folder-widget-container {
+    display: flex;
+    gap: 0.5em;
+    width: auto;
+    /* Set minimum width such that the total width of dropdown
+    button and "Create folder" button is at least equal to the
+    minimum width of pill inputs for permission settings. */
+    min-width: var(--modal-input-width);
+    flex-wrap: wrap;
+
     .dropdown_widget_value {
         overflow: hidden;
         text-overflow: ellipsis;

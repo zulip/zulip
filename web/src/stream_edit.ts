@@ -10,6 +10,7 @@ import render_inline_decorated_channel_name from "../templates/inline_decorated_
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
+import render_create_channel_folder_modal from "../templates/stream_settings/create_channel_folder_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 
@@ -17,6 +18,7 @@ import * as blueslip from "./blueslip.ts";
 import type {Bot} from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -920,4 +922,58 @@ export function initialize(): void {
             }
         },
     );
+
+    $("#channels_overlay_container").on("click", ".create-channel-folder-button", () => {
+        const html_body = render_create_channel_folder_modal({
+            max_channel_folder_name_length: channel_folders.MAX_CHANNEL_FOLDER_NAME_LENGTH,
+            max_channel_folder_description_length:
+                channel_folders.MAX_CHANNEL_FOLDER_DESCRIPTION_LENGTH,
+        });
+
+        function create_channel_folder(): void {
+            const close_on_success = true;
+            const data = {
+                name: $<HTMLInputElement>("input#new_channel_folder_name").val()!.trim(),
+                description: $<HTMLTextAreaElement>("textarea#new_channel_folder_description")
+                    .val()!
+                    .trim(),
+            };
+            dialog_widget.submit_api_request(
+                channel.post,
+                "/json/channel_folders/create",
+                data,
+                {
+                    success_continuation(response_data) {
+                        const id = z
+                            .object({channel_folder_id: z.number()})
+                            .parse(response_data).channel_folder_id;
+                        // This is a temporary channel folder object added
+                        // to channel folders data, so that the folder is
+                        // immediately visible in the dropdown.
+                        // This will be replaced with the actual object once
+                        // the client receives channel_folder/add event.
+                        const channel_folder = {
+                            id,
+                            name: data.name,
+                            description: data.description,
+                            is_archived: false,
+                            rendered_description: "",
+                            date_created: 0,
+                            creator_id: people.my_current_user_id(),
+                        };
+                        channel_folders.add(channel_folder);
+                    },
+                },
+                close_on_success,
+            );
+        }
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Create channel folder"}),
+            html_body,
+            id: "create_channel_folder",
+            html_submit_button: $t_html({defaultMessage: "Create"}),
+            on_click: create_channel_folder,
+            loading_spinner: true,
+        });
+    });
 }

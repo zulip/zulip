@@ -9,6 +9,7 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_call from "./compose_call.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -111,6 +112,18 @@ export function dispatch_normal_event(event) {
 
         case "attachment":
             attachments_ui.update_attachments(event);
+            break;
+
+        case "channel_folder":
+            switch (event.op) {
+                case "add": {
+                    channel_folders.add(event.channel_folder);
+                    break;
+                }
+                default:
+                    blueslip.error("Unexpected event type channel_folder/" + event.op);
+                    break;
+            }
             break;
 
         case "custom_profile_fields":
