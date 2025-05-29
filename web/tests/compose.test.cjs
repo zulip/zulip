@@ -50,7 +50,6 @@ const upload = mock_esm("../src/upload");
 const onboarding_steps = mock_esm("../src/onboarding_steps");
 mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
-    user_can_access_all_other_users: () => true,
 });
 
 const compose_ui = zrequire("compose_ui");

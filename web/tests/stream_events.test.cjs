@@ -35,9 +35,6 @@ const message_view_header = mock_esm("../src/message_view_header", {
 mock_esm("../src/recent_view_ui", {
     complete_rerender() {},
 });
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
-});
 mock_esm("../src/settings_notifications", {
     update_page() {},
     user_settings_panel: "stub", // Not used, but can't be undefined

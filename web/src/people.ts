@@ -1536,9 +1536,14 @@ export function add_active_user(person: User, source = "inital_fetch"): void {
 
 export const is_person_active = (
     user_id: number,
-    allow_missing_user = !settings_data.user_can_access_all_other_users(),
+    allow_missing_user: boolean | undefined = undefined,
 ): boolean => {
     if (!people_by_user_id_dict.has(user_id)) {
+        // settings_data.user_can_access_all_other_users can be
+        // cheap, so we avoid computing it unless it's actually
+        // required.
+        allow_missing_user ??= !settings_data.user_can_access_all_other_users();
+
         if (allow_missing_user) {
             // We consider all inaccessible users as active.
             return true;
