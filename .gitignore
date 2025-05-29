@@ -51,6 +51,7 @@ npm-debug.log
 /prod-static
 /staticfiles.json
 /webpack-stats-production.json
+.swc
 zulip-git-version
 
 # Test / analysis tools

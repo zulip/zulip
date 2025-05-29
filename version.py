@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 390
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (326, 8)  # bumped 2025-05-27 to add @uppy/utils
+PROVISION_VERSION = (327, 1)  # bumped 2025-05-29 to add @swc/plugin-formatjs
