@@ -90,6 +90,7 @@ class StreamDict(TypedDict, total=False):
     can_remove_subscribers_group: UserGroup | None
     can_subscribe_group: UserGroup | None
     folder: ChannelFolder | None
+    default_code_block_language: str
 
 
 def get_stream_permission_policy_key(
@@ -270,6 +271,7 @@ def create_stream_if_needed(
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
+    default_code_block_language: str = "",
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -390,6 +392,9 @@ def create_streams_if_needed(
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
+            default_code_block_language=stream_dict.get(
+                "default_code_block_language", str(realm.default_code_block_language)
+            ),
         )
 
         if created:
@@ -1524,6 +1529,7 @@ def stream_to_dict(
         stream_post_policy=stream_post_policy,
         is_announcement_only=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
+        default_code_block_language=stream.default_code_block_language,
     )
 
 

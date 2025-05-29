@@ -32,6 +32,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_default_code_block_language,
     do_change_stream_description,
     do_change_stream_folder,
     do_change_stream_group_based_setting,
@@ -280,6 +281,7 @@ def update_stream_backend(
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
     folder_id: Json[int | None] | MissingType = Missing,
+    default_code_block_language: str | None = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -474,6 +476,11 @@ def update_stream_backend(
                     old_setting_api_value=current_setting_api_value,
                     acting_user=user_profile,
                 )
+
+    if default_code_block_language is not None:
+        do_change_default_code_block_language(
+            stream, default_code_block_language, acting_user=user_profile
+        )
 
     return json_success(request)
 

@@ -2999,6 +2999,20 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("test_stream", realm)
         self.assertIsNone(stream.folder_id)
 
+    def test_default_code_block_language(self) -> None:
+        iago = self.example_user("iago")
+        realm = iago.realm
+        stream = self.make_stream("test_stream")
+        realm = get_realm("zulip")
+        self.assertEqual(stream.default_code_block_language, realm.default_code_block_language)
+        self.api_patch(
+            iago,
+            f"/api/v1/streams/{stream.id}",
+            {"default_code_block_language": "python"},
+        )
+        stream = get_stream("test_stream", realm)
+        self.assertEqual(stream.default_code_block_language, "python")
+
     def attempt_unsubscribe_of_principal(
         self,
         target_users: list[UserProfile],
