@@ -8,6 +8,9 @@ export type ChannelFolder = z.infer<typeof channel_folder_schema>;
 let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;
 
+export const MAX_CHANNEL_FOLDER_NAME_LENGTH = 100;
+export const MAX_CHANNEL_FOLDER_DESCRIPTION_LENGTH = 1024;
+
 export function add(channel_folder: ChannelFolder): void {
     channel_folder_name_dict.set(channel_folder.name, channel_folder);
     channel_folder_by_id_dict.set(channel_folder.id, channel_folder);
