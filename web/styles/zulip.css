@@ -855,14 +855,6 @@ strong {
     }
 }
 
-.copy-paste-text {
-    /* Hide the text that we want copy paste to capture */
-    position: absolute;
-    text-indent: -99999px;
-    float: left;
-    width: 0;
-}
-
 @keyframes rotate {
     from {
         transform: rotate(0deg);
