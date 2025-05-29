@@ -352,6 +352,10 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find(".input")
         .prop("contenteditable", sub.can_change_stream_permissions_requiring_metadata_access);
 
+    $stream_settings
+        .find(".channel-folder-widget-container button")
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
+
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         $general_settings_container.find(".default-stream").addClass("control-label-disabled");
         $permission_pill_container_elements
@@ -606,4 +610,12 @@ export function update_stream_privacy_choices(policy: string): void {
     if (policy === "can_create_web_public_channel_group") {
         update_web_public_stream_privacy_option_state($container);
     }
+}
+
+export function update_channel_folder_dropdown(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    settings_components.set_channel_folder_dropdown_value(sub);
 }

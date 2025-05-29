@@ -627,6 +627,9 @@ export function discard_stream_property_element_changes(
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
             break;
+        case "folder_id":
+            settings_components.set_channel_folder_dropdown_value(sub);
+            break;
         default:
             if (property_value !== undefined) {
                 const validated_property_value = z

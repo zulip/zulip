@@ -291,6 +291,7 @@ export function show_settings_for(node: HTMLElement): void {
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
+    settings_components.set_up_folder_dropdown_widget(sub);
 
     $("#channels_overlay_container").on(
         "click",
