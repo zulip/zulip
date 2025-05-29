@@ -10,7 +10,7 @@ let inertDocument: Document | undefined;
 export function postprocess_content(html: string): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
-    template.innerHTML = html;
+    template.innerHTML = postprocess_image_inlining_elements(html);
 
     for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
@@ -212,6 +212,44 @@ export function postprocess_content(html: string): string {
         ol.style.setProperty("counter-reset", `count ${list_start - 1}`);
     }
 
+    // After all other processing on images has been done, we look for
+    // adjacent block context images and tuck them structurally into
+    // galleries. This will also process uploaded video thumbnails,
+    // which likewise take the `.message_inline_image` class
+    for (const elt of template.content.querySelectorAll("div.message_inline_image")) {
+        let gallery_element;
+
+        const is_part_of_open_gallery = elt.previousElementSibling?.classList.contains(
+            "message-thumbnail-gallery",
+        );
+
+        if (is_part_of_open_gallery) {
+            // If the the current media element's previous sibling is a gallery,
+            // it should be kept with the other media in that gallery.
+            gallery_element = elt.previousElementSibling;
+        } else {
+            // Otherwise, we've found an image element that follows some other
+            // content (or is the first in the message) and need to create a
+            // gallery for it, and perhaps other adjacent sibling media elements,
+            // if they exist.
+            gallery_element = inertDocument.createElement("div");
+            gallery_element.classList.add("message-thumbnail-gallery");
+            // We insert the gallery just before the media element we've found
+            elt.before(gallery_element);
+        }
+
+        // Finally, the media element gets moved into the current gallery
+        gallery_element?.append(elt);
+    }
+
+    return template.innerHTML;
+}
+
+function postprocess_image_inlining_elements(html: string): string {
+    inertDocument ??= new DOMParser().parseFromString("", "text/html");
+    const template = inertDocument.createElement("template");
+    template.innerHTML = html;
+
     for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
         "div.message_inline_image > a > img",
     )) {
@@ -256,36 +294,5 @@ export function postprocess_content(html: string): string {
             inline_img.src = inline_img.src.replace(/\/[^/]+$/, "/" + thumbnail_name);
         }
     }
-
-    // After all other processing on images has been done, we look for
-    // adjacent images and tuck them structurally into galleries.
-    // This will also process uploaded video thumbnails, which likewise
-    // take the `.message_inline_image` class
-    for (const elt of template.content.querySelectorAll(".message_inline_image")) {
-        let gallery_element;
-
-        const is_part_of_open_gallery = elt.previousElementSibling?.classList.contains(
-            "message-thumbnail-gallery",
-        );
-
-        if (is_part_of_open_gallery) {
-            // If the the current media element's previous sibling is a gallery,
-            // it should be kept with the other media in that gallery.
-            gallery_element = elt.previousElementSibling;
-        } else {
-            // Otherwise, we've found an image element that follows some other
-            // content (or is the first in the message) and need to create a
-            // gallery for it, and perhaps other adjacent sibling media elements,
-            // if they exist.
-            gallery_element = inertDocument.createElement("div");
-            gallery_element.classList.add("message-thumbnail-gallery");
-            // We insert the gallery just before the media element we've found
-            elt.before(gallery_element);
-        }
-
-        // Finally, the media element gets moved into the current gallery
-        gallery_element?.append(elt);
-    }
-
     return template.innerHTML;
 }
