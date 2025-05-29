@@ -33,7 +33,7 @@ export function initialize(): void {
     ).validate({
         errorClass: "text-error",
         wrapper: "div",
-        submitHandler(form) {
+        submitHandler(form:any) {
             if (form.id === "server-login-form") {
                 handle_submit_for_server_login_form(form);
                 return;
@@ -53,7 +53,7 @@ export function initialize(): void {
         invalidHandler() {
             $("*[class$='-error']").hide();
         },
-        showErrors(error_map) {
+        showErrors(error_map: Record<string, string>) {
             $("*[class$='-error']").hide();
             for (const [key, error] of Object.entries(error_map)) {
                 const $error_element = $(`.${CSS.escape(key)}-error`);
