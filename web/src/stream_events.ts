@@ -214,6 +214,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             }
             message_live_update.rerender_messages_view();
         },
+        folder_id(value) {
+            stream_settings_ui.update_channel_folder(sub, value);
+        },
     };
 
     if (Object.hasOwn(updaters, property) && updaters[property] !== undefined) {

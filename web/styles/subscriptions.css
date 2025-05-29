@@ -1358,6 +1358,14 @@ div.settings-radio-input-parent {
     margin: -6px 0 -6px -10px;
 }
 
+#subscription_overlay .channel-folder-widget-container {
+    .dropdown_widget_value {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 #deactivation-confirm-modal {
     .alert {
         padding-right: 14px;

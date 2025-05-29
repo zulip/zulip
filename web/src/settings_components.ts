@@ -8,8 +8,10 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 
 import * as blueslip from "./blueslip.ts";
 import * as buttons from "./buttons.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
@@ -476,6 +478,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_default_code_block_language", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
+    ["folder_id", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -902,6 +905,9 @@ export function check_stream_settings_property_changed(
         case "stream_privacy":
             proposed_val = get_input_element_value(elem, "radio-group");
             break;
+        case "folder_id":
+            proposed_val = get_channel_folder_value_from_dropdown_widget($(elem));
+            break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
@@ -1151,6 +1157,12 @@ export function populate_data_for_stream_settings_request(
                         new: input_value,
                         old: old_value,
                     });
+                    continue;
+                }
+
+                if (property_name === "folder_id") {
+                    const folder_id = get_channel_folder_value_from_dropdown_widget($input_elem);
+                    data[property_name] = JSON.stringify(folder_id);
                     continue;
                 }
 
@@ -1939,4 +1951,80 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
     }
 
     return group_assigned_user_group_permissions;
+}
+
+export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
+    const folder_options = (): dropdown_widget.Option[] => {
+        const folders = channel_folders.get_channel_folders();
+        const options: dropdown_widget.Option[] = folders.map((folder) => ({
+            name: folder.name,
+            unique_id: folder.id,
+        }));
+
+        const disabled_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: settings_config.no_folder_selected,
+            name: $t({defaultMessage: "None"}),
+        };
+
+        options.unshift(disabled_option);
+        return options;
+    };
+
+    const default_id = sub?.folder_id ?? settings_config.no_folder_selected;
+
+    let widget_name = "folder_id";
+    if (sub === undefined) {
+        widget_name = "new_channel_folder_id";
+    }
+
+    let $events_container = $("#stream_settings .subscription_settings");
+    if (sub === undefined) {
+        $events_container = $("#stream_creation_form");
+    }
+
+    const folder_widget = new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: folder_options,
+        $events_container,
+        item_click_callback(event, dropdown, this_widget) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            this_widget.render();
+            if (sub !== undefined) {
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                save_discard_stream_settings_widget_status_handler(
+                    $edit_container.find(".channel-folder-subsection"),
+                    stream_data.get_sub_by_id(sub.stream_id),
+                );
+            }
+        },
+        default_id,
+        unique_id_type: "number",
+    });
+    if (sub !== undefined) {
+        set_dropdown_setting_widget("folder_id", folder_widget);
+    }
+    folder_widget.setup();
+    return folder_widget;
+}
+
+export function set_channel_folder_dropdown_value(sub: StreamSubscription): void {
+    if (sub.folder_id === null) {
+        set_dropdown_list_widget_setting_value("folder_id", settings_config.no_folder_selected);
+        return;
+    }
+    set_dropdown_list_widget_setting_value("folder_id", sub.folder_id);
+}
+
+export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): number | null {
+    const value = get_dropdown_list_widget_setting_value($elem);
+    assert(typeof value === "number");
+    if (value === settings_config.no_folder_selected) {
+        return null;
+    }
+    return value;
 }

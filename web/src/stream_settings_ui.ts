@@ -231,6 +231,11 @@ export function update_is_default_stream(): void {
     }
 }
 
+export function update_channel_folder(sub: StreamSubscription, folder_id: number | null): void {
+    stream_data.update_channel_folder(sub, folder_id);
+    stream_ui_updates.update_channel_folder_dropdown(sub);
+}
+
 export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
