@@ -177,7 +177,8 @@ An organization is considered to be a new customer if:
 !!! tip ""
 
     Once you start the trial, you can switch between monthly and annual
-    billing on your organization's billing page.
+    billing on your organization's billing page. You can
+    [cancel](#cancel-paid-plan) any time during your trial to avoid any charges.
 
 {tab|by-invoice}
 
