@@ -335,8 +335,9 @@
         "row-content" auto / minmax(0, 1fr);
 
     .selectable_sidebar_block {
-        margin: 4px;
-        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
+        grid-template-rows: auto;
+        padding: 4px;
+        padding-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 
     .avatar-preload-background {
