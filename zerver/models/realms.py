@@ -730,6 +730,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+            # Note that user_can_access_all_other_users in the web
+            # app is relying on members always have access.
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
         can_add_subscribers_group=GroupPermissionSetting(

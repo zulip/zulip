@@ -356,6 +356,14 @@ export function user_can_access_all_other_users(): boolean {
         return true;
     }
 
+    if (!current_user.is_guest) {
+        // The only valid values for this setting are role:members and
+        // role:everyone, both of which are always true for non-guest
+        // users. This is an important optimization for code that may
+        // call this function in a loop.
+        return true;
+    }
+
     return user_has_permission_for_group_setting(
         realm.realm_can_access_all_users_group,
         "can_access_all_users_group",
