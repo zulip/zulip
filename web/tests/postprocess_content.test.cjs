@@ -306,3 +306,38 @@ run_test("message_inline_animated_image_still", ({override}) => {
         "",
     );
 });
+
+run_test("message_true_inline_image", ({override}) => {
+    const thumbnail_formats = [
+        {
+            name: "840x560.webp",
+            max_width: 840,
+            max_height: 560,
+            format: "webp",
+            animated: false,
+        },
+    ];
+
+    override(thumbnail, "preferred_format", thumbnail_formats[0]);
+
+    assert.equal(
+        postprocess_content(
+            '<img alt="image" class="true_inline" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/image.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">',
+        ),
+        '<span class="message_inline_image true_inline">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="true_inline media-image-element dinky-thumbnail portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/image.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="128" height="128" style="width: 128px;">' +
+            "</a>" +
+            "</span>",
+    );
+
+    // Broken/invalid source URLs in image previews should be
+    // dropped. Inspired by a real message found in chat.zulip.org
+    // history.
+    assert.equal(
+        postprocess_content(
+            '<img class="true_inline" src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png">',
+        ),
+        "",
+    );
+});
