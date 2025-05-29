@@ -46,9 +46,6 @@ mock_esm("../src/pm_list", {
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
 });
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
-});
 mock_esm("../src/settings_linkifiers", {
     maybe_disable_widgets() {},
 });
