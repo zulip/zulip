@@ -21,6 +21,7 @@ import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
@@ -474,6 +475,9 @@ export async function initialize_everything(state_data) {
     // module, so that we can tell whether user is member of
     // user_group whose members are allowed to create multiuse invite.
     user_groups.initialize(state_data.user_groups);
+
+    // Channel folders data must be initialized before left sidebar.
+    channel_folders.initialize(state_data.channel_folders);
 
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they

@@ -141,6 +141,15 @@ export const raw_user_group_schema = z.object({
     deactivated: z.boolean(),
 });
 
+export const channel_folder_schema = z.object({
+    id: z.number(),
+    name: z.string(),
+    rendered_description: z.string(),
+    creator_id: z.number().nullable(),
+    date_created: z.number(),
+    is_archived: z.boolean(),
+});
+
 export const user_topic_schema = z.object({
     stream_id: z.number(),
     topic_name: z.string(),
@@ -498,6 +507,11 @@ export const state_data_schema = z
         z
             .object({realm_user_groups: z.array(raw_user_group_schema)})
             .transform((user_groups) => ({user_groups})),
+    )
+    .and(
+        z
+            .object({channel_folders: z.array(channel_folder_schema)})
+            .transform((channel_folders) => ({channel_folders})),
     )
     .and(
         z
