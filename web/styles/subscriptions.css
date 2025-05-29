@@ -1287,15 +1287,6 @@ div.settings-radio-input-parent {
         height: 1.4em;
     }
 
-    .dropdown-widget-button {
-        /* Match the margin with other input groups around. */
-        margin-bottom: 20px;
-        min-width: var(--modal-input-width);
-        max-width: 100%;
-        width: auto;
-        height: 30px;
-    }
-
     .default-stream {
         margin: 20px 0;
         width: fit-content;
