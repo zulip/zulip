@@ -368,9 +368,7 @@ export class BuddyList extends BuddyListConf {
         // This must happen after `fill_screen_with_content`
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
         $("#buddy-list-other-users-container .view-all-users-link").remove();
-        if (!buddy_data.get_is_searching_users()) {
-            void this.render_view_user_list_links();
-        }
+        void this.render_view_user_list_links();
         this.display_or_hide_sections();
         void this.update_empty_list_placeholders();
 
@@ -709,6 +707,14 @@ export class BuddyList extends BuddyListConf {
     }
 
     async render_view_user_list_links(): Promise<void> {
+        // We don't show the "view user" links when searching, because
+        // these links are meant to reduce confusion about the list
+        // being incomplete, and it's obvious why it's incomplete during
+        // search.
+        if (buddy_data.get_is_searching_users()) {
+            return;
+        }
+
         const {current_sub, other_users_count} = this.render_data;
         const non_participant_users_matching_view_count =
             await this.non_participant_users_matching_view_count();
@@ -723,7 +729,7 @@ export class BuddyList extends BuddyListConf {
 
         // After the `await`, we might have changed to a different channel view.
         // If so, we shouldn't update the DOM anymore, and should let the newer `populate`
-        // call set things up with fresh data. We also want to make sure not to show
+        // call set things up with fresh data. We also want to ensure we're still not showing
         // the links when searching users, which might have changed since fetching data.
         if (current_sub !== this.render_data.current_sub || buddy_data.get_is_searching_users()) {
             return;
