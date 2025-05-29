@@ -476,6 +476,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_default_code_block_language", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
+    ["default_code_block_language", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -901,6 +902,9 @@ export function check_stream_settings_property_changed(
             break;
         case "stream_privacy":
             proposed_val = get_input_element_value(elem, "radio-group");
+            break;
+        case "default_code_block_language":
+            proposed_val = get_input_element_value(elem, "dropdown-list-widget");
             break;
         default:
             if (current_val !== undefined) {

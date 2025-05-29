@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
@@ -8,10 +9,12 @@ import render_change_stream_info_modal from "../templates/stream_settings/change
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
+import * as pygments_data from "./pygments_data.ts";
 import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
@@ -391,6 +394,11 @@ function create_stream(): void {
         is_default_stream: JSON.stringify(default_stream),
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
+        default_code_block_language: JSON.stringify(
+            settings_components
+                .get_widget_for_dropdown_list_settings("default_code_block_language")
+                ?.value() ?? "",
+        ),
         principals,
         ...group_setting_values,
     };
@@ -523,6 +531,49 @@ export function show_new_stream_modal(): void {
     clear_error_display();
 }
 
+function set_up_other_settings_widgets(): void {
+    function item_click_callback(
+        event: JQuery.ClickEvent,
+        dropdown: tippy.Instance,
+        widget: dropdown_widget.DropdownWidget,
+    ): void {
+        dropdown.hide();
+        event.preventDefault();
+        event.stopPropagation();
+        widget.render();
+    }
+    const stream_default_code_block_language_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "new_default_code_block_language",
+        get_options() {
+            const options = Object.keys(pygments_data.langs).map((x) => ({
+                name: x,
+                unique_id: x,
+            }));
+
+            const disabled_option = {
+                is_setting_disabled: true,
+                unique_id: "",
+                name: $t({defaultMessage: "No language set"}),
+            };
+
+            options.unshift(disabled_option);
+            return options;
+        },
+        $events_container: $("#subscription_overlay"),
+        default_id: realm.realm_default_code_block_language,
+        unique_id_type: "string",
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        item_click_callback,
+    });
+    stream_default_code_block_language_widget.setup();
+    settings_components.set_dropdown_setting_widget(
+        "default_code_block_language",
+        stream_default_code_block_language_widget,
+    );
+}
+
 let group_setting_widgets: Record<string, GroupSettingPillContainer | undefined> = {};
 
 function set_up_group_setting_widgets(): void {
@@ -620,6 +671,7 @@ export function set_up_handlers(): void {
     });
 
     set_up_group_setting_widgets();
+    set_up_other_settings_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
 }
 
