@@ -9,7 +9,9 @@
             <a class="button open" rel="noopener noreferrer" target="_blank">{{t "Open" }}</a>
             <a class="button download" download>{{t "Download" }}</a>
         </div>
-        <div class="exit" aria-label="{{t 'Close' }}"><span aria-hidden="true">x</span></div>
+        <div class="exit" aria-label="{{t 'Close' }}">
+            <span aria-hidden="true" class="zulip-icon zulip-icon-close"></span>
+        </div>
     </div>
 
     <div class="image-preview no-select">
@@ -18,8 +20,8 @@
     <div class="video-player"></div>
     <div class="player-container"></div>
     <div class="center">
-        <div class="arrow no-select" data-direction="prev">&lt;</div>
+        <div class="arrow no-select" data-direction="prev"><i class="zulip-icon zulip-icon-chevron-left"></i></div>
         <div class="image-list"></div>
-        <div class="arrow no-select" data-direction="next">&gt;</div>
+        <div class="arrow no-select" data-direction="next"><i class="zulip-icon zulip-icon-chevron-right"></i></div>
     </div>
 </div>

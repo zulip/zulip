@@ -53,11 +53,8 @@
         flex-shrink: 0;
 
         color: hsl(0deg 0% 100% / 80%);
-        font-size: 2rem;
-        line-height: 1.8rem;
-
-        transform: scaleY(0.75);
-        font-weight: 300;
+        font-size: 14px;
+        line-height: 31px;
 
         opacity: 0;
         pointer-events: none;
@@ -180,13 +177,12 @@
         padding: 12px 20px;
 
         .arrow {
-            padding: 0 10px;
             color: hsl(0deg 0% 100%);
-            font-size: 1.8rem;
-            line-height: 1.6rem;
-            font-weight: 200;
+            /* The thumbnails do not scale, so we express these
+               dimensions as pixels, too. */
+            font-size: 35px;
+            line-height: 25.6px;
 
-            transform: scaleY(2);
             cursor: pointer;
 
             opacity: 0.5;
