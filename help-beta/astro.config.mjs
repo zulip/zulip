@@ -41,7 +41,7 @@ export default defineConfig({
         starlight({
             title: "Zulip help center",
             pagination: false,
-            customCss: ["./src/styles/main.css"],
+            customCss: ["./src/styles/main.css", "./src/styles/steps.css"],
             sidebar: [
                 {
                     label: "Zulip homepage",
