@@ -40,9 +40,7 @@
 
             {{! exterior links (e.g. to a trac ticket) }}
             {{#each topic_links}}
-                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="external-topic-link recipient-bar-control no-underline">
-                    <i class="fa fa-external-link-square recipient_bar_icon" data-tippy-content="Open {{this.text}}" aria-label="{{t 'External link' }}"></i>
-                </a>
+                {{> components/icon_button icon="external-link" intent="neutral" custom_classes="external-topic-link recipient-bar-control recipient-bar-control-icon" data-url=this.url data-tippy-content=this.text aria-label="{{t 'External link' }}" }}
             {{/each}}
 
             {{! edit topic pencil icon }}
