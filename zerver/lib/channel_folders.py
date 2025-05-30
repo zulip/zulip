@@ -20,6 +20,10 @@ class ChannelFolderDict(TypedDict):
     is_archived: bool
 
 
+# ----------------------------------------------------------------------
+# Validation / rendering helpers
+# ----------------------------------------------------------------------
+
 def check_channel_folder_name(name: str, realm: Realm) -> None:
     if name.strip() == "":
         raise JsonableError(_("Channel folder name can't be empty."))
@@ -36,11 +40,20 @@ def check_channel_folder_name(name: str, realm: Realm) -> None:
         raise JsonableError(_("Channel folder name already in use"))
 
 
-def render_channel_folder_description(text: str, realm: Realm, *, acting_user: UserProfile) -> str:
+def render_channel_folder_description(
+    text: str,
+    realm: Realm,
+    *,
+    acting_user: UserProfile,
+) -> str:
     return markdown_convert(
         text, message_realm=realm, no_previews=True, acting_user=acting_user
     ).rendered_content
 
+
+# ----------------------------------------------------------------------
+# Serialization helpers
+# ----------------------------------------------------------------------
 
 def get_channel_folder_dict(channel_folder: ChannelFolder) -> ChannelFolderDict:
     date_created = datetime_to_timestamp(channel_folder.date_created)
@@ -56,20 +69,20 @@ def get_channel_folder_dict(channel_folder: ChannelFolder) -> ChannelFolderDict:
 
 
 def get_channel_folders_in_realm(
-    realm: Realm, include_archived: bool = False
+    realm: Realm,
+    include_archived: bool = False,
 ) -> list[ChannelFolderDict]:
     folders = ChannelFolder.objects.filter(realm=realm)
     if not include_archived:
         folders = folders.exclude(is_archived=True)
 
-    channel_folders = [get_channel_folder_dict(channel_folder) for channel_folder in folders]
+    channel_folders = [get_channel_folder_dict(folder) for folder in folders]
     return sorted(channel_folders, key=lambda folder: folder["id"])
 
 
 def get_channel_folder_by_id(channel_folder_id: int, realm: Realm) -> ChannelFolder:
     try:
-        channel_folder = ChannelFolder.objects.get(id=channel_folder_id, realm=realm)
-        return channel_folder
+        return ChannelFolder.objects.get(id=channel_folder_id, realm=realm)
     except ChannelFolder.DoesNotExist:
         raise JsonableError(_("Invalid channel folder ID"))
 
@@ -79,11 +92,22 @@ def get_channel_folders_for_spectators(realm: Realm) -> list[ChannelFolderDict]:
         get_web_public_streams_queryset(realm).values_list("folder_id", flat=True)
     )
     folders = ChannelFolder.objects.filter(id__in=folder_ids_for_web_public_streams)
-    channel_folders = [get_channel_folder_dict(channel_folder) for channel_folder in folders]
+    channel_folders = [get_channel_folder_dict(folder) for folder in folders]
     return sorted(channel_folders, key=lambda folder: folder["id"])
 
 
+# ----------------------------------------------------------------------
+# Folder-usage check
+# ----------------------------------------------------------------------
+
 def check_channel_folder_in_use(channel_folder: ChannelFolder) -> bool:
-    if Stream.objects.filter(folder=channel_folder).exists():
-        return True
-    return False
+    """
+    Return **True** if the folder still contains at least one **active**
+    (not-archived) stream.  This allows archiving the folder when all
+    contained streams have already been archived, fixing the overly-strict
+    behaviour introduced in d8ae21a.
+    """
+    return Stream.objects.filter(
+        folder=channel_folder,
+        is_archived=False,   # block only on live channels
+    ).exists()
