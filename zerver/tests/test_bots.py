@@ -1225,11 +1225,30 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_invalid_short_name(self) -> None:
         self.login("hamlet")
         bot = self.create_bot()
+        bot_id = bot["user_id"]
+        bot_info = dict()
+        invalid_short_names = [
+            "",
+            " ",
+            "bot of ham",
+            "bot\nof\nham",
+        ]
+        for invalid_short_name in invalid_short_names:
+            bot_info["short_name"] = invalid_short_name
+            result = self.client_patch(f"/json/bots/{bot_id}", bot_info)
+            self.assert_json_error(result, "Bad name or username")
+            bot = self.get_bot()
+            # Assert that the email has not changed.
+            self.assertEqual("hambot-bot@zulip.testserver", bot["username"])
+
+    def test_patch_bot_unchanged_short_name(self) -> None:
+        self.login("hamlet")
+        bot = self.create_bot()
         bot_info = {
-            "short_name": "bot of ham",
+            "short_name": "hambot"  # the same short_name from create_bot()
         }
-        result = self.client_patch(f"/json/bots/{bot['user_id']}", bot_info)
-        self.assert_json_error(result, "Bad name or username")
+        # This should silently fail instead of raising an error.
+        self.client_patch(f"/json/bots/{bot['user_id']}", bot_info)
 
         bot = self.get_bot()
         # Assert that the email has not changed.
