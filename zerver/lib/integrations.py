@@ -853,6 +853,12 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
+    "capistrano": [
+        FixturelessScreenshotConfig(
+            "The [deployment]() to **fizzbuzz-prod** (version v9.2.3) has been completed successfully! :rocket:",
+            "project-fizzbuzz",
+        )
+    ],
     "codebase": [
         FixturelessScreenshotConfig(
             """Maxy Stert pushed 2 commit(s) to `main` in project FizzBuzz:
@@ -893,6 +899,12 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
             image_dir="hg",
         )
     ],
+    "openshift": [
+        FixturelessScreenshotConfig(
+            "Deployment [78641]() triggered by a push to **main** by commit [ff96efb]() at 2023-02-20 14:35 has **failed**.",
+            "fizzbuzz-dev",
+        )
+    ],
     "perforce": [
         FixturelessScreenshotConfig(
             """
@@ -903,6 +915,15 @@ Make client_name a kwarg.
 ```
 """,
             "//depot/fizz/buzz/*",
+        )
+    ],
+    "puppet": [
+        FixturelessScreenshotConfig(
+            """Puppet production run for web-server-01 completed at Fri May 30 12:34:56 2025.
+ Created a Gist showing the output at abc123xyz
+ Summary at report.example.com:2025-05-30/production/web-server-01/completed
+ Report URL: http://example.com/puppet-reports/production/web-server-01/?status=completed&time=20250530123456""",
+            "Reports",
         )
     ],
     "svn": [
