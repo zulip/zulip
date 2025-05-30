@@ -321,6 +321,13 @@ export function initialize(): void {
         ].join(","),
         {
             delay: LONG_HOVER_DELAY,
+            onShow(instance) {
+                const $reference = $(instance.reference);
+                if ($reference.hasClass("external-topic-link")) {
+                    const url_name = $reference.attr("data-tippy-content")!;
+                    instance.setContent($t({defaultMessage: "Open {url_name}"}, {url_name}));
+                }
+            },
             onHidden(instance) {
                 instance.destroy();
             },
