@@ -26,6 +26,11 @@ from zerver.lib.markdown.tabbed_sections import generate_content_blocks, parse_t
 INDENT_SPACES = "    "
 
 
+def convert_kebab_to_pascal(text: str) -> str:
+    # to_pascal is a function for converting snake case to pascal.
+    return to_pascal(text).replace("-", "")
+
+
 def replace_emoticon_translation_table(markdown_string: str, import_statement_set: set[str]) -> str:
     """
     We will replace emoticon_translations custom syntax in Python with
@@ -63,19 +68,20 @@ def replace_image_path(markdown_string: str, replacement_path: str) -> str:
 def fix_file_imports(
     markdown_string: str, import_statement_set: set[str], import_relative_base_path: str
 ) -> str:
-    def convert_to_pascal(text: str) -> str:
-        return to_pascal(text).replace("-", "").replace(".Md", "")
+    def get_pascal_filename_without_extension(match_string: str) -> str:
+        return convert_kebab_to_pascal(os.path.basename(match_string).split(".")[0])
 
     def convert_to_astro_tag(match: re.Match[str]) -> str:
-        return "<" + convert_to_pascal(match.group(1)) + " />"
+        return "<" + get_pascal_filename_without_extension(match.group(1)) + " />"
 
     RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
     result = RE.sub(convert_to_astro_tag, markdown_string)
     matches = RE.findall(markdown_string)
 
-    for match in matches:
+    for match_string in matches:
+        pascal_filename = get_pascal_filename_without_extension(match_string)
         import_statement_set.add(
-            f'import {convert_to_pascal(match)} from "{import_relative_base_path}/_{match}x"'
+            f'import {pascal_filename} from "{import_relative_base_path}/_{pascal_filename}.mdx"'
         )
 
     return result
@@ -444,7 +450,7 @@ def run() -> None:
             with open(
                 os.path.join(
                     include_output_dir,
-                    "_" + os.path.basename(name).split(".")[0] + ".mdx",
+                    "_" + convert_kebab_to_pascal(os.path.basename(name).split(".")[0]) + ".mdx",
                 ),
                 "w",
             ) as mdx_file:
