@@ -44,11 +44,33 @@ class IntegrationsTestCase(ZulipTestCase):
         webhook_names = {webhook.name for webhook in WEBHOOK_INTEGRATIONS}
         webhooks_with_screenshot_config = set(WEBHOOK_SCREENSHOT_CONFIG.keys())
         missing_webhooks = webhook_names - webhooks_with_screenshot_config - NO_SCREENSHOT_WEBHOOKS
-        message = (
-            f"These webhooks are missing screenshot config: {missing_webhooks}.\n"
-            "Add them to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG"
+        extra_webhook_configs = webhooks_with_screenshot_config - webhook_names
+        extra_webhook_no_configs = NO_SCREENSHOT_WEBHOOKS - webhook_names
+
+        def construct_message(title: str, integrations: set[str], action: str) -> str:
+            return (
+                f"\n\n{title}\n" + "\n".join(integrations) + f"\n{action}" if integrations else ""
+            )
+
+        self.assertEqual(
+            webhooks_with_screenshot_config,
+            webhook_names - NO_SCREENSHOT_WEBHOOKS,
+            construct_message(
+                "The following integrations are missing their example screenshot configuration:",
+                missing_webhooks,
+                "Add them to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG",
+            )
+            + construct_message(
+                "The following integrations have a screenshot configuration but no longer exist:",
+                extra_webhook_configs,
+                "Remove them from zerver.lib.integrations.DOC_SCREENSHOT_CONFIG",
+            )
+            + construct_message(
+                "The following integrations are listed in NO_SCREENSHOT_CONFIG but no longer exist:",
+                extra_webhook_no_configs,
+                "Remove them from zerver.lib.integrations.NO_SCREENSHOT_CONFIG",
+            ),
         )
-        self.assertFalse(missing_webhooks, message)
 
     def test_no_missing_screenshot_path(self) -> None:
         message = '"{path}" does not exist for integration {integration_name}.\n'
