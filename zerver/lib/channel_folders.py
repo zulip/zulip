@@ -84,6 +84,4 @@ def get_channel_folders_for_spectators(realm: Realm) -> list[ChannelFolderDict]:
 
 
 def check_channel_folder_in_use(channel_folder: ChannelFolder) -> bool:
-    if Stream.objects.filter(folder=channel_folder).exists():
-        return True
-    return False
+    return Stream.objects.filter(folder=channel_folder).exists()
