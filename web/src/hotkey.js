@@ -1301,7 +1301,10 @@ export function process_hotkey(e, hotkey) {
             const $row = message_lists.current.selected_row();
             const $emoji_icon = $row.find(".emoji-message-control-button-container");
             let emoji_picker_reference;
-            if ($emoji_icon.closest(".message_control_button").css("display") !== "none") {
+            if (
+                $emoji_icon?.length !== 0 &&
+                $emoji_icon.closest(".message_control_button").css("display") !== "none"
+            ) {
                 emoji_picker_reference = $emoji_icon[0];
             } else {
                 emoji_picker_reference = $row.find(".message-actions-menu-button")[0];
