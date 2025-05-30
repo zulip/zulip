@@ -477,7 +477,6 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     let channel_id: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
-    const suggest_terms: NarrowTerm[] = [];
 
     // channel:Rome -> show all Rome topics
     // channel:Rome topic: -> show all Rome topics
@@ -498,7 +497,6 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         case "channel":
             guess = "";
             channel_id = operand;
-            suggest_terms.push(last);
             break;
         case "topic":
         case "search":
@@ -507,9 +505,6 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
                 channel_id = filter.operands("channel")[0];
             } else {
                 channel_id = narrow_state.stream_id()?.toString();
-                if (channel_id) {
-                    suggest_terms.push({operator: "channel", operand: channel_id});
-                }
             }
             break;
     }
@@ -548,8 +543,8 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 
     return topics.map((topic) => {
         const topic_term = {operator: "topic", operand: topic, negated};
-        const terms = [...suggest_terms, topic_term];
-        return format_as_suggestion(terms);
+        const terms = [topic_term];
+        return {search_string: Filter.unparse(terms), description_html: undefined};
     });
 }
 
