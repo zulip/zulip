@@ -31,6 +31,7 @@ function MessageListView() {
             find(selector) {
                 assert.equal(selector, ".message_controls .reaction_button");
                 return {
+                    length: 1,
                     css(property) {
                         assert.equal(property, "display");
                         return "none";
