@@ -162,6 +162,38 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
     return true;
 }
 
+// There might be some false positives while pasting only tables from
+// something like LibreOffice Writer.
+function is_from_libreoffice_calc(body_tag: HTMLBodyElement): boolean {
+    const html_tag = body_tag.parentElement;
+    if (!html_tag || html_tag.nodeName !== "HTML") {
+        return false;
+    }
+
+    const has_libreoffice_metadata = [...html_tag.querySelectorAll("meta")].some(
+        (meta) => meta.name === "generator" && meta.content.startsWith("LibreOffice"),
+    );
+    if (!has_libreoffice_metadata) {
+        return false;
+    }
+
+    // This is done to narrow the possible false positives such as pasting
+    // text from LibreOffice Writer, that also contains the same meta data.
+    if (
+        !body_tag ||
+        // Check that <body> has only one child element to avoid
+        // misclassification. Multiple children may appear when
+        // pasting mixed content from something like LibreOffice
+        // Writer,but Calc always pastes a single <table> element.
+        body_tag.children.length > 1 ||
+        body_tag.firstElementChild?.tagName !== "TABLE"
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
 export function is_single_image(paste_html: string): boolean {
     const html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
@@ -169,6 +201,7 @@ export function is_single_image(paste_html: string): boolean {
     assert(html_fragment !== null);
     return (
         is_from_excel(html_fragment) ||
+        is_from_libreoffice_calc(html_fragment) ||
         (html_fragment.childNodes.length === 1 &&
             html_fragment.firstElementChild !== null &&
             html_fragment.firstElementChild.nodeName === "IMG")
