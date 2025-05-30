@@ -898,6 +898,17 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
             "scheduled backups",
         )
     ],
+    "google-calendar": [
+        FixturelessScreenshotConfig(
+            """The [Development Sync]() event is scheduled from 2 PM - 3 PM on Friday, May 30, 2025 at Conference Room B.
+> Let's align on our current sprint progress, address any blockers, and share updates. Your input is crucial!
+
+[Join call]().""",
+            "Team reminders",
+            image_dir="google/calendar",
+            image_name="003.png",
+        )
+    ],
     "jenkins": [
         FixturelessScreenshotConfig(
             "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
@@ -918,6 +929,16 @@ https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agent
 * [Suppress "comment edited" events when body is same.]()""",
             "default",
             image_dir="hg",
+        )
+    ],
+    "notion": [
+        FixturelessScreenshotConfig(
+            """**John Lin** [commented]() on:
+
+> project demo scheduled
+
+Can we reschedule this to next week?""",
+            "Shades Release v11.0",
         )
     ],
     "openshift": [
