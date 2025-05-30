@@ -144,9 +144,9 @@ dependencies = [
     { name = "atpublic" },
     { name = "attrs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c4/ca/b2b7cc880403ef24be77383edaadfcf0098f5d7b9ddbf3e2c17ef0a6af0d/aiosmtpd-1.4.6.tar.gz", hash = "sha256:5a811826e1a5a06c25ebc3e6c4a704613eb9a1bcf6b78428fbe865f4f6c9a4b8", size = 152775 }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/ca/b2b7cc880403ef24be77383edaadfcf0098f5d7b9ddbf3e2c17ef0a6af0d/aiosmtpd-1.4.6.tar.gz", hash = "sha256:5a811826e1a5a06c25ebc3e6c4a704613eb9a1bcf6b78428fbe865f4f6c9a4b8", size = 152775, upload-time = "2024-05-18T11:37:50.029Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ec/39/d401756df60a8344848477d54fdf4ce0f50531f6149f3b8eaae9c06ae3dc/aiosmtpd-1.4.6-py3-none-any.whl", hash = "sha256:72c99179ba5aa9ae0abbda6994668239b64a5ce054471955fe75f581d2592475", size = 154263 },
+    { url = "https://files.pythonhosted.org/packages/ec/39/d401756df60a8344848477d54fdf4ce0f50531f6149f3b8eaae9c06ae3dc/aiosmtpd-1.4.6-py3-none-any.whl", hash = "sha256:72c99179ba5aa9ae0abbda6994668239b64a5ce054471955fe75f581d2592475", size = 154263, upload-time = "2024-05-18T11:37:47.877Z" },
 ]
 
 [[package]]
@@ -277,9 +277,9 @@ wheels = [
 name = "atpublic"
 version = "5.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fa/af/d5113daf3947044e43d74305cbd31502915c784e158c0c098db03ceeff17/atpublic-5.1.tar.gz", hash = "sha256:abc1f4b3dbdd841cc3539e4b5e4f3ad41d658359de704e30cb36da4d4e9d3022", size = 14670 }
+sdist = { url = "https://files.pythonhosted.org/packages/fa/af/d5113daf3947044e43d74305cbd31502915c784e158c0c098db03ceeff17/atpublic-5.1.tar.gz", hash = "sha256:abc1f4b3dbdd841cc3539e4b5e4f3ad41d658359de704e30cb36da4d4e9d3022", size = 14670, upload-time = "2025-01-24T02:30:41.546Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/c1/6408177d6078e159fd3a2a53206e8d1d51ba30ef75ad016b19dada6952b4/atpublic-5.1-py3-none-any.whl", hash = "sha256:135783dbd887fbddb6ef032d104da70c124f2b44b9e2d79df07b9da5334825e3", size = 5209 },
+    { url = "https://files.pythonhosted.org/packages/35/c1/6408177d6078e159fd3a2a53206e8d1d51ba30ef75ad016b19dada6952b4/atpublic-5.1-py3-none-any.whl", hash = "sha256:135783dbd887fbddb6ef032d104da70c124f2b44b9e2d79df07b9da5334825e3", size = 5209, upload-time = "2025-01-24T02:30:40.156Z" },
 ]
 
 [[package]]
@@ -5212,8 +5212,8 @@ source = { virtual = "." }
 dev = [
     { name = "aioapns" },
     { name = "aiohttp" },
-    { name = "altcha" },
     { name = "aiosmtpd" },
+    { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref" },
     { name = "backoff" },
@@ -5346,8 +5346,8 @@ docs = [
 ]
 prod = [
     { name = "aioapns" },
-    { name = "altcha" },
     { name = "aiosmtpd" },
+    { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref" },
     { name = "backoff" },
@@ -5432,8 +5432,8 @@ prod = [
 dev = [
     { name = "aioapns" },
     { name = "aiohttp" },
-    { name = "altcha" },
     { name = "aiosmtpd", specifier = ">=1.4.6" },
+    { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref", url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" },
     { name = "backoff" },
@@ -5567,8 +5567,8 @@ docs = [
 ]
 prod = [
     { name = "aioapns" },
-    { name = "altcha" },
     { name = "aiosmtpd", specifier = ">=1.4.6" },
+    { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref", url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" },
     { name = "backoff" },
