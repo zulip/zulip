@@ -508,7 +508,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 
     return topics.map((topic) => {
         const topic_term = {operator: "topic", operand: topic, negated};
-        const terms = [...suggest_terms, topic_term];
+        const terms = [topic_term];
         return format_as_suggestion(terms);
     });
 }
