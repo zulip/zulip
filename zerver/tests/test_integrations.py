@@ -51,27 +51,29 @@ class IntegrationsTestCase(ZulipTestCase):
         self.assertFalse(missing_webhooks, message)
 
     def test_no_missing_screenshot_path(self) -> None:
-        message = (
-            '"{path}" does not exist for webhook {webhook_name}.\n'
-            "Consider updating zerver.lib.integrations.DOC_SCREENSHOT_CONFIG\n"
-            'and running "tools/screenshots/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
-        )
-        for integration_name in WEBHOOK_SCREENSHOT_CONFIG:
-            configs = WEBHOOK_SCREENSHOT_CONFIG[integration_name]
-            for screenshot_config in configs:
+        message = '"{path}" does not exist for integration {integration_name}.\n'
+        tip = '\nConsider updating zerver.lib.integrations.DOC_SCREENSHOT_CONFIG\n and running "tools/screenshots/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
+        error_message = ""
+
+        for integration_name, screenshot_configs in WEBHOOK_SCREENSHOT_CONFIG.items():
+            for screenshot_config in screenshot_configs:
                 integration = INTEGRATIONS[integration_name]
                 assert isinstance(integration, WebhookIntegration)
                 if screenshot_config.fixture_name == "":
-                    # Such screenshot configs only use a placeholder
-                    # fixture_name.
+                    # Skip screenshot configs of webhooks with a placeholder fixture_name
                     continue
                 fixture_path = get_fixture_path(integration, screenshot_config)
-                self.assertTrue(
-                    os.path.isfile(fixture_path),
-                    message.format(path=fixture_path, webhook_name=integration_name),
+                error_message = (
+                    error_message
+                    + message.format(path=fixture_path, integration_name=integration_name)
+                    if not os.path.isfile(fixture_path)
+                    else error_message
                 )
                 image_path = get_image_path(integration, screenshot_config)
-                self.assertTrue(
-                    os.path.isfile(image_path),
-                    message.format(path=image_path, webhook_name=integration_name),
+                error_message = (
+                    error_message
+                    + message.format(path=image_path, integration_name=integration_name)
+                    if not os.path.isfile(image_path)
+                    else error_message
                 )
+        self.assertEqual(error_message, "", tip)
