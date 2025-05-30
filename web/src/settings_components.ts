@@ -301,6 +301,17 @@ function get_jitsi_server_url_setting_value(
     return JSON.stringify($custom_input_elem.val());
 }
 
+export function update_custom_time_limit_minute_text($input: JQuery): void {
+    if ($input.parent().hasClass("singular-plural-minutes")) {
+        const $minutes_text = $input.parent().find(".minutes-text");
+        if (Number($input.val()) === 1) {
+            $minutes_text.text($t({defaultMessage: "minute"}));
+        } else {
+            $minutes_text.text($t({defaultMessage: "minutes"}));
+        }
+    }
+}
+
 export function update_custom_value_input(property_name: MessageTimeLimitSetting): void {
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
     const custom_input_elem_id = $dropdown_elem
@@ -315,6 +326,7 @@ export function update_custom_value_input(property_name: MessageTimeLimitSetting
             get_realm_time_limits_in_minutes(property_name),
         );
     }
+    update_custom_time_limit_minute_text($(`#${CSS.escape(custom_input_elem_id)}`));
 }
 
 export function get_time_limit_dropdown_setting_value(
