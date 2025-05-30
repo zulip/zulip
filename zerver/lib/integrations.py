@@ -872,6 +872,13 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
             "Push to main on FizzBuzz",
         )
     ],
+    "discourse": [
+        FixturelessScreenshotConfig(
+            """**@Niloth** posted in [Zulip's new mobile app is out!]()
+> Zulip’s next-gen mobile app is now in public beta. If offers a sleek new design and a faster, smoother experience. Check out the announcement post for details and instructions on how to try the beta!""",
+            "announce",
+        )
+    ],
     "git": [
         FixturelessScreenshotConfig(
             """`a2e84e86ddf7` was deployed to `main` with:
@@ -892,6 +899,16 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
     "jenkins": [
         FixturelessScreenshotConfig(
             "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
+        )
+    ],
+    "mastodon": [
+        FixturelessScreenshotConfig(
+            """**[Roundtables: What’s Next for Mixed Reality: Glasses, Goggles, and More](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)**
+Recorded on November 19, 2024\nWhat’s Next for Mixed Reality: Glasses, Goggles, and More.
+Speakers: Mat Honan, Editor in Chief, and James O’Donnell, AI hardware reporter.
+We are barreling toward the next big consumer device category: smart glasses. After years of trying, augmented-reality specs are at last a thing. Facebook recently showed off its Orion…
+[https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)""",
+            "MIT Technology Review",
         )
     ],
     "mercurial": [
@@ -953,6 +970,16 @@ Everyone loves 'em! Our unicorn support should have:\n...
 * **Estimated hours**: 40
 """,
             "Add support for unicorns",
+        )
+    ],
+    "rss": [
+        FixturelessScreenshotConfig(
+            """**[Roundtables: What’s Next for Mixed Reality: Glasses, Goggles, and More](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)**
+Recorded on November 19, 2024\nWhat’s Next for Mixed Reality: Glasses, Goggles, and More.
+Speakers: Mat Honan, Editor in Chief, and James O’Donnell, AI hardware reporter.
+We are barreling toward the next big consumer device category: smart glasses. After years of trying, augmented-reality specs are at last a thing. Facebook recently showed off its Orion…
+[https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)""",
+            "MIT Technology Review",
         )
     ],
     "svn": [
