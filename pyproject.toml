@@ -6,8 +6,9 @@ requires-python = ">=3.10"
 [dependency-groups]
 prod = [
   # Django itself
-  "django[argon2]==5.1.*",
+  "django[argon2]==5.2.*",
   "asgiref", # https://github.com/django/asgiref/pull/494
+  "django-cte>=1.3.3.dev20250530125340,!=1.3.3", # https://github.com/dimagi/django-cte/pull/114
 
   # needed for NotRequired, ParamSpec
   "typing-extensions",
