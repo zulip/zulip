@@ -931,6 +931,17 @@ https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agent
             image_dir="hg",
         )
     ],
+    "nagios": [
+        FixturelessScreenshotConfig(
+            """**PROBLEM**: service is CRITICAL
+
+~~~~
+CRITICAL - load average: 7.49, 8.20, 4.72
+~~~~
+""",
+            "service Remote Load on myserver.example.com",
+        )
+    ],
     "notion": [
         FixturelessScreenshotConfig(
             """**John Lin** [commented]() on:
