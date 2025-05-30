@@ -22518,6 +22518,9 @@ paths:
         Update the members of a [user group](/help/user-groups). The
         user IDs must correspond to non-deactivated users.
 
+        **Changes**: Prior to Zulip 11.0 (feature level 391), members
+        could not be added or removed from a deactivated group.
+
         **Changes**: Prior to Zulip 10.0 (feature level 303), group memberships of
         deactivated users were visible to the API and could be edited via this endpoint.
       x-curl-examples-parameters:
@@ -23110,6 +23113,9 @@ paths:
       tags: ["users"]
       description: |
         Update the subgroups of a [user group](/help/user-groups).
+
+        **Changes**: Prior to Zulip 11.0 (feature level 391), subgroups
+        could not be added or removed from a deactivated group.
 
         **Changes**: New in Zulip 6.0 (feature level 127).
       x-curl-examples-parameters:

@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 391**
+
+* [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members),
+  [`POST /user_groups/{user_group_id}/subgroups`](/api/update-user-group-subgroups):
+  Adding/removing members and subgroups to a deactivated group is now allowed.
+
 **Feature level 390**
 
 * [`GET /events`](/api/get-events): Events with `type: "navigation_view"` are

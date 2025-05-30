@@ -2122,12 +2122,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         params = {"delete": orjson.dumps([hamlet.id]).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
-        self.assert_json_error(result, "User group is deactivated.")
-        self.assert_user_membership(user_group, [hamlet])
+        self.assert_json_success(result)
+        self.assert_member_not_in_group(user_group, hamlet)
 
-        params = {"add": orjson.dumps([iago.id]).decode()}
+        params = {"add": orjson.dumps([hamlet.id]).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
-        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_json_success(result)
         self.assert_user_membership(user_group, [hamlet])
 
     def test_mentions(self) -> None:
@@ -3317,12 +3317,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         params = {"delete": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
-        self.assert_json_error(result, "User group is deactivated.")
-        self.assert_subgroup_membership(support_group, [leadership_group])
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [])
 
-        params = {"add": orjson.dumps([test_group.id]).decode()}
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
-        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_json_success(result)
         self.assert_subgroup_membership(support_group, [leadership_group])
 
         # Test that a deactivated group cannot be used as a subgroup.

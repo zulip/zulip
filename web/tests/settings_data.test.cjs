@@ -110,6 +110,8 @@ const deactivated_group = {
     members: new Set([1, 2, 3]),
     is_system_group: false,
     direct_subgroup_ids: new Set([4, 5, 6]),
+    can_add_members_group: 4,
+    can_remove_members_group: 4,
     can_join_group: 1,
     can_leave_group: 1,
     can_manage_group: 1,
@@ -436,8 +438,8 @@ function test_user_group_permission_setting(override, setting_name, permission_f
     override(current_user, "user_id", 2);
     assert.ok(permission_func(students.id));
 
-    // Cannot perform any join, leave, add, remove if group is deactivated
-    assert.ok(!permission_func(deactivated_group.id));
+    // Can perform any join, leave, add, remove even if the group is deactivated
+    assert.ok(permission_func(deactivated_group.id));
 }
 
 run_test("can_join_user_group", ({override}) => {
