@@ -850,6 +850,12 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
+    "asana": [
+        FixturelessScreenshotConfig(
+            "Justin Case created a new task **[Optimize image loading in unicorn catalog]()**.\n> Implement lazy loading for images on the Unicorn catalog to improve load times.",
+            "Data Solutions > Project Unicorns",
+        )
+    ],
     "capistrano": [
         FixturelessScreenshotConfig(
             "The [deployment]() to **fizzbuzz-prod** (version v9.2.3) has been completed successfully! :rocket:",
@@ -916,6 +922,12 @@ Make client_name a kwarg.
             "//depot/fizz/buzz/*",
         )
     ],
+    "phabricator": [
+        FixturelessScreenshotConfig(
+            "WMDE_Phab moved [T389011: Phrase match operation in simple search]() from [Peer Review]() to [Product Verification]() on the [Wikibase Product Platform Team WPP (Sprint 46)]() board.",
+            "Feed",
+        )
+    ],
     "puppet": [
         FixturelessScreenshotConfig(
             """Puppet production run for web-server-01 completed at Fri May 30 12:34:56 2025.
@@ -925,12 +937,39 @@ Make client_name a kwarg.
             "Reports",
         )
     ],
+    "redmine": [
+        FixturelessScreenshotConfig(
+            """Al Gorithm **created** issue [643 Add support for unicorns]():
+
+~~~quote
+
+Everyone loves 'em! Our unicorn support should have:\n...
+
+~~~
+
+* **Assignee**: Max Power
+* **Status**: New
+* **Target version**: 9.2
+* **Estimated hours**: 40
+""",
+            "Add support for unicorns",
+        )
+    ],
     "svn": [
         FixturelessScreenshotConfig(
             """**svncredible** committed revision r2126 to `fizzbuzz-dev`.
 > Style the error message on the frobnicator.""",
             "fizzbuzz-dev",
         )
+    ],
+    "trac": [
+        FixturelessScreenshotConfig(
+            """cool-user-name updated [ticket #798]() with comment:
+> Fixed in 26595799c7c2d0a8f8bc7c15de5dcc813fff93c9
+
+status: **new** => **closed**, resolution: => **fixed**""",
+            "#798 Cool Ticket Title",
+        ),
     ],
 }
 
