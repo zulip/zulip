@@ -1179,6 +1179,7 @@ export class Filter {
             "with",
             "dm",
             "is-dm",
+            "not-is-dm",
             "is-resolved",
             "in-home",
             "not-is-muted",
