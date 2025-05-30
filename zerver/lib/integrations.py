@@ -932,6 +932,17 @@ We are barreling toward the next big consumer device category: smart glasses. Af
             image_dir="hg",
         )
     ],
+    "nagios": [
+        FixturelessScreenshotConfig(
+            """**PROBLEM**: service is CRITICAL
+
+~~~~
+CRITICAL - load average: 7.49, 8.20, 4.72
+~~~~
+""",
+            "service Remote Load on myserver.example.com",
+        )
+    ],
     "notion": [
         FixturelessScreenshotConfig(
             """**King Hamlet** [commented]() on:
