@@ -90,6 +90,18 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
+    if (filter.has_negated_operand("is", "dm")) {
+        // TODO: We might in the future change this to "Channel message feed"
+        // with a "#" icon and work that logic to `get_title`, `add_icon_data`
+        // , etc. This is only done to preserve the existing behavior when one
+        // searches with the `-is:dm` term.
+        return {
+            title: $t({defaultMessage: "Combined feed"}),
+            zulip_icon: "all-messages",
+            link: "/help/combined-feed",
+        };
+    }
+
     const title = filter.get_title();
     const description = filter.get_description()?.description;
     const link = filter.get_description()?.link;

@@ -781,6 +781,13 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands(is_dm);
     assert_not_mark_read_when_searching(is_dm);
 
+    const not_is_dm = [{operator: "is", operand: "dm", negate: true}];
+    filter = new Filter(not_is_dm);
+    assert.ok(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(not_is_dm);
+    assert_not_mark_read_with_has_operands(not_is_dm);
+    assert_not_mark_read_when_searching(not_is_dm);
+
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
     assert.ok(filter.can_mark_messages_read());
@@ -2328,6 +2335,7 @@ test("navbar_helpers", ({override}) => {
     const in_all = [{operator: "in", operand: "all"}];
     const is_starred = [{operator: "is", operand: "starred"}];
     const is_dm = [{operator: "is", operand: "dm"}];
+    const is_dm_negated = [{operator: "is", operand: "dm", negated: true}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
@@ -2441,6 +2449,13 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "user",
             title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
+        },
+        {
+            terms: is_dm_negated,
+            is_common_narrow: true,
+            zulip_icon: undefined,
+            title: "translated: Channel messages",
+            redirect_url_with_search: "#",
         },
         {
             terms: is_mentioned,
