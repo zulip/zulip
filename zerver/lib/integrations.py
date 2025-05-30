@@ -875,6 +875,13 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
             "Push to main on FizzBuzz",
         )
     ],
+    "discourse": [
+        FixturelessScreenshotConfig(
+            """**@Niloth** posted in [Zulip's new mobile app is out!]()
+> Zulip’s next-gen mobile app is now in public beta. If offers a sleek new design and a faster, smoother experience. Check out the announcement post for details and instructions on how to try the beta!""",
+            "announce",
+        )
+    ],
     "git": [
         FixturelessScreenshotConfig(
             """`a2e84e86ddf7` was deployed to `main` with:
@@ -894,6 +901,14 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
     "jenkins": [
         FixturelessScreenshotConfig(
             "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
+        )
+    ],
+    "mastodon": [
+        FixturelessScreenshotConfig(
+            """**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
+Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O 2025 event in May, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
+https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
+            "MIT Technology Review",
         )
     ],
     "mercurial": [
@@ -948,6 +963,14 @@ Support for the following sub-events is needed:\n...
 * **Estimated hours**: 40
 """,
             'Add support for "comment edited" events',
+        )
+    ],
+    "rss": [
+        FixturelessScreenshotConfig(
+            """**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
+Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O 2025 event in May, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
+https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
+            "MIT Technology Review",
         )
     ],
     "svn": [
