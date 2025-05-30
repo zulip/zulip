@@ -724,13 +724,39 @@ for webhook_integration in WEBHOOK_INTEGRATIONS:
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
-# Add integrations that don't have automated screenshots here
+# Add webhook integrations that don't have automated screenshots here
 NO_SCREENSHOT_WEBHOOKS = {
     "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
-    "ifttt",  # Docs don't have a screenshot
-    "slack_incoming",  # Docs don't have a screenshot
-    "zapier",  # Docs don't have a screenshot
+    "ifttt",  # Doc doesn't have a screenshot because it's a platform for integrations
+    "slack_incoming",  # Doc doesn't have a screenshot because it's a type of integration
+    "zapier",  # Doc doesn't have a screenshot because it's a platform for integrations
 }
+
+hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add fixtureless integrations that don't have automated screenshots here
+NO_SCREENSHOT_CONFIG = (
+    {
+        "giphy",  # Doc doesn't have a screenshot
+        "twitter",  # the integration is planned to be removed
+        # Outgoing integrations - Docs won't have a screenshot
+        "email",
+        "onyx",
+        # Video call integrations - Docs won't have a screenshot
+        "zoom",
+        "jitsi",
+        "big-blue-button",
+        # Integrations that require screenshots of message threads - support is yet to be added
+        "errbot",
+        "hubot",
+        "github_detail",
+        "irc",
+        "matrix",  # Also requires a screenshot on the Matrix side of the bridge
+        "xkcd",
+    }
+    | NO_SCREENSHOT_WEBHOOKS
+    | hubot_integration_names
+)
 
 
 WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
