@@ -849,7 +849,57 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     ],
 }
 
-FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
+    "codebase": [
+        FixturelessScreenshotConfig(
+            """Ann Tenna pushed 2 commit(s) to main in project FizzBuzz:
+
+* [a2e84e86dd](): Make client_name a kwarg.
+* [d68b14fa6d](): Suppress "comment edited" events when body is same.
+""",
+            "Push to main on FizzBuzz",
+        )
+    ],
+    "git": [
+        FixturelessScreenshotConfig(
+            """`a2e84e86ddf7` was deployed to `main` with:
+* idli@example.com - b7763f7: Make client_name a kwarg.
+* dosa@example.com - ff96efb: Add support for unicorns.
+""",
+            "main",
+            channel="commits",
+        )
+    ],
+    "mercurial": [
+        FixturelessScreenshotConfig(
+            """**Al Gorithm** <algorithm@example.com> pushed [2 commits]() to **default** (`170:e494a5be3393`):
+* [Make client_name a kwarg.]()
+* [Suppress "comment edited" events when body is same.]()""",
+            "default",
+            channel="commits",
+            image_dir="hg",
+        )
+    ],
+    "perforce": [
+        FixturelessScreenshotConfig(
+            """
+**Paige Turner** committed revision @[492]() to `//depot/fizz/buzz/*`.
+
+```quote
+Make client_name a kwarg.
+```
+""",
+            "//depot/fizz/buzz/*",
+        )
+    ],
+    "svn": [
+        FixturelessScreenshotConfig(
+            """**svncredible** committed revision r2126 to `fizzbuzz-dev`.
+> Style the error message on the frobnicator.""",
+            "fizzbuzz-dev",
+        )
+    ],
+}
 
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
