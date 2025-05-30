@@ -870,6 +870,18 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
             channel="commits",
         )
     ],
+    "github-actions": [
+        FixturelessScreenshotConfig(
+            """Backup [failed]() at 2025-05-30T02:00:00Z.
+> Unable to connect.""",
+            "Scheduled backups",
+        )
+    ],
+    "jenkins": [
+        FixturelessScreenshotConfig(
+            "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
+        )
+    ],
     "mercurial": [
         FixturelessScreenshotConfig(
             """**Al Gorithm** <algorithm@example.com> pushed [2 commits]() to **default** (`170:e494a5be3393`):
