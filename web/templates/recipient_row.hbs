@@ -40,9 +40,13 @@
 
             {{! exterior links (e.g. to a trac ticket) }}
             {{#each topic_links}}
-                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="external-topic-link recipient-bar-control no-underline">
-                    <i class="fa fa-external-link-square recipient_bar_icon" data-tippy-content="Open {{this.text}}" aria-label="{{t 'External link' }}"></i>
-                </a>
+                {{#with this}}
+                    {{!-- TODO: Find a way to use the icon_button component with <a> tags,
+                    instead of copying over the icon button styles via the utility classes. --}}
+                    <a href="{{url}}" target="_blank" rel="noopener noreferrer" class="recipient-bar-control recipient-bar-control-icon no-underline icon-button icon-button-neutral" data-tippy-content="{{t 'Open {text}' }}" aria-label="{{t 'Open {text}' }}" tabindex="0">
+                        <i class="zulip-icon zulip-icon-external-link" aria-hidden="true"></i>
+                    </a>
+                {{/with}}
             {{/each}}
 
             {{! edit topic pencil icon }}
