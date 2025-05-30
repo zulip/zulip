@@ -64,7 +64,8 @@ a.no-style {
 }
 
 a.no-underline,
-a.no-underline:hover {
+a.no-underline:hover,
+a.no-underline:focus {
     text-decoration: none;
 }
 
