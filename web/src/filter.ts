@@ -1183,6 +1183,7 @@ export class Filter {
             "with",
             "dm",
             "is-dm",
+            "not-is-dm",
             "is-resolved",
             "in-home",
             "not-is-muted",
@@ -1479,6 +1480,9 @@ export class Filter {
             this.operands("sender")[0] === people.my_current_email()
         ) {
             return $t({defaultMessage: "Reactions"});
+        }
+        if (this.has_negated_operand("is", "dm")) {
+            return $t({defaultMessage: "Channel messages"});
         }
         /* istanbul ignore next */
         return undefined;
