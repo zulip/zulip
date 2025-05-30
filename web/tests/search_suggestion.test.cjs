@@ -765,6 +765,82 @@ test("topic_suggestions", ({override, mock_template}) => {
         "topic:REXX",
     ];
     assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions("topic:");
+    expected = [
+        "topic:",
+        "topic:✔+ice+cream",
+        "topic:ignore",
+        `topic:team`,
+        "topic:✔+team+work",
+        `topic:test`,
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+    override(narrow_state, "stream_id", () => "");
+
+    for (const topic_name of ["a", "b", "c", "trap", "talks", "tower"]) {
+        stream_topic_history.add_message({
+            stream_id: devel_id,
+            topic_name,
+        });
+    }
+
+    stream_data.subscribe_myself(stream_data.get_sub("devel"));
+    stream_data.subscribe_myself(stream_data.get_sub("office"));
+    suggestions = get_suggestions("topic:");
+    expected = [
+        "topic:",
+        "topic:a",
+        "topic:b",
+        "topic:c",
+        "topic:✔+ice+cream",
+        "topic:ignore",
+        "topic:REXX",
+        "topic:team",
+        "topic:✔+team+work",
+        "topic:test",
+        "topic:trap",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions("topic:t");
+    expected = [
+        "topic:t",
+        "topic:team",
+        "topic:✔+team+work",
+        "topic:test",
+        "topic:trap",
+        "topic:talks",
+        "topic:tower",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Prioritize topics from currently narrowed channel
+    override(narrow_state, "stream_id", () => devel_id);
+    suggestions = get_suggestions("topic:t");
+    expected = [
+        "topic:t",
+        "topic:trap",
+        "topic:talks",
+        "topic:tower",
+        "topic:team",
+        "topic:✔+team+work",
+        "topic:test",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    override(narrow_state, "stream_id", () => office_id);
+    suggestions = get_suggestions("topic:t");
+    expected = [
+        "topic:t",
+        "topic:team",
+        "topic:✔+team+work",
+        "topic:test",
+        "topic:trap",
+        "topic:talks",
+        "topic:tower",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 });
 
 test("topic_suggestions (limits)", () => {
