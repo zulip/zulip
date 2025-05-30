@@ -598,7 +598,10 @@ INTEGRATIONS: dict[str, Integration] = {
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
     "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
+        "github-actions",
+        ["continuous-integration"],
+        display_name="GitHub Actions",
+        stream_name="github-actions updates",
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
@@ -867,6 +870,18 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
 * Bo-Williams@example.com - ff96efb: Add support for "comment edited" events.
 """,
             "main",
+        )
+    ],
+    "github-actions": [
+        FixturelessScreenshotConfig(
+            """Backup [failed]() at 2025-05-30T02:00:00Z.
+> Unable to connect.""",
+            "scheduled backups",
+        )
+    ],
+    "jenkins": [
+        FixturelessScreenshotConfig(
+            "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
         )
     ],
     "mercurial": [
