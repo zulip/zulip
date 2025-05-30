@@ -853,6 +853,12 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
+    "asana": [
+        FixturelessScreenshotConfig(
+            "Ariella Drake created a new task **[Optimize image loading in paints catalog]()**.\n> Implement lazy loading for images on the paints catalog to improve load times.",
+            "Data Solutions > Project Shades",
+        )
+    ],
     "capistrano": [
         FixturelessScreenshotConfig(
             "The [deployment]() to **fizzbuzz-prod** (version v9.2.3) has been completed successfully! :rocket:",
@@ -926,12 +932,39 @@ Make client_name a kwarg.
             "Reports",
         )
     ],
+    "redmine": [
+        FixturelessScreenshotConfig(
+            """Elena Gracia **created** issue [643 Add support for "comment edited" events]():
+
+~~~quote
+
+Support for the following sub-events is needed:\n...
+
+~~~
+
+* **Assignee**: Max Power
+* **Status**: New
+* **Target version**: 9.2
+* **Estimated hours**: 40
+""",
+            'Add support for "comment edited" events',
+        )
+    ],
     "svn": [
         FixturelessScreenshotConfig(
             """**nolan_turner** committed revision r2126 to `fizzbuzz-dev`.
 > Style the error message on the video failing to load.""",
             "fizzbuzz-dev",
         )
+    ],
+    "trac": [
+        FixturelessScreenshotConfig(
+            """anna-smith updated [ticket #798]() with comment:
+> Fixed in 26595799c7c2d0a8f8bc7c15de5dcc813fff93c9
+
+status: **new** => **closed**, resolution: => **fixed**""",
+            "#798 Fix broken links in documentation",
+        ),
     ],
 }
 
