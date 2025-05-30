@@ -329,6 +329,11 @@ export function initialize(): void {
         message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();
     });
+    $("body").on("click", ".external-topic-link", function (e) {
+        const url = $(this).attr("data-url")!;
+        window.open(url, "_blank", "noopener,noreferrer");
+        e.stopPropagation();
+    });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.try_save_inline_topic_edit($recipient_row);
