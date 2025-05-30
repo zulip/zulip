@@ -150,6 +150,10 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     return result
 
 
+def convert_comments(markdown_string: str) -> str:
+    return markdown_string.replace("<!--", "{/*").replace("-->", "*/}")
+
+
 def convert_tab_syntax(markdown_string: str, import_statement_set: set[str]) -> str:
     """
     Convert our custom tab syntax to relevant MDX equivalent.
@@ -366,6 +370,7 @@ def convert_help_center_file_to_mdx(
     result = replace_emoticon_translation_table(result, import_statement_set)
     result = replace_image_path(result, "../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
+    result = convert_comments(result)
     result = insert_imports(result, import_statement_set, 2)
     result = insert_frontmatter(result)
     return result
@@ -397,6 +402,7 @@ def convert_include_file_to_mdx(
     result = fix_relative_path(result)
     result = replace_image_path(result, "../../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
+    result = convert_comments(result)
     result = insert_imports(result, import_statement_set, 1)
     return result
 
