@@ -156,6 +156,18 @@ test("subset_suggestions", ({mock_template}) => {
     ];
 
     assert.deepEqual(suggestions.strings, expected);
+
+    // Exact-topic query
+    const exact_topic_query = `channel:${denmark_id} exact-topic:"To be or not to be" shakespeare`;
+    const exact_topic_suggestions = get_suggestions(exact_topic_query);
+
+    const expected_exact_topic = [
+        `channel:${denmark_id} exact-topic:To+be+or+not+to+be shakespeare`,
+        `channel:${denmark_id} exact-topic:To+be+or+not+to+be`,
+        `channel:${denmark_id}`,
+    ];
+
+    assert.deepEqual(exact_topic_suggestions.strings, expected_exact_topic);
 });
 
 test("dm_suggestions", ({override, mock_template}) => {
@@ -697,8 +709,8 @@ test("topic_suggestions", ({override, mock_template}) => {
         "dm:ted@zulip.com",
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
-        `channel:${office_id} topic:team`,
-        `channel:${office_id} topic:test`,
+        `channel:${office_id} team`,
+        `channel:${office_id} test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -706,7 +718,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for <strong>te</strong>");
-    assert.equal(describe(`channel:${office_id} topic:team`), "Channel office > team");
+    assert.equal(describe(`channel:${office_id} team`), "Channel office, search for team");
 
     suggestions = get_suggestions(`topic:staplers channel:${office_id}`);
     expected = [`topic:staplers channel:${office_id}`, "topic:staplers"];
@@ -755,6 +767,14 @@ test("topic_suggestions", ({override, mock_template}) => {
         `topic:REXX channel:${devel_id} topic:`,
         `topic:REXX channel:${devel_id}`,
         "topic:REXX",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions(`exact-topic:REXX channel:${devel_id} exact-topic:`);
+    expected = [
+        `exact-topic:REXX channel:${devel_id} exact-topic:`,
+        `exact-topic:REXX channel:${devel_id}`,
+        "exact-topic:REXX",
     ];
     assert.deepEqual(suggestions.strings, expected);
 });

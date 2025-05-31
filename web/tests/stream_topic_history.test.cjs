@@ -431,7 +431,7 @@ test("ask_server_for_latest_topic_data", () => {
         assert.equal(opts.url, "/json/messages");
         assert.deepEqual(opts.data, {
             anchor: "newest",
-            narrow: '[{"operator":"stream","operand":1080},{"operator":"topic","operand":"Topic1"}]',
+            narrow: '[{"operator":"stream","operand":1080},{"operator":"exact-topic","operand":"Topic1"}]',
             num_after: 0,
             num_before: 1,
             allow_empty_topic_name: true,

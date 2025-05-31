@@ -724,7 +724,8 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
     result.stream_id = stream_id;
 
     const op_topic = filter.operands("topic");
-    result.topic_selected = op_topic.length === 1;
+    const op_exact_topic = filter.operands("exact-topic");
+    result.topic_selected = op_topic.length === 1 || op_exact_topic.length === 1;
 
     return result;
 }
