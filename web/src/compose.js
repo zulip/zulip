@@ -146,7 +146,7 @@ export function send_message_success(request, data) {
     }
 
     echo.reify_message_id(request.local_id, data.id);
-    drafts.draft_model.deleteDraft(request.draft_id);
+    drafts.draft_model.deleteDrafts([request.draft_id]);
 
     if (request.type === "stream") {
         if (data.automatic_new_visibility_policy) {
@@ -369,7 +369,7 @@ function schedule_message_to_custom_date() {
 
     const $banner_container = $("#compose_banners");
     const success = function (data) {
-        drafts.draft_model.deleteDraft(draft_id);
+        drafts.draft_model.deleteDrafts([draft_id]);
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
