@@ -112,19 +112,27 @@ function restore_draft(draft_id: string): void {
     });
 }
 
-function remove_draft($draft_row: JQuery): void {
-    // Deletes the draft and removes it from the list
-    const draft_id = $draft_row.attr("data-draft-id")!;
+function remove_drafts($draft_rows: JQuery): void {
+    // Deletes the drafts and removes it from the list
+    const deleted_drafts: LocalStorageDraft[] = [];
+    const draft_ids: string[] = [];
 
-    const draft = drafts.draft_model.getDraft(draft_id);
-    drafts.draft_model.deleteDrafts([draft_id]);
+    $draft_rows.each(function () {
+        const draft_id = $(this).attr("data-draft-id")!;
 
-    if (draft) {
-        draft_undo_delete_list.push(draft);
+        const draft = drafts.draft_model.getDraft(draft_id);
+        if (draft) {
+            deleted_drafts.push(draft);
+            draft_ids.push(draft_id);
+            $(this).remove();
+        }
+    });
+
+    if (deleted_drafts.length > 0) {
+        drafts.draft_model.deleteDrafts(draft_ids);
+        draft_undo_delete_list.push(...deleted_drafts);
         show_delete_banner();
     }
-
-    $draft_row.remove();
 
     if ($("#drafts_table .overlay-message-row").length === 0) {
         $("#drafts_table .no-drafts").show();
@@ -178,7 +186,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         }
         const $focused_row = messages_overlay_ui.row_with_focus(this);
         messages_overlay_ui.focus_on_sibling_element(this);
-        remove_draft($focused_row);
+        remove_drafts($focused_row);
     },
     items_container_selector: "drafts-container",
     items_list_selector: "drafts-list",
@@ -310,7 +318,7 @@ function setup_event_handlers(): void {
     $("#drafts_table .overlay_message_controls .delete-overlay-message").on("click", function () {
         const $draft_row = $(this).closest(".overlay-message-row");
 
-        remove_draft($draft_row);
+        remove_drafts($draft_row);
         update_bulk_delete_ui();
     });
 
@@ -350,12 +358,10 @@ function setup_bulk_actions_handlers(): void {
     });
 
     $(".delete-selected-drafts-button").on("click", () => {
-        $(".drafts-list")
+        const $selected_rows = $(".drafts-list")
             .find(".draft-selection-checkbox.fa-check-square")
-            .closest(".overlay-message-row")
-            .each(function () {
-                remove_draft($(this));
-            });
+            .closest(".overlay-message-row");
+        remove_drafts($selected_rows);
         update_bulk_delete_ui();
     });
 }
