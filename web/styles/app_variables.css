@@ -1854,8 +1854,7 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --height-inbox-search: 1.8571em; /* 26px / 14px em */
-    --width-inbox-search: 24.7142em; /* 346px / 14px em */
+    --width-inbox-search: 29.0625em; /* 465px / 16px em */
     --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: light-dark(
         hsl(147deg 57% 25%),
@@ -2605,6 +2604,34 @@
     --color-background-danger-banner: light-dark(
         hsl(0deg 35% 92%),
         hsl(0deg 52% 18%)
+    );
+
+    /* Inputs */
+    --color-text-input: light-dark(
+        color-mix(in oklch, hsl(0deg 0% 15%) 50%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 83%) 50%, transparent)
+    );
+    --color-text-input-focus: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 83%));
+    --color-background-input: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 8%));
+    --color-background-input-focus: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 4%)
+    );
+    --color-border-input: light-dark(
+        color-mix(in oklch, hsl(0deg 0% 0%) 35%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 30%, transparent)
+    );
+    --color-border-input-hover: light-dark(
+        color-mix(in oklch, hsl(0deg 0% 0%) 70%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 55%, transparent)
+    );
+    --color-border-input-focus: light-dark(
+        color-mix(in oklch, hsl(0deg 0% 0%) 95%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
+    );
+    --color-box-shadow-input-focus: light-dark(
+        color-mix(in oklch, hsl(231deg 15% 17%) 32%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 38%, transparent)
     );
 
     /* .main-view-banner colors */

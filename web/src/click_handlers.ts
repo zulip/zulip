@@ -36,7 +36,6 @@ import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
-import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
 import * as util from "./util.ts";
@@ -838,8 +837,6 @@ export function initialize(): void {
 
     // LEFT SIDEBAR
 
-    $("body").on("click", "#clear_search_topic_button", topic_list.clear_topic_search);
-
     $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
@@ -882,7 +879,7 @@ export function initialize(): void {
         window.location.hash = "narrow/is/dm";
     });
 
-    $("body").on("click", ".direct-messages-list-filter", (e) => {
+    $("body").on("click", ".direct-messages-search-section", (e) => {
         // We don't want clicking on the filter to trigger the DM
         // narrow defined on click for
         // `#direct-messages-section-header.zoom-in`.
