@@ -317,7 +317,7 @@ export function initialize(): void {
     message_list_tooltip(
         [
             "#message_feed_container .recipient_bar_icon:not(.recipient-row-topic-menu)",
-            "#message_feed_container .recipient-bar-control-icon:not(.recipient-row-topic-menu)",
+            "#message_feed_container .recipient-bar-control-icon",
         ].join(","),
         {
             delay: LONG_HOVER_DELAY,
