@@ -166,7 +166,6 @@ test("dm_suggestions", ({override, mock_template}) => {
     suggestions = get_suggestions(query);
     expected = [
         "is:dm al",
-        "is:dm is:alerted",
         "is:dm dm:alice@zulip.com",
         "is:dm sender:alice@zulip.com",
         "is:dm dm-including:alice@zulip.com",
@@ -240,16 +239,15 @@ test("dm_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     // Make sure suggestions still work if preceding tokens
-    query = "is:alerted sender:ted@zulip.com";
+    query = "is:watched sender:ted@zulip.com";
     suggestions = get_suggestions(query);
-    expected = ["is:alerted sender:ted@zulip.com", "is:alerted"];
+    expected = ["is:watched sender:ted@zulip.com", "is:watched"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:starred has:link is:dm al";
     suggestions = get_suggestions(query);
     expected = [
         "is:starred has:link is:dm al",
-        "is:starred has:link is:dm is:alerted",
         "is:starred has:link is:dm dm:alice@zulip.com",
         "is:starred has:link is:dm sender:alice@zulip.com",
         "is:starred has:link is:dm dm-including:alice@zulip.com",
@@ -376,7 +374,7 @@ test("empty_query_suggestions", () => {
         "is:starred",
         "is:mentioned",
         "is:followed",
-        "is:alerted",
+        "is:watched",
         "is:unread",
         "is:muted",
         "is:resolved",
@@ -398,7 +396,7 @@ test("empty_query_suggestions", () => {
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Messages containing watched phrases");
+    assert.equal(describe("is:watched"), "Messages containing watched phrases");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Resolved topics");
     assert.equal(describe("is:followed"), "Followed topics");
@@ -461,9 +459,9 @@ test("has_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     // 66 is misc channel id.
-    query = "channel:66 is:alerted has:lin";
+    query = "channel:66 is:watched has:lin";
     suggestions = get_suggestions(query);
-    expected = ["channel:66 is:alerted has:link", "channel:66 is:alerted", "channel:66"];
+    expected = ["channel:66 is:watched has:link", "channel:66 is:watched", "channel:66"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
@@ -481,7 +479,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:starred",
         "is:mentioned",
         "is:followed",
-        "is:alerted",
+        "is:watched",
         "is:unread",
         "is:muted",
         "is:resolved",
@@ -499,7 +497,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Messages containing watched phrases");
+    assert.equal(describe("is:watched"), "Messages containing watched phrases");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Resolved topics");
     assert.equal(describe("is:followed"), "Followed topics");
@@ -513,7 +511,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "-is:starred",
         "-is:mentioned",
         "-is:followed",
-        "-is:alerted",
+        "-is:watched",
         "-is:unread",
         "-is:muted",
         "-is:resolved",
@@ -523,7 +521,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("-is:dm"), "Exclude direct messages");
     assert.equal(describe("-is:starred"), "Exclude starred messages");
     assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
-    assert.equal(describe("-is:alerted"), "Exclude messages containing watched phrases");
+    assert.equal(describe("-is:watched"), "Exclude messages containing watched phrases");
     assert.equal(describe("-is:unread"), "Exclude unread messages");
     assert.equal(describe("-is:resolved"), "Unresolved topics");
     assert.equal(describe("-is:followed"), "Exclude followed topics");
@@ -538,7 +536,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:starred",
         "is:mentioned",
         "is:followed",
-        "is:alerted",
+        "is:watched",
         "is:unread",
         "is:muted",
         "is:resolved",
@@ -716,13 +714,13 @@ test("topic_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions(`is:alerted channel:${devel_id} is:starred topic:`);
+    suggestions = get_suggestions(`is:watched channel:${devel_id} is:starred topic:`);
     expected = [
-        `is:alerted channel:${devel_id} is:starred topic:`,
-        `is:alerted channel:${devel_id} is:starred topic:REXX`,
-        `is:alerted channel:${devel_id} is:starred`,
-        `is:alerted channel:${devel_id}`,
-        "is:alerted",
+        `is:watched channel:${devel_id} is:starred topic:`,
+        `is:watched channel:${devel_id} is:starred topic:REXX`,
+        `is:watched channel:${devel_id} is:starred`,
+        `is:watched channel:${devel_id}`,
+        "is:watched",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -1017,13 +1015,13 @@ test("operator_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     // 66 is a misc channel id.
-    query = "channel:66 is:alerted -f";
+    query = "channel:66 is:watched -f";
     suggestions = get_suggestions(query);
     expected = [
-        "channel:66 is:alerted -f",
-        "channel:66 is:alerted -sender:myself@zulip.com",
-        "channel:66 is:alerted -sender:",
-        "channel:66 is:alerted",
+        "channel:66 is:watched -f",
+        "channel:66 is:watched -sender:myself@zulip.com",
+        "channel:66 is:watched -sender:",
+        "channel:66 is:watched",
         "channel:66",
     ];
     assert.deepEqual(suggestions.strings, expected);

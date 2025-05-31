@@ -103,7 +103,7 @@ Zulip offers the following filters based on the location of the message.
 
 ### Search your important messages
 
-* `is:alerted`: Search messages that contain your [watched
+* `is:watched`: Search messages that contain your [watched
 phrases](/help/dm-mention-alert-notifications#watched-phrases). Messages are
   included in the search results based on the phrases you had configured when you
   received the message.
