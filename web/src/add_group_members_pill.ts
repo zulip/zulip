@@ -1,8 +1,10 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as input_pill from "./input_pill.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as stream_pill from "./stream_pill.ts";
@@ -13,9 +15,9 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 
-function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
+async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
     const user_ids = user_pill.get_user_ids(pill_widget);
-    const stream_user_ids = stream_pill.get_user_ids(pill_widget);
+    const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
     return [...user_ids, ...stream_user_ids];
 }
 
@@ -108,14 +110,22 @@ export function create({
 
     if (onPillCreateAction) {
         pill_widget.onPillCreate(() => {
-            onPillCreateAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
+            void (async () => {
+                loading.make_indicator($(".add-group-member-loading-spinner"), {
+                    height: 56, // 4em at 14px / 1em
+                });
+                const user_ids = await get_pill_user_ids(pill_widget);
+                onPillCreateAction(user_ids, get_pill_group_ids(pill_widget));
+                loading.destroy_indicator($(".add-group-member-loading-spinner"));
+            })();
         });
     }
 
     if (onPillRemoveAction) {
-        pill_widget.onPillRemove(() => {
-            onPillRemoveAction(get_pill_user_ids(pill_widget), get_pill_group_ids(pill_widget));
-        });
+        void (async () => {
+            const user_ids = await get_pill_user_ids(pill_widget);
+            onPillRemoveAction(user_ids, get_pill_group_ids(pill_widget));
+        })();
     }
 
     function get_users(): User[] {
@@ -175,9 +185,20 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
-        const pill_user_ids = get_pill_user_ids(pill_widget);
-        const pill_group_ids = get_pill_group_ids(pill_widget);
-        action({pill_user_ids, pill_group_ids});
+        void (async () => {
+            loading.make_indicator($(".add-group-member-loading-spinner"), {
+                height: 56, // 4em at 14px / 1em
+            });
+            const pill_user_ids = await get_pill_user_ids(pill_widget);
+            // If we're no longer in the same view after fetching
+            // subscriber data, don't update the UI.
+            if (get_pill_widget() !== pill_widget) {
+                return;
+            }
+            loading.destroy_indicator($(".add-group-member-loading-spinner"));
+            const pill_group_ids = get_pill_group_ids(pill_widget);
+            action({pill_user_ids, pill_group_ids});
+        })();
     }
 
     $parent_container.on("keyup", pill_selector, (e) => {

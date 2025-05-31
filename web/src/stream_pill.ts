@@ -60,12 +60,48 @@ export function get_stream_name_from_item(item: StreamPill): string {
     return stream.name;
 }
 
-export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
-    let user_ids = pill_widget
-        .items()
-        .flatMap((item) =>
-            item.type === "stream" ? peer_data.get_subscribers(item.stream_id) : [],
-        );
+function get_stream_pill_stream_ids(
+    pill_widget: StreamPillWidget | CombinedPillContainer,
+): number[] {
+    const stream_ids = [];
+    for (const pill of pill_widget.items()) {
+        if (pill.type === "stream") {
+            stream_ids.push(pill.stream_id);
+        }
+    }
+    return stream_ids;
+}
+
+export async function get_user_ids(
+    pill_widget: StreamPillWidget | CombinedPillContainer,
+): Promise<number[]> {
+    // Start the fetches first so they can run in parallel
+    const promises_by_stream = new Map<number, Promise<number[] | null>>();
+    for (const stream_id of get_stream_pill_stream_ids(pill_widget)) {
+        promises_by_stream.set(stream_id, peer_data.get_all_subscribers(stream_id, false));
+    }
+
+    const user_ids_by_stream = new Map<number, number[]>();
+    for (const [stream_id, promise] of promises_by_stream.entries()) {
+        const subscribers = await promise;
+        // `null` means the request failed. We don't want to keep retrying
+        // since awaiting that will delay this function's return of other
+        // channel's data.
+        if (subscribers !== null) {
+            user_ids_by_stream.set(stream_id, subscribers);
+        }
+    }
+
+    // Double check if any of the stream pills have since been removed
+    // from the pill widget.
+    let user_ids: number[] = [];
+    const current_stream_ids_in_widget = get_stream_pill_stream_ids(pill_widget);
+    for (const [stream_id, subscriber_ids] of user_ids_by_stream.entries()) {
+        if (current_stream_ids_in_widget.includes(stream_id)) {
+            user_ids = [...user_ids, ...subscriber_ids];
+        }
+    }
+
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
     return user_ids;

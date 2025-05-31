@@ -132,11 +132,11 @@ run_test("get_stream_id", () => {
     assert.equal(stream_pill.get_stream_name_from_item(denmark_pill), denmark.name);
 });
 
-run_test("get_user_ids", () => {
+run_test("get_user_ids", async () => {
     const items = [denmark_pill, sweden_pill];
     const widget = {items: () => items};
 
-    const user_ids = stream_pill.get_user_ids(widget);
+    const user_ids = await stream_pill.get_user_ids(widget);
     assert.deepEqual(user_ids, [1, 2, 3, 4, 5, 77]);
 });
 
