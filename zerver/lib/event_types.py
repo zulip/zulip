@@ -557,6 +557,11 @@ class MessageContentEditLimitSecondsData(BaseModel):
     message_content_edit_limit_seconds: int | None
 
 
+class RealmTopicsPolicyData(BaseModel):
+    topics_policy: str
+    mandatory_topics: bool
+
+
 class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str
