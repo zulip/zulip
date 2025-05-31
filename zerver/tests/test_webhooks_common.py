@@ -223,13 +223,12 @@ class MissingEventHeaderTestCase(WebhookTestCase):
     # an actual webhook, instead of just making a mock
     def test_missing_event_header(self) -> None:
         self.subscribe(self.test_user, self.CHANNEL_NAME)
-        with self.assertLogs("zulip.zerver.webhooks.anomalous", level="INFO") as webhook_logs:
+        with self.assertNoLogs("zulip.zerver.webhooks.anomalous", level="INFO"):
             result = self.client_post(
                 self.url,
                 self.get_body("ticket_state_changed"),
                 content_type="application/x-www-form-urlencoded",
             )
-        self.assertTrue("Missing the HTTP event header 'X-Groove-Event'" in webhook_logs.output[0])
         self.assert_json_error(result, "Missing the HTTP event header 'X-Groove-Event'")
 
         realm = get_realm("zulip")
