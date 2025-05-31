@@ -557,6 +557,11 @@ class MessageContentEditLimitSecondsData(BaseModel):
     message_content_edit_limit_seconds: int | None
 
 
+class RealmTopicsPolicyData(BaseModel):
+    topics_policy: str
+    mandatory_topics: bool
+
+
 class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str
@@ -587,6 +592,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_topics_group: int | UserGroupMembersDict | None = None
     can_resolve_topics_group: int | UserGroupMembersDict | None = None
+    can_set_topics_policy_group: int | UserGroupMembersDict | None = None
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None
@@ -835,6 +841,7 @@ class BasicStreamFields(BaseModel):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    topics_policy: str
 
 
 class EventStreamCreate(BaseEvent):
@@ -906,6 +913,7 @@ class SingleSubscription(BaseModel):
     pin_to_top: bool
     push_notifications: bool | None
     subscribers: list[int]
+    topics_policy: str
     wildcard_mentions_notify: bool | None
 
 

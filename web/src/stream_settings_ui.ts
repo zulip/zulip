@@ -43,7 +43,7 @@ import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
-import type {StreamPermissionGroupSetting} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_types.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -210,6 +210,14 @@ export function update_message_retention_setting(
 ): void {
     stream_data.update_message_retention_setting(sub, new_value);
     stream_ui_updates.update_setting_element(sub, "message_retention_days");
+}
+
+export function update_topics_policy_setting(
+    sub: StreamSubscription,
+    new_value: StreamTopicsPolicy,
+): void {
+    stream_data.update_topics_policy_setting(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "topics_policy");
 }
 
 export function update_stream_permission_group_setting(
@@ -852,6 +860,7 @@ function setup_page(callback: () => void): void {
             is_owner: current_user.is_owner,
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
+            stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
             check_default_stream: false,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             org_level_message_retention_setting:
@@ -864,6 +873,7 @@ function setup_page(callback: () => void): void {
             group_setting_labels: settings_config.all_group_setting_labels.stream,
             realm_has_archived_channels,
             has_billing_access: settings_data.user_has_billing_access(),
+            stream_topics_policy_label: stream_edit.get_stream_topics_policy_label_html(),
         };
 
         const rendered = render_stream_settings_overlay(template_data);
