@@ -43,6 +43,7 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(
                 related_name="direct_supergroups",
                 through="zerver.GroupGroupMembership",
+                through_fields=("supergroup", "subgroup"),
                 to="zerver.UserGroup",
             ),
         ),

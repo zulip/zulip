@@ -836,16 +836,16 @@ wheels = [
 
 [[package]]
 name = "django"
-version = "5.1.8"
+version = "5.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/40/45adc1b93435d1b418654a734b68351bb6ce0a0e5e37b2f0e9aeb1a2e233/Django-5.1.8.tar.gz", hash = "sha256:42e92a1dd2810072bcc40a39a212b693f94406d0ba0749e68eb642f31dc770b4", size = 10723602, upload-time = "2025-04-02T11:19:56.028Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/10/0d546258772b8f31398e67c85e52c66ebc2b13a647193c3eef8ee433f1a8/django-5.2.1.tar.gz", hash = "sha256:57fe1f1b59462caed092c80b3dd324fd92161b620d59a9ba9181c34746c97284", size = 10818735, upload-time = "2025-05-07T14:06:17.543Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ec/0d/e6dd0ed898b920fec35c6eeeb9acbeb831fff19ad21c5e684744df1d4a36/Django-5.1.8-py3-none-any.whl", hash = "sha256:11b28fa4b00e59d0def004e9ee012fefbb1065a5beb39ee838983fd24493ad4f", size = 8277130, upload-time = "2025-04-02T11:19:51.591Z" },
+    { url = "https://files.pythonhosted.org/packages/90/92/7448697b5838b3a1c6e1d2d6a673e908d0398e84dc4f803a2ce11e7ffc0f/django-5.2.1-py3-none-any.whl", hash = "sha256:a9b680e84f9a0e71da83e399f1e922e1ab37b2173ced046b541c72e1589a5961", size = 8301833, upload-time = "2025-05-07T14:06:10.955Z" },
 ]
 
 [package.optional-dependencies]
@@ -887,11 +887,14 @@ sdist = { url = "https://files.pythonhosted.org/packages/de/a2/7db0b55ff84260aa1
 
 [[package]]
 name = "django-cte"
-version = "1.3.3"
+version = "1.3.3.dev20250530125340"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a0/56/951f6e176c83bf5e500ef7108c9e8de38785e249b62fa29be12b4c71c4eb/django-cte-1.3.3.tar.gz", hash = "sha256:0c1aeef067278a22886151c1d27f6f665a303952d058900e5ca82a24cde40697", size = 10931, upload-time = "2024-06-07T12:51:06.089Z" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f8/07/9ea1091a94319c6adea841ac1954937038400dae55f42e4085eb830ffea5/django_cte-1.3.3.dev20250530125340.tar.gz", hash = "sha256:ea1a52215b8ab4f96087db7d48b807ae52ac85d5e4b4c3412ff3224a8026ab35", size = 10330, upload-time = "2025-05-30T12:54:04.922Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/02/a9d12e8c1cb767b2541bf7d759fbe713f84238f1c2bd22ed2ef3bed14606/django_cte-1.3.3-py2.py3-none-any.whl", hash = "sha256:85bbc3efb30c2f8c9ae3080ca6f0b9570e43d2cb4b6be10846c8ef9f046873fa", size = 11989, upload-time = "2024-06-07T12:51:04.827Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/1f/c641c2411c9b6e4efd1532bc34672d7bc879e4ff6a71645c128ea6637b63/django_cte-1.3.3.dev20250530125340-py3-none-any.whl", hash = "sha256:d3d2ac3083b3113dcbc728a8fbbb164ebbf70a39f5c876f9bd006ede7f75a382", size = 11958, upload-time = "2025-05-30T12:54:03.284Z" },
 ]
 
 [[package]]
@@ -5449,11 +5452,12 @@ dev = [
     { name = "decorator" },
     { name = "defusedxml" },
     { name = "disposable-email-domains" },
-    { name = "django", extras = ["argon2"], specifier = "==5.1.*" },
+    { name = "django", extras = ["argon2"], specifier = "==5.2.*" },
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
+    { name = "django-cte", specifier = ">=1.3.3.dev20250530125340,!=1.3.3" },
     { name = "django-scim2" },
     { name = "django-stubs" },
     { name = "django-stubs-ext" },
@@ -5580,11 +5584,12 @@ prod = [
     { name = "decorator" },
     { name = "defusedxml" },
     { name = "disposable-email-domains" },
-    { name = "django", extras = ["argon2"], specifier = "==5.1.*" },
+    { name = "django", extras = ["argon2"], specifier = "==5.2.*" },
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
+    { name = "django-cte", specifier = ">=1.3.3.dev20250530125340,!=1.3.3" },
     { name = "django-scim2" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extras = ["call", "phonenumberslite", "sms"] },
