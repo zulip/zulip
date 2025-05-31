@@ -12,4 +12,6 @@ Organization website: {{ organization_website }}
 
 Expected user count: {{ expected_user_count }}
 
+Cloud or self-hosting?: {{ type_of_hosting }}
+
 Message: {{ message }}

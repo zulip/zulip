@@ -87,6 +87,11 @@ class DemoRequestForm(forms.Form):
     SORTED_ORG_TYPE_NAMES = sorted(
         ([org_type["name"] for org_type in Realm.ORG_TYPES.values() if not org_type["hidden"]]),
     )
+    TYPE_OF_HOSTING_OPTIONS = [
+        "Zulip Cloud",
+        "Self-hosting",
+        "Both / not sure",
+    ]
     full_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
     email = forms.EmailField()
     role = forms.CharField(max_length=MAX_INPUT_LENGTH)
@@ -94,6 +99,7 @@ class DemoRequestForm(forms.Form):
     organization_type = forms.CharField()
     organization_website = forms.URLField(required=True, assume_scheme="https")
     expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    type_of_hosting = forms.CharField()
     message = forms.CharField(widget=forms.Textarea)
 
 
@@ -157,6 +163,7 @@ def demo_request(request: HttpRequest) -> HttpResponse:
     context = {
         "MAX_INPUT_LENGTH": DemoRequestForm.MAX_INPUT_LENGTH,
         "SORTED_ORG_TYPE_NAMES": DemoRequestForm.SORTED_ORG_TYPE_NAMES,
+        "TYPE_OF_HOSTING_OPTIONS": DemoRequestForm.TYPE_OF_HOSTING_OPTIONS,
     }
 
     if request.POST:
@@ -174,6 +181,7 @@ def demo_request(request: HttpRequest) -> HttpResponse:
                 "organization_type": form.cleaned_data["organization_type"],
                 "organization_website": form.cleaned_data["organization_website"],
                 "expected_user_count": form.cleaned_data["expected_user_count"],
+                "type_of_hosting": form.cleaned_data["type_of_hosting"],
                 "message": form.cleaned_data["message"],
             }
             # Sent to the server's sales team, so this email is not user-facing.

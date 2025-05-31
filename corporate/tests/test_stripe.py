@@ -2563,6 +2563,7 @@ class StripeTest(StripeTestCase):
             "organization_type": "Business",
             "organization_website": "https://example.com",
             "expected_user_count": "10 (2 unpaid members)",
+            "type_of_hosting": "Zulip Cloud",
             "message": "Need help!",
         }
         result = self.client_post("/request-demo/", data)
@@ -2580,6 +2581,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip demo request <noreply-", self.email_display_from(message))
             self.assertIn("Full name: King Hamlet", message.body)
+            self.assertIn("Zulip Cloud", message.body)
 
     def test_support_request(self) -> None:
         user = self.example_user("hamlet")
