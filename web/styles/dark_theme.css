@@ -318,36 +318,38 @@
         .alert.alert-error::before {
             color: hsl(0deg 75% 65%);
         }
+    }
 
-        .stacktrace {
-            color: hsl(314deg 22% 85%);
+    .stacktrace {
+        color: hsl(314deg 22% 85%);
+        background-color: hsl(318deg 12% 21%);
+        border: 1px solid hsl(0deg 75% 65%);
 
-            .expand {
-                color: hsl(318deg 14% 36%);
+        .expand {
+            color: hsl(318deg 14% 36%);
+        }
+
+        .subtle {
+            color: hsl(314deg 19% 63%);
+        }
+
+        .stacktrace-more-info {
+            background-color: hsl(312deg 7% 14%);
+        }
+
+        .code-context {
+            color: hsl(314deg 27% 82%);
+            background-color: hsl(312deg 7% 14%);
+            box-shadow:
+                inset 0 11px 10px -10px hsl(0deg 0% 6%),
+                inset 0 -11px 10px -10px hsl(0deg 0% 6%);
+
+            .line-number {
+                color: hsl(318deg 14% 44%);
             }
 
-            .subtle {
-                color: hsl(314deg 19% 63%);
-            }
-
-            .stacktrace-more-info {
-                background-color: hsl(312deg 7% 14%);
-            }
-
-            .code-context {
-                color: hsl(314deg 27% 82%);
-                background-color: hsl(312deg 7% 14%);
-                box-shadow:
-                    inset 0 11px 10px -10px hsl(0deg 0% 6%),
-                    inset 0 -11px 10px -10px hsl(0deg 0% 6%);
-
-                .line-number {
-                    color: hsl(318deg 14% 44%);
-                }
-
-                .focus-line {
-                    background-color: hsl(307deg 9% 19%);
-                }
+            .focus-line {
+                background-color: hsl(307deg 9% 19%);
             }
         }
     }

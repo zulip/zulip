@@ -8,7 +8,3 @@ $("body").on("click", ".alert-box .exit", function () {
         $stack_trace.removeClass("fade-out show");
     }, 300);
 });
-
-$(".alert-box").on("click", ".stackframe", function () {
-    $(this).siblings(".code-context").toggle("fast");
-});
