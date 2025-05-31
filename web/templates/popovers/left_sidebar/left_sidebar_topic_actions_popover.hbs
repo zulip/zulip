@@ -11,7 +11,7 @@
                 <div role="group" class="tab-picker popover-menu-tab-group" aria-label="{{t 'Topic visibility' }}">
                     <input type="radio" id="sidebar-topic-muted-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.MUTED}}" {{#if (eq visibility_policy all_visibility_policies.MUTED)}}checked{{/if}} />
                     <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-muted-policy" aria-label="{{t 'Mute' }}" data-tippy-content="{{t 'Mute' }}" tabindex="0">
-                        <i class="zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
                     </label>
                     <input type="radio" id="sidebar-topic-inherit-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.INHERIT}}" {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}checked{{/if}} />
                     <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-inherit-policy" aria-label="{{t 'Default' }}" data-tippy-content="{{t 'Default' }}" tabindex="0">
