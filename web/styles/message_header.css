@@ -257,14 +257,6 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
-
-    .change_visibility_policy {
-        cursor: pointer;
-
-        i {
-            display: block;
-        }
-    }
 }
 
 .on_hover_topic_read {

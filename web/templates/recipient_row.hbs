@@ -63,22 +63,22 @@
                 <div class="toggle_resolve_topic_spinner recipient_bar_icon" style="display: none"></div>
             {{/if}}
 
+            {{! visibility policy menu }}
             {{#if (and is_subscribed (not is_archived))}}
-                <span class="change_visibility_policy recipient-bar-control hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
-                    {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
-                        <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic.' }}"></i>
-                    {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                        <i class="zulip-icon zulip-icon-unmute recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic.'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic.' }}"></i>
-                    {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                        <i class="zulip-icon zulip-icon-mute recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic.'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have muted this topic.' }}"></i>
-                    {{else}}
-                        <i class="zulip-icon zulip-icon-inherit recipient_bar_icon"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'Notifications are based on your configuration for this channel.' }}"></i>
-                    {{/if}}
-                </span>
+            {{!-- We define the change_visibility_policy class in a wrapper span
+            since the icon button component already has a tippy tooltip attached
+            to it and Tippy does not support multiple tooltips on a single element. --}}
+            <span class="change_visibility_policy recipient-bar-control hidden-for-spectators" aria-haspopup="true">
+                {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
+                    {{> components/icon_button icon="follow" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "You follow this topic.") aria-label=(t "You follow this topic.") }}
+                {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
+                    {{> components/icon_button icon="unmute" intent="neutral" custom_classes="recipient-bar-control recipient-bar-control-icon" data-tippy-content=(t "You have unmuted this topic.") aria-label=(t "You have unmuted this topic.") }}
+                {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
+                    {{> components/icon_button icon="mute" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "You have muted this topic.") aria-label=(t "You have muted this topic.") }}
+                {{else}}
+                    {{> components/icon_button icon="inherit" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "Notifications are based on your configuration for this channel.") aria-label=(t "Notifications are based on your configuration for this channel.") }}
+                {{/if}}
+            </span>
             {{/if}}
 
             {{! Topic menu }}
