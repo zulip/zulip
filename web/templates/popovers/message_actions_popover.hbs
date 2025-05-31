@@ -30,6 +30,15 @@
             </a>
         </li>
         {{/if}}
+        {{#if is_editable_by_others_menu_item}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" data-message-id="{{message_id}}" class="popover_editable_by_others popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{is_editable_by_others_menu_item}}</span>
+                {{!-- {{popover_hotkey_hints "E"}} --}}
+            </a>
+        </li>
+        {{/if}}
         {{#if move_message_menu_item}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" data-message-id="{{message_id}}" class="popover_move_message popover-menu-link" tabindex="0">

@@ -334,6 +334,7 @@ class MessageDict:
                 "sender_id": message.sender.id,
                 "sending_client__name": message.sending_client.name,
                 "sender__realm_id": message.sender.realm_id,
+                "is_editable_by_others": message.is_editable_by_others,
             }
             for message in messages
         ]
@@ -360,6 +361,7 @@ class MessageDict:
             "sender_id",
             "sending_client__name",
             "sender__realm_id",
+            "is_editable_by_others",
         ]
         # Uses index: zerver_message_pkey
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
@@ -390,6 +392,7 @@ class MessageDict:
             recipient_type_id=row["recipient__type_id"],
             reactions=row["reactions"],
             submessages=row["submessages"],
+            is_editable_by_others=row["is_editable_by_others"],
         )
 
     @staticmethod
@@ -411,6 +414,7 @@ class MessageDict:
         recipient_type_id: int,
         reactions: list[RawReactionRow],
         submessages: list[dict[str, Any]],
+        is_editable_by_others: bool,
     ) -> dict[str, Any]:
         obj = dict(
             id=message_id,
@@ -473,6 +477,8 @@ class MessageDict:
             ReactionDict.build_dict_from_raw_db_row(reaction) for reaction in reactions
         ]
         obj["submessages"] = submessages
+        obj["is_editable_by_others"] = is_editable_by_others
+        print("editable", is_editable_by_others)
         return obj
 
     @staticmethod
