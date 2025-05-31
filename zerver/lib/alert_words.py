@@ -14,9 +14,9 @@ from zerver.models.alert_words import flush_realm_alert_words
 
 @cache_with_key(lambda realm: realm_alert_words_cache_key(realm.id), timeout=3600 * 24)
 def alert_words_in_realm(realm: Realm) -> dict[int, list[str]]:
-    user_ids_and_words = AlertWord.objects.filter(realm=realm, user_profile__is_active=True).values(
-        "user_profile_id", "word"
-    )
+    user_ids_and_words = AlertWord.objects.filter(
+        realm=realm, user_profile__is_active=True, deactivated__exact=False
+    ).values("user_profile_id", "word")
     user_ids_with_words: dict[int, list[str]] = {}
     for id_and_word in user_ids_and_words:
         user_ids_with_words.setdefault(id_and_word["user_profile_id"], [])
@@ -46,19 +46,32 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     return alert_word_automaton
 
 
+def user_all_alert_ids_and_words(user_profile: UserProfile) -> list[tuple[int, str]]:
+    return list(AlertWord.objects.filter(user_profile=user_profile).values_list("id", "word"))
+
+
 def user_alert_words(user_profile: UserProfile) -> list[str]:
-    return list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
+    return list(
+        AlertWord.objects.filter(user_profile=user_profile, deactivated__exact=False).values_list(
+            "word", flat=True
+        )
+    )
 
 
 @transaction.atomic(savepoint=False)
 def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) -> list[str]:
-    existing_words_lower = {word.lower() for word in user_alert_words(user_profile)}
+    existing_words_lower_dict = {}
+    for id, word in user_all_alert_ids_and_words(user_profile):
+        existing_words_lower_dict[word.lower()] = id
 
     # Keeping the case, use a dictionary to get the set of
     # case-insensitive distinct, new alert words
     word_dict: dict[str, str] = {}
     for word in new_words:
-        if word.lower() in existing_words_lower:
+        if word.lower() in existing_words_lower_dict:
+            got_alert_word = AlertWord.objects.get(pk=existing_words_lower_dict[word.lower()])
+            got_alert_word.deactivated = False
+            got_alert_word.save()
             continue
         word_dict[word.lower()] = word
 
@@ -74,9 +87,14 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
 
 @transaction.atomic(savepoint=False)
 def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> list[str]:
-    # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.
+    # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.s
     # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.
     # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.
     for delete_word in delete_words:
-        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
+        word_to_be_deleted = AlertWord.objects.get(
+            user_profile=user_profile, word__iexact=delete_word
+        )
+        word_to_be_deleted.deactivated = True
+        word_to_be_deleted.save()
+
     return user_alert_words(user_profile)
