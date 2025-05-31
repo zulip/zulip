@@ -310,9 +310,12 @@ export function initialize(): void {
         },
     );
 
-    message_list_tooltip("#message_feed_container .change_visibility_policy > i", {
-        ...topic_visibility_policy_tooltip_props,
-    });
+    message_list_tooltip(
+        "#message_feed_container .change_visibility_policy > .recipient-bar-control-icon",
+        {
+            ...topic_visibility_policy_tooltip_props,
+        },
+    );
 
     message_list_tooltip("#message_feed_container .recipient-bar-control-icon:not(.toggle_resolve_topic_spinner)", {
         delay: LONG_HOVER_DELAY,
