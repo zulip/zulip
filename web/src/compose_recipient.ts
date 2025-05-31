@@ -263,6 +263,12 @@ function focus_compose_recipient(): void {
 
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
+    compose_state.set_is_stream_recipient_dropdown_for_forward_message_opened(false);
+    compose_validate.warn_if_topic_resolved(false);
+    // We are resetting the state of the `is_processing_forward_message`,
+    // otherwise this will never become false.
+    compose_state.set_is_processing_forward_message(false);
+
     if (!compose_select_recipient_dropdown_widget.item_clicked) {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
