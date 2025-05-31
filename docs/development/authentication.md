@@ -66,7 +66,7 @@ details worth understanding:
 
 - Register an OAuth2 application with GitHub at one of
   <https://github.com/settings/developers> or
-  <https://github.com/organizations/ORGNAME/settings/developers>.
+  `https://github.com/organizations/<your-org>/settings/applications`.
   Specify `http://auth.zulipdev.com:9991/complete/github/` as the callback URL.
 
 - You should get a page with settings for your new application,
