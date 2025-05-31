@@ -111,6 +111,12 @@
     }
 }
 
+.giphy-popover .tippy-box .tippy-arrow {
+    /* Since the GIPHY banner at the popover is black,
+       match the arrow color with the banner. */
+    color: hsl(0deg 0% 0%);
+}
+
 .tippy-box[data-theme="popover-menu"]:has(#gear-menu-dropdown) {
     --box-shadow-popover-menu: var(--box-shadow-gear-menu);
 }
