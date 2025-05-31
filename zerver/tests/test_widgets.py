@@ -532,6 +532,13 @@ class WidgetContentTestCase(ZulipTestCase):
 
         assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
         assert_success(dict(type="strike", key="5,9"))
+        assert_success(dict(type="edit_task", key="5,9", task="ea", desc=""))
+
+        sender = self.example_user("hamlet")
+        assert_error(
+            '{"type": "edit_task", "key":"5,9", "task":"eat", "desc":""}',
+            "You can't edit the task list unless you are the author.",
+        )
 
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")
