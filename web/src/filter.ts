@@ -212,6 +212,14 @@ function message_matches_search_term(message: Message, operator: string, operand
             return message.stream_id.toString() === operand;
         }
 
+        case "channels": {
+            if (message.type !== "stream") {
+                return false;
+            }
+            const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
+            return ["public", "web-public"].includes(stream_privacy_policy) && operand === "public";
+        }
+
         case "topic":
             if (message.type !== "stream") {
                 return false;
@@ -1606,12 +1614,6 @@ export class Filter {
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo Markdown
             // processor.
-            return false;
-        }
-
-        // TODO: It's not clear why `channels:` filters would not be
-        // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
             return false;
         }
 
