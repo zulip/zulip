@@ -4,7 +4,7 @@
             <div role="group" class="recipient-bar-topic-visibility-switcher tab-picker tab-picker-vertical" aria-label="{{t 'Topic visibility' }}">
                 <input type="radio" id="select-muted-policy" class="tab-option" name="visibility-policy-select" data-visibility-policy="{{all_visibility_policies.MUTED}}" {{#if (eq visibility_policy all_visibility_policies.MUTED)}}checked{{/if}} />
                 <label role="menuitemradio" class="tab-option-content" for="select-muted-policy" tabindex="0">
-                    <i class="zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
                     <span class="popover-menu-label">{{t "Mute"}}</span>
                 </label>
                 <input type="radio" id="select-inherit-policy" class="tab-option" name="visibility-policy-select" data-visibility-policy="{{all_visibility_policies.INHERIT}}" {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}checked{{/if}} />
