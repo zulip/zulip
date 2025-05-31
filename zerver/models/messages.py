@@ -100,6 +100,8 @@ class AbstractMessage(models.Model):
     # If the message is a channel message (as opposed to a DM or group-DM)
     is_channel_message = models.BooleanField(default=True, db_index=True)
 
+    is_editable_by_others = models.BooleanField(default=False)
+
     class Meta:
         abstract = True
 

@@ -45,6 +45,7 @@ export const update_message_event_schema = z.object({
     // The server is still using subject.
     // This will not be set until it gets fixed.
     topic: z.optional(z.string()),
+    is_editable_by_others: z.optional(z.boolean()),
 });
 export type UpdateMessageEvent = z.output<typeof update_message_event_schema>;
 

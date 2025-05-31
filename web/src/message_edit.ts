@@ -180,7 +180,7 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
         return false;
     }
 
-    if (!message.sent_by_me) {
+    if (!message.sent_by_me && !message.is_editable_by_others) {
         return false;
     }
 
@@ -720,6 +720,17 @@ function edit_message($row: JQuery, raw_content: string): void {
         }
         compose_validate.check_overflow_text($row);
     }
+}
+
+export function set_editable_by_others(message: Message | undefined): void {
+    assert(message !== undefined);
+    void channel.patch({
+        url: "/json/messages/" + message.id,
+        data: {is_editable_by_others: !message.is_editable_by_others},
+        success() {
+            // todo
+        },
+    });
 }
 
 function start_edit_maintaining_scroll($row: JQuery, content: string): void {

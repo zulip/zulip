@@ -45,6 +45,7 @@ type ActionPopoverContext = {
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
     should_display_add_reaction_option: boolean;
+    is_editable_by_others_menu_item: string | undefined;
 };
 
 type TopicPopoverContext = {
@@ -159,9 +160,17 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     let editability_menu_item;
     let move_message_menu_item;
     let view_source_menu_item;
+    let is_editable_by_others_menu_item;
 
     if (is_content_editable) {
         editability_menu_item = $t({defaultMessage: "Edit message"});
+        if(message.sent_by_me) {
+            if(message.is_editable_by_others) {
+                is_editable_by_others_menu_item = $t({defaultMessage: "Do not allow others to edit"})
+            } else {
+                is_editable_by_others_menu_item = $t({defaultMessage: "Allow others to edit"});
+            }
+        }
     } else {
         view_source_menu_item = $t({defaultMessage: "View original message"});
     }
@@ -228,7 +237,6 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         !is_add_reaction_icon_visible() &&
         not_spectator &&
         !(stream_id && stream_data.is_stream_archived(stream_id));
-
     return {
         message_id: message.id,
         stream_id,
@@ -244,6 +252,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_message,
+        is_editable_by_others_menu_item,
     };
 }
 
