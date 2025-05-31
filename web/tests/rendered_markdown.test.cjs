@@ -804,3 +804,13 @@ run_test("rtl", () => {
     rm.update_elements($content);
     assert.ok($content.hasClass("rtl"));
 });
+
+run_test("process message formatting layout", () => {
+    const $markdown_intruction_table = $.create("markdown instruction table");
+    const $child = $.create("p, ul, ol, pre, blockquote, hr");
+    $markdown_intruction_table.set_find_results("p, ul, ol, pre, blockquote, hr", $child);
+
+    assert.ok(!$child.hasClass("preserve-message-formatting-layout"));
+    rm.process_message_formatting_layout($markdown_intruction_table);
+    assert.ok($child.hasClass("preserve-message-formatting-layout"));
+});
