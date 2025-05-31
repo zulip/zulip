@@ -16,6 +16,7 @@ import type {
     StreamNotificationSettings,
     UserSettings,
 } from "./user_settings.ts";
+import * as util from "./util.ts";
 
 /*
     This file contains translations between the integer values used in
@@ -290,6 +291,34 @@ export const message_edit_history_visibility_policy_values = {
         code: "none",
         description: $t({defaultMessage: "Don't allow"}),
     },
+};
+
+type PolicyValue = {
+    code: string;
+    description: string;
+};
+
+type RealmTopicsPolicyValues = {
+    allow_empty_topic: PolicyValue;
+    disable_empty_topic: PolicyValue;
+};
+
+export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
+    const empty_topic_name = util.get_final_topic_display_name("");
+
+    return {
+        allow_empty_topic: {
+            code: "allow_empty_topic",
+            description: $t(
+                {defaultMessage: '"{empty_topic_name}" topic allowed'},
+                {empty_topic_name},
+            ),
+        },
+        disable_empty_topic: {
+            code: "disable_empty_topic",
+            description: $t({defaultMessage: 'No "{empty_topic_name}" topic'}, {empty_topic_name}),
+        },
+    };
 };
 
 export const time_limit_dropdown_values = [

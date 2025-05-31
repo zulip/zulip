@@ -207,6 +207,7 @@ class HomeTest(ZulipTestCase):
         "realm_require_unique_names",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",
+        "realm_topics_policy",
         "realm_upload_quota_mib",
         "realm_uri",
         "realm_url",

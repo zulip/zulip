@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import * as tippy from "tippy.js";
 
@@ -6,7 +7,7 @@ import render_settings_organization_settings_tip from "../templates/settings/org
 
 import * as bot_data from "./bot_data.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
-import {$t, get_language_name, language_list} from "./i18n.ts";
+import {$t, $t_html, get_language_name, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -25,6 +26,7 @@ import * as settings_toggle from "./settings_toggle.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
 import {the} from "./util.ts";
+import * as util from "./util.ts";
 
 const admin_settings_label = {
     // Organization profile
@@ -32,7 +34,6 @@ const admin_settings_label = {
         defaultMessage: "Advertise organization in the Zulip communities directory",
     }),
     // Organization settings
-    realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
@@ -130,6 +131,16 @@ export function build_page(): void {
             "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
     }
 
+    const realm_topics_policy_label_html = new Handlebars.SafeString(
+        $t_html(
+            {
+                defaultMessage:
+                    "Default <i>{empty_topic_name}</i> topic configuration for channels",
+            },
+            {empty_topic_name: util.get_final_topic_display_name("")},
+        ),
+    );
+
     const options = {
         custom_profile_field_types: realm.custom_profile_field_types,
         full_name: current_user.full_name,
@@ -182,7 +193,9 @@ export function build_page(): void {
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url,
-        realm_mandatory_topics: realm.realm_mandatory_topics,
+        realm_topics_policy: realm.realm_topics_policy,
+        realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
+        realm_topics_policy_label_html,
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
             realm.realm_message_content_allowed_in_email_notifications,
