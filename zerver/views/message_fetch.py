@@ -110,20 +110,20 @@ def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
-    include_anchor: Json[bool] = True,
-    num_before: Json[NonNegativeInt] = 0,
-    num_after: Json[NonNegativeInt] = 0,
-    narrow: Json[list[NarrowParameter] | None] = None,
-    use_first_unread_anchor_val: Annotated[
-        Json[bool], ApiParamConfig("use_first_unread_anchor")
-    ] = False,
-    client_gravatar: Json[bool] = True,
-    apply_markdown: Json[bool] = True,
     allow_empty_topic_name: Json[bool] = False,
+    anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
+    apply_markdown: Json[bool] = True,
+    client_gravatar: Json[bool] = True,
     client_requested_message_ids: Annotated[
         Json[list[NonNegativeInt] | None], ApiParamConfig("message_ids")
     ] = None,
+    include_anchor: Json[bool] = True,
+    narrow: Json[list[NarrowParameter] | None] = None,
+    num_after: Json[NonNegativeInt] = 0,
+    num_before: Json[NonNegativeInt] = 0,
+    use_first_unread_anchor_val: Annotated[
+        Json[bool], ApiParamConfig("use_first_unread_anchor")
+    ] = False,
 ) -> HttpResponse:
     # User has to either provide message_ids or both num_before and num_after.
     if (
