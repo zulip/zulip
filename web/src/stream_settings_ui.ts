@@ -212,6 +212,14 @@ export function update_message_retention_setting(
     stream_ui_updates.update_setting_element(sub, "message_retention_days");
 }
 
+export function update_default_code_block_language(
+    sub: StreamSubscription,
+    new_value: string,
+): void {
+    stream_data.update_default_code_block_language(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "default_code_block_language");
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,

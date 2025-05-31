@@ -28,6 +28,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import {postprocess_content} from "./postprocess_content.ts";
+import * as pygments_data from "./pygments_data.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
@@ -226,6 +227,55 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
     });
 }
 
+function setup_other_settings_widgets(sub: StreamSubscription): void {
+    const $edit_container = stream_settings_containers.get_edit_container(sub);
+    let stream_default_code_block_language_widget =
+        settings_components.get_widget_for_dropdown_list_settings("default_code_block_language");
+    function item_click_callback(
+        event: JQuery.ClickEvent,
+        dropdown: tippy.Instance,
+        widget: dropdown_widget.DropdownWidget,
+    ): void {
+        dropdown.hide();
+        event.preventDefault();
+        event.stopPropagation();
+        widget.render();
+        const $subsection = $edit_container.find(".advanced-configurations-container");
+        settings_components.save_discard_stream_settings_widget_status_handler($subsection, sub);
+    }
+    stream_default_code_block_language_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "default_code_block_language",
+        get_options() {
+            const options = Object.keys(pygments_data.langs).map((x) => ({
+                name: x,
+                unique_id: x,
+            }));
+
+            const disabled_option = {
+                is_setting_disabled: true,
+                unique_id: "",
+                name: $t({defaultMessage: "No language set"}),
+            };
+
+            options.unshift(disabled_option);
+            return options;
+        },
+        $events_container: $("#subscription_overlay"),
+        default_id: sub.default_code_block_language,
+        unique_id_type: "string",
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        item_click_callback,
+    });
+
+    stream_default_code_block_language_widget.setup();
+    settings_components.set_dropdown_setting_widget(
+        "default_code_block_language",
+        stream_default_code_block_language_widget,
+    );
+}
+
 function setup_group_setting_widgets(sub: StreamSubscription): void {
     for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
         settings_components.create_stream_group_setting_widget({
@@ -290,6 +340,7 @@ export function show_settings_for(node: HTMLElement): void {
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
+    setup_other_settings_widgets(slim_sub);
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
 
     $("#channels_overlay_container").on(

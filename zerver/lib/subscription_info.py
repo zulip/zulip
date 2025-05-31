@@ -144,6 +144,7 @@ def get_web_public_subs(
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
             wildcard_mentions_notify=wildcard_mentions_notify,
+            default_code_block_language=stream.default_code_block_language,
         )
         subscribed.append(sub)
 
@@ -219,6 +220,7 @@ def build_stream_api_dict(
         stream_weekly_traffic=stream_weekly_traffic,
         is_announcement_only=is_announcement_only,
         is_recently_active=raw_stream_dict["is_recently_active"],
+        default_code_block_language=raw_stream_dict["default_code_block_language"],
     )
 
 
@@ -250,6 +252,7 @@ def build_stream_dict_for_sub(
     stream_weekly_traffic = stream_dict["stream_weekly_traffic"]
     is_announcement_only = stream_dict["is_announcement_only"]
     is_recently_active = stream_dict["is_recently_active"]
+    default_code_block_language = stream_dict["default_code_block_language"]
 
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
@@ -298,6 +301,7 @@ def build_stream_dict_for_sub(
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
         wildcard_mentions_notify=wildcard_mentions_notify,
+        default_code_block_language=default_code_block_language,
     )
 
 
@@ -321,6 +325,7 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    default_code_block_language = raw_stream_dict["default_code_block_language"]
 
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -372,6 +377,7 @@ def build_stream_dict_for_never_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        default_code_block_language=default_code_block_language,
     )
 
 
