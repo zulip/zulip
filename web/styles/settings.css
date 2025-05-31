@@ -484,7 +484,6 @@ input[type="checkbox"] {
     top: 2px;
 
     &:hover {
-        color: var(--color-unmute-stream-hover);
         cursor: pointer;
     }
 }
