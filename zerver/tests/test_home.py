@@ -142,6 +142,7 @@ class HomeTest(ZulipTestCase):
         "realm_can_move_messages_between_channels_group",
         "realm_can_move_messages_between_topics_group",
         "realm_can_resolve_topics_group",
+        "realm_can_set_topics_policy_group",
         "realm_can_summarize_topics_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
