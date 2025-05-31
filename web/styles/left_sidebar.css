@@ -166,7 +166,7 @@
 
 #left_sidebar_scroll_container {
     outline: none;
-    overflow-y: auto;
+    overflow: hidden auto;
     position: relative;
     z-index: 0;
     width: 100%;
@@ -545,10 +545,7 @@ ul.filters {
             /* Push back against a:hover color in dark_theme.css */
             color: var(--color-text-sidebar-row) !important;
         }
-
-        &:focus {
-            text-decoration: none;
-        }
+        text-decoration: none;
     }
 
     .sidebar-topic-action-heading {
@@ -757,7 +754,7 @@ li.active-sub-filter {
         }
     }
 
-    . {
+    .top-left-active-filter {
         /* Don't display a background on condensed icons. */
         background: unset;
     }
