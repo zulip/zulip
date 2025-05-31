@@ -314,25 +314,19 @@ export function initialize(): void {
         ...topic_visibility_policy_tooltip_props,
     });
 
-    message_list_tooltip(
-        [
-            "#message_feed_container .recipient_bar_icon:not(.recipient-row-topic-menu):not(.toggle_resolve_topic_spinner)",
-            "#message_feed_container .recipient-bar-control-icon:not(.recipient-row-topic-menu):not(.toggle_resolve_topic_spinner)",
-        ].join(","),
-        {
-            delay: LONG_HOVER_DELAY,
-            onShow(instance) {
-                const $reference = $(instance.reference);
-                if ($reference.hasClass("external-topic-link")) {
-                    const url_name = $reference.attr("data-tippy-content")!;
-                    instance.setContent($t({defaultMessage: "Open {url_name}"}, {url_name}));
-                }
-            },
-            onHidden(instance) {
-                instance.destroy();
-            },
+    message_list_tooltip("#message_feed_container .recipient-bar-control-icon:not(.toggle_resolve_topic_spinner)", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $reference = $(instance.reference);
+            if ($reference.hasClass("external-topic-link")) {
+                const url_name = $reference.attr("data-tippy-content")!;
+                instance.setContent($t({defaultMessage: "Open {url_name}"}, {url_name}));
+            }
         },
-    );
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 
     message_list_tooltip(".rendered_markdown time", {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
