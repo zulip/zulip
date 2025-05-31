@@ -91,7 +91,7 @@
     }
 
     > .tippy-arrow {
-        color: var(--color-background-popover-menu);
+        color: hsl(0deg 0% 0%);
     }
 
     &[data-placement^="top"] > .tippy-arrow::before {
@@ -780,7 +780,7 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-scrolling-container {
-        overflow: auto;
+        overflow: hidden auto;
         height: 200px;
         margin: 2px;
         padding: 5px 0;
