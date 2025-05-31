@@ -333,3 +333,17 @@
         cursor: pointer;
     }
 }
+
+@container message-lists (width < $cq_ml_min) {
+    .recipient_bar_controls > *:not(.zulip-icon-more-vertical) {
+        display: none;
+    }
+}
+
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .recipient_bar_controls > *:not(.zulip-icon-more-vertical) {
+            display: none;
+        }
+    }
+}
