@@ -136,6 +136,11 @@ Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell-off)
 License: ISC License
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/shared/icons/unmute.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell-ring)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/bar-chart.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -260,12 +265,6 @@ Files: web/shared/icons/user-group-x.svg
 Copyright: 2013-2024 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Custom made out of feather icons by Vlad Koborov
-
-Files: web/shared/icons/unmute.svg
-Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_up
-Copyright: Google, Inc.
-License: Apache-2.0
-Comment: Material volume up icon (rounded)
 
 Files: web/styles/pygments.css
 Copyright: 2022, Quansight Labs

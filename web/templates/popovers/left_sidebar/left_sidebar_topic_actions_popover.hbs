@@ -20,7 +20,7 @@
                     {{#if (or stream_muted topic_unmuted)}}
                     <input type="radio" id="sidebar-topic-unmuted-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}checked{{/if}} />
                     <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-unmuted-policy" aria-label="{{t 'Unmute' }}" data-tippy-content="{{t 'Unmute' }}" tabindex="0">
-                        <i class="zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
                     </label>
                     {{/if}}
                     <input type="radio" id="sidebar-topic-followed-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}checked{{/if}} />
