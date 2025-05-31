@@ -141,6 +141,16 @@ Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell-ring)
 License: ISC License
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/shared/icons/inherit.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/follow.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/rss)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/bar-chart.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
