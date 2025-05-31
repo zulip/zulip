@@ -4769,6 +4769,19 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Everyone`, and
                                             `false` to `Admins`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_set_topics_policy_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to change per-channel `topics_policy` setting. Note that
+                                            the user must be a member of both this group and the `can_administer_channel_group`
+                                            of the channel whose `topics_policy` they want to change.
+
+                                            Organization administrators can always change the `topics_policy` setting of
+                                            every channel.
+
+                                            **Changes**: New in Zulip 10.0 (feature level ZF-ec92b4).
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_invite_users_group:
                                       allOf:
                                         - description: |
@@ -17820,6 +17833,21 @@ paths:
                               Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
                               setting controlled this permission; `true` corresponded to `Everyone`, and
                               `false` to `Admins`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_set_topics_policy_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to change per-channel `topics_policy` setting. Note that
+                              the user must be a member of both this group and the `can_administer_channel_group`
+                              of the channel whose `topics_policy` they want to change.
+
+                              Organization administrators can always change the `topics_policy` setting of
+                              every channel.
+
+                              **Changes**: New in Zulip 10.0 (feature level ZF-ec92b4).
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_invite_users_group:
                         allOf:
