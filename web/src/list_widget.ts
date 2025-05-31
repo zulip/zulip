@@ -14,6 +14,7 @@ type ListWidgetMeta<Key, Item = Key> = {
     applied_sorting_functions: [SortingFunction<Item>, boolean][]; // This is used to keep track of the sorting functions applied.
     sorting_functions: Map<string, SortingFunction<Item>>;
     filter_value: string;
+    has_active_filters: boolean;
     offset: number;
     list: Key[];
     filtered_list: Item[];
@@ -26,6 +27,7 @@ type ListWidgetMeta<Key, Item = Key> = {
 type ListWidgetFilterOpts<Item> = {
     $element?: JQuery<HTMLInputElement>;
     onupdate?: () => void;
+    is_active?: () => boolean;
 } & (
     | {
           predicate: (item: Item, value: string) => boolean;
@@ -214,12 +216,12 @@ function get_column_count_for_table($table: JQuery): number {
 
 export function render_empty_list_message_if_needed(
     $container: JQuery,
-    filter_value?: string,
+    has_active_filters?: boolean,
 ): void {
     let empty_list_message = $container.attr("data-empty");
 
     const empty_search_results_message = $container.attr("data-search-results-empty");
-    if (filter_value && empty_search_results_message) {
+    if (has_active_filters && empty_search_results_message) {
         empty_list_message = empty_search_results_message;
     }
 
@@ -288,6 +290,7 @@ export function create<Key, Item = Key>(
         filtered_list: [],
         reverse_mode: false,
         filter_value: "",
+        has_active_filters: opts.filter?.is_active?.() ?? false,
         $scroll_container: scroll_util.get_scroll_element(opts.$simplebar_container),
         $scroll_listening_element,
     };
@@ -364,7 +367,8 @@ export function create<Key, Item = Key>(
 
             // Stop once the offset reaches the length of the original list.
             if (this.all_rendered()) {
-                render_empty_list_message_if_needed($container, meta.filter_value);
+                meta.has_active_filters = opts.filter?.is_active?.() ?? Boolean(meta.filter_value);
+                render_empty_list_message_if_needed($container, meta.has_active_filters);
                 if (opts.callback_after_render) {
                     opts.callback_after_render();
                 }
