@@ -94,7 +94,7 @@
         color: hsl(0deg 0% 0%);
     }
 
-     &[data-placement^="top"] > .tippy-arrow::before {
+    &[data-placement^="top"] > .tippy-arrow::before {
         bottom: var(--popover-tippy-arrow-before-offset);
     }
 
