@@ -447,6 +447,10 @@ input[type="checkbox"] {
     }
 }
 
+.send_test_notification {
+    margin-bottom: 10px;
+}
+
 .preferences-settings-form {
     .tab-picker {
         width: 325px;
