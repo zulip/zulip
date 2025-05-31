@@ -5,15 +5,19 @@ import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
 const ls = localstorage();
+
+export let auto_collapse_views: boolean;
 
 const STATES = {
     EXPANDED: "expanded",
@@ -140,6 +144,7 @@ export function handle_narrow_activated(filter: Filter): void {
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    const $condensedList = $("#left-sidebar-navigation-list-condensed");
 
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -147,6 +152,10 @@ function toggle_condensed_navigation_area(): void {
     }
 
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
+        // Change state keep_views_expanded to auto collapse before condensing
+        auto_collapse_views = true;
+        checkAutoCollapse();
+        $condensedList.css("display", "flex");
         // Toggle into the condensed state
         $views_label_container.addClass("showing-condensed-navigation");
         $views_label_container.removeClass("showing-expanded-navigation");
@@ -154,6 +163,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-down");
         save_state(STATES.CONDENSED);
     } else {
+        $condensedList.css("display", "none");
         // Toggle into the expanded state
         $views_label_container.addClass("showing-expanded-navigation");
         $views_label_container.removeClass("showing-condensed-navigation");
@@ -161,6 +171,24 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-right");
         save_state(STATES.EXPANDED);
     }
+    resize.resize_stream_filters_container();
+}
+
+function toggle_auto_collpase_views_section(): void {
+    const $views_label_container = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    $views_label_container.addClass("showing-expanded-navigation");
+    $views_label_container.removeClass("showing-condensed-navigation");
+    $views_label_icon.addClass("rotate-icon-down");
+    $views_label_icon.removeClass("rotate-icon-right");
+
+    save_state(STATES.EXPANDED);
+
+    // Toggle the state of Auto collapse
+    auto_collapse_views = !auto_collapse_views;
+
+    checkAutoCollapse();
     resize.resize_stream_filters_container();
 }
 
@@ -260,9 +288,116 @@ export function handle_home_view_changed(new_home_view: string): void {
     update_dom_with_unread_counts(res, true);
 }
 
+function checkAutoCollapse(): void {
+    const $views_navigation_list = $("#left-sidebar-navigation-list");
+    const $direct_messages_header = $("#direct-messages-section-header");
+    const $views_section_header = $("#views-label-container");
+    const $streams_header = $("#streams_header");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    const $condensedList = $("#left-sidebar-navigation-list-condensed");
+
+    if (auto_collapse_views) {
+        $views_navigation_list.removeClass("keep_views_expanded");
+        $direct_messages_header.removeClass("keep_views_expanded");
+        $views_section_header.removeClass("keep_views_expanded");
+        $streams_header.removeClass("keep_views_expanded");
+    } else {
+        $condensedList.css("display", "none");
+        // Toggle into the expanded state before adding keep_views_expanded
+        $views_section_header.addClass("showing-expanded-navigation");
+        $views_section_header.removeClass("showing-condensed-navigation");
+        $views_label_icon.addClass("rotate-icon-down");
+        $views_label_icon.removeClass("rotate-icon-right");
+        save_state(STATES.EXPANDED);
+
+        $views_navigation_list.addClass("keep_views_expanded");
+        $direct_messages_header.addClass("keep_views_expanded");
+        $views_section_header.addClass("keep_views_expanded");
+        $streams_header.addClass("keep_views_expanded");
+    }
+}
+
+function attachSidebarScrollListener(): void {
+    const $scrollContainer = $("#left_sidebar_scroll_container .simplebar-content-wrapper");
+    const $viewsHeader = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    const $dmHeader = $("#direct-messages-section-header");
+    const $dm_icon = $("#toggle-direct-messages-section-icon");
+    const $streamsHeader = $("#streams_header");
+    const $condensedList = $("#left-sidebar-navigation-list-condensed");
+
+    if (
+        $scrollContainer.length > 0 &&
+        $viewsHeader.length > 0 &&
+        $dmHeader.length > 0 &&
+        $condensedList.length > 0
+    ) {
+        $scrollContainer.on("scroll", () => {
+            const scrollTop = $scrollContainer.scrollTop() ?? 0;
+
+            // Toggle "scrolled" class on views header
+            if (scrollTop > 0) {
+                $viewsHeader.addClass("scrolled");
+                if ($viewsHeader.hasClass("keep_views_expanded")) {
+                    $dmHeader.addClass("scrolled-when-views-expanded");
+                }
+            } else {
+                $viewsHeader.removeClass("scrolled");
+                $dmHeader.removeClass("scrolled-when-views-expanded");
+            }
+
+            if (!$viewsHeader[0] || !$dmHeader[0]) {
+                return;
+            }
+            const viewsBottom = $viewsHeader[0].getBoundingClientRect().bottom;
+            const dmTop = $dmHeader[0].getBoundingClientRect().top;
+
+            if (dmTop <= viewsBottom) {
+                if ($viewsHeader.hasClass("showing-expanded-navigation")) {
+                    $condensedList.css("display", "flex");
+                    $views_label_icon.addClass("rotate-icon-right");
+                    $views_label_icon.removeClass("rotate-icon-down");
+                }
+                $dmHeader.addClass("scrolled");
+            } else {
+                if ($viewsHeader.hasClass("showing-expanded-navigation")) {
+                    $condensedList.css("display", "none");
+                    $views_label_icon.addClass("rotate-icon-down");
+                    $views_label_icon.removeClass("rotate-icon-right");
+                }
+                $dmHeader.removeClass("scrolled");
+            }
+
+            if (!$streamsHeader[0]) {
+                return;
+            }
+            const dmBottom = $dmHeader[0].getBoundingClientRect().bottom;
+            const streamsTop = $streamsHeader[0].getBoundingClientRect().top;
+
+            if (streamsTop <= dmBottom) {
+                $dmHeader.removeClass("scrolled");
+                $dm_icon.removeClass("rotate-icon-down").addClass("rotate-icon-right");
+                $streamsHeader.addClass("scrolled");
+            } else {
+                $dm_icon.removeClass("rotate-icon-right").addClass("rotate-icon-down");
+                $streamsHeader.removeClass("scrolled");
+            }
+        });
+    } else {
+        setTimeout(attachSidebarScrollListener, 100);
+    }
+}
+
+export function initialize_auto_collapse_setting(): void {
+    auto_collapse_views = user_settings.auto_collapse_views;
+    checkAutoCollapse();
+}
+
 export function initialize(): void {
     update_scheduled_messages_row();
     restore_views_state();
+    initialize_auto_collapse_setting();
+    attachSidebarScrollListener();
 
     $("body").on(
         "click",
@@ -272,4 +407,10 @@ export function initialize(): void {
             toggle_condensed_navigation_area();
         },
     );
+
+    $("body").on("click", ".popover-menu-button", (e) => {
+        e.preventDefault();
+        toggle_auto_collpase_views_section();
+        popovers.hide_all();
+    });
 }

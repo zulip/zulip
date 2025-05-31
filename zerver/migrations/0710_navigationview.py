@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0708_stream_folder"),
+        ("zerver", "0709_realmauditlog_modified_channel_folder"),
     ]
 
     operations = [
