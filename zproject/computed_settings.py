@@ -1210,15 +1210,11 @@ def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:
         d = d[key]
 
 
-# Merge SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT into SOCIAL_AUTH_SYNC_ATTRS_DICT.
-# This is compat code for the original SOCIAL_AUTH_CUSTOM_ATTRS_DICT setting.
-# TODO/compatibility: Remove this for release Zulip 10.0.
-for subdomain, dict_for_subdomain in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.items():
-    for backend_name, custom_attrs_map in dict_for_subdomain.items():
-        ensure_dict_path(SOCIAL_AUTH_SYNC_ATTRS_DICT, [subdomain, backend_name])
-        for custom_attr_name, source_attr_name in custom_attrs_map.items():
-            SOCIAL_AUTH_SYNC_ATTRS_DICT[subdomain][backend_name][f"custom__{custom_attr_name}"] = (
-                source_attr_name
+for subdomain, dict_for_subdomain in SOCIAL_AUTH_SYNC_ATTRS_DICT.items():
+    for backend_name, attrs_map in dict_for_subdomain.items():
+        if "zulip_groups" in attrs_map.values():
+            raise AssertionError(
+                "zulip_groups can't be listed as a SAML attribute in SOCIAL_AUTH_SYNC_ATTRS_DICT"
             )
 
 SOCIAL_AUTH_PIPELINE = [

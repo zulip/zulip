@@ -93,6 +93,8 @@ SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {}
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {}
+SAML_SYNCHRONIZED_GROUPS_BY_REALM: dict[str, dict[str, str]] = {}
+
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
