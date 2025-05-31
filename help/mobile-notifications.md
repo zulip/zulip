@@ -12,7 +12,7 @@ apps.
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
+1. Toggle the checkboxes for **Channels** and **DMs and mentions**
    in the **Mobile** column of the **Notification triggers** table.
 
 {end_tabs}
@@ -93,7 +93,7 @@ notification.
 {settings_tab|notifications}
 
 1. In the **Mobile** column of the **Notification triggers** table, make sure
-   the **DMs, mentions, and alerts** checkbox is checked.
+   the **DMs and mentions** checkbox is checked.
 
 1. Under **Mobile message notifications**, make sure the **Send mobile
    notifications even if I'm online** checkbox is checked.
@@ -241,7 +241,7 @@ troubleshooting data provided by the mobile app.
 ## Related articles
 
 * [Channel notifications](/help/channel-notifications)
-* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [DMs and mentions](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)
 * [Do not disturb](/help/do-not-disturb)

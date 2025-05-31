@@ -68,5 +68,5 @@ explicitly set a notification preference.
 * [Mobile notifications](/help/mobile-notifications)
 * [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)
-* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [DMs and mentions](/help/dm-mention-alert-notifications)
 * [Do not disturb](/help/do-not-disturb)

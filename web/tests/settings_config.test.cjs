@@ -83,7 +83,7 @@ run_test("all_notifications", ({override}) => {
             ],
         },
         {
-            label: "translated: DMs, mentions, and alerts",
+            label: "translated: DMs and mentions",
             notification_settings: [
                 {
                     is_checked: false,
