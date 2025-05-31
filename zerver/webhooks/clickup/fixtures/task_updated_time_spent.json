@@ -1,0 +1,37 @@
+{
+    "event": "taskUpdated",
+    "history_items": [
+        {
+            "id": "3945907824924417727",
+            "type": "1",
+            "date": "1710990573849",
+            "field": "time_spent",
+            "parent_id": "163597292",
+            "data": {"total_time": "68520000", "rollup_time": "68520000"},
+            "source": null,
+            "user": {
+                "id": "37621629",
+                "username": "Pieter",
+                "email": "pieterceka123@gmail.com",
+                "color": "#5f7c8a",
+                "initials": "P",
+                "profilePicture": null
+            },
+            "before": null,
+            "after": {
+                "id": "3945907824924425939",
+                "start": "1710972573656",
+                "end": "1710990573656",
+                "time": "18000000",
+                "source": "clickup",
+                "date_added": "1710990573849"
+            }
+        }
+    ],
+    "task_id": "86cvyxabb",
+    "data": {
+        "description": "Time Tracking Created",
+        "interval_id": "3945907824924425939"
+    },
+    "webhook_id": "4c21a84b-d0d8-41f7-978e-4fea0776f150"
+}

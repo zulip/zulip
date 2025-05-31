@@ -1,0 +1,52 @@
+{
+    "event": "taskUpdated",
+    "history_items": [
+      {
+        "id": "2800800851630274181",
+        "type": 1,
+        "date": "1642736879339",
+        "field": "section_moved",
+        "parent_id": "162641285",
+        "data": {
+          "mute_notifications": true
+        },
+        "source": null,
+        "user": {
+          "id": 183,
+          "username": "Pieter",
+          "email": "kwok.pieter@gmail.com",
+          "color": "#7b68ee",
+          "initials": "J",
+          "profilePicture": null
+        },
+        "before": {
+          "id": "162641062",
+          "name": "Webhook payloads",
+          "category": {
+            "id": "96771950",
+            "name": "hidden",
+            "hidden": true
+          },
+          "project": {
+            "id": "7002367",
+            "name": "This is my API Space"
+          }
+        },
+        "after": {
+          "id": "162641285",
+          "name": "webhook payloads 2",
+          "category": {
+            "id": "96772049",
+            "name": "hidden",
+            "hidden": true
+          },
+          "project": {
+            "id": "7002367",
+            "name": "This is my API Space"
+          }
+        }
+      }
+    ],
+    "task_id": "86cvyxabb",
+    "webhook_id": "7fa3ec74-69a8-4530-a251-8a13730bd204"
+  }

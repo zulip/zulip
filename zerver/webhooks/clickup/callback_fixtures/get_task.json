@@ -1,0 +1,63 @@
+{
+    "id": "string",
+    "custom_id": "string",
+    "custom_item_id": 0,
+    "name": "Tanswer",
+    "text_content": "string",
+    "description": "string",
+    "status": {
+        "status": "in progress",
+        "color": "#d3d3d3",
+        "orderindex": 1,
+        "type": "custom"
+    },
+    "orderindex": "string",
+    "date_created": "string",
+    "date_updated": "string",
+    "date_closed": "string",
+    "creator": {
+        "id": 183,
+        "username": "Pieter CK",
+        "color": "#827718",
+        "profilePicture": "https://attachments-public.clickup.com/profilePictures/183_abc.jpg"
+    },
+    "assignees": ["string"],
+    "checklists": ["string"],
+    "tags": ["string"],
+    "parent": "string",
+    "priority": "string",
+    "due_date": "string",
+    "start_date": "string",
+    "time_estimate": "string",
+    "time_spent": "string",
+    "custom_fields": [
+        {
+            "id": "string",
+            "name": "string",
+            "type": "string",
+            "type_config": {},
+            "date_created": "string",
+            "hide_from_guests": true,
+            "value": {
+                "id": 183,
+                "username": "Pieter CK",
+                "email": "kwok.pieter@gmail.com",
+                "color": "#7b68ee",
+                "initials": "PK",
+                "profilePicture": null
+            },
+            "required": true
+        }
+    ],
+    "list": {
+        "id": "123"
+    },
+    "folder": {
+        "id": "456"
+    },
+    "space": {
+        "id": "789"
+    },
+    "url": "https://app.clickup.com/XXXXXXXX/home",
+    "markdown_description": "string"
+}
