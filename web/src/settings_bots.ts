@@ -307,6 +307,7 @@ export function add_a_new_bot(): void {
     function set_up_form_fields(): void {
         $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
         $("#payload_url_inputbox").hide();
+        $("#service_bot_triggers_container").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
         $("#config_inputbox").hide();
@@ -325,10 +326,12 @@ export function add_a_new_bot(): void {
             $("#config_inputbox").hide();
 
             $("#payload_url_inputbox").hide();
+            $("#service_bot_triggers_container").hide();
             $("#create_payload_url").removeClass("required");
             if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
                 $("#payload_url_inputbox").show();
                 $("#create_payload_url").addClass("required");
+                $("#service_bot_triggers_container").show();
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 $("#service_name_list").show();
                 $("#select_service_name").addClass("required");
