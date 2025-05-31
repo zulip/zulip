@@ -806,6 +806,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
                 "project": "Zulip Mobile",
                 "language": "en",
                 "resource": "file",
+                "event": "review_completed",
                 "reviewed": "100",
             },
         )
