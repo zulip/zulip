@@ -98,7 +98,7 @@ export function zoom_out(): void {
 
 type ListInfoNodeOptions =
     | {
-          type: "topic";
+          type: "exact-topic";
           conversation: TopicInfo;
       }
     | {
@@ -115,14 +115,14 @@ export function keyed_topic_li(conversation: TopicInfo): ListInfoNode {
     const render = (): string => render_topic_list_item(conversation);
 
     const eq = (other: ListInfoNode): boolean =>
-        other.type === "topic" && _.isEqual(conversation, other.conversation);
+        other.type === "exact-topic" && _.isEqual(conversation, other.conversation);
 
     const key = "t:" + conversation.topic_name;
 
     return {
         key,
         render,
-        type: "topic",
+        type: "exact-topic",
         conversation,
         eq,
     };
