@@ -14,7 +14,6 @@ import {localstorage} from "./localstorage.ts";
 import * as markdown from "./markdown.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -642,7 +641,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
 
         let draft_topic_display_name = draft.topic;
         let is_empty_string_topic = false;
-        if (draft.topic === "" && !realm.realm_mandatory_topics) {
+        if (draft.topic === "" && stream_data.can_use_empty_topic(draft.stream_id)) {
             draft_topic_display_name = util.get_final_topic_display_name("");
             is_empty_string_topic = true;
         }
