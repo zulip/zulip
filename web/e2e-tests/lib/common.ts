@@ -512,10 +512,12 @@ export async function get_rendered_messages(
                 topic_label === null ? "" : (await get_element_text(topic_label)).trim();
             let key = stream_name;
             if (topic_name !== "") {
-                // If topic_name is '', then this is direct messages, so only
-                // append > topic_name if we are not in 1:1 or group direct
-                // messages.
-                key = `${stream_name} > ${topic_name}`;
+                // If topic_name is '', then this is direct messages, so we
+                // use topic_name with possibly stream_name on combined feed.
+                key =
+                    (await page.title()) === "Combined feed - Zulip Dev - Zulip"
+                        ? `${stream_name} > ${topic_name}`
+                        : topic_name;
             }
 
             const messages = await Promise.all(
@@ -531,7 +533,7 @@ export async function get_rendered_messages(
 
 // This method takes in page, table to fetch the messages
 // from, and expected messages. The format of expected
-// message is { "stream > topic": [messages] }.
+// message is { "topic": [messages] }.
 // The method will only check that all the messages in the
 // messages array passed exist in the order they are passed.
 export async function check_messages_sent(
