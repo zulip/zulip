@@ -279,6 +279,7 @@ def update_stream_backend(
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
+    can_unsubscribe_group: Json[GroupSettingChangeRequest] | None = None,
     folder_id: Json[int | None] | MissingType = Missing,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
@@ -561,19 +562,24 @@ def remove_subscriptions_backend(
     ]
 
     unsubscribing_others = False
+    unsubscribing_self = False
     if principals:
         people_to_unsub = bulk_principals_to_user_profiles(principals, user_profile)
         unsubscribing_others = any(
             not user_directly_controls_user(user_profile, target) for target in people_to_unsub
         )
+        if not unsubscribing_others:
+            unsubscribing_self = user_profile in people_to_unsub
 
     else:
         people_to_unsub = {user_profile}
+        unsubscribing_self = True
 
     streams, __ = list_to_streams(
         streams_as_dict,
         user_profile,
         unsubscribing_others=unsubscribing_others,
+        unsubscribing_self=unsubscribing_self,
     )
 
     result: dict[str, list[str]] = dict(removed=[], not_removed=[])
@@ -631,6 +637,7 @@ def add_subscriptions_backend(
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
+    can_unsubscribe_group: Json[int | UserGroupMembersData] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
@@ -713,6 +720,7 @@ def add_subscriptions_backend(
             "can_remove_subscribers_group"
         ]
         stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
+        stream_dict_copy["can_unsubscribe_group"] = group_settings_map["can_unsubscribe_group"]
         stream_dict_copy["folder"] = folder
 
         stream_dicts.append(stream_dict_copy)
