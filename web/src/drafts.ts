@@ -220,12 +220,14 @@ export const draft_model = (function () {
         return changed;
     }
 
-    function deleteDraft(id: string): void {
+    function deleteDrafts(ids: string[]): void {
         const drafts = get();
 
-        // TODO(typescript) rework this to store the draft data in a map.
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete drafts[id];
+        for (const id of ids) {
+            // TODO(typescript) rework this to store the draft data in a map.
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete drafts[id];
+        }
         save(drafts);
     }
 
@@ -235,7 +237,7 @@ export const draft_model = (function () {
         getDraftCount,
         addDraft,
         editDraft,
-        deleteDraft,
+        deleteDrafts,
     };
 })();
 
@@ -273,7 +275,7 @@ export function rewire_sync_count(value: typeof sync_count): void {
 export function delete_all_drafts(): void {
     const drafts = draft_model.get();
     for (const [id] of Object.entries(drafts)) {
-        draft_model.deleteDraft(id);
+        draft_model.deleteDrafts([id]);
     }
 }
 
@@ -436,7 +438,7 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
         // there is nothing to save here but delete the
         // draft if exists.
         if (draft_id) {
-            draft_model.deleteDraft(draft_id);
+            draft_model.deleteDrafts([draft_id]);
         }
         return undefined;
     }
@@ -614,7 +616,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         // drafts overlay can be opened without any errors.
         // We also report the exception to the server so that
         // the bug can be fixed.
-        draft_model.deleteDraft(id);
+        draft_model.deleteDrafts([id]);
         blueslip.error(
             "Error in rendering draft.",
             {

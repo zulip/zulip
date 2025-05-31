@@ -249,7 +249,7 @@ test("draft_model delete", ({override_rewire}) => {
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
 
-    draft_model.deleteDraft(id);
+    draft_model.deleteDrafts([id]);
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 

@@ -117,7 +117,7 @@ function remove_draft($draft_row: JQuery): void {
     const draft_id = $draft_row.attr("data-draft-id")!;
 
     const draft = drafts.draft_model.getDraft(draft_id);
-    drafts.draft_model.deleteDraft(draft_id);
+    drafts.draft_model.deleteDrafts([draft_id]);
 
     if (draft) {
         draft_undo_delete_list.push(draft);
