@@ -372,12 +372,18 @@ class MessageDict:
         row is a row from a .values() call, and it needs to have
         all the relevant fields populated
         """
+
+        def get_message_topic(row: dict[str, Any]) -> str:
+            if row["recipient__type"] == Recipient.STREAM:
+                return row[DB_TOPIC_NAME]
+            return ""
+
         return MessageDict.build_message_dict(
             message_id=row["id"],
             last_edit_time=row["last_edit_time"],
             edit_history_json=row["edit_history"],
             content=row["content"],
-            topic_name=row[DB_TOPIC_NAME],
+            topic_name=get_message_topic(row),
             date_sent=row["date_sent"],
             rendered_content=row["rendered_content"],
             rendered_content_version=row["rendered_content_version"],

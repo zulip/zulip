@@ -202,6 +202,9 @@ class ScheduledMessage(models.Model):
 
     @override
     def __str__(self) -> str:
+        if self.recipient.type != Recipient.STREAM:
+            return f"{self.recipient.label()} {self.sender!r} {self.scheduled_timestamp}"
+
         return f"{self.recipient.label()} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
 
     def topic_name(self) -> str:
@@ -217,8 +220,8 @@ class ScheduledMessage(models.Model):
         recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
 
         if recipient_type_str == "private":
-            # The topic for direct messages should always be an empty string.
-            assert self.topic_name() == ""
+            # The topic for direct messages should always be "\x07".
+            assert self.topic_name() == Message.DM_TOPIC
 
             return APIScheduledDirectMessageDict(
                 scheduled_message_id=self.id,
