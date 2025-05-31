@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0706_channelfolder"),
+        ("zerver", "0708_stream_folder"),
     ]
 
     operations = [

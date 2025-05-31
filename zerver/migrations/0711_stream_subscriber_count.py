@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0706_stream_subscriber_count_data_migration"),
+        ("zerver", "0710_navigationview"),
     ]
 
     operations = [
