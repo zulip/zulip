@@ -105,6 +105,9 @@ def apply_i18n_trimmed_policy(src: str, env: Environment) -> str:
     return trans_block_re.sub(r"\1 trimmed \2", src)
 
 
+formatjs_id_pattern = "[sha512:contenthash:base64:6]"
+
+
 class Command(makemessages.Command):
     xgettext_options = makemessages.Command.xgettext_options
     for func, tag in tags:
@@ -199,13 +202,13 @@ class Command(makemessages.Command):
             template.templatize = old_templatize
             template.constant_re = old_constant_re
 
-    def extract_strings(self, data: str) -> list[str]:
-        translation_strings: list[str] = []
+    def extract_strings(self, data: str) -> dict[str, str]:
+        translation_strings: dict[str, str] = {}
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
                 match = " ".join(line.strip() for line in match.splitlines())
-                translation_strings.append(match)
+                translation_strings[match] = match
 
         return translation_strings
 
@@ -216,8 +219,8 @@ class Command(makemessages.Command):
         data = singleline_js_comment.sub("", data)
         return data
 
-    def get_translation_strings(self) -> list[str]:
-        translation_strings: list[str] = []
+    def get_translation_strings(self) -> dict[str, str]:
+        translation_strings: dict[str, str] = {}
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):
@@ -226,7 +229,7 @@ class Command(makemessages.Command):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
-                    translation_strings.extend(self.extract_strings(data))
+                    translation_strings.update(self.extract_strings(data))
         for dirpath, dirnames, filenames in itertools.chain(
             os.walk("web/src"), os.walk("web/shared/src")
         ):
@@ -236,7 +239,7 @@ class Command(makemessages.Command):
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
                     data = self.ignore_javascript_comments(data)
-                    translation_strings.extend(self.extract_strings(data))
+                    translation_strings.update(self.extract_strings(data))
 
         extracted = subprocess.check_output(
             [
@@ -244,14 +247,15 @@ class Command(makemessages.Command):
                 "extract",
                 "--additional-function-names=$t,$t_html",
                 "--format=simple",
+                f"--id-interpolation-pattern={formatjs_id_pattern}",
                 "--ignore=**/*.d.ts",
                 "web/src/**/*.js",
                 "web/src/**/*.ts",
             ]
         )
-        translation_strings.extend(orjson.loads(extracted).values())
+        translation_strings.update(orjson.loads(extracted))
 
-        return list(set(translation_strings))
+        return dict(sorted(translation_strings.items()))
 
     def get_template_dir(self) -> str:
         return self.frontend_source
@@ -290,23 +294,22 @@ class Command(makemessages.Command):
             yield os.path.join(path, self.get_namespace())
 
     def get_new_strings(
-        self, old_strings: Mapping[str, str], translation_strings: list[str], locale: str
+        self, old_strings: Mapping[str, str], translation_strings: Mapping[str, str], locale: str
     ) -> dict[str, str]:
         """
         Missing strings are removed, new strings are added and already
         translated strings are not touched.
         """
         new_strings = {}  # Dict[str, str]
-        for k in translation_strings:
+        for k, v in translation_strings.items():
             if locale == "en":
-                # For English language, translation is equal to the key.
-                new_strings[k] = old_strings.get(k, k)
+                new_strings[k] = old_strings.get(k, v)
             else:
                 new_strings[k] = old_strings.get(k, "")
 
         return new_strings
 
-    def write_translation_strings(self, translation_strings: list[str]) -> None:
+    def write_translation_strings(self, translation_strings: Mapping[str, str]) -> None:
         for locale, output_path in zip(self.get_locales(), self.get_output_paths(), strict=False):
             self.stdout.write(f"[frontend] processing locale {locale}")
             try:
