@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Collection, Sequence
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Annotated, Any
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -9,6 +9,7 @@ from django.db import transaction
 from django.db.models import Q, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import StringConstraints
 from zxcvbn import zxcvbn
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
@@ -198,6 +199,12 @@ def do_invite_users(
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+    welcome_bot_custom_message: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH,
+        ),
+    ] = None,
 ) -> list[tuple[str, str, bool]]:
     num_invites = len(invitee_emails)
 
@@ -285,6 +292,7 @@ def do_invite_users(
             realm=realm,
             include_realm_default_subscriptions=include_realm_default_subscriptions,
             notify_referrer_on_join=notify_referrer_on_join,
+            welcome_bot_custom_message=welcome_bot_custom_message,
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
@@ -387,12 +395,19 @@ def do_create_multiuse_invite_link(
     include_realm_default_subscriptions: bool,
     streams: Sequence[Stream] = [],
     user_groups: Sequence[NamedUserGroup] = [],
+    welcome_bot_custom_message: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH,
+        ),
+    ] = None,
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(
         realm=realm,
         referred_by=referred_by,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
+        welcome_bot_custom_message=welcome_bot_custom_message,
     )
     if streams:
         invite.streams.set(streams)

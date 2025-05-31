@@ -311,10 +311,12 @@ def process_new_human_user(
     # For the sake of tracking the history of UserProfiles,
     # we want to tie the newly created user to the PreregistrationUser
     # it was created from.
+    welcome_bot_custom_message = None
     if prereg_user is not None:
         prereg_user.status = confirmation_settings.STATUS_USED
         prereg_user.created_user = user_profile
         prereg_user.save(update_fields=["status", "created_user"])
+        welcome_bot_custom_message = prereg_user.welcome_bot_custom_message
 
     # Mark any other PreregistrationUsers in the realm that are STATUS_USED as
     # inactive so we can keep track of the PreregistrationUser we
@@ -346,10 +348,16 @@ def process_new_human_user(
     # to keep all the onboarding code in zerver/lib/onboarding.py.
     from zerver.lib.onboarding import send_initial_direct_message
 
-    message_id = send_initial_direct_message(user_profile)
-    UserMessage.objects.filter(user_profile=user_profile, message_id=message_id).update(
+    initial_message_id, welcome_bot_custom_message_id = send_initial_direct_message(
+        user_profile, welcome_bot_custom_message=welcome_bot_custom_message
+    )
+    UserMessage.objects.filter(user_profile=user_profile, message_id=initial_message_id).update(
         flags=F("flags").bitor(UserMessage.flags.starred)
     )
+    if welcome_bot_custom_message_id is not None:
+        UserMessage.objects.filter(
+            user_profile=user_profile, message_id=welcome_bot_custom_message_id
+        ).update(flags=F("flags").bitor(UserMessage.flags.starred))
 
     # The 'visibility_policy_banner' is only displayed to existing users.
     # Mark it as read for a new user.
