@@ -29,5 +29,10 @@
             {{> inbox_list .}}
         {{/if}}
     </div>
+    <div id="inbox-loading-indicator">
+        {{#unless normal_view}}
+        {{> ../more_topics_spinner}}
+        {{/unless}}
+    </div>
     {{/if}}
 </div>
