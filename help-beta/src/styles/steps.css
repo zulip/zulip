@@ -1,0 +1,88 @@
+/*
+The contents of this file is just css taken from
+https://github.com/withastro/starlight/blob/d7ecbcdd42ee6500965e79ae74aac94840c7bc48/packages/starlight/user-components/Steps.astro
+We want to apply these styles to all lists ordered lists in our help
+center. Future starlight upgrades have the potential to break this
+css if they change the underlying variable names, but the breaks
+would be obvious when testing the upgrade and if it becomes a
+consistent issue, we can look into some other solution.
+*/
+
+ol {
+    --bullet-size: calc(var(--sl-line-height) * 1rem);
+    --bullet-margin: 0.375rem;
+
+    list-style: none;
+    counter-reset: steps-counter var(--sl-steps-start, 0);
+    padding-inline-start: 0;
+}
+
+ol > li {
+    counter-increment: steps-counter;
+    position: relative;
+    padding-inline-start: calc(var(--bullet-size) + 1rem);
+    /* HACK: Keeps any `margin-bottom` inside the `<li>`’s padding box to avoid gaps in the hairline border. */
+    padding-bottom: 1px;
+    /* Prevent bullets from touching in short list items. */
+    min-height: calc(var(--bullet-size) + var(--bullet-margin));
+}
+
+ol > li + li {
+    /* Remove margin between steps. */
+    margin-top: 0;
+}
+
+/* Custom list marker element. */
+ol > li::before {
+    content: counter(steps-counter);
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: var(--bullet-size);
+    height: var(--bullet-size);
+    line-height: var(--bullet-size);
+
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    text-align: center;
+    color: var(--sl-color-white);
+    background-color: var(--sl-color-gray-6);
+    border-radius: 99rem;
+    box-shadow: inset 0 0 0 1px var(--sl-color-gray-5);
+}
+
+/* Vertical guideline linking list numbers. */
+ol > li::after {
+    --guide-width: 1px;
+    content: "";
+    position: absolute;
+    top: calc(var(--bullet-size) + var(--bullet-margin));
+    bottom: var(--bullet-margin);
+    inset-inline-start: calc((var(--bullet-size) - var(--guide-width)) / 2);
+    width: var(--guide-width);
+    background-color: var(--sl-color-hairline-light);
+}
+
+/* Adjust first item inside a step so that it aligns vertically with the number
+    even if using a larger font size (e.g. a heading) */
+ol > li > :first-child {
+    /*
+The `lh` unit is not yet supported by all browsers in our support matrix
+— see https://caniuse.com/mdn-css_types_length_lh
+In unsupported browsers we approximate this using our known line-heights.
+*/
+    --lh: calc(1em * var(--sl-line-height));
+    --shift-y: calc(0.5 * (var(--bullet-size) - var(--lh)));
+    transform: translateY(var(--shift-y));
+    margin-bottom: var(--shift-y);
+}
+
+ol > li > :first-child:where(h1, h2, h3, h4, h5, h6) {
+    --lh: calc(1em * var(--sl-line-height-headings));
+}
+
+@supports (--prop: 1lh) {
+    ol > li > :first-child {
+        --lh: 1lh;
+    }
+}
