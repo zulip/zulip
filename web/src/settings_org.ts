@@ -1210,6 +1210,7 @@ export function register_save_discard_widget_handlers(
                 show_elem,
             );
         }
+        settings_components.update_custom_time_limit_minute_text($(this));
 
         const $subsection = $(this).closest(".settings-subsection-parent");
         if (for_realm_default_settings) {

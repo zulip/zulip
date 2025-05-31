@@ -122,6 +122,8 @@ IGNORED_PHRASES = [
     r"^cookie$",
     # Used to refer custom time limits
     r"\bN\b",
+    r"minute",
+    r"minutes",
     # Capital c feels obtrusive in clear status option
     r"clear",
     r"group direct messages with \{recipient\}",
