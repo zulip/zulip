@@ -1,59 +1,53 @@
-/// <reference types="webpack-dev-server" />
-
 import path from "node:path";
 import * as url from "node:url";
 
 import type {ZopfliOptions} from "@gfx/zopfli";
 import {gzip} from "@gfx/zopfli";
+import type {Configuration, SwcLoaderOptions} from "@rspack/core";
+import {rspack} from "@rspack/core";
 import CompressionPlugin from "compression-webpack-plugin";
-import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
-import DebugRequirePlugin from "./debug-require-webpack-plugin.ts";
 import assets from "./webpack.assets.json" with {type: "json"};
 import dev_assets from "./webpack.dev-assets.json" with {type: "json"};
 
 const config = (
     env: {
+        allowed_hosts?: string;
         minimize?: true;
         puppeteer_tests?: true;
         ZULIP_VERSION?: string;
         custom_5xx_file?: string;
     } = {},
     argv: {mode?: string},
-): webpack.Configuration[] => {
+): Configuration[] => {
     const production: boolean = argv.mode === "production";
 
-    const baseConfig: webpack.Configuration = {
+    const baseConfig: Configuration = {
         mode: production ? "production" : "development",
         context: import.meta.dirname,
-        cache: {
-            type: "filesystem",
-            buildDependencies: {
-                config: [import.meta.filename],
+        experiments: {
+            cache: {
+                type: "persistent",
             },
         },
     };
 
-    const plugins: webpack.WebpackPluginInstance[] = [
-        new webpack.DefinePlugin({
+    const plugins: Configuration["plugins"] = [
+        new rspack.DefinePlugin({
             DEVELOPMENT: JSON.stringify(!production),
             ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
         }),
-        new DebugRequirePlugin(),
         new BundleTracker({
             path: path.join(import.meta.dirname, production ? ".." : "../var"),
             filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
         }),
         // Extract CSS from files
-        new MiniCssExtractPlugin({
+        new rspack.CssExtractRspackPlugin({
             filename: production ? "[name].[contenthash].css" : "[name].css",
             chunkFilename: production ? "[contenthash].css" : "[id].css",
         }),
-        new HtmlWebpackPlugin({
+        new rspack.HtmlRspackPlugin({
             filename: "5xx.html",
             template: env.custom_5xx_file ? "html/" + env.custom_5xx_file : "html/5xx.html",
             chunks: ["error-styles"],
@@ -70,7 +64,7 @@ const config = (
         );
     }
 
-    const frontendConfig: webpack.Configuration = {
+    const frontendConfig: Configuration = {
         ...baseConfig,
         name: "frontend",
         entry: production
@@ -89,11 +83,6 @@ const config = (
                     options: {exposes: "zulip_test"},
                 },
                 {
-                    test: path.resolve(import.meta.dirname, "debug-require.cjs"),
-                    loader: "expose-loader",
-                    options: {exposes: "require"},
-                },
-                {
                     test: url.fileURLToPath(import.meta.resolve("jquery")),
                     loader: "expose-loader",
                     options: {exposes: ["$", "jQuery"]},
@@ -102,7 +91,7 @@ const config = (
                 {
                     test: /\.font\.cjs$/,
                     use: [
-                        MiniCssExtractPlugin.loader,
+                        rspack.CssExtractRspackPlugin.loader,
                         {
                             loader: "css-loader",
                             options: {
@@ -121,21 +110,70 @@ const config = (
                     ],
                     type: "javascript/auto",
                 },
-                // Transpile .js and .ts files with Babel
+                // Transpile .js and .ts files with SWC
                 {
-                    test: /\.[cm]?[jt]s$/,
+                    test: /\.[cm]?js$/,
                     include: [
                         path.resolve(import.meta.dirname, "shared/src"),
                         path.resolve(import.meta.dirname, "src"),
                     ],
-                    loader: "babel-loader",
+                    loader: "builtin:swc-loader",
+                    options: {
+                        env: {
+                            mode: "usage",
+                            coreJs: "3.42",
+                        },
+                        jsc: {
+                            experimental: {
+                                plugins: [
+                                    [
+                                        "@swc/plugin-formatjs",
+                                        {
+                                            additionalFunctionNames: ["$t", "$t_html"],
+                                        },
+                                    ],
+                                ],
+                            },
+                        },
+                    } satisfies SwcLoaderOptions,
+                    type: "javascript/auto",
+                },
+                {
+                    test: /\.[cm]?ts$/,
+                    include: [
+                        path.resolve(import.meta.dirname, "shared/src"),
+                        path.resolve(import.meta.dirname, "src"),
+                    ],
+                    loader: "builtin:swc-loader",
+                    options: {
+                        env: {
+                            mode: "usage",
+                            coreJs: "3.42",
+                        },
+                        jsc: {
+                            experimental: {
+                                plugins: [
+                                    [
+                                        "@swc/plugin-formatjs",
+                                        {
+                                            additionalFunctionNames: ["$t", "$t_html"],
+                                        },
+                                    ],
+                                ],
+                            },
+                            parser: {
+                                syntax: "typescript",
+                            },
+                        },
+                    } satisfies SwcLoaderOptions,
+                    type: "javascript/auto",
                 },
                 // regular css files
                 {
                     test: /\.css$/,
                     exclude: path.resolve(import.meta.dirname, "styles"),
                     use: [
-                        MiniCssExtractPlugin.loader,
+                        rspack.CssExtractRspackPlugin.loader,
                         {
                             loader: "css-loader",
                             options: {
@@ -149,7 +187,7 @@ const config = (
                     test: /\.css$/,
                     include: path.resolve(import.meta.dirname, "styles"),
                     use: [
-                        MiniCssExtractPlugin.loader,
+                        rspack.CssExtractRspackPlugin.loader,
                         {
                             loader: "css-loader",
                             options: {
@@ -221,12 +259,6 @@ const config = (
         devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
             minimize: env.minimize ?? production,
-            minimizer: [
-                new CssMinimizerPlugin({
-                    minify: CssMinimizerPlugin.cleanCssMinify,
-                }),
-                "...",
-            ],
             splitChunks: {
                 chunks: "all",
                 // webpack/examples/many-pages suggests 20 requests for HTTP/2
@@ -236,6 +268,7 @@ const config = (
         },
         plugins,
         devServer: {
+            allowedHosts: env.allowed_hosts !== undefined ? env.allowed_hosts.split(",") : "auto",
             client: {
                 overlay: {
                     runtimeErrors: false,
@@ -255,8 +288,6 @@ const config = (
                 "Access-Control-Allow-Origin": "*",
                 "Timing-Allow-Origin": "*",
             },
-            setupMiddlewares: (middlewares) =>
-                middlewares.filter((middleware) => middleware.name !== "cross-origin-header-check"),
         },
         infrastructureLogging: {
             level: "warn",
@@ -271,7 +302,7 @@ const config = (
         },
     };
 
-    const serverConfig: webpack.Configuration = {
+    const serverConfig: Configuration = {
         ...baseConfig,
         name: "server",
         target: "node",
