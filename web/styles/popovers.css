@@ -94,20 +94,20 @@
         color: hsl(0deg 0% 0%);
     }
 
-    &[data-placement^="top"] > .tippy-arrow::before {
-        bottom: hsl(0deg 0% 0%);
+     &[data-placement^="top"] > .tippy-arrow::before {
+        bottom: var(--popover-tippy-arrow-before-offset);
     }
 
     &[data-placement^="bottom"] > .tippy-arrow::before {
-        top: hsl(0deg 0% 0%);
+        top: var(--popover-tippy-arrow-before-offset);
     }
 
     &[data-placement^="left"] > .tippy-arrow::before {
-        right: hsl(0deg 0% 0%)
+        right: var(--popover-tippy-arrow-before-offset);
     }
 
     &[data-placement^="right"] > .tippy-arrow::before {
-        left: hsl(0deg 0% 0%);
+        left: var(--popover-tippy-arrow-before-offset);
     }
 }
 
@@ -780,8 +780,7 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-scrolling-container {
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: hidden auto;        
         height: 200px;
         margin: 2px;
         padding: 5px 0;
