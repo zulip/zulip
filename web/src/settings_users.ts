@@ -205,6 +205,15 @@ function add_value_to_filters(
     section.list_widget.hard_redraw();
 }
 
+function are_filters_active(
+    filters: UserSettingsSection["filters"],
+    $search_input: JQuery,
+): boolean {
+    const search_value = String($search_input.val()).trim();
+    const selected_role = filters.role_code;
+    return Boolean(search_value) || selected_role !== 0;
+}
+
 function role_selected_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
@@ -519,6 +528,10 @@ function active_create_table(active_users: number[]): void {
             predicate(person) {
                 return people.predicate_for_user_settings_filters(person, active_section.filters);
             },
+            is_active() {
+                const $search_input = $("#admin-active-users-list .search");
+                return are_filters_active(active_section.filters, $search_input);
+            },
             onupdate: reset_scrollbar($users_table),
         },
         $parent_container: $("#admin-active-users-list").expectOne(),
@@ -568,6 +581,10 @@ function deactivated_create_table(deactivated_users: number[]): void {
                         person,
                         deactivated_section.filters,
                     );
+                },
+                is_active() {
+                    const $search_input = $("#admin-deactivated-users-list .search");
+                    return are_filters_active(deactivated_section.filters, $search_input);
                 },
                 onupdate: reset_scrollbar($deactivated_users_table),
             },
