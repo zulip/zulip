@@ -139,7 +139,7 @@ BigBlueButton server (version 2.4+) and configure it:
 
 1. Get the Shared Secret using the `bbb-conf --secret` command on your
    BigBlueButton Server. See also [the BigBlueButton
-   documentation](https://docs.bigbluebutton.org/admin/customize.html#extract-the-shared-secret).
+   documentation](https://docs.bigbluebutton.org/administration/customize/#extract-the-shared-secret).
 
 2. Get the URL to your BigBlueButton API. The URL has the form of
    `https://bigbluebutton.example.com/bigbluebutton/` and can also be
