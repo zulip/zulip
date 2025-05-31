@@ -334,17 +334,26 @@ def add_members_to_group_backend(
     if len(members) == 1 and user_profile.id == members[0]:
         try:
             user_group = access_user_group_for_update(
-                user_group_id, user_profile, permission_setting="can_join_group"
+                user_group_id,
+                user_profile,
+                permission_setting="can_join_group",
+                allow_deactivated=True,
             )
         except JsonableError:
             # User can still join the group if user has permission to add
             # anyone in the group.
             user_group = access_user_group_for_update(
-                user_group_id, user_profile, permission_setting="can_add_members_group"
+                user_group_id,
+                user_profile,
+                permission_setting="can_add_members_group",
+                allow_deactivated=True,
             )
     else:
         user_group = access_user_group_for_update(
-            user_group_id, user_profile, permission_setting="can_add_members_group"
+            user_group_id,
+            user_profile,
+            permission_setting="can_add_members_group",
+            allow_deactivated=True,
         )
 
     member_users = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
@@ -381,17 +390,26 @@ def remove_members_from_group_backend(
     if len(members) == 1 and user_profile.id == members[0]:
         try:
             user_group = access_user_group_for_update(
-                user_group_id, user_profile, permission_setting="can_leave_group"
+                user_group_id,
+                user_profile,
+                permission_setting="can_leave_group",
+                allow_deactivated=True,
             )
         except JsonableError:
             # User can still leave the group if user has permission to remove
             # anyone from the group.
             user_group = access_user_group_for_update(
-                user_group_id, user_profile, permission_setting="can_remove_members_group"
+                user_group_id,
+                user_profile,
+                permission_setting="can_remove_members_group",
+                allow_deactivated=True,
             )
     else:
         user_group = access_user_group_for_update(
-            user_group_id, user_profile, permission_setting="can_remove_members_group"
+            user_group_id,
+            user_profile,
+            permission_setting="can_remove_members_group",
+            allow_deactivated=True,
         )
 
     group_member_ids = get_user_group_direct_member_ids(user_group)
