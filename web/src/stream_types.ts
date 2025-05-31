@@ -19,6 +19,13 @@ export const stream_permission_group_settings_schema = z.enum([
 ]);
 export type StreamPermissionGroupSetting = z.infer<typeof stream_permission_group_settings_schema>;
 
+export const stream_topics_policy_schema = z.enum([
+    "allow_empty_topic",
+    "disable_empty_topic",
+    "inherit",
+]);
+export type StreamTopicsPolicy = z.infer<typeof stream_topics_policy_schema>;
+
 // These types are taken from the `zerver/lib/types.py`.
 export const stream_schema = z.object({
     creator_id: z.number().nullable(),
@@ -35,6 +42,7 @@ export const stream_schema = z.object({
     rendered_description: z.string(),
     stream_id: z.number(),
     stream_post_policy: z.nativeEnum(StreamPostPolicy),
+    topics_policy: stream_topics_policy_schema,
     can_add_subscribers_group: group_setting_value_schema,
     can_administer_channel_group: group_setting_value_schema,
     can_remove_subscribers_group: group_setting_value_schema,

@@ -1296,6 +1296,14 @@ run_test("get_focus_area", ({override}) => {
         get_focus_area({message_type: "stream"}),
         "#compose_select_recipient_widget_wrapper",
     );
+
+    stream_data.add_sub({
+        message_type: "stream",
+        name: "fun",
+        stream_id: 4,
+        topics_policy: "inherit",
+    });
+
     override(realm, "realm_topics_policy", "disable_empty_topic");
     assert.equal(
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
