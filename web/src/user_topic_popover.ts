@@ -9,6 +9,21 @@ import {parse_html} from "./ui_util.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
+const extract_visibility_policy_popover_context = (
+    $element: JQuery,
+): {
+    stream_id: number;
+    topic_name: string;
+} => {
+    const stream_id_str = $element.attr("data-stream-id");
+    assert(stream_id_str !== undefined);
+    const stream_id = Number.parseInt(stream_id_str, 10);
+    const topic_name = $element.attr("data-topic-name")!;
+    assert(stream_id !== undefined);
+    assert(topic_name !== undefined);
+    return {stream_id, topic_name};
+};
+
 export function initialize(): void {
     popover_menus.register_popover_menu(".change_visibility_policy", {
         theme: "popover-menu",
@@ -28,14 +43,24 @@ export function initialize(): void {
         onShow(instance) {
             popover_menus.popover_instances.change_visibility_policy = instance;
             popover_menus.on_show_prep(instance);
-            const $elt = $(instance.reference).closest(".change_visibility_policy").expectOne();
-            const stream_id_str = $elt.attr("data-stream-id");
-            $elt.addClass("visibility-policy-popover-visible");
-            assert(stream_id_str !== undefined);
+            const $reference = $(instance.reference);
+            const $change_visibility_policy_button = $reference
+                .closest(".change_visibility_policy")
+                .expectOne();
 
-            const stream_id = Number.parseInt(stream_id_str, 10);
-            const topic_name = $elt.attr("data-topic-name")!;
+            // The topic visibility policy popover logic is shared between
+            // the recipient bar and other parts of the app. However, the
+            // relevant data attributes are located in different elements —
+            // specifically, within the message header when triggered from
+            // the recipient bar, instead of the button itself. Hence, we
+            // need to conditionally extract the data attributes below.
+            const $data_element = $reference.hasClass("recipient-bar-control")
+                ? $reference.closest(".message_header").expectOne()
+                : $change_visibility_policy_button;
+            const {stream_id, topic_name} =
+                extract_visibility_policy_popover_context($data_element);
 
+            $change_visibility_policy_button.addClass("visibility-policy-popover-visible");
             instance.setContent(
                 parse_html(
                     render_change_visibility_policy_popover(
@@ -49,12 +74,16 @@ export function initialize(): void {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-            const $elt = $(instance.reference).closest(".change_visibility_policy").expectOne();
-            const stream_id_str = $elt.attr("data-stream-id");
-            assert(stream_id_str !== undefined);
+            const $reference = $(instance.reference);
+            const $change_visibility_policy_button = $reference
+                .closest(".change_visibility_policy")
+                .expectOne();
 
-            const stream_id = Number.parseInt(stream_id_str, 10);
-            const topic_name = $elt.attr("data-topic-name")!;
+            const $data_element = $reference.hasClass("recipient-bar-control")
+                ? $reference.closest(".message_header").expectOne()
+                : $change_visibility_policy_button;
+            const {stream_id, topic_name} =
+                extract_visibility_policy_popover_context($data_element);
 
             if (!stream_id) {
                 popover_menus.hide_current_popover_if_visible(instance);
