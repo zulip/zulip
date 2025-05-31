@@ -735,6 +735,9 @@ export class Typeahead<ItemType extends string | object> {
         switch (e.key) {
             case "ArrowDown":
             case "ArrowUp":
+            case "Shift":
+            case "Control":
+            case "Meta":
                 break;
 
             case "Tab":
