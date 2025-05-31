@@ -302,7 +302,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(filter.has_negated_operand("channels", "public"));
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(!filter.is_channel_view());
@@ -316,7 +316,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(!filter.has_negated_operand("channels", "public"));
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
@@ -510,7 +510,7 @@ test("basics", () => {
     assert.ok(filter.contains_no_partial_conversations());
     // This next check verifies what is probably a bug; see the
     // comment in the can_apply_locally implementation.
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(filter.may_contain_multiple_conversations());
@@ -591,7 +591,7 @@ test("basics", () => {
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(filter.includes_full_stream_history());
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(!filter.may_contain_multiple_conversations());
@@ -1076,12 +1076,23 @@ test("predicate_basics", ({override}) => {
     // For old channels that we are no longer subscribed to, we may not have
     // a subscription, but these should still match by channel name.
     const old_sub_id = new_stream_id();
+    const private_sub_id = new_stream_id();
     const old_sub = {
         name: "old-subscription",
         stream_id: old_sub_id,
         subscribed: false,
+        invite_only: false,
+        is_web_public: false,
+    };
+    const private_sub = {
+        name: "private-subscription",
+        stream_id: private_sub_id,
+        subscribed: true,
+        invite_only: true,
+        is_web_public: false,
     };
     stream_data.add_sub(old_sub);
+    stream_data.add_sub(private_sub);
     predicate = get_predicate([
         ["channel", old_sub_id.toString()],
         ["topic", "Bar"],
@@ -1101,7 +1112,8 @@ test("predicate_basics", ({override}) => {
     assert.ok(!predicate({type: stream_message}));
 
     predicate = get_predicate([["channels", "public"]]);
-    assert.ok(predicate({}));
+    assert.ok(predicate({type: stream_message, stream_id: old_sub_id}));
+    assert.ok(!predicate({type: stream_message, stream_id: private_sub_id}));
 
     predicate = get_predicate([["is", "starred"]]);
     assert.ok(predicate({starred: true}));
