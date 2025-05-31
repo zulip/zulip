@@ -194,8 +194,8 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     reset();
 
     const draft_model = drafts.draft_model;
-    override(draft_model, "deleteDraft", (draft_id) => {
-        assert.equal(draft_id, 100);
+    override(draft_model, "deleteDrafts", (draft_ids) => {
+        assert.deepEqual(draft_ids, [100]);
         draft_deleted = true;
     });
     override_rewire(echo, "reify_message_id", (local_id, message_id) => {
