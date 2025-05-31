@@ -538,7 +538,10 @@ input[type="checkbox"] {
 }
 
 #user_enter_sends_label kbd,
-#realm_enter_sends_label kbd {
+#realm_enter_sends_label kbd,
+.overlay-keyboard-shortcuts
+    .popover-menu-hotkey-hints
+    .popover-menu-hotkey-hint {
     /* 14px at 15px/1em */
     font-size: 0.9333em;
     font-style: normal;
@@ -547,6 +550,15 @@ input[type="checkbox"] {
     position: relative;
     bottom: 1px;
     margin: 0 2px;
+}
+
+.overlay-keyboard-shortcuts .popover-menu-hotkey-hints {
+    display: inline;
+    padding-left: 0;
+}
+
+.overlay-keyboard-shortcuts .popover-menu-hotkey-hint {
+    font-family: monospace;
 }
 
 .edit-attachment-buttons {
