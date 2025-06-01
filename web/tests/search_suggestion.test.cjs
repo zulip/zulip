@@ -117,6 +117,18 @@ test("basic_get_suggestions_for_spectator", () => {
     page_params.is_spectator = false;
 });
 
+test("get_suggestions deduplication", () => {
+    let query = "has:attachment";
+    let suggestions = get_suggestions(query, query);
+    let expected = ["has:attachment"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "has:attachment has:attachment";
+    suggestions = get_suggestions(query);
+    expected = ["has:attachment"];
+    assert.deepEqual(suggestions.strings, expected);
+});
+
 test("get_is_suggestions_for_spectator", () => {
     page_params.is_spectator = true;
 
