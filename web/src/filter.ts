@@ -361,10 +361,7 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                operand = operand
-                    .toString()
-                    .toLowerCase()
-                    .replaceAll(/[\u201C\u201D]/g, '"');
+                operand = operand.toString().replaceAll(/[\u201C\u201D]/g, '"');
                 break;
             default:
                 operand = operand.toString().toLowerCase();

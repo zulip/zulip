@@ -978,7 +978,7 @@ test("canonicalization", () => {
 
     term = Filter.canonicalize_term({operator: "search", operand: "fOO"});
     assert.equal(term.operator, "search");
-    assert.equal(term.operand, "foo");
+    assert.equal(term.operand, "fOO");
 
     term = Filter.canonicalize_term({operator: "search", operand: 123});
     assert.equal(term.operator, "search");
