@@ -28,6 +28,10 @@ Forward new Discourse posts to Zulip!
 
 {end_tabs}
 
+{!congrats.md!}
+
+![](/static/images/integrations/discourse/001.png)
+
 ### Related documentation
 
 - [Discourse Chat Integration][chat-integration]
