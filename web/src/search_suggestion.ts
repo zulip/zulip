@@ -1050,7 +1050,7 @@ export function get_search_result(
     add_current_filter = false,
 ): Suggestion[] {
     let suggestion_line: SuggestionLine;
-
+    text_search_terms = text_search_terms.map((term) => Filter.canonicalize_term(term));
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
     // terms correspond to the terms for the entire query entered in the searchbox.
