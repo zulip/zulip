@@ -29,4 +29,8 @@ You can repeat the above process and create Zaps for different databases
 and/or different kinds of Notion events that you'd like to be notified
 about in Zulip.
 
+{!congrats.md!}
+
+![](/static/images/integrations/notion/001.png)
+
 [1]: ./zapier
