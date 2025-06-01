@@ -357,6 +357,14 @@ class DocPageTest(ZulipTestCase):
             not in (image_path := os.path.relpath(os.path.join(root, file), directory))
         }
 
+        # The integration docs and the screenshot images are in different repos
+        # for the PythonAPIIntegrations, so we cannot avoid going out of sync
+        # when adding/deleting screenshots.
+        # Use this set to temporarily add exclusions to this test.
+        exception_images: set[str] = {}
+        images_in_dir.update(exception_images)
+        images_in_docs.update(exception_images)
+
         self.assertEqual(
             images_in_dir,
             images_in_docs,
