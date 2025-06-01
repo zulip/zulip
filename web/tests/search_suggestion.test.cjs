@@ -184,7 +184,15 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     query = "is:private";
     suggestions = get_suggestions(query);
-    expected = ["is:dm"];
+    // Same search suggestions as for "is:dm"
+    expected = [
+        "is:dm",
+        "dm:alice@zulip.com",
+        "dm:bob@zulip.com",
+        "dm:jeff@zulip.com",
+        "dm:myself@zulip.com",
+        "dm:ted@zulip.com",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "dm:t";
