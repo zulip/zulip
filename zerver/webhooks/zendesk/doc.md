@@ -8,37 +8,29 @@ Get notifications about Zendesk tickets in Zulip!
 
 1. {!generate-webhook-url-basic.md!}
 
-1. Append `{%raw%}&ticket_title={{ ticket.title }}&ticket_id={{ ticket.id }}{%endraw%}`
-   to the URL generated above.
+1. Head over to the [Admin Center](https://support.zendesk.com/hc/en-us/articles/4581766374554-Using-Zendesk-Admin-Center#topic_hfg_dyz_1hb) for your Zendesk account.
 
-1. In Zendesk, click the **gear** (<i class="fa fa-cog"></i>) icon in the
-    bottom-left corner. Click on **Extensions**, and then click **add
-    target**.
+1. In the left sidebar, navigate to `Apps and Integrations`->`Actions and webhooks`->`Webhooks` or head over to `https://<your_subdomain>.zendesk.com/admin/apps-integrations/actions-webhooks/webhooks`.
 
-1. Click the **URL target**, and fill in the form with the following:
+1. Click on `Create Webhook`.
 
-    * **Title**: Zulip
-    * **URL**: the URL generated and updated above
-    * **Method**: POST
-    * **Attribute Name**: message
-    * **Username**: your bot's user name, e.g., `zendesk-bot@yourdomain.com`
-    * **Password**: your bot's API key
+1. Select the `Trigger or Automation` option and click `Next`.
 
-1. Select **Test Target**, and click **Submit**. A test message should
-   appear Zulip. Save the target by selecting **Create target**, and
-   clicking **Submit**.
+1. In the details section, set the **Request method** to `POST`, **Request format** to `JSON` and enter the webhook URL generated previously in the **Endpoint URL** field.
 
-1. Add a new trigger, for every action you'd like to be notified about.
-   To add a trigger, select **Triggers** in the left menu, and click
-   **add trigger**.
+1. Select `Basic Authentication` in the **Authentication** options and enter your Zulip Bot email for the **Username** and Zulip Bot API KEY for the **Password**.
 
-1. Give the trigger a descriptive title (e.g., "Announce ticket update").
-   Under **Meet all of the following conditions**, select the conditions
-   for the trigger. In the **Perform these actions** section, select
-   **Notification: Notify target**, and select the target created above
-   (e.g., "Zulip").
+1. Head over to `https://<your_subdomain>.zendesk.com/agent/admin/triggers` and select the `Create Trigger` option.
 
-1. Enter the message body into the **Message** field. You can use both
+1. Select `Notifications` for the **Trigger Category**.
+1. Add the two conditions below in **Meet ANY of the following conditions**:
+      - Category: `Ticket > Ticket`, Operator: `IS`, Value: `Created`
+      - Category: `Ticket > Ticket`, Operator: `IS`, Value: `Updated`
+1. In the **Actions** section add an action having:
+
+      Category: `Notify by > Active webhook`, Value: `<Your_webhook_name>`
+
+1. Enter the message body into the **message** field of the JSON object. You can use both
    Zulip Markdown and Zendesk placeholders. Here's an example message
    body template that you can optionally use:
 
@@ -53,7 +45,15 @@ Get notifications about Zendesk tickets in Zulip!
         {{ ticket.description }}
         ```{% endraw %}
 
-1.  Click **Submit**.
+1. Additionally you can also provide the `topic` field to get notifications in a custom topic.
+
+1. To get notifications for a given ticket in its own dedicated topic, add the fields
+`{% raw %}ticket_id:{{ticket.id}}{% endraw %}`
+and
+`{% raw %}ticket_title:{{ticket.title}}{% endraw %}`
+
+
+1. Click on `Create Trigger` to add the new trigger.
 
 {end_tabs}
 
@@ -63,4 +63,5 @@ Get notifications about Zendesk tickets in Zulip!
 
 ### Related documentation
 
+- [Zendesk webhook documentation](https://support.zendesk.com/hc/en-us/articles/4408839108378-Creating-webhooks-to-interact-with-third-party-systems)
 {!webhooks-url-specification.md!}
