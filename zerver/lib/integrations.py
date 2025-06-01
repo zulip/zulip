@@ -940,6 +940,14 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
             "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
         )
     ],
+    "jira-plugin": [
+        FixturelessScreenshotConfig(
+            """Manvir Singh **created** [678]() - priority Medium, assigned to @**Zoe Davis**:
+
+> Implement lazy loading for images on the Paints catalog to improve load times.""",
+            "678: Optimize image loading in paints catalog",
+        )
+    ],
     "mastodon": [
         FixturelessScreenshotConfig(
             """**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
