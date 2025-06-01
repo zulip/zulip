@@ -1007,9 +1007,26 @@ def extract_unread_data_from_um_rows(
 
         elif msg_type == Recipient.DIRECT_MESSAGE_GROUP:
             user_ids_string = get_direct_message_group_users(recipient_id)
-            direct_message_group_dict[message_id] = dict(
-                user_ids_string=user_ids_string,
-            )
+            user_ids = [int(uid) for uid in user_ids_string.split(",")]
+
+            # For API compatibility, we populate pm_dict for 1:1 and self DMs
+            # so clients relying on pm_dict continue to work during the migration.
+            # We populate direct_message_group_dict for group size > 2.
+            if len(user_ids) <= 2:
+                if len(user_ids) == 1:
+                    # For self-DM, other_user_id is the user's own id
+                    other_user_id = user_ids[0]
+                else:
+                    # For 1:1 DM, other_user_id is the other participant
+                    other_user_id = user_ids[1] if user_ids[0] == user_profile.id else user_ids[0]
+
+                pm_dict[message_id] = dict(
+                    other_user_id=other_user_id,
+                )
+            else:
+                direct_message_group_dict[message_id] = dict(
+                    user_ids_string=user_ids_string,
+                )
 
         # TODO: Add support for alert words here as well.
         is_mentioned = (row["flags"] & UserMessage.flags.mentioned) != 0
