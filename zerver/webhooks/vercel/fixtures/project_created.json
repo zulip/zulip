@@ -1,0 +1,17 @@
+{
+"id": "UsdR8wMCXdNVMITM-dhNG",
+"payload": {
+  "user": {
+    "id": "f0Ls96Zaxrzu6E6A8gBfE8jW"
+  },
+  "team": {
+    "id": "team_IXf0JVlfXDnlJiHaXZM7VIWv"
+  },
+  "project": {
+    "id": "prj_m8V2h9xII8VgXRaMdBwcHpS0vsoa",
+    "name": "nextjs-commerce"
+  }
+},
+"createdAt": 1737711304206,
+"type": "project.created"
+}
