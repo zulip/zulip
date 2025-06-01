@@ -162,7 +162,7 @@ test("terms", () => {
     assert.equal(result[1].operand, "Bar");
 
     assert.equal(result[2].operator, "search");
-    assert.equal(result[2].operand, "yo");
+    assert.equal(result[2].operand, "Yo");
 
     message_lists.set_current(undefined);
     result = narrow_state.search_terms();
