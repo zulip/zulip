@@ -18,7 +18,7 @@ webpack_command = [
     "node",
     "--experimental-strip-types",
     "--no-warnings=ExperimentalWarning",
-    "../node_modules/webpack-cli/bin/cli.js",
+    "../node_modules/@rspack/cli/bin/rspack",
 ]
 
 
@@ -34,8 +34,6 @@ def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> 
         "--mode=production",
         f"--env=ZULIP_VERSION={ZULIP_VERSION}",
     ]
-    if quiet:
-        webpack_args += ["--stats=errors-only"]
     if config_name is not None:
         webpack_args += [f"--config-name={config_name}"]
     if "PUPPETEER_TESTS" in os.environ:
@@ -74,9 +72,9 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     if minify:
         webpack_args.append("--env=minimize")
     if disable_host_check:
-        webpack_args.append("--allowed-hosts=all")
+        webpack_args.append("--env=allowed_hosts=all")
     else:
-        webpack_args.append(f"--allowed-hosts={host},.zulipdev.com,.zulipdev.org")
+        webpack_args.append(f"--env=allowed_hosts={host},.zulipdev.com,.zulipdev.org")
 
     # Tell webpack-dev-server to fall back to periodic polling on
     # filesystems where inotify is known to be broken.
@@ -110,7 +108,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         event_notifier = pyinotify.Notifier(watch_manager, WebpackConfigFileChangeHandler())
         # We did a chdir to the root of the Zulip checkout above.
         for filepath in [
-            "webpack.config.ts",
+            "rspack.config.ts",
             "webpack.assets.json",
             "webpack.dev-assets.json",
         ]:
