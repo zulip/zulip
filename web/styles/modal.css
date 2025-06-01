@@ -533,6 +533,7 @@
             height: 0;
             overflow: auto;
             flex-grow: 1;
+            padding-top: 2px;
             padding-right: var(--width-simplebar-scroll-hover);
 
             .option-row {
