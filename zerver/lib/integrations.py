@@ -938,6 +938,14 @@ FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
             "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
         )
     ],
+    "jira-plugin": [
+        FixturelessScreenshotConfig(
+            """Justin Case **created** [678]() - priority Medium, assigned to @**Justin Time**:
+
+> Implement lazy loading for images on the Unicorn catalog to improve load times.""",
+            "678: Optimize image loading in unicorn catalog",
+        )
+    ],
     "mastodon": [
         FixturelessScreenshotConfig(
             """**[Roundtables: What’s Next for Mixed Reality: Glasses, Goggles, and More](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)**
