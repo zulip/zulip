@@ -208,29 +208,26 @@ p.n-margin {
     box-shadow: 0 0 2px hsl(16deg 60% 45%);
 }
 
-.all-messages-search-caution {
-    border: 1px solid hsl(192deg 19% 75% / 20%);
-    box-shadow: 0 0 2px hsl(192deg 19% 75% / 20%);
-}
-
 .history-limited-box,
 .all-messages-search-caution {
-    border-radius: 4px;
     display: none;
     margin: 0 auto 12px;
     padding: 5px;
-    /* Difference should be 16px to accommodate the icon. */
-    /* This emulates hanging indent. */
-    padding-left: 26px;
-    text-indent: -10px;
-
-    .all-messages-search-caution-icon {
-        margin: 0 3px 0 1px;
-    }
 
     & p {
         margin: 0;
         padding: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+.search-all-channels-button {
+    & a {
+        &:hover {
+            text-decoration: none;
+        }
     }
 }
 
@@ -1384,6 +1381,13 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 
     .search-query-word {
         word-wrap: break-word;
+    }
+
+    .search-all-channels-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 5px;
     }
 }
 

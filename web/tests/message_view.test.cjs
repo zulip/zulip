@@ -54,11 +54,12 @@ mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-function empty_narrow_html(title, html, search_data) {
+function empty_narrow_html(title, html, search_data, update_hash) {
     const opts = {
         title,
         html,
         search_data,
+        update_hash,
     };
     return require("../templates/empty_feed_notice.hbs")(opts);
 }
@@ -674,9 +675,15 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     };
     let current_filter = set_filter([["search", "what about grail"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
+    const update_hash = hash_util.search_public_streams_notice_url(current_filter.terms());
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", undefined, expected_search_data),
+        empty_narrow_html(
+            "translated: No search results.",
+            undefined,
+            expected_search_data,
+            update_hash,
+        ),
     );
 
     const streamA_id = 88;

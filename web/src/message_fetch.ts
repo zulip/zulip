@@ -126,6 +126,7 @@ export function fetch_more_if_required_for_current_msg_list(
     if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
+        message_feed_top_notices.hide_top_of_narrow_notices();
         narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
         message_lists.current.update_trailing_bookend();
         compose_closed_ui.update_buttons_for_private();

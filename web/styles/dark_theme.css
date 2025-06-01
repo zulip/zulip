@@ -389,8 +389,7 @@
         opacity: 0.7;
     }
 
-    .history-limited-box,
-    .all-messages-search-caution {
+    .history-limited-box {
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
