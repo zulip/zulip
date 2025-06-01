@@ -1,0 +1,52 @@
+{
+    "id": "790",
+    "name": "the Milky Way",
+    "private": false,
+    "statuses": [
+        {
+            "status": "to do",
+            "type": "open",
+            "orderindex": 0,
+            "color": "#d3d3d3"
+        },
+        {
+            "status": "complete",
+            "type": "closed",
+            "orderindex": 1,
+            "color": "#6bc950"
+        }
+    ],
+    "multiple_assignees": false,
+    "features": {
+        "due_dates": {
+            "enabled": false,
+            "start_date": false,
+            "remap_due_dates": false,
+            "remap_closed_due_date": false
+        },
+        "time_tracking": {
+            "enabled": false
+        },
+        "tags": {
+            "enabled": false
+        },
+        "time_estimates": {
+            "enabled": false
+        },
+        "checklists": {
+            "enabled": true
+        },
+        "custom_fields": {
+            "enabled": true
+        },
+        "remap_dependencies": {
+            "enabled": false
+        },
+        "dependency_warning": {
+            "enabled": false
+        },
+        "portfolios": {
+            "enabled": false
+        }
+    }
+}

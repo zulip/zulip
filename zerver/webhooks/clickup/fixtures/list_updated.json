@@ -1,0 +1,26 @@
+{
+    "event": "listUpdated",
+    "history_items": [
+      {
+        "id": "8a2f82db-7718-4fdb-9493-4849e67f009d",
+        "type": 6,
+        "date": "1642740510345",
+        "field": "name",
+        "parent_id": "162641285",
+        "data": {},
+        "source": null,
+        "user": {
+              "id": 183,
+              "username": "Pieter",
+              "email": "kwok.pieter@gmail.com",
+              "color": "#7b68ee",
+              "initials": "P",
+              "profilePicture": null
+        },
+        "before": "webhook payloads 2",
+        "after": "Webhook payloads round 2"
+      }
+    ],
+    "list_id": "901601848935",
+    "webhook_id": "7fa3ec74-69a8-4530-a251-8a13730bd204"
+  }

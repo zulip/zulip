@@ -1,0 +1,33 @@
+{
+    "goal": {
+        "id": "e53a033c-900e-462d-a849-4a216b06d930",
+        "name": "hat-trick",
+        "team_id": "512",
+        "date_created": "1568044355026",
+        "start_date": null,
+        "due_date": "1568036964079",
+        "description": "Updated Goal Description",
+        "private": false,
+        "archived": false,
+        "creator": 183,
+        "color": "#32a852",
+        "pretty_id": "6",
+        "multiple_owners": true,
+        "folder_id": null,
+        "members": [],
+        "owners": [
+            {
+                "id": 182,
+                "username": "Pieter CK",
+                "email": "kwok.pieter@gmail.com",
+                "color": "#7b68ee",
+                "initials": "PK",
+                "profilePicture": "https://attachments-public.clickup.com/profilePictures/182_abc.jpg"
+            }
+        ],
+        "key_results": [],
+        "percent_completed": 0,
+        "history": [],
+        "pretty_url": "https://app.clickup.com/512/goals/6"
+    }
+}
