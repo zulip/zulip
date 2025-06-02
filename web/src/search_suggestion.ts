@@ -661,6 +661,33 @@ function get_public_channels_filter_suggestions(
     return get_special_filter_suggestions(last, terms, suggestions);
 }
 
+function get_archived_channel_filter_suggestions(
+    last: NarrowTerm,
+    terms: NarrowTerm[],
+): Suggestion[] {
+    let search_string = "channels:archived";
+    // show "channels:archived" option for users who
+    // have "streams" in their muscle memory
+    if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
+        search_string = "streams:archived";
+    }
+    let description_html = Filter.describe_archived_channels(last.negated ?? false);
+    description_html = description_html.charAt(0).toUpperCase() + description_html.slice(1);
+    const suggestions: SuggestionAndIncompatiblePatterns[] = [
+        {
+            search_string,
+            description_html,
+            incompatible_patterns: [
+                {operator: "is", operand: "dm"},
+                {operator: "channel"},
+                {operator: "dm-including"},
+                {operator: "dm"},
+            ],
+        },
+    ];
+    return get_special_filter_suggestions(last, terms, suggestions);
+}
+
 function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     let suggestions: SuggestionAndIncompatiblePatterns[];
     if (page_params.is_spectator) {
@@ -1079,6 +1106,7 @@ export function get_search_result(
         // searching user probably is looking to make a group DM.
         get_group_suggestions,
         get_public_channels_filter_suggestions,
+        get_archived_channel_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
