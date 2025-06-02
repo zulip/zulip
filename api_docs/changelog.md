@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 406**
+
+* [`POST /register`](/api/register-queue): Added `push_devices`
+  field to response.
+* [`GET /events`](/api/get-events): A `push_device` event is sent
+  to clients when registration to bouncer either succeeds or fails.
+* [`POST /mobile_push/register`](/api/register-push-device): Added
+  an endpoint to register a device to receive end-to-end encrypted
+  mobile push notifications.
+
 **Feature level 405**
 
 * [Message formatting](/api/message-formatting): Added new HTML

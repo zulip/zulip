@@ -283,6 +283,13 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
+class EventPushDevice(BaseEvent):
+    type: Literal["push_device"]
+    push_account_id: str
+    status: Literal["active", "failed", "pending"]
+    error_code: str | None
+
+
 class NavigationViewFields(BaseModel):
     fragment: str
     is_pinned: bool

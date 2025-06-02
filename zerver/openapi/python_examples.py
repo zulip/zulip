@@ -1679,6 +1679,23 @@ def remove_fcm_token(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "delete", "200")
 
 
+@openapi_test_function("/mobile_push/register:post")
+def register_push_device(client: Client) -> None:
+    # {code_example|start}
+    # Register a push device.
+    request = {
+        "token_kind": "fcm",
+        "push_account_id": 2408,
+        "push_public_key": "push-public-key",
+        "bouncer_public_key": "bouncer-public-key",
+        "encrypted_push_registration": "encrypted-push-registration-data",
+    }
+    result = client.call_endpoint(url="/mobile_push/register", method="POST", request=request)
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/mobile_push/register", "post", "200")
+
+
 @openapi_test_function("/typing:post")
 def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
@@ -1986,6 +2003,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_apns_token(client)
     add_fcm_token(client)
     remove_fcm_token(client)
+    register_push_device(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

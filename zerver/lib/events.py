@@ -1957,6 +1957,9 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
+    elif event["type"] == "push_device":
+        state["push_devices"][event["push_account_id"]]["status"] = event["status"]
+        state["push_devices"][event["push_account_id"]]["error_code"] = event.get("error_code")
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
