@@ -58,6 +58,10 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 11.0 (feature level ZF-657917), support was added for
+  `is:watched` filter. The `is:watched` filter replaced and deprecated
+  the `is:alerted` filter.
+
 * In Zulip 10.0 (feature level 366), support was added for a new
   `is:muted` operator combination, matching messages in topics and
   channels that the user has [muted](/help/mute-a-topic).
