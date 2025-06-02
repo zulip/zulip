@@ -184,6 +184,29 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     });
 }
 
+function get_archived_channel_filter_suggestions(
+    last: NarrowTerm,
+    terms: NarrowTerm[],
+): Suggestion[] {
+    const archived_description_html = "All archived channels";
+    const suggestions: SuggestionAndIncompatiblePatterns[] = [
+        {
+            search_string: "channels:archived",
+            description_html: archived_description_html,
+            is_people: false,
+            incompatible_patterns: [
+                {operator: "is", operand: "dm"},
+                {operator: "channel"},
+                {operator: "dm-including"},
+                {operator: "dm"},
+                {operator: "in"},
+                {operator: "channels"},
+            ],
+        },
+    ];
+    return get_special_filter_suggestions(last, terms, suggestions);
+}
+
 function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     // We only suggest groups once a term with a valid user already exists
     if (terms.length === 0) {
@@ -1131,6 +1154,7 @@ export function get_search_result(
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
+        get_archived_channel_filter_suggestions,
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
@@ -1144,6 +1168,7 @@ export function get_search_result(
         filterers = [
             get_is_filter_suggestions,
             get_channel_suggestions,
+            get_archived_channel_filter_suggestions,
             get_people("sender"),
             get_people("from"),
             get_topic_suggestions,
