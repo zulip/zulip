@@ -384,3 +384,32 @@ run_test("initiate_search", ({override_rewire}) => {
     assert.ok(search_bar_opened);
     assert.equal($("#search_query").text(), "");
 });
+
+run_test("set_search_bar_contents with duplicate pills", () => {
+    const duplicate_attachment_terms = [
+        {
+            negated: false,
+            operator: "has",
+            operand: "attachment",
+        },
+        {
+            negated: false,
+            operator: "has",
+            operand: "attachment",
+        },
+    ];
+    search_pill.set_search_bar_contents(
+        duplicate_attachment_terms,
+        search.search_pill_widget,
+        false,
+        noop,
+    );
+    const pills = search.search_pill_widget._get_pills_for_testing();
+    assert.equal(pills.length, 1);
+    assert.deepEqual(pills[0].item, {
+        type: "search",
+        operator: "has",
+        operand: "attachment",
+        negated: false,
+    });
+});
