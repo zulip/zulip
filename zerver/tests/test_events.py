@@ -189,6 +189,8 @@ from zerver.lib.event_schema import (
     check_navigation_view_update,
     check_onboarding_steps,
     check_presence,
+    check_push_account_remove,
+    check_push_account_update,
     check_reaction_add,
     check_reaction_remove,
     check_realm_bot_add,
@@ -247,6 +249,7 @@ from zerver.lib.event_schema import (
     check_user_topic,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
+from zerver.lib.exceptions import InvalidBouncerPublicKeyError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
@@ -281,6 +284,7 @@ from zerver.models import (
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationUser,
+    PushDevice,
     Realm,
     RealmAuditLog,
     RealmDomain,
@@ -314,6 +318,7 @@ from zerver.tornado.event_queue import (
     send_web_reload_client_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
+from zerver.worker.register_push_device_to_bouncer import RegisterPushDeviceToBouncerWorker
 from zerver.worker.thumbnail import ensure_thumbnails
 
 
@@ -4211,6 +4216,62 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(audit_log.event_type, AuditLogEventType.REALM_EXPORT_DELETED)
         self.assertEqual(audit_log.acting_user, self.user_profile)
         self.assertEqual(audit_log.extra_data["realm_export_id"], export_row_id)
+
+    @mock.patch(
+        "zerver.worker.register_push_device_to_bouncer.do_register_remote_push_device",
+        return_value=3,
+    )
+    def test_push_account_update(self, unused_mock: mock.Mock) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        push_device = PushDevice.objects.create(
+            user=hamlet,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_account_id=2408,
+            push_public_key="dummy-push-public-key",
+            bouncer_public_key="bouncer-public-key",
+            encrypted_push_registration="encrypted-push-registration",
+        )
+
+        worker_data = {
+            "user_profile_id": push_device.user.id,
+            "push_account_id": push_device.push_account_id,
+            "bouncer_public_key": push_device.bouncer_public_key,
+            "encrypted_push_registration": push_device.encrypted_push_registration,
+        }
+        with self.verify_action(state_change_expected=True, num_events=1) as events:
+            worker = RegisterPushDeviceToBouncerWorker()
+            worker.consume(worker_data)
+        check_push_account_update("events[0]", events[0])
+
+    @mock.patch(
+        "zerver.worker.register_push_device_to_bouncer.do_register_remote_push_device",
+        side_effect=InvalidBouncerPublicKeyError,
+    )
+    def test_push_account_remove(self, unused_mock: mock.Mock) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        push_device = PushDevice.objects.create(
+            user=hamlet,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_account_id=2408,
+            push_public_key="dummy-push-public-key",
+            bouncer_public_key="bouncer-public-key",
+            encrypted_push_registration="encrypted-push-registration",
+        )
+
+        worker_data = {
+            "user_profile_id": push_device.user.id,
+            "push_account_id": push_device.push_account_id,
+            "bouncer_public_key": push_device.bouncer_public_key,
+            "encrypted_push_registration": push_device.encrypted_push_registration,
+        }
+        with self.verify_action(state_change_expected=True, num_events=1) as events:
+            worker = RegisterPushDeviceToBouncerWorker()
+            worker.consume(worker_data)
+        check_push_account_remove("events[0]", events[0])
 
     def test_notify_realm_export_on_failure(self) -> None:
         do_change_user_role(

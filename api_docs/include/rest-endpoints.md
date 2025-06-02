@@ -158,3 +158,4 @@
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Register push account for E2EE notifications](/api/register-push-account)

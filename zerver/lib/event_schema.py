@@ -44,6 +44,8 @@ from zerver.lib.event_types import (
     EventNavigationViewsUpdate,
     EventOnboardingSteps,
     EventPresence,
+    EventPushAccountRemove,
+    EventPushAccountUpdate,
     EventReactionAdd,
     EventReactionRemove,
     EventRealmBilling,
@@ -184,6 +186,8 @@ check_navigation_view_add = make_checker(EventNavigationViewsAdd)
 check_navigation_view_remove = make_checker(EventNavigationViewsRemove)
 check_navigation_view_update = make_checker(EventNavigationViewsUpdate)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
+check_push_account_update = make_checker(EventPushAccountUpdate)
+check_push_account_remove = make_checker(EventPushAccountRemove)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
 check_realm_billing = make_checker(EventRealmBilling)

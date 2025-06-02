@@ -1941,6 +1941,11 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
+    elif event["type"] == "push_account":
+        if event["op"] == "update":
+            state["push_accounts"][event["push_account_id"]]["status"] = event["status"]
+        elif event["op"] == "remove":
+            del state["push_accounts"][event["push_account_id"]]
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 

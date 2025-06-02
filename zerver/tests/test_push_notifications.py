@@ -28,7 +28,11 @@ from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_upd
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import (
+    InvalidBouncerPublicKeyError,
+    JsonableError,
+    PushRegistrationLivenessTimedOutError,
+)
 from zerver.lib.push_notifications import (
     DeviceToken,
     InvalidRemotePushDeviceTokenError,
@@ -66,6 +70,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     Message,
+    PushDevice,
     PushDeviceToken,
     RealmAuditLog,
     Recipient,
@@ -1488,6 +1493,166 @@ class RegisterPushDeviceToBouncer(BouncerTestCase):
             invalid_token_payload,
         )
         self.assert_json_error(result, "Invalid encrypted_push_registration")
+
+
+class RegisterPushDeviceToServer(ZulipTestCase):
+    @staticmethod
+    def get_register_push_device_payload() -> dict[str, str | int]:
+        payload: dict[str, str | int] = {
+            "token_kind": PushDevice.TokenKind.FCM,
+            "push_account_id": 2408,
+            "push_public_key": "dummy-push-public-key",
+            "bouncer_public_key": "bouncer-public-key",
+            "encrypted_push_registration": "encrypted-push-registration",
+        }
+        return payload
+
+    @mock.patch(
+        "zerver.worker.register_push_device_to_bouncer.do_register_remote_push_device",
+        return_value=3,
+    )
+    def test_register_push_device_success(self, unused_mock: mock.Mock) -> None:
+        self.login("hamlet")
+
+        push_devices_count = PushDevice.objects.count()
+        self.assertEqual(push_devices_count, 0)
+
+        payload = self.get_register_push_device_payload()
+
+        # Verify the created PushDevice row while the registration
+        # to the bouncer is in progress (worker hasn't consumed yet).
+        with mock.patch("zerver.views.push_notifications.queue_event_on_commit"):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 1)
+        self.assertIsNone(push_devices[0].bouncer_device_id)
+        self.assertIsNotNone(push_devices[0].bouncer_public_key)
+        self.assertIsNotNone(push_devices[0].encrypted_push_registration)
+
+        # Verify the created PushDevice row after the
+        # registration to the bouncer is complete.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            payload["push_account_id"] = 9999
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.order_by("pk")
+        self.assert_length(push_devices, 2)
+        self.assertIsNotNone(push_devices[1].bouncer_device_id)
+        self.assertIsNone(push_devices[1].bouncer_public_key)
+        self.assertIsNone(push_devices[1].encrypted_push_registration)
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="push_account", op="update", push_account_id="9999", status="active"),
+        )
+
+        # Idempotent
+        with self.capture_send_event_calls(expected_num_events=0):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 2)
+
+        # For coverage
+        with (
+            self.settings(ZILENCER_ENABLED=False),
+            mock.patch(
+                "zerver.worker.register_push_device_to_bouncer.send_to_push_bouncer",
+                return_value={"device_id": 4},
+            ),
+            self.capture_send_event_calls(expected_num_events=1),
+        ):
+            payload["push_account_id"] = 5555
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 3)
+
+    def test_register_push_device_error(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        payload = self.get_register_push_device_payload()
+
+        # Verify InvalidBouncerPublicKeyError
+        with (
+            mock.patch(
+                "zerver.worker.register_push_device_to_bouncer.do_register_remote_push_device",
+                side_effect=InvalidBouncerPublicKeyError,
+            ),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 0)
+        self.assertEqual(
+            events[0]["event"],
+            dict(
+                type="push_account",
+                op="remove",
+                push_account_id="2408",
+                reason="Invalid bouncer_public_key",
+            ),
+        )
+
+        # Verify PushRegistrationLivenessTimedOutError
+        with (
+            mock.patch(
+                "zerver.worker.register_push_device_to_bouncer.do_register_remote_push_device",
+                side_effect=PushRegistrationLivenessTimedOutError,
+            ),
+            self.assertLogs(level="ERROR") as m,
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 0)
+        self.assertEqual(
+            events[0]["event"], dict(type="push_account", op="remove", push_account_id="2408")
+        )
+        self.assertEqual(
+            m.output,
+            [
+                f"ERROR:root:Push device registration for user_id={hamlet.id}, push_account_id=2408 timedout."
+            ],
+        )
+
+        # Verify any other Exception resulting in retry and eventually timedout error.
+        attempt = [0]
+        start_time = now()
+
+        def fake_time() -> int:
+            if attempt[0] == 1:
+                return datetime_to_timestamp(start_time + timedelta(days=2))
+            return datetime_to_timestamp(start_time + timedelta(hours=attempt[0]))
+
+        def raise_exception(*args: Any, **kwargs: Any) -> None:
+            attempt[0] += 1
+            raise Exception("some failure")
+
+        with (
+            mock.patch(
+                "zerver.worker.register_push_device_to_bouncer.do_register_remote_push_device",
+                side_effect=raise_exception,
+            ),
+            mock.patch(
+                "zerver.worker.register_push_device_to_bouncer.time.time", side_effect=fake_time
+            ),
+            mock.patch(
+                "zerver.worker.register_push_device_to_bouncer.time.sleep", return_value=None
+            ),
+            self.assertLogs(level="WARNING"),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 0)
+        self.assertEqual(
+            events[0]["event"], dict(type="push_account", op="remove", push_account_id="2408")
+        )
 
 
 class TestAPNs(PushNotificationTestCase):

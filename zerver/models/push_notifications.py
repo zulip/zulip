@@ -77,7 +77,8 @@ class PushDevice(models.Model):
 
     class Meta:
         indexes = [
-            # TODO: Add comment while adding query in future commit.
+            # Index used by queries in `get_push_accounts`,
+            # `register_push_device`, and `RegisterPushDeviceToBouncerWorker`.
             models.Index(
                 fields=["user", "push_account_id"],
                 name="zerver_push_device_user_push_account_id_idx",

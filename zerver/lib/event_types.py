@@ -283,6 +283,20 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
+class EventPushAccountUpdate(BaseEvent):
+    type: Literal["push_account"]
+    op: Literal["update"]
+    push_account_id: str
+    status: Literal["active"]
+
+
+class EventPushAccountRemove(BaseEvent):
+    type: Literal["push_account"]
+    op: Literal["remove"]
+    push_account_id: str
+    reason: Literal["Invalid bouncer_public_key"] | None
+
+
 class NavigationViewFields(BaseModel):
     fragment: str
     is_pinned: bool
