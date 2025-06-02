@@ -601,7 +601,7 @@ export class MessageListView {
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:
-            1. Hide the sender avatar and name.
+            1. Replace the sender avatar and name with a muted sender avatar and name as "Muted sender".
             2. Hide reactions on that message.
             3. Do not give a background color to that message even if it mentions the
                current user.
@@ -651,7 +651,7 @@ export class MessageListView {
         } else {
             mention_classname = undefined;
         }
-        let include_sender = existing_include_sender && !is_hidden;
+        let include_sender = existing_include_sender;
         if (is_revealed) {
             // If the message is to be revealed, we show the sender anyways, because the
             // the first message in the group (which would hold the sender) can still be
@@ -666,7 +666,9 @@ export class MessageListView {
             message.sender_id,
         );
 
-        const small_avatar_url = people.small_avatar_url(message);
+        const small_avatar_url = is_hidden
+            ? "../../static/images/muted-user/muted-sender.png"
+            : people.small_avatar_url(message);
         let background_color;
         if (message.type === "stream") {
             background_color = stream_data.get_color(message.stream_id);

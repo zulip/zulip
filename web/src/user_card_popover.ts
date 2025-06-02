@@ -672,6 +672,9 @@ function register_click_handlers(): void {
         "click",
         ".sender_name, .inline-profile-picture-wrapper",
         function (this: HTMLElement, e) {
+            if (this.closest(".muted_message_sender")) {
+                return;
+            }
             const $row = $(this).closest(".message_row");
             e.stopPropagation();
             assert(message_lists.current !== undefined);
