@@ -22,7 +22,9 @@ from zerver.actions.realm_settings import (
 from zerver.lib import redis_utils
 from zerver.lib.exceptions import (
     JsonableError,
+    MissingBouncerPublicKeyError,
     MissingRemoteRealmError,
+    PushRegistrationLifespanExceededError,
     RemoteRealmServerMismatchError,
 )
 from zerver.lib.outgoing_http import OutgoingSession
@@ -226,6 +228,18 @@ def send_to_push_bouncer(
             # The callers requesting this endpoint want the exception to propagate
             # so they can catch it.
             raise RemoteRealmServerMismatchError
+        elif (
+            endpoint == "push/e2ee/register/"
+            and "code" in result_dict
+            and result_dict["code"] == "INVALID_BOUNCER_PUBLIC_KEY"
+        ):
+            raise MissingBouncerPublicKeyError
+        elif (
+            endpoint == "push/e2ee/register/"
+            and "code" in result_dict
+            and result_dict["code"] == "PUSH_REGISTRATION_LIVENESS_TIMEDOUT"
+        ):
+            raise PushRegistrationLifespanExceededError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)

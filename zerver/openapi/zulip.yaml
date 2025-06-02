@@ -1790,6 +1790,75 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a user's clients when the registration status changes.
+
+                                **Changes**: New in Zulip 11.0 (feature level 334).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - push_account_registration_status
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                push_account_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the channel to which the topic belongs.
+                                status:
+                                  type: string
+                                  description: |
+                                    TODO: "active" or "pending"
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "push_account_registration_status",
+                                  "op": "update",
+                                  "push_account_id": 1234,
+                                  "status": "active"
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when the user deletes a file
+                                they had uploaded. Useful primarily for UI showing all the files
+                                the current user has uploaded.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - push_account_registration_status
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                push_account_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the channel to which the topic belongs.
+                                reason:
+                                  type: string
+                                  nullable: true
+                                  description: |
+                                    TODO:
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "push_account_registration_status",
+                                  "op": "update",
+                                  "push_account_id": 1234,
+                                  "reason": "Invalid bouncer_public_key",
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent when a submessage is added to a message.
 
                                 Submessages are an **experimental** API used for widgets such as the
