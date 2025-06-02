@@ -40,3 +40,46 @@ class PushDeviceToken(AbstractPushDeviceToken):
 
     class Meta:
         unique_together = ("user", "kind", "token")
+
+
+class PushDevice(models.Model):
+    """Each row corresponds to an account on an install of the app
+    registered or registration-in-progress to bouncer to receive
+    mobile push notifications.
+    """
+
+    # The logged-in user for an account within an install of the app.
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE)
+
+    class TokenKind(models.IntegerChoices):
+        APNS = 1, "APNs"
+        FCM = 2, "FCM"
+
+    token_kind = models.PositiveSmallIntegerField(choices=TokenKind.choices)
+
+    # ID to identify an account within an install of the app.
+    push_account_id = models.BigIntegerField()
+
+    # Key to use to encrypt notifications.
+    push_public_key = models.TextField()
+
+    # ID to identify the corresponding record on RemotePushDevice.
+    # Set to NULL while registration to bouncer is in progress.
+    bouncer_device_id = models.BigIntegerField(null=True)
+
+    # Key used to encrypt 'encrypted_push_registration'.
+    # Set to NULL once registration to bouncer succeeds.
+    bouncer_public_key = models.TextField(null=True)
+
+    # Registration data encrypted by mobile client for bouncer.
+    # Set to NULL once registration to bouncer succeeds.
+    encrypted_push_registration = models.TextField(null=True)
+
+    class Meta:
+        indexes = [
+            # TODO: Add comment while adding query in future commit.
+            models.Index(
+                fields=["user", "push_account_id"],
+                name="zerver_push_device_user_push_account_id_idx",
+            )
+        ]
