@@ -218,12 +218,18 @@ function message_matches_search_term(message: Message, operator: string, operand
             if (message.type !== "stream") {
                 return false;
             }
+            if (operand === "archived") {
+                const stream = stream_data.get_sub_by_id(message.stream_id);
+                return stream?.is_archived ?? false;
+            }
+
             const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
             switch (operand) {
                 case "public":
                     return ["public", "web-public"].includes(stream_privacy_policy);
                 case "web-public":
                     return stream_privacy_policy === "web-public";
+
                 default:
                     return false;
             }
@@ -456,11 +462,12 @@ export class Filter {
        This is just for the search bar, not for saving the
        narrow in the URL fragment.  There we do use full
        URI encoding to avoid problematic characters. */
-    static encodeOperand(operand: string, operator: string): string {
+    static encodeOperand(operand: string | number, operator: string): string {
+        const operandStr = String(operand);
         if (USER_OPERATORS.has(operator)) {
-            return operand.replaceAll(/[\s"%]/g, (c) => encodeURIComponent(c));
+            return operandStr.replaceAll(/[\s"%]/g, (c) => encodeURIComponent(c));
         }
-        return operand.replaceAll(/[\s"%+]/g, (c) => (c === " " ? "+" : encodeURIComponent(c)));
+        return operandStr.replaceAll(/[\s"%+]/g, (c) => (c === " " ? "+" : encodeURIComponent(c)));
     }
 
     static decodeOperand(encoded: string, operator: string): string {
@@ -588,7 +595,11 @@ export class Filter {
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
-                return channels_operands.has(term.operand);
+                return (
+                    term.operand === "public" ||
+                    term.operand === "archived" ||
+                    term.operand === "web-public"
+                );
             case "topic":
                 return true;
             case "sender":
@@ -658,6 +669,7 @@ export class Filter {
         const levels = [
             "in",
             "channels-public",
+            "channels-archived",
             "channels-web-public",
             "channel",
             "topic",
@@ -826,6 +838,12 @@ export class Filter {
                     content: this.describe_channels_operator(term.negated ?? false, operand),
                 };
             }
+            if (canonicalized_operator === "channels" && operand === "archived") {
+                return {
+                    type: "plain_text",
+                    content: this.describe_archived_channels(term.negated ?? false),
+                };
+            }
             const prefix_for_operator = Filter.operator_to_prefix(
                 canonicalized_operator,
                 term.negated,
@@ -899,6 +917,11 @@ export class Filter {
             default:
                 return possible_prefix + "all public channels";
         }
+    }
+
+    static describe_archived_channels(negated: boolean): string {
+        const possible_prefix = negated ? "exclude " : "";
+        return possible_prefix + "archived channels";
     }
 
     static search_description_as_html(
@@ -1162,6 +1185,8 @@ export class Filter {
             "in-all",
             "channels-public",
             "not-channels-public",
+            "channels-archived",
+            "not-channels-archived",
             "channels-web-public",
             "not-channels-web-public",
             "near",
@@ -1270,6 +1295,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-archived"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["channels-web-public"])) {
             return true;
         }
@@ -1342,6 +1370,8 @@ export class Filter {
                     return "/#narrow/is/mentioned";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "channels-archived":
+                    return "/#narrow/channels/archived";
                 case "channels-web-public":
                     return "/#narrow/channels/web-public";
                 case "dm":
@@ -1517,6 +1547,8 @@ export class Filter {
                         });
                     }
                     return $t({defaultMessage: "Messages in all public channels"});
+                case "channels-archived":
+                    return $t({defaultMessage: "Messages in archived channels"});
                 case "channels-web-public":
                     return $t({defaultMessage: "Messages in all web-public channels"});
                 case "is-starred":
@@ -1631,6 +1663,16 @@ export class Filter {
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo Markdown
             // processor.
+            return false;
+        }
+
+        // TODO: It's not clear why `channels:` filters would not be
+        // applicable locally.
+        if (
+            this.has_operator("channels") ||
+            this.has_negated_operand("channels", "public") ||
+            this.has_negated_operand("channels", "archived")
+        ) {
             return false;
         }
 
@@ -1913,6 +1955,8 @@ export class Filter {
             "not-channels-public",
             "channels-web-public",
             "not-channels-web-public",
+            "channels-archived",
+            "not-channels-archived",
             "is-muted",
             "not-is-muted",
             "in-home",
