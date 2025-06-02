@@ -804,6 +804,12 @@ export class Filter {
                     };
                 }
             }
+            if (canonicalized_operator === "channels" && operand === "public") {
+                return {
+                    type: "plain_text",
+                    content: this.describe_public_channels(term.negated ?? false),
+                };
+            }
             const prefix_for_operator = Filter.operator_to_prefix(
                 canonicalized_operator,
                 term.negated,
@@ -862,6 +868,14 @@ export class Filter {
             };
         });
         return [...parts, ...more_parts];
+    }
+
+    static describe_public_channels(negated: boolean): string {
+        const possible_prefix = negated ? "exclude " : "";
+        if (page_params.is_spectator || current_user.is_guest) {
+            return possible_prefix + "all public channels that you can view";
+        }
+        return possible_prefix + "all public channels";
     }
 
     static search_description_as_html(
