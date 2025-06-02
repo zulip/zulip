@@ -1,5 +1,6 @@
 import uuid
 from datetime import timedelta
+from unittest import mock
 
 import orjson
 from django.conf import settings
@@ -7,8 +8,14 @@ from django.utils.timezone import now
 from nacl.encoding import Base64Encoder
 from nacl.public import PublicKey, SealedBox
 
-from zerver.lib.test_classes import BouncerTestCase
+from zerver.lib.exceptions import (
+    InvalidBouncerPublicKeyError,
+    InvalidEncryptedPushRegistrationError,
+    RequestExpiredError,
+)
+from zerver.lib.test_classes import BouncerTestCase, ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.models import PushDevice
 from zilencer.models import RemotePushDevice, RemoteRealm
 
 
@@ -190,3 +197,189 @@ class RegisterPushDeviceToBouncer(BouncerTestCase):
             invalid_token_payload,
         )
         self.assert_json_error(result, "Invalid encrypted_push_registration")
+
+
+class RegisterPushDeviceToServer(ZulipTestCase):
+    @staticmethod
+    def get_register_push_device_payload() -> dict[str, str | int]:
+        payload: dict[str, str | int] = {
+            "token_kind": PushDevice.TokenKind.FCM,
+            "push_account_id": 2408,
+            "push_public_key": "dummy-push-public-key",
+            "bouncer_public_key": "bouncer-public-key",
+            "encrypted_push_registration": "encrypted-push-registration",
+        }
+        return payload
+
+    @mock.patch(
+        "zerver.lib.push_registration.do_register_remote_push_device",
+        return_value=3,
+    )
+    def test_register_push_device_success(self, unused_mock: mock.Mock) -> None:
+        self.login("hamlet")
+
+        push_devices_count = PushDevice.objects.count()
+        self.assertEqual(push_devices_count, 0)
+
+        payload = self.get_register_push_device_payload()
+
+        # Verify the created PushDevice row while the registration
+        # to the bouncer is in progress (worker hasn't consumed yet).
+        with mock.patch("zerver.views.push_notifications.queue_event_on_commit"):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 1)
+        self.assertIsNone(push_devices[0].bouncer_device_id)
+        self.assertEqual(push_devices[0].status, "pending")
+
+        # Verify the created PushDevice row after the
+        # registration to the bouncer is complete.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            payload["push_account_id"] = 9999
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.order_by("pk")
+        self.assert_length(push_devices, 2)
+        self.assertIsNotNone(push_devices[1].bouncer_device_id)
+        self.assertEqual(push_devices[1].status, "active")
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="push_device", push_account_id="9999", status="active"),
+        )
+
+        # Idempotent
+        with self.capture_send_event_calls(expected_num_events=0):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 2)
+
+        # For coverage
+        with (
+            self.settings(ZILENCER_ENABLED=False),
+            mock.patch(
+                "zerver.lib.push_registration.send_to_push_bouncer",
+                return_value={"device_id": 4},
+            ),
+            self.capture_send_event_calls(expected_num_events=1),
+        ):
+            payload["push_account_id"] = 5555
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 3)
+
+    def test_register_push_device_error(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        push_devices_count = PushDevice.objects.count()
+        self.assertEqual(push_devices_count, 0)
+
+        payload = self.get_register_push_device_payload()
+
+        # Verify InvalidBouncerPublicKeyError
+        with (
+            mock.patch(
+                "zerver.lib.push_registration.do_register_remote_push_device",
+                side_effect=InvalidBouncerPublicKeyError,
+            ),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 1)
+        self.assertEqual(push_devices[0].error_code, InvalidBouncerPublicKeyError.code.name)
+        self.assertEqual(push_devices[0].status, "failed")
+        self.assertEqual(
+            events[0]["event"],
+            dict(
+                type="push_device",
+                push_account_id="2408",
+                status="failed",
+                error_code="INVALID_BOUNCER_PUBLIC_KEY",
+            ),
+        )
+
+        # Retrying with correct payload results in success.
+        # `error_code` of the same PushDevice row updated to None.
+        with (
+            mock.patch(
+                "zerver.lib.push_registration.do_register_remote_push_device",
+                return_value=3,
+            ),
+            self.capture_send_event_calls(expected_num_events=1),
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 1)
+        self.assertIsNone(push_devices[0].error_code)
+        self.assertEqual(push_devices[0].status, "active")
+
+        # Reset
+        PushDevice.objects.all().delete()
+
+        # Verify InvalidEncryptedPushRegistrationError
+        with (
+            mock.patch(
+                "zerver.lib.push_registration.do_register_remote_push_device",
+                side_effect=InvalidEncryptedPushRegistrationError,
+            ),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 1)
+        self.assertEqual(
+            push_devices[0].error_code, InvalidEncryptedPushRegistrationError.code.name
+        )
+        self.assertEqual(
+            events[0]["event"],
+            dict(
+                type="push_device",
+                push_account_id="2408",
+                status="failed",
+                error_code="BAD_REQUEST",
+            ),
+        )
+
+        # Reset
+        PushDevice.objects.all().delete()
+
+        # Verify RequestExpiredError
+        with (
+            mock.patch(
+                "zerver.lib.push_registration.do_register_remote_push_device",
+                side_effect=RequestExpiredError,
+            ),
+            self.assertLogs(level="ERROR") as m,
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+        push_devices = PushDevice.objects.all()
+        self.assert_length(push_devices, 1)
+        self.assertEqual(push_devices[0].error_code, RequestExpiredError.code.name)
+        self.assertEqual(
+            events[0]["event"],
+            dict(
+                type="push_device",
+                push_account_id="2408",
+                status="failed",
+                error_code="REQUEST_EXPIRED",
+            ),
+        )
+        self.assertEqual(
+            m.output,
+            [
+                f"ERROR:root:Push device registration request for user_id={hamlet.id}, push_account_id=2408 expired."
+            ],
+        )
+
+        # TODO: Verify any other Exception resulting in a retry for a day.
+        # This implementation would be a follow-up. Currently `retry_event`
+        # leads to 3 retries at max.
