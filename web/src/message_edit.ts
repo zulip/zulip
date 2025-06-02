@@ -20,6 +20,7 @@ import {detached_uploads_api_response_schema} from "./attachments.ts";
 import * as attachments_ui from "./attachments_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -785,11 +786,14 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
 }
 
 function show_toggle_resolve_topic_spinner($row: JQuery): void {
-    const $spinner = $row.find(".toggle_resolve_topic_spinner");
-    loading.make_indicator($spinner);
-    $spinner.css({width: "1em"});
-    $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").hide();
-    $row.find(".toggle_resolve_topic_spinner").show();
+    const $button = $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").expectOne();
+    $button.addClass("loading-resolve-topic-state");
+    // While we call the show_button_loading_indicator method to
+    // show the spinner, we don't need to call the corresponding
+    // hide_button_loading_indicator method later in the code
+    // for a successful resolve/unresolve request, as that results
+    // in a rerender of the message feed which replaces the button.
+    buttons.show_button_loading_indicator($button);
 }
 
 function get_resolve_topic_time_limit_error_string(
@@ -954,18 +958,7 @@ function do_toggle_resolve_topic(
     void channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
-        success() {
-            if ($row) {
-                const $spinner = $row.find(".toggle_resolve_topic_spinner");
-                loading.destroy_indicator($spinner);
-            }
-        },
         error(xhr) {
-            if ($row) {
-                const $spinner = $row.find(".toggle_resolve_topic_spinner");
-                loading.destroy_indicator($spinner);
-            }
-
             if (xhr.responseJSON) {
                 const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
                 if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
