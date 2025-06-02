@@ -317,14 +317,20 @@ export function initialize(): void {
         },
     );
 
-    message_list_tooltip("#message_feed_container .recipient-bar-control-icon:not(.toggle_resolve_topic_spinner)", {
+    message_list_tooltip("#message_feed_container .recipient-bar-control-icon", {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             const $reference = $(instance.reference);
+            if ($reference.hasClass("loading-resolve-topic-state")) {
+                // Don't show tooltip when the loading indicator is being
+                // displayed while resolving/unresolving a topic.
+                return false;
+            }
             if ($reference.hasClass("external-topic-link")) {
                 const url_name = $reference.attr("data-tippy-content")!;
                 instance.setContent($t({defaultMessage: "Open {url_name}"}, {url_name}));
             }
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();

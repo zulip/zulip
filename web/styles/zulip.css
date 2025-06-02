@@ -1285,16 +1285,14 @@ nav {
     text-align: center;
 }
 
-div.topic_edit_spinner,
-div.toggle_resolve_topic_spinner {
+div.topic_edit_spinner {
     display: flex;
     align-items: center;
     width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
     height: 1.2em; /* 18px at 15px/em */
 }
 
-div.topic_edit_spinner .loading_indicator_spinner,
-div.toggle_resolve_topic_spinner .loading_indicator_spinner {
+div.topic_edit_spinner .loading_indicator_spinner {
     width: 0.9333em; /* 14px at 15px/em  (from font size set in .message-header-contents) */
     height: 0.9333em; /* 14px at 15px/em */
 
