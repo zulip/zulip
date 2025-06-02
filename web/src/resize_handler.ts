@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as compose_ui from "./compose_ui.ts";
 import * as condense from "./condense.ts";
+import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as resize from "./resize.ts";
@@ -28,6 +29,7 @@ export function handler(): void {
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
     compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
+    message_edit.maybe_autosize_message_edit_box();
     resize.update_recent_view();
     scroll_bar.handle_overlay_scrollbars();
 
