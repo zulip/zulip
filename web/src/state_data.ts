@@ -153,6 +153,12 @@ export const muted_user_schema = z.object({
     timestamp: z.number(),
 });
 
+export const navigation_view_schema = z.object({
+    fragment: z.string(),
+    name: z.string().nullish(),
+    is_pinned: z.boolean(),
+});
+
 const unread_stream_info_schema = z.object({
     stream_id: z.number(),
     topic: z.string(),
@@ -473,6 +479,11 @@ export const state_data_schema = z
                 presence_last_update_id: z.number().optional(),
             })
             .transform((presence) => ({presence})),
+    )
+    .and(
+        z
+            .object({navigation_views: z.array(navigation_view_schema)})
+            .transform((navigation_views) => ({navigation_views})),
     )
     .and(
         z

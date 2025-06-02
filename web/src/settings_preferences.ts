@@ -12,6 +12,7 @@ import * as hash_parser from "./hash_parser.ts";
 import {$t_html, get_language_list_columns, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as loading from "./loading.ts";
+import * as navigation_views_ui from "./navigation_views_ui.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
@@ -257,10 +258,15 @@ export function set_up(settings_panel: SettingsPanel): void {
         return;
     }
 
+    navigation_views_ui.set_up();
+
     // Common handler for sending requests to the server when an input
     // element is changed.
     $container.on("change", "input[type=checkbox], select", function (this: HTMLElement, e) {
         const $input_elem = $(e.currentTarget);
+        if ($input_elem.hasClass("navigation-view-checkbox")) {
+            return;
+        }
         const setting = $input_elem.attr("name");
         assert(setting !== undefined);
         const data: Record<string, string | boolean | number> = {};
