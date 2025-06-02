@@ -1,9 +1,12 @@
+from typing import Annotated
+
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.decorator import human_users_only, zulip_login_required
 from zerver.lib import redis_utils
@@ -23,6 +26,7 @@ from zerver.lib.push_notifications import (
     uses_notification_bouncer,
     validate_token,
 )
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.remote_server import (
     SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
     UserDataForRemoteBilling,
@@ -32,7 +36,8 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint, typed_endpoint_without_parameters
-from zerver.models import PushDeviceToken, UserProfile
+from zerver.lib.typed_endpoint_validators import check_int_in_validator
+from zerver.models import PushDevice, PushDeviceToken, UserProfile
 from zerver.views.errors import config_error
 
 redis_client = redis_utils.get_redis_client()
@@ -254,3 +259,39 @@ def self_hosting_registration_transfer_challenge_verify(
     verification_secret = data["verification_secret"]
 
     return json_success(request, data={"verification_secret": verification_secret})
+
+
+@human_users_only
+@typed_endpoint
+def register_push_device(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    token_kind: Json[Annotated[int, check_int_in_validator(PushDevice.TokenKind.values)]],
+    push_account_id: Json[int],
+    push_public_key: Json[str],
+    bouncer_public_key: Json[str],
+    encrypted_push_registration: Json[str],
+) -> HttpResponse:
+    # TODO: If push notification not configured, return
+
+    PushDevice.objects.create(
+        user=user_profile,
+        token_kind=token_kind,
+        push_account_id=push_account_id,
+        push_public_key=push_public_key,
+        bouncer_public_key=bouncer_public_key,
+        encrypted_push_registration=encrypted_push_registration,
+    )
+
+    queue_event_on_commit(
+        "register_push_device_to_bouncer",
+        {
+            "user_profile_id": user_profile.id,
+            "bouncer_public_key": bouncer_public_key,
+            "encrypted_push_registration": encrypted_push_registration,
+            "push_account_id": push_account_id,
+        },
+    )
+
+    return json_success(request)
