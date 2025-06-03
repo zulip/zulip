@@ -115,7 +115,7 @@ export function set_hash_to_home_view(triggered_by_escape_key = false): void {
     // but doesn't trigger `hashchange`. So, we trigger hashchange directly
     // here to let it handle the whole rendering process for us.
     browser_history.set_hash("");
-    hashchanged(false);
+    void hashchanged(false);
 }
 
 function show_home_view(): void {
@@ -151,7 +151,10 @@ function show_home_view(): void {
 }
 
 // Returns true if this function performed a narrow
-function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean): boolean {
+async function do_hashchange_normal(
+    from_reload: boolean,
+    restore_selected_id: boolean,
+): Promise<boolean> {
     message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
@@ -165,7 +168,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             let terms;
             try {
                 // TODO: Show possible valid URLs to the user.
-                terms = hash_util.parse_narrow(hash);
+                terms = await hash_util.parse_narrow(hash);
             } catch {
                 ui_report.error(
                     $t_html({defaultMessage: "Invalid URL"}),
@@ -486,7 +489,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
     if (base === "user") {
         const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
-        if (!people.is_known_user_id(user_id)) {
+        if (!people.is_valid_user_id(user_id)) {
             user_profile.show_user_profile_access_error_modal();
         } else {
             const user = people.get_by_user_id(user_id);
@@ -495,11 +498,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 }
 
-function hashchanged(
+async function hashchanged(
     from_reload: boolean,
     e?: JQuery.Event | HashChangeEvent,
     restore_selected_id = true,
-): boolean | undefined {
+): Promise<boolean | undefined> {
     const current_hash = window.location.hash;
     const old_hash = e && ("oldURL" in e ? new URL(e.oldURL).hash : browser_history.old_hash());
     const is_hash_web_public_compatible = browser_history.update_web_public_hash(current_hash);
@@ -536,7 +539,7 @@ function hashchanged(
     sidebar_ui.hide_all();
     modals.close_active_if_any();
     browser_history.state.changing_hash = true;
-    const ret = do_hashchange_normal(from_reload, restore_selected_id);
+    const ret = await do_hashchange_normal(from_reload, restore_selected_id);
     browser_history.state.changing_hash = false;
     return ret;
 }
@@ -547,9 +550,9 @@ export function initialize(): void {
     window.history.scrollRestoration = "manual";
 
     $(window).on("hashchange", (e) => {
-        hashchanged(false, e.originalEvent);
+        void hashchanged(false, e.originalEvent);
     });
-    hashchanged(true);
+    void hashchanged(true);
 
     $("body").on("click", "a", function (this: HTMLAnchorElement, e: JQuery.ClickEvent) {
         if (this.hash === window.location.hash && this.hash.includes("/near/")) {
@@ -557,7 +560,7 @@ export function initialize(): void {
             // matches the current view. Such a click doesn't trigger
             // a hashchange event, so we manually trigger one in order
             // to ensure the app scrolls to the correct message.
-            hashchanged(false, e, false);
+            void hashchanged(false, e, false);
         }
     });
 }

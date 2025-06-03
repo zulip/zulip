@@ -387,24 +387,29 @@ function load_data_from_ls(): void {
     );
 }
 
-function format_dm(
+async function format_dm(
     user_ids_string: string,
     unread_count: number,
     latest_msg_id: number,
-): DirectMessageContext {
+): Promise<DirectMessageContext> {
     const recipient_ids = people.user_ids_string_to_ids_array(user_ids_string);
     if (recipient_ids.length === 0) {
         // Self DM
         recipient_ids.push(people.my_current_user_id());
     }
 
-    const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
+    const reply_to = await people.get_or_fetch_user_ids_string_to_emails_string(user_ids_string);
     assert(reply_to !== undefined);
-    const rendered_dm_with = recipient_ids
-        .map((recipient_id) => ({
-            name: people.get_display_full_name(recipient_id),
+    const recipients_info = [];
+    for (const recipient_id of recipient_ids) {
+        const full_name = await people.get_or_fetch_display_full_name(recipient_id);
+        recipients_info.push({
+            name: full_name,
             status_emoji_info: user_status.get_status_emoji(recipient_id),
-        }))
+        });
+    }
+
+    const rendered_dm_with = recipients_info
         .sort((a, b) => util.strcmp(a.name, b.name))
         .map((user_info) => render_user_with_status_icon(user_info));
 
@@ -728,13 +733,13 @@ function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
     return new Map([...row_dict].sort(([, a], [, b]) => b.latest_msg_id - a.latest_msg_id));
 }
 
-function reset_data(): {
+async function reset_data(): Promise<{
     unread_dms_count: number;
     is_dms_collapsed: boolean;
     has_dms_post_filter: boolean;
     has_visible_unreads: boolean;
     has_unread_mention: boolean;
-} {
+}> {
     dms_dict = new Map();
     topics_dict = new Map();
     streams_dict = new Map();
@@ -752,7 +757,7 @@ function reset_data(): {
     if (unread_dms_count) {
         for (const [key, {count, latest_msg_id}] of unread_dms_dict) {
             if (count) {
-                const dm_data = format_dm(key, count, latest_msg_id);
+                const dm_data = await format_dm(key, count, latest_msg_id);
                 dms_dict.set(key, dm_data);
                 if (!dm_data.is_hidden) {
                     has_dms_post_filter = true;
@@ -824,7 +829,7 @@ function filter_click_handler(
     save_data_to_ls();
     dropdown.hide();
     widget.render();
-    update();
+    void update();
 }
 
 export function update_channel_view(channel_id: number): void {
@@ -930,6 +935,26 @@ function render_channel_view(channel_id: number): void {
     });
 }
 
+function post_complete_rerender_callback(): void {
+    // If the focus is not on the inbox rows, the inbox view scrolls
+    // down when moving from other views to the inbox view. To avoid
+    // this, we scroll to top before restoring focus via revive_current_focus.
+    $("html").scrollTop(0);
+    setTimeout(() => {
+        revive_current_focus();
+    }, 0);
+
+    const first_filter = filters.values().next();
+    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+        widget_name: "inbox-filter",
+        item_click_callback: filter_click_handler,
+        $events_container: $("#inbox-main"),
+        default_id: first_filter.done ? undefined : first_filter.value,
+    });
+    filters_dropdown_widget.setup();
+}
+
 export function complete_rerender(): void {
     if (!inbox_util.is_visible()) {
         return;
@@ -955,41 +980,26 @@ export function complete_rerender(): void {
 
             render_channel_view(channel_id);
         }
+        post_complete_rerender_callback();
     } else {
         channel_view_topic_widget = undefined;
-        const {has_visible_unreads, ...additional_context} = reset_data();
-        $("#inbox-pane").html(
-            render_inbox_view({
-                normal_view: true,
-                search_val: search_keyword,
-                INBOX_SEARCH_ID,
-                dms_dict,
-                topics_dict,
-                streams_dict,
-                ...additional_context,
-            }),
-        );
-        show_empty_inbox_channel_view_text(false);
-        show_empty_inbox_text(has_visible_unreads);
+        void reset_data().then(({has_visible_unreads, ...additional_context}) => {
+            $("#inbox-pane").html(
+                render_inbox_view({
+                    normal_view: true,
+                    search_val: search_keyword,
+                    INBOX_SEARCH_ID,
+                    dms_dict,
+                    topics_dict,
+                    streams_dict,
+                    ...additional_context,
+                }),
+            );
+            show_empty_inbox_channel_view_text(false);
+            show_empty_inbox_text(has_visible_unreads);
+            post_complete_rerender_callback();
+        });
     }
-
-    // If the focus is not on the inbox rows, the inbox view scrolls
-    // down when moving from other views to the inbox view. To avoid
-    // this, we scroll to top before restoring focus via revive_current_focus.
-    $("html").scrollTop(0);
-    setTimeout(() => {
-        revive_current_focus();
-    }, 0);
-
-    const first_filter = filters.values().next();
-    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
-        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
-        widget_name: "inbox-filter",
-        item_click_callback: filter_click_handler,
-        $events_container: $("#inbox-main"),
-        default_id: first_filter.done ? undefined : first_filter.value,
-    });
-    filters_dropdown_widget.setup();
 }
 
 export function search_and_update(): void {
@@ -1000,7 +1010,7 @@ export function search_and_update(): void {
     search_keyword = new_keyword;
     current_focus_id = INBOX_SEARCH_ID;
     update_triggered_by_user = true;
-    update();
+    void update();
 }
 
 function row_in_search_results(keyword: string, text: string): boolean {
@@ -1130,7 +1140,7 @@ export function revive_current_focus(): void {
     }
 }
 
-function update_closed_compose_text($row: JQuery, is_header_row: boolean): void {
+async function update_closed_compose_text($row: JQuery, is_header_row: boolean): Promise<void> {
     if (is_header_row) {
         compose_closed_ui.set_standard_text_for_reply_button();
         return;
@@ -1142,7 +1152,8 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
         const $recipients_info = $row.find(".recipients_info");
         const narrow_url = $recipients_info.attr("href");
         assert(narrow_url !== undefined);
-        const recipient_ids = hash_util.decode_dm_recipient_user_ids_from_narrow_url(narrow_url);
+        const recipient_ids =
+            await hash_util.decode_dm_recipient_user_ids_from_narrow_url(narrow_url);
         if (recipient_ids) {
             reply_recipient_information = {
                 user_ids: recipient_ids,
@@ -1162,11 +1173,13 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
     compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
 }
 
-export function get_focused_row_message(): {message?: Message | undefined} & (
-    | {msg_type: "private"; private_message_recipient?: string}
-    | {msg_type: "stream"; stream_id: number; topic?: string}
-    | {msg_type?: never}
-) {
+export async function get_focused_row_message(): Promise<
+    {message?: Message | undefined} & (
+        | {msg_type: "private"; private_message_recipient?: string}
+        | {msg_type: "stream"; stream_id: number; topic?: string}
+        | {msg_type?: never}
+    )
+> {
     if (!is_list_focused()) {
         return {message: undefined};
     }
@@ -1198,7 +1211,9 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
         assert(row_info !== undefined);
         const message = message_store.get(row_info.latest_msg_id);
         if (message === undefined) {
-            const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
+            const recipients = await people.get_or_fetch_user_ids_string_to_emails_string(
+                row_info.user_ids_string,
+            );
             assert(recipients !== undefined);
             return {
                 msg_type: "private",
@@ -1226,8 +1241,8 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
     };
 }
 
-export function toggle_topic_visibility_policy(): boolean {
-    const inbox_message = get_focused_row_message();
+export async function toggle_topic_visibility_policy(): Promise<boolean> {
+    const inbox_message = await get_focused_row_message();
     if (inbox_message.message !== undefined) {
         user_topics_ui.toggle_topic_visibility_policy(inbox_message.message);
         if (inbox_message.message.type === "stream") {
@@ -1277,7 +1292,7 @@ function set_list_focus(input_key?: string): void {
     const total_cols = cols_to_focus.length;
     current_focus_id = $row_to_focus.attr("id");
     const is_header_row = is_row_a_header($row_to_focus);
-    update_closed_compose_text($row_to_focus, is_header_row);
+    void update_closed_compose_text($row_to_focus, is_header_row);
 
     // Loop through columns.
     if (col_focus > total_cols - 1) {
@@ -1534,7 +1549,7 @@ export function change_focused_element(input_key: string): boolean {
     return false;
 }
 
-export function update(): void {
+export async function update(): Promise<void> {
     if (!inbox_util.is_visible()) {
         return;
     }
@@ -1557,7 +1572,7 @@ export function update(): void {
     for (const [key, {count, latest_msg_id}] of unread_dms_dict) {
         if (count !== 0) {
             const old_dm_data = dms_dict.get(key);
-            const new_dm_data = format_dm(key, count, latest_msg_id);
+            const new_dm_data = await format_dm(key, count, latest_msg_id);
             rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data, dm_keys_to_insert);
             dms_dict.set(key, new_dm_data);
             if (!new_dm_data.is_hidden) {

@@ -823,21 +823,32 @@ function register_click_handlers(): void {
         e.preventDefault();
     });
 
-    $("body").on("click", ".message-user-card-popover-root .mention_user", function (e) {
-        if (!compose_state.composing()) {
-            compose_reply.respond_to_message({
-                trigger: "user sidebar popover",
-                keep_composebox_empty: true,
-            });
-        }
-        const user_id = elem_to_user_id($(this).parents("ul"));
-        const name = people.get_by_user_id(user_id).full_name;
-        const is_active = people.is_active_user_for_popover(user_id);
-        const mention = people.get_mention_syntax(name, user_id, !is_active);
-        compose_ui.insert_syntax_and_focus(mention);
-        message_user_card.hide();
+    $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
         e.stopPropagation();
         e.preventDefault();
+
+        function mention_user(element: HTMLElement): void {
+            const user_id = elem_to_user_id($(element).parents("ul"));
+            const name = people.get_by_user_id(user_id).full_name;
+            const is_active = people.is_active_user_for_popover(user_id);
+            const mention = people.get_mention_syntax(name, user_id, !is_active);
+            compose_ui.insert_syntax_and_focus(mention);
+            message_user_card.hide();
+        }
+        assert(e.currentTarget instanceof HTMLElement);
+        if (!compose_state.composing()) {
+            void compose_reply
+                .respond_to_message({
+                    trigger: "user sidebar popover",
+                    keep_composebox_empty: true,
+                })
+                .then(() => {
+                    assert(e.currentTarget instanceof HTMLElement);
+                    mention_user(e.currentTarget);
+                });
+            return;
+        }
+        mention_user(e.currentTarget);
     });
 
     $("body").on(

@@ -12,11 +12,15 @@ export class UserSearch {
 
     $widget = $("#userlist-header-search").expectOne();
     $input = $<HTMLInputElement>("input.user-list-filter").expectOne();
-    _reset_items: () => void;
-    _update_list: () => void;
+    _reset_items: () => Promise<void>;
+    _update_list: () => Promise<void>;
     _on_focus: () => void;
 
-    constructor(opts: {reset_items: () => void; update_list: () => void; on_focus: () => void}) {
+    constructor(opts: {
+        reset_items: () => Promise<void>;
+        update_list: () => Promise<void>;
+        on_focus: () => void;
+    }) {
         this._reset_items = opts.reset_items;
         this._update_list = opts.update_list;
         this._on_focus = opts.on_focus;
@@ -29,7 +33,7 @@ export class UserSearch {
             const input_is_empty = this.$input.val() === "";
             buddy_data.set_is_searching_users(!input_is_empty);
             $("#clear_search_people_button").toggleClass("hidden", input_is_empty);
-            opts.update_list();
+            void opts.update_list();
         });
         this.$input.on("focus", (e) => {
             this.on_focus(e);
@@ -58,7 +62,7 @@ export class UserSearch {
 
         this.$input.val("");
         this.$input.trigger("blur");
-        this._reset_items();
+        void this._reset_items();
     }
 
     expand_column(): void {

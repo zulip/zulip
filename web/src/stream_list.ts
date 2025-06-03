@@ -76,9 +76,9 @@ export function set_pending_stream_list_rerender(value: boolean): void {
     pending_stream_list_rerender = value;
 }
 
-export function zoom_out(): void {
+export async function zoom_out(): Promise<void> {
     if (pending_stream_list_rerender) {
-        update_streams_sidebar(true);
+        await update_streams_sidebar(true);
     }
     const $stream_li = topic_list.get_stream_li();
 
@@ -228,15 +228,15 @@ function get_search_term(): string {
     return search_term.trim();
 }
 
-export function add_sidebar_row(sub: StreamSubscription): void {
+export async function add_sidebar_row(sub: StreamSubscription): Promise<void> {
     create_sidebar_row(sub);
-    update_streams_sidebar();
+    await update_streams_sidebar();
 }
 
-export function remove_sidebar_row(stream_id: number): void {
+export async function remove_sidebar_row(stream_id: number): Promise<void> {
     stream_sidebar.remove_row(stream_id);
     const force_rerender = stream_id === topic_list.active_stream_id();
-    update_streams_sidebar(force_rerender);
+    await update_streams_sidebar(force_rerender);
 }
 
 export function create_initial_sidebar_rows(force_rerender = false): void {
@@ -590,7 +590,7 @@ function set_stream_unread_count(
     );
 }
 
-export let update_streams_sidebar = (force_rerender = false): void => {
+export let update_streams_sidebar = async (force_rerender = false): Promise<void> => {
     if (!force_rerender && is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
@@ -606,7 +606,7 @@ export let update_streams_sidebar = (force_rerender = false): void => {
 
     build_stream_list(force_rerender);
 
-    stream_cursor.redraw();
+    await stream_cursor.redraw();
 
     const filter = narrow_state.filter();
     if (!filter) {
@@ -664,17 +664,17 @@ export function update_dom_unread_counts_visibility(): void {
     }
 }
 
-export function rename_stream(sub: StreamSubscription): void {
+export async function rename_stream(sub: StreamSubscription): Promise<void> {
     // The sub object is expected to already have the updated name
     build_stream_sidebar_row(sub);
-    update_streams_sidebar(true); // big hammer
+    await update_streams_sidebar(true); // big hammer
 }
 
-export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void {
+export async function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): Promise<void> {
     // Pinned/unpinned streams require re-ordering.
     // We use kind of brute force now, which is probably fine.
     build_stream_sidebar_row(sub);
-    update_streams_sidebar();
+    await update_streams_sidebar();
 
     // Only scroll pinned topics into view.  If we're unpinning
     // a topic, we may be literally trying to get it out of
@@ -689,9 +689,9 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
     }
 }
 
-export function refresh_muted_or_unmuted_stream(sub: StreamSubscription): void {
+export async function refresh_muted_or_unmuted_stream(sub: StreamSubscription): Promise<void> {
     build_stream_sidebar_row(sub);
-    update_streams_sidebar();
+    await update_streams_sidebar();
 }
 
 export function get_sidebar_stream_topic_info(filter: Filter): {
@@ -779,11 +779,11 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     return $stream_li;
 }
 
-export function handle_narrow_activated(
+export async function handle_narrow_activated(
     filter: Filter,
     change_hash: boolean,
     show_more_topics: boolean,
-): void {
+): Promise<void> {
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li) {
         scroll_stream_into_view($stream_li);
@@ -791,7 +791,7 @@ export function handle_narrow_activated(
             if (!is_zoomed_in() && show_more_topics) {
                 zoom_in();
             } else if (is_zoomed_in() && !show_more_topics) {
-                zoom_out();
+                await zoom_out();
             }
         }
     }
@@ -807,14 +807,15 @@ export function handle_message_view_deactivated(): void {
 }
 
 function focus_stream_filter(e: JQuery.ClickEvent): void {
-    stream_cursor.reset();
+    void stream_cursor.reset();
     e.stopPropagation();
 }
 
 function actually_update_streams_for_search(): void {
-    update_streams_sidebar();
-    resize.resize_page_components();
-    stream_cursor.reset();
+    void update_streams_sidebar().then(() => {
+        resize.resize_page_components();
+        void stream_cursor.reset();
+    });
 }
 
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
@@ -864,8 +865,9 @@ export function initialize({
     });
 
     $(".show-all-streams").on("click", (e) => {
-        zoom_out();
-        browser_history.update_current_history_state_data({show_more_topics: false});
+        void zoom_out().then(() => {
+            browser_history.update_current_history_state_data({show_more_topics: false});
+        });
 
         e.preventDefault();
         e.stopPropagation();
@@ -1038,11 +1040,11 @@ export function set_event_handlers({
                 return true;
             },
             ArrowUp() {
-                stream_cursor.prev();
+                void stream_cursor.prev();
                 return true;
             },
             ArrowDown() {
-                stream_cursor.next();
+                void stream_cursor.next();
                 return true;
             },
         },
@@ -1050,7 +1052,7 @@ export function set_event_handlers({
 
     $search_input.on("click", focus_stream_filter);
     $search_input.on("focusout", () => {
-        stream_cursor.clear();
+        void stream_cursor.clear();
     });
     $search_input.on("input", update_streams_for_search);
 }
@@ -1092,7 +1094,7 @@ export function initiate_search(): void {
     sidebar_ui.show_left_sidebar();
     $filter.trigger("focus");
 
-    stream_cursor.reset();
+    void stream_cursor.reset();
 }
 
 export function clear_and_hide_search(): void {
@@ -1101,7 +1103,7 @@ export function clear_and_hide_search(): void {
         $filter.val("");
         update_streams_for_search();
     }
-    stream_cursor.clear();
+    void stream_cursor.clear();
     $filter.trigger("blur");
 
     hide_search_section();

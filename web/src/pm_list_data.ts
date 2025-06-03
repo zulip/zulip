@@ -51,7 +51,7 @@ type DisplayObject = {
     is_deactivated: boolean;
 };
 
-export function get_conversations(search_string = ""): DisplayObject[] {
+export async function get_conversations(search_string = ""): Promise<DisplayObject[]> {
     const conversations = pm_conversations.recent.get();
     const display_objects = [];
 
@@ -70,7 +70,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
     for (const conversation of conversations) {
         const user_ids_string = conversation.user_ids_string;
 
-        const users = people.get_users_from_ids(
+        const users = await people.get_or_fetch_users_from_ids(
             people.user_ids_string_to_ids_array(user_ids_string),
         );
         if (!people.dm_matches_search_string(users, search_string)) {
@@ -79,7 +79,8 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             continue;
         }
 
-        const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
+        const reply_to =
+            await people.get_or_fetch_user_ids_string_to_emails_string(user_ids_string);
         assert(reply_to !== undefined);
         const recipients_string = people.format_recipients(user_ids_string, "narrow");
 
@@ -133,14 +134,14 @@ export function get_conversations(search_string = ""): DisplayObject[] {
 }
 
 // Designed to closely match topic_list_data.get_list_info().
-export function get_list_info(
+export async function get_list_info(
     zoomed: boolean,
     search_term = "",
-): {
+): Promise<{
     conversations_to_be_shown: DisplayObject[];
     more_conversations_unread_count: number;
-} {
-    const conversations = get_conversations(search_term);
+}> {
+    const conversations = await get_conversations(search_term);
 
     if (zoomed || conversations.length <= max_conversations_to_show) {
         return {

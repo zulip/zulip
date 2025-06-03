@@ -561,8 +561,8 @@ function add_text_and_select(text: string, $textarea: JQuery<HTMLTextAreaElement
     textarea.setSelectionRange(init_cursor_pos, new_cursor_pos);
 }
 
-export function try_stream_topic_syntax_text(text: string): string | null {
-    const stream_topic = hash_util.decode_stream_topic_from_url(text);
+export async function try_stream_topic_syntax_text(text: string): Promise<string | null> {
+    const stream_topic = await hash_util.decode_stream_topic_from_url(text);
 
     if (!stream_topic) {
         return null;
@@ -606,7 +606,10 @@ export function try_stream_topic_syntax_text(text: string): string | null {
     return syntax_text;
 }
 
-export function paste_handler(this: HTMLTextAreaElement, event: JQuery.TriggeredEvent): void {
+export async function paste_handler(
+    this: HTMLTextAreaElement,
+    event: JQuery.TriggeredEvent,
+): Promise<void> {
     assert(event.originalEvent instanceof ClipboardEvent);
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -643,7 +646,7 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
             ) {
                 // Try to transform the url to #**stream>topic** syntax
                 // if it is a valid url.
-                const syntax_text = try_stream_topic_syntax_text(trimmed_paste_text);
+                const syntax_text = await try_stream_topic_syntax_text(trimmed_paste_text);
                 if (syntax_text) {
                     event.preventDefault();
                     event.stopPropagation();
@@ -686,6 +689,6 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
 }
 
 export function initialize(): void {
-    $<HTMLTextAreaElement>("textarea#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", "textarea.message_edit_content", paste_handler);
+    $<HTMLTextAreaElement>("textarea#compose-textarea").on("paste", () => paste_handler);
+    $("body").on("paste", "textarea.message_edit_content", () => paste_handler);
 }

@@ -709,7 +709,7 @@ export function dispatch_normal_event(event) {
                     for (const rec of event.subscriptions) {
                         const sub = sub_store.get(rec.stream_id);
                         if (sub) {
-                            stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
+                            void stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
                         } else {
                             blueslip.error("Subscribing to unknown stream", {
                                 stream_id: rec.stream_id,

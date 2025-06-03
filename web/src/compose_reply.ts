@@ -25,12 +25,12 @@ import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as unread_ops from "./unread_ops.ts";
 
-export let respond_to_message = (opts: {
+export let respond_to_message = async (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
     reply_type?: "personal";
     trigger?: string;
-}): void => {
+}): Promise<void> => {
     let message;
     let msg_type: "private" | "stream";
     if (recent_view_util.is_visible()) {
@@ -46,7 +46,7 @@ export let respond_to_message = (opts: {
             return;
         }
     } else if (inbox_util.is_visible()) {
-        const message_opts = inbox_ui.get_focused_row_message();
+        const message_opts = await inbox_ui.get_focused_row_message();
         if (message_opts.message === undefined) {
             // If the user is not focused on inbox header, msg_type
             // is not defined, so we open empty compose with nothing prefilled.
@@ -163,14 +163,15 @@ export function reply_with_mention(opts: {
     trigger?: string;
 }): void {
     assert(message_lists.current !== undefined);
-    respond_to_message({
-        ...opts,
-        keep_composebox_empty: true,
-    });
     const message = message_lists.current.selected_message();
     assert(message !== undefined);
     const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
-    compose_ui.insert_syntax_and_focus(mention);
+    void respond_to_message({
+        ...opts,
+        keep_composebox_empty: true,
+    }).then(() => {
+        compose_ui.insert_syntax_and_focus(mention);
+    });
 }
 
 export let selection_within_message_id = (
@@ -230,14 +231,14 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
     return {message_id, message, quote_content};
 }
 
-export function quote_message(opts: {
+export async function quote_message(opts: {
     message_id: number;
     quote_content?: string | undefined;
     keep_composebox_empty?: boolean;
     reply_type?: "personal";
     trigger?: string;
     forward_message?: boolean;
-}): void {
+}): Promise<void> {
     const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
@@ -275,7 +276,7 @@ export function quote_message(opts: {
             // are prone to glitches where you select the
             // text, plus it's a complicated codepath that
             // can have other unintended consequences.)
-            respond_to_message({
+            await respond_to_message({
                 ...opts,
                 keep_composebox_empty: true,
             });
@@ -431,6 +432,6 @@ export function get_message_selection(selection = window.getSelection()): string
 
 export function initialize(): void {
     $("body").on("click", ".compose_reply_button", () => {
-        respond_to_message({trigger: "reply button"});
+        void respond_to_message({trigger: "reply button"});
     });
 }

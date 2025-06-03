@@ -144,7 +144,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         is_muted(value) {
             stream_muting.update_is_muted(sub, value, message_view.rerender_combined_feed);
-            stream_list.refresh_muted_or_unmuted_stream(sub);
+            void stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_view_ui.complete_rerender();
         },
         desktop_notifications: update_stream_specific_notification_setting("desktop_notifications"),
@@ -168,7 +168,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         pin_to_top(value) {
             update_stream_setting(sub, value, "pin_to_top");
-            stream_list.refresh_pinned_or_unpinned_stream(sub);
+            void stream_list.refresh_pinned_or_unpinned_stream(sub);
         },
         invite_only(value) {
             assert(other_values !== undefined);
@@ -184,7 +184,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         is_recently_active(value) {
             update_stream_setting(sub, value, "is_recently_active");
-            stream_list.update_streams_sidebar();
+            void stream_list.update_streams_sidebar();
         },
         is_archived(value) {
             const is_subscribed = sub.subscribed;
@@ -192,12 +192,12 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             if (!value) {
                 stream_data.mark_unarchived(sub.stream_id);
                 if (is_subscribed) {
-                    stream_list.add_sidebar_row(sub);
+                    void stream_list.add_sidebar_row(sub);
                 }
             } else {
                 stream_data.mark_archived(stream_id);
                 if (is_subscribed) {
-                    stream_list.remove_sidebar_row(stream_id);
+                    void stream_list.remove_sidebar_row(stream_id);
                     if (stream_id === compose_state.selected_recipient_id) {
                         compose_state.set_selected_recipient_id("");
                         compose_recipient.on_compose_select_recipient_update();
@@ -302,14 +302,13 @@ export function mark_subscribed(
     if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend(true);
-        activity_ui.build_user_sidebar();
+        void activity_ui.build_user_sidebar();
     }
 
+    void stream_list.add_sidebar_row(sub);
     // The new stream in sidebar might need its unread counts
     // re-calculated.
     unread_ui.update_unread_counts();
-
-    stream_list.add_sidebar_row(sub);
     stream_list.update_subscribe_to_more_streams_link();
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
@@ -337,14 +336,14 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
         // disappear whenever no unread messages remain.
         unread_ui.hide_unread_banner();
 
-        activity_ui.build_user_sidebar();
+        void activity_ui.build_user_sidebar();
     }
 
     // Unread messages in the now-unsubscribe stream need to be
     // removed from global count totals.
     unread_ui.update_unread_counts();
 
-    stream_list.remove_sidebar_row(sub.stream_id);
+    void stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
@@ -369,6 +368,6 @@ export function process_subscriber_update(user_ids: number[], stream_ids: number
     user_profile.update_user_profile_streams_list_for_users(user_ids);
     const narrow_stream_id = narrow_state.stream_id();
     if (narrow_stream_id && stream_ids.includes(narrow_stream_id)) {
-        activity_ui.build_user_sidebar();
+        void activity_ui.build_user_sidebar();
     }
 }

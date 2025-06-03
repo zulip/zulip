@@ -27,14 +27,14 @@ export let user_filter: UserSearch | undefined;
 // Function initialized from `ui_init` to avoid importing narrow.js and causing circular imports.
 let narrow_by_email: (email: string) => void;
 
-function get_pm_list_item(user_id: string): JQuery | undefined {
-    return buddy_list.find_li({
+async function get_pm_list_item(user_id: string): Promise<JQuery | undefined> {
+    return await buddy_list.find_li({
         key: Number.parseInt(user_id, 10),
     });
 }
 
-function set_pm_count(user_ids_string: string, count: number): void {
-    const $pm_li = get_pm_list_item(user_ids_string);
+async function set_pm_count(user_ids_string: string, count: number): Promise<void> {
+    const $pm_li = await get_pm_list_item(user_ids_string);
     if ($pm_li !== undefined) {
         ui_util.update_unread_count_in_dom($pm_li, count);
     }
@@ -48,7 +48,7 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
         // TODO: just use user_ids_string in our markup
         const is_pm = !user_ids_string.includes(",");
         if (is_pm) {
-            set_pm_count(user_ids_string, count);
+            void set_pm_count(user_ids_string, count);
         }
     }
 }
@@ -81,7 +81,7 @@ export function rewire_update_presence_indicators(value: typeof update_presence_
     update_presence_indicators = value;
 }
 
-export function redraw_user(user_id: number): void {
+export async function redraw_user(user_id: number): Promise<void> {
     if (realm.realm_presence_disabled) {
         return;
     }
@@ -92,16 +92,16 @@ export function redraw_user(user_id: number): void {
         return;
     }
 
-    buddy_list.insert_or_move([user_id]);
+    await buddy_list.insert_or_move([user_id]);
     update_presence_indicators();
 }
 
-export function rerender_user_sidebar_participants(): void {
+export async function rerender_user_sidebar_participants(): Promise<void> {
     if (!narrow_state.stream_id() || narrow_state.topic() === undefined) {
         return;
     }
 
-    buddy_list.rerender_participants();
+    await buddy_list.rerender_participants();
 }
 
 export function check_should_redraw_new_user(user_id: number): boolean {
@@ -118,7 +118,7 @@ export function searching(): boolean {
     return user_filter?.searching() ?? false;
 }
 
-export let build_user_sidebar = (): number[] | undefined => {
+export let build_user_sidebar = async (): Promise<number[] | undefined> => {
     if (realm.realm_presence_disabled) {
         return undefined;
     }
@@ -128,7 +128,7 @@ export let build_user_sidebar = (): number[] | undefined => {
 
     const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
-    buddy_list.populate({all_user_ids});
+    await buddy_list.populate({all_user_ids});
 
     return all_user_ids; // for testing
 };
@@ -137,23 +137,23 @@ export function rewire_build_user_sidebar(value: typeof build_user_sidebar): voi
     build_user_sidebar = value;
 }
 
-function do_update_users_for_search(): void {
+async function do_update_users_for_search(): Promise<void> {
     // Hide all the popovers but not userlist sidebar
     // when the user is searching.
     popovers.hide_all();
-    build_user_sidebar();
+    await build_user_sidebar();
     assert(user_cursor !== undefined);
-    user_cursor.reset();
+    await user_cursor.reset();
 }
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
 
-export function initialize(opts: {narrow_by_email: (email: string) => void}): void {
+export async function initialize(opts: {narrow_by_email: (email: string) => void}): Promise<void> {
     narrow_by_email = opts.narrow_by_email;
 
     set_cursor_and_filter();
 
-    build_user_sidebar();
+    await build_user_sidebar();
 
     buddy_list.start_scroll_handler();
 
@@ -170,11 +170,11 @@ export function initialize(opts: {narrow_by_email: (email: string) => void}): vo
     activity.send_presence_to_server();
 }
 
-export function update_presence_info(
+export async function update_presence_info(
     user_id: number,
     info: PresenceInfoFromEvent,
     server_time: number,
-): void {
+): Promise<void> {
     // There can be some case where the presence event
     // was set for an inaccessible user if
     // CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is
@@ -185,23 +185,23 @@ export function update_presence_info(
     }
 
     presence.update_info_from_event(user_id, info, server_time);
-    redraw_user(user_id);
+    await redraw_user(user_id);
     pm_list.update_private_messages();
 }
 
-export function redraw(): void {
-    build_user_sidebar();
+export async function redraw(): Promise<void> {
+    await build_user_sidebar();
     assert(user_cursor !== undefined);
-    user_cursor.redraw();
+    await user_cursor.redraw();
     pm_list.update_private_messages();
     update_presence_indicators();
 }
 
-export function reset_users(): void {
+export async function reset_users(): Promise<void> {
     // Call this when we're leaving the search widget.
-    build_user_sidebar();
+    await build_user_sidebar();
     assert(user_cursor !== undefined);
-    user_cursor.clear();
+    await user_cursor.clear();
 }
 
 export function narrow_for_user(opts: {$li: JQuery}): void {
@@ -241,14 +241,14 @@ export function set_cursor_and_filter(): void {
         update_list: update_users_for_search,
         reset_items: reset_users,
         on_focus() {
-            user_cursor!.reset();
+            void user_cursor!.reset();
         },
     });
 
     const $input = user_filter.input_field();
 
     $input.on("blur", () => {
-        user_cursor!.clear();
+        void user_cursor!.clear();
     });
 
     keydown_util.handle({
@@ -259,11 +259,11 @@ export function set_cursor_and_filter(): void {
                 return true;
             },
             ArrowUp() {
-                user_cursor!.prev();
+                void user_cursor!.prev();
                 return true;
             },
             ArrowDown() {
-                user_cursor!.next();
+                void user_cursor!.next();
                 return true;
             },
         },

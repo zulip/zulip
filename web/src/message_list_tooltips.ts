@@ -167,8 +167,9 @@ export function initialize(): void {
             assert(local_id !== undefined);
             assert(instance.reference instanceof HTMLElement);
             const message_id = rows.get_message_id(instance.reference);
-            const title = reactions.get_reaction_title_data(message_id, local_id);
-            instance.setContent(title);
+            void reactions.get_reaction_title_data(message_id, local_id).then((title) => {
+                instance.setContent(title);
+            });
 
             const config = {attributes: false, childList: true, subtree: true};
             const target = $elem.parents(".message-list.focused-message-list").get(0);

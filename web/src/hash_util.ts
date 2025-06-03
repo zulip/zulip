@@ -55,7 +55,7 @@ export function encode_stream_id(stream_id: number): string {
     return internal_url.encodeHashComponent(slug);
 }
 
-export function decode_operand(operator: string, operand: string): string {
+export async function decode_operand(operator: string, operand: string): Promise<string> {
     if (
         operator === "group-pm-with" ||
         operator === "dm-including" ||
@@ -63,7 +63,7 @@ export function decode_operand(operator: string, operand: string): string {
         operator === "sender" ||
         operator === "pm-with"
     ) {
-        const emails = people.slug_to_emails(operand);
+        const emails = await people.slug_to_emails(operand);
         if (emails) {
             return emails;
         }
@@ -198,7 +198,7 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+export async function parse_narrow(hash: string[]): Promise<NarrowTerm[] | undefined> {
     // There's a Python copy of this function in `zerver/lib/url_decoding.py`
     // called `parse_narrow_url`, the two should be kept roughly in sync.
 
@@ -233,7 +233,7 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
             return undefined;
         }
 
-        const operand = decode_operand(operator, raw_operand);
+        const operand = await decode_operand(operator, raw_operand);
         terms.push({negated, operator, operand});
     }
     return terms;
@@ -337,13 +337,15 @@ export function validate_group_settings_hash(hash: string): string {
     return hash;
 }
 
-export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string): number[] | null {
+export async function decode_dm_recipient_user_ids_from_narrow_url(
+    narrow_url: string,
+): Promise<number[] | null> {
     try {
         const url = new URL(narrow_url, window.location.origin);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
             return null;
         }
-        const terms = parse_narrow(url.hash.split(/\//));
+        const terms = await parse_narrow(url.hash.split(/\//));
         if (!terms?.[0]) {
             return null;
         }
@@ -370,15 +372,15 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
     }
 }
 
-export function decode_stream_topic_from_url(
+export async function decode_stream_topic_from_url(
     url_str: string,
-): {stream_id: number; topic_name?: string; message_id?: string} | null {
+): Promise<{stream_id: number; topic_name?: string; message_id?: string} | null> {
     try {
         const url = new URL(url_str, window.location.origin);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
             return null;
         }
-        const terms = parse_narrow(url.hash.split(/\//));
+        const terms = await parse_narrow(url.hash.split(/\//));
         if (terms === undefined) {
             return null;
         }

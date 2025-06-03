@@ -121,7 +121,7 @@ export function update_stream_name(sub: StreamSubscription, new_name: string): v
     const stream_id = sub.stream_id;
 
     // Update the left sidebar.
-    stream_list.rename_stream(sub);
+    void stream_list.rename_stream(sub);
 
     // Update the stream settings
     stream_edit.update_stream_name(sub, new_name);

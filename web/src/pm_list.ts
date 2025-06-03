@@ -57,11 +57,11 @@ export function close(): void {
     update_private_messages();
 }
 
-export function _build_direct_messages_list(): vdom.Tag<PMNode> {
+export async function _build_direct_messages_list(): Promise<vdom.Tag<PMNode>> {
     const $filter = $<HTMLInputElement>(".direct-messages-list-filter").expectOne();
     const search_term = $filter.val()!;
-    const conversations = pm_list_data.get_conversations(search_term);
-    const pm_list_info = pm_list_data.get_list_info(zoomed, search_term);
+    const conversations = await pm_list_data.get_conversations(search_term);
+    const pm_list_info = await pm_list_data.get_list_info(zoomed, search_term);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
     const more_conversations_unread_count = pm_list_info.more_conversations_unread_count;
 
@@ -95,30 +95,41 @@ function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
     prior_dom = new_dom;
 }
 
+function post_update_private_messages_callback(): void {
+    // Make sure to update the left sidebar heights after updating
+    // direct messages.
+    setTimeout(resize.resize_stream_filters_container, 0);
+}
+
 export function update_private_messages(): void {
     if (private_messages_collapsed) {
         // In the collapsed state, we will still display the current
         // conversation, to preserve the UI invariant that there's
         // always something highlighted in the left sidebar.
-        const conversations = pm_list_data.get_conversations();
-        const active_conversation = conversations.find((conversation) => conversation.is_active);
+        const conversations_promise = pm_list_data.get_conversations();
+        void conversations_promise.then((conversations) => {
+            const active_conversation = conversations.find(
+                (conversation) => conversation.is_active,
+            );
 
-        if (active_conversation) {
-            const node = [pm_list_dom.keyed_pm_li(active_conversation)];
-            const new_dom = pm_list_dom.pm_ul(node);
-            set_dom_to(new_dom);
-        } else {
-            // Otherwise, empty the section.
-            $(".dm-list").empty();
-            prior_dom = undefined;
-        }
+            if (active_conversation) {
+                const node = [pm_list_dom.keyed_pm_li(active_conversation)];
+                const new_dom = pm_list_dom.pm_ul(node);
+                set_dom_to(new_dom);
+            } else {
+                // Otherwise, empty the section.
+                $(".dm-list").empty();
+                prior_dom = undefined;
+            }
+            post_update_private_messages_callback();
+        });
     } else {
-        const new_dom = _build_direct_messages_list();
-        set_dom_to(new_dom);
+        const new_dom_promise = _build_direct_messages_list();
+        void new_dom_promise.then((new_dom) => {
+            set_dom_to(new_dom);
+            post_update_private_messages_callback();
+        });
     }
-    // Make sure to update the left sidebar heights after updating
-    // direct messages.
-    setTimeout(resize.resize_stream_filters_container, 0);
 }
 
 export function expand(): void {

@@ -50,6 +50,12 @@ let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 let valid_user_ids: Set<number>;
+let fetch_users_storage: {
+    pending_user_ids: Set<number>;
+    in_transit_user_ids: Set<number>;
+    promise_resolvers_for_pending: (() => void)[];
+    promise_resolvers_for_in_transit: Map<string, (() => void)[]>;
+};
 
 export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
@@ -79,6 +85,13 @@ export function init(): void {
     duplicate_full_name_data = new FoldDict();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
+
+    fetch_users_storage = {
+        pending_user_ids: new Set(),
+        in_transit_user_ids: new Set(),
+        promise_resolvers_for_pending: [],
+        promise_resolvers_for_in_transit: new Map(),
+    };
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -116,9 +129,92 @@ export function get_users_from_ids(user_ids: number[]): User[] {
     return user_ids.map((user_id) => get_by_user_id(user_id));
 }
 
-// Use this function only when you are sure that user_id is valid.
-export let get_by_user_id = (user_id: number): User => {
-    const person = people_by_user_id_dict.get(user_id);
+export async function get_or_fetch_users_from_ids(user_ids: number[]): Promise<User[]> {
+    await fetch_users_from_ids(user_ids);
+    return get_users_from_ids(user_ids);
+}
+
+function get_unique_key_for_user_fetch(user_ids: Set<number>): string {
+    const fetch_unique_key = [...user_ids].sort().join(",");
+    return fetch_unique_key;
+}
+
+function start_fetch_for_requested_users(): void {
+    if (fetch_users_storage.pending_user_ids.size === 0) {
+        // We already did a fetch_users call.
+        return;
+    }
+
+    const user_ids_to_fetch = fetch_users_storage.pending_user_ids;
+    fetch_users_storage.pending_user_ids = new Set();
+    fetch_users_storage.in_transit_user_ids =
+        fetch_users_storage.in_transit_user_ids.union(user_ids_to_fetch);
+    const fetch_unique_key = get_unique_key_for_user_fetch(user_ids_to_fetch);
+    fetch_users_storage.promise_resolvers_for_in_transit.set(
+        fetch_unique_key,
+        fetch_users_storage.promise_resolvers_for_pending,
+    );
+    fetch_users_storage.promise_resolvers_for_pending = [];
+
+    void fetch_users(user_ids_to_fetch).then((fetched_users) => {
+        for (const user of fetched_users) {
+            if (user.is_active) {
+                add_active_user(user);
+            } else {
+                non_active_user_dict.set(user.user_id, user);
+                _add_user(user);
+            }
+        }
+
+        const promise_resolvers =
+            fetch_users_storage.promise_resolvers_for_in_transit.get(fetch_unique_key)!;
+        for (const resolve of promise_resolvers) {
+            resolve();
+        }
+    });
+}
+
+export async function fetch_users_from_ids(user_ids: number[]): Promise<void> {
+    const unknown_user_ids = new Set(
+        user_ids.filter((user_id) => !people_by_user_id_dict.has(user_id)),
+    );
+
+    if (unknown_user_ids.size === 0) {
+        return;
+    }
+
+    if (
+        unknown_user_ids.intersection(fetch_users_storage.in_transit_user_ids).size ===
+        unknown_user_ids.size
+    ) {
+        // User data is in transit for all of them.
+        const promise = new Promise<void>((resolve) => {
+            const key = get_unique_key_for_user_fetch(fetch_users_storage.in_transit_user_ids);
+            fetch_users_storage.promise_resolvers_for_in_transit.get(key)!.push(resolve);
+        });
+        return promise;
+    }
+
+    fetch_users_storage.pending_user_ids =
+        fetch_users_storage.pending_user_ids.union(unknown_user_ids);
+    const promise = new Promise<void>((resolve) => {
+        fetch_users_storage.promise_resolvers_for_pending.push(resolve);
+        setTimeout(() => start_fetch_for_requested_users, 0);
+    });
+    return promise;
+}
+
+export async function get_or_fetch_user_from_id(user_id: number): Promise<User> {
+    const users = await get_or_fetch_users_from_ids([user_id]);
+    return users[0]!;
+}
+
+let get_by_user_id = (user_id: number): User => {
+    let person = people_by_user_id_dict.get(user_id);
+    const allow_missing_user = !settings_data.user_can_access_all_other_users();
+    if (allow_missing_user && person === undefined) {
+        person = add_inaccessible_user(user_id);
+    }
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
 };
@@ -127,37 +223,36 @@ export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
     get_by_user_id = value;
 }
 
-// This is type unsafe version of get_by_user_id for the callers that expects undefined values.
-export function maybe_get_user_by_id(user_id: number, ignore_missing = false): User | undefined {
-    if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
-        blueslip.error("Unknown user_id in maybe_get_user_by_id", {user_id});
-        return undefined;
-    }
-    return people_by_user_id_dict.get(user_id);
-}
-
-export function validate_user_ids(user_ids: number[]): number[] {
-    const good_ids = [];
-    const bad_ids = [];
-
-    for (const user_id of user_ids) {
-        if (people_by_user_id_dict.has(user_id)) {
-            good_ids.push(user_id);
-        } else {
-            bad_ids.push(user_id);
-        }
-    }
-
-    if (bad_ids.length > 0) {
-        blueslip.warn("We have untracked user_ids", {bad_ids});
-    }
-
-    return good_ids;
-}
-
-export let get_by_email = (email: string): User | undefined => {
+async function fetch_user_by_email(email: string): Promise<User | undefined> {
     const person = people_dict.get(email);
+    if (person !== undefined) {
+        // If we already have the user, return it immediately.
+        return person;
+    }
+    return new Promise<User | undefined>((resolve) => {
+        channel.get({
+            url: `/json/users/${email}`,
+            data: {client_gravatar: true, include_custom_profile_fields: true},
+            dataType: "json",
+            success(data) {
+                const user = z.object({user: user_schema}).parse(data).user;
+                if (user.is_active) {
+                    add_active_user(user);
+                } else {
+                    non_active_user_dict.set(user.user_id, user);
+                    _add_user(user);
+                }
+                resolve(user);
+            },
+            error() {
+                resolve(undefined);
+            }
+        });
+    })
+}
 
+export let get_by_email = async (email: string): Promise<User | undefined> => {
+    const person = await fetch_user_by_email(email);
     if (!person) {
         return undefined;
     }
@@ -175,7 +270,7 @@ export function rewire_get_by_email(value: typeof get_by_email): void {
     get_by_email = value;
 }
 
-export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
+export async function get_bot_owner_user(user: User & {is_bot: true}): Promise<User | undefined> {
     const owner_id = user.bot_owner_id;
 
     if (owner_id === undefined || owner_id === null) {
@@ -183,7 +278,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
         return undefined;
     }
 
-    return get_user_by_id_assert_valid(owner_id);
+    return await get_or_fetch_user_from_id(owner_id);
 }
 
 export function can_admin_user(user: User): boolean {
@@ -193,8 +288,8 @@ export function can_admin_user(user: User): boolean {
     );
 }
 
-export function id_matches_email_operand(user_id: number, email: string): boolean {
-    const person = get_by_email(email);
+export async function id_matches_email_operand(user_id: number, email: string): Promise<boolean> {
+    const person = await get_by_email(email);
 
     if (!person) {
         // The user may type bad data into the search bar, so
@@ -228,8 +323,12 @@ export function sort_user_ids_by_username(user_ids: number[]): number[] {
 }
 
 // A function that sorts Email according to the user's full name
-export function sort_emails_by_username(emails: string[]): (string | undefined)[] {
-    const user_ids = emails.map((email) => get_user_id(email));
+export async function sort_emails_by_username(emails: string[]): Promise<(string | undefined)[]> {
+    const user_ids = [];
+    for (const email of emails) {
+        const user_id = await get_user_id(email);
+        user_ids.push(user_id)
+    }
     const name_email_dict = user_ids.map((user_id, index) => ({
         name:
             user_id !== undefined && people_by_user_id_dict.has(user_id)
@@ -252,8 +351,8 @@ export function get_visible_email(user: User): string {
     return user.email;
 }
 
-export function get_user_id(email: string): number | undefined {
-    const person = get_by_email(email);
+export async function get_user_id(email: string): Promise<number | undefined> {
+    const person = await get_by_email(email);
     if (person === undefined) {
         blueslip.error("Unknown email for get_user_id", {email});
         return undefined;
@@ -267,27 +366,7 @@ export function get_user_id(email: string): number | undefined {
     return user_id;
 }
 
-export function is_known_user_id(user_id: number): boolean {
-    /*
-    We may get a user_id from mention syntax that we don't
-    know about if a user includes some random number in
-    the mention syntax by manually typing it instead of
-    selecting some user from typeahead.
-    */
-
-    /*
-    This function also returns false for inaccessible users
-    even though we have the user_id for them as we do not
-    want to show the mention pill for them.
-    */
-    const person = maybe_get_user_by_id(user_id, true);
-    if (person === undefined || person.is_inaccessible_user) {
-        return false;
-    }
-    return true;
-}
-
-export function direct_message_group_string(message: Message): string | undefined {
+export async function direct_message_group_string(message: Message): Promise<string | undefined> {
     if (message.type !== "private") {
         return undefined;
     }
@@ -298,9 +377,10 @@ export function direct_message_group_string(message: Message): string | undefine
     );
     let user_ids = message.display_recipient.map((recip) => recip.id);
 
-    user_ids = user_ids.filter(
-        (user_id) => user_id && people_by_user_id_dict.has(user_id) && !is_my_user_id(user_id),
-    );
+    const users = await get_or_fetch_users_from_ids(user_ids);
+    user_ids = users.filter(
+        (user) => !user.is_inaccessible_user && !is_my_user_id(user.user_id),
+    ).map((user) => user.user_id);
 
     if (user_ids.length <= 1) {
         return undefined;
@@ -311,27 +391,26 @@ export function direct_message_group_string(message: Message): string | undefine
     return user_ids.join(",");
 }
 
-export function user_ids_string_to_emails_string(user_ids_string: string): string | undefined {
-    const user_ids = split_to_ints(user_ids_string);
-    return user_ids_to_emails_string(user_ids);
+export async function get_or_fetch_user_ids_string_to_emails_string(
+    user_ids_string: string,
+): Promise<string | undefined> {
+    const user_ids = user_ids_string_to_ids_array(user_ids_string);
+    return await get_or_fetch_user_ids_to_emails_string(user_ids);
 }
 
-export function user_ids_to_emails_string(user_ids: number[]): string | undefined {
-    let emails = util.try_parse_as_truthy(
-        user_ids.map((user_id) => {
-            const person = people_by_user_id_dict.get(user_id);
-            return person?.email;
-        }),
-    );
-
-    if (emails === undefined) {
-        blueslip.warn("Unknown user ids: " + user_ids.join(","));
+export async function get_or_fetch_user_ids_to_emails_string(
+    user_ids: number[],
+): Promise<string | undefined> {
+    try {
+        const users = await get_or_fetch_users_from_ids(user_ids);
+        const sorted_users_by_name = users.sort((a, b) => util.strcmp(a.full_name, b.full_name));
+        const emails = sorted_users_by_name.map((user) => user.email.toLowerCase());
+        return emails.join(",");
+    } catch {
+        // `get_or_fetch_users_from_ids` already logs error
+        // for unknown user ids, so we don't need to log it again here.
         return undefined;
     }
-
-    emails = emails.map((email) => email.toLowerCase());
-
-    return sort_emails_by_username(emails).join(",");
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
@@ -352,8 +431,8 @@ export function get_participants_from_user_ids_string(user_ids_string: string): 
     return user_ids;
 }
 
-export function emails_strings_to_user_ids_array(emails_string: string): number[] | undefined {
-    const user_ids_string = emails_strings_to_user_ids_string(emails_string);
+export async function emails_strings_to_user_ids_array(emails_string: string): Promise<number[] | undefined> {
+    const user_ids_string = await emails_strings_to_user_ids_string(emails_string);
     if (user_ids_string === undefined) {
         return undefined;
     }
@@ -362,21 +441,18 @@ export function emails_strings_to_user_ids_array(emails_string: string): number[
     return user_ids_array;
 }
 
-export function reply_to_to_user_ids_string(emails_string: string): string | undefined {
+export async function reply_to_to_user_ids_string(emails_string: string): Promise<string | undefined> {
     // This is basically emails_strings_to_user_ids_string
     // without blueslip warnings, since it can be called with
     // invalid data.
     const emails = emails_string.split(",");
-
-    let user_ids = util.try_parse_as_truthy(
-        emails.map((email) => {
-            const person = get_by_email(email);
-            return person?.user_id;
-        }),
-    );
-
-    if (user_ids === undefined) {
-        return undefined;
+    let user_ids: number[] = [];
+    for (const email of emails) {
+        const person = await get_by_email(email);
+        if (!person) {
+            return undefined;
+        }
+        user_ids.push(person.user_id);
     }
 
     user_ids = util.sorted_ids(user_ids);
@@ -384,21 +460,16 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
     return user_ids.join(",");
 }
 
-export function user_ids_to_full_names_string(user_ids: number[]): string {
-    const names = user_ids.map((user_id) => {
-        const person = maybe_get_user_by_id(user_id);
-        if (person !== undefined) {
-            return person.full_name;
-        }
-        return INACCESSIBLE_USER_NAME;
-    });
-
+export async function user_ids_to_full_names_string(user_ids: number[]): Promise<string> {
+    const users = await get_or_fetch_users_from_ids(user_ids);
+    const names = users.map((user) => user.full_name);
     const sorted_names = names.sort(util.make_strcmp());
     return sorted_names.join(", ");
 }
 
-export function get_user_time(user_id: number): string | undefined {
-    const user_timezone = get_by_user_id(user_id).timezone;
+export async function get_user_time(user_id: number): Promise<string | undefined> {
+    const user = await get_or_fetch_user_from_id(user_id);
+    const user_timezone = user.timezone;
     if (user_timezone) {
         try {
             return new Date().toLocaleTimeString(user_settings.default_language, {
@@ -415,30 +486,33 @@ export function get_user_time(user_id: number): string | undefined {
     return undefined;
 }
 
-export function get_user_type(user_id: number): string | undefined {
-    const user_profile = get_by_user_id(user_id);
+export async function get_user_type(user_id: number): Promise<string | undefined> {
+    const user_profile = await get_or_fetch_user_from_id(user_id);
     return settings_config.user_role_map.get(user_profile.role);
 }
 
-export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
+export async function emails_strings_to_user_ids_string(emails_string: string): Promise<string | undefined> {
     const emails = emails_string.split(",");
-    return email_list_to_user_ids_string(emails);
+    return await email_list_to_user_ids_string(emails);
 }
 
-export function emails_string_to_user_ids(emails_string: string): number[] {
-    const user_ids_string = email_list_to_user_ids_string(
+export async function emails_string_to_user_ids(emails_string: string): Promise<number[]> {
+    const user_ids_string = await email_list_to_user_ids_string(
         util.extract_pm_recipients(emails_string),
     );
     return user_ids_string ? user_ids_string_to_ids_array(user_ids_string) : [];
 }
 
-export let email_list_to_user_ids_string = (emails: string[]): string | undefined => {
-    let user_ids = util.try_parse_as_truthy(
-        emails.map((email) => {
-            const person = get_by_email(email);
-            return person?.user_id;
-        }),
-    );
+export let email_list_to_user_ids_string = async (emails: string[]): Promise<string | undefined> => {
+    let user_ids: number[] = [];
+    for (const email of emails) {
+        const person = await get_by_email(email);
+        if (!person) {
+            // If we don't know the email, we can't do anything.
+            return undefined;
+        }
+        user_ids.push(person.user_id);
+    }
 
     if (user_ids === undefined) {
         blueslip.warn("Unknown emails", {emails});
@@ -456,12 +530,18 @@ export function rewire_email_list_to_user_ids_string(
     email_list_to_user_ids_string = value;
 }
 
-export function get_full_names_for_poll_option(user_ids: number[]): string {
-    return get_display_full_names(user_ids).join(", ");
+export async function get_full_names_for_poll_option(user_ids: number[]): Promise<string> {
+    const full_names = await get_display_full_names(user_ids);
+    return full_names.join(", ");
 }
 
-export function get_display_full_name(user_id: number): string {
-    const person = get_user_by_id_assert_valid(user_id);
+export async function get_or_fetch_display_full_name(user_id: number): Promise<string> {
+    await get_or_fetch_user_from_id(user_id);
+    return get_display_full_name(user_id);
+}
+
+export async function get_display_full_name(user_id: number): Promise<string> {
+    const person = await get_or_fetch_user_from_id(user_id);
 
     if (muted_users.is_user_muted(user_id)) {
         if (should_add_guest_user_indicator(user_id)) {
@@ -478,8 +558,10 @@ export function get_display_full_name(user_id: number): string {
     return person.full_name;
 }
 
-export function get_display_full_names(user_ids: number[]): string[] {
-    return user_ids.map((user_id) => get_display_full_name(user_id));
+export async function get_display_full_names(user_ids: number[]): Promise<string[]> {
+    const users = await get_or_fetch_users_from_ids(user_ids);
+    const full_names = users.map((user) => user.full_name);
+    return full_names;
 }
 
 export function get_full_name(user_id: number): string {
@@ -496,7 +578,7 @@ function _calc_user_and_other_ids(user_ids_string: string): {
     return {user_ids, other_ids};
 }
 
-export function get_recipients(user_ids_string: string): string[] {
+export async function get_recipients(user_ids_string: string): Promise<string[]> {
     // See message_store.get_pm_full_names() for a similar function.
 
     const {other_ids} = _calc_user_and_other_ids(user_ids_string);
@@ -506,18 +588,19 @@ export function get_recipients(user_ids_string: string): string[] {
         return [my_full_name()];
     }
 
-    const names = get_display_full_names(other_ids);
+    const names = await get_display_full_names(other_ids);
     const sorted_names = names.sort(util.make_strcmp());
 
     return sorted_names;
 }
 
-export function format_recipients(
+export async function format_recipients(
     users_ids_string: string,
     join_strategy: "long" | "narrow",
-): string {
+): Promise<string> {
+    const recipients = await get_recipients(users_ids_string);
     const formatted_recipients_string = util.format_array_as_list_with_conjunction(
-        get_recipients(users_ids_string),
+        recipients,
         join_strategy,
     );
     return formatted_recipients_string;
@@ -533,24 +616,17 @@ export function pm_reply_user_string(message: Message | MessageWithBooleans): st
     return user_ids.join(",");
 }
 
-export function pm_reply_to(message: Message): string | undefined {
+export async function pm_reply_to(message: Message): Promise<string | undefined> {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
         return undefined;
     }
 
-    const emails = user_ids.map((user_id) => {
-        const person = people_by_user_id_dict.get(user_id);
-        if (!person) {
-            blueslip.error("Unknown user id in message", {user_id});
-            return "?";
-        }
-        return person.email;
-    });
-
-    const reply_to = sort_emails_by_username(emails).join(",");
-
+    const users = await get_or_fetch_users_from_ids(user_ids);
+    const emails = users.map((user) => user.email);
+    const sorted_emails = await sort_emails_by_username(emails);
+    const reply_to = sorted_emails.join(",");
     return reply_to;
 }
 
@@ -659,7 +735,7 @@ export function pm_perma_link(message: Message): string | undefined {
     return url;
 }
 
-export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
+export async function pm_with_url(message: Message | MessageWithBooleans): Promise<string | undefined> {
     const user_ids = pm_with_user_ids(message);
 
     if (user_ids?.[0] === undefined) {
@@ -671,8 +747,8 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
     if (user_ids.length > 1) {
         suffix = "group";
     } else {
-        const person = maybe_get_user_by_id(user_ids[0]);
-        if (person?.full_name) {
+        const person = await get_or_fetch_user_from_id(user_ids[0]);
+        if (!person.is_inaccessible_user && person.full_name) {
             suffix = person.full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
         } else {
             blueslip.error("Unknown people in message");
@@ -685,20 +761,25 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
     return url;
 }
 
-export function update_email_in_reply_to(
+export async function update_email_in_reply_to(
     reply_to: string,
     user_id: number,
     new_email: string,
-): string {
+): Promise<string> {
     // We try to replace an old email with a new email in a reply_to,
     // but we try to avoid changing the reply_to if we don't have to,
     // and we don't warn on any errors.
     let emails = reply_to.split(",");
 
-    const persons = util.try_parse_as_truthy(emails.map((email) => people_dict.get(email.trim())));
-
-    if (persons === undefined) {
-        return reply_to;
+    const persons = [];
+    // It is okay to calling this in a loop as the caller
+    // already fetches the users here once.
+    for (const email of emails) {
+        const user = await get_by_email(email);
+        if (!user) {
+            return reply_to;
+        }
+        persons.push(user);
     }
 
     const needs_patch = persons.some((person) => person.user_id === user_id);
@@ -774,7 +855,7 @@ export function emails_to_slug(emails_string: string): string | undefined {
     return slug;
 }
 
-export function slug_to_emails(slug: string): string | undefined {
+export function slug_to_user_ids_string(slug: string): string | undefined {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
@@ -791,7 +872,16 @@ export function slug_to_emails(slug: string): string | undefined {
     if (m) {
         let user_ids_string = m[1]!;
         user_ids_string = exclude_me_from_string(user_ids_string);
-        return user_ids_string_to_emails_string(user_ids_string);
+        return user_ids_string;
+    }
+    /* istanbul ignore next */
+    return undefined;
+}
+
+export async function slug_to_emails(slug: string): Promise<string | undefined> {
+    const user_ids_string = slug_to_user_ids_string(slug);
+    if (user_ids_string) {
+        return await get_or_fetch_user_ids_string_to_emails_string(user_ids_string);
     }
     /* istanbul ignore next */
     return undefined;
@@ -1599,7 +1689,11 @@ export function report_late_add(user_id: number, email: string): void {
     }
 }
 
-export function make_user(user_id: number, email: string, full_name: string): User {
+export function make_user(
+    user_id: number,
+    email: string = "user" + user_id + "@" + realm.realm_bot_domain,
+    full_name: string = $t({defaultMessage: "Loading..."}),
+): User {
     // Used to create fake user objects for users who we see via some
     // API call, such as fetching a message sent by the user, before
     // we receive a full user object for the user via the events
@@ -1649,17 +1743,6 @@ export function add_inaccessible_user(user_id: number): User {
     return unknown_user;
 }
 
-export function get_user_by_id_assert_valid(
-    user_id: number,
-    allow_missing_user = !settings_data.user_can_access_all_other_users(),
-): User {
-    if (!allow_missing_user) {
-        return get_by_user_id(user_id);
-    }
-
-    return maybe_get_user_by_id(user_id, true) ?? add_inaccessible_user(user_id);
-}
-
 function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {
     let involved_people: DisplayRecipientUser[] = [];
 
@@ -1693,8 +1776,7 @@ export function extract_people_from_message(message: MessageWithBooleans): void 
             continue;
         }
 
-        report_late_add(user_id, person.email);
-
+        void get_or_fetch_user_from_id(user_id);
         _add_user(make_user(user_id, person.email, person.full_name));
     }
 }

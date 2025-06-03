@@ -214,7 +214,11 @@ export type BuddyUserInfo = {
     faded?: boolean;
 };
 
-export function info_for(user_id: number, direct_message_recipients: Set<number>): BuddyUserInfo {
+export async function info_for(
+    user_id: number,
+    direct_message_recipients: Set<number>,
+): Promise<BuddyUserInfo> {
+    await people.fetch_users_from_ids([user_id]);
     const is_deactivated = !people.is_person_active(user_id);
     const is_dm = direct_message_recipients.has(user_id);
 
@@ -330,9 +334,13 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
     };
 }
 
-export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
+export async function get_items_for_users(user_ids: number[]): Promise<BuddyUserInfo[]> {
     const direct_message_recipients = narrow_state.pm_ids_set();
-    const user_info = user_ids.map((user_id) => info_for(user_id, direct_message_recipients));
+    const user_info: BuddyUserInfo[] = [];
+    for (const user_id of user_ids) {
+        const info = await info_for(user_id, direct_message_recipients);
+        user_info.push(info);
+    }
     return user_info;
 }
 

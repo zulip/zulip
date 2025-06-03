@@ -236,37 +236,39 @@ export const update_elements = ($content: JQuery): void => {
         }
     });
 
-    $content.find("a.stream-topic, a.message-link").each(function (): void {
-        const narrow_url = $(this).attr("href");
-        assert(narrow_url !== undefined);
-        const channel_topic = hash_util.decode_stream_topic_from_url(narrow_url);
-        assert(channel_topic !== null);
-        const channel_name = sub_store.maybe_get_stream_name(channel_topic.stream_id);
-        if (channel_name !== undefined && $(this).find(".highlight").length === 0) {
-            // Display the current channel name if it hasn't been deleted
-            // and not being displayed in search highlight.
-            // TODO: Ideally, we should NOT skip this if only topic is highlighted,
-            // but we are doing so currently.
-            const topic_name = channel_topic.topic_name;
-            assert(topic_name !== undefined);
-            const topic_display_name = util.get_final_topic_display_name(topic_name);
-            const context = {
-                channel_name,
-                topic_display_name,
-                is_empty_string_topic: topic_name === "",
-                href: narrow_url,
-            };
-            if ($(this).hasClass("stream-topic")) {
-                const topic_link_html = render_topic_link({
-                    channel_id: channel_topic.stream_id,
-                    ...context,
-                });
-                $(this).replaceWith($(topic_link_html));
-            } else {
-                const message_link_html = render_channel_message_link(context);
-                $(this).replaceWith($(message_link_html));
+    $content.find("a.stream-topic, a.message-link").each(function (this: HTMLElement): void {
+        void (async () => {
+            const narrow_url = $(this).attr("href");
+            assert(narrow_url !== undefined);
+            const channel_topic = await hash_util.decode_stream_topic_from_url(narrow_url);
+            assert(channel_topic !== null);
+            const channel_name = sub_store.maybe_get_stream_name(channel_topic.stream_id);
+            if (channel_name !== undefined && $(this).find(".highlight").length === 0) {
+                // Display the current channel name if it hasn't been deleted
+                // and not being displayed in search highlight.
+                // TODO: Ideally, we should NOT skip this if only topic is highlighted,
+                // but we are doing so currently.
+                const topic_name = channel_topic.topic_name;
+                assert(topic_name !== undefined);
+                const topic_display_name = util.get_final_topic_display_name(topic_name);
+                const context = {
+                    channel_name,
+                    topic_display_name,
+                    is_empty_string_topic: topic_name === "",
+                    href: narrow_url,
+                };
+                if ($(this).hasClass("stream-topic")) {
+                    const topic_link_html = render_topic_link({
+                        channel_id: channel_topic.stream_id,
+                        ...context,
+                    });
+                    $(this).replaceWith($(topic_link_html));
+                } else {
+                    const message_link_html = render_channel_message_link(context);
+                    $(this).replaceWith($(message_link_html));
+                }
             }
-        }
+        })();
     });
 
     $content.find("time").each(function (): void {

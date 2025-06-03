@@ -138,8 +138,8 @@ class BuddyListConf {
         return Number.parseInt(user_id, 10);
     }
 
-    get_data_from_user_ids(user_ids: number[]): BuddyUserInfo[] {
-        const data = buddy_data.get_items_for_users(user_ids);
+    async get_data_from_user_ids(user_ids: number[]): Promise<BuddyUserInfo[]> {
+        const data = await buddy_data.get_items_for_users(user_ids);
         return data;
     }
 
@@ -320,7 +320,7 @@ export class BuddyList extends BuddyListConf {
         );
     }
 
-    populate(opts: {all_user_ids: number[]}): void {
+    async populate(opts: {all_user_ids: number[]}): Promise<void> {
         this.render_count = 0;
         this.$participants_list.empty();
         this.participant_user_ids = [];
@@ -363,7 +363,7 @@ export class BuddyList extends BuddyListConf {
             );
         }
 
-        this.fill_screen_with_content();
+        await this.fill_screen_with_content();
 
         // This must happen after `fill_screen_with_content`
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
@@ -579,7 +579,7 @@ export class BuddyList extends BuddyListConf {
 
         // Collapsing and uncollapsing sections has a similar effect to
         // scrolling, so we make sure to fill screen with content here as well.
-        this.fill_screen_with_content();
+        void this.fill_screen_with_content();
     }
 
     toggle_users_matching_view_section(): void {
@@ -591,7 +591,7 @@ export class BuddyList extends BuddyListConf {
 
         // Collapsing and uncollapsing sections has a similar effect to
         // scrolling, so we make sure to fill screen with content here as well.
-        this.fill_screen_with_content();
+        void this.fill_screen_with_content();
     }
 
     toggle_other_users_section(): void {
@@ -603,10 +603,10 @@ export class BuddyList extends BuddyListConf {
 
         // Collapsing and uncollapsing sections has a similar effect to
         // scrolling, so we make sure to fill screen with content here as well.
-        this.fill_screen_with_content();
+        void this.fill_screen_with_content();
     }
 
-    render_more(opts: {chunk_size: number}): void {
+    async render_more(opts: {chunk_size: number}): Promise<void> {
         const chunk_size = opts.chunk_size;
 
         const begin = this.render_count;
@@ -618,7 +618,7 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        const items = this.get_data_from_user_ids(more_user_ids);
+        const items = await this.get_data_from_user_ids(more_user_ids);
         const participants = [];
         const subscribed_users = [];
         const other_users = [];
@@ -883,7 +883,7 @@ export class BuddyList extends BuddyListConf {
         return undefined;
     }
 
-    maybe_remove_user_id(opts: {user_id: number}): void {
+    async maybe_remove_user_id(opts: {user_id: number}): Promise<void> {
         let was_removed = false;
         for (const user_id_list of [
             this.participant_user_ids,
@@ -905,7 +905,7 @@ export class BuddyList extends BuddyListConf {
 
         if (pos < this.render_count) {
             this.render_count -= 1;
-            const $li = this.find_li({key: opts.user_id});
+            const $li = await this.find_li({key: opts.user_id});
             assert($li !== undefined);
             $li.remove();
             this.update_padding();
@@ -932,7 +932,7 @@ export class BuddyList extends BuddyListConf {
         return i === -1 ? user_id_list.length : i;
     }
 
-    force_render(opts: {pos: number}): void {
+    async force_render(opts: {pos: number}): Promise<void> {
         const pos = opts.pos;
 
         // Try to render a bit optimistically here.
@@ -947,12 +947,12 @@ export class BuddyList extends BuddyListConf {
             });
         }
 
-        this.render_more({
+        await this.render_more({
             chunk_size,
         });
     }
 
-    find_li(opts: {key: number; force_render?: boolean}): JQuery | undefined {
+    async find_li(opts: {key: number; force_render?: boolean}): Promise<JQuery | undefined> {
         const user_id = opts.key;
 
         // Try direct DOM lookup first for speed.
@@ -978,7 +978,7 @@ export class BuddyList extends BuddyListConf {
             return undefined;
         }
 
-        this.force_render({
+        await this.force_render({
             pos,
         });
 
@@ -989,12 +989,12 @@ export class BuddyList extends BuddyListConf {
         return $li;
     }
 
-    insert_new_html(opts: {
+    async insert_new_html(opts: {
         new_user_id: number | undefined;
         html: string;
         is_subscribed_user: boolean;
         is_participant_user: boolean;
-    }): void {
+    }): Promise<void> {
         const user_id_following_insertion = opts.new_user_id;
         const html = opts.html;
         const is_subscribed_user = opts.is_subscribed_user;
@@ -1010,7 +1010,7 @@ export class BuddyList extends BuddyListConf {
                 this.$other_users_list.append($(html));
             }
         } else {
-            const $li = this.find_li({key: user_id_following_insertion});
+            const $li = await this.find_li({key: user_id_following_insertion});
             assert($li !== undefined);
             $li.before($(html));
         }
@@ -1019,16 +1019,16 @@ export class BuddyList extends BuddyListConf {
         this.update_padding();
     }
 
-    insert_or_move(user_ids: number[]): void {
+    async insert_or_move(user_ids: number[]): Promise<void> {
         // TODO: Further optimize this function by clubbing DOM updates from
         // multiple insertions/movements into a single update.
 
         const all_participant_ids = this.render_data.get_all_participant_ids();
-        const users = buddy_data.get_items_for_users(user_ids);
+        const users = await buddy_data.get_items_for_users(user_ids);
         for (const user of users) {
             const user_id = user.user_id;
 
-            this.maybe_remove_user_id({user_id});
+            await this.maybe_remove_user_id({user_id});
 
             const new_pos_in_all_users = this.find_position({
                 user_id,
@@ -1064,7 +1064,7 @@ export class BuddyList extends BuddyListConf {
             this.all_user_ids.splice(new_pos_in_all_users, 0, user_id);
 
             const html = this.item_to_html({item: user});
-            this.insert_new_html({
+            await this.insert_new_html({
                 html,
                 new_user_id,
                 is_subscribed_user,
@@ -1077,7 +1077,7 @@ export class BuddyList extends BuddyListConf {
         void this.render_section_headers();
     }
 
-    rerender_participants(): void {
+    async rerender_participants(): Promise<void> {
         if (page_params.is_spectator) {
             return;
         }
@@ -1093,10 +1093,10 @@ export class BuddyList extends BuddyListConf {
         // We are just moving the users around since we still want to show the
         // user in buddy list regardless of if they are a participant, so we
         // call `insert_or_move` on both `users_to_remove` and `users_to_add`.
-        this.insert_or_move([...users_to_remove, ...users_to_add]);
+        await this.insert_or_move([...users_to_remove, ...users_to_add]);
     }
 
-    fill_screen_with_content(): void {
+    async fill_screen_with_content(): Promise<void> {
         let height = this.height_to_fill();
 
         const elem = util.the(scroll_util.get_scroll_element($(this.scroll_container_selector)));
@@ -1115,7 +1115,7 @@ export class BuddyList extends BuddyListConf {
 
             const chunk_size = 20;
 
-            this.render_more({
+            await this.render_more({
                 chunk_size,
             });
         }
@@ -1128,7 +1128,7 @@ export class BuddyList extends BuddyListConf {
         const $scroll_container = scroll_util.get_scroll_element($(this.scroll_container_selector));
 
         $scroll_container.on("scroll", () => {
-            this.fill_screen_with_content();
+            void this.fill_screen_with_content();
         });
     }
 

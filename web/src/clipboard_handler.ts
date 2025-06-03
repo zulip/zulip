@@ -30,9 +30,8 @@ export function execute_copy(
 export async function copy_link_to_clipboard(link: string): Promise<void> {
     // The caller is responsible for making sure what it is passes in
     // to this function is a Zulip internal link.
+    const stream_topic_details = await hash_util.decode_stream_topic_from_url(link);
     return new Promise((resolve) => {
-        const stream_topic_details = hash_util.decode_stream_topic_from_url(link);
-
         function handle_copy_event(e: ClipboardEvent): void {
             if (stream_topic_details === null) {
                 e.clipboardData?.setData("text/plain", link);

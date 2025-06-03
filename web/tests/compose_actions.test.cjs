@@ -410,8 +410,10 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     const opts = {};
 
     reply_with_mention(opts);
-    assert.equal(compose_state.stream_name(), "Denmark");
-    assert.equal(syntax_to_insert, "@**Bob Roberts**");
+    setTimeout(() => {
+        assert.equal(compose_state.stream_name(), "Denmark");
+        assert.equal(syntax_to_insert, "@**Bob Roberts**");
+    }, 0);
 
     // Test for extended mention syntax
     const bob_1 = {
@@ -428,8 +430,10 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     people.add_active_user(bob_2);
 
     reply_with_mention(opts);
-    assert.equal(compose_state.stream_name(), "Denmark");
-    assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
+    setTimeout(() => {
+        assert.equal(compose_state.stream_name(), "Denmark");
+        assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
+    });
 });
 
 test("quote_message", ({disallow, override, override_rewire}) => {

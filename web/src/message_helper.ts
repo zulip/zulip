@@ -52,7 +52,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
     // => clean_reactions data for the message, with care being taken
     // to make sure reify_message_id moves the data structure
     // properly.
-    const clean_reactions = reactions.generate_clean_reactions(raw_message);
+    const clean_reactions = new Map<string, message_store.MessageCleanReaction>();
 
     let message: Message;
     if (message_with_booleans.type === "stream") {
@@ -127,5 +127,9 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
 
     alert_words.process_message(message);
     message_store.update_message_cache(message);
+    void reactions.generate_clean_reactions(raw_message).then((clean_reactions_data) => {
+        message.clean_reactions = clean_reactions_data;
+        message_store.update_message_cache(message);
+    });
     return message;
 }

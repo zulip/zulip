@@ -595,7 +595,7 @@ export function process_enter_key(e) {
         return true;
     }
 
-    compose_reply.respond_to_message({trigger: "hotkey enter"});
+    void compose_reply.respond_to_message({trigger: "hotkey enter"});
     return true;
 }
 
@@ -1077,7 +1077,7 @@ export function process_hotkey(e, hotkey) {
         case "reply_message": // 'r': respond to message
             // Note that you can "Enter" to respond to messages as well,
             // but that is handled in process_enter_key().
-            compose_reply.respond_to_message({trigger: "hotkey"});
+            void compose_reply.respond_to_message({trigger: "hotkey"});
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
@@ -1184,7 +1184,7 @@ export function process_hotkey(e, hotkey) {
             deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
             return true;
         case "respond_to_author": // 'R': respond to author
-            compose_reply.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
+            void compose_reply.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
             return true;
         case "compose_reply_with_mention": // '@': respond to message with mention to author
             compose_reply.reply_with_mention({trigger: "hotkey"});

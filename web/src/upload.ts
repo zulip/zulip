@@ -423,10 +423,15 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         assert(event.originalEvent.dataTransfer !== null);
         const files = event.originalEvent.dataTransfer.files;
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_reply.respond_to_message({
-                trigger: "file drop or paste",
-                keep_composebox_empty: true,
-            });
+            void compose_reply
+                .respond_to_message({
+                    trigger: "file drop or paste",
+                    keep_composebox_empty: true,
+                })
+                .then(() => {
+                    upload_files(uppy, config, files);
+                });
+            return;
         }
         upload_files(uppy, config, files);
     });
@@ -438,7 +443,7 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
             return;
         }
         const items = clipboard_data.items;
-        const files = [];
+        const files: File[] = [];
         for (const item of items) {
             const file = item.getAsFile();
             if (file === null) {
@@ -454,10 +459,15 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         // present a plain-text version of the file name.
         event.preventDefault();
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_reply.respond_to_message({
-                trigger: "file drop or paste",
-                keep_composebox_empty: true,
-            });
+            void compose_reply
+                .respond_to_message({
+                    trigger: "file drop or paste",
+                    keep_composebox_empty: true,
+                })
+                .then(() => {
+                    upload_files(uppy, config, files);
+                });
+            return;
         }
         upload_files(uppy, config, files);
     });
@@ -652,11 +662,15 @@ export function initialize(): void {
             upload_files(edit_upload_object, edit_config(row_id), files);
         } else if (message_lists.current?.selected_message()) {
             // Start a reply to selected message, if viewing a message feed.
-            compose_reply.respond_to_message({
-                trigger: "drag_drop_file",
-                keep_composebox_empty: true,
-            });
-            upload_files(compose_upload_object, compose_config, files);
+            void compose_reply
+                .respond_to_message({
+                    trigger: "drag_drop_file",
+                    keep_composebox_empty: true,
+                })
+                .then(() => {
+                    upload_files(compose_upload_object, compose_config, files);
+                });
+            return;
         } else {
             // Start a new message in other views.
             compose_actions.start({

@@ -3,9 +3,11 @@ import $ from "jquery";
 import * as blueslip from "./blueslip.ts";
 import * as scroll_util from "./scroll_util.ts";
 
+type MaybePromise<T> = T | Promise<T>;
+
 type List<Key> = {
     scroll_container_selector: string;
-    find_li: (opts: {key: Key; force_render: boolean}) => JQuery | undefined;
+    find_li: (opts: {key: Key; force_render: boolean}) => MaybePromise<JQuery | undefined>;
     first_key: () => Key | undefined;
     prev_key: (key: Key) => Key | undefined;
     next_key: (key: Key) => Key | undefined;
@@ -21,11 +23,11 @@ export class ListCursor<Key> {
         this.list = list;
     }
 
-    clear(): void {
+    async clear(): Promise<void> {
         if (this.curr_key === undefined) {
             return;
         }
-        const row = this.get_row(this.curr_key);
+        const row = await this.get_row(this.curr_key);
         if (row) {
             row.clear();
         }
@@ -36,7 +38,9 @@ export class ListCursor<Key> {
         return this.curr_key;
     }
 
-    get_row(key: Key | undefined): {highlight: () => void; clear: () => void} | undefined {
+    async get_row(
+        key: Key | undefined,
+    ): Promise<{highlight: () => void; clear: () => void} | undefined> {
         // TODO: The list class should probably do more of the work
         //       here, so we're not so coupled to jQuery, and
         //       so we instead just get back a widget we can say
@@ -48,7 +52,7 @@ export class ListCursor<Key> {
             return undefined;
         }
 
-        const $li = this.list.find_li({
+        const $li = await this.list.find_li({
             key,
             force_render: true,
         });
@@ -73,13 +77,13 @@ export class ListCursor<Key> {
         scroll_util.scroll_element_into_container($li, $scroll_container);
     }
 
-    redraw(): void {
+    async redraw(): Promise<void> {
         // We should only call this for situations like the buddy
         // list where we redraw the whole list without necessarily
         // changing it, so we just want to re-highlight the current
         // row in the new DOM.  If you are filtering, for now you
         // should call the 'reset()' method.
-        const row = this.get_row(this.curr_key);
+        const row = await this.get_row(this.curr_key);
 
         if (row === undefined) {
             return;
@@ -87,7 +91,7 @@ export class ListCursor<Key> {
         row.highlight();
     }
 
-    go_to(key: Key | undefined): void {
+    async go_to(key: Key | undefined): Promise<void> {
         if (key === undefined) {
             blueslip.error("Caller is not checking keys for ListCursor.go_to");
             return;
@@ -95,8 +99,8 @@ export class ListCursor<Key> {
         if (key === this.curr_key) {
             return;
         }
-        this.clear();
-        const row = this.get_row(key);
+        await this.clear();
+        const row = await this.get_row(key);
         if (row === undefined) {
             blueslip.error("Cannot highlight key for ListCursor", {key});
             return;
@@ -105,17 +109,17 @@ export class ListCursor<Key> {
         row.highlight();
     }
 
-    reset(): void {
-        this.clear();
+    async reset(): Promise<void> {
+        await this.clear();
         const key = this.list.first_key();
         if (key === undefined) {
             this.curr_key = undefined;
             return;
         }
-        this.go_to(key);
+        await this.go_to(key);
     }
 
-    prev(): void {
+    async prev(): Promise<void> {
         if (this.curr_key === undefined) {
             return;
         }
@@ -124,14 +128,14 @@ export class ListCursor<Key> {
             // leave the current key
             return;
         }
-        this.go_to(key);
+        await this.go_to(key);
     }
 
-    next(): void {
+    async next(): Promise<void> {
         if (this.curr_key === undefined) {
             // This is sort of a special case where we went from
             // an empty filter to having data.
-            this.reset();
+            await this.reset();
             return;
         }
         const key = this.list.next_key(this.curr_key);
@@ -139,6 +143,6 @@ export class ListCursor<Key> {
             // leave the current key
             return;
         }
-        this.go_to(key);
+        await this.go_to(key);
     }
 }

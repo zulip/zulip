@@ -211,7 +211,7 @@ export function initialize(): void {
         if (page_params.is_spectator) {
             return;
         }
-        compose_reply.respond_to_message({trigger: "message click"});
+        void compose_reply.respond_to_message({trigger: "message click"});
         e.stopPropagation();
     };
 
