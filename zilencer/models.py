@@ -587,3 +587,26 @@ def has_stale_audit_log(server: RemoteZulipServer) -> bool:
         return True
 
     return False
+
+
+class RemotePushDevice(models.Model):
+    device_id = models.BigAutoField(primary_key=True)
+
+    realm = models.ForeignKey(Realm, on_delete=models.CASCADE, null=True)
+
+    remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
+
+    token = models.TextField()
+
+    class TokenKind(models.IntegerChoices):
+        APNS = 1
+        FCM = 2
+
+    token_kind = models.PositiveSmallIntegerField(choices=TokenKind.choices)
+
+    push_account_id = models.BigIntegerField()
+
+    expired_time = models.DateTimeField(null=True)
+
+    # [optional] Contains the app id of the device if it is an iOS device
+    ios_app_id = models.TextField(null=True)
