@@ -11,6 +11,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -440,6 +441,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     // compose-box do not cover the last messages of the current stream
     // while writing a long message.
     resize.reset_compose_message_max_height();
+    compose_tooltips.initialize_compose_tooltips("compose", "#compose .compose_button_tooltip");
 
     complete_starting_tasks(opts);
 

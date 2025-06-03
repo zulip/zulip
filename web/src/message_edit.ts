@@ -673,6 +673,10 @@ function edit_message($row: JQuery, raw_content: string): void {
         $message_edit_content.on("keyup", (event) => {
             compose_ui.handle_keyup(event, $message_edit_content);
         });
+        compose_tooltips.initialize_compose_tooltips(
+            `edit_message:${message.id}`,
+            ".message_edit .compose_button_tooltip",
+        );
     }
 
     // Add tooltip and timer
@@ -1104,6 +1108,10 @@ export function end_message_row_edit($row: JQuery): void {
     $row.find(".message_edit").trigger("blur");
     // We should hide the editing typeahead if it is visible
     $row.find("input.message_edit_topic").trigger("blur");
+    // Hide the edit box tooltips
+    compose_tooltips.clean_up_compose_singleton_tooltip(
+        `edit_message:${$row.attr("data-message-id")}`,
+    );
 }
 
 export function end_message_edit(message_id: number): void {
