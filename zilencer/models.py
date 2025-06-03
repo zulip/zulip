@@ -587,3 +587,48 @@ def has_stale_audit_log(server: RemoteZulipServer) -> bool:
         return True
 
     return False
+
+
+class RemotePushDevice(models.Model):
+    """Each row corresponds to an account on an install of the app
+    registered to receive mobile push notifications.
+    """
+
+    device_id = models.BigAutoField(primary_key=True)
+
+    # Set to null for self-hosters. `remote_realm` is set instead.
+    realm = models.ForeignKey(Realm, on_delete=models.CASCADE, null=True)
+
+    # Set to null for zulip cloud. `realm` is set instead.
+    remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
+
+    # A token that uniquely identifies the app instance.
+    #
+    # FCM and APNs don't specify a maximum token length, so we only enforce
+    # that they're at most the maximum FCM / APNs payload size of 4096 bytes.
+    token = models.CharField(max_length=4096)
+
+    class TokenKind(models.IntegerChoices):
+        APNS = 1, "APNs"
+        FCM = 2, "FCM"
+
+    token_kind = models.PositiveSmallIntegerField(choices=TokenKind.choices)
+
+    # ID to identify an account within an install of the app.
+    push_account_id = models.BigIntegerField()
+
+    expired_time = models.DateTimeField(null=True)
+
+    # [optional] Contains the app id of the device if it is an iOS device
+    ios_app_id = models.TextField(null=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                # Each app install (token) can have multiple accounts (push_account_id).
+                # The (push_account_id, token) pair needs to be unique to avoid sending
+                # redundant notifications to the same account on a device.
+                fields=["push_account_id", "token"],
+                name="unique_remote_push_device_push_account_id_token",
+            ),
+        ]
