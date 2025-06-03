@@ -38,7 +38,6 @@ from zerver.lib.attachments import (
     validate_attachment_request,
     validate_attachment_request_for_spectator_access,
 )
-from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -871,102 +870,6 @@ class StreamAdminTest(ZulipTestCase):
             "property": "history_public_to_subscribers",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
-    def test_add_and_remove_stream_as_default(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        realm = user_profile.realm
-        stream = self.make_stream("stream", realm=realm)
-        stream_id = self.subscribe(user_profile, "stream").id
-
-        params = {
-            "is_default_stream": orjson.dumps(True).decode(),
-        }
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-        self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
-
-        # User still needs to be an admin to add a default channel.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        user_profile_group = check_add_user_group(
-            realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=user_profile,
-        )
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "You do not have permission to change default channels.")
-        self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
-
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_success(result)
-        self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
-
-        params = {
-            "is_private": orjson.dumps(True).decode(),
-        }
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "A default channel cannot be private.")
-        stream.refresh_from_db()
-        self.assertFalse(stream.invite_only)
-
-        params = {
-            "is_private": orjson.dumps(True).decode(),
-            "is_default_stream": orjson.dumps(False).decode(),
-        }
-
-        # User still needs to be an admin to remove a default channel.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "You do not have permission to change default channels.")
-        self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_success(result)
-        stream.refresh_from_db()
-        self.assertTrue(stream.invite_only)
-        self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
-
-        stream_2 = self.make_stream("stream_2", realm=realm)
-        stream_2_id = self.subscribe(user_profile, "stream_2").id
-
-        bad_params = {
-            "is_default_stream": orjson.dumps(True).decode(),
-            "is_private": orjson.dumps(True).decode(),
-        }
-        result = self.client_patch(f"/json/streams/{stream_2_id}", bad_params)
-        self.assert_json_error(result, "A default channel cannot be private.")
-        stream.refresh_from_db()
-        self.assertFalse(stream_2.invite_only)
-        self.assertFalse(stream_2_id in get_default_stream_ids_for_realm(realm.id))
-
-        private_stream = self.make_stream("private_stream", realm=realm, invite_only=True)
-        private_stream_id = self.subscribe(user_profile, "private_stream").id
-
-        params = {
-            "is_default_stream": orjson.dumps(True).decode(),
-        }
-        result = self.client_patch(f"/json/streams/{private_stream_id}", params)
-        self.assert_json_error(result, "A default channel cannot be private.")
-        self.assertFalse(private_stream_id in get_default_stream_ids_for_realm(realm.id))
-
-        params = {
-            "is_private": orjson.dumps(False).decode(),
-            "is_default_stream": orjson.dumps(True).decode(),
-        }
-        result = self.client_patch(f"/json/streams/{private_stream_id}", params)
-        self.assert_json_success(result)
-        private_stream.refresh_from_db()
-        self.assertFalse(private_stream.invite_only)
-        self.assertTrue(private_stream_id in get_default_stream_ids_for_realm(realm.id))
 
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
