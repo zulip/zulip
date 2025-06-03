@@ -357,6 +357,12 @@ test("basics", () => {
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
 
+    // "is:alerted" was renamed to "is:watched"
+    terms = [{operator: "is", operand: "alerted"}];
+    filter = new Filter(terms);
+    assert.ok(filter.has_operand("is", "watched"));
+    assert.ok(!filter.has_operand("is", "alerted"));
+
     terms = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
@@ -664,11 +670,11 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
-    is_operator = [{operator: "is", operand: "alerted"}];
+    is_operator = [{operator: "is", operand: "watched"}];
     filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
-    is_operator = [{operator: "is", operand: "alerted", negated: true}];
+    is_operator = [{operator: "is", operand: "watched", negated: true}];
     filter = new Filter([...additional_terms_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
@@ -1107,7 +1113,7 @@ test("predicate_basics", ({override}) => {
     assert.ok(predicate({unread: true}));
     assert.ok(!predicate({unread: false}));
 
-    predicate = get_predicate([["is", "alerted"]]);
+    predicate = get_predicate([["is", "watched"]]);
     assert.ok(predicate({alerted: true}));
     assert.ok(!predicate({alerted: false}));
     assert.ok(!predicate({}));
@@ -1710,7 +1716,7 @@ test("describe", ({mock_template, override}) => {
     string = "@-mentions";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-    narrow = [{operator: "is", operand: "alerted"}];
+    narrow = [{operator: "is", operand: "watched"}];
     string = "messages containing watched phrases";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
@@ -1986,7 +1992,7 @@ test("term_type", () => {
 });
 
 test("first_valid_id_from", ({override}) => {
-    const terms = [{operator: "is", operand: "alerted"}];
+    const terms = [{operator: "is", operand: "watched"}];
 
     const filter = new Filter(terms);
 
@@ -2359,7 +2365,7 @@ test("navbar_helpers", ({override}) => {
         {operator: "dm", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"},
     ];
     // not common narrows, but used for browser title updates
-    const is_alerted = [{operator: "is", operand: "alerted"}];
+    const is_watched = [{operator: "is", operand: "watched"}];
     const is_unread = [{operator: "is", operand: "unread"}];
     const channel_topic_near = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -2581,7 +2587,7 @@ test("navbar_helpers", ({override}) => {
             link: "/help/emoji-reactions",
         },
         {
-            terms: is_alerted,
+            terms: is_watched,
             is_common_narrow: false,
             icon: undefined,
             title: "translated: Messages containing watched phrases",

@@ -259,8 +259,8 @@ test_fixture("is:mentioned with no unreads and no matches", {
     expected_msg_ids: [],
 });
 
-test_fixture("is:alerted with no unreads and one match", {
-    filter_terms: [{operator: "is", operand: "alerted"}],
+test_fixture("is:watched with no unreads and one match", {
+    filter_terms: [{operator: "is", operand: "watched"}],
     unread_info: {
         flavor: "not_found",
     },

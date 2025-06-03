@@ -131,7 +131,7 @@ export let update_views_filtered_on_message_property = (
         "is-starred",
         "is-unread",
         "is-mentioned",
-        "is-alerted",
+        "is-watched",
     ];
 
     if (message_ids.length === 0 || !supported_term_types.includes(property_term_type)) {
@@ -853,8 +853,8 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 "is-mentioned",
                 is_mentioned,
             );
-            const is_alerted = event.flags.includes("has_alert_word");
-            update_views_filtered_on_message_property([event.message_id], "is-alerted", is_alerted);
+            const is_watched = event.flags.includes("has_alert_word");
+            update_views_filtered_on_message_property([event.message_id], "is-watched", is_watched);
         }
     }
 
