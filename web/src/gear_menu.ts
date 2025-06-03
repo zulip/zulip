@@ -8,6 +8,7 @@ import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
@@ -172,6 +173,13 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
+            });
+
+            $popper.on("click", ".convert-demo-organization", (e) => {
+                popover_menus.hide_current_popover_if_visible(instance);
+                e.preventDefault();
+                e.stopPropagation();
+                demo_organizations_ui.do_convert_demo_organization();
             });
 
             $popper.on("click", ".change-language-spectator", (e) => {
