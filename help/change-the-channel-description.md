@@ -29,20 +29,6 @@ disabled. Use Markdown formatting to include a link to a website, Zulip
 
 {!channel-settings-general-tab-tip.md!}
 
-{tab|mobile}
-
-{!mobile-all-channels-view.md!}
-
-{!channel-name-long-press-menu.md!}
-
-1. Tap **Channel settings**.
-
-1. Tap **Edit channel**, and enter a new description.
-
-1. Tap **Save**.
-
-{!channel-name-long-press-menu-tip.md!}
-
 {end_tabs}
 
 {!automated-notice-channel-event.md!}
