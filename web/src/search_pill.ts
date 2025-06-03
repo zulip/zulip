@@ -141,13 +141,8 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
     return pills;
 }
 
-function append_user_pill(
-    users: User[],
-    pill_widget: SearchPillWidget,
-    operator: string,
-    negated: boolean,
-): void {
-    const pill_data: SearchUserPill = {
+function search_user_pill_data(users: User[], operator: string, negated: boolean): SearchUserPill {
+    return {
         type: "search_user",
         operator,
         negated,
@@ -161,7 +156,15 @@ function append_user_pill(
             deactivated: !people.is_person_active(user.user_id) && !user.is_inaccessible_user,
         })),
     };
+}
 
+function append_user_pill(
+    users: User[],
+    pill_widget: SearchPillWidget,
+    operator: string,
+    negated: boolean,
+): void {
+    const pill_data = search_user_pill_data(users, operator, negated);
     pill_widget.appendValidatedData(pill_data);
     pill_widget.clear_text();
 }
