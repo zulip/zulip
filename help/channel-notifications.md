@@ -22,16 +22,6 @@ channels](/help/mute-a-channel), channel notification settings apply only to
 1. Under **Notification settings**, toggle your preferred
    notifications settings for the channel.
 
-{tab|mobile}
-
-{!channel-long-press-menu.md!}
-
-1. Tap **Channel settings**.
-
-1. Toggle **Notifications**.
-
-{!mobile-channel-settings-menu-tip.md!}
-
 {end_tabs}
 
 ## Configure default notifications for all channels
