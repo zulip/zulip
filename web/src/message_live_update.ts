@@ -75,7 +75,7 @@ export function update_stream_name(stream_id: number, new_name: string): void {
 
 export function update_user_full_name(user_id: number, full_name: string): void {
     message_store.update_sender_full_name(user_id, full_name);
-    rerender_messages_view_for_user(user_id);
+    rerender_messages_view();
 }
 
 export function update_avatar(user_id: number, avatar_url: string | null): void {
