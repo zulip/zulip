@@ -48,17 +48,6 @@ explicitly set a notification preference.
 1. In the **Notification triggers** table,
    toggle the settings for **Channels**.
 
-{tab|mobile}
-
-{!mobile-profile-menu.md!}
-
-1. Tap **Settings**.
-
-1. Tap **Notifications**.
-
-1. Toggle **Channel notifications** to configure mobile push notifications for
-   channel messages.
-
 {end_tabs}
 
 ## Related articles
