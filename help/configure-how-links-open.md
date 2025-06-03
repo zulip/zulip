@@ -9,9 +9,10 @@ in your device's default browser.
 
 {tab|mobile}
 
-{!mobile-profile-menu.md!}
+1. Tap the **Menu** (<i class="zulip-icon zulip-icon-mobile-menu mobile-help"></i>)
+   tab in the bottom right corner of the app.
 
-1. Tap **Settings**.
+1. Tap <i class="zulip-icon zulip-icon-gear mobile-help"></i> **Settings**.
 
 1. Toggle **Open links with in-app browser**.
 
