@@ -14,9 +14,56 @@ import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {realm} from "./state_data.ts";
-import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs.ts";
+import {
+    EXTRA_LONG_HOVER_DELAY,
+    INSTANT_HOVER_DELAY,
+    LONG_HOVER_DELAY,
+    SINGLETON_INSTANT_HOVER_DELAY,
+    SINGLETON_LONG_HOVER_DELAY,
+    get_tooltip_content,
+} from "./tippyjs.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+
+let compose_tooltips: tippy.Instance[] | null = null;
+let compose_tooltip_singleton: tippy.CreateSingletonInstance | null = null;
+
+export function initialize_compose_tooltips(): void {
+    // Clean up existing instances first
+    if (compose_tooltip_singleton) {
+        compose_tooltip_singleton.destroy();
+        if (compose_tooltips) {
+            for (const tippy_instance of compose_tooltips) {
+                if (!tippy_instance.state.isDestroyed) {
+                    tippy_instance.destroy();
+                }
+            }
+        }
+    }
+
+    compose_tooltips = tippy.default(".compose_button_tooltip", {
+        trigger: "mouseenter",
+        placement: "top",
+    });
+
+    compose_tooltip_singleton = tippy.createSingleton(compose_tooltips, {
+        delay: LONG_HOVER_DELAY,
+        onTrigger(instance, event) {
+            const currentTarget = event.currentTarget;
+            if (currentTarget instanceof HTMLElement) {
+                const content = get_tooltip_content(currentTarget);
+                if (content) {
+                    instance.setContent(content);
+                }
+                if (currentTarget.classList?.contains("disabled-on-hover")) {
+                    instance.setProps({delay: SINGLETON_INSTANT_HOVER_DELAY});
+                } else {
+                    instance.setProps({delay: SINGLETON_LONG_HOVER_DELAY});
+                }
+            }
+        },
+    });
+}
 
 export function initialize(): void {
     tippy.delegate("body", {
@@ -129,40 +176,6 @@ export function initialize(): void {
         },
         onHidden(instance) {
             instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
-        // Only display Tippy content on classes accompanied by a `data-` attribute.
-        target: `
-        .compose_control_button[data-tooltip-template-id],
-        .compose_control_button[data-tippy-content],
-        .compose_control_button_container
-        `,
-        // Add some additional delay when they open
-        // so that regular users don't have to see
-        // them unless they want to.
-        delay: LONG_HOVER_DELAY,
-        // By default, tippyjs uses a trigger value of "mouseenter focus",
-        // which means the tooltips can appear either when the element is
-        // hovered over or when it receives focus (e.g. by being clicked).
-        // However, we only want the tooltips to appear on hover, not on click.
-        // Therefore, we need to remove the "focus" trigger from the buttons,
-        // so that the tooltips don't appear when the buttons are clicked.
-        trigger: "mouseenter",
-        // This ensures that the upload files tooltip
-        // doesn't hide behind the left sidebar.
-        appendTo: () => document.body,
-        // If the button is `.disabled-on-hover`, then we want to show the
-        // tooltip instantly, to make it clear to the user that the button
-        // is disabled, and why.
-        onTrigger(instance, event) {
-            assert(event.currentTarget instanceof HTMLElement);
-            if (event.currentTarget.classList.contains("disabled-on-hover")) {
-                instance.setProps({delay: INSTANT_HOVER_DELAY});
-            } else {
-                instance.setProps({delay: LONG_HOVER_DELAY});
-            }
         },
     });
 
