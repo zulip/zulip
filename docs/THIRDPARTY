@@ -96,6 +96,10 @@ Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, mo
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: web/shared/icons/mobile-menu.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: web/shared/icons/more-vertical.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
