@@ -61,6 +61,13 @@ class WebhookConfigOption:
     validator: Callable[[str, str], str | bool | None]
 
 
+@dataclass
+class WebhookUrlOption:
+    name: str
+    label: str
+    validator: Callable[[str, str], str | bool | None]
+
+
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:

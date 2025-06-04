@@ -355,7 +355,7 @@ export const realm_schema = z.object({
             display_name: z.string(),
             name: z.string(),
             all_event_types: z.nullable(z.array(z.string())),
-            config_options: z
+            url_options: z
                 .array(
                     z.object({
                         key: z.string(),
