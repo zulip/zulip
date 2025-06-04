@@ -55,7 +55,7 @@ def clear_supported_auth_backends_cache() -> None:
 class RealmAuthenticationMethod(models.Model):
     """
     Tracks which authentication backends are enabled for a realm.
-    An enabled backend is represented in this table a row with appropriate
+    An enabled backend is represented in this table as a row with appropriate
     .realm value and .name matching the name of the target backend in the
     AUTH_BACKEND_NAME_MAP dict.
     """
