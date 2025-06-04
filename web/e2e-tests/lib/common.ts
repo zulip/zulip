@@ -94,9 +94,8 @@ export async function screenshot(page: Page, name: string | null = null): Promis
         screenshot_id += 1;
     }
 
-    const screenshot_path = path.join(puppeteer_dir, `${name}.png`);
     await page.screenshot({
-        path: screenshot_path,
+        path: `${path.join(puppeteer_dir, name)}.png`,
     });
 }
 
