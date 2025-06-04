@@ -19,6 +19,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -26,7 +27,7 @@ from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
-from zerver.lib.types import StreamMessageEditRequest
+from zerver.lib.types import StreamMessageEditRequest, UserGroupMembersData
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
@@ -2052,7 +2053,9 @@ class MessageMoveTopicTest(ZulipTestCase):
             admin_user,
             id1,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         # Test restrict resolving topics to admins only.
         admins_group = NamedUserGroup.objects.get(
@@ -2069,7 +2072,9 @@ class MessageMoveTopicTest(ZulipTestCase):
             hamlet,
             id1,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         result = self.resolve_topic_containing_message(
             admin_user,
@@ -2091,13 +2096,17 @@ class MessageMoveTopicTest(ZulipTestCase):
             othello,
             id2,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         result = self.resolve_topic_containing_message(
             admin_user,
             id2,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         result = self.resolve_topic_containing_message(
             hamlet,
@@ -2105,9 +2114,71 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        # Test restrict topics to an anonymous group.
+        # Test restrict resolving topics to a user defined group in a particular channel.
         original_topic_name = "topic 3"
         id3 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+
+        do_change_realm_permission_group_setting(
+            admin_user.realm, "can_resolve_topics_group", nobody_group, acting_user=None
+        )
+
+        do_change_stream_group_based_setting(
+            stream, "can_resolve_topics_group", leadership_group, acting_user=admin_user
+        )
+
+        result = self.resolve_topic_containing_message(
+            othello,
+            id3,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id3,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+
+        result = self.resolve_topic_containing_message(
+            hamlet,
+            id3,
+        )
+        self.assert_json_success(result)
+
+        # Test restrict topics to an anonymous group in a particular channel.
+        original_topic_name = "topic 4"
+        id4 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+
+        othello_group_member_dict = UserGroupMembersData(
+            direct_members=[othello.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_resolve_topics_group", othello_group_member_dict, acting_user=othello
+        )
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id4,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+        result = self.resolve_topic_containing_message(
+            othello,
+            id4,
+        )
+        self.assert_json_success(result)
+
+        do_change_stream_group_based_setting(
+            stream, "can_resolve_topics_group", nobody_group, acting_user=othello
+        )
+
+        # Test restrict topics to an anonymous group.
+        original_topic_name = "topic 5"
+        id5 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
         staff_group = check_add_user_group(
             admin_user.realm, "Staff", [admin_user], acting_user=admin_user
         )
@@ -2120,20 +2191,21 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         result = self.resolve_topic_containing_message(
             othello,
-            id3,
+            id5,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
-
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
         result = self.resolve_topic_containing_message(
             cordelia,
-            id3,
+            id5,
         )
         self.assert_json_success(result)
 
-        id3 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+        id5 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
         result = self.resolve_topic_containing_message(
             admin_user,
-            id3,
+            id5,
         )
         self.assert_json_success(result)
 
@@ -2144,14 +2216,14 @@ class MessageMoveTopicTest(ZulipTestCase):
             nobody_group,
             acting_user=None,
         )
-        original_topic_name = "topic 4"
-        id4 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+        original_topic_name = "topic 6"
+        id6 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
 
         # Do not allow if there is some change other than adding
         # RESOLVED_TOPIC_PREFIX
         self.login_user(admin_user)
         result = self.client_patch(
-            "/json/messages/" + str(id4),
+            "/json/messages/" + str(id6),
             {
                 "topic": RESOLVED_TOPIC_PREFIX + "topic 45",
                 "propagate_mode": "change_all",
@@ -2161,7 +2233,7 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         result = self.resolve_topic_containing_message(
             admin_user,
-            id4,
+            id6,
         )
         self.assert_json_success(result)
 
@@ -2176,9 +2248,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         do_set_realm_property(
             admin_user.realm, "move_messages_within_stream_limit_seconds", 3600, acting_user=None
         )
-        original_topic_name = "topic 5"
-        id5 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
-        message = Message.objects.get(id=id5)
+        original_topic_name = "topic 7"
+        id7 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+        message = Message.objects.get(id=id7)
         message.date_sent -= timedelta(seconds=4000)
         message.save()
 
@@ -2186,7 +2258,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # RESOLVED_TOPIC_PREFIX
         self.login_user(cordelia)
         result = self.client_patch(
-            "/json/messages/" + str(id5),
+            "/json/messages/" + str(id7),
             {
                 "topic": RESOLVED_TOPIC_PREFIX + "topic 56",
                 "propagate_mode": "change_all",
@@ -2198,6 +2270,6 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         result = self.resolve_topic_containing_message(
             cordelia,
-            id5,
+            id7,
         )
         self.assert_json_success(result)
