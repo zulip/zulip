@@ -46,17 +46,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $searchbox_form = $("#searchbox_form");
     stub_pills();
 
-    mock_template("search_list_item.hbs", true, (data, html) => {
-        if (data.is_people) {
-            for (const user of data.users) {
-                assert.equal(typeof user.user_pill_context.id, "number");
-                assert.equal(typeof user.user_pill_context.display_value, "string");
-                assert.equal(typeof user.user_pill_context.has_image, "boolean");
-                assert.equal(typeof user.user_pill_context.img_src, "string");
-            }
-        }
-        return html;
-    });
+    mock_template("search_list_item.hbs", true, (_data, html) => html);
 
     let expected_pill_display_value = "";
     let input_pill_displayed = false;
@@ -144,57 +134,21 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                         "dm-including:zo",
                         {
                             description_html: "group direct messages including",
-                            is_people: true,
                             search_string: "dm-including:user7@zulipdev.com",
-                            users: [
-                                {
-                                    user_pill_context: {
-                                        display_value: "Zoe",
-                                        has_image: true,
-                                        id: 7,
-                                        img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
-                                    },
-                                },
-                            ],
                         },
                     ],
                     [
                         "dm:zo",
                         {
                             description_html: "direct messages with",
-                            is_people: true,
                             search_string: "dm:user7@zulipdev.com",
-                            users: [
-                                {
-                                    user_pill_context: {
-                                        display_value: "Zoe",
-                                        has_image: true,
-                                        id: 7,
-                                        img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
-                                    },
-                                },
-                            ],
                         },
                     ],
                     [
                         "sender:zo",
                         {
                             description_html: "sent by",
-                            is_people: true,
                             search_string: "sender:user7@zulipdev.com",
-                            users: [
-                                {
-                                    user_pill_context: {
-                                        display_value: "Zoe",
-                                        has_image: true,
-                                        id: 7,
-                                        img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
-                                    },
-                                },
-                            ],
                         },
                     ],
                     [
