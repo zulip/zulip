@@ -57,6 +57,51 @@ export function is_active(modal_id: string): boolean {
     return $micromodal.attr("id") === modal_id;
 }
 
+const activeModalContentHandlers = new Map<
+    HTMLElement,
+    { scroll: EventListenerOrEventListenerObject; resize: EventListenerOrEventListenerObject }
+>();
+
+function setupModalContentScrollAndResize(modalContent: HTMLElement): void {
+    const applyFadeAndShadow = () => {
+        if (
+            modalContent.scrollHeight > modalContent.clientHeight &&
+            modalContent.scrollTop + modalContent.clientHeight < modalContent.scrollHeight
+        ) {
+            modalContent.classList.add("has-bottom-fade");
+        } else {
+            modalContent.classList.remove("has-bottom-fade");
+        }
+
+        if (modalContent.scrollTop > 0) {
+            modalContent.classList.add("is-scrolled-down");
+        } else {
+            modalContent.classList.remove("is-scrolled-down");
+        }
+    };
+
+    applyFadeAndShadow();
+
+    const scrollHandler = applyFadeAndShadow;
+    const resizeHandler = applyFadeAndShadow;
+
+    modalContent.addEventListener("scroll", scrollHandler);
+    window.addEventListener("resize", resizeHandler);
+
+    activeModalContentHandlers.set(modalContent, { scroll: scrollHandler, resize: resizeHandler });
+}
+
+function cleanupModalContentScrollAndResize(modalContent: HTMLElement): void {
+    const handlers = activeModalContentHandlers.get(modalContent);
+    if (handlers) {
+        modalContent.removeEventListener("scroll", handlers.scroll);
+        window.removeEventListener("resize", handlers.resize);
+        activeModalContentHandlers.delete(modalContent);
+    }
+    modalContent.classList.remove("has-bottom-fade");
+    modalContent.classList.remove("is-scrolled-down");
+}
+
 // If conf.autoremove is true, the modal element will be removed from the DOM
 // once the modal is hidden.
 // conf also accepts the following optional properties:
@@ -66,7 +111,7 @@ export function is_active(modal_id: string): boolean {
 // on_hidden: Callback to run when the modal is hidden.
 export function open(
     modal_id: string,
-    conf: ModalConfig & {recursive_call_count?: number} = {},
+    conf: ModalConfig & { recursive_call_count?: number } = {},
 ): void {
     if (modal_id === undefined) {
         blueslip.error("Undefined id was passed into open");
@@ -76,29 +121,29 @@ export function open(
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
     if (modal_id.startsWith("#")) {
-        blueslip.error("hash-based selector passed in to open", {modal_id});
+        blueslip.error("hash-based selector passed in to open", { modal_id });
         return;
     }
 
     if (any_active()) {
         /*
-          Our modal system doesn't directly support opening a modal
-          when one is already open, because the `any_active` CSS
-          class doesn't update until Micromodal has finished its
-          animations, which can take 100ms or more.
-
-          We can likely fix that, but in the meantime, we should
-          handle this situation correctly, by closing the current
-          modal, waiting for it to finish closing, and then attempting
-          to open the current modal again.
-        */
+         * Our modal system doesn't directly support opening a modal
+         * when one is already open, because the `any_active` CSS
+         * class doesn't update until Micromodal has finished its
+         * animations, which can take 100ms or more.
+         *
+         * We can likely fix that, but in the meantime, we should
+         * handle this situation correctly, by closing the current
+         * modal, waiting for it to finish closing, and then attempting
+         * to open the current modal again.
+         */
         if (!conf.recursive_call_count) {
             conf.recursive_call_count = 1;
         } else {
             conf.recursive_call_count += 1;
         }
         if (conf.recursive_call_count > 50) {
-            blueslip.error("Modal incorrectly is still open", {modal_id});
+            blueslip.error("Modal incorrectly is still open", { modal_id });
             return;
         }
 
@@ -153,10 +198,10 @@ export function open(
         }
 
         /* Micromodal's data-micromodal-close feature doesn't check for
-           range selections; this means dragging a selection of text in an
-           input inside the modal too far will weirdly close the modal.
-           See https://github.com/ghosh/Micromodal/issues/505.
-           Work around this with our own implementation. */
+         * range selections; this means dragging a selection of text in an
+         * input inside the modal too far will weirdly close the modal.
+         * See https://github.com/ghosh/Micromodal/issues/505.
+         * Work around this with our own implementation. */
         if (document.getSelection()?.type === "Range") {
             return;
         }
@@ -175,6 +220,12 @@ export function open(
         if (!overlays.any_active()) {
             overlay_util.disable_scrolling();
         }
+
+        const modalContent = $micromodal.find(".modal__content")[0];
+        if (modalContent instanceof HTMLElement) {
+            setupModalContentScrollAndResize(modalContent);
+        }
+
         call_hooks(pre_open_hooks);
     }
 
@@ -187,6 +238,12 @@ export function open(
         if (!overlays.any_active()) {
             overlay_util.enable_scrolling();
         }
+
+        const modalContent = $micromodal.find(".modal__content")[0];
+        if (modalContent instanceof HTMLElement) {
+            cleanupModalContentScrollAndResize(modalContent);
+        }
+
         call_hooks(pre_close_hooks);
     }
 
@@ -212,7 +269,7 @@ export function close(modal_id: string, conf: Pick<ModalConfig, "on_hidden"> = {
     }
 
     if (active_modal() !== `#${CSS.escape(modal_id)}`) {
-        blueslip.error("Trying to close modal when other is open", {modal_id, active_modal});
+        blueslip.error("Trying to close modal when other is open", { modal_id, active_modal });
         return;
     }
 
