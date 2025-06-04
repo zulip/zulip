@@ -209,7 +209,8 @@ p.n-margin {
 }
 
 .history-limited-box,
-.all-messages-search-caution {
+.all-messages-search-caution,
+.end-of-combined-feed {
     display: none;
     margin: 0 auto 12px;
     padding: 5px;

@@ -20,6 +20,14 @@ function hide_history_limit_notice(): void {
     $(".history-limited-box").hide();
 }
 
+function show_end_of_combined_feed_notice(): void {
+    $(".end-of-combined-feed").show();
+}
+
+function hide_end_of_combined_feed_notice(): void {
+    $(".end-of-combined-feed").hide();
+}
+
 function hide_end_of_results_notice(): void {
     $(".all-messages-search-caution").hide();
 }
@@ -64,6 +72,11 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         ) {
             show_end_of_results_notice();
         }
+
+        // Display the notice for combined feed view
+        if (filter?.is_in_home()) {
+            show_end_of_combined_feed_notice();
+        }
     }
 
     if (msg_list.data.fetch_status.history_limited()) {
@@ -74,4 +87,5 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
 export function hide_top_of_narrow_notices(): void {
     hide_end_of_results_notice();
     hide_history_limit_notice();
+    hide_end_of_combined_feed_notice();
 }
