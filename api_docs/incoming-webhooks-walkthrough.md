@@ -210,24 +210,37 @@ tools which you can use to test your webhook - 2 command line tools and a GUI.
 
 ### Webhooks requiring custom configuration
 
-In rare cases, it's necessary for an incoming webhook to require
-additional user configuration beyond what is specified in the post
-URL.  The typical use case for this is APIs like the Stripe API that
-require clients to do a callback to get details beyond an opaque
-object ID that one would want to include in a Zulip notification.
+In cases where an incoming webhook integration requires additional user inputs
+for specific configurations, one can use the `url_options` feature. It's a field
+in the `WebhookIntegration` class that adds custom UI fields in the "Generate
+integrations URL" modal for the specified settings. The user input for these fields
+will be encoded in the integrations webhook URL.
 
 These configuration options are declared as follows:
 
 ```python
-    WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
-                       config_options=[('HelloWorld API key', 'hw_api_key', check_string)])
+    WebhookIntegration(
+        'helloworld',
+        ...
+        url_options=[
+          WebhookConfigOption(
+            name='ignore_private_repositories',
+            description='Exclude notifications from private repositories',
+            validator=check_string
+          ),
+        ],
+    )
 ```
 
-`config_options` is a list describing the parameters the user should
+`url_options` is a list describing the parameters the user should
 configure:
-    1. A user-facing string describing the field to display to users.
-    2. The field name you'll use to access this from your `view.py` function.
-    3. A Validator, used to verify the input is valid.
+
+  - `name`: For normal `WebhookConfigOption` objects, this will be the query
+    variable name used to encode the user input for the config in the integrations'
+    webhook URL parameter.
+  - `description`: User-facing string describing the field to display to users.
+  - `validator`: The name of a validator that can be used to validate values for
+    this parameter.
 
 Common validators are available in `zerver/lib/validators.py`.
 
