@@ -16351,6 +16351,8 @@ paths:
                                 **Changes**: New in Zulip 8.0 (feature level 207).
                             config_options:
                               $ref: "#/components/schemas/WebhookConfigOption"
+                            url_options:
+                              $ref: "#/components/schemas/WebhookUrlOption"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -24709,21 +24711,20 @@ components:
     WebhookConfigOption:
       type: array
       description: |
-        An array of configuration options where each option is an
-        object containing a unique identifier, a human-readable name,
-        and a validation function name hinting how to verify the
-        correct input format.
+        An array of configuration options that can be set when creating
+        a bot user for this incoming webhook integration.
 
-        This is an unstable API expected to be used only by the Zulip web
-        apps. Please discuss in chat.zulip.org before using it.
+        This is an unstable API. Please discuss in chat.zulip.org before
+        using it.
 
-        **Changes**: In Zulip 10.0 (feature level 318), changed `config`
-        to `config_options`. The `config_options` field defines which options
-        should be offered when creating URLs for this integration. Previously,
-        the `config` field was a key-value pair describing integration-specific
-        configuration data that needs to be included when creating an incoming
-        webhook bot. The feature was never operational because there is currently
-        no way to associate an incoming webhook bot with an integration.
+        **Changes**: As of Zulip 11.0 (feature level ZF-f9d19d), this
+        object is reserved for integration-specific configuration options
+        that can be set when creating a bot user. Previously, this object
+        also included optional webhook URL parameters, which are now
+        specified in the `url_options` object.
+
+        Before Zulip 10.0 (feature level 318), this field was named `config`,
+        and was reserved for configuration data key-value pairs.
       items:
         type: object
         additionalProperties: false
@@ -24731,7 +24732,7 @@ components:
           key:
             type: string
             description: |
-              A key for the configuration option to use in generated URLs.
+              A key for the configuration option.
           label:
             type: string
             description: |
@@ -24740,8 +24741,38 @@ components:
             type: string
             description: |
               The name of the validator function for the configuration
-              option. Currently generated values are `check_bool` and
-              `check_string`.
+              option.
+    WebhookUrlOption:
+      type: array
+      description: |
+        An array of optional URL parameter options for the incoming webhook
+        integration. In the web app, these are used when
+        [generating a URL for an integration](/help/generate-integration-url).
+
+        This is an unstable API expected to be used only by the Zulip web
+        app. Please discuss in chat.zulip.org before using it.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-f9d19d). Previously,
+        these optional URL parameter options were included in the
+        `config_options` object.
+      items:
+        type: object
+        additionalProperties: false
+        properties:
+          key:
+            type: string
+            description: |
+              The parameter variable to encode the users input for this
+              option in the integrations webhook URL.
+          label:
+            type: string
+            description: |
+              A human-readable label of the url option.
+          validator:
+            type: string
+            description: |
+              The name of the validator function for the configuration
+              option.
     CustomProfileField:
       type: object
       additionalProperties: false
