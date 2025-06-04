@@ -160,7 +160,6 @@ test("subset_suggestions", ({mock_template}) => {
 
 test("dm_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
-    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     let query = "is:dm";
     let suggestions = get_suggestions(query);
@@ -300,7 +299,6 @@ test("dm_suggestions", ({override, mock_template}) => {
 
 test("group_suggestions", ({mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
-    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     // If there's an existing completed user pill right before
     // the input string, we suggest a user group as one of the
@@ -489,7 +487,6 @@ test("has_suggestions", ({override, mock_template}) => {
 
 test("check_is_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
-    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     override(narrow_state, "stream_id", noop);
 
@@ -662,7 +659,6 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
 
 test("topic_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
-    mock_template("user_pill.hbs", true, (_data, html) => html);
     let suggestions;
     let expected;
 
@@ -856,7 +852,6 @@ test("channel_completion", ({override}) => {
 
 test("people_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
-    mock_template("user_pill.hbs", true, (_data, html) => html);
 
     let query = "te";
 
@@ -933,20 +928,6 @@ test("people_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    function is_person(q) {
-        return suggestions.lookup_table.get(q).description_html.includes(`class="user-pill`);
-    }
-    assert.equal(is_person("dm:ted@zulip.com"), true);
-    assert.equal(is_person("sender:ted@zulip.com"), true);
-    assert.equal(is_person("dm-including:ted@zulip.com"), true);
-
-    function has_image(q) {
-        return suggestions.lookup_table.get(q).description_html.includes(`class="pill-image"`);
-    }
-    assert.equal(has_image("dm:bob@zulip.com"), true);
-    assert.equal(has_image("sender:bob@zulip.com"), true);
-    assert.equal(has_image("dm-including:bob@zulip.com"), true);
-
     function test_describe(q, description_html_start) {
         assert.ok(
             suggestions.lookup_table.get(q).description_html.startsWith(description_html_start),
@@ -973,37 +954,6 @@ test("people_suggestions", ({override, mock_template}) => {
     test_avatar_url("dm:bob@zulip.com", expectedString);
     test_avatar_url("sender:bob@zulip.com", expectedString);
     test_avatar_url("dm-including:bob@zulip.com", expectedString);
-
-    const guest_html = "<i>(guest)</i>";
-    function test_guest_user_indicator(q, should_have_guest_indicator) {
-        const description_html = suggestions.lookup_table.get(q).description_html;
-        if (should_have_guest_indicator) {
-            assert.ok(description_html.includes(guest_html));
-        } else {
-            assert.ok(!description_html.includes(guest_html));
-        }
-    }
-
-    override(realm, "realm_enable_guest_user_indicator", true);
-    suggestions = get_suggestions(query);
-
-    test_guest_user_indicator("dm:bob@zulip.com", false);
-    test_guest_user_indicator("sender:bob@zulip.com", false);
-    test_guest_user_indicator("dm-including:bob@zulip.com", false);
-
-    bob.is_guest = true;
-    suggestions = get_suggestions(query);
-
-    test_guest_user_indicator("dm:bob@zulip.com", true);
-    test_guest_user_indicator("sender:bob@zulip.com", true);
-    test_guest_user_indicator("dm-including:bob@zulip.com", true);
-
-    override(realm, "realm_enable_guest_user_indicator", false);
-    suggestions = get_suggestions(query);
-
-    test_guest_user_indicator("dm:bob@zulip.com", false);
-    test_guest_user_indicator("sender:bob@zulip.com", false);
-    test_guest_user_indicator("dm-including:bob@zulip.com", false);
 
     suggestions = get_suggestions("Ted "); // note space
 
