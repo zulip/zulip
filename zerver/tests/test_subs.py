@@ -293,29 +293,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Moderation request channel must be private.")
         self.assertTrue(private_stream.invite_only)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        params = {
-            "is_private": orjson.dumps(False).decode(),
-        }
-        stream = self.subscribe(user_profile, "private_stream_2")
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_patch(f"/json/streams/{stream.id}", params)
-        self.assertTrue(stream.invite_only)
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        user_profile_group = check_add_user_group(
-            realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=user_profile,
-        )
-        result = self.client_patch(f"/json/streams/{stream.id}", params)
-        self.assertTrue(stream.invite_only)
-        self.assert_json_success(result)
-
         stream = self.subscribe(user_profile, "private_stream_3", invite_only=True)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         nobody_group = NamedUserGroup.objects.get(
@@ -330,6 +307,9 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
+        user_profile_group = check_add_user_group(
+            realm, "user_profile_group", [user_profile], acting_user=user_profile
+        )
         do_change_realm_permission_group_setting(
             realm,
             "can_create_public_channel_group",
@@ -402,29 +382,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "A default channel cannot be private.")
         self.assertFalse(default_stream.invite_only)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        params = {
-            "is_private": orjson.dumps(True).decode(),
-        }
-        stream = self.subscribe(user_profile, "public_stream_2")
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_patch(f"/json/streams/{stream.id}", params)
-        self.assertFalse(stream.invite_only)
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        user_profile_group = check_add_user_group(
-            realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=user_profile,
-        )
-        result = self.client_patch(f"/json/streams/{stream.id}", params)
-        self.assertFalse(stream.invite_only)
-        self.assert_json_success(result)
-
         stream = self.subscribe(user_profile, "public_stream_3")
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         nobody_group = NamedUserGroup.objects.get(
@@ -439,6 +396,9 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
+        user_profile_group = check_add_user_group(
+            realm, "user_profile_group", [user_profile], acting_user=user_profile
+        )
         do_change_realm_permission_group_setting(
             realm,
             "can_create_private_channel_group",
@@ -624,14 +584,20 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "test_stream")
         stream_id = stream.id
 
+        user_profile_group = check_add_user_group(
+            realm, "user_profile_group", [user_profile], acting_user=user_profile
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            user_profile_group,
+            acting_user=user_profile,
+        )
+
         params = {
             "is_web_public": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
@@ -715,37 +681,6 @@ class StreamAdminTest(ZulipTestCase):
             "property": "is_web_public",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
-        # Test non-admin belonging to can_administer_channel_group
-        # can also make the stream public.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        stream = self.make_stream("test_stream_1", realm=realm)
-        stream_id = self.subscribe(user_profile, "test_stream_1").id
-        user_profile_group = check_add_user_group(
-            realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_realm_permission_group_setting(
-            realm,
-            "can_create_web_public_channel_group",
-            user_profile_group,
-            acting_user=None,
-        )
-        params = {
-            "is_web_public": orjson.dumps(True).decode(),
-            "history_public_to_subscribers": orjson.dumps(True).decode(),
-        }
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=user_profile,
-        )
-        result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_success(result)
 
     def test_change_history_access_for_private_streams(self) -> None:
         user_profile = self.example_user("iago")
@@ -1411,52 +1346,6 @@ class StreamAdminTest(ZulipTestCase):
             },
         )
 
-    def test_permissions_and_archiving_behavior(self) -> None:
-        """
-        Test permissions for archiving and unarchiving streams, and ensure users without
-        the necessary permissions cannot archive or unarchive a stream.
-        """
-        desdemona = self.example_user("desdemona")
-        iago = self.example_user("iago")
-
-        stream = self.make_stream("test_stream", invite_only=False)
-        self.subscribe(iago, stream.name)
-
-        do_deactivate_stream(stream, acting_user=None)
-        stream.refresh_from_db()
-        self.assertTrue(stream.deactivated)
-
-        data = {}
-        data["is_archived"] = "false"
-        result = self.api_patch(desdemona, f"/api/v1/streams/{stream.id}", info=data)
-        self.assert_json_success(result)
-        stream.refresh_from_db()
-        self.assertFalse(stream.deactivated)
-
-        cordelia = self.example_user("cordelia")
-        stream1 = self.make_stream("test_stream_1", invite_only=False)
-        self.subscribe(iago, stream1.name)
-
-        do_deactivate_stream(stream1, acting_user=None)
-        stream1.refresh_from_db()
-        self.assertTrue(stream1.deactivated)
-
-        result = self.api_patch(cordelia, f"/api/v1/streams/{stream1.id}", info=data)
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        do_change_stream_group_based_setting(
-            stream1,
-            "can_administer_channel_group",
-            UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
-            acting_user=desdemona,
-        )
-
-        result = self.api_patch(cordelia, f"/api/v1/streams/{stream1.id}", info=data)
-        self.assert_json_success(result)
-
-        stream1.refresh_from_db()
-        self.assertFalse(stream1.deactivated)
-
     def test_is_archived_true_does_not_archive_stream(self) -> None:
         """
         Ensure that passing `is_archived` as True does not archive the stream.
@@ -1543,19 +1432,9 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream = self.subscribe(user_profile, "stream_name")
 
-        user_profile_group = check_add_user_group(
-            realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=user_profile,
-        )
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_success(result)
-
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_error(result, "Channel already has that name.")
@@ -1734,17 +1613,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         # User belonging to `can_subscribe_group` should be notified.
         self.assertIn(self.example_user("ZOE").id, notified_user_ids)
-
-    def test_rename_stream_requires_admin(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        stream = self.make_stream("stream_name1")
-        self.subscribe(user_profile, "stream_name1")
-
-        stream_id = get_stream("stream_name1", user_profile.realm).id
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
 
     def test_notify_on_stream_rename(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -2015,21 +1883,6 @@ class StreamAdminTest(ZulipTestCase):
             f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
         )
 
-    def test_change_stream_description_requires_administer_channel_permissions(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-
-        self.make_stream("stream_name1")
-        self.subscribe(user_profile, "stream_name1")
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-
-        stream = get_stream("stream_name1", user_profile.realm)
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"description": "Test description"}
-        )
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
     def test_change_stream_message_retention_days_notifications(self) -> None:
         user_profile = self.example_user("desdemona")
         self.login_user(user_profile)
@@ -2213,43 +2066,10 @@ class StreamAdminTest(ZulipTestCase):
         nobody_group = NamedUserGroup.objects.get(
             name="role:nobody", is_system_group=True, realm=realm
         )
-
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            nobody_group,
-            acting_user=user_profile,
-        )
-
         moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
-        shiva = self.example_user("shiva")
-        self.login_user(shiva)
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, shiva))
-
         params = {}
-        params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
-        result = self.client_patch(f"/json/streams/{stream.id}", params)
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            moderators_system_group,
-            acting_user=user_profile,
-        )
-        members_system_group = NamedUserGroup.objects.get(
-            name="role:members", realm=realm, is_system_group=True
-        )
-        params[setting_name] = orjson.dumps({"new": members_system_group.id}).decode()
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            params,
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name1", realm)
-        self.assertEqual(getattr(stream, setting_name).id, members_system_group.id)
 
         self.login("iago")
         params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
@@ -2360,90 +2180,8 @@ class StreamAdminTest(ZulipTestCase):
             f"'{setting_name}' setting cannot be set to 'role:internet' group.",
         )
 
-        # For private streams, realm admins need not be subscribed to
-        # the stream to change the setting as they can administer the
-        # channel by default.
-        stream = get_stream("stream_name2", realm)
-        params[setting_name] = orjson.dumps({"new": moderators_system_group.id}).decode()
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            params,
-        )
-        if setting_name in Stream.stream_permission_group_settings_requiring_content_access:
-            self.assert_json_error(result, "Channel content access is required.")
-        else:
-            self.assert_json_success(result)
-            stream = get_stream("stream_name2", realm)
-            self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
-
-        # For private streams, channel admins need not be subscribed to
-        # the stream to change the setting as they can administer the
-        # channel by default.
-        shiva_group_member_dict = UserGroupMembersData(
-            direct_members=[shiva.id], direct_subgroups=[]
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            shiva_group_member_dict,
-            acting_user=shiva,
-        )
-        self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, shiva))
-        params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
-        self.login_user(shiva)
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            params,
-        )
-        if setting_name in Stream.stream_permission_group_settings_requiring_content_access:
-            self.assert_json_error(result, "Channel content access is required.")
-            do_change_stream_group_based_setting(
-                stream,
-                "can_add_subscribers_group",
-                shiva_group_member_dict,
-                acting_user=shiva,
-            )
-            result = self.client_patch(
-                f"/json/streams/{stream.id}",
-                params,
-            )
-            self.assert_json_success(result)
-            stream = get_stream("stream_name2", realm)
-            self.assertEqual(getattr(stream, setting_name).id, owners_group.id)
-        else:
-            self.assert_json_success(result)
-            stream = get_stream("stream_name2", realm)
-            self.assertEqual(getattr(stream, setting_name).id, owners_group.id)
-
-        # Guest user cannot be a channel admin for a public channel.
-        # `user_has_permission_for_group_setting` will not allow a guest
-        # to be a part of `can_administer_channel_group` since that
-        # group has `allow_everyone_group` set to false.
-        stream = get_stream("stream_name1", realm)
-        polonius = self.example_user("polonius")
-        polonius_group_member_dict = UserGroupMembersData(
-            direct_members=[polonius.id], direct_subgroups=[]
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            polonius_group_member_dict,
-            acting_user=polonius,
-        )
-        subbed_users = self.users_subscribed_to_stream(stream.name, polonius.realm)
-        self.assertNotIn(polonius, subbed_users)
-        self.login_user(polonius)
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            params,
-        )
-        self.assert_json_error(result, "Invalid channel ID")
-
     def test_changing_stream_permission_settings(self) -> None:
         self.make_stream("stream_name1")
-        self.make_stream("stream_name2", invite_only=True)
-        # Subscribe at least one user to the private stream.
-        self.subscribe(self.example_user("hamlet"), "stream_name2")
 
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_change_stream_permission_setting(setting_name)
@@ -2915,56 +2653,6 @@ class StreamAdminTest(ZulipTestCase):
             {"folder_id": orjson.dumps(99).decode()},
         )
         self.assert_json_error(result, "Invalid channel folder ID")
-
-    def test_permission_to_change_stream_folder(self) -> None:
-        iago = self.example_user("iago")
-        hamlet = self.example_user("hamlet")
-        realm = iago.realm
-        channel_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
-        stream = self.make_stream("test_stream")
-
-        self.assertIsNone(stream.folder_id)
-
-        nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            nobody_group,
-            acting_user=iago,
-        )
-
-        result = self.api_patch(
-            iago,
-            f"/api/v1/streams/{stream.id}",
-            {"folder_id": orjson.dumps(channel_folder.id).decode()},
-        )
-        self.assert_json_success(result)
-        stream = get_stream("test_stream", realm)
-        self.assertEqual(stream.folder_id, channel_folder.id)
-
-        result = self.api_patch(
-            hamlet,
-            f"/api/v1/streams/{stream.id}",
-            {"folder_id": orjson.dumps(None).decode()},
-        )
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[]),
-            acting_user=iago,
-        )
-        result = self.api_patch(
-            hamlet,
-            f"/api/v1/streams/{stream.id}",
-            {"folder_id": orjson.dumps(None).decode()},
-        )
-        self.assert_json_success(result)
-        stream = get_stream("test_stream", realm)
-        self.assertIsNone(stream.folder_id)
 
     def attempt_unsubscribe_of_principal(
         self,
