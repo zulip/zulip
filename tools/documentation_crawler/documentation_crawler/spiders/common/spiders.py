@@ -45,10 +45,6 @@ VNU_IGNORE = [
     # Real errors that should be fixed.
     r"Attribute “markdown” not allowed on element “div” at this point\.",
     r"No “p” element in scope but a “p” end tag seen\.",
-    (
-        r"Element “div” not allowed as child of element “ul” in this context\."
-        r" \(Suppressing further errors from this subtree\.\)"
-    ),
     # Opinionated informational messages.
     r"Trailing slash on void elements has no effect and interacts badly with unquoted attribute values\.",
 ]
