@@ -1,11 +1,12 @@
 /* Styles for the Micromodal-based modals */
 :root {
     /* Exit buttons are sometimes Cancel, but sometimes
-       other "Nah, forget it" actions. */
+     * other "Nah, forget it" actions. */
     --color-exit-button-text: hsl(0deg 0% 0%);
     --color-exit-button-border: hsl(300deg 2% 11% / 30%);
     --color-exit-button-background: hsl(226deg 1% 42% / 20%);
     --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
+    --color-modal-background: var(--color-background-modal);
 }
 
 .modal__overlay {
@@ -33,9 +34,9 @@
     padding: 16px 16px 16px 24px;
     display: grid;
     /* 1.8em is the shortest round value for heading at which none of
-       the letters of the english alphabet get cut by overflow:hidden
-       at em = 20px
-       29px at 16px/1em = 1.8125 */
+     * the letters of the english alphabet get cut by overflow:hidden
+     * at em = 20px
+     * 29px at 16px/1em = 1.8125 */
     grid-template:
         "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
         1.8125em;
@@ -61,9 +62,9 @@
 
     .channel-privacy-type-icon {
         /* This pushes back on suspect styles
-           in app_components.css. A fuller fix
-           will require tracking down other
-           instances of this class. */
+         * in app_components.css. A fuller fix
+         * will require tracking down other
+         * instances of this class. */
         width: auto;
         padding-right: 0;
     }
@@ -76,13 +77,13 @@
 
 .modal__title:has(.stream-or-topic-reference) {
     /* Reduce the font weight of headings that
-       include stream or topic references (e.g.,
-       topic move/rename modals). */
+     * include stream or topic references (e.g.,
+     * topic move/rename modals). */
     font-weight: 450;
 
     .stream-or-topic-reference {
         /* Make the stream or topic references
-           more prominent. */
+         * more prominent. */
         font-weight: 600;
     }
 }
@@ -123,12 +124,31 @@
     padding: 2px 24px;
     line-height: 1.5;
     /* Prevent the appearance of a horizontal
-       native scrollbar at certain
-       info-density/zoom levels. */
+     * native scrollbar at certain
+     * info-density/zoom levels. */
     overflow: hidden auto;
     /* Set a max-width, less the 24px of left and right
-       padding specified above. */
+     * padding specified above. */
     max-width: calc(100% - 48px);
+
+    position: relative;
+    transition: box-shadow 0.2s ease-out;
+
+    &.has-bottom-fade::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: linear-gradient(to top, var(--color-modal-background) 0%, transparent 100%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    &.is-scrolled-down {
+        box-shadow: 0 5px 10px -5px rgba(0, 0, 0, 0.2);
+    }
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid var(--color-border-modal-footer);
@@ -137,7 +157,7 @@
 
 .modal__button {
     /* We need the backup value for billing related html files where
-       this variable is not defined. */
+     * this variable is not defined. */
     font-size: var(--base-font-size-px, 14px);
     padding: 8px 16px;
     background-color: hsl(0deg 0% 90%);
@@ -167,10 +187,10 @@
 .modal__button:hover {
     transform: scale(1.05);
     /* The extremely subtle 1.05 scale can cause
-       a gap to appear between the outline and
-       button background color; this negative
-       offset preserves the scale effect, but also
-       covers any tiny gaps owing to subtle scaling. */
+     * a gap to appear between the outline and
+     * button background color; this negative
+     * offset preserves the scale effect, but also
+     * covers any tiny gaps owing to subtle scaling. */
     outline-offset: -1px;
 }
 
@@ -215,21 +235,21 @@
 
         .modal__content {
             /* When showing read receipts, we use simplebar
-            to make the list scrollable.  It requires this to
-            be flex. */
+             * to make the list scrollable.  It requires this to
+             * be flex. */
             display: flex;
 
             /* Setting a minimum height prevents the loading indicator
-               appearing/disappearing from resizing the modal in the
-               common case that one is requesting read receipts for
-               direct messages. */
+             * appearing/disappearing from resizing the modal in the
+             * common case that one is requesting read receipts for
+             * direct messages. */
             min-height: 120px;
             /* Setting a maximum height is just for aesthetics; the modal looks
-               weird if its aspect ratio gets too stretched. */
+             * weird if its aspect ratio gets too stretched. */
             max-height: 480px;
 
             /* For the notification bot error, we want to keep the modal clean and small.
-               The 16px padding is intended to match the padding at the top of the modal. */
+             * The 16px padding is intended to match the padding at the top of the modal. */
             &.compact {
                 min-height: unset;
                 padding-bottom: 16px;
@@ -410,7 +430,7 @@
         cursor: not-allowed;
 
         /* The background-color of select elements inside modal is different than the others in
-        settings pages, because the background of the modal is brighter than the setting page. */
+         * settings pages, because the background of the modal is brighter than the setting page. */
         background-color: hsl(0deg 0% 90%);
 
         /* This is reset for other browsers to use Chrome's opacity. */
@@ -464,14 +484,14 @@
 
 #create_bot_short_name {
     /* A shorter dropdown width (~200px at 14px em)
-       to ensure the email all fits on one line. */
+     * to ensure the email all fits on one line. */
     width: 14em;
 }
 
 #add-poll-modal,
 #add-todo-modal {
     /* this height allows 3-4 option rows
-    to fit in without need for scrolling */
+     * to fit in without need for scrolling */
     height: 32.1428em; /* 450px / 14px em */
     overflow: hidden;
 
