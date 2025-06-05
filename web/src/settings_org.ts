@@ -1121,6 +1121,8 @@ export let init_dropdown_widgets = (): void => {
 
         const disabled_option = {
             is_setting_disabled: true,
+            show_disabled_icon: true,
+            show_disabled_option_name: false,
             unique_id: DISABLED_STATE_ID,
             name: $t({defaultMessage: "Disabled"}),
         };
@@ -1169,6 +1171,8 @@ export const combined_code_language_options = (): dropdown_widget.Option[] => {
 
     const disabled_option = {
         is_setting_disabled: true,
+        show_disabled_icon: true,
+        show_disabled_option_name: false,
         unique_id: "",
         name: $t({defaultMessage: "No language set"}),
     };
