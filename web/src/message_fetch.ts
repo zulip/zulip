@@ -278,7 +278,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
-            const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
+            const user_ids_array = people.user_ids_string_to_ids_array(raw_term.operand);
             assert(user_ids_array !== undefined);
             narrow_term.operand = user_ids_array;
         }
