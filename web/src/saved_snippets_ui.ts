@@ -208,6 +208,7 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
             saved_snippets_widget = widget;
             saved_snippets_dropdown = dropdown;
         },
+        keep_focus_on_search: true,
         focus_target_on_hidden: false,
         prefer_top_start_placement: true,
         tippy_props: {
