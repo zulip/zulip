@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 372  # Last bumped to interpret "(no topic)" as empty string
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (323, 2)  # bumped 2025-06-04 to upgrade uv
+PROVISION_VERSION = (324, 0)  # bumped 2025-06-05 to add types-requests-oauthlib, types-uwsgi
