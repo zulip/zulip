@@ -217,13 +217,6 @@ const KEYDOWN_MAPPINGS = {
     "Shift+Delete": {name: "delete", message_view_only: false},
 };
 
-function is_printable_ascii(key) {
-    // ASCII printable characters (character code 32-126) -> " " to "~".
-    // It includes letters, digits, punctuation marks, and a few
-    // miscellaneous symbols.
-    return key.length === 1 && key >= " " && key <= "~";
-}
-
 const KNOWN_NAMED_KEY_ATTRIBUTE_VALUES = new Set([
     "Alt",
     "ArrowDown",
@@ -327,7 +320,8 @@ export function get_keydown_hotkey(e) {
     // the same physical key combination that a QWERTY user would
     // use (e.g. 'ф' on Cyrillic maps to 'a' on QWERTY). In such cases,
     // we derive the QWERTY equivalent using `e.code` and the `CODE_TO_QWERTY_CHAR` map.
-    const use_event_key = is_printable_ascii(e.key) || KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
+    const use_event_key =
+        common.is_printable_ascii(e.key) || KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
     let key = e.key;
     if (!use_event_key) {
         const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
