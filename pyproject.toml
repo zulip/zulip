@@ -262,7 +262,7 @@ dev = [
   "zulint",
 
   # For type checking
-  "mypy[faster-cache]",
+  "mypy[faster-cache]~=1.15.0",  # https://github.com/typeddjango/django-stubs/issues/2696
 
   "boto3-stubs[s3,ses,sns,sqs]",
   "django-stubs",
