@@ -706,7 +706,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for te");
-    assert.equal(describe(`channel:${office_id} topic:team`), "Channel office > team");
+    assert.equal(describe(`channel:${office_id} topic:team`), "Messages in #office > team");
 
     suggestions = get_suggestions(`topic:staplers channel:${office_id}`);
     expected = [`topic:staplers channel:${office_id}`, "topic:staplers"];
@@ -826,7 +826,7 @@ test("xss_channel_name", () => {
     const suggestions = get_suggestions(query);
     assert.deepEqual(
         suggestions.lookup_table.get(`channel:${stream_id}`).description_html,
-        "Channel &lt;em&gt; Italics &lt;/em&gt;",
+        "Messages in #&lt;em&gt; Italics &lt;/em&gt;",
     );
 });
 
