@@ -1450,6 +1450,12 @@ label.preferences-radio-choice-label {
                 background-color: var(--color-active-row-modal);
             }
 
+            &:focus-visible {
+                border-radius: 4px;
+                outline: 1px solid var(--color-outline-focus);
+                outline-offset: -2px;
+            }
+
             .sidebar-item-icon {
                 font-size: 1.4em;
                 text-align: center;
