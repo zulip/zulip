@@ -614,6 +614,14 @@ export function initialize() {
         compose_recipient.update_compose_area_placeholder_text();
     });
 
+    $("#private_message_recipient").on("focus", () => {
+        // Once the DM input has been focused, we no longer treat
+        // the recipient row as muted, as we assume the user is
+        // doing something that requires keeping attention called
+        // to the recipient row
+        compose_recipient.unmute_recipient_row();
+    });
+
     $("body").on("click", ".formatting_button", function (e) {
         const $compose_click_target = $(this);
         const $textarea = $compose_click_target.closest("form").find("textarea");
