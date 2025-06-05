@@ -21,17 +21,4 @@
     **Note**: You will only see the **Create channel** button if you have
     permission to create channels.
 
-{tab|mobile}
-
-{!mobile-all-channels-view.md!}
-
-1. Tap the **Create new channel** button at the top of the app.
-
-1. Fill out the requested info, and tap **Create**.
-
-!!! warn ""
-
-    **Note**: You will only see the **Create new channel** button if you have
-    permission to create channels.
-
 {end_tabs}
