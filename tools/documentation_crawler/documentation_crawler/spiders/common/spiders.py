@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from collections.abc import Callable, Iterator
+from collections.abc import AsyncIterator, Callable, Iterator
 from urllib.parse import urlsplit
 
 import scrapy
@@ -202,9 +202,10 @@ class BaseDocumentationSpider(scrapy.Spider):
         )
 
     @override
-    def start_requests(self) -> Iterator[Request]:
+    async def start(self) -> AsyncIterator[Request]:
         for url in self.start_urls:
-            yield from self._make_requests(url)
+            for request in self._make_requests(url):
+                yield request
 
     @override
     def parse(self, response: Response) -> Iterator[Request]:
