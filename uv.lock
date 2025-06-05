@@ -1190,15 +1190,6 @@ wheels = [
 ]
 
 [[package]]
-name = "future"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a7/b2/4140c69c6a66432916b26158687e821ba631a4c9273c474343badf84d3ba/future-1.0.0.tar.gz", hash = "sha256:bd2968309307861edae1458a4f8a4f3598c03be43b97521076aebf5d94c07b05", size = 1228490, upload-time = "2024-02-21T11:52:38.461Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/71/ae30dadffc90b9006d77af76b393cb9dfbfc9629f339fc1574a1c52e6806/future-1.0.0-py3-none-any.whl", hash = "sha256:929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216", size = 491326, upload-time = "2024-02-21T11:52:35.956Z" },
-]
-
-[[package]]
 name = "gitlint-core"
 version = "0.19.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3395,20 +3386,6 @@ wheels = [
 ]
 
 [[package]]
-name = "python-twitter"
-version = "3.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "future" },
-    { name = "requests" },
-    { name = "requests-oauthlib" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/59/63/5941b988f1a119953b046ae820bc443ada3c9e0538a80d67f3938f9418f1/python-twitter-3.5.tar.gz", hash = "sha256:45855742f1095aa0c8c57b2983eee3b6b7f527462b50a2fa8437a8b398544d90", size = 87701, upload-time = "2018-11-03T12:32:08.03Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/a9/2eb36853d8ca49a70482e2332aa5082e09b3180391671101b1612e3aeaf1/python_twitter-3.5-py2.py3-none-any.whl", hash = "sha256:4a420a6cb6ee9d0c8da457c8a8573f709c2ff2e1a7542e2d38807ebbfe8ebd1d", size = 67368, upload-time = "2018-11-03T12:32:06.177Z" },
-]
-
-[[package]]
 name = "python3-openid"
 version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -5305,7 +5282,6 @@ dev = [
     { name = "python-digitalocean" },
     { name = "python-ldap" },
     { name = "python-magic" },
-    { name = "python-twitter" },
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
@@ -5424,7 +5400,6 @@ prod = [
     { name = "python-dateutil" },
     { name = "python-ldap" },
     { name = "python-magic" },
-    { name = "python-twitter" },
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
@@ -5527,7 +5502,6 @@ dev = [
     { name = "python-digitalocean" },
     { name = "python-ldap" },
     { name = "python-magic" },
-    { name = "python-twitter" },
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
@@ -5647,7 +5621,6 @@ prod = [
     { name = "python-dateutil" },
     { name = "python-ldap" },
     { name = "python-magic" },
-    { name = "python-twitter" },
     { name = "python3-saml" },
     { name = "pyuca" },
     { name = "pyvips" },
