@@ -23,7 +23,7 @@ active bot in the organization.
 
 {start_tabs}
 
-{settings_tab|bot-list-admin}
+{settings_tab|all-bots}
 
 1. In the **Actions** column, click the **manage bot** (<i class="zulip-icon
    zulip-icon-user-cog"></i>) icon for the bot you want to manage.

@@ -74,10 +74,10 @@ link_mapping = {
         "Users",
         "/#organization/users/invitations",
     ],
-    "bot-list-admin": [
+    "all-bots": [
         "Organization settings",
         "Bots",
-        "/#organization/bot-list-admin",
+        "/#organization/all-bots",
     ],
     "default-channels-list": [
         "Organization settings",
