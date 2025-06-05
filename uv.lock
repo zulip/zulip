@@ -4785,6 +4785,19 @@ wheels = [
 ]
 
 [[package]]
+name = "types-requests-oauthlib"
+version = "2.0.0.20250516"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "types-oauthlib" },
+    { name = "types-requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fc/7b/1803a83dbccf0698a9fb70a444d12f1dcb0f49a5d8a6327a1e53fac19e15/types_requests_oauthlib-2.0.0.20250516.tar.gz", hash = "sha256:2a384b6ca080bd1eb30a88e14836237dc43d217892fddf869f03aea65213e0d4", size = 11034, upload-time = "2025-05-16T03:09:45.119Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e8/3c/1bc76f1097cc4978cc97df11524f47559f8927fb2a2807375947bd185189/types_requests_oauthlib-2.0.0.20250516-py3-none-any.whl", hash = "sha256:faf417c259a3ae54c1b72c77032c07af3025ed90164c905fb785d21e8580139c", size = 14343, upload-time = "2025-05-16T03:09:43.874Z" },
+]
+
+[[package]]
 name = "types-s3transfer"
 version = "0.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4803,6 +4816,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f4/1e/9c401fc3aa8f8c1596a9daedbe8d1c70c830e20d78753117d75f7e9b9535/types_setuptools-80.3.0.20250505.tar.gz", hash = "sha256:5fd3d34b8fa3441d68d010fef95e232d1e48f3f5cb578f3477b7aae4f8374502", size = 41205, upload-time = "2025-05-05T03:06:44.726Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/bf/466fa9faaf6a99dc68c37492693069c99b4f83c73b5bac59649051a74937/types_setuptools-80.3.0.20250505-py3-none-any.whl", hash = "sha256:117c86a82367306388b55310d04da807ff4c3ecdf769656a5fdc0fdd06a2c1b6", size = 63106, upload-time = "2025-05-05T03:06:43.063Z" },
+]
+
+[[package]]
+name = "types-uwsgi"
+version = "2.0.0.20240516"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/7f/34f8caead3fcc68d0ae3431ef18518ba879925ea22e848469f852cc93cb9/types-uWSGI-2.0.0.20240516.tar.gz", hash = "sha256:d0780903b16f151178054cc21534efd6eb1efe2903b39bea3444539942047e3e", size = 6520, upload-time = "2024-05-16T02:21:26.865Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/05/1b8e66e2d2152fb9858d4a452c9b18a048415ec977c7bf673ade17119f8d/types_uWSGI-2.0.0.20240516-py3-none-any.whl", hash = "sha256:f40bf338b1850eab3fa67c5edfd4f75676c14609208d612d88498526a69aca70", size = 7477, upload-time = "2024-05-16T02:21:25.811Z" },
 ]
 
 [[package]]
@@ -5327,6 +5349,8 @@ dev = [
     { name = "types-redis" },
     { name = "types-regex" },
     { name = "types-requests" },
+    { name = "types-requests-oauthlib" },
+    { name = "types-uwsgi" },
     { name = "types-zxcvbn" },
     { name = "typing-extensions" },
     { name = "uri-template" },
@@ -5548,6 +5572,8 @@ dev = [
     { name = "types-redis" },
     { name = "types-regex" },
     { name = "types-requests" },
+    { name = "types-requests-oauthlib" },
+    { name = "types-uwsgi" },
     { name = "types-zxcvbn" },
     { name = "typing-extensions" },
     { name = "uri-template" },
