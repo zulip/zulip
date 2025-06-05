@@ -89,17 +89,6 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 
 1. Hover over an emoji reaction to see who reacted with that emoji.
 
-{tab|mobile}
-
-{!message-long-press-menu.md!}
-
-1. Tap **See who reacted**.
-
-!!! tip ""
-
-    You can also long-press an existing emoji reaction to see who reacted with
-    that emoji.
-
 {end_tabs}
 
 ### Toggle whether names of reacting users are displayed
