@@ -46,7 +46,11 @@ function composing_to_current_private_message_narrow(): boolean {
 }
 
 export let maybe_mute_recipient_row = (): void => {
-    if (composing_to_current_topic_narrow() && compose_state.has_full_recipient()) {
+    if (
+        composing_to_current_topic_narrow() &&
+        compose_state.has_full_recipient() &&
+        !compose_state.is_recipient_edited_manually()
+    ) {
         $("#compose-recipient").toggleClass("muted-recipient-row", true);
     } else {
         $("#compose-recipient").toggleClass("muted-recipient-row", false);
@@ -341,16 +345,12 @@ export function initialize(): void {
     });
     compose_select_recipient_dropdown_widget.setup();
 
-    // `input` isn't relevant for streams since it registers as a change only
-    // when an item in the dropdown is selected.
-    $("#stream_message_recipient_topic,#private_message_recipient").on(
-        "input",
-        update_on_recipient_change,
-    );
     // changes for the stream dropdown are handled in on_compose_select_recipient_update
-    $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
-        update_on_recipient_change();
+    $("#stream_message_recipient_topic,#private_message_recipient").on("input change", () => {
+        // To make sure the checks in update_on_recipient_change() are correct,
+        // we update manual editing first.
         compose_state.set_recipient_edited_manually(true);
+        update_on_recipient_change();
     });
 
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);

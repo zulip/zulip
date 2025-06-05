@@ -245,11 +245,6 @@
         opacity: 0.5;
     }
 
-    .pill + .input:empty::before {
-        content: attr(data-some-recipients-text);
-        opacity: 0.5;
-    }
-
     &:has(.input:focus) {
         border-color: var(--color-compose-recipient-box-has-focus);
     }
