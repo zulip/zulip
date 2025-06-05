@@ -100,12 +100,6 @@ desktop apps.
    **direct messages** heading, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
    keyboard shortcut.
 
-{tab|mobile}
-
-1. Tap the **Direct messages**
-   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="help-center-icon"/> )
-   tab at the bottom of the app.
-
 {end_tabs}
 
 
