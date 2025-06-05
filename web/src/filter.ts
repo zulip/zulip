@@ -46,6 +46,11 @@ type Part =
           is_empty_string_topic: boolean;
       }
     | {
+          type: "channel";
+          prefix_for_operator: string;
+          operand: string;
+      }
+    | {
           type: "is_operator";
           verb: string;
           operand: string;
@@ -694,7 +699,7 @@ export class Filter {
 
         switch (operator) {
             case "channel":
-                return verb + "channel";
+                return verb + "messages in #";
             case "channels":
                 return verb + "channels";
             case "near":
@@ -839,7 +844,7 @@ export class Filter {
                     const stream = stream_data.get_sub_by_id_string(operand);
                     if (stream) {
                         return {
-                            type: "prefix_for_operator",
+                            type: "channel",
                             prefix_for_operator,
                             operand: stream.name,
                         };

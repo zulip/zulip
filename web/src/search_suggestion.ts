@@ -157,10 +157,9 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     channels = typeahead_helper.sorter(query, channels, (x) => x);
 
     return channels.map((channel_name) => {
-        const prefix = "channel";
+        const prefix = "messages in #";
         const verb = last.negated ? "exclude " : "";
-        const description_html =
-            verb + prefix + " " + Handlebars.Utils.escapeExpression(channel_name);
+        const description_html = verb + prefix + Handlebars.Utils.escapeExpression(channel_name);
         const channel = stream_data.get_sub_by_name(channel_name);
         assert(channel !== undefined);
         const term = {
