@@ -36,7 +36,7 @@
     {{else if (eq this.type "is_operator")}}
         {{#if (eq this.operand "mentioned")}}
             {{~!-- squash whitespace --~}}
-            {{this.verb}}@-mentions
+            {{this.verb}}messages that mention you
             {{~!-- squash whitespace --~}}
         {{else if (or (eq this.operand "starred") (eq this.operand "alerted") (eq this.operand "unread"))}}
             {{~!-- squash whitespace --~}}

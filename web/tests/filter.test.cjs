@@ -1717,7 +1717,7 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "mentioned"}];
-    string = "@-mentions";
+    string = "messages that mention you";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "alerted"}];
