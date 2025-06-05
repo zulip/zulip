@@ -385,7 +385,6 @@ plugins = [
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
-    "aiosmtpd.*",
     "bitfield.*",
     "bmemcached.*",
     "circuitbreaker.*",
