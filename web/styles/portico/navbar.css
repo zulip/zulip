@@ -280,7 +280,7 @@ details summary::-webkit-details-marker {
 }
 
 @media (width <= 1400px) {
-    .top-menu-submenu.singup-column {
+    .top-menu-submenu.signup-column {
         justify-content: flex-end;
         right: 55px;
     }
