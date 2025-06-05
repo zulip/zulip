@@ -91,8 +91,6 @@ prod = [
   # Needed for iOS push notifications
   "aioapns",
 
-  "python-twitter",
-
   # To parse po files
   "polib",
 
@@ -413,7 +411,6 @@ module = [
     "social_django.*",
     "talon_core.*",
     "tlds.*",
-    "twitter.*",
     "two_factor.*",
 ]
 ignore_missing_imports = true
