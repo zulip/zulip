@@ -288,6 +288,8 @@ dev = [
   "types-redis",
   "types-regex",
   "types-requests",
+  "types-requests-oauthlib",
+  "types-uwsgi",
   "types-zxcvbn",
 
   # Needed for tools/check-thirdparty
@@ -407,14 +409,12 @@ module = [
     "pyuca.*",
     "pyvips.*",
     "re2.*",
-    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
     "scim2_filter_parser.attr_paths",
     "social_django.*",
     "talon_core.*",
     "tlds.*",
     "twitter.*",
     "two_factor.*",
-    "uwsgi",
 ]
 ignore_missing_imports = true
 
