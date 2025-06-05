@@ -1029,6 +1029,10 @@ class Attacher {
     }
 }
 
+export function search_term_description_html(item: NarrowTerm): string {
+    return `search for ${Handlebars.Utils.escapeExpression(item.operand)}`;
+}
+
 export function get_search_result(
     pill_search_terms: NarrowTerm[],
     text_search_terms: NarrowTerm[],
@@ -1083,7 +1087,7 @@ export function get_search_result(
         suggestion_line = [
             {
                 search_string: last.operand,
-                description_html: `search for ${Handlebars.Utils.escapeExpression(last.operand)}`,
+                description_html: search_term_description_html(last),
                 is_people: false,
             },
         ];
