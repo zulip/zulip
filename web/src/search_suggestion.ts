@@ -43,7 +43,10 @@ export type Suggestion = {
       }
 );
 
-export const max_num_of_search_results = MAX_ITEMS;
+export let max_num_of_search_results = MAX_ITEMS;
+export function rewire_max_num_of_search_results(value: typeof max_num_of_search_results): void {
+    max_num_of_search_results = value;
+}
 
 function channel_matches_query(channel_name: string, q: string): boolean {
     return common.phrase_match(q, channel_name);
@@ -1153,7 +1156,7 @@ export function get_search_result(
     return attacher.get_result().slice(0, max_items);
 }
 
-export function get_suggestions(
+export let get_suggestions = function (
     pill_search_terms: NarrowTerm[],
     text_search_terms: NarrowTerm[],
     add_current_filter = false,
@@ -1163,6 +1166,10 @@ export function get_suggestions(
 } {
     const result = get_search_result(pill_search_terms, text_search_terms, add_current_filter);
     return finalize_search_result(result);
+};
+
+export function rewire_get_suggestions(value: typeof get_suggestions): void {
+    get_suggestions = value;
 }
 
 export function finalize_search_result(result: Suggestion[]): {

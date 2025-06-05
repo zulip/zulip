@@ -7,10 +7,10 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
-const search_suggestion = mock_esm("../src/search_suggestion");
 
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
+const search_suggestion = zrequire("search_suggestion");
 const stream_data = zrequire("stream_data");
 
 function stub_pills() {
@@ -60,7 +60,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return html;
     });
 
-    search_suggestion.max_num_of_search_results = 999;
+    override_rewire(search_suggestion, "max_num_of_search_results", 999);
     let terms;
 
     function mock_pill_removes(widget) {
@@ -112,7 +112,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("ver");
             assert.deepStrictEqual(source, expected_source_value);
@@ -200,7 +200,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("zo");
             assert.deepStrictEqual(source, expected_source_value);
