@@ -206,10 +206,13 @@ def build_message_list(
     messages_to_render: list[dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
-        if message.recipient.type in (Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP):
+        if message.recipient.type == Recipient.STREAM:
             return message.sender.full_name
-        else:
-            return ""
+        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            display_recipient = get_display_recipient(message.recipient)
+            if len(display_recipient) > 2:
+                return message.sender.full_name
+        return ""
 
     def fix_plaintext_image_urls(content: str) -> str:
         # Replace image URLs in plaintext content of the form
@@ -265,7 +268,8 @@ def build_message_list(
             grouping: dict[str, Any] = {"user": message.sender_id}
             narrow_link = personal_narrow_url(
                 realm=user.realm,
-                sender=message.sender,
+                sender_id=message.sender.id,
+                sender_full_name=message.sender.full_name,
             )
             header = f"You and {message.sender.full_name}"
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
@@ -481,9 +485,13 @@ def do_send_missedmessage_events_reply_in_zulip(
     else:
         reply_to_name = "Zulip"
 
+    def update_context_for_personal_message(context: dict[str, Any], sender: UserProfile) -> None:
+        """Helper function to get context updates for personal messages"""
+
     senders = list({m["message"].sender for m in missed_messages})
-    if missed_messages[0]["message"].recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
+    message = missed_messages[0]["message"]
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        display_recipient = get_display_recipient(message.recipient)
         narrow_url = direct_message_group_narrow_url(
             user=user_profile,
             display_recipient=display_recipient,
@@ -491,7 +499,9 @@ def do_send_missedmessage_events_reply_in_zulip(
         context.update(narrow_url=narrow_url)
         other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user_profile.id]
         context.update(group_pm=True)
-        if len(other_recipients) == 2:
+        if len(other_recipients) <= 1:
+            context.update(group_pm=False, private_message=True)
+        elif len(other_recipients) == 2:
             direct_message_group_display_name = " and ".join(other_recipients)
             context.update(direct_message_group_display_name=direct_message_group_display_name)
         elif len(other_recipients) == 3:
@@ -504,13 +514,13 @@ def do_send_missedmessage_events_reply_in_zulip(
                 ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
             context.update(direct_message_group_display_name=direct_message_group_display_name)
-    elif missed_messages[0]["message"].recipient.type == Recipient.PERSONAL:
+    elif message.recipient.type == Recipient.PERSONAL:
         narrow_url = personal_narrow_url(
             realm=user_profile.realm,
-            sender=missed_messages[0]["message"].sender,
+            sender_id=message.sender.id,
+            sender_full_name=message.sender.full_name,
         )
-        context.update(narrow_url=narrow_url)
-        context.update(private_message=True)
+        context.update(narrow_url=narrow_url, private_message=True)
     elif (
         context["mention"]
         or context["stream_email_notify"]
@@ -532,7 +542,6 @@ def do_send_missedmessage_events_reply_in_zulip(
                     ]
                 }
             )
-        message = missed_messages[0]["message"]
         assert message.recipient.type == Recipient.STREAM
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
         narrow_url = topic_narrow_url(

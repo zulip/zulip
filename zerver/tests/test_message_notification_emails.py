@@ -34,6 +34,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 
@@ -1279,6 +1280,42 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "DMs with Cordelia, Lear's daughter"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
+    def test_pm_link_in_missed_message_header_with_multiple_user_with_the_same_name(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        iago_2 = self.example_user("ZOE")
+        iago_2.full_name = "iago"
+        iago_2.save()
+
+        msg_id = self.send_group_direct_message(
+            iago,
+            [hamlet, iago_2],
+            "Group personal message!",
+        )
+
+        verify_body_include = ["Iago: > Group personal message! -- Reply"]
+        email_subject = "Group DMs with iago and Iago"
+        self._test_cases(msg_id, verify_body_include, email_subject)
+
+    def test_pm_link_in_missed_message_header_using_direct_message_group(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        get_or_create_direct_message_group(id_list=[cordelia.id, hamlet.id])
+
+        msg_id = self.send_personal_message(
+            cordelia,
+            hamlet,
+            "Let's test a direct message link in email notifications",
+        )
+
+        encoded_name = "Cordelia,-Lear's-daughter"
+        verify_body_include = [
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/dm/{cordelia.id}-{encoded_name}"
+        ]
+        email_subject = "DMs with Cordelia, Lear's daughter"
+        self._test_cases(msg_id, verify_body_include, email_subject)
+
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
         msg_id_1 = self.send_stream_message(
@@ -1321,6 +1358,50 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.assertIn(
             ">\n                    \n                        <div><p>Hello</p></div>\n",
             mail.outbox[2].alternatives[0][0],
+        )
+
+    def test_sender_name_in_missed_pm_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        get_or_create_direct_message_group(id_list=[hamlet.id, iago.id])
+
+        msg_id = self.send_personal_message(iago, hamlet, "Hello")
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+        )
+
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
+        # Sender name is not appended for missed 1:1 direct messages
+        self.assertEqual("> Hello\n\n--\n\nReply", mail.outbox[0].body[:18])
+        self.assertIn(
+            ">\n                    \n                        <div><p>Hello</p></div>\n",
+            mail.outbox[0].alternatives[0][0],
+        )
+
+    def test_your_name_in_missed_pm_to_self_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        msg_id = self.send_personal_message(hamlet, hamlet, "Hello", read_by_sender=False)
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+        )
+
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        self.assertEqual(mail.outbox[0].subject, "DMs with King Hamlet")
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
+        # Sender name is not appended for missed 1:1 direct messages
+        self.assertEqual("> Hello\n\n--\n\nReply", mail.outbox[0].body[:18])
+        self.assertIn(
+            ">\n                    \n                        <div><p>Hello</p></div>\n",
+            mail.outbox[0].alternatives[0][0],
         )
 
     def test_multiple_missed_personal_messages(self) -> None:
