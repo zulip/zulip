@@ -572,7 +572,7 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
     }
 }
 
-function process_keypress(e: JQuery.KeyPressEvent | JQuery.KeyDownEvent): void {
+function process_keydown(e: JQuery.KeyDownEvent): void {
     const is_filter_focused = $("#emoji-popover-filter").is(":focus");
     const pressed_key = e.key;
     if (
@@ -646,16 +646,7 @@ function register_popover_events($popover: JQuery): void {
 
     $("#emoji-popover-filter").on("input", filter_emojis);
     $("#emoji-popover-filter").on("keydown", process_enter_while_filtering);
-    $(".emoji-popover").on("keypress", process_keypress);
-    $(".emoji-popover").on("keydown", (e) => {
-        // Because of cross-browser issues we need to handle Backspace
-        // key separately. Firefox fires `keypress` event for Backspace
-        // key but chrome doesn't so we need to trigger the logic for
-        // handling Backspace in `keydown` event which is fired by both.
-        if (e.key === "Backspace") {
-            process_keypress(e);
-        }
-    });
+    $(".emoji-popover").on("keydown", process_keydown);
 }
 
 function get_default_emoji_popover_options(): Partial<tippy.Props> {
