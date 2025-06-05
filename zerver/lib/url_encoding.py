@@ -94,9 +94,9 @@ def encode_user_full_name_and_id(full_name: str, user_id: int, with_operator: bo
     return direct_message_slug
 
 
-def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
+def personal_narrow_url(*, realm: Realm, sender_id: int, sender_full_name: str) -> str:
     base_url = f"{realm.url}/#narrow/dm/"
-    direct_message_slug = encode_user_full_name_and_id(sender.full_name, sender.id)
+    direct_message_slug = encode_user_full_name_and_id(sender_full_name, sender_id)
     return base_url + direct_message_slug
 
 
@@ -104,6 +104,17 @@ def direct_message_group_narrow_url(
     *, user: UserProfile, display_recipient: list[UserDisplayRecipient]
 ) -> str:
     realm = user.realm
+    if len(display_recipient) == 1:
+        # For self-DMs, we use the personal narrow URL format.
+        return personal_narrow_url(realm=realm, sender_id=user.id, sender_full_name=user.full_name)
+    if len(display_recipient) == 2:
+        # For 1:1 DMs, we use the personal narrow URL format.
+        other_user = next(r for r in display_recipient if r["id"] != user.id)
+        return personal_narrow_url(
+            realm=realm, sender_id=other_user["id"], sender_full_name=other_user["full_name"]
+        )
+
+    # For group DMs with more than 2 users, we use other user IDs to create a slug.
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     direct_message_slug = encode_user_ids(other_user_ids)
     base_url = f"{realm.url}/#narrow/dm/"
