@@ -367,7 +367,7 @@ export class BuddyList extends BuddyListConf {
 
         // This must happen after `fill_screen_with_content`
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
-        $("#buddy-list-other-users-container .view-all-users-link").remove();
+        $("#buddy-list-other-users-container .view-all-users-link").empty();
         void this.render_view_user_list_links();
         this.display_or_hide_sections();
         void this.update_empty_list_placeholders();
@@ -758,7 +758,9 @@ export class BuddyList extends BuddyListConf {
         // We give a link to view the list of all users to help reduce confusion about
         // there being hidden (inactive) "other" users.
         if (has_inactive_other_users) {
-            $("#buddy-list-other-users-container").append($(render_view_all_users()));
+            $("#buddy-list-other-users-container .view-all-users-link").html(
+                render_view_all_users(),
+            );
         }
 
         // Note that we don't show a link for the participants list because we expect
