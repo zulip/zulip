@@ -38,7 +38,8 @@ message.
 
 {!message-long-press-menu.md!}
 
-1. Tap **Add a reaction**.
+1. Select one of the emojis at the top of the menu, or tap **more**
+   (<i class="zulip-icon zulip-icon-chevron-right mobile-help"></i>).
 
 1. Start typing the name of the emoji you want to use, and select an emoji from
    the list of suggestions.
