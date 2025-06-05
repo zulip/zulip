@@ -366,7 +366,7 @@ export class BuddyList extends BuddyListConf {
         this.fill_screen_with_content();
 
         // This must happen after `fill_screen_with_content`
-        $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove();
+        $("#buddy-list-users-matching-view-container .view-all-subscribers-link").empty();
         $("#buddy-list-other-users-container .view-all-users-link").empty();
         void this.render_view_user_list_links();
         this.display_or_hide_sections();
@@ -746,12 +746,10 @@ export class BuddyList extends BuddyListConf {
                 current_sub,
                 "subscribers",
             );
-            $("#buddy-list-users-matching-view-container").append(
-                $(
-                    render_view_all_subscribers({
-                        stream_edit_hash,
-                    }),
-                ),
+            $("#buddy-list-users-matching-view-container .view-all-subscribers-link").html(
+                render_view_all_subscribers({
+                    stream_edit_hash,
+                }),
             );
         }
 
