@@ -35,7 +35,7 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 
 {!go-to-inbox.md!}
 
-1. Select **All topics**, **Unmuted topics**, or **Followed topics** from
+1. Select **All topics**, **Standard view**, or **Followed topics** from
    the dropdown in the upper left of the **inbox** view.
 
 {end_tabs}
