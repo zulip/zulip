@@ -407,7 +407,7 @@ run_test("set_search_bar_contents with duplicate pills", () => {
     const pills = search.search_pill_widget._get_pills_for_testing();
     assert.equal(pills.length, 1);
     assert.deepEqual(pills[0].item, {
-        type: "search",
+        type: "generic_operator",
         operator: "has",
         operand: "attachment",
         negated: false,

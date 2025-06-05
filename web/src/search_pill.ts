@@ -32,7 +32,7 @@ export type SearchUserPill = {
 
 type SearchPill =
     | {
-          type: "search";
+          type: "generic_operator";
           operator: string;
           operand: string;
           negated: boolean | undefined;
@@ -51,7 +51,7 @@ export function create_item_from_search_string(search_string: string): SearchPil
         return undefined;
     }
     return {
-        type: "search",
+        type: "generic_operator",
         operator: search_term.operator,
         operand: search_term.operand,
         negated: search_term.negated,
