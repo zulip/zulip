@@ -198,12 +198,12 @@ export function update_bot_settings_tip($tip_container: JQuery): void {
 function update_add_bot_button(): void {
     if (can_create_incoming_webhooks()) {
         $("#bot-settings .add-a-new-bot").show();
-        $("#admin-bot-list .add-new-bots").show();
+        $("#admin-bot-list .add-a-new-bot").show();
         $("#admin-bot-list .manage-your-bots").hide();
         $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
     } else {
         $("#bot-settings .add-a-new-bot").hide();
-        $("#admin-bot-list .add-new-bots").hide();
+        $("#admin-bot-list .add-a-new-bot").hide();
         $(".org-settings-list li[data-section='bot-list-admin'] .locked").show();
 
         if (bot_data.get_all_bots_for_current_user().length > 0) {
