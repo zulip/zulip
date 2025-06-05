@@ -703,7 +703,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             },
             {
                 search_string: "is:mentioned",
-                description_html: "@-mentions",
+                description_html: "messages that mention you",
                 is_people: false,
                 incompatible_patterns: [{operator: "is", operand: "mentioned"}],
             },
