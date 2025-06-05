@@ -706,7 +706,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for <strong>te</strong>");
-    assert.equal(describe(`channel:${office_id} topic:team`), "Channel office > team");
+    assert.equal(describe(`channel:${office_id} topic:team`), "Messages in #office > team");
 
     suggestions = get_suggestions(`topic:staplers channel:${office_id}`);
     expected = [`topic:staplers channel:${office_id}`, "topic:staplers"];
