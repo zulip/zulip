@@ -30,21 +30,6 @@ subscribe to [private](/help/channel-permissions#private-channels) channels.
     **by number of subscribers** (<i class="fa fa-user-o"></i>), or
     **by estimated weekly traffic** (<i class="fa fa-bar-chart"></i>).
 
-{tab|mobile}
-
-{!mobile-all-channels-view.md!}
-
-1. Scroll through the list of channels.
-
-1. Tap the **plus**
-   (<img src="/static/images/help/mobile-plus-icon.svg" alt="plus" class="help-center-icon"/>)
-   icon to the right of a channel to subscribe to it.
-
-!!! tip ""
-
-    You can also press and hold a channel until the long-press menu appears, and
-    tap **Subscribe**.
-
 {end_tabs}
 
 ## Related articles
