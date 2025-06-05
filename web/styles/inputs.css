@@ -1,0 +1,99 @@
+.input-element-wrapper {
+    display: grid;
+    grid-template: "icon input button" auto / auto minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.input-icon {
+    grid-area: icon;
+    margin-left: 0.5em; /* 8px at 16px/1em */
+    color: var(--color-text-input);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.input-active-styles {
+    color: var(--color-text-input-focus);
+    background-color: var(--color-background-input-focus);
+    border-color: var(--color-border-input-focus);
+}
+
+.input-element-wrapper .input-element {
+    /* Input element spans the entire grid */
+    grid-area: 1 / 1 / -1 / -1;
+    box-sizing: border-box;
+    padding: 0.1875em 0.5em; /* 3px at 16px/1em and 8px at 16px/1em */
+    font-size: var(--base-font-size-px);
+    font-family: "Source Sans 3 VF", sans-serif;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    color: var(--color-text-input);
+    background: var(--color-background-input);
+    border: 1px solid var(--color-border-input);
+    border-radius: 4px;
+    outline: none;
+    transition: all 0.1s linear;
+    transition-property: border-color, box-shadow;
+
+    &:hover {
+        border-color: var(--color-border-input-hover);
+    }
+
+    &:focus {
+        box-shadow: 0 0 6px 1px var(--color-box-shadow-input-focus);
+    }
+
+    &:focus,
+    &.input-element-active {
+        @extend .input-active-styles;
+    }
+}
+
+.input-action-button {
+    grid-area: button;
+    padding: 0.25em; /* 4px at 16px/1em */
+    /* At 16px/1em, the icon button is 24px x 24px,
+       and the height of the input element is 28px.
+       Since the icon button is vertically centered
+       within the input element, that leaves a gap
+       of 2px on either side of the button vertically.
+       We match that with 2px of right margin. */
+    margin-right: 0.125em; /* 2px at 16px/1em */
+    z-index: 1;
+}
+
+.input-icon ~ .input-element {
+    /* At 16px/1em,
+       8px (icon left margin)
+       + 16px (icon width)
+       + 8px (match icon left margin on right) */
+    padding-left: 2em; /* 32px at 16px/1em */
+}
+
+.input-element:has(~ .input-action-button) {
+    /* At 16px/1em,
+       4px (gap from icon button)
+       + 24px (icon button width)
+       + 2px (icon button right margin) */
+    padding-right: 1.875em; /* 30px at 16px/1em */
+}
+
+.filter-input {
+    .input-action-button {
+        display: none;
+    }
+
+    .input-element {
+        padding-right: 0.5em;
+    }
+
+    .input-element:not(:placeholder-shown) {
+        @extend .input-active-styles;
+
+        padding-right: 2em;
+
+        ~ .input-action-button {
+            display: flex;
+        }
+    }
+}
