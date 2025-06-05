@@ -566,10 +566,7 @@ export function initialize(): void {
                 mutation: MutationRecord,
                 instance: tippy.Instance,
             ): boolean {
-                return Array.prototype.includes.call(
-                    mutation.removedNodes,
-                    instance.reference.parentElement,
-                );
+                return Array.prototype.includes.call(mutation.removedNodes, instance.reference);
             }
 
             do_render_buddy_list_tooltip(
