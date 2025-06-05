@@ -1229,10 +1229,17 @@ textarea.new_message_textarea {
 #compose.compose-box-open:hover {
     .muted-recipient-row {
         #compose_select_recipient_widget,
-        #compose_recipient_box {
+        #compose_recipient_box,
+        #compose-direct-recipient .pill-container {
             transition: 250ms ease;
             transition-delay: 150ms;
             transition-property: background-color, border-color;
+        }
+
+        #compose-direct-recipient .pill {
+            transition: 250ms ease;
+            transition-delay: 150ms;
+            transition-property: outline-color;
         }
 
         &#compose-recipient {
@@ -1248,10 +1255,7 @@ textarea.new_message_textarea {
     }
 }
 
-/* For now, we're restricting muted recipient-row styles
-   to stream topics only, as restyling DM pills will
-   will take additional work. */
-.muted-recipient-row:not(.compose-recipient-direct-selected) {
+.muted-recipient-row {
     &#compose-recipient {
         .decorated-channel-name,
         .conversation-arrow,
@@ -1265,9 +1269,23 @@ textarea.new_message_textarea {
     }
 
     #compose_select_recipient_widget,
-    #compose_recipient_box {
+    #compose_recipient_box,
+    #compose-direct-recipient .pill-container {
         background-color: transparent;
         border-color: transparent;
+
+        /* Particularly in light mode, pill colors are almost identical
+           to the compose-box background. We place a higher-contrast
+           outline on them in the muted state. */
+        .pill {
+            outline: 1px solid var(--color-outline-muted-input-pill);
+        }
+
+        &:hover {
+            .pill {
+                outline-color: transparent;
+            }
+        }
 
         /* We don't want to trigger the recipient-box-wide hover
            effects when someone is just hovering the new-topic
