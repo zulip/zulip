@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 372  # Last bumped to interpret "(no topic)" as empty string
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (325, 0)  # bumped 2025-06-05 to remove python-twitter
+PROVISION_VERSION = (326, 0)  # bumped 2025-06-05 to upgrade Python requirements
