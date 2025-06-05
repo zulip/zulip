@@ -6,12 +6,14 @@ import render_search_list_item from "../templates/search_list_item.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
 import {Filter} from "./filter.ts";
+import {$t} from "./i18n.ts";
 import * as input_pill from "./input_pill.ts";
 import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
 import type {NarrowTerm} from "./state_data.ts";
+import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -167,11 +169,19 @@ export function generate_pills_html(suggestion: Suggestion): string {
         const render_data = util.the(pill_render_data);
         // Don't add description html for search terms, since those "pills"
         // are already set up to only display text and no pill. We also
-        // don't show it for any user pills.
+        // don't show it for most user pills.
         if (render_data.type === "generic_operator" && render_data.operator !== "search") {
             return render_search_list_item({
                 pills: pill_render_data,
                 description_html: suggestion.description_html,
+            });
+        } else if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
+            const description_html = render_data.negated
+                ? $t({defaultMessage: "Exclude messages you sent"})
+                : $t({defaultMessage: "Messages you sent"});
+            return render_search_list_item({
+                pills: pill_render_data,
+                description_html,
             });
         }
     }
@@ -221,6 +231,14 @@ function search_user_pill_data_from_term(term: NarrowTerm): SearchUserPill {
         return person;
     });
     return search_user_pill_data(users, term.operator, term.negated ?? false);
+}
+
+function is_sent_by_me_pill(pill: SearchUserPill): boolean {
+    return (
+        pill.operator === "sender" &&
+        pill.users.length === 1 &&
+        util.the(pill.users).email === state_data.current_user.email
+    );
 }
 
 function search_user_pill_data(users: User[], operator: string, negated: boolean): SearchUserPill {

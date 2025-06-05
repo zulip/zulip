@@ -12,9 +12,11 @@ const people = zrequire("people");
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
 const search_suggestion = zrequire("search_suggestion");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
+const current_user = {};
+set_current_user(current_user);
 const realm = {};
 set_realm(realm);
 
