@@ -7,6 +7,8 @@ import render_settings_user_list_row from "../templates/settings/settings_user_l
 import {compute_active_status, post_presence_response_schema} from "./activity.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as components from "./components.ts";
+import type {Toggle} from "./components.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
@@ -55,10 +57,12 @@ type BotSettingsSection = {
     filters: {
         text_search: string;
         status_code: number;
+        owner_code: number;
     };
     handle_events: () => void;
     create_table: () => void;
     list_widget: ListWidgetType<number, BotInfo> | undefined;
+    toggler?: Toggle;
 };
 
 const active_section: UserSettingsSection = {
@@ -91,6 +95,8 @@ const bots_section: BotSettingsSection = {
         text_search: "",
         // 0 status_code signifies Active status for our filter.
         status_code: 0,
+        // 0 owner_code signifies All bots, 1 signifies current user's bots
+        owner_code: 0,
     },
     handle_events: bots_handle_events,
     create_table: bots_create_table,
@@ -208,7 +214,7 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
 
 function add_value_to_filters(
     section: UserSettingsSection | BotSettingsSection,
-    key: "role_code" | "status_code" | "text_search",
+    key: "role_code" | "status_code" | "text_search" | "owner_code",
     value: number | string,
 ): void {
     if (key === "role_code" && "role_code" in section.filters) {
@@ -217,6 +223,9 @@ function add_value_to_filters(
     } else if (key === "status_code" && "status_code" in section.filters) {
         assert(typeof value === "number");
         section.filters.status_code = value;
+    } else if (key === "owner_code" && "owner_code" in section.filters) {
+        assert(typeof value === "number");
+        section.filters.owner_code = value;
     } else {
         assert(typeof value === "string");
         section.filters.text_search = value;
@@ -407,6 +416,7 @@ type BotInfo = {
     role: number;
     status_code: number;
     is_active: boolean;
+    can_modify_bot: boolean;
     user_id: number;
     full_name: string;
     user_role_text: string | undefined;
@@ -437,11 +447,16 @@ function bot_info(bot_user_id: number): BotInfo {
     const owner_id = bot_user.bot_owner_id;
     const owner_full_name = bot_owner_full_name(owner_id);
 
+    const is_admin = current_user.is_admin;
+    const is_bot_owner = owner_id === current_user.user_id;
+    const can_modify_bot = is_admin || is_bot_owner;
+
     return {
         is_bot: true,
         role: bot_user.role,
         is_active: people.is_person_active(bot_user.user_id),
         status_code: people.is_person_active(bot_user.user_id) ? 0 : 1,
+        can_modify_bot,
         user_id: bot_user.user_id,
         full_name: bot_user.full_name,
         user_role_text: people.get_user_type(bot_user_id),
@@ -451,9 +466,9 @@ function bot_info(bot_user_id: number): BotInfo {
         bot_owner_full_name: owner_full_name ?? $t({defaultMessage: "No owner"}),
         no_owner: !owner_full_name,
         is_current_user: false,
-        can_modify: current_user.is_admin,
-        cannot_deactivate: bot_user.is_system_bot ?? false,
-        cannot_edit: bot_user.is_system_bot ?? false,
+        can_modify: can_modify_bot,
+        cannot_deactivate: (bot_user.is_system_bot ?? false) || !can_modify_bot,
+        cannot_edit: (bot_user.is_system_bot ?? false) || !can_modify_bot,
         // It's always safe to show the real email addresses for bot users
         display_email: bot_user.email,
         ...(owner_id
@@ -502,6 +517,8 @@ function human_info(person: User): {
     img_src: string;
     last_active_date: string;
 } {
+    const is_admin = current_user.is_admin;
+
     return {
         is_bot: false,
         user_role_text: people.get_user_type(person.user_id),
@@ -509,10 +526,11 @@ function human_info(person: User): {
         user_id: person.user_id,
         full_name: person.full_name,
         bot_owner_id: person.is_bot ? person.bot_owner_id : null,
-        can_modify: current_user.is_admin,
+        can_modify: is_admin,
         is_current_user: people.is_my_user_id(person.user_id),
         cannot_deactivate:
-            person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner()),
+            (person.is_owner && (!current_user.is_owner || people.is_current_user_only_owner())) ||
+            !is_admin,
         display_email: person.delivery_email,
         img_src: people.small_avatar_url_for_person(person),
         // TODO: This is not shown in deactivated users table and it is
@@ -527,7 +545,31 @@ function set_text_search_value($table: JQuery, value: string): void {
     $table.find<HTMLInputElement>(".search").val(value);
 }
 
+function setup_toggler(): void {
+    const toggler = components.toggle({
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "All bots"}), key: "all-bots"},
+            {label: $t({defaultMessage: "Your bots"}), key: "your-bots"},
+        ],
+        callback(_name, key) {
+            browser_history.update(`#organization/${key}`);
+            add_value_to_filters(bots_section, "owner_code", key === "your-bots" ? 1 : 0);
+            // Update the heading text based on selected tab
+            $("#admin-bot-list h3").text(
+                key === "your-bots"
+                    ? $t({defaultMessage: "Your bots"})
+                    : $t({defaultMessage: "All bots"}),
+            );
+        },
+    });
+
+    bots_section.toggler = toggler;
+    toggler.get().prependTo($("#admin-bot-list .tab-container"));
+}
+
 function bots_create_table(): void {
+    setup_toggler();
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
@@ -552,7 +594,13 @@ function bots_create_table(): void {
                     item.display_email.toLowerCase().includes(search_query);
 
                 const filter_status = item.status_code === bots_section.filters.status_code;
-                return filter_searches && filter_status;
+                const current_user_id = people.my_current_user_id();
+                const is_owner = item.bot_owner_id === current_user_id;
+                const filter_owner =
+                    bots_section.filters.owner_code === 0 ||
+                    (bots_section.filters.owner_code === 1 && is_owner);
+
+                return filter_searches && filter_status && filter_owner;
             },
             onupdate: reset_scrollbar($bots_table),
         },
