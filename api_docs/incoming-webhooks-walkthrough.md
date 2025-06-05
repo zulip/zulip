@@ -244,6 +244,11 @@ configure:
 
 Common validators are available in `zerver/lib/validators.py`.
 
+The `url_options` setting in the example above may look like this
+to users:
+
+<img class="screenshot" src="/static/images/api/url-options-example.png" alt="screenshot" />
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an
