@@ -12,6 +12,7 @@ import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
 import type {NarrowTerm} from "./state_data.ts";
+import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -121,6 +122,14 @@ function search_user_pill_data_from_term(term: NarrowTerm): SearchUserPill {
     return search_user_pill_data(users, term.operator, term.negated ?? false);
 }
 
+function is_sent_by_me_pill(pill: SearchUserPill): boolean {
+    return (
+        pill.operator === "sender" &&
+        pill.users.length === 1 &&
+        pill.users[0]!.email === state_data.current_user.email
+    );
+}
+
 // TODO: We're calculating `description_html` every time, even though
 // we only show it (in `generate_pills_html`) for lines with only one
 // pill. We can probably simplify things by separating out a function
@@ -182,8 +191,10 @@ export function generate_pills_html(suggestion: Suggestion): string {
         // text and no pill.
         if (pill.type === "search_non_user" && pill.operator !== "search") {
             description_html = suggestion.description_html;
+        } else if (pill.type === "search_user" && is_sent_by_me_pill(pill)) {
+            description_html = "Messages you sent";
         }
-        // We don't show `description_html` for "search_user" pills
+        // Note: We don't show `description_html` for most "search_user" pills
         return render_search_list_item({
             pills: pill_render_data,
             description_html,
