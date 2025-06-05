@@ -1821,6 +1821,10 @@
         hsl(237deg 68% 94% / 50%),
         hsl(240deg 65% 60% / 60%)
     );
+    --color-outline-muted-input-pill: light-dark(
+        hsl(237deg 68% 88%),
+        hsl(240deg 65% 60% / 22%)
+    );
     --color-focus-outline-input-pill: light-dark(
         hsl(240deg 50% 50%),
         hsl(0deg 0% 100% / 60%)
