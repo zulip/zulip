@@ -628,6 +628,13 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
         // Only intervene to generate formatted links when dealing
         // with a URL and a URL-safe range selection.
         if (isUrl(trimmed_paste_text)) {
+            if (cursor_at_markdown_link_marker($textarea)) {
+                // When pasting a link after the link marker syntax, we want to
+                // avoid inserting markdown syntax text and instead just paste
+                // the raw text, possibly replacing any selection. In other words,
+                // let the browser handle it.
+                return;
+            }
             if (is_safe_url_paste_target($textarea)) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -635,12 +642,7 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
                 compose_ui.format_text($textarea, "linked", url);
                 return;
             }
-
-            if (
-                !compose_ui.cursor_inside_code_block($textarea) &&
-                !cursor_at_markdown_link_marker($textarea) &&
-                !compose_ui.shift_pressed
-            ) {
+            if (!compose_ui.cursor_inside_code_block($textarea) && !compose_ui.shift_pressed) {
                 // Try to transform the url to #**stream>topic** syntax
                 // if it is a valid url.
                 const syntax_text = try_stream_topic_syntax_text(trimmed_paste_text);
