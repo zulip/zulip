@@ -560,7 +560,7 @@ export function setup_topic_search_typeahead(): void {
             }
             return [...filter_options.keys()];
         },
-        highlighter_html(item: string) {
+        item_html(item: string) {
             return typeahead_helper.render_topic_state(item);
         },
         matcher(item: string, query: string) {

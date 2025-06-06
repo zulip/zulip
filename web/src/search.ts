@@ -193,7 +193,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         helpOnEmptyStrings: true,
         stopAdvance: true,
         requireHighlight: false,
-        highlighter_html(item: string): string {
+        item_html(item: string): string {
             const obj = search_map.get(item);
             return render_search_list_item(obj);
         },

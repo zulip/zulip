@@ -375,7 +375,7 @@ export function initialize_custom_pronouns_type_fields(element_id: string): void
                 sorter(items, query) {
                     return bootstrap_typeahead.defaultSorter(items, query);
                 },
-                highlighter_html(item) {
+                item_html(item) {
                     return typeahead_helper.render_typeahead_item({primary: item});
                 },
             });

@@ -52,10 +52,10 @@ const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
 // **********************************
 // They do not do any HTML escaping, at all.
 // And your input to them is rendered as though it were HTML by
-// the default highlighter.
+// the default `item_html`.
 //
 // So if you are not using trusted input, you MUST use a
-// highlighter that escapes (i.e. one that calls
+// custom `item_html` that escapes (i.e. one that calls
 // Handlebars.Utils.escapeExpression).
 
 // ---------------- TYPE DECLARATIONS ----------------
@@ -1109,7 +1109,7 @@ export function get_candidates(
     return [];
 }
 
-export function content_highlighter_html(item: TypeaheadSuggestion): string | undefined {
+export function content_item_html(item: TypeaheadSuggestion): string | undefined {
     switch (item.type) {
         case "emoji":
             return typeahead_helper.render_emoji(item);
@@ -1397,7 +1397,7 @@ export function initialize_topic_edit_typeahead(
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
-        highlighter_html(item: string): string {
+        item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
             return typeahead_helper.render_typeahead_item({
@@ -1457,7 +1457,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             // O(n) behavior in the number of users in the organization
             // inside the typeahead library.
             source: get_candidates,
-            highlighter_html: content_highlighter_html,
+            item_html: content_item_html,
             matcher() {
                 return true;
             },
@@ -1529,7 +1529,7 @@ export function initialize({
             return topics_seen_for(compose_state.stream_id());
         },
         items: max_num_items,
-        highlighter_html(item: string): string {
+        item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
             return typeahead_helper.render_typeahead_item({
@@ -1572,7 +1572,7 @@ export function initialize({
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
-        highlighter_html(item: UserGroupPillData | UserPillData) {
+        item_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
         },
         matcher(): boolean {
