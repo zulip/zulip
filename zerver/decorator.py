@@ -91,7 +91,13 @@ def update_user_activity(
         "time": datetime_to_timestamp(timezone_now()),
         "client_id": request_notes.client.id,
     }
-    queue_json_publish_rollback_unsafe("user_activity", event, lambda event: None)
+
+    queue_name = "user_activity"
+    if settings.USER_ACTIVITY_SHARDS > 1:  # nocoverage
+        shard_id = user_profile.id % settings.USER_ACTIVITY_SHARDS + 1
+        queue_name = f"user_activity_shard{shard_id}"
+
+    queue_json_publish_rollback_unsafe(queue_name, event, lambda event: None)
 
 
 # Based on django.views.decorators.http.require_http_methods

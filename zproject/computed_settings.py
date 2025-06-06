@@ -1279,6 +1279,7 @@ CROSS_REALM_BOT_EMAILS = {
 MOBILE_NOTIFICATIONS_SHARDS = int(
     get_config("application_server", "mobile_notification_shards", "1")
 )
+USER_ACTIVITY_SHARDS = int(get_config("application_server", "user_activity_shards", "1"))
 
 TWO_FACTOR_PATCH_ADMIN = False
 
