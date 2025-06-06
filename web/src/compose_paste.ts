@@ -505,7 +505,7 @@ export function paste_handler_converter(
     return markdown_text;
 }
 
-function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boolean {
+function can_paste_url_over_range($textarea: JQuery<HTMLTextAreaElement>): boolean {
     const range = $textarea.range();
 
     if (!range.text) {
@@ -515,19 +515,6 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
 
     if (isUrl(range.text.trim())) {
         // Don't engage our URL paste logic over existing URLs
-        return false;
-    }
-
-    if (range.start <= 2) {
-        // The range opens too close to the start of the textarea
-        // to have to worry about Markdown link syntax
-        return true;
-    }
-
-    // Look at the two characters before the start of the original
-    // range in search of the tell-tale `](` from existing Markdown
-    // link syntax
-    if (cursor_at_markdown_link_marker($textarea)) {
         return false;
     }
 
@@ -635,7 +622,7 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
                 // let the browser handle it.
                 return;
             }
-            if (is_safe_url_paste_target($textarea)) {
+            if (can_paste_url_over_range($textarea)) {
                 event.preventDefault();
                 event.stopPropagation();
                 const url = trimmed_paste_text;
