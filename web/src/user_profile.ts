@@ -959,6 +959,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             $events_container: $("#bot-edit-form"),
             default_id: owner_id,
             unique_id_type: "number",
+            keep_focus_on_search: true,
         });
         bot_owner_dropdown_widget.setup();
 
