@@ -56,7 +56,7 @@ const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
 //
 // So if you are not using trusted input, you MUST use a
 // highlighter that escapes (i.e. one that calls
-// typeahead_helper.highlight_with_escaping).
+// Handlebars.Utils.escapeExpression).
 
 // ---------------- TYPE DECLARATIONS ----------------
 // There are many types of suggestions that can show

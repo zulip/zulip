@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -261,7 +260,7 @@ export function create_user_pill_context(user: User): UserPillItem {
 
     return {
         id: user.user_id,
-        display_value: new Handlebars.SafeString(user.full_name),
+        display_value: user.full_name,
         has_image: true,
         img_src: avatar_url,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
