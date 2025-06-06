@@ -76,6 +76,7 @@ function create_choice_row(): void {
         get_options,
         item_click_callback,
         $events_container: $container,
+        keep_focus_on_search: true,
     }).setup();
 }
 
