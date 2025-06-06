@@ -221,7 +221,7 @@ export class Typeahead<ItemType extends string | object> {
     items: number;
     matcher: (item: ItemType, query: string) => boolean;
     sorter: (items: ItemType[], query: string) => ItemType[];
-    highlighter_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (item: ItemType, query: string) => string | undefined;
     updater: (
         item: ItemType,
         query: string,
@@ -281,7 +281,7 @@ export class Typeahead<ItemType extends string | object> {
         this.items = options.items ?? MAX_ITEMS;
         this.matcher = options.matcher ?? ((item, query) => this.defaultMatcher(item, query));
         this.sorter = options.sorter;
-        this.highlighter_html = options.highlighter_html;
+        this.item_html = options.item_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
         this.$container = $(CONTAINER_HTML);
         if (options.non_tippy_parent_element) {
@@ -544,7 +544,7 @@ export class Typeahead<ItemType extends string | object> {
         const $items: JQuery[] = final_items.map((item) => {
             const $i = $(ITEM_HTML);
             this.values.set(the($i), item);
-            const item_html = this.highlighter_html(item, this.query) ?? "";
+            const item_html = this.item_html(item, this.query) ?? "";
             const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
@@ -894,7 +894,7 @@ export class Typeahead<ItemType extends string | object> {
  * =========================== */
 
 type TypeaheadOptions<ItemType> = {
-    highlighter_html: (item: ItemType, query: string) => string | undefined;
+    item_html: (item: ItemType, query: string) => string | undefined;
     items?: number;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
