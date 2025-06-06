@@ -2,6 +2,7 @@
 import logging
 from typing import Any
 
+from django.conf import settings
 from django.db import connection
 from psycopg2.sql import SQL, Literal
 from typing_extensions import override
@@ -32,6 +33,17 @@ class UserActivityWorker(LoopQueueProcessingWorker):
     """
 
     client_id_map: dict[str, int] = {}
+
+    @override
+    def __init__(
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        worker_num: int | None = None,
+    ) -> None:
+        if settings.USER_ACTIVITY_SHARDS > 1 and worker_num is not None:  # nocoverage
+            self.queue_name += f"_shard{worker_num}"
+        super().__init__(threaded, disable_timeout, worker_num)
 
     @override
     def start(self) -> None:
