@@ -285,6 +285,7 @@ function create_role_filter_dropdown(
         tippy_props: {
             offset: [0, 0],
         },
+        keep_focus_on_search: true,
     });
 }
 
