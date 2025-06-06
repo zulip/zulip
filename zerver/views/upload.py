@@ -17,7 +17,6 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseNotFound,
 )
-from django.http.request import MediaType
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.cache import patch_cache_control, patch_vary_headers
@@ -213,11 +212,11 @@ def preferred_accept(request: HttpRequest, served_types: list[str]) -> str | Non
 
 def closest_thumbnail_format(
     requested_format: BaseThumbnailFormat,
-    accepts: list[MediaType],
+    request: HttpRequest,
     rendered_formats: list[StoredThumbnailFormat],
 ) -> StoredThumbnailFormat:
     accepted_types = sorted(
-        accepts,
+        request.accepted_types,
         key=lambda e: float(e.params.get("q", "1.0")),
         reverse=True,
     )
@@ -331,7 +330,7 @@ def serve_file(
                 # set, or the client is just guessing a format and
                 # hoping.
                 requested_format = closest_thumbnail_format(
-                    requested_format, request.accepted_types, rendered_formats
+                    requested_format, request, rendered_formats
                 )
         elif requested_format not in rendered_formats:
             # They requested a valid format, but one we've not
