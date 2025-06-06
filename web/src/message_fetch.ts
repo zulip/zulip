@@ -307,9 +307,9 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 
             // The other operands supporting integer IDs all work with
             // a single user object.
-            const person = people.get_by_email(raw_term.operand);
-            if (person !== undefined) {
-                narrow_term.operand = person.user_id;
+            const user_id = Number(raw_term.operand);
+            if (typeof user_id === "number" && people.maybe_get_user_by_id(user_id, true)) {
+                narrow_term.operand = Number(raw_term.operand);
             }
         }
         narrow_terms.push(narrow_term);

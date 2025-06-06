@@ -109,12 +109,9 @@ function format_as_suggestion(terms: NarrowTerm[], is_operator_suggestion = fals
 }
 
 function compare_by_direct_message_group(
-    direct_message_group_emails: string[],
+    direct_message_group_user_ids: Set<number>,
 ): (person1: User, person2: User) => number {
-    const user_ids = direct_message_group_emails.slice(0, -1).flatMap((person) => {
-        const user = people.get_by_email(person);
-        return user?.user_id ?? [];
-    });
+    const user_ids = [...direct_message_group_user_ids];
     // Construct dict for all direct message groups, so we can
     // look up each's recency
     const direct_message_groups = direct_message_group_data.get_direct_message_groups();
@@ -245,11 +242,13 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
-    const parts = [...all_but_last_part.split(","), people.my_current_email()];
+    const parts = new Set(people.user_ids_string_to_ids_array(all_but_last_part));
+    parts.add(people.my_current_user_id());
 
     const all_users_but_last_part = [];
-    for (const email of all_but_last_part.split(",")) {
-        const user = people.get_by_email(email);
+    for (const user_id of all_but_last_part.split(",")) {
+        const ignore_missing = true;
+        const user = people.maybe_get_user_by_id(Number(user_id), ignore_missing);
         // Somehow an invalid email is showing up earlier in the group.
         // This can happen if e.g. the user manually enters multiple emails.
         // We won't have group suggestions built from an invalid user, so
@@ -265,7 +264,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 
     const person_matcher = people.build_person_matcher(last_part);
     let persons = people.filter_all_persons((person) => {
-        if (parts.includes(person.email)) {
+        if (parts.has(person.user_id)) {
             return false;
         }
         return last_part === "" || person_matcher(person);
@@ -283,7 +282,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     return persons.map((person) => {
         const term = {
             operator: "dm",
-            operand: all_but_last_part + "," + person.email,
+            operand: all_but_last_part + "," + person.user_id,
             negated,
         };
 
@@ -389,7 +388,7 @@ function get_person_suggestions(
         const terms: NarrowTerm[] = [
             {
                 operator: autocomplete_operator,
-                operand: person.email,
+                operand: person.user_id.toString(),
                 negated: last.negated,
             },
         ];
@@ -833,7 +832,7 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     const negated_symbol = negated ? "-" : "";
     const verb = negated ? "exclude " : "";
 
-    const sender_query = negated_symbol + "sender:" + people.my_current_email();
+    const sender_query = negated_symbol + "sender:" + people.my_current_user_id();
     const sender_me_query = negated_symbol + "sender:me";
     const from_string = negated_symbol + "from";
     const sent_string = negated_symbol + "sent";
@@ -934,7 +933,7 @@ function suggestions_for_current_filter(): SuggestionLine[] {
             get_default_suggestion_line(narrow_state.search_terms()),
         ];
     }
-    if (narrow_state.pm_emails_string()) {
+    if (narrow_state.pm_ids_string()) {
         return [
             get_default_suggestion_line([
                 {
@@ -1077,7 +1076,7 @@ export function get_search_result(
         person_suggestion_ops.includes(text_search_terms.at(-2)!.operator)
     ) {
         const person_op = text_search_terms.at(-2)!;
-        if (!people.reply_to_to_user_ids_string(person_op.operand)) {
+        if (!person_op.operand) {
             last = {
                 operator: person_op.operator,
                 operand: person_op.operand + " " + last.operand,

@@ -355,10 +355,10 @@ function get_user_card_popover_data(
         is_bot: user.is_bot,
         is_me,
         is_sender_popover,
-        pm_with_url: hash_util.pm_with_url(user.email),
+        pm_with_url: hash_util.pm_with_url(user.user_id.toString()),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
-        sent_by_url: hash_util.by_sender_url(user.email),
+        sent_by_url: hash_util.by_sender_url(user.user_id.toString()),
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
@@ -408,7 +408,7 @@ function show_user_card_popover(
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
-        const sent_by_url = hash_util.by_sender_url(user.email);
+        const sent_by_url = hash_util.by_sender_url(user.user_id.toString());
         const user_avatar = people.small_avatar_url_for_person(user);
         args = {
             user_id: user.user_id,
@@ -720,12 +720,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "dm",
-                    operand: email,
+                    operand: user_id.toString(),
                 },
             ],
             {trigger: "user sidebar popover"},
@@ -740,12 +739,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "sender",
-                    operand: email,
+                    operand: user_id.toString(),
                 },
             ],
             {trigger: "user sidebar popover"},

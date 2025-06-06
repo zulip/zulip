@@ -20,8 +20,8 @@ export function initialize_pill(): UserPillWidget {
     const pill = input_pill.create({
         $container,
         pill_config,
-        create_item_from_text: user_pill.create_item_from_email,
-        get_text_from_item: user_pill.get_email_from_item,
+        create_item_from_text: user_pill.create_item_from_user_id,
+        get_text_from_item: user_pill.get_user_id_string_from_item,
         get_display_value_from_item: user_pill.get_display_value_from_item,
         generate_pill_html: (item: UserPill) => user_pill.generate_pill_html(item, true),
     });
