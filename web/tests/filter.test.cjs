@@ -834,6 +834,10 @@ test("show_first_unread", () => {
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.allow_use_first_unread_when_narrowing());
 
+    terms = [{operator: "is", operand: "starred"}];
+    filter = new Filter(terms);
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+
     // Side case
     terms = [{operator: "is", operand: "any"}];
     filter = new Filter(terms);

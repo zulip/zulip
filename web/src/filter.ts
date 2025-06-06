@@ -1536,7 +1536,10 @@ export class Filter {
     }
 
     allow_use_first_unread_when_narrowing(): boolean {
-        return this.can_mark_messages_read() || this.has_operator("is");
+        return (
+            this.can_mark_messages_read() ||
+            (this.has_operator("is") && !this.has_operand("is", "starred"))
+        );
     }
 
     contains_only_private_messages(): boolean {
