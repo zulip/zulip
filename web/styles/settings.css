@@ -1320,7 +1320,7 @@ label.preferences-radio-choice-label {
 
 /* -- new settings overlay -- */
 #settings_page {
-    height: 95vh;
+    height: 100%;
     width: 97vw;
     max-width: 73.1429em; /* 1024px at 14px em */
     margin: 2.5vh auto;
