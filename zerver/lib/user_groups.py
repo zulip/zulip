@@ -326,7 +326,10 @@ def lock_subgroups_with_respect_to_supergroup(
         else:
             assert permission_setting is not None
             potential_supergroup = access_user_group_for_update(
-                potential_supergroup_id, acting_user, permission_setting=permission_setting
+                potential_supergroup_id,
+                acting_user,
+                permission_setting=permission_setting,
+                allow_deactivated=True,
             )
         # We avoid making a separate query for user_group_ids because the
         # recursive query already returns those user groups.
