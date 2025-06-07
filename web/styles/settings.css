@@ -858,6 +858,7 @@ input[type="checkbox"] {
         .decorated-channel-name {
             overflow-x: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
 }
