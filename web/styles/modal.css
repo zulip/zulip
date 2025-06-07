@@ -514,6 +514,8 @@
             height: 0;
             overflow: auto;
             flex-grow: 1;
+            padding-top: 2px;
+            padding-right: 16px;
 
             .option-row {
                 list-style-type: none;
