@@ -13,9 +13,7 @@
                     </div>
                     <div class="delete-drafts-group">
                         <div class="delete-selected-drafts-button-container">
-                            <button class="button small rounded delete-selected-drafts-button" type="button" disabled>
-                                <i class="fa fa-trash-o fa-lg" aria-hidden="true"></i>
-                            </button>
+                            {{> ./components/icon_button intent="danger" custom_classes="delete-selected-drafts-button" icon="trash" disabled=true  }}
                         </div>
                         <button class="button small rounded select-drafts-button" role="checkbox" aria-checked="false">
                             <span>{{t "Select all drafts" }}</span>

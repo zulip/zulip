@@ -770,6 +770,22 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".delete-option",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            /* Ensure the tooltip remains visible even when data-reference-hidden is set. */
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+
+            instance.setContent($t({defaultMessage: "Delete"}));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: [
             "#personal-menu-dropdown .info-density-button-container",
             "#user-preferences .info-density-button-container",
