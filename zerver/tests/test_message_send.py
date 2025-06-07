@@ -34,6 +34,7 @@ from zerver.actions.streams import (
     do_change_stream_group_based_setting,
     do_change_stream_permission,
     do_deactivate_stream,
+    do_set_stream_property,
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
@@ -43,6 +44,7 @@ from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
     JsonableError,
+    MessagesNotAllowedInEmptyTopicError,
 )
 from zerver.lib.message import get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.message_cache import MessageDict
@@ -74,9 +76,9 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot, get_user
 from zerver.views.message_send import InvalidMirrorInputError
 
@@ -3562,17 +3564,53 @@ class CheckMessageTest(ZulipTestCase):
         topic_name = "(no topic)"
         message_content = "whatever"
         addressee = Addressee.for_stream(stream, topic_name)
+        self.login_user(sender)
 
-        do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
-        realm.refresh_from_db()
-
-        with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
-            check_message(sender, client, addressee, message_content, realm)
-
-        do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
+
+        # User can't send message when stream `topics_policy` is set to `inherit`
+        # and realm `topics_policy` is set to `disable_empty_topic`.
+        self.login_user(sender)
+
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.sender.id, sender.id)
+
+        # User can't send message when stream `topics_policy` is set to `inherit`
+        # and realm `topics_policy` is set to `disable_empty_topic`.
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.disable_empty_topic, acting_user=None
+        )
+        realm.refresh_from_db()
+        with self.assertRaisesRegex(
+            MessagesNotAllowedInEmptyTopicError,
+            "Sending messages to the general chat is not allowed in this channel.",
+        ):
+            check_message(sender, client, addressee, message_content, realm)
+
+        # User can send message when stream `topics_policy` is set to `allow_empty_topic`.
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum.allow_empty_topic.value, sender
+        )
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.sender.id, sender.id)
+
+        # User can't send messages when stream `topics_policy` is set to `disable_empty_topic`.
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.allow_empty_topic, acting_user=None
+        )
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum.disable_empty_topic.value, sender
+        )
+        realm.refresh_from_db()
+        with self.assertRaisesRegex(
+            MessagesNotAllowedInEmptyTopicError,
+            "Sending messages to the general chat is not allowed in this channel.",
+        ):
+            check_message(sender, client, addressee, message_content, realm)
 
     def test_empty_topic_message(self) -> None:
         realm = get_realm("zulip")
@@ -3582,14 +3620,50 @@ class CheckMessageTest(ZulipTestCase):
         topic_name = ""
         message_content = "whatever"
         addressee = Addressee.for_stream(stream, topic_name)
+        self.login_user(sender)
 
-        do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
-        realm.refresh_from_db()
-
-        with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
-            check_message(sender, client, addressee, message_content, realm)
-
-        do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.topic_name(), topic_name)
+
+        # User can't send message when stream `topics_policy` is set to `inherit`
+        # and realm `topics_policy` is set to `disable_empty_topic`.
+        self.login_user(sender)
+
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.topic_name(), topic_name)
+
+        # User can't send message when stream `topics_policy` is set to `inherit`
+        # and realm `topics_policy` is set to `disable_empty_topic`.
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.disable_empty_topic, acting_user=None
+        )
+        realm.refresh_from_db()
+        with self.assertRaisesRegex(
+            MessagesNotAllowedInEmptyTopicError,
+            "Sending messages to the general chat is not allowed in this channel.",
+        ):
+            check_message(sender, client, addressee, message_content, realm)
+
+        # User can send message when stream `topics_policy` is set to `allow_empty_topic`.
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum.allow_empty_topic.value, sender
+        )
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.sender.id, sender.id)
+
+        # User can't send messages when stream `topics_policy` is set to `disable_empty_topic`.
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.allow_empty_topic, acting_user=None
+        )
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum.disable_empty_topic.value, sender
+        )
+        realm.refresh_from_db()
+        with self.assertRaisesRegex(
+            MessagesNotAllowedInEmptyTopicError,
+            "Sending messages to the general chat is not allowed in this channel.",
+        ):
+            check_message(sender, client, addressee, message_content, realm)
