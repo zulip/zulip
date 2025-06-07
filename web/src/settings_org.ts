@@ -1073,6 +1073,7 @@ function set_up_dropdown_widget(
         },
         default_id: z.union([z.string(), z.number()]).parse(realm[setting_name]),
         unique_id_type,
+        keep_focus_on_search: true,
         ...(text_if_current_value_not_in_options && {text_if_current_value_not_in_options}),
         on_mount_callback(dropdown) {
             if (setting_type === "group") {
