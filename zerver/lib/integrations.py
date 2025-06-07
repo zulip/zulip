@@ -696,13 +696,39 @@ for webhook_integration in WEBHOOK_INTEGRATIONS:
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
-# Add integrations that don't have automated screenshots here
+# Add webhook integrations that don't have automated screenshots here
 NO_SCREENSHOT_WEBHOOKS = {
     "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
-    "ifttt",  # Docs don't have a screenshot
-    "slack_incoming",  # Docs don't have a screenshot
-    "zapier",  # Docs don't have a screenshot
+    "ifttt",  # Doc doesn't have a screenshot because it's a platform for integrations
+    "slack_incoming",  # Doc doesn't have a screenshot because it's a type of integration
+    "zapier",  # Doc doesn't have a screenshot because it's a platform for integrations
 }
+
+hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add fixtureless integrations that don't have automated screenshots here
+NO_SCREENSHOT_CONFIG = (
+    {
+        "giphy",  # Doc doesn't have a screenshot
+        "twitter",  # the integration is planned to be removed
+        # Outgoing integrations - Docs won't have a screenshot
+        "email",
+        "onyx",
+        # Video call integrations - Docs won't have a screenshot
+        "zoom",
+        "jitsi",
+        "big-blue-button",
+        # Integrations that require screenshots of message threads - support is yet to be added
+        "errbot",
+        "hubot",
+        "github_detail",
+        "irc",
+        "matrix",  # Also requires a screenshot on the Matrix side of the bridge
+        "xkcd",
+    }
+    | NO_SCREENSHOT_WEBHOOKS
+    | hubot_integration_names
+)
 
 
 WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
@@ -849,7 +875,196 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     ],
 }
 
-FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
+    "asana": [
+        FixturelessScreenshotConfig(
+            "Justin Case created a new task **[Optimize image loading in unicorn catalog]()**.\n> Implement lazy loading for images on the Unicorn catalog to improve load times.",
+            "Data Solutions > Project Unicorns",
+        )
+    ],
+    "capistrano": [
+        FixturelessScreenshotConfig(
+            "The [deployment]() to **fizzbuzz-prod** (version v9.2.3) has been completed successfully! :rocket:",
+            "project-fizzbuzz",
+        )
+    ],
+    "codebase": [
+        FixturelessScreenshotConfig(
+            """Ann Tenna pushed 2 commit(s) to main in project FizzBuzz:
+
+* [a2e84e86dd](): Make client_name a kwarg.
+* [d68b14fa6d](): Suppress "comment edited" events when body is same.
+""",
+            "Push to main on FizzBuzz",
+        )
+    ],
+    "discourse": [
+        FixturelessScreenshotConfig(
+            """**@Niloth** posted in [Zulip's new mobile app is out!]()
+> Zulip’s next-gen mobile app is now in public beta. If offers a sleek new design and a faster, smoother experience. Check out the announcement post for details and instructions on how to try the beta!""",
+            "announce",
+        )
+    ],
+    "git": [
+        FixturelessScreenshotConfig(
+            """`a2e84e86ddf7` was deployed to `main` with:
+* idli@example.com - b7763f7: Make client_name a kwarg.
+* dosa@example.com - ff96efb: Add support for unicorns.
+""",
+            "main",
+            channel="commits",
+        )
+    ],
+    "github-actions": [
+        FixturelessScreenshotConfig(
+            """Backup [failed]() at 2025-05-30T02:00:00Z.
+> Unable to connect.""",
+            "Scheduled backups",
+        )
+    ],
+    "google-calendar": [
+        FixturelessScreenshotConfig(
+            """The [Development Sync]() event is scheduled from 2 PM - 3 PM on Friday, May 30, 2025 at Conference Room B.
+> Let's align on our current sprint progress, address any blockers, and share updates. Your input is crucial!
+
+[Join call]().""",
+            "Team reminders",
+            image_dir="google/calendar",
+            image_name="003.png",
+        )
+    ],
+    "jenkins": [
+        FixturelessScreenshotConfig(
+            "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
+        )
+    ],
+    "jira-plugin": [
+        FixturelessScreenshotConfig(
+            """Justin Case **created** [678]() - priority Medium, assigned to @**Justin Time**:
+
+> Implement lazy loading for images on the Unicorn catalog to improve load times.""",
+            "678: Optimize image loading in unicorn catalog",
+        )
+    ],
+    "mastodon": [
+        FixturelessScreenshotConfig(
+            """**[Roundtables: What’s Next for Mixed Reality: Glasses, Goggles, and More](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)**
+Recorded on November 19, 2024\nWhat’s Next for Mixed Reality: Glasses, Goggles, and More.
+Speakers: Mat Honan, Editor in Chief, and James O’Donnell, AI hardware reporter.
+We are barreling toward the next big consumer device category: smart glasses. After years of trying, augmented-reality specs are at last a thing. Facebook recently showed off its Orion…
+[https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)""",
+            "MIT Technology Review",
+        )
+    ],
+    "mercurial": [
+        FixturelessScreenshotConfig(
+            """**Al Gorithm** <algorithm@example.com> pushed [2 commits]() to **default** (`170:e494a5be3393`):
+* [Make client_name a kwarg.]()
+* [Suppress "comment edited" events when body is same.]()""",
+            "default",
+            channel="commits",
+            image_dir="hg",
+        )
+    ],
+    "nagios": [
+        FixturelessScreenshotConfig(
+            """**PROBLEM**: service is CRITICAL
+
+~~~~
+CRITICAL - load average: 7.49, 8.20, 4.72
+~~~~
+""",
+            "service Remote Load on myserver.example.com",
+        )
+    ],
+    "notion": [
+        FixturelessScreenshotConfig(
+            """**King Hamlet** [commented]() on:
+
+> line rehearsal scheduled
+
+Can we reschedule this to next week?""",
+            "The Best Play in the World",
+        )
+    ],
+    "openshift": [
+        FixturelessScreenshotConfig(
+            "Deployment [78641]() triggered by a push to **main** by commit [ff96efb]() at 2023-02-20 14:35 has **failed**.",
+            "fizzbuzz-dev",
+        )
+    ],
+    "perforce": [
+        FixturelessScreenshotConfig(
+            """
+**Paige Turner** committed revision @[492]() to `//depot/fizz/buzz/*`.
+
+```quote
+Make client_name a kwarg.
+```
+""",
+            "//depot/fizz/buzz/*",
+        )
+    ],
+    "phabricator": [
+        FixturelessScreenshotConfig(
+            "WMDE_Phab moved [T389011: Phrase match operation in simple search]() from [Peer Review]() to [Product Verification]() on the [Wikibase Product Platform Team WPP (Sprint 46)]() board.",
+            "Feed",
+        )
+    ],
+    "puppet": [
+        FixturelessScreenshotConfig(
+            """Puppet production run for web-server-01 completed at Fri May 30 12:34:56 2025.
+ Created a Gist showing the output at abc123xyz
+ Summary at report.example.com:2025-05-30/production/web-server-01/completed
+ Report URL: http://example.com/puppet-reports/production/web-server-01/?status=completed&time=20250530123456""",
+            "Reports",
+        )
+    ],
+    "redmine": [
+        FixturelessScreenshotConfig(
+            """Al Gorithm **created** issue [643 Add support for unicorns]():
+
+~~~quote
+
+Everyone loves 'em! Our unicorn support should have:\n...
+
+~~~
+
+* **Assignee**: Max Power
+* **Status**: New
+* **Target version**: 9.2
+* **Estimated hours**: 40
+""",
+            "Add support for unicorns",
+        )
+    ],
+    "rss": [
+        FixturelessScreenshotConfig(
+            """**[Roundtables: What’s Next for Mixed Reality: Glasses, Goggles, and More](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)**
+Recorded on November 19, 2024\nWhat’s Next for Mixed Reality: Glasses, Goggles, and More.
+Speakers: Mat Honan, Editor in Chief, and James O’Donnell, AI hardware reporter.
+We are barreling toward the next big consumer device category: smart glasses. After years of trying, augmented-reality specs are at last a thing. Facebook recently showed off its Orion…
+[https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/](https://www.technologyreview.com/2024/11/19/1107018/roundtables-whats-next-for-mixed-reality-glasses-goggles-and-more/)""",
+            "MIT Technology Review",
+        )
+    ],
+    "svn": [
+        FixturelessScreenshotConfig(
+            """**svncredible** committed revision r2126 to `fizzbuzz-dev`.
+> Style the error message on the frobnicator.""",
+            "fizzbuzz-dev",
+        )
+    ],
+    "trac": [
+        FixturelessScreenshotConfig(
+            """cool-user-name updated [ticket #798]() with comment:
+> Fixed in 26595799c7c2d0a8f8bc7c15de5dcc813fff93c9
+
+status: **new** => **closed**, resolution: => **fixed**""",
+            "#798 Cool Ticket Title",
+        ),
+    ],
+}
 
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
