@@ -20,6 +20,15 @@
                 <span class="search-query-word">{{query_word}}</span>
                 {{/if}}
             {{/each}}
+            {{#if update_hash}}
+            <span class="search-all-channels-button">
+                <a class="search-shared-history" href="{{update_hash}}">
+                    <button class="action-button action-button-quiet-neutral">
+                        <span class="action-button-label">{{t "Search all public channels" }}</span>
+                    </button>
+                </a>
+            </span>
+            {{/if}}
         {{else}}
             {{{ html }}}
         {{/if}}
