@@ -10,7 +10,7 @@ let inertDocument: Document | undefined;
 export function postprocess_content(html: string): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
-    template.innerHTML = html;
+    template.innerHTML = postprocess_image_inlining_elements(html);
 
     for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
@@ -212,56 +212,11 @@ export function postprocess_content(html: string): string {
         ol.style.setProperty("counter-reset", `count ${list_start - 1}`);
     }
 
-    for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
-        "div.message_inline_image > a > img",
-    )) {
-        inline_img.setAttribute("loading", "lazy");
-        // We can't just check whether `inline_image.src` starts with
-        // `/user_uploads/thumbnail`, even though that's what the
-        // server writes in the markup, because Firefox will have
-        // already prepended the origin to the source of an image.
-        let image_url;
-        try {
-            image_url = new URL(inline_img.src, window.location.origin);
-        } catch {
-            // If the image source URL can't be parsed, likely due to
-            // some historical bug in the Markdown processor, just
-            // drop the invalid image element.
-            inline_img.closest("div.message_inline_image")!.remove();
-            continue;
-        }
-
-        if (
-            image_url.origin === window.location.origin &&
-            image_url.pathname.startsWith("/user_uploads/thumbnail/")
-        ) {
-            let thumbnail_name = thumbnail.preferred_format.name;
-            if (inline_img.dataset.animated === "true") {
-                if (
-                    user_settings.web_animate_image_previews === "always" ||
-                    // Treat on_hover as "always" on mobile web, where
-                    // hovering is impossible and there's much less on
-                    // the screen.
-                    (user_settings.web_animate_image_previews === "on_hover" && util.is_mobile())
-                ) {
-                    thumbnail_name = thumbnail.animated_format.name;
-                } else {
-                    // If we're showing a still thumbnail, show a play
-                    // button so that users that it can be played.
-                    inline_img
-                        .closest(".message_inline_image")!
-                        .classList.add("message_inline_animated_image_still");
-                }
-            }
-            inline_img.src = inline_img.src.replace(/\/[^/]+$/, "/" + thumbnail_name);
-        }
-    }
-
     // After all other processing on images has been done, we look for
-    // adjacent images and tuck them structurally into galleries.
-    // This will also process uploaded video thumbnails, which likewise
-    // take the `.message_inline_image` class
-    for (const elt of template.content.querySelectorAll(".message_inline_image")) {
+    // adjacent block context images and tuck them structurally into
+    // galleries. This will also process uploaded video thumbnails,
+    // which likewise take the `.message_inline_image` class
+    for (const elt of template.content.querySelectorAll("div.message_inline_image")) {
         let gallery_element;
 
         const is_part_of_open_gallery = elt.previousElementSibling?.classList.contains(
@@ -287,5 +242,84 @@ export function postprocess_content(html: string): string {
         gallery_element?.append(elt);
     }
 
+    return template.innerHTML;
+}
+
+function postprocess_image_inlining_elements(html: string): string {
+    inertDocument ??= new DOMParser().parseFromString("", "text/html");
+    const template = inertDocument.createElement("template");
+    template.innerHTML = html;
+
+    for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
+        "img.true_inline, div.message_inline_image > a > img",
+    )) {
+        inline_img.setAttribute("loading", "lazy");
+        // We can't just check whether `inline_image.src` starts with
+        // `/user_uploads/thumbnail`, even though that's what the
+        // server writes in the markup, because Firefox will have
+        // already prepended the origin to the source of an image.
+        let image_url;
+        try {
+            image_url = new URL(inline_img.src, window.location.origin);
+        } catch {
+            // If the image source URL can't be parsed, likely due to
+            // some historical bug in the Markdown processor, just
+            // drop the invalid image element.
+            if (inline_img.matches("img.true_inline")) {
+                inline_img.closest("img.true_inline")!.remove();
+            } else {
+                inline_img.closest("div.message_inline_image")!.remove();
+            }
+            continue;
+        }
+
+        if (
+            image_url.origin === window.location.origin &&
+            image_url.pathname.startsWith("/user_uploads/thumbnail/")
+        ) {
+            let thumbnail_name = thumbnail.preferred_format.name;
+            if (
+                inline_img.matches("div.message_inline_image > a > img") &&
+                inline_img.dataset.animated === "true"
+            ) {
+                if (
+                    user_settings.web_animate_image_previews === "always" ||
+                    // Treat on_hover as "always" on mobile web, where
+                    // hovering is impossible and there's much less on
+                    // the screen.
+                    (user_settings.web_animate_image_previews === "on_hover" && util.is_mobile())
+                ) {
+                    thumbnail_name = thumbnail.animated_format.name;
+                } else {
+                    // If we're showing a still thumbnail, show a play
+                    // button so that users that it can be played.
+                    inline_img
+                        .closest(".message_inline_image")!
+                        .classList.add("message_inline_animated_image_still");
+                }
+            }
+            inline_img.src = inline_img.src.replace(/\/[^/]+$/, "/" + thumbnail_name);
+        }
+
+        // In case of true inline images, we also need to add additional wrapper
+        // containers to img element since we just receive the img element from
+        // the server.
+        if (inline_img.matches("img.true_inline")) {
+            const original_src = inline_img.getAttribute("data-original-src")!;
+            const alt = inline_img.getAttribute("alt");
+            const anchor = inertDocument.createElement("a");
+
+            anchor.setAttribute("href", original_src);
+            if (alt) {
+                anchor.setAttribute("title", alt);
+            }
+
+            anchor.append(inline_img.cloneNode(true));
+            const span = inertDocument.createElement("span");
+            span.classList.add("message_inline_image", "true_inline");
+            span.append(anchor);
+            inline_img.parentNode?.replaceChild(span, inline_img);
+        }
+    }
     return template.innerHTML;
 }
