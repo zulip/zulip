@@ -144,6 +144,7 @@ def get_web_public_subs(
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
             wildcard_mentions_notify=wildcard_mentions_notify,
+            subscriber_count=stream.subscriber_count,
         )
         subscribed.append(sub)
 
@@ -219,6 +220,7 @@ def build_stream_api_dict(
         stream_weekly_traffic=stream_weekly_traffic,
         is_announcement_only=is_announcement_only,
         is_recently_active=raw_stream_dict["is_recently_active"],
+        subscriber_count=raw_stream_dict["subscriber_count"],
     )
 
 
@@ -250,6 +252,7 @@ def build_stream_dict_for_sub(
     stream_weekly_traffic = stream_dict["stream_weekly_traffic"]
     is_announcement_only = stream_dict["is_announcement_only"]
     is_recently_active = stream_dict["is_recently_active"]
+    subscriber_count = stream_dict["subscriber_count"]
 
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
@@ -297,6 +300,7 @@ def build_stream_dict_for_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=subscriber_count,
         wildcard_mentions_notify=wildcard_mentions_notify,
     )
 
