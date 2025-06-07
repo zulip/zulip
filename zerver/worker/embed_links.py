@@ -62,6 +62,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
                 message.content,
                 realm,
                 url_embed_data=url_embed_data,
+                default_code_block_language="",
             )
             do_update_embedded_data(message.sender, message, rendering_result)
 
