@@ -2527,7 +2527,7 @@ _Released 2021-05-13_
 - Code blocks now have a copy-to-clipboard button and can be
   integrated with external code playgrounds, making it convenient to
   work with code while discussing it in Zulip.
-- Added a new organization [Moderator role][roles-and-permissions].
+- Added a new organization [Moderator role][user-roles].
   Many permissions settings for sensitive features now support only
   allowing moderators and above to use the feature.
 - Added a native Giphy integration for sending animated GIFs.
@@ -2556,7 +2556,7 @@ _Released 2021-05-13_
 - Added support for moving topics to private streams, and for configuring
   which roles can move topics between streams.
 
-[roles-and-permissions]: https://zulip.com/help/roles-and-permissions
+[user-roles]: https://zulip.com/help/user-roles
 
 #### Upgrade notes for 4.0
 
@@ -3091,7 +3091,7 @@ possible CVE-2020-14215 caused a user to incorrectly join as an
 organization administrator in the past. See the release blog post for
 details.
 
-[audit-org-admin]: https://zulip.com/help/change-a-users-role
+[audit-org-admin]: https://zulip.com/help/user-roles
 
 ### Zulip Server 2.1.4
 
