@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, StringConstraints
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
@@ -24,7 +24,14 @@ from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_ca
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
-from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
+from zerver.models import (
+    MultiuseInvite,
+    NamedUserGroup,
+    PreregistrationUser,
+    Realm,
+    Stream,
+    UserProfile,
+)
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
 # Because mypy fails to correctly infer the type of the validator, we want this constant
@@ -137,6 +144,12 @@ def invite_users_backend(
     stream_ids: Json[list[int]],
     group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
+    welcome_bot_custom_message: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH,
+        ),
+    ] = None,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -151,6 +164,9 @@ def invite_users_backend(
         PreregistrationUser.INVITE_AS["MODERATOR"],
     ]
     check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
+
+    if welcome_bot_custom_message is not None and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
 
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
@@ -169,6 +185,7 @@ def invite_users_backend(
         invite_expires_in_minutes=invite_expires_in_minutes,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
+        welcome_bot_custom_message=welcome_bot_custom_message,
     )
 
     if skipped:
@@ -246,6 +263,12 @@ def generate_multiuse_invite_backend(
     stream_ids: Json[list[int]] | None = None,
     group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
+    welcome_bot_custom_message: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH,
+        ),
+    ] = None,
 ) -> HttpResponse:
     if stream_ids is None:
         stream_ids = []
@@ -273,5 +296,6 @@ def generate_multiuse_invite_backend(
         include_realm_default_subscriptions,
         streams,
         user_groups,
+        welcome_bot_custom_message,
     )
     return json_success(request, data={"invite_link": invite_link})

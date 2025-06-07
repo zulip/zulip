@@ -97,4 +97,19 @@
             </div>
         </div>
     {{/if}}
+    {{#if is_admin}}
+    <div class="input-group">
+        <label class="checkbox display-block modal-field-label">
+            <input type="checkbox" id="should_send_welcome_bot_custom_message" {{#if should_send_welcome_bot_custom_message}} checked="checked"{{/if}}/>
+            <span class="rendered-checkbox"></span>
+            {{t 'Add a custom Welcome Bot message for new users'}}
+        </label>
+        <div id="invite_welcome_bot_custom_message_container">
+            <label for="welcome_bot_custom_message" class="modal-field-label">{{t "Message text" }}</label>
+            <textarea id="welcome_bot_custom_message" name="welcome_bot_custom_message" class="settings_textarea" maxlength="1000" rows="3">
+                {{~default_welcome_bot_custom_message~}}
+            </textarea>
+        </div>
+    </div>
+    {{/if}}
 </form>
