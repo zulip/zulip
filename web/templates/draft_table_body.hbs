@@ -9,7 +9,13 @@
                 <div id="draft_overlay_banner_container" class="banner-container"></div>
                 <div class="header-body">
                     <div class="drafts-header-note">
-                        {{t "Drafts are not synced to other devices and browsers." }}
+                        <div class="overlay-keyboard-shortcuts">
+                            {{#tr}}
+                                To restore a draft, click on it or press <z-shortcut></z-shortcut>.
+                                {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
+                            {{/tr}}
+                        </div>
+                        <div>{{t "Drafts are not synced to other devices and browsers." }}</div>
                     </div>
                     <div class="delete-drafts-group">
                         <div class="delete-selected-drafts-button-container">
