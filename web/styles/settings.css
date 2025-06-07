@@ -509,6 +509,19 @@ input[type="checkbox"] {
     }
 }
 
+#customizable_stream_notifications_table .dropdown-widget-button {
+    /* 225px at 16px/1em */
+    width: 14.0625em;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 .advanced-configurations-container {
     .advance-config-toggle-area {
         cursor: pointer;
