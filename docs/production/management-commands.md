@@ -121,9 +121,9 @@ There are dozens of useful management commands under
   to one or more users.
 - `./manage.py change_realm_subdomain`: Change subdomain of a realm.
 - `./manage.py change_user_email`: Change a user's email address.
-- `./manage.py change_user_role`: Can change are user's role
+- `./manage.py change_user_role`: Can change a user's role
   (easier done [via the
-  UI](https://zulip.com/help/change-a-users-role)) or give bots the
+  UI](https://zulip.com/help/user-roles)) or give bots the
   `can_forge_sender` permission, which is needed for certain special API features.
 - `./manage.py export_single_user`: does a limited version of the [main
   export tools](export-and-import.md) containing just
