@@ -8768,6 +8768,14 @@ paths:
               properties:
                 content:
                   $ref: "#/components/schemas/RequiredContent"
+                default_code_block_language:
+                  description: |
+                    The default language used in markdown code blocks
+                    in messages sent to a channel, when none is specified.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-991763).
+                  type: string
+                  example: python
               required:
                 - content
       responses:
