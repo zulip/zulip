@@ -259,6 +259,24 @@ export function resize_settings_creation_overlay($container: JQuery): void {
         );
 }
 
+export function resize_settings_overlay_list_toggler_container(
+    $container: JQuery,
+    resize_window = true,
+): void {
+    if ($container.find(".display-type").length === 0) {
+        return;
+    }
+    // Make list-toggler-container in left panel equal to the title container
+    // in the right panel.
+    $container
+        .find(".list-toggler-container")
+        .css("height", `${$container.find(".display-type").height()}px`);
+    if (resize_window) {
+        // Needed to update the simplebar height.
+        $(window).trigger("resize");
+    }
+}
+
 export function resize_page_components(): void {
     resize_navbar_alerts();
     resize_sidebars();
@@ -268,4 +286,6 @@ export function resize_page_components(): void {
     resize_settings_overlay($("#channels_overlay_container"));
     resize_settings_creation_overlay($("#groups_overlay_container"));
     resize_settings_creation_overlay($("#channels_overlay_container"));
+    resize_settings_overlay_list_toggler_container($("#groups_overlay"), false);
+    resize_settings_overlay_list_toggler_container($("#subscription_overlay"), false);
 }

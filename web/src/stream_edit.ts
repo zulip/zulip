@@ -28,6 +28,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import {postprocess_content} from "./postprocess_content.ts";
+import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
@@ -145,6 +146,7 @@ export function open_edit_panel_empty(): void {
         .attr("data-tab-key")!;
     empty_right_panel();
     setup_subscriptions_tab_hash(tab_key);
+    resize.resize_settings_overlay_list_toggler_container($("#subscription_overlay"));
 }
 
 export function update_stream_name(sub: StreamSubscription, new_name: string): void {

@@ -1279,6 +1279,7 @@ function open_right_panel_empty(): void {
         .attr("data-tab-key");
     assert(tab_key !== undefined);
     setup_group_list_tab_hash(tab_key);
+    resize.resize_settings_overlay_list_toggler_container($("#groups_overlay"));
 }
 
 export function is_editing_group(desired_group_id: number): boolean {
@@ -1999,6 +2000,9 @@ export function initialize(): void {
                     $("#change_group_info_modal .dialog_submit_button")
                         .addClass("save-button")
                         .attr("data-group-id", user_group_id);
+                },
+                on_hidden() {
+                    resize.resize_settings_overlay_list_toggler_container($("#groups_overlay"));
                 },
                 update_submit_disabled_state_on_change: true,
             });
