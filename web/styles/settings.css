@@ -340,6 +340,11 @@ select.settings_select {
     .table tr:first-of-type td {
         border-top: none;
     }
+
+    .tab-switcher {
+        margin-left: 0;
+        margin-top: 1em;
+    }
 }
 
 .user_role,
@@ -2082,7 +2087,8 @@ label.preferences-radio-choice-label {
         display: inline-block;
     }
 
-    .user_filters {
+    .user_filters,
+    .bot_filters {
         display: flex;
         flex-wrap: wrap;
         margin-top: auto;
