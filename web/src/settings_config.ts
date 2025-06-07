@@ -164,6 +164,51 @@ export const web_home_view_values = {
     },
 };
 
+export const built_in_navigation_view_values = {
+    inbox: {
+        icon: "zulip-icon-inbox",
+        fragment: "inbox",
+        name: $t({defaultMessage: "Inbox"}),
+        is_pinned: true,
+    },
+    recent_topics: {
+        icon: "zulip-icon-recent",
+        fragment: "recent",
+        name: $t({defaultMessage: "Recent conversations"}),
+        is_pinned: true,
+    },
+    all_messages: {
+        icon: "zulip-icon-all-messages",
+        fragment: "feed",
+        name: $t({defaultMessage: "Combined feed"}),
+        is_pinned: true,
+    },
+    mentions: {
+        icon: "zulip-icon-at-sign",
+        fragment: "narrow/is/mentioned",
+        name: $t({defaultMessage: "Mentions"}),
+        is_pinned: true,
+    },
+    reactions: {
+        icon: "zulip-icon-reaction",
+        fragment: "has/reaction/sender/me",
+        name: $t({defaultMessage: "Reactions"}),
+        is_pinned: true,
+    },
+    starred: {
+        icon: "zulip-icon-star",
+        fragment: "narrow/is/starred",
+        name: $t({defaultMessage: "Starred messages"}),
+        is_pinned: true,
+    },
+    drafts: {
+        icon: "zulip-icon-draft",
+        fragment: "drafts",
+        name: $t({defaultMessage: "Drafts"}),
+        is_pinned: true,
+    },
+};
+
 type ColorScheme = "automatic" | "dark" | "light";
 export type ColorSchemeValues = Record<
     ColorScheme,

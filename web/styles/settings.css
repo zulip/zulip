@@ -626,34 +626,32 @@ input[type="checkbox"] {
     padding: 4px 14px;
 }
 
-#user-notification-settings,
-#realm-user-default-settings {
-    .notification-table {
-        thead {
-            background-color: var(--color-background-notification-table-thead);
+.notification-table,
+.navigation-views-table {
+    thead {
+        background-color: var(--color-background-notification-table-thead);
+    }
+
+    & th,
+    td {
+        text-align: center;
+        vertical-align: middle;
+        cursor: default;
+
+        .stream-privacy span.hashtag,
+        .filter-icon i {
+            padding-right: 0;
         }
 
-        & th,
-        td {
-            text-align: center;
-            vertical-align: middle;
+        & label {
             cursor: default;
-
-            .stream-privacy span.hashtag,
-            .filter-icon i {
-                padding-right: 0;
-            }
-
-            & label {
-                cursor: default;
-            }
         }
+    }
 
-        & td:first-child {
-            text-align: left;
-            font-weight: bold;
-            word-break: break-all;
-        }
+    & td:first-child {
+        text-align: left;
+        font-weight: bold;
+        word-break: break-all;
     }
 }
 

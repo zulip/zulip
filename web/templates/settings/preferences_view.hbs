@@ -1,0 +1,32 @@
+<div class="navigation-views-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="subsection-header">
+        <h3>{{t "Navigation views" }}</h3>
+        {{> settings_save_discard_widget section_name="navigation-view-settings" show_only_indicator=(not for_realm_settings) }}
+    </div>
+    <p>{{t "Configure which views appear directly in the left sidebar. Unchecked views will be available in the 'More views' menu." }}</p>
+    <table class="navigation-views-table table table-bordered wrapped-table">
+        <thead>
+            <tr>
+                <th width="70%">{{t "View" }}</th>
+                <th width="30%">{{t "Pinned" }}</th>
+            </tr>
+        </thead>
+        <tbody id="navigation-views-table" class="navigation-views-table">
+            {{#each navigation_views}}
+                <tr data-fragment="{{this.fragment}}">
+                    <td class="view-name">{{this.name}}</td>
+                    <td class="pinned-checkbox">
+                        <label class="checkbox">
+                            <input type="checkbox" 
+                                class="navigation-view-checkbox prop-element" 
+                                data-fragment="{{this.fragment}}"
+                                data-setting-widget-type="boolean"
+                                {{#if this.is_pinned}}checked{{/if}}>
+                            <span class="rendered-checkbox"></span>
+                        </label>
+                    </td>
+                </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
