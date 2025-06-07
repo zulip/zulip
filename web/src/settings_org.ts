@@ -627,6 +627,13 @@ export function discard_stream_property_element_changes(
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
             break;
+        case "default_code_block_language":
+            assert(typeof property_value === "string");
+            settings_components.set_dropdown_list_widget_setting_value(
+                property_name,
+                property_value,
+            );
+            break;
         default:
             if (property_value !== undefined) {
                 const validated_property_value = z

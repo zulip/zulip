@@ -77,5 +77,6 @@ export const api_stream_subscription_schema = api_stream_schema
 
 export const updatable_stream_properties_schema = api_stream_subscription_schema.extend({
     in_home_view: z.boolean(),
+    default_code_block_language: z.string(),
 });
 export type UpdatableStreamProperties = z.infer<typeof updatable_stream_properties_schema>;
