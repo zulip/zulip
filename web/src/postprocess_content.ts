@@ -1,11 +1,12 @@
 import assert from "minimalistic-assert";
 
-import {$t} from "./i18n.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
+
+const STANDARD_INTERNAL_URLS = new Set<string>(["stream", "message-link", "stream-topic"]);
 
 export function postprocess_content(html: string): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
@@ -166,35 +167,26 @@ export function postprocess_content(html: string): string {
                     inline_image.classList.add("landscape-thumbnail");
                 }
             }
-        } else {
-            // For non-image user uploads, the following block ensures that the title
-            // attribute always displays the filename as a security measure.
-            let title: string;
-            let legacy_title: string;
-            if (
-                url.origin === window.location.origin &&
-                url.pathname.startsWith("/user_uploads/")
-            ) {
-                // We add the word "download" to make clear what will
-                // happen when clicking the file.  This is particularly
-                // important in the desktop app, where hovering a URL does
-                // not display the URL like it does in the web app.
-                title = legacy_title = $t(
-                    {defaultMessage: "Download {filename}"},
-                    {
-                        filename: decodeURIComponent(
-                            url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
-                        ),
-                    },
-                );
-            } else {
-                title = url.toString();
-                legacy_title = href;
-            }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
+        }
+        // For external named links, we apply the `external_inline_url` class to display
+        // Tippy tooltip. This tooltip shows the original URL immediately,
+        // ensuring users can clearly see the URL they are about to click.
+        // If the link text is different from the link's destination we show
+        // the tooltip instantly without any delay. If the text is same as
+        // the link it points to we don't show any tooltip.
+        // For internal named links we show their destination in
+        // canonical form via tooltip with some delay.
+        if (
+            url.origin !== window.location.origin &&
+            elt.textContent?.trim() !== elt.href.replace(/\/$/, "")
+        ) {
+            elt.setAttribute("data-message-link-type", "external_inline_url");
+        } else if (
+            url.origin === window.location.origin &&
+            !STANDARD_INTERNAL_URLS.has(elt.getAttribute("class") ?? "") &&
+            elt.textContent?.trim() !== elt.href.replace(/\/$/, "")
+        ) {
+            elt.setAttribute("data-message-link-type", "internal_named_link");
         }
     }
 
