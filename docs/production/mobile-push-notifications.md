@@ -99,7 +99,7 @@ manage your plan, the same plans are offered for all Zulip versions.
 ### Plan management for a Zulip organization
 
 On a self-hosted Zulip server running Zulip 8.0+, [organization
-owners](https://zulip.com/help/roles-and-permissions) and billing administrators
+owners](https://zulip.com/help/user-roles) and billing administrators
 can conveniently access plan management from the Zulip app. See [help center
 documentation](https://zulip.com/help/self-hosted-billing) for detailed
 instructions.
