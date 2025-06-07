@@ -435,7 +435,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     ]);
 
     // Make the max channel size lower, so that we hide the offline users
-    override_rewire(buddy_data, "max_channel_size_to_show_all_subscribers", 2);
+    override_rewire(buddy_data, "MAX_CHANNEL_SIZE_TO_SHOW_ALL_SUBSCRIBERS", 2);
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
 });
 
