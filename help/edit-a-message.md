@@ -63,7 +63,7 @@ removed or changed from a regular mention to a
 
 If you [delete the content of a message](/help/delete-a-message#delete-message-content),
 any pending email notifications for that message will be canceled, including
-[mentions and alerts](/help/dm-mention-alert-notifications).
+[mentions](/help/dm-mention-alert-notifications).
 
 ## Related articles
 

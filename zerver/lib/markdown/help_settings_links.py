@@ -29,7 +29,7 @@ link_mapping = {
     "preferences": ["Personal settings", "Preferences", "/#settings/preferences"],
     "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
     "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
-    "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
+    "watched-phrases": ["Personal settings", "Watched phrases", "/#settings/alert-words"],
     "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
     "topics": ["Personal settings", "Topics", "/#settings/topics"],
     "muted-users": ["Personal settings", "Muted users", "/#settings/muted-users"],

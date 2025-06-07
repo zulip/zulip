@@ -20,5 +20,5 @@ number of unread messages.
 ## Related articles
 
 * [Mention a user or group](/help/mention-a-user-or-group)
-* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [DMs and mentions](/help/dm-mention-alert-notifications)
 * [Reading strategies](/help/reading-strategies)
