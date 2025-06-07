@@ -78,17 +78,9 @@ test("create_item", ({override}) => {
         assert.deepEqual(item, expected_item);
     }
 
-    override(realm, "realm_is_zephyr_mirror_realm", true);
     settings_data.user_can_access_all_other_users = () => false;
 
-    test_create_item("bogus@example.com", [], bogus_item);
     test_create_item("bogus@example.com", [bogus_item], undefined);
-
-    test_create_item("isaac@example.com", [], isaac_item);
-    test_create_item("isaac@example.com", [isaac_item], undefined);
-
-    override(realm, "realm_is_zephyr_mirror_realm", false);
-
     test_create_item("bogus@example.com", [], undefined);
     test_create_item("isaac@example.com", [], isaac_item);
     test_create_item("isaac@example.com", [isaac_item], undefined);

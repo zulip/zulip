@@ -9,7 +9,6 @@ import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
 import type {
     CombinedPill,
     CombinedPillContainer,
@@ -22,7 +21,7 @@ import * as user_status from "./user_status.ts";
 
 export type UserPill = {
     type: "user";
-    user_id?: number;
+    user_id: number;
     email: string;
     full_name: string | undefined;
     img_src?: string;
@@ -41,25 +40,9 @@ export function create_item_from_email(
     current_items: CombinedPill[],
     pill_config?: InputPillConfig,
 ): UserPill | undefined {
-    // For normal Zulip use, we need to validate the email for our realm.
     const user = people.get_by_email(email);
 
     if (!user) {
-        if (realm.realm_is_zephyr_mirror_realm) {
-            if (current_items.some((item) => item.type === "user" && item.email === email)) {
-                return undefined;
-            }
-
-            // For Zephyr we can't assume any emails are invalid,
-            // so we just create a pill where the display value
-            // is the email itself.
-            return {
-                type: "user",
-                full_name: undefined,
-                email,
-            };
-        }
-
         // The email is not allowed, so return.
         return undefined;
     }
@@ -136,7 +119,7 @@ export function get_user_ids(
     pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
 ): number[] {
     const items = pill_widget.items();
-    return items.flatMap((item) => (item.type === "user" ? (item.user_id ?? []) : [])); // be defensive about undefined users
+    return items.flatMap((item) => (item.type === "user" ? item.user_id : []));
 }
 
 export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
