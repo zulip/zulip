@@ -855,6 +855,7 @@ export function dispatch_normal_event(event) {
                 "web_channel_default_view",
                 "web_escape_navigates_to_home_view",
                 "web_home_view",
+                "auto_collapse_views",
                 "web_mark_read_on_scroll_policy",
                 "web_navigate_to_sent_message",
                 "web_stream_unreads_count_display_policy",
@@ -896,6 +897,9 @@ export function dispatch_normal_event(event) {
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
                 }
+            }
+            if (event.property === "auto_collapse_views") {
+                left_sidebar_navigation_area.initialize_auto_collapse_setting();
             }
             if (event.property === "high_contrast_mode") {
                 $("body").toggleClass("high-contrast", event.value);
