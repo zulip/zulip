@@ -21,18 +21,22 @@ function hide_history_limit_notice(): void {
 }
 
 function hide_end_of_results_notice(): void {
-    $(".all-messages-search-caution").hide();
+    $(".all-messages-search-caution").addClass("hidden");
+    $(".combined-feed-notice").addClass("hidden");
 }
 
 function show_end_of_results_notice(): void {
-    $(".all-messages-search-caution").show();
-
     // Set the link to point to this search with streams:public added.
     // Note that element we adjust is not visible to spectators.
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
+    if (narrow_filter.is_in_home()) {
+        $(".combined-feed-notice").removeClass("hidden");
+        return;
+    }
     const terms = narrow_filter.terms();
     const update_hash = hash_util.search_public_streams_notice_url(terms);
+    $(".all-messages-search-caution").removeClass("hidden");
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 }
 
@@ -53,10 +57,10 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         // by a potential spammer user.
         if (
             filter &&
-            !filter.is_in_home() &&
             !filter.contains_only_private_messages() &&
             !filter.includes_full_stream_history() &&
             !filter.is_personal_filter() &&
+            !msg_list.empty() &&
             !(
                 _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
                 filter.operands("sender")[0] === people.my_current_email()

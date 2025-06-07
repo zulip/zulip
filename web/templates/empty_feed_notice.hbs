@@ -24,4 +24,13 @@
             {{{ html }}}
         {{/if}}
     </div>
+    {{#if update_hash}}
+    <a class="search-shared-history hidden-for-spectators" href="{{update_hash}}">
+        <button
+          class="action-button action-button-quiet-neutral"
+          type="button">
+            {{t 'Search all public channels'}}
+        </button>
+    </a>
+    {{/if}}
 </div>
