@@ -21,6 +21,7 @@ export type StreamPermissionGroupSetting = z.infer<typeof stream_permission_grou
 
 // These types are taken from the `zerver/lib/types.py`.
 export const stream_schema = z.object({
+    subscriber_count: z.number(),
     creator_id: z.number().nullable(),
     date_created: z.number(),
     description: z.string(),

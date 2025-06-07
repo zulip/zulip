@@ -255,6 +255,7 @@ class Stream(models.Model):
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",
         "is_recently_active",
+        "subscriber_count",
     ]
 
 
