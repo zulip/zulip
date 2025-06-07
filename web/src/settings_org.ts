@@ -44,6 +44,7 @@ import * as timerender from "./timerender.ts";
 import {group_setting_value_schema} from "./types.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as util from "./util.ts";
@@ -1454,6 +1455,8 @@ export function build_page(): void {
         $spinner.css({visibility: "hidden"});
         $upload_text.show();
         $delete_button.show();
+
+        ui_util.restore_ublockorigin_hidden_img($("#realm-icon-upload-widget .image-block-image"));
     }
 
     function realm_icon_logo_upload_start(
