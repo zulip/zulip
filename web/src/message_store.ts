@@ -1,7 +1,6 @@
 import _ from "lodash";
 import {z} from "zod";
 
-import * as blueslip from "./blueslip.ts";
 import * as people from "./people.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -212,22 +211,6 @@ export function clear_for_testing(): void {
 
 export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id);
-}
-
-export function get_pm_emails(message: Message | MessageWithBooleans): string {
-    const user_ids = people.pm_with_user_ids(message) ?? [];
-    const emails = user_ids
-        .map((user_id) => {
-            const person = people.maybe_get_user_by_id(user_id);
-            if (!person) {
-                blueslip.error("Unknown user id", {user_id});
-                return "?";
-            }
-            return person.email;
-        })
-        .sort();
-
-    return emails.join(", ");
 }
 
 export function get_pm_full_names(user_ids: number[]): string {

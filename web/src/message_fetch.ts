@@ -278,7 +278,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
-            const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
+            const user_ids_array = people.user_ids_string_to_ids_array(raw_term.operand);
             assert(user_ids_array !== undefined);
             narrow_term.operand = user_ids_array;
         }
@@ -307,9 +307,9 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 
             // The other operands supporting integer IDs all work with
             // a single user object.
-            const person = people.get_by_email(raw_term.operand);
-            if (person !== undefined) {
-                narrow_term.operand = person.user_id;
+            const user_id = Number(raw_term.operand);
+            if (typeof user_id === "number" && people.maybe_get_user_by_id(user_id, true)) {
+                narrow_term.operand = Number(raw_term.operand);
             }
         }
         narrow_terms.push(narrow_term);
