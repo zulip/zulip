@@ -27,13 +27,6 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 
-const bogus_item = {
-    email: "bogus@example.com",
-    type: "user",
-    full_name: undefined,
-    // status_emoji_info: undefined,
-};
-
 const isaac_item = {
     email: "isaac@example.com",
     full_name: "Isaac Newton",
@@ -73,29 +66,29 @@ function test(label, f) {
 }
 
 test("create_item", ({override}) => {
-    function test_create_item(email, current_items, expected_item, pill_config) {
-        const item = user_pill.create_item_from_email(email, current_items, pill_config);
+    function test_create_item(user_id, current_items, expected_item, pill_config) {
+        const item = user_pill.create_item_from_user_id(user_id, current_items, pill_config);
         assert.deepEqual(item, expected_item);
     }
 
     settings_data.user_can_access_all_other_users = () => false;
 
-    test_create_item("bogus@example.com", [bogus_item], undefined);
-    test_create_item("bogus@example.com", [], undefined);
-    test_create_item("isaac@example.com", [], isaac_item);
-    test_create_item("isaac@example.com", [isaac_item], undefined);
+    test_create_item(isaac_item.user_id.toString(), [], isaac_item);
+    test_create_item(isaac_item.user_id.toString(), [isaac_item], undefined);
 
     override(realm, "realm_bot_domain", "example.com");
     people.add_inaccessible_user(inaccessible_user_id);
 
-    test_create_item("user103@example.com", [], undefined, {exclude_inaccessible_users: true});
-    test_create_item("user103@example.com", [], inaccessible_user_item, {
+    test_create_item(inaccessible_user_id.toString(), [], undefined, {
+        exclude_inaccessible_users: true,
+    });
+    test_create_item(inaccessible_user_id.toString(), [], inaccessible_user_item, {
         exclude_inaccessible_users: false,
     });
 });
 
 test("get_email", () => {
-    assert.equal(user_pill.get_email_from_item({email: "foo@example.com"}), "foo@example.com");
+    assert.equal(user_pill.get_user_id_string_from_item({user_id: 1}), "1");
 });
 
 test("append", () => {
@@ -130,14 +123,14 @@ test("append", () => {
 });
 
 test("get_items", () => {
-    const items = [isaac_item, bogus_item];
+    const items = [isaac_item];
     pill_widget.items = () => items;
 
     assert.deepEqual(user_pill.get_user_ids(pill_widget), [isaac.user_id]);
 });
 
 test("typeahead", () => {
-    const items = [isaac_item, bogus_item];
+    const items = [isaac_item];
     pill_widget.items = () => items;
 
     // Both alice and isaac are in our realm, but isaac will be

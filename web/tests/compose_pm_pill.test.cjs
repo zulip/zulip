@@ -85,21 +85,24 @@ run_test("pills", ({override, override_rewire}) => {
     let appendValue_called;
     pills.appendValue = function (value) {
         appendValue_called = true;
-        assert.equal(value, "othello@example.com");
+        assert.equal(value, othello.user_id.toString());
         this.appendValidatedData(othello);
     };
 
-    let get_by_email_called = false;
-    override_rewire(people, "get_by_email", (user_email) => {
-        get_by_email_called = true;
-        switch (user_email) {
-            case iago.email:
+    let maybe_get_user_by_id_called = false;
+    override_rewire(people, "maybe_get_user_by_id", (user_id, ignore_missing) => {
+        maybe_get_user_by_id_called = true;
+        switch (user_id) {
+            case iago.user_id:
                 return iago;
-            case othello.email:
+            case othello.user_id:
                 return othello;
             /* istanbul ignore next */
             default:
-                throw new Error(`Unknown user email ${user_email}`);
+                if (ignore_missing) {
+                    return undefined;
+                }
+                throw new Error(`Unknown user_id in maybe_get_user_by_id: ${user_id}`);
         }
     });
 
@@ -119,15 +122,15 @@ run_test("pills", ({override, override_rewire}) => {
 
     function test_create_item(handler) {
         (function test_rejection_path() {
-            const item = handler(othello.email, pills.items());
-            assert.ok(get_by_email_called);
+            const item = handler(othello.user_id, pills.items());
+            assert.ok(maybe_get_user_by_id_called);
             assert.equal(item, undefined);
         })();
 
         (function test_success_path() {
-            get_by_email_called = false;
-            const res = handler(iago.email, pills.items());
-            assert.ok(get_by_email_called);
+            maybe_get_user_by_id_called = false;
+            const res = handler(iago.user_id, pills.items());
+            assert.ok(maybe_get_user_by_id_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.full_name, iago.full_name);
@@ -135,9 +138,9 @@ run_test("pills", ({override, override_rewire}) => {
 
         (function test_deactivated_pill() {
             people.deactivate(iago);
-            get_by_email_called = false;
-            const res = handler(iago.email, pills.items());
-            assert.ok(get_by_email_called);
+            maybe_get_user_by_id_called = false;
+            const res = handler(iago.user_id, pills.items());
+            assert.ok(maybe_get_user_by_id_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.full_name, iago.full_name);

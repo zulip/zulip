@@ -208,12 +208,11 @@ export function set_search_bar_contents(
         }
 
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
-            const users = term.operand.split(",").map((email) => {
-                // This is definitely not undefined, because we just validated it
-                // with `Filter.is_valid_search_term`.
-                const user = people.get_by_email(email)!;
-                return user;
-            });
+            // This is definitely not undefined, because we just validated it
+            // with `Filter.is_valid_search_term`.
+            const users = people.get_users_from_ids(
+                people.user_ids_string_to_ids_array(term.operand),
+            );
             append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
         } else if (term.operator === "search") {
             search_operator_strings.push(input);
@@ -235,7 +234,7 @@ export function set_search_bar_contents(
 
 function get_search_operand(item: SearchPill, for_display: boolean): string {
     if (item.type === "search_user") {
-        return item.users.map((user) => user.email).join(",");
+        return item.users.map((user) => user.user_id).join(",");
     }
     if (for_display && item.operator === "channel") {
         return stream_data.get_valid_sub_by_id_string(item.operand).name;

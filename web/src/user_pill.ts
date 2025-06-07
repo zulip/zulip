@@ -35,16 +35,14 @@ export type UserPillWidget = InputPillContainer<UserPill>;
 
 export type UserPillData = {type: "user"; user: User};
 
-export function create_item_from_email(
-    email: string,
+export function create_item_from_user_id(
+    user_id: string,
     current_items: CombinedPill[],
     pill_config?: InputPillConfig,
 ): UserPill | undefined {
-    // For normal Zulip use, we need to validate the email for our realm.
-    const user = people.get_by_email(email);
-
+    // For normal Zulip use, we need to validate the user_id for our realm.
+    const user = people.maybe_get_user_by_id(Number(user_id), true);
     if (!user) {
-        // The email is not allowed, so return.
         return undefined;
     }
 
@@ -85,8 +83,8 @@ export function create_item_from_email(
     return item;
 }
 
-export function get_email_from_item(item: UserPill): string {
-    return item.email;
+export function get_user_id_string_from_item(item: UserPill): string {
+    return item.user_id.toString();
 }
 
 export function append_person(
@@ -120,7 +118,7 @@ export function get_user_ids(
     pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
 ): number[] {
     const items = pill_widget.items();
-    return items.flatMap((item) => (item.type === "user" ? (item.user_id ?? []) : [])); // be defensive about undefined users
+    return items.flatMap((item) => (item.type === "user" ? item.user_id : []));
 }
 
 export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
@@ -217,8 +215,8 @@ export function create_pills(
     const pills = input_pill.create({
         $container: $pill_container,
         pill_config,
-        create_item_from_text: create_item_from_email,
-        get_text_from_item: get_email_from_item,
+        create_item_from_text: create_item_from_user_id,
+        get_text_from_item: get_user_id_string_from_item,
         get_display_value_from_item,
         generate_pill_html,
     });

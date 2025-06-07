@@ -20,8 +20,8 @@ export function initialize_pill(): UserPillWidget {
     const pill = input_pill.create({
         $container,
         pill_config,
-        create_item_from_text: user_pill.create_item_from_email,
-        get_text_from_item: user_pill.get_email_from_item,
+        create_item_from_text: user_pill.create_item_from_user_id,
+        get_text_from_item: user_pill.get_user_id_string_from_item,
         get_display_value_from_item: user_pill.get_display_value_from_item,
         generate_pill_html: (item: UserPill) => user_pill.generate_pill_html(item, true),
     });
@@ -66,7 +66,13 @@ export function set_from_typeahead(person: User): void {
 export function set_from_emails(value: string): void {
     // value is something like "alice@example.com,bob@example.com"
     clear();
-    widget.appendValue(value);
+    if (value === "") {
+        return;
+    }
+    const user_ids_string = people.emails_strings_to_user_ids_string(value);
+    if (user_ids_string) {
+        widget.appendValue(user_ids_string);
+    }
 }
 
 export function set_from_user_ids(value: number[]): void {
