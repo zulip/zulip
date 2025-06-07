@@ -1,8 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_search_list_item from "../templates/search_list_item.hbs";
-
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import {Filter} from "./filter.ts";
@@ -195,7 +193,8 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         requireHighlight: false,
         highlighter_html(item: string): string {
             const obj = search_map.get(item);
-            return render_search_list_item(obj);
+            assert(obj !== undefined);
+            return search_pill.generate_pills_html(obj);
         },
         // When the user starts typing new search operands,
         // we want to highlight the first typeahead row by default
