@@ -72,6 +72,7 @@ IGNORED_PHRASES = [
     r"Topics I participate in",
     r"Topics I send a message to",
     r"Topics I start",
+    r"Topics I don't follow",
     # Specific short words
     r"beta",
     r"and",
