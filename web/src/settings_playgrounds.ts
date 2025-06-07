@@ -171,7 +171,7 @@ function build_page(): void {
             return [...language_labels.keys()];
         },
         helpOnEmptyStrings: true,
-        highlighter_html: (item: string): string =>
+        item_html: (item: string): string =>
             render_typeahead_item({primary: language_labels.get(item)}),
         matcher(item: string, query: string): boolean {
             const q = query.trim().toLowerCase();
