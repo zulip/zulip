@@ -90,6 +90,7 @@ class StreamDict(TypedDict, total=False):
     can_remove_subscribers_group: UserGroup | None
     can_subscribe_group: UserGroup | None
     folder: ChannelFolder | None
+    default_code_block_language: str
 
 
 def get_stream_permission_policy_key(
@@ -270,6 +271,7 @@ def create_stream_if_needed(
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
+    default_code_block_language: str = "",
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -308,6 +310,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             folder=folder,
+            default_code_block_language=default_code_block_language,
             **group_setting_values,
         ),
     )
@@ -390,6 +393,9 @@ def create_streams_if_needed(
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
+            default_code_block_language=stream_dict.get(
+                "default_code_block_language", str(realm.default_code_block_language)
+            ),
         )
 
         if created:
@@ -1510,6 +1516,7 @@ def stream_to_dict(
         can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
+        default_code_block_language=stream.default_code_block_language,
         description=stream.description,
         first_message_id=stream.first_message_id,
         folder_id=stream.folder_id,

@@ -155,6 +155,8 @@ class Stream(models.Model):
     # Whether a message has been sent to this stream in the last X days.
     is_recently_active = models.BooleanField(default=True, db_default=True)
 
+    default_code_block_language = models.TextField(default="")
+
     stream_permission_group_settings = {
         "can_add_subscribers_group": GroupPermissionSetting(
             require_system_group=False,
@@ -255,6 +257,7 @@ class Stream(models.Model):
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",
         "is_recently_active",
+        "default_code_block_language",
     ]
 
 
