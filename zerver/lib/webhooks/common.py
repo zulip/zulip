@@ -5,6 +5,7 @@ import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
@@ -31,6 +32,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -54,11 +56,48 @@ SETUP_MESSAGE_USER_PART = " by {user_name}"
 OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
 
 
+class PresetConfigOption(str, Enum):
+    BRANCHES = "branches"
+    IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
+    MAPPING = "mapping"
+
+
 @dataclass
 class WebhookConfigOption:
     name: str
     description: str
     validator: Callable[[str, str], str | bool | None]
+
+    @classmethod
+    def build_preset_config(cls, config: PresetConfigOption) -> "WebhookConfigOption":
+        """
+        This creates a pre-configured WebhookConfigOption object that's used in
+        various incoming webhook integrations.
+
+        See https://zulip.com/api/incoming-webhooks-walkthrough#configuration-option-presets
+        for more details on this system and what each option does.
+        """
+        match config:
+            case PresetConfigOption.BRANCHES:
+                return cls(
+                    name=config.value,
+                    description="",
+                    validator=check_string,
+                )
+            case PresetConfigOption.IGNORE_PRIVATE_REPOSITORIES:
+                return cls(
+                    name=config.value,
+                    description="Exclude notifications from private repositories",
+                    validator=check_bool,
+                )
+            case PresetConfigOption.MAPPING:
+                return cls(
+                    name=config.value,
+                    description="",
+                    validator=check_string,
+                )
+
+        raise AssertionError(_("Unknown 'PresetConfigOption': {config}").format(config=config))
 
 
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
