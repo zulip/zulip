@@ -65,6 +65,19 @@
         /* keeps dividing line at same width for all tables in model. */
         width: calc(50% - 11px);
         text-align: right;
+
+        & img.emoji {
+            /* Styles thumb-up emoji to match the emoji styles in the Message formatting pane. */
+
+            /* Slightly reduce size and adjust vertical alignment to
+            to visually center the thumb (wrist in thumb-up emoji sits low). */
+            height: calc(var(--length-line-oversize-block) / 1.2);
+            width: calc(var(--length-line-oversize-block) / 1.2);
+            vertical-align: var(--emoji-vertical-align-offset-em);
+
+            /* Keep consistent margin with emoji styles in the Message formatting pane. */
+            margin: var(--length-line-oversize-block-margin-adjust) auto;
+        }
     }
 
     .hotkey {

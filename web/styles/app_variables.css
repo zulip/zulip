@@ -352,6 +352,7 @@
     --base-line-height-unitless: 1.214;
     --base-maximum-block-height-em: 1.425em;
     --line-fitted-vertical-align-offset-em: 0;
+    --emoji-vertical-align-offset-em: -0.2em;
     --markdown-interelement-space-px: 5px;
     --markdown-interelement-doubled-space-px: calc(
         var(--markdown-interelement-space-px) * 2
