@@ -226,6 +226,7 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
         };
         stream_settings_components.show_subs_pane.create_stream("subscribers_container", sub);
     }
+    resize.resize_settings_overlay_list_toggler_container($("#subscription_overlay"));
 });
 
 $("body").on(
@@ -235,6 +236,7 @@ $("body").on(
         e.preventDefault();
         e.stopPropagation();
         stream_settings_components.show_subs_pane.create_stream("configure_channel_settings");
+        resize.resize_settings_overlay_list_toggler_container($("#subscription_overlay"));
     },
 );
 
