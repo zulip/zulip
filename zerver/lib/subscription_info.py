@@ -81,6 +81,7 @@ def get_web_public_subs(
         )
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
+        default_code_block_language = stream.default_code_block_language
         description = stream.description
         first_message_id = stream.first_message_id
         folder_id = stream.folder_id
@@ -123,6 +124,7 @@ def get_web_public_subs(
             color=color,
             creator_id=creator_id,
             date_created=date_created,
+            default_code_block_language=default_code_block_language,
             description=description,
             desktop_notifications=desktop_notifications,
             email_notifications=email_notifications,
@@ -205,6 +207,7 @@ def build_stream_api_dict(
         can_subscribe_group=can_subscribe_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
+        default_code_block_language=raw_stream_dict["default_code_block_language"],
         description=raw_stream_dict["description"],
         first_message_id=raw_stream_dict["first_message_id"],
         folder_id=raw_stream_dict["folder_id"],
@@ -236,6 +239,7 @@ def build_stream_dict_for_sub(
     can_subscribe_group = stream_dict["can_subscribe_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
+    default_code_block_language = stream_dict["default_code_block_language"]
     description = stream_dict["description"]
     first_message_id = stream_dict["first_message_id"]
     folder_id = stream_dict["folder_id"]
@@ -277,6 +281,7 @@ def build_stream_dict_for_sub(
         color=color,
         creator_id=creator_id,
         date_created=date_created,
+        default_code_block_language=default_code_block_language,
         description=description,
         desktop_notifications=desktop_notifications,
         email_notifications=email_notifications,
@@ -309,6 +314,7 @@ def build_stream_dict_for_never_sub(
     is_archived = raw_stream_dict["deactivated"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
+    default_code_block_language = raw_stream_dict["default_code_block_language"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
     folder_id = raw_stream_dict["folder_id"]
@@ -358,6 +364,7 @@ def build_stream_dict_for_never_sub(
         can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
+        default_code_block_language=default_code_block_language,
         description=description,
         first_message_id=first_message_id,
         folder_id=folder_id,

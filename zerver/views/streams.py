@@ -32,6 +32,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_default_code_block_language,
     do_change_stream_description,
     do_change_stream_folder,
     do_change_stream_group_based_setting,
@@ -280,6 +281,7 @@ def update_stream_backend(
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
     folder_id: Json[int | None] | MissingType = Missing,
+    default_code_block_language: str | None = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -474,6 +476,11 @@ def update_stream_backend(
                     acting_user=user_profile,
                 )
 
+    if default_code_block_language is not None:
+        do_change_default_code_block_language(
+            stream, default_code_block_language, acting_user=user_profile
+        )
+
     return json_success(request)
 
 
@@ -635,6 +642,7 @@ def add_subscriptions_backend(
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
     folder_id: Json[int] | None = None,
+    default_code_block_language: str = "",
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -714,6 +722,7 @@ def add_subscriptions_backend(
         ]
         stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
         stream_dict_copy["folder"] = folder
+        stream_dict_copy["default_code_block_language"] = default_code_block_language
 
         stream_dicts.append(stream_dict_copy)
 

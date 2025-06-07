@@ -8,6 +8,7 @@ import render_change_stream_info_modal from "../templates/stream_settings/change
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -31,6 +32,8 @@ let created_stream: string | undefined;
 // Default is true since the current user is added to
 // the subscribers list initially.
 let current_user_subscribed_to_created_stream = true;
+
+let default_code_block_language_widget: DropdownWidget | undefined;
 
 export function reset_created_stream(): void {
     created_stream = undefined;
@@ -391,6 +394,7 @@ function create_stream(): void {
         is_default_stream: JSON.stringify(default_stream),
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
+        default_code_block_language: default_code_block_language_widget?.value() ?? "",
         principals,
         ...group_setting_values,
     };
@@ -620,6 +624,8 @@ export function set_up_handlers(): void {
     });
 
     set_up_group_setting_widgets();
+    default_code_block_language_widget =
+        settings_components.set_up_default_code_block_language_widget();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
 }
 

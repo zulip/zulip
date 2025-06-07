@@ -214,6 +214,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             }
             message_live_update.rerender_messages_view();
         },
+        default_code_block_language(value: string) {
+            stream_settings_ui.update_default_code_block_language(sub, value);
+        },
     };
 
     if (Object.hasOwn(updaters, property) && updaters[property] !== undefined) {
