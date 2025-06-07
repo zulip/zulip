@@ -9,7 +9,6 @@ import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
 import type {
     CombinedPill,
     CombinedPillContainer,
@@ -22,7 +21,7 @@ import * as user_status from "./user_status.ts";
 
 export type UserPill = {
     type: "user";
-    user_id?: number;
+    user_id: number;
     email: string;
     full_name: string | undefined;
     img_src?: string;
@@ -45,21 +44,6 @@ export function create_item_from_email(
     const user = people.get_by_email(email);
 
     if (!user) {
-        if (realm.realm_is_zephyr_mirror_realm) {
-            if (current_items.some((item) => item.type === "user" && item.email === email)) {
-                return undefined;
-            }
-
-            // For Zephyr we can't assume any emails are invalid,
-            // so we just create a pill where the display value
-            // is the email itself.
-            return {
-                type: "user",
-                full_name: undefined,
-                email,
-            };
-        }
-
         // The email is not allowed, so return.
         return undefined;
     }
