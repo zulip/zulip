@@ -1367,6 +1367,7 @@ paths:
                                         "can_remove_subscribers_group": 2,
                                         "can_subscribe_group": 2,
                                         "stream_weekly_traffic": null,
+                                        "subscriber_count": 0,
                                       },
                                     ],
                                   "id": 0,
@@ -16190,6 +16191,7 @@ paths:
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
+                                subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -21394,6 +21396,7 @@ paths:
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
+                                subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -21439,6 +21442,7 @@ paths:
                                 - can_subscribe_group
                                 - stream_weekly_traffic
                                 - is_recently_active
+                                - subscriber_count
                     example:
                       {
                         "msg": "",
@@ -21467,6 +21471,7 @@ paths:
                               "stream_id": 2,
                               "stream_post_policy": 1,
                               "stream_weekly_traffic": null,
+                              subscriber_count: 20,
                             },
                             {
                               "can_add_subscribers_group": 9,
@@ -21490,6 +21495,7 @@ paths:
                               "stream_id": 1,
                               "stream_post_policy": 1,
                               "stream_weekly_traffic": null,
+                              subscriber_count: 10,
                             },
                           ],
                       }
@@ -21545,6 +21551,7 @@ paths:
                             "can_remove_subscribers_group": 2,
                             "can_subscribe_group": 2,
                             "stream_weekly_traffic": null,
+                            subscriber_count: 12,
                           },
                       }
         "400":
@@ -23854,6 +23861,7 @@ components:
             can_administer_channel_group: {}
             can_send_message_group: {}
             can_subscribe_group: {}
+            subscriber_count: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -23880,6 +23888,7 @@ components:
             - rendered_description
             - is_web_public
             - stream_post_policy
+            - subscriber_count
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
@@ -24047,6 +24056,14 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        subscriber_count:
+          type: number
+          description: |
+            The total number of non-deactivated users (including bots) who
+            are subscribed to the channel. Clients are responsible for updating
+            this value using `peer_add` and `peer_remove` events.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-5e7242).
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -25125,6 +25142,14 @@ components:
             channels. Note that some endpoints will never return archived
             channels unless the client declares explicit support for
             them via the `archived_channels` client capability.
+        subscriber_count:
+          type: number
+          description: |
+            The total number of non-deactivated users (including bots) who
+            are subscribed to the channel. Clients are responsible for updating
+            this value using `peer_add` and `peer_remove` events.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-5e7242).
     DefaultChannelGroup:
       type: object
       description: |
