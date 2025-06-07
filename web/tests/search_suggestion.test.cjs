@@ -109,6 +109,7 @@ test("basic_get_suggestions_for_spectator", () => {
     assert.deepEqual(suggestions.strings, [
         "is:resolved",
         "-is:resolved",
+        "channels:archived",
         "has:link",
         "has:image",
         "has:attachment",
@@ -392,6 +393,7 @@ test("empty_query_suggestions", () => {
         "sender:myself@zulip.com",
         `channel:${devel_id}`,
         `channel:${office_id}`,
+        "channels:archived",
         "has:link",
         "has:image",
         "has:attachment",
@@ -1016,7 +1018,7 @@ test("operator_suggestions", ({override, mock_template}) => {
 
     query = "ch";
     suggestions = get_suggestions(query);
-    expected = ["ch", "channels:public", "channel:"];
+    expected = ["ch", "channels:public", "channels:archived", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-s";
