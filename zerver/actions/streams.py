@@ -475,6 +475,7 @@ def send_subscription_add_events(
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
                 stream_post_policy=stream_dict["stream_post_policy"],
+                subscriber_count=stream_dict["subscriber_count"],
                 topics_policy=stream_dict["topics_policy"],
                 # Computed fields not present in Stream.API_FIELDS
                 is_announcement_only=stream_dict["is_announcement_only"],

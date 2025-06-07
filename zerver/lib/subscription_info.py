@@ -144,6 +144,7 @@ def get_web_public_subs(
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
+            subscriber_count=stream.subscriber_count,
             topics_policy=StreamTopicsPolicyEnum(topics_policy).name,
             wildcard_mentions_notify=wildcard_mentions_notify,
         )
@@ -219,6 +220,7 @@ def build_stream_api_dict(
         stream_id=raw_stream_dict["id"],
         stream_post_policy=raw_stream_dict["stream_post_policy"],
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=raw_stream_dict["subscriber_count"],
         topics_policy=raw_stream_dict["topics_policy"],
         is_announcement_only=is_announcement_only,
         is_recently_active=raw_stream_dict["is_recently_active"],
@@ -251,6 +253,7 @@ def build_stream_dict_for_sub(
     stream_id = stream_dict["stream_id"]
     stream_post_policy = stream_dict["stream_post_policy"]
     stream_weekly_traffic = stream_dict["stream_weekly_traffic"]
+    subscriber_count = stream_dict["subscriber_count"]
     topics_policy = stream_dict["topics_policy"]
     is_announcement_only = stream_dict["is_announcement_only"]
     is_recently_active = stream_dict["is_recently_active"]
@@ -301,6 +304,7 @@ def build_stream_dict_for_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=subscriber_count,
         topics_policy=topics_policy,
         wildcard_mentions_notify=wildcard_mentions_notify,
     )
@@ -326,6 +330,7 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    subscriber_count = raw_stream_dict["subscriber_count"]
     topics_policy = raw_stream_dict["topics_policy"]
 
     if recent_traffic is not None:
@@ -378,6 +383,7 @@ def build_stream_dict_for_never_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=subscriber_count,
         topics_policy=topics_policy,
     )
 

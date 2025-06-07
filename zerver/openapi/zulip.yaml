@@ -1367,6 +1367,7 @@ paths:
                                         "can_remove_subscribers_group": 2,
                                         "can_subscribe_group": 2,
                                         "stream_weekly_traffic": null,
+                                        "subscriber_count": 0,
                                       },
                                     ],
                                   "id": 0,
@@ -16231,6 +16232,7 @@ paths:
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
+                                subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -21470,6 +21472,7 @@ paths:
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
+                                subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -21515,6 +21518,7 @@ paths:
                                 - can_subscribe_group
                                 - stream_weekly_traffic
                                 - is_recently_active
+                                - subscriber_count
                     example:
                       {
                         "msg": "",
@@ -21543,6 +21547,7 @@ paths:
                               "stream_id": 2,
                               "stream_post_policy": 1,
                               "stream_weekly_traffic": null,
+                              subscriber_count: 20,
                             },
                             {
                               "can_add_subscribers_group": 9,
@@ -21566,6 +21571,7 @@ paths:
                               "stream_id": 1,
                               "stream_post_policy": 1,
                               "stream_weekly_traffic": null,
+                              subscriber_count: 10,
                             },
                           ],
                       }
@@ -21621,6 +21627,7 @@ paths:
                             "can_remove_subscribers_group": 2,
                             "can_subscribe_group": 2,
                             "stream_weekly_traffic": null,
+                            subscriber_count: 12,
                           },
                       }
         "400":
@@ -23939,6 +23946,7 @@ components:
             can_administer_channel_group: {}
             can_send_message_group: {}
             can_subscribe_group: {}
+            subscriber_count: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -23965,6 +23973,7 @@ components:
             - rendered_description
             - is_web_public
             - stream_post_policy
+            - subscriber_count
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
@@ -24134,6 +24143,27 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        subscriber_count:
+          type: number
+          description: |
+            The total number of non-deactivated users (including bots) who
+            are subscribed to the channel. Clients are responsible for updating
+            this value using `peer_add` and `peer_remove` events.
+
+            The server's internals cannot guarantee this value is correctly
+            synced with `peer_add` and `peer_remove` events for the channel. As
+            a result, if a (rare) race occurs between a change in the channel's
+            subscribers and fetching this value, it is possible for a client
+            that is correctly following the events protocol to end up with a
+            permanently off-by-one error in the channel's subscriber count.
+
+            Clients are recommended to fetch full subscriber data for a channel
+            in contexts where it is important to avoid this risk. The official
+            web application, for example, uses this field primarily while
+            waiting to fetch a given channel's full subscriber list from the
+            server.
+
+            **Changes**: New in Zulip 11.0 (feature level 394).
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -25214,6 +25244,27 @@ components:
             channels. Note that some endpoints will never return archived
             channels unless the client declares explicit support for
             them via the `archived_channels` client capability.
+        subscriber_count:
+          type: number
+          description: |
+            The total number of non-deactivated users (including bots) who
+            are subscribed to the channel. Clients are responsible for updating
+            this value using `peer_add` and `peer_remove` events.
+
+            The server's internals cannot guarantee this value is correctly
+            synced with `peer_add` and `peer_remove` events for the channel. As
+            a result, if a (rare) race occurs between a change in the channel's
+            subscribers and fetching this value, it is possible for a client
+            that is correctly following the events protocol to end up with a
+            permanently off-by-one error in the channel's subscriber count.
+
+            Clients are recommended to fetch full subscriber data for a channel
+            in contexts where it is important to avoid this risk. The official
+            web application, for example, uses this field primarily while
+            waiting to fetch a given channel's full subscriber list from the
+            server.
+
+            **Changes**: New in Zulip 11.0 (feature level 394).
     DefaultChannelGroup:
       type: object
       description: |

@@ -1538,6 +1538,7 @@ def stream_to_dict(
         stream_post_policy=stream_post_policy,
         is_announcement_only=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=stream.subscriber_count,
         topics_policy=StreamTopicsPolicyEnum(stream.topics_policy).name,
     )
 
