@@ -122,8 +122,8 @@ def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
     return data, json_fixture, multipart_fixture, fixture_name
 
 
-def get_requests_headers(integration_name: str, fixture_name: str) -> dict[str, Any]:
-    headers = get_fixture_http_headers(integration_name, fixture_name)
+def get_requests_headers(integration_dir_name: str, fixture_name: str) -> dict[str, Any]:
+    headers = get_fixture_http_headers(integration_dir_name, fixture_name)
 
     def fix_name(header: str) -> str:
         return header.removeprefix("HTTP_").replace("_", "-")
@@ -153,7 +153,7 @@ def send_bot_payload_message(
     Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
     data, json_fixture, multipart_fixture, fixture_name = get_fixture_info(fixture_path)
 
-    headers = get_requests_headers(integration.name, fixture_name)
+    headers = get_requests_headers(integration.dir_name, fixture_name)
     if config.custom_headers:
         headers.update(config.custom_headers)
     if config.use_basic_auth:

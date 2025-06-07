@@ -214,13 +214,13 @@ def validate_extract_webhook_http_header(
     return extracted_header
 
 
-def get_fixture_http_headers(integration_name: str, fixture_name: str) -> dict["str", "str"]:
+def get_fixture_http_headers(integration_dir_name: str, fixture_name: str) -> dict["str", "str"]:
     """For integrations that require custom HTTP headers for some (or all)
     of their test fixtures, this method will call a specially named
     function from the target integration module to determine what set
     of HTTP headers goes with the given test fixture.
     """
-    view_module_name = f"zerver.webhooks.{integration_name}.view"
+    view_module_name = f"zerver.webhooks.{integration_dir_name}.view"
     try:
         # TODO: We may want to migrate to a more explicit registration
         # strategy for this behavior rather than a try/except import.
