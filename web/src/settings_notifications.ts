@@ -12,6 +12,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
 import {page_params} from "./page_params.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
@@ -86,6 +87,7 @@ function rerender_ui(): void {
         $unmatched_streams_table.css("display", "table-row-group");
     }
     update_desktop_notification_banner();
+    settings_banner.set_up_mobile_push_banner();
 }
 
 function update_desktop_notification_banner(): void {
