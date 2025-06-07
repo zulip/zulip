@@ -421,7 +421,16 @@ function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
     if (terms.length === 0) {
         return [{description_html: "", search_string: "", is_people: false}];
     }
-    return terms.map((term) => format_as_suggestion([term]));
+    const suggestion_line = [];
+    const suggestion_strings = new Set();
+    for (const term of terms) {
+        const suggestion = format_as_suggestion([term]);
+        if (!suggestion_strings.has(suggestion.search_string)) {
+            suggestion_line.push(suggestion);
+            suggestion_strings.add(suggestion.search_string);
+        }
+    }
+    return suggestion_line;
 }
 
 export function get_topic_suggestions_from_candidates({
