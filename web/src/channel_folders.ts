@@ -1,0 +1,43 @@
+import type {z} from "zod";
+
+import {FoldDict} from "./fold_dict.ts";
+import type {StateData, channel_folder_schema} from "./state_data.ts";
+
+export type ChannelFolder = z.infer<typeof channel_folder_schema>;
+
+let channel_folder_name_dict: FoldDict<ChannelFolder>;
+let channel_folder_by_id_dict: Map<number, ChannelFolder>;
+
+// We have an init() function so that our automated tests
+// can easily clear data.
+export function init(): void {
+    channel_folder_name_dict = new FoldDict();
+    channel_folder_by_id_dict = new Map<number, ChannelFolder>();
+}
+
+init();
+
+export const MAX_CHANNEL_FOLDER_NAME_LENGTH = 100;
+export const MAX_CHANNEL_FOLDER_DESCRIPTION_LENGTH = 1024;
+
+export function add(channel_folder: ChannelFolder): void {
+    channel_folder_name_dict.set(channel_folder.name, channel_folder);
+    channel_folder_by_id_dict.set(channel_folder.id, channel_folder);
+}
+
+export function initialize(params: StateData["channel_folders"]): void {
+    for (const channel_folder of params.channel_folders) {
+        add(channel_folder);
+    }
+}
+
+export function get_channel_folders(include_archived = false): ChannelFolder[] {
+    const channel_folders = [...channel_folder_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    return channel_folders.filter((channel_folder) => {
+        if (!include_archived && channel_folder.is_archived) {
+            return false;
+        }
+
+        return true;
+    });
+}

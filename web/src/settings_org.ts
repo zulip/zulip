@@ -627,6 +627,9 @@ export function discard_stream_property_element_changes(
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
             break;
+        case "folder_id":
+            settings_components.set_channel_folder_dropdown_value(sub);
+            break;
         default:
             if (property_value !== undefined) {
                 const validated_property_value = z
@@ -1121,6 +1124,8 @@ export let init_dropdown_widgets = (): void => {
 
         const disabled_option = {
             is_setting_disabled: true,
+            show_disabled_icon: true,
+            show_disabled_option_name: false,
             unique_id: DISABLED_STATE_ID,
             name: $t({defaultMessage: "Disabled"}),
         };
@@ -1169,6 +1174,8 @@ export const combined_code_language_options = (): dropdown_widget.Option[] => {
 
     const disabled_option = {
         is_setting_disabled: true,
+        show_disabled_icon: true,
+        show_disabled_option_name: false,
         unique_id: "",
         name: $t({defaultMessage: "No language set"}),
     };

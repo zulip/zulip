@@ -231,6 +231,11 @@ export function update_is_default_stream(): void {
     }
 }
 
+export function update_channel_folder(sub: StreamSubscription, folder_id: number | null): void {
+    stream_data.update_channel_folder(sub, folder_id);
+    stream_ui_updates.update_channel_folder_dropdown(sub);
+}
+
 export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
@@ -864,6 +869,7 @@ function setup_page(callback: () => void): void {
             group_setting_labels: settings_config.all_group_setting_labels.stream,
             realm_has_archived_channels,
             has_billing_access: settings_data.user_has_billing_access(),
+            is_admin: current_user.is_admin,
         };
 
         const rendered = render_stream_settings_overlay(template_data);

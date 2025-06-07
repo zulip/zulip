@@ -1256,3 +1256,5 @@ export const realm_plan_types = {
     standard_free: {code: 4},
     plus: {code: 10},
 };
+
+export const no_folder_selected = -1;

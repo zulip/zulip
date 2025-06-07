@@ -839,11 +839,13 @@ test("stream_settings", ({override}) => {
         sub,
         moderators_group.id,
     );
+    stream_data.update_channel_folder(sub, 3);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
     assert.equal(sub.can_administer_channel_group, moderators_group.id);
+    assert.equal(sub.folder_id, 3);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();

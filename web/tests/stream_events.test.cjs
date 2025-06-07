@@ -327,6 +327,17 @@ test("update_property", ({override}) => {
         assert.equal(args.sub, sub);
     }
 
+    // Update channel folder
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_channel_folder", stub.f);
+        stream_events.update_property(stream_id, "folder_id", 3);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "value");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.value, 3);
+    }
+
     // Test archiving stream
     {
         stream_data.subscribe_myself(sub);
