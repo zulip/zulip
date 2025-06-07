@@ -496,13 +496,25 @@ class BaseAction(ZulipTestCase):
                 for u in state["never_subscribed"]:
                     if "subscribers" in u:
                         u["subscribers"].sort()
+                    # this isn't guaranteed to match
+                    del u["subscriber_count"]
             if "subscriptions" in state:
                 for u in state["subscriptions"]:
                     if "subscribers" in u:
                         u["subscribers"].sort()
+                    # this isn't guaranteed to match
+                    del u["subscriber_count"]
                 state["subscriptions"] = {u["name"]: u for u in state["subscriptions"]}
             if "unsubscribed" in state:
+                for u in state["unsubscribed"]:
+                    # this isn't guaranteed to match
+                    del u["subscriber_count"]
                 state["unsubscribed"] = {u["name"]: u for u in state["unsubscribed"]}
+            if "streams" in state:
+                for stream in state["streams"]:
+                    if "subscriber_count" in stream:
+                        # this isn't guaranteed to match
+                        del stream["subscriber_count"]
             if "realm_bots" in state:
                 state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
             # Since time is different for every call, just fix the value

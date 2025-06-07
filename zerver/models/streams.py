@@ -258,6 +258,7 @@ class Stream(models.Model):
         "message_retention_days",
         "name",
         "rendered_description",
+        "subscriber_count",
         "can_add_subscribers_group_id",
         "can_administer_channel_group_id",
         "can_send_message_group_id",

@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 394**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id):: Added a new
+  field `subscriber_count` to Stream and Subscription objects with the
+  total number of non-deactivated users who are subscribed to the
+  channel.
+
 **Feature level 393**
 
 * [`PATCH /messages/{message_id}`](/api/delete-message),
