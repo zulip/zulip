@@ -1012,6 +1012,21 @@ export function get_notifications_table_row_data(
     });
 }
 
+export function get_custom_stream_specific_notifications_table_row_data(): NotificationSettingCheckbox[] {
+    // Returns an array of NotificationSettingCheckbox for the special row that
+    // allows adding new configuration for a previously uncustomized channel.
+    return stream_specific_notification_settings.map((setting_name) => {
+        const checkbox = {
+            setting_name,
+            is_disabled: true,
+            is_checked: false,
+            is_mobile_checkbox: setting_name === "push_notifications",
+            push_notifications_disabled: !realm.realm_push_notifications_enabled,
+        };
+        return checkbox;
+    });
+}
+
 export type AllNotifications = {
     general_settings: {
         label: string;
