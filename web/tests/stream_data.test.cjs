@@ -1514,6 +1514,39 @@ test("can_post_messages_in_stream", ({override}) => {
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
+test("can_resolve_topics", ({override}) => {
+    override(realm, "realm_can_resolve_topics_group", admins_group.id);
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_resolve_topics_group: admins_group.id,
+    };
+    stream_data.add_sub(sub);
+
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), false);
+
+    sub.can_resolve_topics_group = moderators_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), false);
+
+    sub.can_resolve_topics_group = everyone_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+});
+
 test("can_unsubscribe_others", ({override}) => {
     const sub = {
         name: "Denmark",

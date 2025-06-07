@@ -278,6 +278,7 @@ def update_stream_backend(
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
+    can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
     folder_id: Json[int | None] | MissingType = Missing,
 ) -> HttpResponse:
@@ -630,6 +631,7 @@ def add_subscriptions_backend(
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
+    can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
@@ -711,6 +713,9 @@ def add_subscriptions_backend(
         stream_dict_copy["can_send_message_group"] = group_settings_map["can_send_message_group"]
         stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
             "can_remove_subscribers_group"
+        ]
+        stream_dict_copy["can_resolve_topics_group"] = group_settings_map[
+            "can_resolve_topics_group"
         ]
         stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
         stream_dict_copy["folder"] = folder
