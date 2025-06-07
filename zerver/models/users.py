@@ -58,6 +58,20 @@ class UserBaseSettings(models.Model):
     created after the change.
     """
 
+    # Fields that realm administrators cannot modify for users
+    SENSITIVE_USER_FIELDS = frozenset(
+        {
+            "email",
+            "new_password",
+            "allow_private_data_export",
+            "send_private_typing_notifications",
+            "send_stream_typing_notifications",
+            "send_read_receipts",
+            "presence_enabled",
+            "email_address_visibility",
+        }
+    )
+
     ### Generic UI settings
     enter_sends = models.BooleanField(default=False)
 
