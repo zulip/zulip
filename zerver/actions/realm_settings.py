@@ -16,6 +16,7 @@ from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -533,6 +534,7 @@ RealmDeactivationReasonType = Literal[
     "tos_violation",
     "inactivity",
     "self_hosting_migration",
+    "demo_expired",
     # When we change the subdomain of a realm, we leave
     # behind a deactivated gravestone realm.
     "subdomain_change",
@@ -623,6 +625,26 @@ def do_deactivate_realm(
     # do not email active organization owners.
     if email_owners:
         do_send_realm_deactivation_email(realm, acting_user, deletion_delay_days)
+
+
+def delete_expired_demo_organizations() -> None:
+    demo_organizations_to_delete = Realm.objects.filter(
+        deactivated=False, demo_organization_scheduled_deletion_date__lte=timezone_now()
+    )
+    for demo_organization in demo_organizations_to_delete:
+        email_owners = False
+        if demo_organization_owner_email_exists(demo_organization):
+            email_owners = True
+        # By setting deletion_delay_days to zero, we send an event to
+        # the deferred work queue to scrub the realm data when
+        # deactivating the realm.
+        do_deactivate_realm(
+            realm=demo_organization,
+            acting_user=None,
+            deactivation_reason="demo_expired",
+            deletion_delay_days=0,
+            email_owners=email_owners,
+        )
 
 
 def do_reactivate_realm(realm: Realm) -> None:
