@@ -4,6 +4,7 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
+import render_confirm_reset_stream_notifications from "../templates/confirm_dialog/confirm_reset_stream_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as banners from "./banners.ts";
@@ -21,6 +22,7 @@ import * as settings_ui from "./settings_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
+import type {SubData} from "./stream_settings_api.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import {stream_specific_notification_settings_schema} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
@@ -266,6 +268,44 @@ function render_customize_stream_notifications_widget(): void {
         unique_id_type: "number",
     });
     customize_stream_notifications_widget.setup();
+}
+
+export function do_reset_stream_notifications(elem: HTMLElement, sub: StreamSubscription): void {
+    const data: SubData = [{stream_id: sub.stream_id, property: "is_muted", value: false}];
+    for (const [per_stream_setting_name, global_setting_name] of Object.entries(
+        settings_config.generalize_stream_notification_setting,
+    )) {
+        data.push({
+            stream_id: sub.stream_id,
+            property: stream_specific_notification_settings_schema
+                .keyof()
+                .parse(per_stream_setting_name),
+            value: user_settings[global_setting_name],
+        });
+    }
+
+    stream_settings_api.bulk_set_stream_property(
+        data,
+        $(elem).closest(".subsection-parent").find(".alert-notification"),
+    );
+}
+
+function reset_stream_notifications(elem: HTMLElement): void {
+    const $row = $(elem).closest(".stream-notifications-row");
+    const stream_id = Number.parseInt($row.attr("data-stream-id")!, 10);
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    const html_body = render_confirm_reset_stream_notifications({sub});
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Reset to default notifications?"}),
+        html_body,
+        id: "confirm_reset_stream_notifications_modal",
+        on_click() {
+            do_reset_stream_notifications(elem, sub);
+        },
+    });
 }
 
 export function set_up(settings_panel: SettingsPanel): void {
@@ -570,4 +610,12 @@ export function initialize(): void {
             $row.closest(".subsection-parent").find(".alert-notification"),
         );
     });
+
+    $("body").on(
+        "click",
+        "#stream-specific-notify-table .reset_stream_notifications",
+        function on_click(this: HTMLElement) {
+            reset_stream_notifications(this);
+        },
+    );
 }

@@ -498,13 +498,52 @@ input[type="checkbox"] {
     }
 }
 
-#stream-specific-notify-table .unmute_stream {
-    position: relative;
-    left: 3px;
-    top: 2px;
+#stream-specific-notify-table {
+    .reset_stream_notifications {
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.2s ease;
+        transition-property: opacity, visibility;
 
-    &:hover {
-        cursor: pointer;
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:active {
+            outline: none;
+        }
+    }
+
+    .unmute_stream {
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .stream-controls {
+        display: flex;
+        align-items: center;
+        /* This gap matches a single space character. */
+        gap: 0.4ch;
+
+        &:hover {
+            .reset_stream_notifications {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+}
+
+#confirm_reset_stream_notifications_modal {
+    .channel-privacy-type-icon {
+        padding-left: 3px;
+        padding-right: 0;
+        width: auto;
     }
 }
 
