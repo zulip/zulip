@@ -17,6 +17,7 @@ class ErrorCode(Enum):
     BAD_NARROW = auto()
     CANNOT_DEACTIVATE_LAST_USER = auto()
     MISSING_HTTP_EVENT_HEADER = auto()
+    STREAM_ALREADY_EXISTS = auto()
     STREAM_DOES_NOT_EXIST = auto()
     UNAUTHORIZED_PRINCIPAL = auto()
     UNSUPPORTED_WEBHOOK_EVENT_TYPE = auto()
@@ -169,6 +170,20 @@ class UnauthorizedError(JsonableError):
         extra_headers_dict = super().extra_headers
         extra_headers_dict["WWW-Authenticate"] = self.www_authenticate
         return extra_headers_dict
+
+
+class StreamExistsError(JsonableError):
+    code = ErrorCode.STREAM_ALREADY_EXISTS
+    http_status_code = 409
+    data_fields = ["stream"]
+
+    def __init__(self, stream: str) -> None:
+        self.stream = stream
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Channel '{stream}' already exists")
 
 
 class StreamDoesNotExistError(JsonableError):
