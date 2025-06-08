@@ -1,4 +1,4 @@
-<div id="admin-bot-list" class="settings-section user-or-bot-settings-section" data-name="bots">
+<div id="admin-bot-list" class="settings-section" data-name="bots">
     <div class="bot-settings-tip banner-wrapper" id="admin-bot-settings-tip">
     </div>
     <div class="clear-float"></div>
@@ -11,10 +11,19 @@
           hidden=(not can_create_new_bots)
           }}
     </div>
-    {{> bot_list
-      section_name="all_bots"
-      section_title=(t "Bots")
-      dropdown_widget_name=all_bots_list_dropdown_widget_name
-      is_admin=is_admin
-      }}
+    <div class="tab-container"></div>
+    <div id="admin-all-bots-list" class="bot-settings-section user-or-bot-settings-section" data-bot-settings-section="all-bots">
+        {{> bot_list
+          section_name="all_bots"
+          section_title=(t "All bots")
+          dropdown_widget_name=all_bots_list_dropdown_widget_name
+          }}
+    </div>
+    <div id="admin-your-bots-list" class="bot-settings-section user-or-bot-settings-section" data-bot-settings-section="your-bots">
+        {{> bot_list
+          section_name="your_bots"
+          section_title=(t "Your bots")
+          dropdown_widget_name=your_bots_list_dropdown_widget_name
+          }}
+    </div>
 </div>

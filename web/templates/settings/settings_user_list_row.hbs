@@ -36,7 +36,7 @@
         {{/if}}
     </td>
     {{/if}}
-    {{#if can_modify}}
+    {{#if (or is_bot can_modify)}}
     <td class="actions">
         <span class="user-status-settings">
             <span class="{{#if (and is_bot cannot_edit)}}tippy-zulip-tooltip{{else}}tippy-zulip-delayed-tooltip{{/if}}"
