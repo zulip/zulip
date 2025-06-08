@@ -97,6 +97,13 @@ class Addressee:
         assert self._topic_name is not None
         return self._topic_name
 
+    def is_message_to_self(self, sender: UserProfile) -> bool:
+        return (
+            self.is_private()
+            and len(self.user_profiles()) == 1
+            and self.user_profiles()[0].id == sender.id
+        )
+
     @staticmethod
     def legacy_build(
         sender: UserProfile,

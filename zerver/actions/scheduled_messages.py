@@ -64,8 +64,8 @@ def check_schedule_message(
         # Legacy default: a scheduled message you sent from a non-API client is
         # automatically marked as read for yourself, unless it was sent to
         # yourself only.
-        read_by_sender = (
-            client.default_read_by_sender() and send_request.message.recipient != sender.recipient
+        read_by_sender = client.default_read_by_sender() and not addressee.is_message_to_self(
+            sender
         )
 
     return do_schedule_messages(
