@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_message_list} = require("./lib/message_list.cjs");
 const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -37,7 +38,6 @@ const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const activity_ui = zrequire("activity_ui");
 const buddy_data = zrequire("buddy_data");
-const {Filter} = zrequire("../src/filter");
 const message_lists = zrequire("message_lists");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -148,11 +148,7 @@ test("fetch on search", async ({override}) => {
 
     const office = {stream_id: 23, name: "office", subscribed: true};
     stream_data.add_sub(office);
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "stream", operand: office.stream_id}]),
-        },
-    });
+    message_lists.set_current(make_message_list([{operator: "stream", operand: office.stream_id}]));
     let get_call_count = 0;
     channel.get = () => {
         get_call_count += 1;
@@ -176,17 +172,13 @@ test("fetch on search", async ({override}) => {
     stream_data.add_sub(kitchen);
     const living_room = {stream_id: 26, name: "living_room", subscribed: true};
     stream_data.add_sub(living_room);
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "stream", operand: kitchen.stream_id}]),
-        },
-    });
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: kitchen.stream_id}]),
+    );
     set_input_val("somevalue");
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "stream", operand: living_room.stream_id}]),
-        },
-    });
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: living_room.stream_id}]),
+    );
     set_input_val("somevalue");
     await activity_ui.await_pending_promise_for_testing();
     assert.equal(get_call_count, 2);

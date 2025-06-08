@@ -9,6 +9,7 @@ const {
     buddy_list_add_other_user,
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -50,7 +51,6 @@ const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const message_lists = zrequire("message_lists");
 const util = zrequire("util");
-const {Filter} = zrequire("../src/filter");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -114,12 +114,8 @@ const $fred_stub = $.create("fred stub");
 const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
 function add_sub_and_set_as_current_narrow(sub) {
     stream_data.add_sub(sub);
-    const filter = new Filter([{operator: "stream", operand: sub.stream_id}]);
-    message_lists.set_current({
-        data: {
-            filter,
-        },
-    });
+    const filter_terms = [{operator: "stream", operand: sub.stream_id}];
+    message_lists.set_current(make_message_list(filter_terms));
 }
 
 function test(label, f) {

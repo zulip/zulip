@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_user} = require("./lib/example_user.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -26,7 +27,6 @@ mock_esm("../src/settings_data", {
     as that would help better understand the below test.
 */
 
-const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
 const people = zrequire("people");
 const {set_current_user} = zrequire("state_data");
@@ -86,11 +86,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const conversation_key = typing_data.get_direct_message_conversation_key(group);
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "dm", operand: group_emails}]),
-        },
-    });
+    message_lists.set_current(make_message_list([{operator: "dm", operand: group_emails}]));
 
     // Based on typing_events.MAX_USERS_TO_DISPLAY_NAME (which is currently 3),
     // we display either the list of all users typing (if they do not exceed

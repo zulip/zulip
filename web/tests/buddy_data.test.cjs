@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -27,7 +28,6 @@ const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
-const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -370,11 +370,7 @@ test("always show me", () => {
 
 test("always show pm users", () => {
     people.add_active_user(selma);
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "dm", operand: selma.email}]),
-        },
-    });
+    message_lists.set_current(make_message_list([{operator: "dm", operand: selma.email}]));
 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
@@ -414,18 +410,11 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
         me.user_id,
     ]);
 
-    const filter = new Filter([
+    const filter_terms = [
         {operator: "channel", operand: sub.stream_id},
         {operator: "topic", operand: "Foo"},
-    ]);
-    message_lists.set_current({
-        data: {
-            filter,
-            participants: {
-                visible: () => new Set(),
-            },
-        },
-    });
+    ];
+    message_lists.set_current(make_message_list(filter_terms));
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [
         me.user_id,
         alice.user_id,
@@ -446,18 +435,15 @@ test("get_conversation_participants", () => {
     stream_data.add_sub(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
-    const filter = new Filter([
+    const filter_terms = [
         {operator: "channel", operand: rome_sub.stream_id},
         {operator: "topic", operand: "Foo"},
-    ]);
-    message_lists.set_current({
-        data: {
-            filter,
-            participants: {
-                visible: () => new Set([selma.user_id]),
-            },
-        },
-    });
+    ];
+    message_lists.set_current(
+        make_message_list(filter_terms, {
+            visible_participants: [selma.user_id],
+        }),
+    );
 
     activity_ui.rerender_user_sidebar_participants();
     assert.deepEqual(
