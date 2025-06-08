@@ -281,6 +281,7 @@ export function build_page(): void {
         giphy_help_link,
         ...get_realm_level_notification_settings(),
         all_bots_list_dropdown_widget_name: settings_users.all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name: settings_users.your_bots_list_dropdown_widget_name,
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
         is_plan_self_hosted:
@@ -337,6 +338,9 @@ export function launch(section: string, user_settings_tab: string | undefined): 
     }
     if (section === "users") {
         settings_panel_menu.org_settings.set_user_settings_tab(user_settings_tab);
+    }
+    if (section === "bots") {
+        settings_panel_menu.org_settings.set_bot_settings_tab(user_settings_tab);
     }
     settings_toggle.goto("organization");
 }
