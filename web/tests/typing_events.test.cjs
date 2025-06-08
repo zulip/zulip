@@ -2,13 +2,13 @@
 
 const assert = require("node:assert/strict");
 
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const settings_data = mock_esm("../src/settings_data");
 
-const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -54,11 +54,7 @@ run_test("render_notifications_for_narrow", ({override, mock_template}) => {
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const conversation_key = typing_data.get_direct_message_conversation_key(group);
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "dm", operand: group_emails}]),
-        },
-    });
+    message_lists.set_current(make_message_list([{operator: "dm", operand: group_emails}]));
 
     const $typing_notifications = $("#typing_notifications");
 
