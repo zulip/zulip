@@ -3,6 +3,8 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -31,55 +33,54 @@ const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
 const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
 set_realm(realm);
 
-const aaron = {
+const aaron = make_user({
     email: "aaron@zulip.com",
     user_id: 6,
     full_name: "Aaron",
-};
-const iago = {
+});
+const iago = make_user({
     email: "iago@zulip.com",
     user_id: 2,
     full_name: "Iago",
-};
-const zoe = {
+});
+const zoe = make_user({
     email: "zoe@zulip.com",
     user_id: 3,
     full_name: "Zoe",
-};
+});
 set_current_user(aaron);
 people.add_active_user(aaron);
 people.initialize_current_user(aaron.user_id);
 people.add_active_user(iago);
 people.add_active_user(zoe);
 
-const stream_A = {
+const stream_A = make_stream({
     subscribed: false,
     name: "A",
     stream_id: 1,
-};
-stream_data.add_sub(stream_A);
-const stream_B = {
+});
+const stream_B = make_stream({
     subscribed: false,
     name: "B",
     stream_id: 2,
-};
-stream_data.add_sub(stream_B);
-
-const stream_1 = {
+});
+const stream_1 = make_stream({
     subscribed: false,
     name: "stream 1",
     stream_id: 30,
     color: "c2726a",
-};
-stream_data.add_sub(stream_1);
-const stream_2 = {
+});
+const stream_2 = make_stream({
     subscribed: false,
     name: "stream 2",
     stream_id: 40,
     color: "e2226a",
     invite_only: false,
     is_web_public: false,
-};
+});
+stream_data.add_sub(stream_A);
+stream_data.add_sub(stream_B);
+stream_data.add_sub(stream_1);
 stream_data.add_sub(stream_2);
 
 const setTimeout_delay = 3000;
