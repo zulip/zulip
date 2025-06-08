@@ -271,7 +271,6 @@ export function initialize(): void {
         target: [
             "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
-            "#stream-specific-notify-table .unmute_stream",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",

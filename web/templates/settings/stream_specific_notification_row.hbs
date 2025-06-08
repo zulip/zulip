@@ -6,8 +6,7 @@
               is_web_public=stream.is_web_public }}
         </span>
         {{stream.stream_name}}
-        <i class="zulip-icon zulip-icon-mute unmute_stream" data-tippy-content="{{t 'Unmute' }}"
-          {{#unless muted}}style="display: none;"{{/unless}}></i>
+        <i class="zulip-icon icon-button-brand zulip-icon-mute tippy-zulip-delayed-tooltip unmute_stream" role="button" tabindex="0" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}" {{#unless muted}}style="display: none;"{{/unless}}></i>
     </td>
     {{#each stream_specific_notification_settings}}
         {{> notification_settings_checkboxes
