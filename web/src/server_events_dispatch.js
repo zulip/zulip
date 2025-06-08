@@ -493,7 +493,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
-                    settings_bots.render_bots();
+                    settings_users.rerender_bot_section(event.bot.user_id);
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
@@ -603,7 +603,7 @@ export function dispatch_normal_event(event) {
                     people.add_active_user(event.person, "server_events");
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
-                        settings_users.redraw_bots_list();
+                        settings_users.rerender_bot_section(event.person.user_id);
                     }
 
                     if (should_redraw) {
