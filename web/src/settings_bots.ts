@@ -200,7 +200,7 @@ function update_add_bot_button(): void {
         $("#bot-settings .add-a-new-bot").show();
         $("#admin-bot-list .add-a-new-bot").show();
         $("#admin-bot-list .manage-your-bots").hide();
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
     } else {
         $("#bot-settings .add-a-new-bot").hide();
         $("#admin-bot-list .add-a-new-bot").hide();
