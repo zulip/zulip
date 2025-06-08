@@ -669,7 +669,7 @@ run_test("get_custom_fields_by_type", ({override}) => {
 run_test("bot_custom_profile_data", () => {
     initialize();
     // If this test fails, then try opening organization settings > bots
-    // http://localhost:9991/#organization/bot-list-admin
+    // http://localhost:9991/#organization/bots
     // and then try to edit any of the bots.
     people.add_active_user(bot_botson);
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), undefined);
