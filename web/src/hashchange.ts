@@ -74,9 +74,10 @@ function is_somebody_else_profile_open(): boolean {
     );
 }
 
-function handle_invalid_section_url(section: "users", settings_tab: string): string {
+function handle_invalid_section_url(section: "bots" | "users", settings_tab: string): string {
     const valid_tab_values = {
         users: new Set(["active", "deactivated", "invitations"]),
+        bots: new Set(["all-bots", "your-bots"]),
     };
 
     if (!valid_tab_values[section].has(settings_tab)) {
@@ -88,7 +89,7 @@ function handle_invalid_section_url(section: "users", settings_tab: string): str
 }
 
 function get_settings_tab(section: string): string | undefined {
-    if (section === "users") {
+    if (section === "users" || section === "bots") {
         const current_settings_tab = hash_parser.get_current_nth_hash_section(2);
         return handle_invalid_section_url(section, current_settings_tab);
     }
@@ -412,7 +413,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            if (section === "users") {
+                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            } else if (section === "bots") {
+                settings_panel_menu.org_settings.set_bot_settings_tab(get_settings_tab(section));
+            }
         }
         settings_toggle.goto(base);
         return;
