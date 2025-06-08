@@ -1,0 +1,29 @@
+<div id="admin-{{section}}-bots-list" class="bot-settings-section settings-section-table" data-bot-settings-section="{{section}}-bots">
+
+    <div class="settings_panel_list_header">
+        <h3>{{section_title}}</h3>
+        <div class="alert-notification" id="{{section}}-bot-field-status"></div>
+        <div class="bot-filters">
+            {{> ../dropdown_widget widget_name=dropdown_widget_name}}
+            {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter bots')}}
+        </div>
+    </div>
+
+    <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
+        <table class="table table-striped wrapped-table">
+            <thead class="table-sticky-headers">
+                <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+                <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
+                <th class="user_role" data-sort="role">{{t "Role" }}</th>
+                <th data-sort="bot_owner">{{t "Owner" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="bot_type" class="bot_type">{{t "Bot type" }}</th>
+                <th class="actions">{{t "Actions" }}</th>
+            </thead>
+            <tbody id="admin-{{section}}-bots-table"
+              data-empty="{{#if (eq section 'all')}}{{t 'There are no active bots in this organization.' }}{{else}}{{t 'You have no active bots.' }}{{/if}}"
+              data-search-results-empty="{{#if (eq section 'all')}}{{t 'No bots match your current filter.' }}{{else}}{{t 'None of your bots match your current filter.' }}{{/if}}">
+            </tbody>
+        </table>
+    </div>
+    <div id="admin_page_bots_loading_indicator"></div>
+</div>
