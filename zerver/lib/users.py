@@ -19,7 +19,11 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.create_user import get_dummy_email_address_for_display_regex
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
+from zerver.lib.exceptions import (
+    EmailAlreadyInUseError,
+    JsonableError,
+    OrganizationOwnerRequiredError,
+)
 from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
@@ -46,6 +50,7 @@ from zerver.models.users import (
     get_partial_realm_user_dicts,
     get_realm_user_dicts,
     get_realm_user_dicts_from_ids,
+    get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
@@ -111,6 +116,23 @@ def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bo
             )
         else:
             raise JsonableError(_("Name is already in use."))
+
+
+def check_bot_email_available(full_name: str, email: str, realm: Realm) -> None:
+    # Import here to avoid circular imports.
+    from zerver.forms import CreateUserForm
+
+    form = CreateUserForm({"full_name": full_name, "email": email})
+    if not form.is_valid():  # nocoverage
+        # coverage note: The similar block above covers the most
+        # common situation where this might fail, but this case may be
+        # still possible with an overly long username.
+        raise JsonableError(_("Bad name or username"))
+    try:
+        get_user_by_delivery_email(email, realm)
+        raise EmailAlreadyInUseError
+    except UserProfile.DoesNotExist:
+        pass
 
 
 def check_short_name(short_name_raw: str) -> str:

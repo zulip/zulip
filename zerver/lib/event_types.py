@@ -416,6 +416,7 @@ class BotTypeForUpdate(BotTypeForUpdateCore):
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
+    email: str | None = None
     full_name: str | None = None
     is_active: bool | None = None
     owner_id: int | None = None
