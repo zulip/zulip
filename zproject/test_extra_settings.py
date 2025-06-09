@@ -300,3 +300,7 @@ ROOT_DOMAIN_LANDING_PAGE = False
 # Disable verifying webhook signatures in tests by default.
 # Tests that intend to verify webhook signatures should override this setting.
 VERIFY_WEBHOOK_SIGNATURES = False
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "full_name": "cn",
+}

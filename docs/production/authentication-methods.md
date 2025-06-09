@@ -187,10 +187,10 @@ All of these data synchronization options have the same model:
   your configuration changes take effect.
 - Logs are available in `/var/log/zulip/ldap.log`.
 
-When using this feature, you may also want to
-[prevent users from changing their display name in the Zulip UI][restrict-name-changes],
-since any such changes would be automatically overwritten on the sync
-run of `manage.py sync_ldap_user_data`.
+When using this feature, you may also want to [prevent users from
+changing their display name or email address in the Zulip
+UI][restrict-name-changes], since any such changes would be
+automatically overwritten.
 
 [restrict-name-changes]: https://zulip.com/help/restrict-name-and-email-changes
 
@@ -269,40 +269,44 @@ groups. To configure this feature:
 
 [zulip-groups]: https://zulip.com/help/user-groups
 
-#### Synchronizing email addresses
+### Synchronizing email addresses
 
-User accounts in Zulip are uniquely identified by their email address,
-and that's [currently](https://github.com/zulip/zulip/pull/16208) the
-only way through which a Zulip account is associated with their LDAP
-user account.
+Zulip 11.0+ supports automatically handling changes in email address
+for most LDAP installations. All you need to do is set the
+`unique_account_id` field in `AUTH_LDAP_USER_ATTR_MAP` to a **stable
+unique identifier** for the account, such as the LDAP Distinguished
+Name (DN). The `unique_account_id` field defaults to the `dn` for new
+installations.
 
-In particular, whenever a user attempts to log in to Zulip using LDAP,
-Zulip will use the LDAP information to authenticate the access, and
-determine the user's email address. It will then log in the user to
-the Zulip account with that email address (or if none exists,
-potentially prompt the user to create one). This model is convenient,
-because it works well with any LDAP provider (and handles migrations
-between LDAP providers transparently).
+:::{note}
 
-However, when a user's email address is changed in your LDAP
-directory, manual action needs to be taken to tell Zulip that the
-email address Zulip account with the new email address.
+While most LDAP data is synced in `sync_ldap_user_data`, email address
+synchronization is only checked on login. The first time a user logs
+in with `unique_account_id` enabled, the unique ID will be linked with
+their Zulip account. After a change in their LDAP email address, Zulip
+will update the linked Zulip account's Zulip email address the next
+time the user logs in.
 
-There are two ways to execute email address changes:
+:::
 
-- Users changing their email address in LDAP can [change their email
-  address in Zulip](https://zulip.com/help/change-your-email-address)
-  before logging out of Zulip. The user will need to be able to
-  receive email at the new email address in order to complete this
-  flow.
+#### Manually handling LDAP email changes
+
+If you don't have `unique_account_id` enabled, when a user's email
+address is changed in your LDAP directory, it must be manually updated
+in Zulip:
 
 - A server administrator can use the `manage.py change_user_email`
-  [management command][management-commands] to adjust a Zulip
+  [management command][management-commands] to update a Zulip
   account's email address directly.
 
-If a user accidentally creates a duplicate account, the duplicate
-account can be deactivated (and its email address changed) or deleted,
-and then the real account adjusted using the management command above.
+- Users can [change their email address in
+  Zulip](https://zulip.com/help/change-your-email-address). The user
+  must be already logged into Zulip and able to receive email at the
+  new email address.
+
+Not doing so will often lead to a duplicate account when the user next
+logs in. If that happens, you can delete the duplicate account and
+then correct the user's email address using the management command.
 
 [management-commands]: ../production/management-commands.md
 
