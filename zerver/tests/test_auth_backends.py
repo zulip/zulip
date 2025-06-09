@@ -115,7 +115,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups, UserGroupMembership
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
-from zerver.models.users import PasswordTooWeakError, get_user_by_delivery_email
+from zerver.models.users import ExternalAuthID, PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
 from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
 from zproject.backends import (
@@ -6860,6 +6860,167 @@ class TestLDAP(ZulipLDAPTestCase):
 
             assert user_profile is not None
             self.assertEqual(user_profile, self.example_user("aaron"))
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "dn"},
+    )
+    def test_external_auth_id_login(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        username = self.ldap_username("hamlet")
+
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 0)
+
+        user_profile = self.backend.authenticate(
+            request=mock.MagicMock(),
+            username=username,
+            password=self.ldap_password("hamlet"),
+            realm=get_realm("zulip"),
+        )
+        self.assertEqual(hamlet.id, user_profile.id)
+
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
+        self.assert_length(external_auth_ids, 1)
+        new_external_auth_id = external_auth_ids[0]
+        self.assertEqual(new_external_auth_id.realm_id, realm.id)
+        self.assertEqual(new_external_auth_id.external_auth_method_name, "ldap")
+        self.assertEqual(
+            new_external_auth_id.external_auth_id, "uid=hamlet,ou=users,dc=zulip,dc=com"
+        )
+
+        # The user's email changes in LDAP. The user should still be
+        # able to successfully log in with their ldap credential: The
+        # account will be found based on the ExternalAuthID.
+        # And the Zulip email is updated to match the new LDAP email.
+        self.change_ldap_user_attr(username, "mail", "new-hamlet-email@zulip.com")
+        with self.assertLogs("zulip.auth.ldap", level="INFO") as mock_log:
+            user_profile = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=username,
+                password=self.ldap_password("hamlet"),
+                realm=get_realm("zulip"),
+            )
+        self.assertEqual(hamlet.id, user_profile.id)
+        self.assertEqual(user_profile.delivery_email, "new-hamlet-email@zulip.com")
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 1)
+        self.assertIn(
+            f"INFO:zulip.auth.ldap:User {hamlet.id}, logged in via ExternalAuthId uid=hamlet,ou=users,dc=zulip,dc=com, has mismatched email. Syncing: hamlet@zulip.com => new-hamlet-email@zulip.com",
+            mock_log.output,
+        )
+
+        # Here the user's ldap email is changed to an email that
+        # matches another user already existing in LDAP.
+        #
+        # Expected outcome: The user can still log in to their Zulip
+        # account with their ldap credentials, but their account's
+        # email is not changed due to the conflict.
+        cordelia = self.example_user("cordelia")
+        self.change_ldap_user_attr(username, "mail", cordelia.delivery_email)
+        with self.assertLogs("zulip.auth.ldap", level="WARNING") as mock_log:
+            user_profile = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=username,
+                password=self.ldap_password("hamlet"),
+                realm=get_realm("zulip"),
+            )
+        self.assertEqual(hamlet.id, user_profile.id)
+        self.assertEqual(user_profile.delivery_email, "new-hamlet-email@zulip.com")
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 1)
+        self.assertEqual(
+            mock_log.output,
+            [
+                f"WARNING:zulip.auth.ldap:Can't sync email for user {hamlet.id}: another user exists with target email {cordelia.delivery_email}"
+            ],
+        )
+
+        # If the capitalization of the current email changes in ldap,
+        # the capitalization of the Zulip email should be synced.
+        self.change_ldap_user_attr(username, "mail", "New-Hamlet-email@zulip.com")
+        with self.assertLogs("zulip.auth.ldap", level="INFO") as mock_log:
+            user_profile = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=username,
+                password=self.ldap_password("hamlet"),
+                realm=get_realm("zulip"),
+            )
+        self.assertEqual(hamlet.id, user_profile.id)
+        self.assertEqual(user_profile.delivery_email, "New-Hamlet-email@zulip.com")
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 1)
+        self.assertIn(
+            f"INFO:zulip.auth.ldap:User {hamlet.id}, logged in via ExternalAuthId uid=hamlet,ou=users,dc=zulip,dc=com, has mismatched email. Syncing: new-hamlet-email@zulip.com => New-Hamlet-email@zulip.com",
+            mock_log.output,
+        )
+
+        # Can't log into a deactivated account - make sure that authentication involving
+        # ExternalAuthID doesn't skip these kinds of checks.
+        do_deactivate_user(user_profile, acting_user=None)
+        user_profile = self.backend.authenticate(
+            request=mock.MagicMock(),
+            username=username,
+            password=self.ldap_password("hamlet"),
+            realm=get_realm("zulip"),
+        )
+        self.assertEqual(user_profile, None)
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "homePhone"},
+    )
+    def test_external_auth_id_login_with_custom_unique_account_id_attribute(self) -> None:
+        """
+        The default recommended value for the unique_account_id attribute is the DN, but we also
+        support using a different attr - as long as its values are unique and stable.
+        For this test we'll use the silly example of the phone number attribute.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        username = self.ldap_username("hamlet")
+
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 0)
+
+        user_profile = self.backend.authenticate(
+            request=mock.MagicMock(),
+            username=username,
+            password=self.ldap_password("hamlet"),
+            realm=get_realm("zulip"),
+        )
+        self.assertEqual(hamlet.id, user_profile.id)
+
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
+        self.assert_length(external_auth_ids, 1)
+        new_external_auth_id = external_auth_ids[0]
+        self.assertEqual(new_external_auth_id.realm_id, realm.id)
+        self.assertEqual(new_external_auth_id.external_auth_method_name, "ldap")
+        self.assertEqual(new_external_auth_id.external_auth_id, "123456789")
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "dn"},
+    )
+    def test_external_auth_id_user_creation(self) -> None:
+        realm = get_realm("zulip")
+        username = "newuser_with_email"
+
+        user_profile = self.backend.authenticate(
+            request=mock.MagicMock(),
+            username=username,
+            password=self.ldap_password("newuser_with_email"),
+            realm=get_realm("zulip"),
+        )
+        assert user_profile is not None
+
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=user_profile))
+        self.assert_length(external_auth_ids, 1)
+        new_external_auth_id = external_auth_ids[0]
+        self.assertEqual(new_external_auth_id.realm_id, realm.id)
+        self.assertEqual(new_external_auth_id.external_auth_method_name, "ldap")
+        self.assertEqual(
+            new_external_auth_id.external_auth_id, "uid=newuser_with_email,ou=users,dc=zulip,dc=com"
+        )
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(

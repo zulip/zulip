@@ -115,7 +115,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.streams import get_active_streams, get_stream
-from zerver.models.users import get_system_bot, get_user_by_delivery_email
+from zerver.models.users import ExternalAuthID, get_system_bot, get_user_by_delivery_email
 
 
 def make_datetime(val: float) -> datetime:
@@ -3022,6 +3022,21 @@ class SingleUserExportTest(ExportFile):
         @checker
         def zerver_alertword(records: list[Record]) -> None:
             self.assertEqual(records[-1]["word"], "pizza")
+
+        ExternalAuthID.objects.create(
+            user=cordelia,
+            realm=cordelia.realm,
+            external_auth_method_name="test-auth",
+            external_auth_id="test-value",
+        )
+
+        @checker
+        def zerver_externalauthid(records: list[Record]) -> None:
+            (rec,) = records
+            self.assertEqual(rec["user"], cordelia.id)
+            self.assertEqual(rec["realm"], cordelia.realm_id)
+            self.assertEqual(rec["external_auth_method_name"], "test-auth")
+            self.assertEqual(rec["external_auth_id"], "test-value")
 
         favorite_city = try_add_realm_custom_profile_field(
             realm,
