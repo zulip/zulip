@@ -133,12 +133,13 @@ class ZulipMessageHandler(MessageHandler):
                 )
 
     async def handle_exception(self, error: Exception) -> str:
-        if isinstance(error, TLSSetupException) and isinstance(
-            error.__cause__, SSLError
-        ):  # nocoverage
-            logger.info("Dropping invalid TLS connection: %s", error.__cause__.reason)
-            # The client probably never sees this error code, but for completeness:
-            return f"421 4.7.6 TLS error: {error.__cause__.reason}"
+        if isinstance(error, TLSSetupException):  # nocoverage
+            if isinstance(error.__cause__, SSLError):
+                reason = error.__cause__.reason
+            else:
+                reason = str(error.__cause__)
+            logger.info("Dropping invalid TLS connection: %s", reason)
+            return f"421 4.7.6 TLS error: {reason}"
         else:
             logger.exception("SMTP session exception")
             return "500 Server error"
