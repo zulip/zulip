@@ -6,6 +6,7 @@ import render_settings_user_list_row from "../templates/settings/settings_user_l
 
 import {compute_active_status, post_presence_response_schema} from "./activity.ts";
 import * as bot_data from "./bot_data.ts";
+import type {Bot} from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -29,6 +30,8 @@ import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
 import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
+
+const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
@@ -761,6 +764,14 @@ function deactivated_create_table(deactivated_users: number[]): void {
     $("#admin_deactivated_users_table").show();
 }
 
+export function check_outgoing_webhook(): void {
+    const bots = bot_data.get_all_bots_for_current_user().filter((elem: Bot) => {
+        const isActive = people.is_person_active(elem.user_id);
+        return elem.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT && isActive;
+    });
+    $("#botserverrc_text_container").toggle(bots.length > 0);
+}
+
 export function update_bot_data(bot_user_id: number): void {
     if (!all_bots_section.list_widget && !your_bots_section.list_widget) {
         return;
@@ -768,6 +779,7 @@ export function update_bot_data(bot_user_id: number): void {
 
     all_bots_section.list_widget?.render_item(bot_info(bot_user_id));
     your_bots_section.list_widget?.render_item(bot_info(bot_user_id));
+    check_outgoing_webhook();
 }
 
 export function update_user_data(
@@ -1021,6 +1033,31 @@ export function set_up_bots(): void {
     });
     create_status_filter_dropdown($("#admin-all-bots-list"), all_bots_section);
     create_status_filter_dropdown($("#admin-your-bots-list"), your_bots_section);
+
+    $("#download_botserverrc_file").on("click", function () {
+        let content = "";
+
+        for (const bot of bot_data.get_all_bots_for_current_user()) {
+            if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
+                const services = bot_data.get_services(bot.user_id);
+                assert(services !== undefined);
+                const service = services[0];
+                assert(service && "token" in service);
+                const bot_token = service.token;
+                content += settings_bots.generate_botserverrc_content(
+                    bot.email,
+                    bot.api_key,
+                    bot_token,
+                );
+            }
+        }
+
+        $(this).attr(
+            "href",
+            "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content),
+        );
+    });
+    check_outgoing_webhook();
 }
 
 type FetchPresenceUserSettingParams = {
