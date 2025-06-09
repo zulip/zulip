@@ -359,6 +359,10 @@ select.settings_select {
     }
 }
 
+.config-download-text {
+    margin-top: 10px;
+}
+
 .user_role,
 .profile_field_type,
 .bot_type,
