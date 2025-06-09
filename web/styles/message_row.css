@@ -78,10 +78,21 @@
       padding on either side of the message box. */
     padding: 0 5px 0 3px;
 
-    &:hover .message_controls {
-        > .message_control_button {
-            opacity: 1;
-            visibility: visible;
+    &:hover {
+        .message_controls {
+            > .message_control_button {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        .message-moved-icon {
+            /* We use !important here because of the order of
+               styles in the CSS file. If we decide to go with
+               showing the icon for moved messages only on hover,
+               we should restructure the file to handle this case,
+               and remove !important. */
+            visibility: visible !important;
         }
     }
 }
@@ -984,6 +995,21 @@ of the base style defined for a read-only textarea in dark mode. */
         /* 2px at 14px/1em */
         padding: 0 0.1429em;
     }
+
+    /* Display moved icons only on hover except in
+       touchscreen environments. */
+    .message-moved-icon {
+        visibility: hidden;
+
+        @media (hover: none) {
+            visibility: visible;
+        }
+    }
+}
+
+/* Display moved icons in the selected message. */
+.selected_message .message-moved-icon {
+    visibility: visible;
 }
 
 .fade-in-message {
