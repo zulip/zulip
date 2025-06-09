@@ -799,7 +799,11 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
                 else:
                     old_value = old_value.named_user_group
 
-            result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
+            if property_name == "deactivated" and new_value is True:
+                # There is a separate endpoint for deactivating streams.
+                result = self.api_delete(user, f"/api/v1/streams/{stream.id}")
+            else:
+                result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
 
             if allow_fail:
                 self.assert_json_error(result, error_msg)
@@ -978,5 +982,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         self.do_test_channel_administering_permission(private_stream, "invite_only", False)
 
         for stream in [public_stream, private_stream]:
+            self.do_test_channel_administering_permission(stream, "deactivated", True)
+
             do_deactivate_stream(stream, acting_user=None)
             self.do_test_channel_administering_permission(stream, "deactivated", False)
