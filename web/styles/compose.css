@@ -1231,14 +1231,18 @@ textarea.new_message_textarea {
         #compose_select_recipient_widget,
         #compose_recipient_box,
         #compose-direct-recipient .pill-container {
-            transition: 250ms ease;
-            transition-delay: 150ms;
+            transition: var(--compose-muted-recipient-row-transition);
+            transition-delay: var(
+                --compose-muted-recipient-row-transition-delay
+            );
             transition-property: background-color, border-color;
         }
 
         #compose-direct-recipient .pill {
-            transition: 250ms ease;
-            transition-delay: 150ms;
+            transition: var(--compose-muted-recipient-row-transition);
+            transition-delay: var(
+                --compose-muted-recipient-row-transition-delay
+            );
             transition-property: outline-color;
         }
 
@@ -1247,8 +1251,10 @@ textarea.new_message_textarea {
             .zulip-icon-chevron-down,
             .conversation-arrow,
             #stream_message_recipient_topic {
-                transition: 250ms ease;
-                transition-delay: 150ms;
+                transition: var(--compose-muted-recipient-row-transition);
+                transition-delay: var(
+                    --compose-muted-recipient-row-transition-delay
+                );
                 transition-property: opacity;
             }
         }

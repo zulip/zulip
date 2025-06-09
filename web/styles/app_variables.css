@@ -522,6 +522,10 @@
         --compose-send-controls-width: 28px;
     }
 
+    /* Compose-specific transitions and delays. */
+    --compose-muted-recipient-row-transition-delay: 100ms;
+    --compose-muted-recipient-row-transition: 150ms ease;
+
     /*
     User group info popover elements and values.
     */
