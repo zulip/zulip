@@ -93,7 +93,7 @@ export function show_configure_email_banner(): void {
     });
 }
 
-export function do_convert_demo_organization(): void {
+export function show_convert_demo_organization_modal(): void {
     if (!current_user.is_owner) {
         return;
     }
@@ -171,7 +171,7 @@ export function handle_demo_organization_conversion(): void {
     $(".demo-organization-warning").on("click", ".convert-demo-organization", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        do_convert_demo_organization();
+        show_convert_demo_organization_modal();
     });
 
     $(".demo-organization-warning").on("click", ".demo-organizations-help", () => {
