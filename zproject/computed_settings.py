@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import sys
@@ -100,6 +101,11 @@ SERVER_GENERATION = int(time.time())
 # Key to authenticate this server to zulip.org for push notifications, etc.
 ZULIP_ORG_KEY = get_secret("zulip_org_key")
 ZULIP_ORG_ID = get_secret("zulip_org_id")
+
+raw_keys: str | None = get_secret("push_registration_encryption_keys")
+PUSH_REGISTRATION_ENCRYPTION_KEYS: dict[str, str] | None = None
+if raw_keys is not None:
+    PUSH_REGISTRATION_ENCRYPTION_KEYS = json.loads(raw_keys)
 
 
 service_name_to_required_upload_level = {
