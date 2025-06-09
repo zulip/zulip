@@ -814,7 +814,11 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         ) -> None:
             old_value = getattr(stream, property_name)
 
-            result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
+            if property_name == "deactivated" and new_value is True:
+                # There is a separate endpoint for deactivating streams.
+                result = self.api_delete(user, f"/api/v1/streams/{stream.id}")
+            else:
+                result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
 
             if allow_fail:
                 self.assert_json_error(result, error_msg)
@@ -915,6 +919,8 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             self.do_test_updating_channel(stream, "name", "Renamed stream")
             self.do_test_updating_channel(stream, "description", "Edited stream description")
             self.do_test_updating_channel(stream, "folder_id", channel_folder.id)
+
+            self.do_test_updating_channel(stream, "deactivated", True)
 
             do_deactivate_stream(stream, acting_user=None)
             self.do_test_updating_channel(stream, "deactivated", False)
