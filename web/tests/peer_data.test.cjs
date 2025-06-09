@@ -147,6 +147,14 @@ test("subscribers", async () => {
     potential_subscriber_ids();
     blueslip.reset();
 
+    const bogus_stream_id = 999;
+    blueslip.expect(
+        "warn",
+        "We called set_subscribers for an untracked stream: " + bogus_stream_id,
+    );
+    peer_data.set_subscribers(bogus_stream_id, []);
+    blueslip.reset();
+
     peer_data.set_subscribers(stream_id, []);
     assert.deepEqual(potential_subscriber_ids(), [
         me.user_id,
@@ -381,10 +389,11 @@ test("get_subscriber_count", () => {
         stream_id: 102,
         name: "India",
         subscribed: true,
+        subscriber_count: 0,
     };
     stream_data.clear_subscriptions();
 
-    blueslip.expect("warn", "We called get_loaded_subscriber_subset for an untracked stream: 102");
+    blueslip.expect("warn", "We called get_subscriber_count for an untracked stream: 102");
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
     stream_data.add_sub(india);

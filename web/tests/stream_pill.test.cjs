@@ -65,9 +65,6 @@ const germany = {
     can_subscribe_group: nobody_group.id,
 };
 
-peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);
-peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
-
 const denmark_pill = {
     type: "stream",
     stream_id: denmark.stream_id,
@@ -83,6 +80,9 @@ const subs = [denmark, sweden, germany];
 for (const sub of subs) {
     stream_data.add_sub(sub);
 }
+
+peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);
+peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
 
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
