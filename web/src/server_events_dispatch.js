@@ -497,18 +497,24 @@ export function dispatch_normal_event(event) {
                     settings_bots.render_bots();
                     if (event.bot.owner_id === current_user.user_id) {
                         settings_users.redraw_your_bots_list();
+                        settings_users.toggle_bot_config_download_container();
                     }
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.render_bots();
                     settings_users.redraw_your_bots_list();
+                    settings_users.toggle_bot_config_download_container();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
                     settings_bots.render_bots();
                     if ("owner_id" in event.bot) {
                         settings_users.redraw_your_bots_list();
+                        settings_users.toggle_bot_config_download_container();
+                    }
+                    if ("is_active" in event.bot) {
+                        settings_users.toggle_bot_config_download_container();
                     }
                     break;
                 default:
