@@ -612,7 +612,7 @@
 
         #integrations-event-options {
             .integration-event-wrapper {
-                margin: 5px 0;
+                margin: var(--settings-nested-checkbox-margin);
             }
 
             .integration-event-name {
