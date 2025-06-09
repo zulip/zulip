@@ -831,6 +831,7 @@ run_test("realm_bot add", ({override}) => {
     override(bot_data, "add", bot_stub.f);
     override(settings_bots, "render_bots", noop);
     override(settings_users, "redraw_your_bots_list", noop);
+    override(settings_users, "toggle_bot_config_download_container", noop);
 
     dispatch(event);
 
@@ -845,6 +846,7 @@ run_test("realm_bot delete", ({override}) => {
     override(bot_data, "del", bot_stub.f);
     override(settings_bots, "render_bots", noop);
     override(settings_users, "redraw_your_bots_list", noop);
+    override(settings_users, "toggle_bot_config_download_container", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -867,14 +869,32 @@ run_test("realm_bot update", ({override}) => {
 
     bot_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
+    let toggle_download_container_stub = make_stub();
+    override(
+        settings_users,
+        "toggle_bot_config_download_container",
+        toggle_download_container_stub.f,
+    );
 
     event = event_fixtures.realm_bot__update_owner;
     override(settings_users, "redraw_your_bots_list", noop);
     dispatch(event);
+    assert.equal(toggle_download_container_stub.num_calls, 1);
     assert.equal(bot_stub.num_calls, 1);
     args = bot_stub.get_args("user_id", "bot");
     assert_same(args.user_id, event.bot.user_id);
     assert_same(args.bot, event.bot);
+
+    toggle_download_container_stub = make_stub();
+    override(
+        settings_users,
+        "toggle_bot_config_download_container",
+        toggle_download_container_stub.f,
+    );
+
+    event = event_fixtures.realm_bot__update_is_active;
+    dispatch(event);
+    assert.equal(toggle_download_container_stub.num_calls, 1);
 });
 
 run_test("realm_emoji", ({override}) => {
