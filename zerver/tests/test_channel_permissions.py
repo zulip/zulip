@@ -727,3 +727,22 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             stream_list=[private_stream, private_stream_2],
             skip_changing_group_setting=True,
         )
+
+    def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        stream = self.subscribe(user_profile, "stream_name1")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.message_retention_days, 2)
