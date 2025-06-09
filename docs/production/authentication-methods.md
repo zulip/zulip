@@ -269,43 +269,6 @@ groups. To configure this feature:
 
 [zulip-groups]: https://zulip.com/help/user-groups
 
-#### Synchronizing email addresses
-
-User accounts in Zulip are uniquely identified by their email address,
-and that's [currently](https://github.com/zulip/zulip/pull/16208) the
-only way through which a Zulip account is associated with their LDAP
-user account.
-
-In particular, whenever a user attempts to log in to Zulip using LDAP,
-Zulip will use the LDAP information to authenticate the access, and
-determine the user's email address. It will then log in the user to
-the Zulip account with that email address (or if none exists,
-potentially prompt the user to create one). This model is convenient,
-because it works well with any LDAP provider (and handles migrations
-between LDAP providers transparently).
-
-However, when a user's email address is changed in your LDAP
-directory, manual action needs to be taken to tell Zulip that the
-email address Zulip account with the new email address.
-
-There are two ways to execute email address changes:
-
-- Users changing their email address in LDAP can [change their email
-  address in Zulip](https://zulip.com/help/change-your-email-address)
-  before logging out of Zulip. The user will need to be able to
-  receive email at the new email address in order to complete this
-  flow.
-
-- A server administrator can use the `manage.py change_user_email`
-  [management command][management-commands] to adjust a Zulip
-  account's email address directly.
-
-If a user accidentally creates a duplicate account, the duplicate
-account can be deactivated (and its email address changed) or deleted,
-and then the real account adjusted using the management command above.
-
-[management-commands]: ../production/management-commands.md
-
 #### Automatically deactivating users
 
 Zulip supports synchronizing the
@@ -376,6 +339,90 @@ the fields that would be useful to sync from your LDAP databases.
 
 [models-py]: https://github.com/zulip/zulip/blob/main/zerver/models/users.py
 [django-auth-booleans]: https://django-auth-ldap.readthedocs.io/en/latest/users.html#easy-attributes
+
+### Synchronizing email addresses
+
+User accounts in Zulip are uniquely identified by their email address,
+and that's the only way through which a Zulip account is associated with their
+LDAP user account unless you enable the `unique_account_id` functionality
+in `AUTH_LDAP_USER_ATTR_MAP` in `/etc/zulip/settings.py`.
+
+By default, whenever a user attempts to log in to Zulip using LDAP,
+Zulip will use the LDAP information to authenticate the access, and
+determine the user's email address. It will then log in the user to
+the Zulip account with that email address (or if none exists,
+potentially prompt the user to create one). This model is convenient,
+because it works well with any LDAP provider (and handles migrations
+between LDAP providers transparently).
+
+#### Identifying user accounts via a unique LDAP attribute
+
+:::{note}
+This functionality currently only works at the time of user sign in with
+LDAP credentials. It is ignored during `sync_ldap_user_data` and therefore
+email changes will not be synced by that process.
+:::
+
+Zulip 11.0+ supports the `unique_account_id` feature, which allows user accounts
+to be identified, at the time of logging in with their LDAP credentials, by the
+value of an LDAP attribute associated with their account - instead of email. By
+default, this LDAP attribute is the DN. Using a different attribute is
+supported, but it is crucial for every user to have a unique value in the
+attribute and for the value to be stable over time.
+
+In order to use this functionality, uncomment the `unique_account_id` row in
+`AUTH_LDAP_USER_ATTR_MAP`:
+
+```python
+    "unique_account_id": "dn",
+```
+
+This makes LDAP authentication work in the following way. In the description
+below, we will assume the `unique_account_id` is set to the DN. Adjust accordingly
+if using a different attribute instead.
+
+1. When a user logs in with their LDAP credentials, Zulip reads the user's LDAP
+   `DN` and searches for an account in the realm with a saved association to
+   this `DN` value.
+1. If no such account is found (this will be the case for every user logging in
+   for the first time after the activation of this feature on your server.),
+   Zulip falls back to the standard way of finding the account by email address.
+   If that succeeds, the association of the identified account with the `DN`
+   will be saved for the future.
+1. If an account associated with the `DN` is found, the user will be logged into
+   this account, regardless of email value. Zulip will also update the account's
+   email address to the current email value in LDAP, if the two differ.
+
+:::{warning}
+Using an attribute whose values aren't unique and/or stable will lead to buggy
+and likely insecure behavior. The recommended attribute to use is the `DN` as
+`DNs` fundamentally should be unique within an LDAP directory and tend to be
+stable.
+:::
+
+#### Manually fixing users after an email change in LDAP
+
+If you don't have `unique_account` enabled, when a user's email address is
+changed in your LDAP directory, manual action needs to be taken to tell Zulip
+that the email address Zulip account with the new email address.
+
+There are two ways to execute email address changes:
+
+- Users changing their email address in LDAP can [change their email
+  address in Zulip](https://zulip.com/help/change-your-email-address)
+  before logging out of Zulip. The user will need to be able to
+  receive email at the new email address in order to complete this
+  flow.
+
+- A server administrator can use the `manage.py change_user_email`
+  [management command][management-commands] to adjust a Zulip
+  account's email address directly.
+
+If a user accidentally creates a duplicate account, the duplicate
+account can be deactivated (and its email address changed) or deleted,
+and then the real account adjusted using the management command above.
+
+[management-commands]: ../production/management-commands.md
 
 ### Multiple LDAP searches
 

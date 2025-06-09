@@ -1211,3 +1211,27 @@ def get_bot_dicts_in_realm(realm: "Realm") -> list[dict[str, Any]]:
 
 def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
+
+
+class ExternalAuthID(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
+    date_created = models.DateTimeField(default=timezone_now)
+    # TODO: We might want to add is_active and date_deactivated fields in the future.
+
+    external_auth_method_name = models.TextField(db_index=False)
+    external_auth_id = models.TextField(db_index=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["realm", "external_auth_id", "external_auth_method_name"],
+                name="zerver_externalauthid_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["realm", "external_auth_method_name"],
+                name="zerver_externalauthid_realm_method_name_idx",
+            ),
+        ]
