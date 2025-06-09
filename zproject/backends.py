@@ -73,7 +73,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
 )
-from zerver.actions.user_settings import do_regenerate_api_key
+from zerver.actions.user_settings import do_change_user_delivery_email, do_regenerate_api_key
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
@@ -107,6 +107,7 @@ from zerver.models.realms import (
     supported_auth_backends,
 )
 from zerver.models.users import (
+    ExternalAuthID,
     PasswordTooWeakError,
     get_user_by_delivery_email,
     get_user_profile_by_id,
@@ -686,6 +687,19 @@ class ZulipLDAPConfigurationError(Exception):
 LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK = 2
 
 
+def ldap_external_auth_id_sync_enabled() -> bool:
+    external_auth_id_attr = settings.AUTH_LDAP_USER_ATTR_MAP.get("unique_account_id")
+    if external_auth_id_attr is None:
+        return False
+
+    if not isinstance(external_auth_id_attr, str):
+        raise AssertionError(
+            "unique_account_id in AUTH_LDAP_USER_ATTR_MAP set to invalid value! must be a string."
+        )
+
+    return True
+
+
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     """Common code between LDAP authentication (ZulipLDAPAuthBackend) and
     using LDAP just to sync user data (ZulipLDAPUserPopulator).
@@ -1027,7 +1041,74 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         return user
 
-    def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> tuple[UserProfile, bool]:
+    def get_and_sync_user_profile_by_external_auth_id(
+        self, external_auth_id: str, email: str, return_data: dict[str, Any]
+    ) -> UserProfile | None:
+        # If we're using External Auth ID based auth, then the lookup by
+        # external_auth_id takes precedence over lookup by email.
+        try:
+            user_profile: UserProfile | None = ExternalAuthID.objects.get(
+                external_auth_method_name=self.name,
+                external_auth_id=external_auth_id,
+                realm=self._realm,
+            ).user_profile
+        except ExternalAuthID.DoesNotExist:
+            user_profile = common_get_active_user(email, self._realm, return_data)
+            if user_profile is not None:
+                # If we found an account with the matching email, but no ExternalAuthID, then this account hasn't
+                # yet had its external_auth_id stored - we need to do this now.
+                ExternalAuthID.objects.create(
+                    external_auth_method_name=self.name,
+                    external_auth_id=external_auth_id,
+                    realm=self._realm,
+                    user_profile=user_profile,
+                )
+            return user_profile
+
+        assert user_profile is not None
+        # We found a user with the matching external_auth_id. Now we need to do a seemingly redundant
+        # re-fetching via common_get_active_user - as that's the core function for securely fetching
+        # a user for login, in authentication contexts. It's responsible for the relevant security
+        # checks (such as the account being active) - we don't attempt to duplicate these checks
+        # here independently.
+        user_profile = common_get_active_user(user_profile.delivery_email, self._realm, return_data)
+        if user_profile is None:
+            return None
+
+        # We need to ensure the email address of the Zulip account remains synced with what's in the ldap
+        # directory. That's the point of external_auth_id-based authentication.
+        if user_profile.delivery_email != email:
+            # We intentionally do a case-sensitive comparison, despite emails in Zulip being
+            # case-insensitive in auth contexts. We want to support the case of sync tweaking just
+            # capitalization of the email address.
+            self.logger.info(
+                "User %s, logged in via ExternalAuthId %s, has mismatched email. Syncing: %s->%s",
+                user_profile.id,
+                external_auth_id,
+                user_profile.delivery_email,
+                email,
+            )
+            if (
+                UserProfile.objects.filter(realm=self._realm, delivery_email__iexact=email)
+                # The EXISTS query has a somewhat strange shape because we need to again consider the edge case where we
+                # might be simply updating capitalization of the email for the user. In such a situation, a "conflict" on
+                # (realm, delivery_email__iexact) is not an actual conflict.
+                .exclude(id=user_profile.id)
+                .exists()
+            ):
+                self.logger.warning(
+                    "Can't sync email for user %s - another user exists with target email %s",
+                    user_profile.id,
+                    email,
+                )
+            else:
+                do_change_user_delivery_email(user_profile, email, acting_user=None)
+
+        return user_profile
+
+    def get_or_build_user(
+        self, username: str, ldap_user: "ZulipLDAPUser"
+    ) -> tuple[UserProfile, bool]:
         """The main function of our authentication backend extension of
         django-auth-ldap.  When this is called (from `authenticate`),
         django-auth-ldap will already have verified that the provided
@@ -1046,6 +1127,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         email = self.user_email_from_ldapuser(username, ldap_user)
 
+        external_auth_id: str | None = None
+        if ldap_external_auth_id_sync_enabled():
+            external_auth_id = ldap_user.get_external_auth_id()
+
         if self.is_account_realm_access_forbidden(ldap_user, self._realm):
             raise ZulipLDAPError("User not allowed to access realm")
 
@@ -1056,7 +1141,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 return_data["inactive_user"] = True
                 raise ZulipLDAPError("User has been deactivated")
 
-        user_profile = common_get_active_user(email, self._realm, return_data)
+        if ldap_external_auth_id_sync_enabled() and external_auth_id:
+            user_profile = self.get_and_sync_user_profile_by_external_auth_id(
+                external_auth_id, email, return_data
+            )
+        else:
+            user_profile = common_get_active_user(email, self._realm, return_data)
+
         if user_profile is not None:
             # An existing user, successfully authed; return it.
             return user_profile, False
@@ -1125,6 +1216,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             opts["role"] = UserProfile.ROLE_REALM_OWNER
             opts["default_stream_groups"] = []
 
+        if ldap_external_auth_id_sync_enabled():
+            opts["external_auth_id_dict"] = {self.name: external_auth_id}
+
         user_profile = do_create_user(
             email,
             None,
@@ -1154,6 +1248,23 @@ class ZulipLDAPUser(_LDAPUser):
         del kwargs["realm"]
 
         super().__init__(*args, **kwargs)
+
+    def get_external_auth_id(self) -> str:
+        """
+        The user's ldap DN is usually the best choice for the external_auth_id in LDAP
+        authentication, as DNs are unique within an ldap directory.
+        However, we also support configuring a custom attribute to use instead.
+        """
+        attr_name = settings.AUTH_LDAP_USER_ATTR_MAP.get("unique_account_id")
+        if attr_name is None:
+            raise AssertionError("unique_account_id is not configured in AUTH_LDAP_USER_ATTR_MAP")
+
+        if attr_name.lower() == "dn":
+            return self.dn
+
+        external_auth_id = self.attrs[attr_name][0]
+        assert isinstance(external_auth_id, str)
+        return external_auth_id
 
     @transaction.atomic(savepoint=False)
     def _get_or_create_user(self, force_populate: bool = False) -> UserProfile:

@@ -53,6 +53,7 @@ LDAP_APPEND_DOMAIN: str | None = None
 LDAP_EMAIL_ATTR: str | None = None
 AUTH_LDAP_REVERSE_EMAIL_SEARCH: Optional["LDAPSearch"] = None
 AUTH_LDAP_USERNAME_ATTR: str | None = None
+
 # AUTH_LDAP_USER_ATTR_MAP is uncommented in prod_settings_template.py,
 # so the value here mainly serves to help document the default.
 AUTH_LDAP_USER_ATTR_MAP: dict[str, str] = {
