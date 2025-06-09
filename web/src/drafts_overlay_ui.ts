@@ -388,6 +388,7 @@ export function launch(): void {
     setup_event_handlers();
     setup_bulk_actions_handlers();
     messages_overlay_ui.initialize_restore_overlay_message_tooltip();
+    messages_overlay_ui.initialize_no_channel_selected_tooltip();
 }
 
 export function update_bulk_delete_ui(): void {
