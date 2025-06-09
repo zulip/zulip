@@ -919,6 +919,7 @@ function navigate_to_anchor_message(opts: {
     assert(message_lists.current !== undefined);
     if (fetch_status_shows_anchor_fetched(message_lists.current.data.fetch_status)) {
         select_msg_id(message_list_data_to_target_message_id(message_lists.current.data));
+        return;
     } else if (fetch_status_shows_anchor_fetched(all_messages_data.fetch_status)) {
         // We can load messages into `msg_list_data` but we don't know
         // the fetch status until we contact server. If we are contacting the
@@ -933,21 +934,26 @@ function navigate_to_anchor_message(opts: {
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
         });
         load_local_messages(msg_list_data, all_messages_data);
-        select_anchor_using_data(msg_list_data);
-    } else {
-        const msg_list_data = new MessageListData({
-            filter: message_lists.current.data.filter,
-            excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
-        });
-
-        message_fetch.load_messages_around_anchor(
-            anchor,
-            () => {
-                select_anchor_using_data(msg_list_data);
-            },
-            msg_list_data,
-        );
+        // It is still possible that `all_messages_data` doesn't have any messages
+        // for the current narrow, so we check for that.
+        if (!msg_list_data.visibly_empty()) {
+            select_anchor_using_data(msg_list_data);
+            return;
+        }
     }
+
+    const msg_list_data = new MessageListData({
+        filter: message_lists.current.data.filter,
+        excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+    });
+
+    message_fetch.load_messages_around_anchor(
+        anchor,
+        () => {
+            select_anchor_using_data(msg_list_data);
+        },
+        msg_list_data,
+    );
 }
 
 export function fast_track_current_msg_list_to_anchor(anchor: string): void {
