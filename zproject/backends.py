@@ -1044,7 +1044,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         """
         return_data: dict[str, Any] = {}
 
-        username = self.user_email_from_ldapuser(username, ldap_user)
+        email = self.user_email_from_ldapuser(username, ldap_user)
 
         if self.is_account_realm_access_forbidden(ldap_user, self._realm):
             raise ZulipLDAPError("User not allowed to access realm")
@@ -1056,7 +1056,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 return_data["inactive_user"] = True
                 raise ZulipLDAPError("User has been deactivated")
 
-        user_profile = common_get_active_user(username, self._realm, return_data)
+        user_profile = common_get_active_user(email, self._realm, return_data)
         if user_profile is not None:
             # An existing user, successfully authed; return it.
             return user_profile, False
@@ -1077,9 +1077,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             raise ZulipLDAPError("Realm has been deactivated")
 
         try:
-            validate_email(username)
+            validate_email(email)
         except ValidationError:
-            error_message = f"{username} is not a valid email address."
+            error_message = f"{email} is not a valid email address."
             # This indicates a misconfiguration of ldap settings
             # or a malformed email value in the ldap directory,
             # so we should log a warning about this before failing.
@@ -1091,8 +1091,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # we also call validate_email_not_already_in_realm just for consistency,
         # even though its checks were already done above.
         try:
-            email_allowed_for_realm(username, self._realm)
-            validate_email_not_already_in_realm(self._realm, username)
+            email_allowed_for_realm(email, self._realm)
+            validate_email_not_already_in_realm(self._realm, email)
         except DomainNotAllowedForRealmError:
             raise ZulipLDAPError("This email domain isn't allowed in this organization.")
         except (DisposableEmailError, EmailContainsPlusError):
@@ -1126,7 +1126,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             opts["default_stream_groups"] = []
 
         user_profile = do_create_user(
-            username,
+            email,
             None,
             self._realm,
             full_name,
