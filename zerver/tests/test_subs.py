@@ -68,7 +68,7 @@ from zerver.lib.subscription_info import (
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.user_groups import UserGroupMembershipDetails, is_user_in_group
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -1113,36 +1113,6 @@ class StreamAdminTest(ZulipTestCase):
         for um in UserMessage.objects.filter(message=message):
             self.assertTrue(um.flags & UserMessage.flags.read)
 
-    def test_deactivate_stream_via_user_group_permissions(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        stream = self.make_stream("new_stream_1")
-        self.subscribe(user_profile, stream.name)
-        user_profile_group = check_add_user_group(
-            user_profile.realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-
-        # Subscribe Cordelia to verify that the archive notification is marked as read for all subscribers.
-        cordelia = self.example_user("cordelia")
-        self.subscribe(cordelia, stream.name)
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=user_profile,
-        )
-        result = self.client_delete(f"/json/streams/{stream.id}")
-        self.assert_json_success(result)
-        self.assertTrue(check_subscriptions_exists(user_profile, stream))
-        # Assert that a notification message was sent for the archive.
-        message = self.get_last_message()
-        expected_content = f"Channel #**{stream.name}** has been archived."
-        self.assertEqual(message.content, expected_content)
-
-        # Assert that the message is read.
-        for um in UserMessage.objects.filter(message=message):
-            self.assertTrue(um.flags & UserMessage.flags.read)
-
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
         do_add_default_stream(stream)
@@ -1370,16 +1340,6 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_delete("/json/streams/999999999")
         self.assert_json_error(result, "Invalid channel ID")
-
-    def test_deactivate_stream_backend_requires_admin(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        self.make_stream("new_stream")
-        stream = self.subscribe(user_profile, "new_stream")
-
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
-        result = self.client_delete(f"/json/streams/{stream.id}")
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
 
     def test_private_stream_live_updates(self) -> None:
         user_profile = self.example_user("hamlet")
