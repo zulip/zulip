@@ -179,7 +179,7 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
-                demo_organizations_ui.do_convert_demo_organization();
+                demo_organizations_ui.show_convert_demo_organization_modal();
             });
 
             $popper.on("click", ".change-language-spectator", (e) => {
