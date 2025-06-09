@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # This tools generates /etc/zulip/zulip-secrets.conf
+import json
 import os
 import sys
 from contextlib import suppress
@@ -17,6 +18,9 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 import argparse
 import configparser
 import uuid
+
+from nacl.encoding import Base64Encoder
+from nacl.public import PrivateKey
 
 os.chdir(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -179,6 +183,17 @@ def generate_secrets(development: bool = False) -> None:
         add_secret("zulip_org_key", random_string(64))
     if need_secret("zulip_org_id"):
         add_secret("zulip_org_id", str(uuid.uuid4()))
+
+    if development and need_secret("push_registration_encryption_keys"):
+        # 'settings.ZILENCER_ENABLED' would be a better check than
+        # 'development' for whether we need push bouncer secrets,
+        # but we're trying to avoid importing settings.
+        private_key = PrivateKey.generate()
+        private_key_str = Base64Encoder.encode(bytes(private_key)).decode("utf-8")
+        public_key_str = Base64Encoder.encode(bytes(private_key.public_key)).decode("utf-8")
+        add_secret(
+            "push_registration_encryption_keys", json.dumps({public_key_str: private_key_str})
+        )
 
     if len(lines) == 0:
         print("generate_secrets: No new secrets to generate.")

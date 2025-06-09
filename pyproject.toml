@@ -201,6 +201,9 @@ prod = [
 
   # For using Missing sentinel
   "pydantic-partials",
+
+  # For E2EE of push notifications
+  "pynacl",
 ]
 docs = [
   # Needed to build RTD docs
