@@ -692,7 +692,9 @@
 }
 
 .main-view-banner {
-    margin-bottom: 20px;
+    /* This is same spatial value as the 4px of padding around
+       the edge of the compose box. */
+    margin-bottom: 4px;
     border-radius: 5px;
     border: 1px solid;
     display: flex;
