@@ -1,5 +1,5 @@
 <li class="{{#if is_active}}active-sub-filter{{/if}} {{#if is_zero}}zero-dm-unreads{{/if}} dm-list-item bottom_left_row" data-user-ids-string="{{user_ids_string}}">
-    <div class="dm-box dm-user-status" data-user-ids-string="{{user_ids_string}}" data-is-group="{{is_group}}">
+    <a href="{{url}}" class="dm-box dm-user-status" data-user-ids-string="{{user_ids_string}}" data-is-group="{{is_group}}">
 
         {{#if is_group}}
         <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
@@ -7,7 +7,7 @@
         <span class="conversation-partners-icon zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
         {{/if}}
 
-        <a href="{{url}}" class="conversation-partners">
+        <span class="conversation-partners">
             <span class="conversation-partners-list">{{recipients}}
                 {{#if is_current_user}}<span class="my_user_status">{{t '(you)'}}</span>{{/if}}
                 {{> status_emoji status_emoji_info}}
@@ -16,7 +16,7 @@
                 {{/if}}
             </span>
 
-        </a>
+        </span>
         <div class="dm-markers-and-unreads">
             {{#if has_unread_mention}}
                 <span class="unread_mention_info">
@@ -27,5 +27,5 @@
                 {{unread}}
             </span>
         </div>
-    </div>
+    </a>
 </li>
