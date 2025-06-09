@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # This tools generates /etc/zulip/zulip-secrets.conf
+import json
 import os
 import sys
 from contextlib import suppress
+
+from nacl.encoding import Base64Encoder
+from nacl.public import PrivateKey
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -179,6 +183,20 @@ def generate_secrets(development: bool = False) -> None:
         add_secret("zulip_org_key", random_string(64))
     if need_secret("zulip_org_id"):
         add_secret("zulip_org_id", str(uuid.uuid4()))
+
+    if need_secret("push_registration_encryption_keys"):
+        # We defer importing settings unless we need it, because
+        # importing settings is expensive (mostly because of
+        # django-auth-ldap) and we want the noop case to be fast.
+        from zproject import settings
+
+        if settings.ZILENCER_ENABLED:
+            private_key = PrivateKey.generate()
+            private_key_str = Base64Encoder.encode(bytes(private_key)).decode("utf-8")
+            public_key_str = Base64Encoder.encode(bytes(private_key.public_key)).decode("utf-8")
+            add_secret(
+                "push_registration_encryption_keys", json.dumps({public_key_str: private_key_str})
+            )
 
     if len(lines) == 0:
         print("generate_secrets: No new secrets to generate.")
