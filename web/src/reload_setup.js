@@ -53,7 +53,7 @@ export function initialize() {
 
         try {
             const private_message_recipient_ids = vars.recipient
-                ? people.emails_string_to_user_ids(vars.recipient)
+                ? people.user_ids_string_to_ids_array(vars.recipient)
                 : [];
 
             compose_actions.start({

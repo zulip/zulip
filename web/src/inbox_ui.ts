@@ -398,8 +398,6 @@ function format_dm(
         recipient_ids.push(people.my_current_user_id());
     }
 
-    const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-    assert(reply_to !== undefined);
     const rendered_dm_with = recipient_ids
         .map((recipient_id) => ({
             name: people.get_display_full_name(recipient_id),
@@ -427,7 +425,7 @@ function format_dm(
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
-        dm_url: hash_util.pm_with_url(reply_to),
+        dm_url: hash_util.pm_with_url(user_ids_string),
         user_ids_string,
         unread_count,
         is_hidden: filter_should_hide_dm_row({dm_key: user_ids_string}),
@@ -1198,11 +1196,9 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
         assert(row_info !== undefined);
         const message = message_store.get(row_info.latest_msg_id);
         if (message === undefined) {
-            const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
-            assert(recipients !== undefined);
             return {
                 msg_type: "private",
-                private_message_recipient: recipients,
+                private_message_recipient: row_info.user_ids_string,
             };
         }
         return {message};

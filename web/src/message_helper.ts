@@ -103,7 +103,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
             status_emoji_info,
             is_private: true,
             is_stream: false,
-            reply_to: util.normalize_recipients(message_store.get_pm_emails(message_with_booleans)),
+            reply_to: people.pm_reply_to(message_with_booleans),
             display_reply_to: message_store.get_pm_full_names(pm_with_user_ids),
             pm_with_url,
             to_user_ids,

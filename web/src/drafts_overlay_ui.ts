@@ -97,11 +97,12 @@ function restore_draft(draft_id: string): void {
         }
     } else {
         if (compose_args.private_message_recipient_ids.length > 0) {
-            const private_message_recipient_emails =
-                people.user_ids_to_emails_string(compose_args.private_message_recipient_ids) ?? "";
-            message_view.show([{operator: "dm", operand: private_message_recipient_emails}], {
-                trigger: "restore draft",
-            });
+            message_view.show(
+                [{operator: "dm", operand: compose_args.private_message_recipient_ids.toString()}],
+                {
+                    trigger: "restore draft",
+                },
+            );
         }
     }
 

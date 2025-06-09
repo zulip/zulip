@@ -69,7 +69,7 @@ type Part =
 
 type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
-    | {valid_user: false; operand: string};
+    | {valid_user: false; operand: number};
 
 function zephyr_stream_name_match(
     message: Message & {type: "stream"},
@@ -220,14 +220,13 @@ function message_matches_search_term(message: Message, operator: string, operand
             return message.topic.toLowerCase() === operand;
 
         case "sender":
-            return people.id_matches_email_operand(message.sender_id, operand);
+            return Number(operand) === message.sender_id;
 
         case "dm": {
-            // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
             }
-            const operand_ids = people.pm_with_operand_ids(operand);
+            const operand_ids = people.user_ids_string_to_ids_array(operand);
             if (!operand_ids) {
                 return false;
             }
@@ -240,15 +239,11 @@ function message_matches_search_term(message: Message, operator: string, operand
         }
 
         case "dm-including": {
-            const operand_user = people.get_by_email(operand);
-            if (operand_user === undefined) {
-                return false;
-            }
             const user_ids = people.all_user_ids_in_pm(message);
             if (!user_ids) {
                 return false;
             }
-            return user_ids.includes(operand_user.user_id);
+            return user_ids.includes(Number(operand));
         }
     }
 
@@ -349,7 +344,7 @@ export class Filter {
             case "dm":
                 operand = operand.toString().toLowerCase();
                 if (operand === "me") {
-                    operand = people.my_current_email();
+                    operand = people.my_current_user_id().toString();
                 }
                 break;
             case "dm-including":
@@ -584,9 +579,9 @@ export class Filter {
                 if (term.operand === "me") {
                     return true;
                 }
-                return term.operand
-                    .split(",")
-                    .every((email) => people.get_by_email(email) !== undefined);
+                return people
+                    .user_ids_string_to_ids_array(term.operand)
+                    .every((user_id) => people.is_valid_user_id(user_id));
             case "search":
                 return true;
             default:
@@ -809,13 +804,13 @@ export class Filter {
                 term.negated,
             );
             if (USER_OPERATORS.has(canonicalized_operator)) {
-                const user_emails = operand.split(",");
-                const users: ValidOrInvalidUser[] = user_emails.map((email) => {
-                    const person = people.get_by_email(email);
+                const user_ids = people.user_ids_string_to_ids_array(operand);
+                const users: ValidOrInvalidUser[] = user_ids.map((user_id) => {
+                    const person = people.maybe_get_user_by_id(user_id);
                     if (person === undefined) {
                         return {
                             valid_user: false,
-                            operand: email,
+                            operand: user_id,
                         };
                     }
                     return {
@@ -906,13 +901,13 @@ export class Filter {
             // We should make sure the current user is not included for
             // the `dm` operand for the narrow.
             const dm_participants = message.display_recipient
-                .map((user) => user.email)
-                .filter((user_email) => user_email !== current_user.email);
+                .map((user) => user.id.toString())
+                .filter((user_id) => user_id !== current_user.user_id.toString());
 
             // However, if the current user is the only recipient of the
             // message, we should include the user in the operand.
             if (dm_participants.length === 0) {
-                dm_participants.push(current_user.email);
+                dm_participants.push(current_user.user_id.toString());
             }
 
             const dm_operand = dm_participants.join(",");
@@ -1299,7 +1294,10 @@ export class Filter {
                 case "channels-public":
                     return "/#narrow/channels/public";
                 case "dm":
-                    return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
+                    return (
+                        "/#narrow/dm/" +
+                        people.user_ids_string_to_slug(this.operands("dm").join(","))
+                    );
                 case "is-resolved":
                     return "/#narrow/topics/is/resolved";
                 case "is-followed":
@@ -1307,7 +1305,10 @@ export class Filter {
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
-                    return "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]!);
+                    return (
+                        "/#narrow/sender/" +
+                        people.user_ids_string_to_slug(this.operands("sender")[0]!)
+                    );
             }
         }
 
@@ -1328,7 +1329,7 @@ export class Filter {
 
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.operands("sender")[0] === people.my_current_user_id().toString()
         ) {
             zulip_icon = "smile";
             return {...context, zulip_icon};
@@ -1408,26 +1409,27 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["dm", "with"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["dm"]))
         ) {
-            const emails = this.operands("dm")[0]!.split(",");
-            if (emails.length === 1) {
-                const user = people.get_by_email(emails[0]!);
+            const ignore_missing = true;
+            const user_ids = people.user_ids_string_to_ids_array(this.operands("dm")[0]!);
+            if (user_ids.length === 1) {
+                const user = people.maybe_get_user_by_id(user_ids[0]!, ignore_missing);
                 if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
                     return $t({defaultMessage: "Messages with yourself"});
                 }
             }
-            const names = emails.map((email) => {
-                const person = people.get_by_email(email);
+            const names = user_ids.map((user_id) => {
+                const person = people.maybe_get_user_by_id(user_id, ignore_missing);
                 if (!person) {
-                    return email;
+                    return user_id.toString();
                 }
-                if (muted_users.is_user_muted(person.user_id)) {
-                    if (people.should_add_guest_user_indicator(person.user_id)) {
+                if (muted_users.is_user_muted(user_id)) {
+                    if (people.should_add_guest_user_indicator(user_id)) {
                         return $t({defaultMessage: "Muted user (guest)"});
                     }
 
                     return $t({defaultMessage: "Muted user"});
                 }
-                if (people.should_add_guest_user_indicator(person.user_id)) {
+                if (people.should_add_guest_user_indicator(user_id)) {
                     return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
                 }
                 return person.full_name;
@@ -1436,9 +1438,9 @@ export class Filter {
             return util.format_array_as_list(names, "long", "conjunction");
         }
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
-            const email = this.operands("sender")[0]!;
-            const user = people.get_by_email(email);
-            let sender = email;
+            const user_id_string = this.operands("sender")[0]!;
+            const user = people.get_by_user_id(Number(user_id_string));
+            let sender = user_id_string;
             if (user) {
                 if (people.is_my_user_id(user.user_id)) {
                     return $t({defaultMessage: "Messages sent by you"});

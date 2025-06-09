@@ -252,10 +252,7 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
 }
 
 // This function modifies the narrow data to use integer IDs instead of
-// strings if it is supported for that operator. We currently don't set
-// or convert user emails to IDs directly in the Filter code because
-// doing so breaks the app in various modules that expect a string of
-// user emails.
+// strings if it is supported for that operator.
 function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
     // We use the canonical operator when checking these sets, so legacy
     // operators, such as "pm-with" and "stream", are not included here.
@@ -278,7 +275,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
-            const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
+            const user_ids_array = people.user_ids_string_to_ids_array(raw_term.operand);
             assert(user_ids_array !== undefined);
             narrow_term.operand = user_ids_array;
         }
@@ -307,9 +304,9 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 
             // The other operands supporting integer IDs all work with
             // a single user object.
-            const person = people.get_by_email(raw_term.operand);
-            if (person !== undefined) {
-                narrow_term.operand = person.user_id;
+            const user_id = Number(raw_term.operand);
+            if (typeof user_id === "number" && people.maybe_get_user_by_id(user_id, true)) {
+                narrow_term.operand = Number(raw_term.operand);
             }
         }
         narrow_terms.push(narrow_term);

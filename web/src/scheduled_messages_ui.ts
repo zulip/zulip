@@ -70,20 +70,15 @@ export function open_scheduled_message_in_compose(
         const recipient_ids = scheduled_msg.to.filter(
             (recipient_id) => !people.get_by_user_id(recipient_id).is_inaccessible_user,
         );
-        const recipient_emails = recipient_ids.map(
-            (recipient_id) => people.get_by_user_id(recipient_id).email,
-        );
         compose_args = {
             message_type: "private" as const,
             private_message_recipient_ids: recipient_ids,
             content: scheduled_msg.content,
             keep_composebox_empty: true,
         };
-        // Narrow filters still use emails for PMs, though we'll
-        // eventually want to migrate that as well.
         narrow_args = {
             message_type: "private" as const,
-            private_message_recipient: recipient_emails.join(","),
+            private_message_recipient: recipient_ids.toString(),
             content: scheduled_msg.content,
             keep_composebox_empty: true,
         };

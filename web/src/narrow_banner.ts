@@ -350,7 +350,11 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         case "dm": {
-            if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
+            if (
+                !people.is_valid_bulk_user_ids_for_compose(
+                    people.user_ids_string_to_ids_array(first_operand),
+                )
+            ) {
                 if (!first_operand.includes(",")) {
                     return {
                         title: $t({defaultMessage: "This user does not exist!"}),
@@ -360,7 +364,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     title: $t({defaultMessage: "One or more of these users do not exist!"}),
                 };
             }
-            const user_ids = people.emails_strings_to_user_ids_array(first_operand);
+            const user_ids = people.user_ids_string_to_ids_array(first_operand);
             assert(user_ids?.[0] !== undefined);
             const user_ids_string = util.sorted_ids(user_ids).join(",");
             const direct_message_error_string =
@@ -446,7 +450,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         case "sender": {
-            const sender = people.get_by_email(first_operand);
+            const sender = people.maybe_get_user_by_id(Number(first_operand), true);
             if (sender) {
                 return {
                     title: $t(
@@ -463,7 +467,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         case "dm-including": {
-            const person_in_dms = people.get_by_email(first_operand);
+            const person_in_dms = people.maybe_get_user_by_id(Number(first_operand), true);
             if (!person_in_dms) {
                 return {
                     title: $t({defaultMessage: "This user does not exist!"}),

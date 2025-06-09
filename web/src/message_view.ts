@@ -1335,10 +1335,7 @@ export function narrow_to_next_pm_string(opts = {}): void {
 
     // Hopefully someday we can narrow by user_ids_string instead of
     // mapping back to emails.
-    const direct_message = people.user_ids_string_to_emails_string(next_direct_message);
-    assert(direct_message !== undefined);
-
-    const filter_expr = [{operator: "dm", operand: direct_message}];
+    const filter_expr = [{operator: "dm", operand: next_direct_message}];
 
     // force_close parameter is true to not auto open compose_box
     const updated_opts = {
@@ -1393,8 +1390,6 @@ export function narrow_by_recipient(
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
     assert(message !== undefined);
-    const emails = message.reply_to.split(",");
-    const reply_to = people.sort_emails_by_username(emails);
 
     switch (message.type) {
         case "private":
@@ -1408,7 +1403,7 @@ export function narrow_by_recipient(
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            show([{operator: "dm", operand: reply_to.join(",")}], show_opts);
+            show([{operator: "dm", operand: message.reply_to}], show_opts);
             break;
 
         case "stream":

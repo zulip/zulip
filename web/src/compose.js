@@ -16,7 +16,6 @@ import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import * as message_events from "./message_events.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
@@ -93,20 +92,12 @@ export function create_message_object(message_content = compose_state.message_co
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.ts
-        const recipient = compose_state.private_message_recipient_emails();
-        const emails = util.extract_pm_recipients(recipient);
-        message.to = emails;
-        message.reply_to = recipient;
-        message.private_message_recipient = recipient;
-        message.to_user_ids = people.email_list_to_user_ids_string(emails);
-
-        // Note: The `undefined` case is for situations like
-        // the is_zephyr_mirror_realm case where users may
-        // be automatically created when you try to send a
-        // direct message to their email address.
-        if (message.to_user_ids !== undefined) {
-            message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
-        }
+        const user_ids = compose_state.private_message_recipient_ids();
+        const user_ids_string = user_ids.join(",");
+        message.to = user_ids;
+        message.reply_to = user_ids_string;
+        message.private_message_recipient = user_ids_string;
+        message.to_user_ids = user_ids_string;
     } else {
         const topic = compose_state.topic();
         message.topic = util.is_topic_name_considered_empty(topic) ? "" : topic;

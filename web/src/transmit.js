@@ -127,10 +127,10 @@ export function reply_message(opts) {
     }
 
     if (message.type === "private") {
-        const pm_recipient = people.pm_reply_to(message);
+        const pm_recipient = people.pm_with_user_ids(message);
 
         reply.type = "private";
-        reply.to = JSON.stringify(pm_recipient.split(","));
+        reply.to = JSON.stringify(pm_recipient);
         reply.content = content;
 
         send_message(reply, success, error);
