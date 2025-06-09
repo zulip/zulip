@@ -1238,6 +1238,14 @@ textarea.new_message_textarea {
             transition-property: background-color, border-color;
         }
 
+        #recipient_box_clear_topic_button {
+            transition: var(--compose-muted-recipient-row-transition);
+            transition-delay: var(
+                --compose-muted-recipient-row-transition-delay
+            );
+            transition-property: color, background-color, opacity;
+        }
+
         #compose-direct-recipient .pill {
             transition: var(--compose-muted-recipient-row-transition);
             transition-delay: var(
@@ -1288,15 +1296,6 @@ textarea.new_message_textarea {
         }
 
         &:hover {
-            .pill {
-                outline-color: transparent;
-            }
-        }
-
-        /* We don't want to trigger the recipient-box-wide hover
-           effects when someone is just hovering the new-topic
-           button. */
-        &:not(:has(#recipient_box_clear_topic_button:hover)):hover {
             background-color: var(
                 --color-compose-recipient-box-background-color
             );
@@ -1308,6 +1307,10 @@ textarea.new_message_textarea {
             .conversation-arrow,
             #stream_message_recipient_topic {
                 opacity: 1;
+            }
+
+            .pill {
+                outline-color: transparent;
             }
         }
 
