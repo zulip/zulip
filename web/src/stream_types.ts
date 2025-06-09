@@ -56,6 +56,10 @@ export const stream_schema = z.object({
     rendered_description: z.string(),
     stream_id: z.number(),
     stream_post_policy: z.nativeEnum(StreamPostPolicy),
+    // Generally, this should not be accessed directly, since it can
+    // have small inaccuracies in the event of rare races. See
+    // the comments on peer_data.get_subscriber_count.
+    subscriber_count: z.number(),
     topics_policy: stream_topics_policy_schema,
 });
 

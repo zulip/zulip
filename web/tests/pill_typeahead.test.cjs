@@ -136,7 +136,6 @@ const denmark = {
     render_subscribers: true,
 };
 const denmark_item = stream_item(denmark);
-peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
 
 const sweden = {
     stream_id: 2,
@@ -144,12 +143,13 @@ const sweden = {
     subscribed: false,
 };
 const sweden_item = stream_item(sweden);
-peer_data.set_subscribers(sweden.stream_id, [mark.user_id, jill.user_id]);
 
 const subs = [denmark, sweden];
 for (const sub of subs) {
     stream_data.add_sub(sub);
 }
+peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
+peer_data.set_subscribers(sweden.stream_id, [mark.user_id, jill.user_id]);
 
 run_test("set_up_user", ({mock_template, override, override_rewire}) => {
     mock_template("typeahead_list_item.hbs", false, (args) => {
