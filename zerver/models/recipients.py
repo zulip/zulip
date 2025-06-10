@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from django.db import models, transaction
 from django.db.models import QuerySet
-from django_cte import CTEManager
 from typing_extensions import override
 
 from zerver.lib.display_recipient import get_display_recipient
@@ -52,8 +51,6 @@ class Recipient(models.Model):
     STREAM = 2
     # The type group direct messages.
     DIRECT_MESSAGE_GROUP = 3
-
-    objects = CTEManager()  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
 
     class Meta:
         unique_together = ("type", "type_id")
