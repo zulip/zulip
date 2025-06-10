@@ -43,7 +43,9 @@ from zerver.models.users import (
     active_user_ids,
     base_bulk_get_user_queryset,
     base_get_user_queryset,
+    get_partial_realm_user_dicts,
     get_realm_user_dicts,
+    get_realm_user_dicts_from_ids,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
@@ -1053,9 +1055,14 @@ def get_accessible_user_ids(
 
 
 def get_user_dicts_in_realm(
-    realm: Realm, user_profile: UserProfile | None
+    realm: Realm, user_profile: UserProfile | None, user_ids: list[int] | None = None
 ) -> tuple[list[RawUserDict], list[APIUserDict]]:
-    all_user_dicts = get_realm_user_dicts(realm.id)
+    if user_ids is not None:
+        all_user_dicts = get_realm_user_dicts_from_ids(realm.id, user_ids)
+    elif settings.PARTIAL_USERS:
+        all_user_dicts = get_partial_realm_user_dicts(realm.id, user_profile)
+    else:
+        all_user_dicts = get_realm_user_dicts(realm.id)
     if check_user_can_access_all_users(user_profile):
         return (all_user_dicts, [])
 
@@ -1102,6 +1109,7 @@ def get_users_for_api(
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
     user_list_incomplete: bool = False,
+    user_ids: list[int] | None = None,
 ) -> dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to
     acting_user via the standard format for the Zulip API.  If
@@ -1114,9 +1122,12 @@ def get_users_for_api(
     accessible_user_dicts: list[RawUserDict] = []
     inaccessible_user_dicts: list[APIUserDict] = []
     if target_user is not None:
+        assert user_ids is None
         accessible_user_dicts = [user_profile_to_user_row(target_user)]
     else:
-        accessible_user_dicts, inaccessible_user_dicts = get_user_dicts_in_realm(realm, acting_user)
+        accessible_user_dicts, inaccessible_user_dicts = get_user_dicts_in_realm(
+            realm, acting_user, user_ids
+        )
 
     if include_custom_profile_fields:
         base_query = CustomProfileFieldValue.objects.select_related("field")

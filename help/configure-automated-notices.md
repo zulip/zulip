@@ -45,8 +45,9 @@ announced.
 ## Notices about topics
 
 A notice is sent when a topic is [resolved or
-unresolved](/help/resolve-a-topic). These notices will be marked as unread only
-for users who had participated in the topic.
+unresolved](/help/resolve-a-topic). Users can
+[configure](/help/marking-messages-as-read#configure-whether-resolved-topic-notices-are-marked-as-read)
+whether these notices are automatically marked as read.
 
 Additionally, when moving messages to another
 [channel](/help/move-content-to-another-channel) or

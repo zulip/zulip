@@ -24,8 +24,10 @@ from zerver.actions.create_realm import do_change_realm_subdomain, do_create_rea
 from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
 from zerver.actions.invites import do_invite_users
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
+    do_scrub_realm,
     do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
@@ -47,7 +49,10 @@ from zerver.lib.mobile_auth_otp import (
 )
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_future_email
-from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
+    get_user_subscribed_streams,
+)
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_classes import ZulipTestCase
@@ -177,7 +182,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         result = self.client_get("/login/", follow=True)
         self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
         self.assertIn("This organization has been deactivated.", result.content.decode())
-        self.assertNotIn("It has moved to", result.content.decode())
+        self.assertNotIn("and all organization data has been deleted", result.content.decode())
 
     def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
         realm = get_realm("zulip")
@@ -221,6 +226,30 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
         self.assertIn(result.request.get("SERVER_NAME"), ["new-name-2.testserver"])
+
+    def test_deactivation_notice_when_deactivated_and_scrubbed(self) -> None:
+        # We expect system bot messages when scrubbing a realm.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
+        hamlet = self.example_user("hamlet")
+        internal_send_private_message(notification_bot, hamlet, "test")
+        realm = get_realm("zulip")
+        do_deactivate_realm(
+            realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        realm.refresh_from_db()
+        assert realm.deactivated
+        assert realm.deactivated_redirect is None
+        with self.assertLogs(level="WARNING"):
+            do_scrub_realm(realm, acting_user=None)
+
+        result = self.client_get("/login/", follow=True)
+        self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
+        self.assertIn("This organization has been deactivated,", result.content.decode())
+        self.assertIn("and all organization data has been deleted", result.content.decode())
 
 
 class AddNewUserHistoryTest(ZulipTestCase):
@@ -1029,7 +1058,7 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(95),
+            self.assert_database_query_count(97),
             self.assert_memcached_count(18),
             self.captureOnCommitCallbacks(execute=True),
         ):
@@ -2806,6 +2835,59 @@ class UserSignUpTest(ZulipTestCase):
 
         result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1"])
         self.check_user_subscribed_only_to_streams("newguy", default_streams | set(group1_streams))
+
+    def test_signup_stream_subscriber_count(self) -> None:
+        """
+        Verify that signing up successfully increments subscriber_count by 1
+        for that new user subscribed streams.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+        realm = get_realm("zulip")
+
+        all_streams_subscriber_count = self.build_streams_subscriber_count(
+            streams=Stream.objects.all()
+        )
+
+        result = self.verify_signup(email=email, password=password, realm=realm)
+        assert isinstance(result, UserProfile)
+
+        user_profile = result
+        user_stream_ids = {stream.id for stream in get_user_subscribed_streams(user_profile)}
+
+        streams_subscriber_counts_before = {
+            stream_id: count
+            for stream_id, count in all_streams_subscriber_count.items()
+            if stream_id in user_stream_ids
+        }
+
+        other_streams_subscriber_counts_before = {
+            stream_id: count
+            for stream_id, count in all_streams_subscriber_count.items()
+            if stream_id not in user_stream_ids
+        }
+
+        # DB-refresh streams.
+        streams_subscriber_counts_after = self.fetch_streams_subscriber_count(user_stream_ids)
+
+        # DB-refresh other_streams.
+        other_streams_subscriber_counts_after = self.fetch_other_streams_subscriber_count(
+            user_stream_ids
+        )
+
+        # Signing up a user should result in subscriber_count + 1
+        self.assert_stream_subscriber_count(
+            streams_subscriber_counts_before,
+            streams_subscriber_counts_after,
+            expected_difference=1,
+        )
+
+        # Make sure other streams are not affected upon signup.
+        self.assert_stream_subscriber_count(
+            other_streams_subscriber_counts_before,
+            other_streams_subscriber_counts_after,
+            expected_difference=0,
+        )
 
     def test_signup_two_confirmation_links(self) -> None:
         email = self.nonreg_email("newguy")

@@ -912,6 +912,8 @@ class RocketChatImporter(ZulipTestCase):
                 "INFO:root:Done processing emoji",
                 "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
+                "INFO:root:Processed messages up to 35 / 35",
+                "INFO:root:Processed messages up to 8 / 8",
                 "INFO:root:Exporting migration status",
             ],
         )

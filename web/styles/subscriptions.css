@@ -136,6 +136,17 @@ h4.user_group_setting_subsection_title {
     line-height: 1.5;
 }
 
+.subscriber_list_settings_container.no-display {
+    display: none;
+}
+
+.subscriber-list-settings-loading {
+    display: flex;
+    align-items: center;
+    margin: auto;
+    margin-top: 100px;
+}
+
 .member-list-box,
 .subscriber-list-box {
     text-align: center;
@@ -520,7 +531,6 @@ h4.user_group_setting_subsection_title {
         position: relative;
         display: inline-block;
         vertical-align: top;
-        height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
 
@@ -654,11 +664,6 @@ h4.user_group_setting_subsection_title {
     position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    /* Calculated from several heights and padding/margin measurements
-    in .list-toggler-container and .stream_filter, with some added
-    fiddling to see what worked best at 12px - 20px font sizes.
-    When we redesign this area we should make this less brittle. */
-    height: calc(100% - 3.4em - 40px);
     width: 100%;
 }
 
@@ -680,7 +685,7 @@ h4.user_group_setting_subsection_title {
     align-items: center;
 }
 
-.user-groups-list.hide-deactived-user-groups .deactivated-group {
+.user-groups-list.hide-deactivated-user-groups .deactivated-group {
     display: none;
 }
 
@@ -885,7 +890,7 @@ h4.user_group_setting_subsection_title {
 
 .org-permissions-form,
 .group-permissions,
-.stream-permissions {
+.advanced-configurations-container {
     .group_setting_disabled {
         cursor: not-allowed;
         /* This ensures that we do not see the not allowed cursor in the
@@ -944,8 +949,9 @@ h4.user_group_setting_subsection_title {
             justify-content: space-between;
             position: absolute;
             bottom: 0;
-            width: calc(100% - 27px);
-            padding: 9px 15px 15px;
+            /* Subtract 15px padding on either side. */
+            width: calc(100% - 30px);
+            padding: 9px 15px;
             text-align: right;
             background-color: var(--color-background-modal-bar);
             border-top: 1px solid var(--color-border-modal-bar);
@@ -1003,14 +1009,14 @@ h4.user_group_setting_subsection_title {
     }
 
     .inner-box {
-        margin: 20px;
+        margin: 18px;
     }
 
     .group_settings_header,
     .stream_settings_header {
         white-space: nowrap;
         display: flex;
-        margin-left: 15px;
+        margin-left: 18px;
 
         .tab-container {
             .tab-switcher {
@@ -1034,23 +1040,9 @@ h4.user_group_setting_subsection_title {
 
             .subscribe-button,
             .join_leave_button,
-            #preview-stream-button,
-            .deactivate {
-                margin-right: 3px;
-                text-decoration: none;
-                padding: 0 10px;
+            #preview-stream-button {
                 height: 100%;
-                display: flex;
-                align-items: center;
-                box-sizing: border-box;
-            }
-
-            .deactivate {
-                height: 100%;
-
-                .icon-container {
-                    display: flex;
-                }
+                margin-left: 3px;
             }
         }
     }
@@ -1086,8 +1078,6 @@ h4.user_group_setting_subsection_title {
         #open_group_info_modal {
             display: flex;
             align-items: center;
-            padding: 7px 10px;
-            font-size: 1.1em;
         }
 
         .button-group {
@@ -1100,7 +1090,8 @@ h4.user_group_setting_subsection_title {
                 width: 1em;
             }
 
-            .deactivate {
+            .deactivate,
+            .reactivate {
                 margin-right: 3px;
                 text-decoration: none;
             }
@@ -1158,7 +1149,6 @@ h4.user_group_setting_subsection_title {
 
     .settings {
         position: relative;
-        height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
 
@@ -1221,6 +1211,10 @@ h4.user_group_setting_subsection_title {
             display: inline !important;
         }
     }
+
+    .icon-button {
+        font-size: 1.2em;
+    }
 }
 
 div.settings-radio-input-parent {
@@ -1268,7 +1262,7 @@ div.settings-radio-input-parent {
 }
 
 .stream-permissions,
-.stream-creation-body,
+.advanced-configurations-container,
 .group-permissions {
     .input-group {
         margin-bottom: 10px;
@@ -1292,15 +1286,6 @@ div.settings-radio-input-parent {
         height: 1.4em;
     }
 
-    .dropdown-widget-button {
-        /* Match the margin with other input groups around. */
-        margin-bottom: 20px;
-        min-width: var(--modal-input-width);
-        max-width: 100%;
-        width: auto;
-        height: 30px;
-    }
-
     .default-stream {
         margin: 20px 0;
         width: fit-content;
@@ -1312,7 +1297,7 @@ div.settings-radio-input-parent {
 }
 
 .group-permissions .pill-container,
-.stream-permissions .pill-container {
+.advanced-configurations-container .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
     background-color: hsl(0deg 0% 100%);
@@ -1327,7 +1312,7 @@ div.settings-radio-input-parent {
     }
 }
 
-.stream-permissions .pill-container {
+.advanced-configurations-container .pill-container {
     margin-bottom: 10px;
 }
 
@@ -1337,21 +1322,18 @@ div.settings-radio-input-parent {
     margin-bottom: 10px;
 }
 
-#stream-advanced-configurations {
-    .dropdown-widget-button {
-        color: hsl(0deg 0% 33%);
-    }
-}
-
 #change_user_group_description,
-#change_stream_description {
+#change_stream_description,
+#new_channel_folder_description {
     width: 100%;
     height: 80px;
     margin-bottom: 4px;
     box-sizing: border-box;
 }
 
-.stream-permissions .stream-message-retention-days-input input[type="text"] {
+.advanced-configurations-container
+    .stream-message-retention-days-input
+    input[type="text"] {
     border-radius: 5px;
     box-shadow: none;
     margin: 0;
@@ -1375,6 +1357,23 @@ div.settings-radio-input-parent {
     width: 2.5781em;
     height: 2.5781em;
     margin: -6px 0 -6px -10px;
+}
+
+#subscription_overlay .channel-folder-widget-container {
+    display: flex;
+    gap: 0.5em;
+    width: auto;
+    /* Set minimum width such that the total width of dropdown
+    button and "Create folder" button is at least equal to the
+    minimum width of pill inputs for permission settings. */
+    min-width: var(--modal-input-width);
+    flex-wrap: wrap;
+
+    .dropdown_widget_value {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 
 #deactivation-confirm-modal {
@@ -1410,32 +1409,25 @@ div.settings-radio-input-parent {
         flex-wrap: wrap;
     }
 
-    .list-toggler-container {
-        text-align: center;
-    }
-
     #groups_overlay .group_settings_header,
     #subscription_overlay .stream_settings_header {
         flex-wrap: wrap;
     }
 }
 
-/* Note that this block has settings_page CSS as well, and thus needs
-   to match the media queries in settings.css
-
-   We should eventually consolidate some of these styles with the settings
-   menu, using shared classnames. */
+/* We should eventually consolidate some of these styles with the styles
+   in settings.css, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .two-pane-settings-container {
         position: relative;
         overflow: hidden;
 
-        .list-toggler-container {
-            text-align: left;
-        }
-
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
+        }
+
+        .two-pane-settings-header.slide-left {
+            border-bottom: none;
         }
     }
 
@@ -1445,56 +1437,25 @@ div.settings-radio-input-parent {
         display: block;
         margin: 0;
         width: 100%;
-        height: calc(100% - var(--settings-overlay-header-height));
 
         border: none;
     }
 
     .two-pane-settings-overlay .right {
         position: absolute;
-        left: 101%;
-
-        top: var(--settings-overlay-header-height);
+        transform: translateX(101%);
+        transition: transform 0.3s ease;
         background-color: var(--color-background-modal);
-        border-top: none;
-
-        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         z-index: 10;
 
         &.show {
-            left: 0%;
+            transform: translateX(0%);
         }
     }
 
-    #settings_page .content-wrapper.right {
-        position: absolute;
-        display: block;
-        left: 101%;
-        margin: 0;
-        width: 100%;
-        height: calc(100% - var(--settings-overlay-header-height));
-
-        top: var(--settings-overlay-header-height);
-        background-color: var(--color-background-modal);
-        border: none;
-
-        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
-        z-index: 10;
-
-        &.show {
-            left: 0%;
-        }
-    }
-
-    .two-pane-settings-overlay {
-        .two-pane-settings-container {
-            height: 95%;
-        }
-
-        .settings {
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+    .two-pane-settings-overlay .settings {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 

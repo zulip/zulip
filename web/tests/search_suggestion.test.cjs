@@ -117,6 +117,18 @@ test("basic_get_suggestions_for_spectator", () => {
     page_params.is_spectator = false;
 });
 
+test("get_suggestions deduplication", () => {
+    let query = "has:attachment";
+    let suggestions = get_suggestions(query, query);
+    let expected = ["has:attachment"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "has:attachment has:attachment";
+    suggestions = get_suggestions(query);
+    expected = ["has:attachment"];
+    assert.deepEqual(suggestions.strings, expected);
+});
+
 test("get_is_suggestions_for_spectator", () => {
     page_params.is_spectator = true;
 
@@ -184,7 +196,15 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     query = "is:private";
     suggestions = get_suggestions(query);
-    expected = ["is:dm"];
+    // Same search suggestions as for "is:dm"
+    expected = [
+        "is:dm",
+        "dm:alice@zulip.com",
+        "dm:bob@zulip.com",
+        "dm:jeff@zulip.com",
+        "dm:myself@zulip.com",
+        "dm:ted@zulip.com",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "dm:t";

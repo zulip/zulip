@@ -69,7 +69,7 @@ There are many ways to use this feature, including:
    zulip-icon-more-vertical"></i>) next to the unread messages counter. You may
    need to hover over the indicator icon for a followed (<i class="zulip-icon
    zulip-icon-follow"></i>) or muted (<i class="zulip-icon
-   zulip-icon-mute-new"></i>) topic in order to see it.
+   zulip-icon-mute"></i>) topic in order to see it.
 
 1. Click **Mark all messages as unread**. This option will appear only if all
    messages in the topic are currently marked as read.

@@ -23,6 +23,8 @@ from zerver.lib.event_types import (
     EventAttachmentAdd,
     EventAttachmentRemove,
     EventAttachmentUpdate,
+    EventChannelFolderAdd,
+    EventChannelFolderUpdate,
     EventCustomProfileFields,
     EventDefaultStreamGroups,
     EventDefaultStreams,
@@ -37,6 +39,9 @@ from zerver.lib.event_types import (
     EventMessage,
     EventMutedTopics,
     EventMutedUsers,
+    EventNavigationViewsAdd,
+    EventNavigationViewsRemove,
+    EventNavigationViewsUpdate,
     EventOnboardingSteps,
     EventPresence,
     EventReactionAdd,
@@ -161,6 +166,7 @@ check_alert_words = make_checker(EventAlertWords)
 check_attachment_add = make_checker(EventAttachmentAdd)
 check_attachment_remove = make_checker(EventAttachmentRemove)
 check_attachment_update = make_checker(EventAttachmentUpdate)
+check_channel_folder_add = make_checker(EventChannelFolderAdd)
 check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
@@ -172,6 +178,9 @@ check_heartbeat = make_checker(EventHeartbeat)
 check_invites_changed = make_checker(EventInvitesChanged)
 check_message = make_checker(EventMessage)
 check_muted_users = make_checker(EventMutedUsers)
+check_navigation_view_add = make_checker(EventNavigationViewsAdd)
+check_navigation_view_remove = make_checker(EventNavigationViewsRemove)
+check_navigation_view_update = make_checker(EventNavigationViewsUpdate)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
@@ -230,6 +239,7 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 # TODO: work through the bottom of this file to try to find ways to
 #       simplify our types or make them more robust
 
+_check_channel_folder_update = make_checker(EventChannelFolderUpdate)
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
 _check_muted_topics = make_checker(EventMutedTopics)
@@ -263,6 +273,13 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     timezone=PersonTimezone,
     is_active=PersonIsActive,
 )
+
+
+def check_channel_folder_update(var_name: str, event: dict[str, object], fields: set[str]) -> None:
+    _check_channel_folder_update(var_name, event)
+
+    assert isinstance(event["data"], dict)
+    assert set(event["data"].keys()) == fields
 
 
 def check_delete_message(
@@ -460,7 +477,11 @@ def check_realm_default_update(
     assert prop in RealmUserDefault.property_types
 
     prop_type = RealmUserDefault.property_types[prop]
-    assert isinstance(event["value"], prop_type)
+    value = event["value"]
+    if inspect.isclass(prop_type) and issubclass(prop_type, Enum):
+        assert isinstance(value, str)
+    else:
+        assert isinstance(value, prop_type)
 
 
 def check_realm_update_dict(
@@ -530,6 +551,7 @@ def check_stream_update(
         "stream_id",
         "first_message_id",
         "is_archived",
+        "folder_id",
     }
 
     if prop == "description":
@@ -569,6 +591,9 @@ def check_stream_update(
     elif prop == "is_archived":
         assert extra_keys == set()
         assert isinstance(value, bool)
+    elif prop == "folder_id":
+        assert extra_keys == set()
+        assert value is None or isinstance(value, int)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 
@@ -620,7 +645,10 @@ def check_user_settings_update(
         assert isinstance(value, str)
     else:
         setting_type = UserProfile.property_types[setting_name]
-        assert isinstance(value, setting_type)
+        if inspect.isclass(setting_type) and issubclass(setting_type, Enum):
+            assert isinstance(value, str)
+        else:
+            assert isinstance(value, setting_type)
 
     if setting_name == "default_language":
         assert "language_name" in event

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as activity_ui from "./activity_ui.ts";
@@ -66,6 +67,12 @@ export function filters_dropdown_options(
     ];
 }
 
+export function handle_message_view_deactivated(highlight_current_view: () => void): void {
+    highlight_current_view();
+    stream_list.handle_message_view_deactivated();
+    pm_list.handle_message_view_deactivated();
+}
+
 export function show(opts: {
     highlight_view_in_left_sidebar: () => void;
     $view: JQuery;
@@ -90,8 +97,6 @@ export function show(opts: {
 
     // Hide selected elements in the left sidebar.
     opts.highlight_view_in_left_sidebar();
-    stream_list.handle_message_view_deactivated();
-    pm_list.handle_message_view_deactivated();
 
     unread_ui.hide_unread_banner();
     opts.update_compose();
@@ -144,6 +149,22 @@ export function is_in_focus(): boolean {
         !modals.any_active_or_animating() &&
         !$(".home-page-input").is(":focus") &&
         !$("#search_query").is(":focus") &&
-        !$(".navbar-item:visible").is(":focus")
+        !$(".navbar-item").is(":focus")
     );
+}
+
+export function is_scroll_position_for_render(): boolean {
+    const scroll_position = window.scrollY;
+    const window_height = window.innerHeight;
+    // We allocate `--max-unmaximized-compose-height` in empty space
+    // below the last rendered row in recent view.
+    //
+    // We don't want user to see this empty space until there are no
+    // new rows to render when the user is scrolling to the bottom of
+    // the view. So, we render new rows when user has scrolled 2 / 3
+    // of (the total scrollable height - the empty space).
+    const compose_max_height = $("html").css("--max-unmaximized-compose-height");
+    assert(typeof compose_max_height === "string");
+    const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
+    return scroll_position + window_height >= (2 / 3) * scroll_max;
 }

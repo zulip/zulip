@@ -1281,11 +1281,14 @@ run_test("right-to-left", () => {
 
 const get_focus_area = compose_ui._get_focus_area;
 run_test("get_focus_area", ({override}) => {
-    assert.equal(get_focus_area({message_type: "private"}), "#private_message_recipient");
+    assert.equal(
+        get_focus_area({message_type: "private", private_message_recipient_ids: []}),
+        "#private_message_recipient",
+    );
     assert.equal(
         get_focus_area({
             message_type: "private",
-            private_message_recipient: "bob@example.com",
+            private_message_recipient_ids: [bob.user_id],
         }),
         "textarea#compose-textarea",
     );

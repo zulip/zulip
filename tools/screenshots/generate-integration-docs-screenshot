@@ -9,6 +9,8 @@ import sys
 from typing import Any
 from urllib.parse import parse_qsl, urlencode
 
+import zulip
+
 SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLS_DIR = os.path.abspath(os.path.dirname(SCREENSHOTS_DIR))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
@@ -30,7 +32,6 @@ django.setup()
 
 import orjson
 import requests
-import zulip
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
@@ -39,12 +40,15 @@ from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
+    FIXTURELESS_SCREENSHOT_CONFIG,
     INTEGRATIONS,
-    BaseScreenshotConfig,
+    WEBHOOK_SCREENSHOT_CONFIG,
+    FixturelessScreenshotConfig,
     Integration,
-    ScreenshotConfig,
     WebhookIntegration,
-    get_fixture_and_image_paths,
+    WebhookScreenshotConfig,
+    get_fixture_path,
+    get_image_path,
     split_fixture_path,
 )
 from zerver.lib.storage import static_path
@@ -100,6 +104,10 @@ def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
     _, fixture_name = split_fixture_path(fixture_path)
 
     if fixture_name:
+        if not os.path.exists(fixture_path):
+            raise FileNotFoundError(
+                f"{BOLDRED}The fixture '{fixture_path}' does not exist. Please check the fixture file name and try again.{ENDC}"
+            )
         if json_fixture:
             with open(fixture_path, "rb") as fb:
                 data = orjson.loads(fb.read())
@@ -114,13 +122,8 @@ def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
     return data, json_fixture, multipart_fixture, fixture_name
 
 
-def get_integration(integration_name: str) -> Integration:
-    integration = INTEGRATIONS[integration_name]
-    return integration
-
-
-def get_requests_headers(integration_name: str, fixture_name: str) -> dict[str, Any]:
-    headers = get_fixture_http_headers(integration_name, fixture_name)
+def get_requests_headers(integration_dir_name: str, fixture_name: str) -> dict[str, Any]:
+    headers = get_fixture_http_headers(integration_dir_name, fixture_name)
 
     def fix_name(header: str) -> str:
         return header.removeprefix("HTTP_").replace("_", "-")
@@ -140,41 +143,17 @@ def custom_headers(headers_json: str) -> dict[str, str]:
         )
 
 
-def send_bot_mock_message(
-    bot: UserProfile, integration: Integration, fixture_path: str, config: BaseScreenshotConfig
-) -> None:
-    # Delete all messages, so new message is the only one it's message group
-    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
-    data, _, _, _ = get_fixture_info(fixture_path)
-
-    assert bot.bot_owner is not None
-    url = f"{bot.bot_owner.realm.url}"
-    client = zulip.Client(email=bot.email, api_key=bot.api_key, site=url)
-
-    try:
-        request = {
-            "type": "stream",
-            "to": integration.stream_name,
-            "topic": data["subject"],
-            "content": data["body"],
-        }
-        client.send_message(request)
-    except KeyError:
-        print(
-            f"{fixture_path} contains invalid configuration. "
-            'Fields "subject" and "body" are required for non-webhook integrations.'
-        )
-        sys.exit(1)
-
-
 def send_bot_payload_message(
-    bot: UserProfile, integration: WebhookIntegration, fixture_path: str, config: ScreenshotConfig
+    bot: UserProfile,
+    integration: WebhookIntegration,
+    fixture_path: str,
+    config: WebhookScreenshotConfig,
 ) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
     data, json_fixture, multipart_fixture, fixture_name = get_fixture_info(fixture_path)
 
-    headers = get_requests_headers(integration.name, fixture_name)
+    headers = get_requests_headers(integration.dir_name, fixture_name)
     if config.custom_headers:
         headers.update(config.custom_headers)
     if config.use_basic_auth:
@@ -231,6 +210,17 @@ def send_bot_payload_message(
         return True
 
 
+def send_bot_mock_message(bot: UserProfile, channel: str, topic: str, message: str) -> None:
+    # Delete all messages, so that the new message is the only one in its message group
+    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
+    assert bot.bot_owner is not None
+    url = f"{bot.bot_owner.realm.url}"
+    client = zulip.Client(email=bot.email, api_key=bot.api_key, site=url)
+
+    request = {"type": "stream", "to": channel, "topic": topic, "content": message}
+    client.send_message(request)
+
+
 def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     message = Message.objects.filter(realm_id=bot.realm_id, sender=bot).last()
     realm = get_realm("zulip")
@@ -243,71 +233,132 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
 
 
 def generate_screenshot_from_config(
-    integration_name: str, screenshot_config: BaseScreenshotConfig
+    integration_name: str, screenshot_config: WebhookScreenshotConfig | FixturelessScreenshotConfig
 ) -> None:
-    integration = get_integration(integration_name)
-    fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
+    integration = INTEGRATIONS[integration_name]
     bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
+    image_path = get_image_path(integration, screenshot_config)
+
     if isinstance(integration, WebhookIntegration):
-        assert isinstance(screenshot_config, ScreenshotConfig), (
-            "Webhook integrations require ScreenshotConfig"
-        )
+        assert isinstance(screenshot_config, WebhookScreenshotConfig)
+        fixture_path = get_fixture_path(integration, screenshot_config)
         message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
     else:
-        send_bot_mock_message(bot, integration, fixture_path, screenshot_config)
+        assert isinstance(screenshot_config, FixturelessScreenshotConfig)
+        create_integration_stream(integration, bot)
+        send_bot_mock_message(
+            bot,
+            channel=screenshot_config.channel or integration.stream_name,
+            topic=screenshot_config.topic,
+            message=screenshot_config.message,
+        )
         message_sent = True
+
     if message_sent:
         capture_last_message_screenshot(bot, image_path)
         print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")
 
 
 parser = argparse.ArgumentParser()
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument("--all", action="store_true")
-group.add_argument(
-    "--skip-until", help="Name of the integration whose predecessor are skipped. Similar to --all"
+
+batch_group = parser.add_mutually_exclusive_group(required=True)
+batch_group.add_argument("--all", action="store_true")
+batch_group.add_argument("--all-webhook", action="store_true")
+batch_group.add_argument("--all-fixtureless", action="store_true")
+batch_group.add_argument(
+    "--skip-until",
+    help="Name of the integration to start processing from, including all that follow in alphabetical order. Similar to --all",
 )
-group.add_argument("--integration", nargs="+", help="Names of the integrations")
-fixture_group = parser.add_argument_group("integration")
-parser.add_argument("--fixture", help="Name of the fixture file to use")
-parser.add_argument("--image-name", help="Name for the screenshot image")
-parser.add_argument("--image-dir", help="Directory name where to save the screenshot image")
-parser.add_argument("--bot-name", help="Name to use for the bot")
-parser.add_argument(
+batch_group.add_argument("--integration", nargs="+", help="Names of specific integrations")
+
+common_group = parser.add_argument_group()
+common_group.add_argument("--image-name", help="Name for the screenshot image")
+common_group.add_argument("--image-dir", help="Directory name where to save the screenshot image")
+common_group.add_argument("--bot-name", help="Name to use for the bot")
+
+webhook_group = parser.add_argument_group("Webhook integrations options")
+webhook_group.add_argument(
+    "--fixture-name",
+    help="Name of the fixture file to use. All other webhook options are ignored if the fixture is not specified.",
+)
+webhook_group.add_argument(
     "-A", "--use-basic-auth", action="store_true", help="Add basic auth headers to the request"
 )
-parser.add_argument(
+webhook_group.add_argument(
     "-Q",
     "--payload-as-query-param",
     action="store_true",
     help="Send payload as query param instead of body",
 )
-parser.add_argument("-P", "--payload-param-name", help="Param name to use for the payload")
-parser.add_argument(
+webhook_group.add_argument("-P", "--payload-param-name", help="Param name to use for the payload")
+webhook_group.add_argument(
     "-H",
     "--custom-headers",
     type=custom_headers,
     help="Any additional headers to be sent with the request.",
 )
 
+fixtureless_group = parser.add_argument_group("Fixtureless non-webhook integrations options")
+fixtureless_group.add_argument("-T", "--topic", help="Topic to use for the mock message")
+fixtureless_group.add_argument("-M", "--message", help="Message to use for the mock message")
+fixtureless_group.add_argument(
+    "-C",
+    "--channel",
+    help="Channel name to use for the mock message. Defaults to stream name. Ignored if --topic and --message are not specified.",
+)
+
 options = parser.parse_args()
 prepare_puppeteer_run()
 
-if options.all:
+
+def validate_integration_count(
+    options: argparse.Namespace, parser: argparse.ArgumentParser, option_name: str
+) -> None:
+    if len(options.integration) != 1:
+        parser.error(
+            f"Exactly one integration should be specified with --integration when --{option_name} is provided"
+        )
+
+
+def build_config(options: argparse.Namespace, config_keys: list[str]) -> dict[str, Any]:
+    config = {
+        key: getattr(options, key) for key in config_keys if getattr(options, key) is not None
+    }
+    return config
+
+
+def generate_full_batch_screenshots(
+    option_key: str,
+    config_dict: dict[str, list[WebhookScreenshotConfig]]
+    | dict[str, list[FixturelessScreenshotConfig]]
+    | dict[str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]],
+    batch_type: str,
+) -> None:
     for key, value in vars(options).items():
-        if key != "all" and value:
-            print("Generating screenshots for all integrations. Ignoring all command-line options")
+        if key != option_key and value:
+            print(f"Generating screenshots for {batch_type}. Ignoring all command-line options")
             break
-    for integration_name, screenshot_configs in DOC_SCREENSHOT_CONFIG.items():
+    for integration_name, screenshot_configs in config_dict.items():
         for screenshot_config in screenshot_configs:
             generate_screenshot_from_config(integration_name, screenshot_config)
 
+
+if options.all:
+    generate_full_batch_screenshots("all", DOC_SCREENSHOT_CONFIG, "all integrations")
+elif options.all_webhook:
+    generate_full_batch_screenshots(
+        "all_webhook", WEBHOOK_SCREENSHOT_CONFIG, "all webhook integrations"
+    )
+elif options.all_fixtureless:
+    generate_full_batch_screenshots(
+        "all_fixtureless", FIXTURELESS_SCREENSHOT_CONFIG, "all fixtureless integrations"
+    )
 elif options.skip_until:
     for key, value in vars(options).items():
         if key != "skip_until" and value:
             print(
-                f"Generating screenshots for all integrations skipping until {options.skip_until}. Ignoring all command-line options"
+                f"Generating screenshots for all integrations starting from {options.skip_until}. Ignoring all command-line options"
             )
             break
     skip = True
@@ -319,27 +370,23 @@ elif options.skip_until:
         for screenshot_config in screenshot_configs:
             generate_screenshot_from_config(integration_name, screenshot_config)
 
-elif options.fixture:
-    if len(options.integration) != 1:
-        parser.error(
-            "Exactly one integration should be specified for --integration when --fixture is provided"
-        )
-    config = dict(
-        fixture_name=options.fixture,
-        use_basic_auth=options.use_basic_auth,
-        custom_headers=options.custom_headers,
-        payload_as_query_param=options.payload_as_query_param,
-    )
-    if options.image_name:
-        config["image_name"] = options.image_name
-    if options.image_dir:
-        config["image_dir"] = options.image_dir
-    if options.bot_name:
-        config["bot_name"] = options.bot_name
-    if options.payload_param_name:
-        config["payload_param_name"] = options.payload_param_name
-    screenshot_config = ScreenshotConfig(**config)
+elif options.fixture_name:
+    validate_integration_count(options, parser, "fixture-name")
+    webhook_options = [action.dest for action in webhook_group._group_actions]
+    common_options = [action.dest for action in common_group._group_actions]
+    config = build_config(options, webhook_options + common_options)
+    screenshot_config = WebhookScreenshotConfig(**config)
     generate_screenshot_from_config(options.integration[0], screenshot_config)
+
+elif options.topic or options.message:
+    if not options.topic or not options.message:
+        parser.error("Both --topic and --message must be specified together")
+    validate_integration_count(options, parser, "topic")
+    fixtureless_options = [action.dest for action in webhook_group._group_actions]
+    common_options = [action.dest for action in common_group._group_actions]
+    config = build_config(options, fixtureless_options + common_options)
+    fixtureless_screenshot_config = FixturelessScreenshotConfig(**config)
+    generate_screenshot_from_config(options.integration[0], fixtureless_screenshot_config)
 
 elif options.integration:
     for integration in options.integration:

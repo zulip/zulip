@@ -1,18 +1,20 @@
+# Zulip Errbot integration
+
 Run your favorite chatbot in Zulip!
 
-1. [Install errbot](https://errbot.readthedocs.io/en/latest/user_guide/setup.html)
-   and follow to instructions to set up a `config.py`.
+{start_tabs}
 
-1. Check out our [Errbot integration package for Zulip](https://github.com/zulip/errbot-backend-zulip).
-   Clone this repository somewhere convenient.
+1. [Install errbot][install-errbot], and follow the instructions to set up a
+   `config.py`.
 
-1. Install the requirements listed in `errbot-backend-zulip/requirements.txt`.
+1. Clone the [Errbot integration package for Zulip][errbot-package]
+   repository somewhere convenient, and install the requirements listed in
+   `errbot-backend-zulip/requirements.txt`.
 
 1. {!create-a-generic-bot.md!}
 
-1. Download your Zulip bot's `zuliprc` config file. You will need its content for the next step.
-
-1. Edit your ErrBot's `config.py`. Use the following template for a minimal configuration:
+1. Edit your ErrBot's `config.py`. Use the following template for a minimal
+   configuration:
 
         import logging
 
@@ -25,23 +27,40 @@ Run your favorite chatbot in Zulip!
         BOT_LOG_FILE = r'<path/to/your/errbot/logfile.log>'
         BOT_LOG_LEVEL = logging.INFO
 
-        BOT_IDENTITY = {  # Fill this with the corresponding values in your bot's `.zuliprc`
-          'email': '<err-bot@your.zulip.server>',
-          'key': '<abcdefghijklmnopqrstuvwxyz123456>',
-          'site': '<http://your.zulip.server>'
+        BOT_IDENTITY = {
+          'email': '<your-bot@email.address>',
+          'key': '<api-key-of-your-bot>',
+          'site': '<your-zulip-organization-url>'
         }
-        BOT_ADMINS = ('<your@email.address',)
+        BOT_ADMINS = ('<your@email.address>',)
         CHATROOM_PRESENCE = ()
-        BOT_PREFIX = '<@**err-bot**>'  # Providing errbot's full name in Zulip lets it respond to @-mentions.
+        BOT_PREFIX = '@**<your-bot-name>**'
 
-    Sections you need to edit are marked with `<>`.
+    Sections you need to edit are marked with `<>`. Replace the `<...>`
+    placeholders with your own values, removing the `<` and `>` brackets.
 
-1. [Start ErrBot](https://errbot.readthedocs.io/en/latest/user_guide/setup.html#starting-the-daemon).
+    Use the details of the Zulip bot created above for the `BOT_IDENTITY`
+    and `BOT_PREFIX` sections.
+
+1. [Start ErrBot][start-errbot].
+
+!!! tip ""
+
+    ErrBot uses the term "Rooms" for Zulip channels.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![Errbot message](/static/images/integrations/errbot/000.png)
 
-### Tips
+### Related documentation
 
-* Rooms in ErrBot are streams in Zulip.
+- [Errbot Documentation](https://errbot.readthedocs.io/en/latest/)
+- [Errbot integration package for Zulip][errbot-package]
+- [Python bindings Configuration][config-python-bindings]
+
+[install-errbot]: https://errbot.readthedocs.io/en/latest/user_guide/setup.html
+[errbot-package]: https://github.com/zulip/errbot-backend-zulip
+[start-errbot]: https://errbot.readthedocs.io/en/latest/user_guide/setup.html#starting-the-daemon
+[config-python-bindings]: https://zulip.com/api/configuring-python-bindings

@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import CASCADE, Q
 from typing_extensions import override
 
+from zerver.models.channel_folders import ChannelFolder
 from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import Realm
 from zerver.models.streams import Stream
@@ -95,6 +96,7 @@ class AuditLogEventType(IntEnum):
     CHANNEL_MESSAGE_RETENTION_DAYS_CHANGED = 605
     CHANNEL_PROPERTY_CHANGED = 607
     CHANNEL_GROUP_BASED_SETTING_CHANGED = 608
+    CHANNEL_FOLDER_CHANGED = 609
 
     USER_GROUP_CREATED = 701
     USER_GROUP_DELETED = 702
@@ -112,6 +114,16 @@ class AuditLogEventType(IntEnum):
     USER_GROUP_REACTIVATED = 724
 
     SAVED_SNIPPET_CREATED = 800
+
+    NAVIGATION_VIEW_CREATED = 850
+    NAVIGATION_VIEW_UPDATED = 851
+    NAVIGATION_VIEW_DELETED = 852
+
+    CHANNEL_FOLDER_CREATED = 901
+    CHANNEL_FOLDER_NAME_CHANGED = 902
+    CHANNEL_FOLDER_DESCRIPTION_CHANGED = 903
+    CHANNEL_FOLDER_ARCHIVED = 904
+    CHANNEL_FOLDER_UNARCHIVED = 905
 
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding
@@ -230,6 +242,11 @@ class RealmAuditLog(AbstractRealmAuditLog):
     )
     modified_user_group = models.ForeignKey(
         NamedUserGroup,
+        null=True,
+        on_delete=CASCADE,
+    )
+    modified_channel_folder = models.ForeignKey(
+        ChannelFolder,
         null=True,
         on_delete=CASCADE,
     )

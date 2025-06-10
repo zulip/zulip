@@ -19,7 +19,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
-import * as server_events from "./server_events.js";
+import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as transmit from "./transmit.js";
 import {user_settings} from "./user_settings.ts";
@@ -86,14 +86,14 @@ export function create_message_object(message_content = compose_state.message_co
         type: compose_state.get_message_type(),
         content: message_content,
         sender_id: current_user.user_id,
-        queue_id: server_events.queue_id,
+        queue_id: server_events_state.queue_id,
         stream_id: undefined,
     };
     message.topic = "";
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.ts
-        const recipient = compose_state.private_message_recipient();
+        const recipient = compose_state.private_message_recipient_emails();
         const emails = util.extract_pm_recipients(recipient);
         message.to = emails;
         message.reply_to = recipient;
@@ -137,9 +137,7 @@ export function clear_compose_box() {
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
-    $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
-        "disabled-on-hover",
-    );
+    $(".needs-empty-compose").removeClass("disabled-on-hover");
 }
 
 export function send_message_success(request, data) {
@@ -148,7 +146,7 @@ export function send_message_success(request, data) {
     }
 
     echo.reify_message_id(request.local_id, data.id);
-    drafts.draft_model.deleteDraft(request.draft_id);
+    drafts.draft_model.deleteDrafts([request.draft_id]);
 
     if (request.type === "stream") {
         if (data.automatic_new_visibility_policy) {
@@ -257,7 +255,7 @@ export let send_message = (request = create_message_object()) => {
     }
 
     transmit.send_message(request, success, error);
-    server_events.assert_get_events_running(
+    server_events_state.assert_get_events_running(
         "Restarting get_events because it was not running during send",
     );
 
@@ -371,7 +369,7 @@ function schedule_message_to_custom_date() {
 
     const $banner_container = $("#compose_banners");
     const success = function (data) {
-        drafts.draft_model.deleteDraft(draft_id);
+        drafts.draft_model.deleteDrafts([draft_id]);
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,

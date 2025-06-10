@@ -76,7 +76,9 @@ export function update_dom_with_unread_counts(
     ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
-    if (counts.home_unread_messages === 0) {
+    const show_sidebar_menu_icon =
+        counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+    if (!show_sidebar_menu_icon) {
         $home_view_li.find(".sidebar-menu-icon").addClass("hide");
     } else {
         $home_view_li.find(".sidebar-menu-icon").removeClass("hide");

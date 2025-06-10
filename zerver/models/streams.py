@@ -11,6 +11,7 @@ from typing_extensions import override
 
 from zerver.lib.cache import flush_stream
 from zerver.lib.types import GroupPermissionSetting
+from zerver.models.channel_folders import ChannelFolder
 from zerver.models.groups import SystemGroups, UserGroup
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
@@ -33,8 +34,15 @@ class Stream(models.Model):
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default="")
     rendered_description = models.TextField(default="")
 
+    # Total number of non-deactivated users who are subscribed to the channel.
+    # It's obvious to be a positive field but also in case it becomes negative
+    # we know immediately that something is wrong as it raises IntegrityError.
+    subscriber_count = models.PositiveIntegerField(default=0, db_default=0)
+
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+
+    folder = models.ForeignKey(ChannelFolder, null=True, on_delete=models.SET_NULL)
 
     # Various permission policy configurations
     PERMISSION_POLICIES: dict[str, dict[str, Any]] = {
@@ -233,6 +241,7 @@ class Stream(models.Model):
         "deactivated",
         "description",
         "first_message_id",
+        "folder_id",
         "history_public_to_subscribers",
         "id",
         "invite_only",

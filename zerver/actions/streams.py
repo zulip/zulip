@@ -28,6 +28,7 @@ from zerver.lib.stream_color import pick_colors
 from zerver.lib.stream_subscription import (
     SubInfo,
     SubscriberPeerInfo,
+    bulk_update_subscriber_counts,
     get_active_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_used_colors_for_user_ids,
@@ -65,6 +66,7 @@ from zerver.models import (
     ArchivedAttachment,
     Attachment,
     ChannelEmailAddress,
+    ChannelFolder,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -187,7 +189,9 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
             sender,
             stream,
             topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            content=_("Channel {channel_name} has been archived.").format(channel_name=stream.name),
+            content=_("Channel #**{channel_name}** has been archived.").format(
+                channel_name=stream.name
+            ),
             archived_channel_notice=True,
             limit_unread_user_ids=set(),
         )
@@ -309,7 +313,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
             sender,
             stream,
             str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            _("Channel {channel_name} un-archived.").format(channel_name=new_name),
+            _("Channel #**{channel_name}** has been unarchived.").format(channel_name=new_name),
         )
 
 
@@ -459,6 +463,7 @@ def send_subscription_add_events(
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
+                folder_id=stream_dict["folder_id"],
                 is_recently_active=stream_dict["is_recently_active"],
                 history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
                 invite_only=stream_dict["invite_only"],
@@ -825,9 +830,12 @@ def bulk_add_subscriptions(
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     altered_guests: set[int] = set()
     altered_streams_dict: dict[UserProfile, set[int]] = defaultdict(set)
+    subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     for sub_info in subs_to_add + subs_to_activate:
         altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
         altered_streams_dict[sub_info.user].add(sub_info.stream.id)
+        if sub_info.user.is_active:
+            subscriber_count_changes[sub_info.stream.id].add(sub_info.user.id)
         if sub_info.user.is_guest:
             altered_guests.add(sub_info.user.id)
 
@@ -843,6 +851,7 @@ def bulk_add_subscriptions(
         subs_to_add=subs_to_add,
         subs_to_activate=subs_to_activate,
     )
+    bulk_update_subscriber_counts(direction=1, streams=subscriber_count_changes)
 
     stream_dict = {stream.id: stream for stream in streams}
 
@@ -1092,12 +1101,19 @@ def bulk_remove_subscriptions(
         return ([], not_subscribed)
 
     sub_ids_to_deactivate = [sub_info.sub.id for sub_info in subs_to_deactivate]
+
+    subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
+    for sub_info in subs_to_deactivate:
+        if sub_info.user.is_active:
+            subscriber_count_changes[sub_info.stream.id].add(sub_info.user.id)
+
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic(savepoint=False):
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
+        bulk_update_subscriber_counts(direction=-1, streams=subscriber_count_changes)
 
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
@@ -1812,3 +1828,33 @@ def do_change_stream_group_based_setting(
         # object would be created if the setting is later set to
         # a combination of users and groups.
         old_user_group.delete()
+
+
+@transaction.atomic(durable=True)
+def do_change_stream_folder(
+    stream: Stream, folder: ChannelFolder | None, *, acting_user: UserProfile
+) -> None:
+    old_folder_id = stream.folder_id
+    stream.folder = folder
+    stream.save(update_fields=["folder"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=AuditLogEventType.CHANNEL_FOLDER_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_folder_id,
+            RealmAuditLog.NEW_VALUE: stream.folder_id,
+        },
+    )
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="folder_id",
+        value=stream.folder_id,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))

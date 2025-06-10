@@ -9,7 +9,7 @@
 const assert = require("node:assert/strict");
 
 const example_settings = require("./lib/example_settings.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -115,7 +115,7 @@ test("unsubscribe", () => {
     assert.ok(!sub.subscribed);
 });
 
-test("subscribers", () => {
+test("subscribers", async () => {
     const sub = {
         name: "Rome",
         subscribed: true,
@@ -140,6 +140,14 @@ test("subscribers", () => {
         return users.map((u) => u.user_id).sort();
     }
 
+    blueslip.expect(
+        "error",
+        "Fetching potential subscribers for stream without full subscriber data",
+    );
+    potential_subscriber_ids();
+    blueslip.reset();
+
+    peer_data.set_subscribers(stream_id, []);
     assert.deepEqual(potential_subscriber_ids(), [
         me.user_id,
         fred.user_id,
@@ -227,6 +235,18 @@ test("subscribers", () => {
     assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
     blueslip.reset();
 
+    // Same test but for `maybe_fetch_is_user_subscribed`
+    blueslip.expect(
+        "warn",
+        "We got a maybe_fetch_is_user_subscribed call for a non-existent or inaccessible stream.",
+        2,
+    );
+    peer_data.add_subscriber(stream_id, brutus.user_id);
+    assert.ok(!(await stream_data.maybe_fetch_is_user_subscribed(stream_id, brutus.user_id)));
+    peer_data.remove_subscriber(stream_id, brutus.user_id);
+    assert.ok(!(await stream_data.maybe_fetch_is_user_subscribed(stream_id, brutus.user_id)));
+    blueslip.reset();
+
     // Verify that we don't crash for a bad stream.
     blueslip.expect(
         "warn",
@@ -267,7 +287,7 @@ test("maybe_fetch_stream_subscribers", async () => {
     assert.equal(channel_get_calls, 1);
 
     peer_data.clear_for_testing();
-    const pending_promise = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    const pending_promise = peer_data.maybe_fetch_stream_subscribers(india.stream_id, false);
     peer_data.bulk_add_subscribers({
         stream_ids: [india.stream_id],
         user_ids: [7, 9],
@@ -282,27 +302,67 @@ test("maybe_fetch_stream_subscribers", async () => {
     assert.deepEqual([...subscribers_after_fetch.keys()], [1, 2, 4, 7, 9]);
 
     peer_data.clear_for_testing();
-    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2), true);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2, false), true);
     assert.equal(peer_data.has_full_subscriber_data(india.stream_id), true);
 
     peer_data.clear_for_testing();
     assert.equal(peer_data.has_full_subscriber_data(india.stream_id), false);
-    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2), true);
-    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5), false);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 2, false), true);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, false), false);
+
+    peer_data.clear_for_testing();
+    assert.deepEqual(await peer_data.get_subscribers(india.stream_id), []);
+    assert.deepEqual(await peer_data.get_all_subscribers(india.stream_id), [1, 2, 3, 4]);
+
+    peer_data.clear_for_testing();
+    channel.get = () => {
+        throw new Error("error");
+    };
+    blueslip.expect("error", "Failure fetching channel subscribers");
+    // retry is false, so we get null because there was an error
+    assert.deepEqual(await peer_data.get_all_subscribers(india.stream_id, false), null);
+    blueslip.reset();
 
     channel.get = () => {
         throw new Error("error");
     };
     peer_data.clear_for_testing();
     blueslip.expect("error", "Failure fetching channel subscribers");
-    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5), null);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, false), null);
     // If we know they're subscribed, we return `true` even though we don't have complete
     // data.
     peer_data.bulk_add_subscribers({
         stream_ids: [india.stream_id],
         user_ids: [5],
     });
-    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5), true);
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, false), true);
+    blueslip.reset();
+
+    peer_data.clear_for_testing();
+    set_global("setTimeout", (f) => {
+        f();
+    });
+    let num_attempts = 0;
+    channel.get = async () => {
+        num_attempts += 1;
+        if (num_attempts === 2) {
+            return {
+                subscribers: [1, 2, 3, 4],
+            };
+        }
+        throw new Error("error");
+    };
+    blueslip.expect("error", "Failure fetching channel subscribers");
+    const subscribers = await peer_data.maybe_fetch_stream_subscribers_with_retry(india.stream_id);
+    assert.equal(num_attempts, 2);
+    assert.deepEqual([...subscribers.keys()], [1, 2, 3, 4]);
+    blueslip.reset();
+
+    peer_data.clear_for_testing();
+    blueslip.expect("error", "Failure fetching channel subscribers");
+    num_attempts = 0;
+    assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, true), false);
+    assert.equal(num_attempts, 2);
 });
 
 test("get_subscriber_count", () => {
@@ -344,7 +404,7 @@ test("get_subscriber_count", () => {
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id, false), 1);
 });
 
-test("is_subscriber_subset", () => {
+test("is_subscriber_subset", async () => {
     function make_sub(stream_id, user_ids) {
         const sub = {
             stream_id,
@@ -372,7 +432,10 @@ test("is_subscriber_subset", () => {
     ];
 
     for (const row of matrix) {
-        assert.equal(peer_data.is_subscriber_subset(row[0].stream_id, row[1].stream_id), row[2]);
+        assert.equal(
+            await peer_data.is_subscriber_subset(row[0].stream_id, row[1].stream_id),
+            row[2],
+        );
     }
 
     // Two untracked streams should never be passed into us.
@@ -384,7 +447,7 @@ test("is_subscriber_subset", () => {
         "warn",
         "We called get_loaded_subscriber_subset for an untracked stream: 99999",
     );
-    peer_data.is_subscriber_subset(99999, 88888);
+    await peer_data.is_subscriber_subset(99999, 88888);
     blueslip.reset();
 
     // Warn about hypothetical undefined stream_ids.
@@ -392,11 +455,20 @@ test("is_subscriber_subset", () => {
         "warn",
         "We called get_loaded_subscriber_subset for an untracked stream: undefined",
     );
-    peer_data.is_subscriber_subset(undefined, sub_a.stream_id);
+    await peer_data.is_subscriber_subset(undefined, sub_a.stream_id);
     blueslip.reset();
+
+    // Errors when fetching subscriber data return `null`
+    channel.get = () => {
+        throw new Error("error");
+    };
+    peer_data.clear_for_testing();
+    // Expect two calls, one for each channel
+    blueslip.expect("error", "Failure fetching channel subscribers", 2);
+    assert.equal(await peer_data.is_subscriber_subset(sub_a.stream_id, sub_b.stream_id), null);
 });
 
-test("get_unique_subscriber_count_for_streams", () => {
+test("get_unique_subscriber_count_for_streams", async () => {
     const sub = {name: "Rome", subscribed: true, stream_id: 1001};
     stream_data.add_sub(sub);
 
@@ -408,7 +480,7 @@ test("get_unique_subscriber_count_for_streams", () => {
     const stream_id = sub.stream_id;
     peer_data.set_subscribers(stream_id, [me.user_id, fred.user_id, bot_botson.user_id]);
 
-    const count = peer_data.get_unique_subscriber_count_for_streams([stream_id]);
+    const count = await peer_data.get_unique_subscriber_count_for_streams([stream_id]);
 
     assert.equal(count, 2);
 });

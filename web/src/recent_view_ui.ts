@@ -579,7 +579,7 @@ function get_avatars_context(all_senders: number[]): AvatarsContext {
         // and just display remaining number of senders.
         const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
         // Pluralization syntax from:
-        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
+        // https://formatjs.github.io/docs/core-concepts/icu-syntax#plural-format
         displayed_other_names.push(
             $t(
                 {
@@ -665,7 +665,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const stream_id = last_msg.stream_id;
         const stream_name = stream_data.get_stream_name_from_id(last_msg.stream_id);
         const stream_color = stream_info.color;
-        const stream_url = hash_util.by_stream_url(stream_id);
+        const stream_url = hash_util.channel_url_by_user_setting(stream_id);
         const invite_only = stream_info.invite_only;
         const is_web_public = stream_info.is_web_public;
         const is_archived = stream_info.is_archived;
@@ -808,11 +808,11 @@ export function process_topic_edit(
     // logic behind this and important notes on use of this function.
     recent_view_data.conversations.delete(recent_view_util.get_topic_key(old_stream_id, old_topic));
 
-    const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
+    const old_topic_msgs = message_util.get_loaded_messages_in_topic(old_stream_id, old_topic);
     process_messages(old_topic_msgs);
 
     new_stream_id = new_stream_id || old_stream_id;
-    const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
+    const new_topic_msgs = message_util.get_loaded_messages_in_topic(new_stream_id, new_topic);
     process_messages(new_topic_msgs);
 }
 
@@ -834,7 +834,7 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
     const msgs_to_process = [];
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         recent_view_data.conversations.delete(recent_view_util.get_topic_key(stream_id, topic));
-        const msgs = message_util.get_messages_in_topic(stream_id, topic);
+        const msgs = message_util.get_loaded_messages_in_topic(stream_id, topic);
         msgs_to_process.push(...msgs);
     }
 
@@ -1267,22 +1267,6 @@ function recenter_focus_if_off_screen(): void {
     }
 }
 
-function is_scroll_position_for_render(): boolean {
-    const scroll_position = window.scrollY;
-    const window_height = window.innerHeight;
-    // We allocate `--max-unmaximized-compose-height` in empty space
-    // below the last rendered row in recent view.
-    //
-    // We don't want user to see this empty space until there are no
-    // new rows to render when the user is scrolling to the bottom of
-    // the view. So, we render new rows when user has scrolled 2 / 3
-    // of (the total scrollable height - the empty space).
-    const compose_max_height = $("html").css("--max-unmaximized-compose-height");
-    assert(typeof compose_max_height === "string");
-    const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
-    return scroll_position + window_height >= (2 / 3) * scroll_max;
-}
-
 function callback_after_render(): void {
     // It is important to restore the scroll position as soon
     // as the rendering is complete to avoid scroll jumping.
@@ -1385,7 +1369,7 @@ export function complete_rerender(): void {
         html_selector: get_topic_row,
         $simplebar_container: $("html"),
         callback_after_render,
-        is_scroll_position_for_render,
+        is_scroll_position_for_render: views_util.is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Update the focused element for keyboard navigation if needed.
             recenter_focus_if_off_screen();
@@ -1427,7 +1411,11 @@ export function show(): void {
     // is a reliable solution to check if recent view was displayed earlier.
     const reattach_event_handlers = topics_widget !== undefined;
     views_util.show({
-        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_recent_view,
+        highlight_view_in_left_sidebar() {
+            views_util.handle_message_view_deactivated(
+                left_sidebar_navigation_area.highlight_recent_view,
+            );
+        },
         $view: $("#recent_view"),
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this

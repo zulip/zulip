@@ -692,6 +692,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": true,
                                         "first_message_id": null,
+                                        "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -1358,6 +1359,7 @@ paths:
                                         "stream_post_policy": 1,
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
+                                        "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -1493,7 +1495,10 @@ paths:
                                   description: |
                                     The new value of the changed property.
 
-                                    **Changes**: Starting with Zulip 10.0 (feature level 320), this
+                                    **Changes**: Starting with Zulip 11.0 (feature level 389),
+                                    this value can be `null` when a channel is removed from the folder.
+
+                                    Starting with Zulip 10.0 (feature level 320), this
                                     field can be an object for `can_remove_subscribers_group` property,
                                     which is a [group-setting value][setting-values], when the setting
                                     is set to a combination of users and groups.
@@ -1522,6 +1527,7 @@ paths:
                                     - type: integer
                                     - type: boolean
                                     - type: string
+                                      nullable: true
                                 rendered_description:
                                   type: string
                                   description: |
@@ -5514,6 +5520,110 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event containing details of a newly configured navigation view.
+
+                                **Changes**: New in Zulip 11.0 (feature level 390).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - navigation_view
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                navigation_view:
+                                  $ref: "#/components/schemas/NavigationView"
+                              example:
+                                {
+                                  "type": "navigation_view",
+                                  "op": "add",
+                                  "navigation_view":
+                                    {
+                                      "fragment": "narrow/is/alerted",
+                                      "is_pinned": true,
+                                      "name": "Alert Words",
+                                    },
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing details of an update to an existing navigation view.
+
+                                **Changes**: New in Zulip 11.0 (feature level 390).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - navigation_view
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                fragment:
+                                  type: string
+                                  description: |
+                                    The unique URL hash of the navigation view being updated.
+                                data:
+                                  type: object
+                                  additionalProperties: false
+                                  description: |
+                                    A dictionary containing the updated properties of the navigation view.
+                                  properties:
+                                    name:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The user-facing name for custom navigation views. Omit this field for built-in views.
+                                    is_pinned:
+                                      type: boolean
+                                      nullable: true
+                                      description: |
+                                        Determines whether the view is pinned (true) or hidden in the menu (false).
+                              example:
+                                {
+                                  "type": "navigation_view",
+                                  "op": "update",
+                                  "fragment": "narrow/is/alerted",
+                                  "data": {"is_pinned": false},
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing the fragment of a deleted navigation view.
+
+                                **Changes**: New in Zulip 11.0 (feature level 390).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - navigation_view
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                fragment:
+                                  type: string
+                                  description: |
+                                    The unique URL hash of the navigation view that was just deleted.
+                              example:
+                                {
+                                  "type": "navigation_view",
+                                  "op": "remove",
+                                  "fragment": "narrow/is/mentioned",
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event containing details of a newly created saved snippet.
 
                                 **Changes**: New in Zulip 10.0 (feature level 297).
@@ -5715,6 +5825,97 @@ paths:
                                   "type": "scheduled_messages",
                                   "op": "remove",
                                   "scheduled_message_id": 17,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when a channel folder is created.
+
+                                **Changes**: New in Zulip 11.0 (feature level 389).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                channel_folder:
+                                  $ref: "#/components/schemas/ChannelFolder"
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "add",
+                                  "channel_folder":
+                                    {
+                                      "name": "fronted",
+                                      "creator_id": 9,
+                                      "date_created": 1717484476,
+                                      "description": "Channels for frontend discussions",
+                                      "rendered_description": "<p>Channels for frontend discussions</p>",
+                                      "id": 2,
+                                      "is_archived": false,
+                                    },
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when a channel folder is updated.
+
+                                **Changes**: New in Zulip 11.0 (feature level 389).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                channel_folder_id:
+                                  type: number
+                                  description: |
+                                    ID of the updated channel folder.
+                                data:
+                                  type: object
+                                  additionalProperties: false
+                                  description: |
+                                    Dictionary containing the changed details of the channel folder.
+                                  properties:
+                                    name:
+                                      type: string
+                                      description: |
+                                        The new name of the channel folder. Only present if the channel
+                                        folder's name changed.
+                                    description:
+                                      type: string
+                                      description: |
+                                        The new description of the channel folder. Only present if the
+                                        description changed.
+                                    rendered_description:
+                                      type: string
+                                      description: |
+                                        The new rendered description of the channel folder. Only present
+                                        if the description changed.
+                                    is_archived:
+                                      type: boolean
+                                      description: |
+                                        Whether the channel folder is archived or not. Only present if
+                                        the channel folder is archived or unarchived.
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "update",
+                                  "data": {"name": "New frontend"},
+                                  "id": 0,
                                 }
                       queue_id:
                         type: string
@@ -6359,6 +6560,217 @@ paths:
                         "result": "error",
                         "msg": "Draft does not exist",
                       }
+  /navigation_views:
+    get:
+      operationId: get-navigation-views
+      tags: ["navigation_views"]
+      summary: Get all navigation views
+      description: |
+        Fetch all configured custom navigation views for the current user.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      navigation_views:
+                        type: array
+                        description: |
+                          An array of dictionaries containing the user's navigation views.
+                        items:
+                          $ref: "#/components/schemas/NavigationView"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "navigation_views":
+                          [
+                            {
+                              "fragment": "narrow/is/alerted",
+                              "is_pinned": false,
+                              "name": "Alert Words",
+                            },
+                          ],
+                      }
+    post:
+      operationId: add-navigation-view
+      tags: ["navigation_views"]
+      summary: Add a navigation view
+      description: |
+        Adds a new custom left sidebar navigation view configuration
+        for the current user.
+
+        This can be used both to configure built-in navigation views,
+        or to add new navigation views.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/NavigationView"
+      responses:
+        "200":
+          description: Request succeeded.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_parameters:
+                  value:
+                    code: "BAD_REQUEST"
+                    msg: "fragment cannot be blank"
+                    result: "error"
+  /navigation_views/{fragment}:
+    patch:
+      operationId: edit-navigation-view
+      tags: ["navigation_views"]
+      summary: Update the navigation view
+      description: |
+        Update the details of an existing configured navigation view,
+        such as its name or whether it's pinned.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      parameters:
+        - name: fragment
+          in: path
+          required: true
+          schema:
+            type: string
+          description: |
+            The unique URL hash of the navigation view to be updated.
+
+            This also serves as the identifier for the navigation view.
+          example: "narrow/is/alerted"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                is_pinned:
+                  type: boolean
+                  description: |
+                    Determines whether the view is pinned (true) or hidden in
+                    the menu (false).
+                  example: true
+                name:
+                  type: string
+                  description: |
+                    The user-facing name for custom navigation views. Omit this
+                    field for built-in views.
+                  example: "Watched Phrases"
+              anyOf:
+                - required:
+                    - is_pinned
+                - required:
+                    - name
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Built-in views cannot have a custom name",
+                        "result": "error",
+                      }
+                description: |
+                  A typical failed JSON response for invalid parameters.
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response when no navigation view
+                      exists with the provided fragment:
+                    example:
+                      {
+                        "code": "NOT_FOUND",
+                        "result": "error",
+                        "msg": "Navigation view does not exist.",
+                      }
+    delete:
+      operationId: remove-navigation-view
+      tags: ["navigation_views"]
+      summary: Remove a navigation view
+      description: |
+        Remove a navigation view.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      parameters:
+        - name: fragment
+          in: path
+          schema:
+            type: string
+          description: |
+            The unique URL hash of the navigation view to be removed.
+
+            This also serves as the identifier for the navigation view.
+          example: "narrow/is/alerted"
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no navigation
+                      view exists with the provided fragment:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Navigation view does not exist.",
+                      }
   /saved_snippets:
     get:
       operationId: get-saved-snippets
@@ -6568,7 +6980,7 @@ paths:
       description: |
         Schedule a reminder to be sent to the current user at the specified time. The reminder will link the relevant message.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-f8d751).
+        **Changes**: New in Zulip 11.0 (feature level 381).
       requestBody:
         required: true
         content:
@@ -7494,7 +7906,7 @@ paths:
                               "sender_full_name": "King Hamlet",
                               "recipient_id": 27,
                               "topic_links": [],
-                              "client": "populate_db",
+                              "client": "ZulipDataImport",
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "submessages": [],
                               "sender_email": "hamlet@zulip.com",
@@ -7516,7 +7928,7 @@ paths:
                               "sender_full_name": "King Hamlet",
                               "recipient_id": 20,
                               "topic_links": [],
-                              "client": "populate_db",
+                              "client": "ZulipDataImport",
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "submessages": [],
                               "sender_email": "hamlet@zulip.com",
@@ -8846,7 +9258,7 @@ paths:
                             "sender_full_name": "King Hamlet",
                             "recipient_id": 27,
                             "topic_links": [],
-                            "client": "populate_db",
+                            "client": "ZulipDataImport",
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "submessages": [],
                             "sender_email": "hamlet@zulip.com",
@@ -9288,6 +9700,79 @@ paths:
                             "msg": "You don't have permission to delete this message",
                             "result": "error",
                           }
+  /messages/{message_id}/report:
+    post:
+      operationId: report-message
+      summary: Report a message
+      tags: ["messages"]
+      description: |
+        Sends a notification to the organization's moderation request channel,
+        if it is configured, that reports the targeted message for review and
+        moderation.
+
+        Clients should check the `moderation_request_channel` realm setting to
+        decide whether to show the option to report messages in the UI.
+
+        If the `report_type` parameter value is `"other"`, the `description`
+        parameter is required. Clients should also enforce and communicate this
+        behavior in the UI.
+
+        **Changes**: New in Zulip 11.0 (feature level 382). This API builds on
+        the `moderation_request_channel` realm setting, which was added in
+        feature level 331.
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                report_type:
+                  description: |
+                    The reason that best describes why the current user is reporting the
+                    target message for moderation.
+                  type: string
+                  enum:
+                    - spam
+                    - harassment
+                    - inappropriate
+                    - norms
+                    - other
+                  example: harassment
+                description:
+                  description: |
+                    A short description with additional context about why the current user
+                    is reporting the target message for moderation.
+
+                    Clients should limit this string to a maximum length of 1000 characters.
+
+                    If the `report_type` parameter is `"other"`, this parameter is required,
+                    and its value cannot be an empty string.
+                  type: string
+                  example: "This message insults and mocks Frodo, which is against the code of conduct."
+              required:
+                - report_type
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Moderation request channel must be specified to enable message reporting.",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response for when the organization's moderation
+                      request channel is not configured:
   /user_uploads:
     post:
       operationId: upload-file
@@ -9441,13 +9926,23 @@ paths:
   /users:
     get:
       operationId: get-users
-      summary: Get all users
+      summary: Get users
       tags: ["users"]
       description: |
-        Retrieve details on all users in the organization. Optionally
-        includes values of [custom profile fields](/help/custom-profile-fields).
+        Retrieve details on users in the organization.
+
+        By default, returns all accessible users in the organization.
+        The `user_ids` query parameter can be used to limit the
+        results to a specific set of user IDs.
+
+        Optionally includes values of [custom profile fields](/help/custom-profile-fields).
 
         You can also [fetch details on a single user](/api/get-user).
+
+        **Changes**: This endpoint did not support unauthenticated
+        access in organizations using the [public access
+        option](/help/public-access-option) prior to Zulip 11.0
+        (feature level 387).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -9463,6 +9958,22 @@ paths:
       parameters:
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
+        - name: user_ids
+          in: query
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [1, 2, 3]
+          required: false
+          description: |
+            Limits the results to the specified user IDs. If not
+            provided, the server will return all accessible users in
+            the organization.
+
+            **Changes**: New in Zulip 11.0 (feature level 384).
       responses:
         "200":
           description: Success.
@@ -11027,6 +11538,17 @@ paths:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
                   $ref: "#/components/schemas/CanSubscribeGroup"
+                folder_id:
+                  description: |
+                    This parameter determines the folder to which the newly
+                    created channel will be added.
+
+                    If the value is `None`, the channel will not be added to
+                    any folder.
+
+                    **Changes**: New in Zulip 11.0 (feature level 389).
+                  type: integer
+                  example: 1
               required:
                 - subscriptions
             encoding:
@@ -11055,6 +11577,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              folder_id:
                 contentType: application/json
       responses:
         "200":
@@ -12544,13 +13068,19 @@ paths:
 
                     - 1 - Top topic in the channel
                     - 2 - Channel feed
+                    - 3 - List of topics
 
-                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    **Changes**: The "List of topics" option is new in
+                    Zulip 11.0 (feature level 383).
+
+                    New in Zulip 9.0 (feature level 269). Previously, this
                     was not configurable, and every user had the "Channel feed" behavior.
+
                   type: integer
                   enum:
                     - 1
                     - 2
+                    - 3
                   example: 1
                 web_font_size_px:
                   description: |
@@ -12920,6 +13450,21 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 235).
                   type: boolean
                   example: true
+                resolved_topic_notice_auto_read_policy:
+                  description: |
+                    Controls whether the resolved-topic notices are marked as read.
+
+                    - "always" - Always mark resolved-topic notices as read.
+                    - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                    - "never" - Never mark resolved-topic notices as read.
+
+                    **Changes**: New in Zulip 11.0 (feature level 385).
+                  type: string
+                  enum:
+                    - always
+                    - except_followed
+                    - never
+                  example: except_followed
                 presence_enabled:
                   description: |
                     Display the presence status to other users when online.
@@ -15552,6 +16097,16 @@ paths:
                                 The list of users other than the current user in the direct message
                                 conversation. This will be an empty list for direct messages sent to
                                 oneself.
+                      navigation_views:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/NavigationView"
+                        description: |
+                          Present if `navigation_views` is present in `fetch_event_types`.
+                          An array of dictionaries containing data on all of the current user's
+                          navigation views.
+
+                          **Changes**: New in Zulip 11.0 (feature level 390).
                       saved_snippets:
                         type: array
                         items:
@@ -15626,6 +16181,8 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                folder_id:
+                                  nullable: true
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
@@ -15673,6 +16230,20 @@ paths:
                           in `can_administer_channel_group` of a channel that they never
                           subscribed to, but not an organization administrator, the channel
                           in question would not be part of this array.
+                      channel_folders:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ChannelFolder"
+                        description: |
+                          Present if `channel_folders` is present in `fetch_event_types`.
+
+                          An array of dictionaries where each dictionary describes one
+                          of the channel folders in the organization.
+
+                          Only channel folders with one or more public web channels are
+                          visible to spectators.
+
+                          **Changes**: New in Zulip 11.0 (feature level 389).
                       unread_msgs:
                         type: object
                         description: |
@@ -15941,8 +16512,12 @@ paths:
 
                               - 1 - Top topic in the channel
                               - 2 - Channel feed
+                              - 3 - List of topics
 
-                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              **Changes**: The "List of topics" option is new in
+                              Zulip 11.0 (feature level 383).
+
+                              New in Zulip 9.0 (feature level 269). Previously, this
                               was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
@@ -16297,6 +16872,16 @@ paths:
                               topics where the user is mentioned.
 
                               **Changes**: New in Zulip 8.0 (feature level 235).
+                          resolved_topic_notice_auto_read_policy:
+                            type: string
+                            description: |
+                              Controls whether the resolved-topic notices are marked as read.
+
+                              - "always" - Always mark resolved-topic notices as read.
+                              - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                              - "never" - Never mark resolved-topic notices as read.
+
+                              **Changes**: New in Zulip 11.0 (feature level 385).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -18689,8 +19274,12 @@ paths:
 
                               - 1 - Top topic in the channel
                               - 2 - Channel feed
+                              - 3 - List of topics
 
-                              **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                              **Changes**: In Zulip 11.0 (feature level 383), we added a new option
+                              "List of topics" to this setting.
+
+                              New in Zulip 9.0 (feature level 269). Previously, this
                               was not configurable, and every user had the "Channel feed" behavior.
                           starred_message_counts:
                             type: boolean
@@ -19021,6 +19610,16 @@ paths:
                               topics where the user is mentioned.
 
                               **Changes**: New in Zulip 8.0 (feature level 235).
+                          resolved_topic_notice_auto_read_policy:
+                            type: string
+                            description: |
+                              Controls whether the resolved-topic notices are marked as read.
+
+                              - "always" - Always mark resolved-topic notices as read.
+                              - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                              - "never" - Never mark resolved-topic notices as read.
+
+                              **Changes**: New in Zulip 11.0 (feature level 385).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -19836,8 +20435,12 @@ paths:
 
                     - 1 - Top topic in the channel
                     - 2 - Channel feed
+                    - 3 - List of topics
 
-                    **Changes**: New in Zulip 9.0 (feature level 269). Previously, this
+                    **Changes**: The "List of topics" option is new in
+                    Zulip 11.0 (feature level 383).
+
+                    New in Zulip 9.0 (feature level 269). Previously, this
                     was not configurable, and every user had the "Channel feed" behavior.
                   type: integer
                   enum:
@@ -20379,6 +20982,21 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 235).
                   type: boolean
                   example: true
+                resolved_topic_notice_auto_read_policy:
+                  description: |
+                    Controls whether the resolved-topic notices are marked as read.
+
+                    - "always" - Always mark resolved-topic notices as read.
+                    - "except_followed" - Mark resolved-topic notices as read in topics not followed by the user.
+                    - "never" - Never mark resolved-topic notices as read.
+
+                    **Changes**: New in Zulip 11.0 (feature level 385).
+                  type: string
+                  enum:
+                    - always
+                    - except_followed
+                    - never
+                  example: except_followed
                 presence_enabled:
                   description: |
                     Display the presence status to other users when online.
@@ -20767,6 +21385,8 @@ paths:
                                 history_public_to_subscribers: {}
                                 first_message_id:
                                   nullable: true
+                                folder_id:
+                                  nullable: true
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
@@ -20813,6 +21433,7 @@ paths:
                                 - message_retention_days
                                 - history_public_to_subscribers
                                 - first_message_id
+                                - folder_id
                                 - is_announcement_only
                                 - can_remove_subscribers_group
                                 - can_subscribe_group
@@ -20832,6 +21453,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A private channel",
                               "first_message_id": 18,
+                              "folder_id": 1,
                               "is_recently_active": true,
                               "history_public_to_subscribers": false,
                               "invite_only": true,
@@ -20854,6 +21476,7 @@ paths:
                               "date_created": 1691057093,
                               "description": "A default public channel",
                               "first_message_id": 21,
+                              "folder_id": null,
                               "is_recently_active": true,
                               "history_public_to_subscribers": true,
                               "invite_only": false,
@@ -20904,6 +21527,7 @@ paths:
                           {
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
+                            "folder_id": 1,
                             "is_recently_active": true,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
@@ -21070,6 +21694,27 @@ paths:
                   example: false
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                is_archived:
+                  description: |
+                    A boolean indicating whether the channel is
+                    [archived](/help/archive-a-channel) or
+                    unarchived. Currently only allows unarchiving
+                    previously archived channels.
+
+                    **Changes**: New in Zulip 11.0 (feature level 388).
+                  type: boolean
+                  example: true
+                folder_id:
+                  description: |
+                    ID of the new folder to which the channel should belong.
+
+                    It can be `None` if the user wants to just remove the channel
+                    from its existing folder.
+
+                    **Changes**: New in Zulip 11.0 (feature level 389).
+                  type: integer
+                  nullable: true
+                  example: 1
                 can_add_subscribers_group:
                   allOf:
                     - description: |
@@ -21219,6 +21864,8 @@ paths:
               history_public_to_subscribers:
                 contentType: application/json
               is_default_stream:
+                contentType: application/json
+              folder_id:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
@@ -21973,13 +22620,18 @@ paths:
         Update the name, description or any of the permission settings
         of a [user group](/help/user-groups).
 
+        This endpoint is also used to reactivate a user group.
+
         Note that while permissions settings of deactivated groups can
         be edited by this API endpoint, and those permissions settings
         do affect the ability to modify the deactivated group and its
         membership, the deactivated group itself cannot be mentioned
         or used in the value of any permission without first being reactivated.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 340), only the name field
+        **Changes**: Starting with Zulip 11.0 (feature level ZF-61b9bf), this
+        endpoint can be used to reactivate a user group.
+
+        Prior to Zulip 10.0 (feature level 340), only the name field
         of deactivated groups could be modified.
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
@@ -22131,6 +22783,18 @@ paths:
                           "old": 11,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                deactivated:
+                  description: |
+                    A deactivated user group can be reactivated by passing this
+                    parameter as `false`.
+
+                    Passing `true` does nothing as user group is deactivated
+                    using [`POST /user_groups/{user_group_id}/deactivate`](deactivate-user-group)
+                    endpoint.
+
+                    **Changes**: New in Zulip 11.0 (feature level 386).
+                  type: boolean
+                  example: false
             encoding:
               can_add_members_group:
                 contentType: application/json
@@ -22143,6 +22807,8 @@ paths:
               can_mention_group:
                 contentType: application/json
               can_remove_members_group:
+                contentType: application/json
+              deactivated:
                 contentType: application/json
       responses:
         "200":
@@ -22623,6 +23289,204 @@ paths:
 
                           **Changes**: New in Zulip 10.0 (feature level 298). Previously,
                           this error returned the `"BAD_REQUEST"` code.
+  /channel_folders/create:
+    post:
+      operationId: create-channel-folder
+      summary: Create a channel folder
+      tags: ["channels"]
+      description: |
+        Create a new channel folder, that will be used to organize
+        channels in left sidebar.
+
+        Only organization administrators can create a new channel
+        folder.
+
+        **Changes**: New in Zulip 11.0 (feature level 389).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: |
+                    The name of the channel folder.
+                  type: string
+                  example: marketing
+                description:
+                  description: |
+                    The description of the channel folder.
+                  type: string
+                  example: Channels for marketing.
+      responses:
+        "200":
+          description: |
+            A success response containing the unique ID of the channel folder.
+            This field provides a straightforward way to reference the
+            newly created channel folder.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - channel_folder_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      channel_folder_id:
+                        type: integer
+                        description: |
+                          The unique ID of the created channel folder.
+                    example:
+                      {"msg": "", "result": "success", "channel_folder_id": 123}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be an organization administrator",
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to create a channel folder:
+  /channel_folders:
+    get:
+      operationId: get-channel-folders
+      summary: Get channel folders
+      tags: ["channels"]
+      description: |
+        Fetches all of the channel folders in the organization.
+
+        **Changes**: New in Zulip 11.0 (feature level 389).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                include_archived:
+                  description: |
+                    Whether to include archived channel folders in the response.
+                  type: boolean
+                  example: true
+                  default: false
+            encoding:
+              include_archived:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      channel_folders:
+                        type: array
+                        description: |
+                          A list of channel folder objects.
+                        items:
+                          $ref: "#/components/schemas/ChannelFolder"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "channel_folders":
+                          [
+                            {
+                              "description": "Channels for frontend discussions",
+                              "rendered_description": "<p>Channels for frontend discussions</p>",
+                              "id": 1,
+                              "creator_id": 1,
+                              "date_created": 1691057093,
+                              "name": "Frontend",
+                              "is_archived": false,
+                            },
+                            {
+                              "description": "Channels for **backend** discussions",
+                              "rendered_description": "<p>Channels for <strong>backend</strong> discussions</p>",
+                              "id": 2,
+                              "creator_id": 1,
+                              "date_created": 1791057093,
+                              "name": "Backend",
+                              "is_archived": false,
+                            },
+                          ],
+                      }
+  /channel_folders/{channel_folder_id}:
+    patch:
+      operationId: update-channel-folder
+      summary: Update a channel folder
+      tags: ["channels"]
+      description: |
+        Update the name or description of a channel folder.
+
+        This endpoint is also used to archive and unarchive
+        a channel folder.
+
+        Only organization administrators can update a
+        channel folder.
+
+        **Changes**: New in Zulip 11.0 (feature level 389).
+      parameters:
+        - $ref: "#/components/parameters/ChannelFolderId"
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: |
+                    The new name of the channel folder.
+                  type: string
+                  example: backend
+                description:
+                  description: |
+                    The new description of the channel folder.
+                  type: string
+                  example: Backend channels.
+                is_archived:
+                  description: |
+                    Whether to archive or unarchive the channel folder.
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid channel folder ID",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the channel folder ID is invalid:
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -22981,6 +23845,8 @@ components:
             history_public_to_subscribers: {}
             first_message_id:
               nullable: true
+            folder_id:
+              nullable: true
             is_recently_active: {}
             is_announcement_only: {}
             can_add_subscribers_group: {}
@@ -23017,6 +23883,7 @@ components:
             - message_retention_days
             - history_public_to_subscribers
             - first_message_id
+            - folder_id
             - is_recently_active
             - is_announcement_only
             - can_remove_subscribers_group
@@ -23150,6 +24017,8 @@ components:
             Is `null` for channels with no message history.
 
             **Changes**: New in Zulip 2.1.0.
+        folder_id:
+          $ref: "#/components/schemas/FolderId"
         is_recently_active:
           type: boolean
           description: |
@@ -24216,6 +25085,8 @@ components:
             has older history that can be accessed.
 
             Is `null` for channels with no message history.
+        folder_id:
+          $ref: "#/components/schemas/FolderId"
         is_recently_active:
           type: boolean
           description: |
@@ -24943,6 +25814,46 @@ components:
         - to
         - topic
         - content
+    NavigationView:
+      type: object
+      description: |
+        Represents a user's personal configuration for a specific
+        navigation view (displayed most visibly at the top of the web
+        application's left sidebar).
+
+        Navigation views can be either an override to the default
+        behavior of a built-in view, or a custom view.
+
+        **Changes**: New in Zulip 11.0 (feature level 390).
+      additionalProperties: false
+      required:
+        - fragment
+        - is_pinned
+      properties:
+        fragment:
+          type: string
+          description: |
+            A unique identifier for the view, used to determine navigation
+            behavior when clicked.
+
+            Clients should use this value to navigate to the corresponding URL hash.
+          example: "narrow/is/alerted"
+        is_pinned:
+          type: boolean
+          description: |
+            Determines whether the view appears directly in the sidebar or
+            is hidden in the "More Views" menu.
+
+            - `true` - Pinned and visible in the sidebar.
+            - `false` - Hidden and accessible via the "More Views" menu.
+          example: true
+        name:
+          type: string
+          nullable: true
+          description: |
+            The user-facing name for custom navigation views. Omit this
+            field for built-in views.
+          example: "Alert Words"
     SavedSnippet:
       type: object
       description: |
@@ -25294,6 +26205,51 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
+    ChannelFolder:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing the channel folder's attributes.
+      properties:
+        name:
+          type: string
+          description: |
+            The name of the channel folder.
+        date_created:
+          type: integer
+          nullable: true
+          description: |
+            The UNIX timestamp for when the channel folder was created,
+            in UTC seconds.
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this channel folder.
+        description:
+          type: string
+          description: |
+            The description of the channel folder.
+        rendered_description:
+          type: string
+          description: |
+            The description of the channel folder rendered as HTML,
+            intended to be used when displaying the channel folder
+            description in a UI.
+
+            One should use the standard Zulip rendered_markdown CSS when
+            displaying this content so that emoji, LaTeX, and other syntax
+            work correctly. And any client-side security logic for
+            user-generated message content should be applied when displaying
+            this HTML as though it were the body of a Zulip message.
+        id:
+          type: integer
+          description: |
+            The ID of the channel folder.
+        is_archived:
+          type: boolean
+          description: |
+            Whether the channel folder is archived or not.
     JsonResponseBase:
       type: object
       properties:
@@ -26037,6 +26993,15 @@ components:
         named groups' content could be inserted with `%(name_of_group)s`.
       type: string
       example: https://github.com/zulip/zulip/issues/{id}
+    FolderId:
+      type: integer
+      nullable: true
+      description: |
+        The ID of the folder to which the channel belongs.
+
+        Is `null` if channel does not belong to any folder.
+
+        **Changes**: New in Zulip 11.0 (feature level 389).
 
   ###################
   # Shared responses
@@ -26236,3 +27201,12 @@ components:
         type: boolean
       example: false
       required: false
+    ChannelFolderId:
+      name: channel_folder_id
+      in: path
+      description: |
+        The ID of the target channel folder.
+      schema:
+        type: integer
+      example: 1
+      required: true

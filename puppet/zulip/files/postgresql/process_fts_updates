@@ -41,6 +41,7 @@ import os
 import select
 import sys
 import time
+from collections.abc import Sequence
 
 import psycopg2
 import psycopg2.extensions
@@ -62,36 +63,61 @@ else:
     logger.setLevel(logging.DEBUG)
 
 
-def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
-    cursor.execute(
-        "SELECT id, message_id FROM fts_update_log LIMIT %s;",
-        [BATCH_SIZE],
-    )
-    ids = []
-    for id, message_id in cursor.fetchall():
-        if USING_PGROONGA:
-            cursor.execute(
-                "UPDATE zerver_message SET "
-                "search_pgroonga = "
-                "escape_html(subject) || ' ' || rendered_content "
-                "WHERE id = %s",
-                (message_id,),
-            )
+def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
+    with conn.cursor() as cursor:
         cursor.execute(
-            "UPDATE zerver_message SET "
-            "search_tsvector = to_tsvector('zulip.english_us_search', "
-            "subject || rendered_content) "
-            "WHERE id = %s",
-            (message_id,),
+            "SELECT id, message_id FROM fts_update_log ORDER BY id LIMIT %s FOR UPDATE SKIP LOCKED",
+            (BATCH_SIZE,),
         )
-        ids.append(id)
-    cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
-    return len(ids)
+        cursor.arraysize = BATCH_SIZE
+        parts = list(zip(*cursor.fetchmany(), strict=True))
+        if not parts:
+            row_ids: Sequence[int] = []
+            message_ids: Sequence[int] = []
+        else:
+            row_ids, message_ids = parts[0], parts[1]
+
+        if message_ids:
+            if USING_PGROONGA:
+                update_sql = "search_pgroonga = escape_html(subject) || ' ' || rendered_content"
+            else:
+                update_sql = "search_tsvector = to_tsvector('zulip.english_us_search', subject || rendered_content)"
+            cursor.execute(
+                f"UPDATE zerver_message SET {update_sql} "  # noqa: S608
+                "WHERE ctid IN ("
+                "  SELECT ctid FROM zerver_message"
+                "  WHERE id IN %s"
+                "  ORDER BY id FOR UPDATE"
+                ")",
+                (message_ids,),
+            )
+        if row_ids:
+            cursor.execute("DELETE FROM fts_update_log WHERE id IN %s", (row_ids,))
+        conn.commit()
+        return len(row_ids)
 
 
-def am_master(cursor: psycopg2.extensions.cursor) -> bool:
-    cursor.execute("SELECT pg_is_in_recovery()")
-    return not cursor.fetchall()[0][0]
+def update_all_rows(msg: str, conn: psycopg2.extensions.connection) -> None:
+    while True:
+        start_time = time.perf_counter()
+        rows_updated = update_fts_columns(conn)
+        if rows_updated:
+            logger.log(
+                logging.INFO,
+                "process_fts_updates: %s %d rows, %d rows/sec",
+                msg,
+                rows_updated,
+                rows_updated / (time.perf_counter() - start_time),
+            )
+
+        if rows_updated != BATCH_SIZE:
+            return
+
+
+def am_master(conn: psycopg2.extensions.connection) -> bool:
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT pg_is_in_recovery()")
+        return not cursor.fetchall()[0][0]
 
 
 def get_config(
@@ -201,13 +227,13 @@ while True:
         if conn is None:
             # connection_factory=None lets mypy understand the return type
             conn = psycopg2.connect(connection_factory=None, **pg_args)
-            cursor = conn.cursor()
             retries = 30
 
-            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+            conn.autocommit = False
+            conn.isolation_level = psycopg2.extensions.ISOLATION_LEVEL_READ_COMMITTED
 
             first_check = True
-            while not am_master(cursor):
+            while not am_master(conn):
                 if first_check:
                     first_check = False
                     logger.warning("In recovery; sleeping")
@@ -215,27 +241,20 @@ while True:
 
             logger.debug("process_fts_updates: listening for search index updates")
 
-            cursor.execute("LISTEN fts_update_log;")
+            with conn.cursor() as cursor:
+                cursor.execute("LISTEN fts_update_log;")
+                conn.commit()
+
             # Catch up on any historical columns
-            while True:
-                rows_updated = update_fts_columns(cursor)
-                logger.log(
-                    logging.INFO if rows_updated > 0 else logging.DEBUG,
-                    "process_fts_updates: Processed %d rows catching up",
-                    rows_updated,
-                )
+            update_all_rows("Caught up", conn)
 
-                if rows_updated != BATCH_SIZE:
-                    # We're caught up, so proceed to the listening for updates phase.
-                    break
-
-        # TODO: If we go back into recovery, we should stop processing updates
         if select.select([conn], [], [], 30) != ([], [], []):
             conn.poll()
-            while conn.notifies:
-                conn.notifies.pop()
-                update_fts_columns(cursor)
+            conn.notifies.clear()
+            update_all_rows("Updated", conn)
+
     except psycopg2.OperationalError as e:
+        # We will end up here if the database is restarted, or becomes read-only.
         retries -= 1
         if retries <= 0:
             raise

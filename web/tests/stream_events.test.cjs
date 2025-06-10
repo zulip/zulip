@@ -35,15 +35,18 @@ const message_view_header = mock_esm("../src/message_view_header", {
 mock_esm("../src/recent_view_ui", {
     complete_rerender() {},
 });
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
-});
 mock_esm("../src/settings_notifications", {
     update_page() {},
     user_settings_panel: "stub", // Not used, but can't be undefined
 });
 mock_esm("../src/overlays", {
     streams_open: () => true,
+});
+const settings_config = zrequire("settings_config");
+mock_esm("../src/user_settings", {
+    user_settings: {
+        web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+    },
 });
 
 const user_group_edit = mock_esm("../src/user_group_edit");
@@ -324,12 +327,23 @@ test("update_property", ({override}) => {
         assert.equal(args.sub, sub);
     }
 
+    // Update channel folder
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_channel_folder", stub.f);
+        stream_events.update_property(stream_id, "folder_id", 3);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "value");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.value, 3);
+    }
+
     // Test archiving stream
     {
         stream_data.subscribe_myself(sub);
 
         const stub = make_stub();
-        override(stream_settings_ui, "update_settings_for_archived", stub.f);
+        override(stream_settings_ui, "update_settings_for_archived_and_unarchived", stub.f);
         override(settings_streams, "update_default_streams_table", noop);
         override(message_live_update, "rerender_messages_view", noop);
 
@@ -358,9 +372,34 @@ test("update_property", ({override}) => {
         assert.equal(removed_sidebar_rows, 1);
     }
 
-    // We do not live update unarchiving stream, but we test this for coverage.
+    // Test unarchiving stream
     {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_settings_for_archived_and_unarchived", stub.f);
+        override(message_live_update, "rerender_messages_view", noop);
+
+        let bookend_updates = 0;
+        override(message_lists.current, "update_trailing_bookend", () => {
+            bookend_updates += 1;
+        });
+
+        let added_sidebar_rows = 0;
+        override(stream_list, "add_sidebar_row", () => {
+            added_sidebar_rows += 1;
+        });
+
+        compose_state.set_stream_id(stream_id);
+
+        // Unarchive the stream
         stream_events.update_property(stream_id, "is_archived", false);
+        assert.ok(!stream_data.is_stream_archived(stream_id));
+        assert.ok(stream_data.is_subscribed(stream_id));
+
+        const args = stub.get_args("sub");
+        assert.equal(args.sub.stream_id, stream_id);
+
+        assert.equal(bookend_updates, 1);
+        assert.equal(added_sidebar_rows, 1);
     }
 
     // Test deprecated properties for coverage.

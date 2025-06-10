@@ -15,8 +15,8 @@
 {% endif %}
 
 <ul>
-    {% for realm in realms %}
-    <li><a href="{{ realm.url }}">{{ realm.name }} ({{ realm.host }})</a></li>
+    {% for realm_data in realms %}
+    <li><a href="{{ realm_data.url }}">{{ realm_data.name }} ({{ realm_data.host }})</a></li>
     {% endfor %}
 </ul>
 

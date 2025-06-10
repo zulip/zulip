@@ -99,6 +99,30 @@ def validate_message(client: Client, message_id: int, content: Any) -> None:
     assert result["raw_content"] == content
 
 
+def set_moderation_request_channel(client: Client, channel: str | None = "core team") -> None:
+    if channel is None:
+        # Disable moderation request feature
+        channel_id = "-1"
+    else:
+        channel_id = client.get_stream_id(channel)["stream_id"]
+
+    request = dict(moderation_request_channel_id=channel_id)
+    result = client.call_endpoint("/realm", method="PATCH", request=request)
+    assert_success_response(result)
+
+
+def get_users_messages(client: Client, user_id: int) -> list[dict[str, Any]]:
+    request: dict[str, Any] = {
+        "anchor": "newest",
+        "num_before": 100,
+        "num_after": 0,
+        "narrow": [{"operator": "sender", "operand": user_id}],
+    }
+    result = client.get_messages(request)
+    assert_success_response(result)
+    return result["messages"]
+
+
 @openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client: Client) -> None:
     # {code_example|start}
@@ -1136,6 +1160,74 @@ def remove_attachment(client: Client, attachment_id: int) -> None:
     validate_against_openapi_schema(result, "/attachments/{attachment_id}", "delete", "200")
 
 
+@openapi_test_function("/navigation_views:get")
+def get_navigation_views(client: Client) -> None:
+    # {code_example|start}
+    # Get all navigation views for the user
+    result = client.call_endpoint(
+        url="navigation_views",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views", "get", "200")
+
+
+@openapi_test_function("/navigation_views:post")
+def add_navigation_views(client: Client) -> None:
+    # {code_example|start}
+    # Add a navigation view
+    request = {
+        "fragment": "narrow/is/alerted",
+        "is_pinned": True,
+        "name": "Alert Word",
+    }
+    result = client.call_endpoint(
+        url="navigation_views",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views", "post", "200")
+
+
+@openapi_test_function("/navigation_views/{fragment}:patch")
+def update_navigation_views(client: Client) -> None:
+    # Fetch navigation views for updating
+    result = client.call_endpoint(url="navigation_views", method="GET")
+    fragment = result["navigation_views"][0]["fragment"]
+    # {code_example|start}
+    # Update a navigation view's location
+    request = {
+        "is_pinned": True,
+    }
+    result = client.call_endpoint(
+        url=f"navigation_views/{fragment}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views/{fragment}", "patch", "200")
+
+
+@openapi_test_function("/navigation_views/{fragment}:delete")
+def remove_navigation_views(client: Client) -> None:
+    # Fetch navigation views for deletion
+    result = client.call_endpoint(url="navigation_views", method="GET")
+    fragment = result["navigation_views"][0]["fragment"]
+    # {code_example|start}
+    # Remove a navigation views
+    result = client.call_endpoint(
+        url=f"navigation_views/{fragment}",
+        method="DELETE",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/navigation_views/{fragment}", "delete", "200")
+
+
 @openapi_test_function("/saved_snippets:post")
 def create_saved_snippet(client: Client) -> None:
     # {code_example|start}
@@ -1411,6 +1503,25 @@ def update_message_flags(client: Client) -> None:
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/messages/flags", "post", "200")
+
+
+@openapi_test_function("/messages/{message_id}/report:post")
+def report_message(client: Client) -> None:
+    set_moderation_request_channel(client)
+    ensure_users([10], ["hamlet"])
+    hamlets_messages = get_users_messages(client, 10)
+    message_id = hamlets_messages[0]["id"]
+    # {code_example|start}
+    request = {
+        "report_type": "harassment",
+        "description": "Boromir is bullying Frodo.",
+    }
+    # Report a message, given the message's ID.
+    result = client.call_endpoint(f"/messages/{message_id}/report", method="POST", request=request)
+    # {code_example|end}
+    assert_success_response(result)
+
+    validate_against_openapi_schema(result, "/messages/{message_id}/report", "post", "200")
 
 
 def register_queue_all_events(client: Client) -> str:
@@ -1814,6 +1925,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     get_message_history(client, message_id)
     get_read_receipts(client, message_id)
     delete_message(client, message_id)
+    report_message(client)
     mark_all_as_read(client)
     mark_stream_as_read(client)
     mark_topic_as_read(client)
@@ -1857,6 +1969,10 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_user_mute(client)
     get_alert_words(client)
     add_alert_words(client)
+    add_navigation_views(client)
+    get_navigation_views(client)
+    update_navigation_views(client)
+    remove_navigation_views(client)
     create_saved_snippet(client)
     # Calling this again to pass the curl examples tests as the
     # `delete-saved-snippet` endpoint is called before `edit-saved-snippet`

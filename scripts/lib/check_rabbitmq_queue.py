@@ -31,6 +31,9 @@ normal_queues = [
 mobile_notification_shards = int(
     get_config(get_config_file(), "application_server", "mobile_notification_shards", "1")
 )
+user_activity_shards = int(
+    get_config(get_config_file(), "application_server", "user_activity_shards", "1")
+)
 
 OK = 0
 WARNING = 1
@@ -175,6 +178,8 @@ def check_rabbitmq_queues() -> None:
             f"missedmessage_mobile_notifications_shard{d}"
             for d in range(1, mobile_notification_shards + 1)
         ]
+    if user_activity_shards > 1:
+        check_queues += [f"user_activity_shard{d}" for d in range(1, user_activity_shards + 1)]
 
     queues_to_check = set(check_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:

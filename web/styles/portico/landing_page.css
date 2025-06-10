@@ -1274,6 +1274,10 @@ button {
     background-image: url("../../images/landing-page/why-zulip/why-zulip-threads.jpg");
 }
 
+.portico-landing.why-page .bg-pycon.partners {
+    background-image: url("../../images/landing-page/hands.jpg");
+}
+
 .portico-landing.why-page .bg-dimmer {
     position: absolute;
     width: 100%;
@@ -2698,6 +2702,7 @@ button {
     }
 }
 
+.partners-page,
 .self-hosting-page {
     & p {
         font-size: 18px !important;
@@ -2775,8 +2780,7 @@ button {
                 justify-content: flex-start;
                 align-items: flex-start;
                 flex-direction: column;
-                width: 40vw;
-                height: 350px;
+                width: 35vw;
                 box-shadow:
                     0 1px 1px 0 hsl(193deg 100% 7.1% / 30%),
                     1px 1px 1px 0 hsl(193deg 100% 7.1% / 15%),
@@ -2787,10 +2791,6 @@ button {
                 margin: 10px 0;
                 padding: 50px 30px 0;
                 border-top: 5px solid hsl(171deg 49% 39%);
-
-                @media (width < 1000px) {
-                    height: 400px;
-                }
 
                 & h1 {
                     font-weight: 600;
@@ -2810,8 +2810,9 @@ button {
                 flex-direction: column;
 
                 .feature-box {
-                    width: 75vw !important;
-                    height: calc(600px - 35vw);
+                    width: 70vw;
+                    height: auto;
+                    padding-bottom: 20px;
                 }
             }
         }
@@ -2849,6 +2850,26 @@ button {
             }
         }
     }
+}
+
+.self-hosting-page .feature-box {
+    /* Defined a fixed height since we all boxes to have same height. */
+    height: 350px;
+
+    @media (width < 1200px) {
+        height: 400px;
+    }
+
+    @media (width < 900px) {
+        /* Based on height required to fit all content in the box at 768px. */
+        height: 480px;
+    }
+}
+
+.partners-page .feature-grid .feature-row .feature-box {
+    height: 200px;
+    padding: 0 30px;
+    justify-content: center;
 }
 
 .apps .apps-page-link {

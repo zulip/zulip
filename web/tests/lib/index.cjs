@@ -87,7 +87,6 @@ const noop = function () {};
 require("../../src/templates.ts"); // register Zulip extensions
 
 async function run_one_module(file) {
-    zjquery.clear_initialize_function();
     zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".test.cjs"));
     test.set_current_file_name(file);

@@ -2,7 +2,7 @@ import base64
 import logging
 import re
 from email.headerregistry import Address
-from typing import Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import dns.resolver
 import orjson
@@ -330,6 +330,10 @@ class HomepageForm(forms.Form):
         return email
 
 
+class ImportRealmOwnerSelectionForm(forms.Form):
+    user_id = forms.IntegerField()
+
+
 class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
@@ -426,7 +430,16 @@ class CaptchaRealmCreationForm(RealmCreationForm):
         return payload
 
 
-class LoggingSetPasswordForm(SetPasswordForm):
+# https://github.com/typeddjango/django-stubs/pull/2384#pullrequestreview-2813849209
+if TYPE_CHECKING:
+    BaseSetPasswordForm: TypeAlias = SetPasswordForm[UserProfile]  # type: ignore[type-var]  # we don't subclass AbstractUser
+else:
+    BaseSetPasswordForm = SetPasswordForm
+
+
+class LoggingSetPasswordForm(
+    BaseSetPasswordForm  # type: ignore[type-var]  # we don't subclass AbstractUser
+):
     new_password1 = forms.CharField(
         label=_("New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
@@ -452,7 +465,6 @@ class LoggingSetPasswordForm(SetPasswordForm):
 
     @override
     def save(self, commit: bool = True) -> UserProfile:
-        assert isinstance(self.user, UserProfile)
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
         return self.user
 

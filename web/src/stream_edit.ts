@@ -5,10 +5,12 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
+import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
+import render_create_channel_folder_modal from "../templates/stream_settings/create_channel_folder_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 
@@ -16,6 +18,7 @@ import * as blueslip from "./blueslip.ts";
 import type {Bot} from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -23,6 +26,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
@@ -271,6 +275,7 @@ export function show_settings_for(node: HTMLElement): void {
         can_access_stream_email: stream_data.can_access_stream_email(sub),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
+        is_development_environment: page_params.development_environment,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -284,11 +289,13 @@ export function show_settings_for(node: HTMLElement): void {
 
     $edit_container.addClass("show");
 
+    stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
+    settings_components.set_up_folder_dropdown_widget(sub);
 
     $("#channels_overlay_container").on(
         "click",
@@ -351,10 +358,15 @@ function stream_setting_changed(elem: HTMLInputElement): void {
 }
 
 export function archive_stream(stream_id: number, $alert_element: JQuery): void {
+    dialog_widget.show_dialog_spinner();
     channel.del({
         url: "/json/streams/" + stream_id,
+        success() {
+            dialog_widget.hide_dialog_spinner();
+        },
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
+            dialog_widget.hide_dialog_spinner();
         },
     });
 }
@@ -579,7 +591,7 @@ export function initialize(): void {
         ".stream-permissions-warning-banner .main-view-banner-close-button",
         (event) => {
             event.preventDefault();
-            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+            $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
 
@@ -601,7 +613,7 @@ export function initialize(): void {
             const sub = sub_store.get(stream_id);
             assert(sub !== undefined);
             stream_settings_components.sub_or_unsub(sub, $stream_row);
-            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+            $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
 
@@ -747,6 +759,46 @@ export function initialize(): void {
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
     });
 
+    $("#channels_overlay_container").on("click", ".reactivate", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const stream_id = get_stream_id(this);
+        function do_unarchive_stream(): void {
+            dialog_widget.show_dialog_spinner();
+            channel.patch({
+                url: `/json/streams/${stream_id}`,
+                data: {is_archived: false},
+                success() {
+                    dialog_widget.hide_dialog_spinner();
+                },
+                error(xhr) {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        $(".stream_change_property_info"),
+                    );
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
+
+        const stream = sub_store.get(stream_id);
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
+        const html_body = render_settings_reactivation_stream_modal();
+
+        confirm_dialog.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Unarchive <z-link></z-link>?"},
+                {"z-link": () => stream_name_with_privacy_symbol_html},
+            ),
+            id: "unarchive-stream-modal",
+            html_body,
+            on_click: do_unarchive_stream,
+        });
+
+        $(".dialog_submit_button").attr("data-stream-id", stream_id);
+    });
+
     $("#channels_overlay_container").on("click", ".stream-row", function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
@@ -797,8 +849,10 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
-            if (sub && $subsection.attr("id") === "stream_permission_settings") {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            if (sub && $subsection.hasClass("stream-permissions")) {
+                stream_ui_updates.update_default_stream_and_stream_privacy_state(
+                    $("#stream_settings"),
+                );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
@@ -861,11 +915,67 @@ export function initialize(): void {
 
             const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
-            if ($subsection.attr("id") === "stream_permission_settings") {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            if ($subsection.hasClass("stream-permissions")) {
+                stream_ui_updates.update_default_stream_and_stream_privacy_state(
+                    $("#stream_settings"),
+                );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
         },
     );
+
+    $("#channels_overlay_container").on("click", ".create-channel-folder-button", () => {
+        const html_body = render_create_channel_folder_modal({
+            max_channel_folder_name_length: channel_folders.MAX_CHANNEL_FOLDER_NAME_LENGTH,
+            max_channel_folder_description_length:
+                channel_folders.MAX_CHANNEL_FOLDER_DESCRIPTION_LENGTH,
+        });
+
+        function create_channel_folder(): void {
+            const close_on_success = true;
+            const data = {
+                name: $<HTMLInputElement>("input#new_channel_folder_name").val()!.trim(),
+                description: $<HTMLTextAreaElement>("textarea#new_channel_folder_description")
+                    .val()!
+                    .trim(),
+            };
+            dialog_widget.submit_api_request(
+                channel.post,
+                "/json/channel_folders/create",
+                data,
+                {
+                    success_continuation(response_data) {
+                        const id = z
+                            .object({channel_folder_id: z.number()})
+                            .parse(response_data).channel_folder_id;
+                        // This is a temporary channel folder object added
+                        // to channel folders data, so that the folder is
+                        // immediately visible in the dropdown.
+                        // This will be replaced with the actual object once
+                        // the client receives channel_folder/add event.
+                        const channel_folder = {
+                            id,
+                            name: data.name,
+                            description: data.description,
+                            is_archived: false,
+                            rendered_description: "",
+                            date_created: 0,
+                            creator_id: people.my_current_user_id(),
+                        };
+                        channel_folders.add(channel_folder);
+                    },
+                },
+                close_on_success,
+            );
+        }
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Create channel folder"}),
+            html_body,
+            id: "create_channel_folder",
+            html_submit_button: $t_html({defaultMessage: "Create"}),
+            on_click: create_channel_folder,
+            loading_spinner: true,
+        });
+    });
 }

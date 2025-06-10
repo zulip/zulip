@@ -303,11 +303,20 @@ export function slug_to_stream_id(slug: string): number | undefined {
 
 export function mark_archived(stream_id: number): void {
     const sub = get_sub_by_id(stream_id);
-    if (sub === undefined || !stream_info.get(stream_id)) {
+    if (sub === undefined) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
         return;
     }
     sub.is_archived = true;
+}
+
+export function mark_unarchived(stream_id: number): void {
+    const sub = get_sub_by_id(stream_id);
+    if (sub === undefined) {
+        blueslip.warn("Failed to unarchive stream " + stream_id.toString());
+        return;
+    }
+    sub.is_archived = false;
 }
 
 export function delete_sub(stream_id: number): void {
@@ -442,6 +451,10 @@ export function update_stream_permission_group_setting(
     sub[setting_name] = group_setting;
 }
 
+export function update_channel_folder(sub: StreamSubscription, folder_id: number | null): void {
+    sub.folder_id = folder_id;
+}
+
 export function receives_notifications(
     stream_id: number,
     notification_name: keyof StreamSpecificNotificationSettings,
@@ -464,7 +477,7 @@ export function canonicalized_name(stream_name: string): string {
     return stream_name.toString().toLowerCase();
 }
 
-export let get_color = (stream_id: number | undefined): string => {
+export function get_color(stream_id: number | undefined): string {
     if (stream_id === undefined) {
         return DEFAULT_COLOR;
     }
@@ -473,10 +486,6 @@ export let get_color = (stream_id: number | undefined): string => {
         return DEFAULT_COLOR;
     }
     return sub.color;
-};
-
-export function rewire_get_color(value: typeof get_color): void {
-    get_color = value;
 }
 
 export function is_muted(stream_id: number): boolean {
@@ -603,7 +612,7 @@ export function rewire_has_content_access(value: typeof has_content_access): voi
     has_content_access = value;
 }
 
-function can_administer_channel(sub: StreamSubscription): boolean {
+export function can_administer_channel(sub: StreamSubscription): boolean {
     // Note that most callers should use wrappers like
     // can_change_permissions_requiring_content_access, since actions
     // that can grant access to message content require content access
@@ -871,6 +880,28 @@ export function rewire_is_user_subscribed(value: typeof is_user_subscribed): voi
     is_user_subscribed = value;
 }
 
+// This function parallels `is_user_subscribed` but fetches subscriber data for the
+// `stream_id` if we don't have complete data yet.
+export async function maybe_fetch_is_user_subscribed(
+    stream_id: number,
+    user_id: number,
+    retry_on_failure: boolean,
+): Promise<boolean> {
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined || !can_view_subscribers(sub)) {
+        // If we don't know about the stream, or we ourselves cannot access subscriber list,
+        // so we return false.
+        blueslip.warn(
+            "We got a maybe_fetch_is_user_subscribed call for a non-existent or inaccessible stream.",
+        );
+        return false;
+    }
+    return (
+        (await peer_data.maybe_fetch_is_user_subscribed(stream_id, user_id, retry_on_failure)) ??
+        false
+    );
+}
+
 export function create_streams(streams: Stream[]): void {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.
@@ -1039,4 +1070,22 @@ export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
             stream,
         }))
         .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+}
+
+export function get_streams_for_move_messages_widget(): (dropdown_widget.Option & {
+    stream: StreamSubscription;
+})[] {
+    return get_unsorted_subs_with_content_access()
+        .filter((stream) => !stream.is_archived)
+        .sort((a, b) => {
+            if (a.subscribed !== b.subscribed) {
+                return a.subscribed ? -1 : 1;
+            }
+            return util.strcmp(a.name.toLowerCase(), b.name.toLowerCase());
+        })
+        .map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id,
+            stream,
+        }));
 }

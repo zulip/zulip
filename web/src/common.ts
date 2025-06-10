@@ -98,6 +98,13 @@ export function adjust_shift_hotkey(hotkeys: string[]): boolean {
     return false;
 }
 
+export function is_printable_ascii(key: string): boolean {
+    // ASCII printable characters (character code 32-126) -> " " to "~".
+    // It includes letters, digits, punctuation marks, and a few
+    // miscellaneous symbols.
+    return key.length === 1 && key >= " " && key <= "~";
+}
+
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation
 // for design details on this feature.
 function set_password_toggle_label(

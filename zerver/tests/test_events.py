@@ -27,6 +27,13 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
+from zerver.actions.channel_folders import (
+    check_add_channel_folder,
+    do_archive_channel_folder,
+    do_change_channel_folder_description,
+    do_change_channel_folder_name,
+    do_unarchive_channel_folder,
+)
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
@@ -60,6 +67,11 @@ from zerver.actions.message_edit import (
 )
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
+from zerver.actions.navigation_views import (
+    do_add_navigation_view,
+    do_remove_navigation_view,
+    do_update_navigation_view,
+)
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
@@ -106,6 +118,7 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
+    do_change_stream_folder,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -154,6 +167,8 @@ from zerver.lib.event_schema import (
     check_attachment_add,
     check_attachment_remove,
     check_attachment_update,
+    check_channel_folder_add,
+    check_channel_folder_update,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
@@ -168,6 +183,9 @@ from zerver.lib.event_schema import (
     check_message,
     check_muted_topics,
     check_muted_users,
+    check_navigation_view_add,
+    check_navigation_view_remove,
+    check_navigation_view_update,
     check_onboarding_steps,
     check_presence,
     check_reaction_add,
@@ -1747,6 +1765,29 @@ class NormalActionsTest(BaseAction):
             do_update_user_custom_profile_data_if_changed(hamlet, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
+
+    def test_navigation_views_events(self) -> None:
+        with self.verify_action() as events:
+            navigation_view = do_add_navigation_view(
+                self.user_profile, fragment="inbox", is_pinned=True, name=None
+            )
+        check_navigation_view_add("events[0]", events[0])
+        self.assertEqual(events[0]["navigation_view"]["fragment"], "inbox")
+        self.assertEqual(events[0]["navigation_view"]["is_pinned"], True)
+        self.assertIsNone(events[0]["navigation_view"]["name"])
+
+        with self.verify_action() as events:
+            do_update_navigation_view(
+                self.user_profile, navigation_view, is_pinned=False, name=None
+            )
+        check_navigation_view_update("events[0]", events[0])
+        self.assertEqual(events[0]["fragment"], "inbox")
+        self.assertEqual(events[0]["data"]["is_pinned"], False)
+
+        with self.verify_action() as events:
+            do_remove_navigation_view(self.user_profile, navigation_view)
+        check_navigation_view_remove("events[0]", events[0])
+        self.assertEqual(events[0]["fragment"], "inbox")
 
     def test_presence_events(self) -> None:
         with self.verify_action(slim_presence=False) as events:
@@ -4538,6 +4579,7 @@ class RealmPropertyActionTest(BaseAction):
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -4574,7 +4616,12 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                 )
 
-            old_value = vals[count]
+            if isinstance(val, Enum):
+                old_value = vals[count].value
+                new_value = val.value
+            else:
+                old_value = vals[count]
+                new_value = val
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
@@ -4583,7 +4630,7 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                     extra_data={
                         RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: val,
+                        RealmAuditLog.NEW_VALUE: new_value,
                         "property": name,
                     },
                 ).count(),
@@ -4657,7 +4704,7 @@ class UserDisplayActionTest(BaseAction):
             web_home_view=["all_messages", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
-            web_channel_default_view=[2, 1],
+            web_channel_default_view=[2, 1, 3],
             user_list_style=[1, 2, 3],
             web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=[1, 2, 3],
@@ -4665,6 +4712,7 @@ class UserDisplayActionTest(BaseAction):
             web_line_height_percent=[105, 120, 160],
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         user_settings_object = True
@@ -4929,6 +4977,19 @@ class SubscribeActionTest(BaseAction):
             )
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
+
+        channel_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
+        with self.verify_action(include_subscribers=include_subscribers) as events:
+            do_change_stream_folder(stream, channel_folder, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "folder_id")
+        self.assertEqual(events[0]["value"], channel_folder.id)
+
+        with self.verify_action(include_subscribers=include_subscribers) as events:
+            do_change_stream_folder(stream, None, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "folder_id")
+        self.assertIsNone(events[0]["value"])
 
         # Update stream privacy - make stream web-public
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
@@ -5426,3 +5487,56 @@ class ScheduledMessagesEventsTest(BaseAction):
         with self.verify_action() as events:
             delete_scheduled_message(self.user_profile, scheduled_message_id)
         check_scheduled_message_remove("events[0]", events[0])
+
+
+class ChannelFolderActionTest(BaseAction):
+    def test_channel_folder_creation_event(self) -> None:
+        folder_name = "Frontend"
+        folder_description = "Channels for **frontend** discussions"
+        with self.verify_action() as events:
+            check_add_channel_folder(
+                self.user_profile.realm,
+                folder_name,
+                folder_description,
+                acting_user=self.user_profile,
+            )
+        check_channel_folder_add("events[0]", events[0])
+
+    def test_channel_folder_update_event(self) -> None:
+        channel_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Frontend",
+            "Channels for frontend discussion",
+            acting_user=self.user_profile,
+        )
+        iago = self.example_user("iago")
+
+        with self.verify_action() as events:
+            do_change_channel_folder_name(channel_folder, "Web frontend", acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"name"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertEqual(events[0]["data"]["name"], "Web frontend")
+
+        with self.verify_action() as events:
+            do_change_channel_folder_description(
+                channel_folder, "Channels for **frontend** discussions", acting_user=iago
+            )
+        check_channel_folder_update("events[0]", events[0], {"description", "rendered_description"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertEqual(events[0]["data"]["description"], "Channels for **frontend** discussions")
+        self.assertEqual(
+            events[0]["data"]["rendered_description"],
+            "<p>Channels for <strong>frontend</strong> discussions</p>",
+        )
+
+        with self.verify_action() as events:
+            do_archive_channel_folder(channel_folder, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"is_archived"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertTrue(events[0]["data"]["is_archived"])
+
+        with self.verify_action() as events:
+            do_unarchive_channel_folder(channel_folder, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"is_archived"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertFalse(events[0]["data"]["is_archived"])

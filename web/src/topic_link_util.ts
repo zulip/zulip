@@ -1,7 +1,8 @@
+// Keep this synchronized with zerver/lib/topic_link_util.py
+
 import assert from "minimalistic-assert";
 
-import * as internal_url from "../shared/src/internal_url.ts";
-
+import * as hash_util from "./hash_util.ts";
 import * as stream_data from "./stream_data.ts";
 
 const invalid_stream_topic_regex = /[`>*&[\]]|(\$\$)/g;
@@ -62,11 +63,7 @@ export function get_topic_link_content(
     assert(stream_id !== undefined);
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
-        const stream_topic_url = internal_url.by_stream_topic_url(
-            stream_id,
-            topic_name,
-            () => stream_name,
-        );
+        const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
         if (message_id !== undefined) {
             return {
                 text: `#${escape(stream_name)} > ${escape(topic_name)} @ 💬`,
@@ -80,7 +77,7 @@ export function get_topic_link_content(
     }
     return {
         text: `#${escape(stream_name)}`,
-        url: internal_url.by_stream_url(stream_id, () => stream_name),
+        url: hash_util.channel_url_by_user_setting(stream_id),
     };
 }
 

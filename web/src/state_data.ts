@@ -141,6 +141,15 @@ export const raw_user_group_schema = z.object({
     deactivated: z.boolean(),
 });
 
+export const channel_folder_schema = z.object({
+    id: z.number(),
+    name: z.string(),
+    rendered_description: z.string(),
+    creator_id: z.number().nullable(),
+    date_created: z.number(),
+    is_archived: z.boolean(),
+});
+
 export const user_topic_schema = z.object({
     stream_id: z.number(),
     topic_name: z.string(),
@@ -501,6 +510,11 @@ export const state_data_schema = z
     )
     .and(
         z
+            .object({channel_folders: z.array(channel_folder_schema)})
+            .transform((channel_folders) => ({channel_folders})),
+    )
+    .and(
+        z
             .object({
                 unread_msgs: z.object({
                     pms: z.array(unread_direct_message_info_schema),
@@ -546,7 +560,13 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                queue_id: NOT_TYPED_YET,
+                queue_id: z.nullable(z.string()),
+            })
+            .transform((server_events_state) => ({server_events_state})),
+    )
+    .and(
+        z
+            .object({
                 server_generation: NOT_TYPED_YET,
                 event_queue_longpoll_timeout_seconds: NOT_TYPED_YET,
                 last_event_id: NOT_TYPED_YET,

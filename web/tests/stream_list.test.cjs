@@ -43,6 +43,7 @@ mock_esm("../src/group_permission_settings", {
 const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
+stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -51,6 +52,7 @@ const settings_config = zrequire("settings_config");
 // Start with always filtering out inactive streams.
 const user_settings = {
     demote_inactive_streams: settings_config.demote_inactive_streams_values.always.code,
+    web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
 };
 initialize_user_settings({user_settings});
 stream_list_sort.set_filter_out_inactives();

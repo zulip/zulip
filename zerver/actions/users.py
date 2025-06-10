@@ -32,6 +32,7 @@ from zerver.lib.send_email import (
 )
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
+from zerver.lib.stream_subscription import update_all_subscriber_counts_for_user
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     get_anonymous_group_membership_dict_for_streams,
@@ -273,12 +274,15 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
     Helper function for changing the .is_active field. Not meant as a standalone function
     in production code as properly activating/deactivating users requires more steps.
     This changes the is_active value and saves it, while ensuring
-    Subscription.is_user_active values are updated in the same db transaction.
+    Subscription.is_user_active and Stream.subscriber_count values are updated in the same db transaction.
     """
     with transaction.atomic(savepoint=False):
         user_profile.is_active = value
         user_profile.save(update_fields=["is_active"])
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
+        update_all_subscriber_counts_for_user(
+            user_profile=user_profile, direction=1 if value else -1
+        )
 
 
 def send_group_update_event_for_anonymous_group_setting(
@@ -972,7 +976,9 @@ def do_send_password_reset_email(
             delivery_email__iexact=email, is_active=True
         )
         if active_accounts_in_other_realms:
-            context["active_accounts_in_other_realms"] = active_accounts_in_other_realms
+            context["other_realm_urls"] = [
+                active_account.realm.url for active_account in active_accounts_in_other_realms
+            ]
         language = get_language()
 
         send_email(

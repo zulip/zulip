@@ -82,24 +82,8 @@ function make_zjquery() {
         return proxy;
     }
 
-    let initialize_function;
-
     const zjquery = function (arg, arg2) {
-        if (typeof arg === "function") {
-            assert.ok(
-                !initialize_function,
-                `
-                    We are trying to avoid the $(...) mechanism
-                    for initializing modules in our codebase,
-                    and the code that you are compiling/running
-                    has tried to do this twice.  Please either
-                    clean up the real code or reduce the scope
-                    of what you are testing in this test module.
-                `,
-            );
-            initialize_function = arg;
-            return undefined;
-        }
+        assert.ok(typeof arg !== "function", "zjquery does not support $(callback)");
 
         // If somebody is passing us an element, we return
         // the element itself if it's been created with
@@ -139,14 +123,6 @@ function make_zjquery() {
             elems.set(selector, $elem);
         }
         return elems.get(selector);
-    };
-
-    zjquery.get_initialize_function = function () {
-        return initialize_function;
-    };
-
-    zjquery.clear_initialize_function = function () {
-        initialize_function = undefined;
     };
 
     zjquery.create = function (name, opts) {

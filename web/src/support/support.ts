@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-$(() => {
+function initialize(): void {
     $("body").on("click", "button.scrub-realm-button", function (this: HTMLButtonElement, e) {
         e.preventDefault();
         const message =
@@ -100,4 +100,6 @@ $(() => {
             }
         },
     );
-});
+}
+
+initialize();

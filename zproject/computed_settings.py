@@ -967,6 +967,9 @@ LOGGING: dict[str, Any] = {
             "handlers": ["scim_file", "errors_file"],
             "propagate": False,
         },
+        "mail.log": {
+            "level": "WARNING",
+        },
         "pyvips": {
             "level": "ERROR",
             "handlers": ["console", "errors_file"],
@@ -1276,6 +1279,7 @@ CROSS_REALM_BOT_EMAILS = {
 MOBILE_NOTIFICATIONS_SHARDS = int(
     get_config("application_server", "mobile_notification_shards", "1")
 )
+USER_ACTIVITY_SHARDS = int(get_config("application_server", "user_activity_shards", "1"))
 
 TWO_FACTOR_PATCH_ADMIN = False
 
@@ -1304,3 +1308,5 @@ SCIM_SERVICE_PROVIDER = {
 
 # Which API key to use will be determined based on TOPIC_SUMMARIZATION_MODEL.
 TOPIC_SUMMARIZATION_API_KEY = get_secret("topic_summarization_api_key", None)
+
+PARTIAL_USERS = bool(os.environ.get("PARTIAL_USERS"))

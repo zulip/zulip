@@ -34,6 +34,9 @@ const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
+mock_esm("../src/channel", {
+    get: () => ({subscribers: []}),
+});
 
 let set_timeout_called;
 set_global("setTimeout", (f, time) => {
@@ -61,12 +64,13 @@ const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
-
 const current_user = {};
 set_current_user(current_user);
 const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
 set_realm(realm);
-const user_settings = {};
+const user_settings = {
+    web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+};
 initialize_user_settings({user_settings});
 
 const ct = composebox_typeahead;
@@ -1714,7 +1718,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
     $("#private_message_recipient").off("blur");
-    $("#send_later").css = noop;
     ct.initialize({
         on_enter_send: finish,
     });

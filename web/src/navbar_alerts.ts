@@ -1,5 +1,4 @@
 import {addDays} from "date-fns";
-import Handlebars from "handlebars";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -12,7 +11,7 @@ import * as channel from "./channel.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as feedback_widget from "./feedback_widget.ts";
-import {$t, $t_html} from "./i18n.ts";
+import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
@@ -372,16 +371,14 @@ const demo_organization_deadline_banner = (): AlertBanner => {
     return {
         process: "demo-organization-deadline",
         intent: days_remaining <= 7 ? "danger" : "info",
-        label: new Handlebars.SafeString(
-            $t_html(
-                {
-                    defaultMessage:
-                        "This demo organization will be automatically deleted in {days_remaining} days, unless it's converted into a permanent organization.",
-                },
-                {
-                    days_remaining,
-                },
-            ),
+        label: $t(
+            {
+                defaultMessage:
+                    "This demo organization will be automatically deleted in {days_remaining} days, unless it's converted into a permanent organization.",
+            },
+            {
+                days_remaining,
+            },
         ),
         buttons,
         close_button: true,
@@ -506,8 +503,10 @@ export function initialize(): void {
         }, 2000);
     });
 
-    $("#navbar_alerts_wrapper").on("click", ".convert-demo-organization", () => {
-        demo_organizations_ui.do_convert_demo_organization();
+    $("#navbar_alerts_wrapper").on("click", ".convert-demo-organization", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        demo_organizations_ui.show_convert_demo_organization_modal();
     });
 
     $("#navbar_alerts_wrapper").on("click", ".demo-organizations-help", () => {

@@ -75,7 +75,12 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     // because convert_to_pill_on_enter is false.
     assert(search_pill_widget !== null);
     search_pill_widget.clear(true);
-    search_pill.set_search_bar_contents(terms, search_pill_widget, set_search_bar_text);
+    search_pill.set_search_bar_contents(
+        terms,
+        search_pill_widget,
+        search_typeahead.shown,
+        set_search_bar_text,
+    );
     on_narrow_search(terms, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to
@@ -220,6 +225,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 search_pill.set_search_bar_contents(
                     search_terms,
                     search_pill_widget,
+                    search_typeahead.shown,
                     set_search_bar_text,
                 );
                 narrow_to_search_contents_with_search_bar_open();
@@ -281,11 +287,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 
             // Record this on keydown before the typeahead code closes the
             // typeahead, so we can use this information on keyup.
-            if (keydown_util.is_enter_event(e) && $("#searchbox_form .typeahead").is(":visible")) {
-                typeahead_was_open_on_enter = true;
-            } else {
-                typeahead_was_open_on_enter = false;
-            }
+            typeahead_was_open_on_enter = keydown_util.is_enter_event(e) && search_typeahead.shown;
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
             if (is_using_input_method) {
@@ -389,6 +391,7 @@ function reset_searchbox(clear = false): void {
         search_pill.set_search_bar_contents(
             narrow_state.search_terms(),
             search_pill_widget,
+            search_typeahead.shown,
             set_search_bar_text,
         );
     }

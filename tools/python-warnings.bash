@@ -10,12 +10,6 @@ PYTHONWARNINGS+=',default:Attribute s is deprecated and will be removed in Pytho
 # https://github.com/boto/botocore/pull/3239
 PYTHONWARNINGS+=',ignore:datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.:DeprecationWarning:botocore.auth'
 
-# https://bugs.launchpad.net/beautifulsoup/+bug/2076897
-PYTHONWARNINGS+=',ignore:The '\''strip_cdata'\'' option of HTMLParser() has never done anything and will eventually be removed.:DeprecationWarning:bs4.builder._lxml'
-
-# https://github.com/fabfuel/circuitbreaker/pull/63
-PYTHONWARNINGS+=',ignore:datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.:DeprecationWarning:circuitbreaker'
-
 # https://github.com/mahmoud/glom/pull/258
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':DeprecationWarning'
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':SyntaxWarning'
@@ -39,13 +33,10 @@ PYTHONWARNINGS+=',ignore:path is deprecated.:DeprecationWarning:semgrep.semgrep_
 # https://github.com/scrapy/scrapy/issues/3288
 PYTHONWARNINGS+=',ignore:Passing method to twisted.internet.ssl.CertificateOptions was deprecated in Twisted 17.1.0.:DeprecationWarning:scrapy.core.downloader.contextfactory'
 
-# https://github.com/scrapy/scrapy/issues/6450
-PYTHONWARNINGS+=',ignore:twisted.web.http.HTTPClient was deprecated in Twisted 24.7.0:DeprecationWarning:scrapy.core.downloader.webclient'
+# https://github.com/scrapy/scrapy/issues/6859
+PYTHONWARNINGS+=',ignore:Attempting to mutate a Context after a Connection was created.:DeprecationWarning:scrapy.core.downloader.contextfactory'
 
 # https://github.com/adamchainz/time-machine/pull/486
 PYTHONWARNINGS+=',ignore:datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.:DeprecationWarning:time_machine'
-
-# https://github.com/zulip/python-zulip-api/pull/833
-PYTHONWARNINGS+=',default:distro.linux_distribution() is deprecated.:DeprecationWarning:zulip'
 
 export SQLALCHEMY_WARN_20=1

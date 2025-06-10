@@ -37,6 +37,7 @@ from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import clear_scheduled_emails, queue_scheduled_emails, send_future_email
+from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -982,6 +983,8 @@ class QueryCountTest(ZulipTestCase):
         ]
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
+        subscriber_count_before = self.build_streams_subscriber_count(streams)
+
         invite_expires_in_minutes = 4 * 24 * 60
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
@@ -995,7 +998,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(85),
+            self.assert_database_query_count(88),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -1019,6 +1022,17 @@ class QueryCountTest(ZulipTestCase):
 
         self.assertEqual(
             notifications, {"private_stream1", "private_stream2", "Verona", "Denmark,Scotland"}
+        )
+
+        # DB-refresh streams
+        subscriber_count_after = self.fetch_streams_subscriber_count(
+            stream_ids=set(subscriber_count_before)
+        )
+
+        self.assert_stream_subscriber_count(
+            subscriber_count_before,
+            subscriber_count_after,
+            expected_difference=1,
         )
 
 
@@ -1811,6 +1825,95 @@ class ActivateTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.assertTrue(user.is_active)
 
+    def test_stream_subscriber_count_upon_deactivate(self) -> None:
+        # Test subscriber_count decrements upon deactivating a user.
+        # We use the api here as we want this to be end-to-end.
+
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+        user = self.example_user("hamlet")
+
+        streams_subscriber_counts_before = self.build_streams_subscriber_count(
+            streams=get_user_subscribed_streams(user)
+        )
+        stream_ids = set(streams_subscriber_counts_before)
+        other_streams_subscriber_counts_before = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        result = self.client_delete(f"/json/users/{user.id}")
+        self.assert_json_success(result)
+
+        # DB-refresh streams.
+        streams_subscriber_counts_after = self.fetch_streams_subscriber_count(stream_ids)
+
+        # DB-refresh other_streams.
+        other_streams_subscriber_counts_after = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        # Deactivating a user should result in subscriber_count - 1
+        self.assert_stream_subscriber_count(
+            streams_subscriber_counts_before,
+            streams_subscriber_counts_after,
+            expected_difference=-1,
+        )
+
+        # Make sure other streams are not affected upon deactivation.
+        self.assert_stream_subscriber_count(
+            other_streams_subscriber_counts_before,
+            other_streams_subscriber_counts_after,
+            expected_difference=0,
+        )
+
+    def test_stream_subscriber_count_upon_reactivate(self) -> None:
+        # Test subscriber_count increments upon reactivating a user.
+        # We use the api here as we want this to be end-to-end.
+
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+        user = self.example_user("hamlet")
+
+        # First, deactivate that user
+        result = self.client_delete(f"/json/users/{user.id}")
+        self.assert_json_success(result)
+
+        streams_subscriber_counts_before = self.build_streams_subscriber_count(
+            streams=get_user_subscribed_streams(user)
+        )
+        stream_ids = set(streams_subscriber_counts_before)
+        other_streams_subscriber_counts_before = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        # Reactivate user
+        result = self.client_post(f"/json/users/{user.id}/reactivate")
+        self.assert_json_success(result)
+
+        # DB-refresh streams.
+        streams_subscriber_counts_after = self.fetch_streams_subscriber_count(stream_ids)
+
+        # DB-refresh other_streams.
+        other_streams_subscriber_counts_after = self.fetch_other_streams_subscriber_count(
+            stream_ids
+        )
+
+        # Reactivating a user should result in subscriber_count + 1
+        self.assert_stream_subscriber_count(
+            streams_subscriber_counts_before,
+            streams_subscriber_counts_after,
+            expected_difference=1,
+        )
+
+        # Make sure other streams are not affected upon reactivation.
+        self.assert_stream_subscriber_count(
+            other_streams_subscriber_counts_before,
+            other_streams_subscriber_counts_after,
+            expected_difference=0,
+        )
+
     def test_email_sent(self) -> None:
         self.login("iago")
         user = self.example_user("hamlet")
@@ -2061,7 +2164,7 @@ class ActivateTest(ZulipTestCase):
         session_key = self.client.session.session_key
         self.assertTrue(session_key)
 
-        result = self.client_get("/json/users")
+        result = self.client_get("/json/attachments")
         self.assert_json_success(result)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
 
@@ -2069,7 +2172,7 @@ class ActivateTest(ZulipTestCase):
             do_deactivate_user(user, acting_user=None)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
 
-        result = self.client_get("/json/users")
+        result = self.client_get("/json/attachments")
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401
         )
@@ -2915,7 +3018,7 @@ class GetProfileTest(ZulipTestCase):
         # 1. Hamlet and Iago - they are subscribed to common streams.
         # 2. Prospero - Because Polonius sent a DM to Prospero when
         # they were allowed to access all users.
-        # 3. Aaron and Zoe - Because they are particapting in a
+        # 3. Aaron and Zoe - Because they are participating in a
         # group DM with Polonius.
         # 4. Shiva - Because Shiva sent a DM to Polonius.
         # 5. Polonius - A user can obviously access themselves.
@@ -2963,6 +3066,66 @@ class GetProfileTest(ZulipTestCase):
             inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id, hamlet.id]
         )
 
+    def test_get_user_dicts_with_ids(self) -> None:
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        zoe = self.example_user("ZOE")
+        aaron = self.example_user("aaron")
+        webhook_bot = self.example_user("webhook_bot")
+
+        self.set_up_db_for_testing_user_access()
+        # Test the /json/users endpoint with user_ids query parameter.
+        self.login("polonius")
+        # These users are accessible to Polonius because:
+        # 1. Hamlet and Iago - they are subscribed to common streams.
+        # 3. Aaron and Zoe - Because they are participating in a
+        # group DM with Polonius.
+        accessible_user_ids_subset = [hamlet.id, iago.id, aaron.id, zoe.id, webhook_bot.id]
+        inaccessible_user_ids_subset = [cordelia.id, desdemona.id]
+        user_ids_to_fetch = accessible_user_ids_subset + inaccessible_user_ids_subset
+        with self.assert_database_query_count(9):
+            result = orjson.loads(
+                self.client_get(
+                    "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
+                ).content
+            )
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        self.assert_length(accessible_users, len(accessible_user_ids_subset))
+        accessible_user_ids = [user["user_id"] for user in accessible_users]
+        self.assertCountEqual(
+            accessible_user_ids,
+            accessible_user_ids_subset,
+        )
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        self.assert_length(accessible_human_users, 4)
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(inaccessible_user_ids, inaccessible_user_ids_subset)
+
+        # Desdemona can access all users since she is an admin.
+        self.login("desdemona")
+        with self.assert_database_query_count(4):
+            result = orjson.loads(
+                self.client_get(
+                    "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
+                ).content
+            )
+        all_fetched_users = result["members"]
+        self.assertCountEqual(
+            [user["user_id"] for user in all_fetched_users],
+            user_ids_to_fetch,
+        )
+
     def test_get_user_with_restricted_access(self) -> None:
         polonius = self.example_user("polonius")
         hamlet = self.example_user("hamlet")
@@ -3002,6 +3165,17 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(9):
+            result = self.client_get("/json/users")
+        self.assert_json_success(result)
+
+        result_dict = orjson.loads(result.content)
+        all_fetched_users = result_dict["members"]
+        self.assertEqual(
+            len(all_fetched_users),
+            UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count() + 1,
+        )
+
     def test_get_inaccessible_user_ids(self) -> None:
         polonius = self.example_user("polonius")
         bot = self.example_user("default_bot")
@@ -3031,6 +3205,53 @@ class GetProfileTest(ZulipTestCase):
             [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
         )
         self.assertEqual(inaccessible_user_ids, {othello.id})
+
+    def test_get_users_for_spectators(self) -> None:
+        # Checks that spectators can fetch users data.
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Try with a realm with no web-public channels.
+        with self.assert_database_query_count(2):
+            result = self.client_get("/json/users", subdomain="lear")
+            self.assert_json_error(
+                result,
+                "Not logged in: API authentication or user session required",
+                status_code=401,
+            )
+
+        with self.assert_database_query_count(4):
+            result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        result_dict = orjson.loads(result.content)
+
+        all_fetched_users = result_dict["members"]
+        self.assertEqual(
+            len(all_fetched_users), UserProfile.objects.filter(realm=hamlet.realm).count()
+        )
+
+        user_ids_to_fetch = [hamlet.id, othello.id]
+        with self.assert_database_query_count(4):
+            result_dict = orjson.loads(
+                self.client_get(
+                    "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
+                ).content
+            )
+        all_fetched_users = result_dict["members"]
+        self.assertCountEqual(
+            [user["user_id"] for user in all_fetched_users],
+            user_ids_to_fetch,
+        )
+
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(4):
+            result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        result_dict = orjson.loads(result.content)
+        all_fetched_users = result_dict["members"]
+        self.assertEqual(
+            len(all_fetched_users),
+            UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count(),
+        )
 
 
 class DeleteUserTest(ZulipTestCase):

@@ -8,12 +8,15 @@ import render_change_stream_info_modal from "../templates/stream_settings/change
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
+import {page_params} from "./page_params.ts";
 import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_create_subscribers from "./stream_create_subscribers.ts";
@@ -31,6 +34,8 @@ let created_stream: string | undefined;
 // Default is true since the current user is added to
 // the subscribers list initially.
 let current_user_subscribed_to_created_stream = true;
+
+let folder_widget: DropdownWidget | undefined;
 
 export function reset_created_stream(): void {
     created_stream = undefined;
@@ -173,7 +178,7 @@ function toggle_advanced_configurations(): void {
     const $advanced_configurations_view = $(".advanced-configurations-collapase-view");
     const $toggle_button = $(".toggle-advanced-configurations-icon");
 
-    if ($advanced_configurations_view.is(":visible")) {
+    if (!$advanced_configurations_view.hasClass("hide")) {
         // Toggle into the condensed state
         $advanced_configurations_view.addClass("hide");
         $toggle_button.addClass("fa-caret-right");
@@ -238,7 +243,7 @@ $("body").on(
     },
 );
 
-$("body").on("click", ".advanced-configurations-container .advance-config-title-container", (e) => {
+$("body").on("click", ".advanced-configurations-container .advance-config-toggle-area", (e) => {
     e.stopPropagation();
     toggle_advanced_configurations();
 });
@@ -383,7 +388,7 @@ function create_stream(): void {
         text: $t({defaultMessage: "Creating channel..."}),
     });
 
-    const data = {
+    const data: Record<string, string> = {
         subscriptions,
         is_web_public: JSON.stringify(is_web_public),
         invite_only: JSON.stringify(invite_only),
@@ -394,6 +399,16 @@ function create_stream(): void {
         principals,
         ...group_setting_values,
     };
+
+    if (page_params.development_environment) {
+        assert(folder_widget !== undefined);
+        const folder_id = folder_widget.value();
+        if (folder_id !== settings_config.no_folder_selected) {
+            // We do not include "folder_id" in request data if
+            // new stream will not be added to any folder.
+            data.folder_id = JSON.stringify(folder_id);
+        }
+    }
 
     // Subscribe yourself and possible other people to a new stream.
     void channel.post({
@@ -459,12 +474,16 @@ export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
     stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
-    resize.resize_settings_creation_overlay();
+    resize.resize_settings_creation_overlay($("#channels_overlay_container"));
 
     stream_create_subscribers.build_widgets();
 
     // Select the first visible and enabled choice for stream privacy.
-    $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
+    $(
+        "#stream_creation_form .stream-privacy-values .settings-radio-input-parent:not([hidden]) input:not(:disabled)",
+    )
+        .first()
+        .prop("checked", true);
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
@@ -617,6 +636,7 @@ export function set_up_handlers(): void {
 
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
+    folder_widget = settings_components.set_up_folder_dropdown_widget();
 }
 
 export function initialize(): void {

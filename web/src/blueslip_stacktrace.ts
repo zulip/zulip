@@ -161,6 +161,8 @@ export async function display_stacktrace(ex: unknown, message?: string): Promise
     } while (ex !== undefined && ex !== null);
 
     const $alert = $("<div>").addClass("stacktrace").html(render_blueslip_stacktrace({errors}));
-    $(".alert-box").append($alert);
+    $(".blueslip-error-container").append($alert);
     $alert.addClass("show");
+    // Scroll to the latest stacktrace when it is added.
+    $alert[0]?.scrollIntoView({behavior: "smooth"});
 }

@@ -20,7 +20,6 @@ corporate/tests/stripe_fixtures/*.json -diff
 *.eot binary
 *.woff binary
 *.woff2 binary
-*.svg binary
 *.ttf binary
 *.png binary
 *.otf binary
@@ -30,3 +29,6 @@ corporate/tests/stripe_fixtures/*.json -diff
 *.bmp binary
 *.mp3 binary
 *.pdf binary
+
+# Treat SVG files as code for diffing purposes.
+*.svg diff

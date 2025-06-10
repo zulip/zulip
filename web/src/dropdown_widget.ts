@@ -78,6 +78,10 @@ export type DropdownWidgetOptions = {
     // Boolean variable to check whether the dropdown is opened
     // with a keyboard trigger or not.
     dropdown_triggered_via_keyboard?: boolean;
+    // Keep focus on search box while navigation.
+    keep_focus_on_search?: boolean;
+    // When this is set, pressing tab will move focus to the target element.
+    tab_moves_focus_to_target?: string | (() => string);
 };
 
 export class DropdownWidget {
@@ -112,6 +116,9 @@ export class DropdownWidget {
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
     dropdown_triggered_via_keyboard: boolean;
+    keep_focus_on_search: boolean;
+    tab_moves_focus_to_target: string | (() => string) | undefined;
+    current_hover_index: number;
 
     // TODO: This is only used in one widget, with no implementation
     // here, so should be generalized or reworked.
@@ -147,6 +154,9 @@ export class DropdownWidget {
             options.dropdown_input_visible_selector ?? this.widget_selector;
         this.prefer_top_start_placement = options.prefer_top_start_placement ?? false;
         this.dropdown_triggered_via_keyboard = false;
+        this.keep_focus_on_search = options.keep_focus_on_search ?? false;
+        this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
+        this.current_hover_index = 0;
     }
 
     init(): void {
@@ -245,6 +255,36 @@ export class DropdownWidget {
         }
     }
 
+    update_hover_state($popper: JQuery): void {
+        assert(this.list_widget !== undefined);
+        const list_items = this.list_widget.get_current_list();
+        if (list_items.length === 0) {
+            return;
+        }
+        $popper.find(".list-item.current_selection").removeClass("current_selection");
+        if (this.sticky_bottom_option) {
+            $popper
+                .find(".sticky-bottom-option.current_selection")
+                .removeClass("current_selection");
+        }
+        if (this.current_hover_index === list_items.length && this.sticky_bottom_option) {
+            $popper.find(".sticky-bottom-option").addClass("current_selection");
+        } else {
+            const current_hover_item = list_items[this.current_hover_index];
+            assert(current_hover_item !== undefined);
+            const $item = $popper
+                .find(`.list-item[data-unique-id="${current_hover_item.unique_id}"]`)
+                .addClass("current_selection");
+            if ($item.length === 0) {
+                this.list_widget.render(this.current_hover_index + 1);
+            }
+            const element = $item[0];
+            if (element) {
+                element.scrollIntoView({block: "nearest"});
+            }
+        }
+    }
+
     setup(): void {
         this.init();
         const delegate_container = util.the(this.$events_container);
@@ -304,7 +344,8 @@ export class DropdownWidget {
                             return render_dropdown_list({
                                 item: {
                                     ...item,
-                                    is_item_selected: item.unique_id === selected_item_unique_id,
+                                    is_current_user_setting:
+                                        item.unique_id === selected_item_unique_id,
                                 },
                             });
                         },
@@ -320,6 +361,11 @@ export class DropdownWidget {
 
                 $search_input.on("input.list_widget_filter", () => {
                     this.show_empty_if_no_items($popper);
+                    if (this.keep_focus_on_search) {
+                        $search_input.trigger("focus");
+                        this.current_hover_index = 0;
+                        this.update_hover_state($popper);
+                    }
                 });
 
                 // Keyboard handler
@@ -345,25 +391,26 @@ export class DropdownWidget {
                         return;
                     }
 
+                    function get_item_by_index(index: number): JQuery {
+                        const item = list_items[index];
+                        assert(item !== undefined);
+                        return $popper.find(`.list-item[data-unique-id="${item.unique_id}"]`);
+                    }
+
                     function first_item(): JQuery {
-                        const first_item = list_items[0];
-                        assert(first_item !== undefined);
-                        return $popper.find(`.list-item[data-unique-id="${first_item.unique_id}"]`);
+                        return get_item_by_index(0);
                     }
 
                     function last_item(): JQuery {
-                        const last_item = list_items.at(-1);
-                        assert(last_item !== undefined);
-                        return $popper.find(`.list-item[data-unique-id="${last_item.unique_id}"]`);
+                        return get_item_by_index(list_items.length - 1);
                     }
 
-                    const render_all_items_and_focus_last_item = (): void => {
+                    const render_all_items = (): void => {
                         assert(this.list_widget !== undefined);
                         // List widget doesn't render all items by default, so we need to render all
                         // the items and focus on the last element.
                         const list_items = this.list_widget.get_current_list();
                         this.list_widget.render(list_items.length);
-                        trigger_element_focus(last_item());
                     };
 
                     const handle_arrow_down_on_last_item = (): void => {
@@ -386,7 +433,8 @@ export class DropdownWidget {
 
                     const handle_arrow_up_on_sticky_bottom_option = (): void => {
                         if (list_items.length > 0) {
-                            render_all_items_and_focus_last_item();
+                            render_all_items();
+                            trigger_element_focus(last_item());
                         } else if (!this.hide_search_box) {
                             trigger_element_focus($search_input);
                         }
@@ -400,20 +448,54 @@ export class DropdownWidget {
                         }
                     };
 
+                    const handle_arrow_down_on_sequential_focus = (): void => {
+                        switch (e.target) {
+                            case $search_input.get(0):
+                                handle_arrow_down_on_search_input();
+                                break;
+                            case $sticky_bottom_option.get(0):
+                                handle_arrow_down_on_sticky_bottom_option();
+                                break;
+                            case last_item().get(0):
+                                handle_arrow_down_on_last_item();
+                                break;
+                            default:
+                                trigger_element_focus($(e.target).next());
+                        }
+                    };
+
                     const handle_arrow_up_on_search_input = (): void => {
                         if (this.sticky_bottom_option) {
                             trigger_element_focus($sticky_bottom_option);
                         } else {
-                            render_all_items_and_focus_last_item();
+                            render_all_items();
+                            trigger_element_focus(last_item());
                         }
                     };
 
                     const handle_arrow_up_on_first_item = (): void => {
                         if (this.hide_search_box) {
-                            render_all_items_and_focus_last_item();
+                            render_all_items();
+                            trigger_element_focus(last_item());
                         } else {
                             trigger_element_focus($search_input);
                         }
+                    };
+
+                    const update_highlighted_index = (new_index: number): void => {
+                        let length = list_items.length;
+                        if (this.sticky_bottom_option) {
+                            length += 1;
+                        }
+                        if (new_index >= length) {
+                            this.current_hover_index = 0;
+                        } else if (new_index < 0) {
+                            render_all_items();
+                            this.current_hover_index = length - 1;
+                        } else {
+                            this.current_hover_index = new_index;
+                        }
+                        this.update_hover_state($popper);
                     };
 
                     switch (e.key) {
@@ -424,8 +506,20 @@ export class DropdownWidget {
                             ) {
                                 $sticky_bottom_option.trigger("click");
                             } else if (e.target === $search_input.get(0)) {
-                                // Select first item if in search input.
-                                first_item().trigger("click");
+                                if (this.keep_focus_on_search) {
+                                    if (
+                                        this.sticky_bottom_option &&
+                                        list_items.length === this.current_hover_index
+                                    ) {
+                                        $sticky_bottom_option.trigger("click");
+                                    } else {
+                                        const $item = get_item_by_index(this.current_hover_index);
+                                        $item.trigger("click");
+                                    }
+                                } else {
+                                    // Select first item if in search input.
+                                    first_item().trigger("click");
+                                }
                             } else if (list_items.length > 0) {
                                 $(e.target).trigger("click");
                             }
@@ -436,42 +530,68 @@ export class DropdownWidget {
                         case "Escape":
                             popover_menus.hide_current_popover_if_visible(instance);
                             this.on_exit_with_escape_callback();
+                            this.current_hover_index = 0;
                             e.stopPropagation();
                             e.preventDefault();
                             break;
 
                         case "Tab":
-                        case "ArrowDown":
-                            switch (e.target) {
-                                case $search_input.get(0):
-                                    handle_arrow_down_on_search_input();
-                                    break;
-                                case $sticky_bottom_option.get(0):
-                                    handle_arrow_down_on_sticky_bottom_option();
-                                    break;
-                                case last_item().get(0):
-                                    handle_arrow_down_on_last_item();
-                                    break;
-                                default:
-                                    trigger_element_focus($(e.target).next());
+                            if (this.tab_moves_focus_to_target) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                popover_menus.hide_current_popover_if_visible(instance);
+                                this.current_hover_index = 0;
+                                const target =
+                                    typeof this.tab_moves_focus_to_target === "function"
+                                        ? this.tab_moves_focus_to_target()
+                                        : this.tab_moves_focus_to_target;
+                                $(target).trigger("focus");
+                            } else if (!this.hide_search_box && this.keep_focus_on_search) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                update_highlighted_index(this.current_hover_index + 1);
+                                break;
+                            } else {
+                                handle_arrow_down_on_sequential_focus();
+                                break;
                             }
-                            break;
+                    }
 
-                        case "ArrowUp":
-                            switch (e.target) {
-                                case $search_input.get(0):
-                                    handle_arrow_up_on_search_input();
-                                    break;
-                                case $sticky_bottom_option.get(0):
-                                    handle_arrow_up_on_sticky_bottom_option();
-                                    break;
-                                case first_item().get(0):
-                                    handle_arrow_up_on_first_item();
-                                    break;
-                                default:
-                                    trigger_element_focus($(e.target).prev());
-                            }
-                            break;
+                    if (!this.hide_search_box && this.keep_focus_on_search) {
+                        switch (e.key) {
+                            case "ArrowDown":
+                                e.preventDefault();
+                                e.stopPropagation();
+                                update_highlighted_index(this.current_hover_index + 1);
+                                break;
+                            case "ArrowUp":
+                                e.preventDefault();
+                                e.stopPropagation();
+                                update_highlighted_index(this.current_hover_index - 1);
+                                break;
+                        }
+                    } else {
+                        switch (e.key) {
+                            case "ArrowDown":
+                                handle_arrow_down_on_sequential_focus();
+                                break;
+
+                            case "ArrowUp":
+                                switch (e.target) {
+                                    case $search_input.get(0):
+                                        handle_arrow_up_on_search_input();
+                                        break;
+                                    case $sticky_bottom_option.get(0):
+                                        handle_arrow_up_on_sticky_bottom_option();
+                                        break;
+                                    case first_item().get(0):
+                                        handle_arrow_up_on_first_item();
+                                        break;
+                                    default:
+                                        trigger_element_focus($(e.target).prev());
+                                }
+                                break;
+                        }
                     }
                 });
 
@@ -493,11 +613,13 @@ export class DropdownWidget {
                         this.current_value = Number.parseInt(this.current_value, 10);
                     }
                     this.item_click_callback(event, instance, this, false);
+                    this.current_hover_index = 0;
                 });
 
                 // Click on $sticky_bottom_option.
                 $popper.on("click", ".sticky-bottom-option", (event) => {
                     this.item_click_callback(event, instance, this, true);
+                    this.current_hover_index = 0;
                 });
 
                 // Adjust focus based on how the dropdown was opened
@@ -535,6 +657,10 @@ export class DropdownWidget {
                         }
                     } else {
                         $search_input.trigger("focus");
+                        if (this.keep_focus_on_search) {
+                            this.current_hover_index = 0;
+                            this.update_hover_state($popper);
+                        }
                     }
                 }, 0);
 
@@ -549,6 +675,7 @@ export class DropdownWidget {
                 if (this.focus_target_on_hidden) {
                     $(this.widget_selector).trigger("focus");
                 }
+                this.current_hover_index = 0;
                 this.on_hidden_callback(instance);
                 instance.destroy();
             },

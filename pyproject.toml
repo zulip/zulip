@@ -91,8 +91,6 @@ prod = [
   # Needed for iOS push notifications
   "aioapns",
 
-  "python-twitter",
-
   # To parse po files
   "polib",
 
@@ -197,6 +195,12 @@ prod = [
 
   # For captchas on unauth'd pages which can generate emails
   "altcha",
+
+  # SMTP server for accepting incoming email
+  "aiosmtpd>=1.4.6",
+
+  # For using Missing sentinel
+  "pydantic-partials",
 ]
 docs = [
   # Needed to build RTD docs
@@ -258,7 +262,7 @@ dev = [
   "zulint",
 
   # For type checking
-  "mypy[faster-cache]",
+  "mypy[faster-cache]~=1.15.0",  # https://github.com/typeddjango/django-stubs/issues/2696
 
   "boto3-stubs[s3,ses,sns,sqs]",
   "django-stubs",
@@ -282,6 +286,8 @@ dev = [
   "types-redis",
   "types-regex",
   "types-requests",
+  "types-requests-oauthlib",
+  "types-uwsgi",
   "types-zxcvbn",
 
   # Needed for tools/check-thirdparty
@@ -400,14 +406,11 @@ module = [
     "pyuca.*",
     "pyvips.*",
     "re2.*",
-    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
     "scim2_filter_parser.attr_paths",
     "social_django.*",
     "talon_core.*",
     "tlds.*",
-    "twitter.*",
     "two_factor.*",
-    "uwsgi",
 ]
 ignore_missing_imports = true
 

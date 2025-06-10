@@ -66,7 +66,8 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         handle_send_email_format_changes(copied_event)
         if "realm_id" in copied_event:
             # "realm" does not serialize over the queue, so we send the realm_id
-            copied_event["realm"] = Realm.objects.get(id=copied_event["realm_id"])
+            if copied_event.get("realm_id") is not None:
+                copied_event["realm"] = Realm.objects.get(id=copied_event["realm_id"])
             del copied_event["realm_id"]
         self.connection = initialize_connection(self.connection)
         send_immediate_email(**copied_event, connection=self.connection)

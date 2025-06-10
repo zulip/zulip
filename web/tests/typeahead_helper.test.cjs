@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const settings_config = zrequire("settings_config");
@@ -23,6 +23,10 @@ const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+
+mock_esm("../src/channel", {
+    get: () => ({subscribers: []}),
+});
 
 const current_user = {};
 set_current_user(current_user);
@@ -212,7 +216,7 @@ function test(label, f) {
     });
 }
 
-test("sort_streams", ({override, override_rewire}) => {
+test("sort_streams", ({override}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -277,7 +281,7 @@ test("sort_streams", ({override, override_rewire}) => {
     );
 
     stream_list_sort.set_filter_out_inactives();
-    override_rewire(compose_state, "stream_name", () => "Dev");
+    compose_state.set_selected_recipient_id(dev_sub.stream_id);
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dev"); // Stream being composed to
@@ -296,7 +300,8 @@ test("sort_streams", ({override, override_rewire}) => {
     assert.deepEqual(test_streams[4].name, "Dev");
     assert.deepEqual(test_streams[5].name, "Docs");
 
-    override_rewire(compose_state, "stream_name", () => "Different");
+    compose_state.set_selected_recipient_id(linux_sub.stream_id);
+
     // Test sort streams with description
     test_streams = [
         {

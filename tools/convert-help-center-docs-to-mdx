@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import sys
+from textwrap import indent
 
 import django
 from django.template import engines
@@ -20,23 +21,36 @@ setup_path()
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 django.setup()
 
+from zerver.lib.markdown.tabbed_sections import generate_content_blocks, parse_tabs
 
-def replace_emoticon_translation_table(markdown_string: str) -> str:
+INDENT_SPACES = "    "
+
+
+def convert_kebab_to_pascal(text: str) -> str:
+    # to_pascal is a function for converting snake case to pascal.
+    return to_pascal(text).replace("-", "")
+
+
+def replace_emoticon_translation_table(markdown_string: str, import_statement_set: set[str]) -> str:
     """
     We will replace emoticon_translations custom syntax in Python with
     <EmoticonTranslations> astro component.
     """
-    return markdown_string.replace(
+    result = markdown_string.replace(
         "\\{emoticon_translations\\}",
         """
-import EmoticonTranslations from '../../components/EmoticonTranslations.astro';
-
 <EmoticonTranslations />
 """,
     )
+    if result != markdown_string:
+        import_statement_set.add(
+            "import EmoticonTranslations from '../../components/EmoticonTranslations.astro';"
+        )
+
+    return result
 
 
-def replace_image_path(markdown_string: str) -> str:
+def replace_image_path(markdown_string: str, replacement_path: str) -> str:
     """
     We will point to the existing image folder till
     the cutover. After that, we will copy the images
@@ -47,37 +61,28 @@ def replace_image_path(markdown_string: str) -> str:
     # We do not replace /static/images directly since there are a few
     # instances in the documentation where zulip.com links are
     # referenced with that blurb as a part of the url.
-    result = markdown_string.replace("(/static/images/help-beta", "(../../../../static/images/help")
-    return result.replace('="/static/images/help-beta', '="../../../../static/images/help')
+    result = markdown_string.replace("(/static/images/help-beta", f"({replacement_path}")
+    return result.replace('="/static/images/help-beta', f'="{replacement_path}')
 
 
-def fix_file_imports(markdown_string: str) -> str:
-    def convert_to_pascal(text: str) -> str:
-        return to_pascal(text).replace("-", "").replace(".Md", "")
+def fix_file_imports(
+    markdown_string: str, import_statement_set: set[str], import_relative_base_path: str
+) -> str:
+    def get_pascal_filename_without_extension(match_string: str) -> str:
+        return convert_kebab_to_pascal(os.path.basename(match_string).split(".")[0])
 
     def convert_to_astro_tag(match: re.Match[str]) -> str:
-        return "<" + convert_to_pascal(match.group(1)) + " />"
-
-    def append_str_to_line(text: str, destination_str: str, n: int) -> str:
-        lines = destination_str.splitlines()
-        if 1 <= n <= len(lines):
-            lines[n - 1] += "\n" + text + "\n"
-
-        return "\n".join(lines)
+        return "<" + get_pascal_filename_without_extension(match.group(1)) + " />"
 
     RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
     result = RE.sub(convert_to_astro_tag, markdown_string)
     matches = RE.findall(markdown_string)
 
-    import_statement_set = {
-        f'import {convert_to_pascal(match)} from "./include/_{match}"' for match in matches
-    }
-    for import_statement in import_statement_set:
-        # First line of the file is always the heading/title of the
-        # file. We rely on the heading being the first line later
-        # in the function inserting frontmatter and thus we add
-        # this to the second line.
-        result = append_str_to_line(import_statement, result, 2)
+    for match_string in matches:
+        pascal_filename = get_pascal_filename_without_extension(match_string)
+        import_statement_set.add(
+            f'import {pascal_filename} from "{import_relative_base_path}/_{pascal_filename}.mdx"'
+        )
 
     return result
 
@@ -101,6 +106,233 @@ def fix_relative_path(markdown_string: str) -> str:
     return markdown_string.replace("help/", "help-beta/")
 
 
+def insert_string_at_line(text: str, destination_str: str, n: int) -> str:
+    lines = destination_str.splitlines()
+    if 1 <= n <= len(lines):
+        lines.insert(n - 1, text)
+    return "\n".join(lines)
+
+
+def replace_icon_with_unplugin_component(
+    match: re.Match[str],
+    icon_package_name: str,
+    icon_component_prefix: str,
+    import_statement_set: set[str],
+) -> str:
+    icon_name = match.group(1)
+    component_name = icon_component_prefix + to_pascal(icon_name).replace("-", "")
+    import_statement = f'import {component_name} from "~icons/{icon_package_name}/{icon_name}"'
+    import_statement_set.add(import_statement)
+    return f"<{component_name} />"
+
+
+def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
+    """
+    Write some examples here and some assumptions we made about
+    the icon tags.
+    """
+    font_awesome_pattern = re.compile(
+        r'<i[^>]*class="(?:[^"]*\s)?fa(?:\s+fa-([a-z0-9\-]+))(?:\s[^"]*)?"[^>]*>(?:\s[^<]*)?</i>',
+    )
+
+    def replace_font_awesome_icon_with_unplugin_component(match: re.Match[str]) -> str:
+        return replace_icon_with_unplugin_component(match, "fa", "Fa", import_statement_set)
+
+    result = re.sub(
+        font_awesome_pattern, replace_font_awesome_icon_with_unplugin_component, markdown_string
+    )
+
+    zulip_icon_pattern = re.compile(
+        r'<i[^>]*class="(?:[^"]*\s)?zulip-icon(?:\s+zulip-icon-([a-z0-9\-]+))(?:\s[^"]*)?"[^>]*>(?:\s[^<]*)?</i>',
+    )
+
+    def replace_zulip_icon_with_unplugin_component(match: re.Match[str]) -> str:
+        return replace_icon_with_unplugin_component(
+            match, "zulip-icon", "ZulipIcons", import_statement_set
+        )
+
+    result = re.sub(zulip_icon_pattern, replace_zulip_icon_with_unplugin_component, result)
+
+    return result
+
+
+def convert_comments(markdown_string: str) -> str:
+    return markdown_string.replace("<!--", "{/*").replace("-->", "*/}")
+
+
+def convert_tab_syntax(markdown_string: str, import_statement_set: set[str]) -> str:
+    """
+    Convert our custom tab syntax to relevant MDX equivalent.
+    This function is inspired from `tabbed_section.py`'s run method.
+    """
+    TABBED_SECTION_TEMPLATE = """<Tabs>
+{blocks}
+</Tabs>"""
+
+    TAB_ITEM_TEMPLATE = """<TabItem label="{tab_label}">
+{content}
+</TabItem>"""
+
+    def indent_content_inside_blocks(content_block: str) -> str:
+        """
+        The original function `generate_content_blocks` does no
+        indenting, and we need the content in between our TabItems
+        to be indented. This is bit of string manipulation, but it
+        is a better alternative compared to duplicating the original
+        function here just to indent.
+        """
+        content_block_lines = content_block.splitlines()
+        result_lines = []
+        for line in content_block_lines:
+            if line.startswith(("<TabItem", "</TabItem>")):
+                result_lines.append(line)
+            else:
+                result_lines.append(INDENT_SPACES + line)
+
+        return "\n".join(result_lines)
+
+    lines = markdown_string.splitlines()
+    tab_section = parse_tabs(lines)
+    while tab_section:
+        if "tabs" in tab_section:
+            content_blocks = generate_content_blocks(tab_section, lines, TAB_ITEM_TEMPLATE)
+            content_blocks = indent_content_inside_blocks(content_blocks)
+            content_blocks = indent(content_blocks, INDENT_SPACES)
+            tabs_mdx = TABBED_SECTION_TEMPLATE.format(blocks=content_blocks)
+            import_statement_set.add(
+                "import { Tabs, TabItem } from '@astrojs/starlight/components'"
+            )
+        else:
+            # This is the case where we don't have any tabs but we were
+            # using the `start_tabs` and `end_tabs` syntax to create
+            # a border around the instructions. We just put the content
+            # as is in this case since we don't want to add that border
+            # anymore.
+            tabs_mdx = ("\n").join(
+                lines[(tab_section["start_tabs_index"] + 1) : (tab_section["end_tabs_index"])]
+            )
+
+        start = tab_section["start_tabs_index"]
+        end = tab_section["end_tabs_index"] + 1
+        lines = [*lines[:start], tabs_mdx, *lines[end:]]
+        tab_section = parse_tabs(lines)
+
+    return "\n".join(lines)
+
+
+def detab(text: str) -> tuple[str, str]:
+    """
+    Remove a tab from the front of each line of the given text.
+    Taken directly from
+    https://github.com/Python-Markdown/markdown/blob/64a3c0fbc00327fbfee1fd6b44da0e5453287fe4/markdown/blockprocessors.py#L85
+    We need this function for converting admonitions to asides, it is
+    okay to be duplicating this code for this script.
+    """
+    tab_length = 4
+    newtext = []
+    lines = text.split("\n")
+    for line in lines:
+        if line.startswith(" " * tab_length):
+            newtext.append(line[tab_length:])
+        elif not line.strip():
+            newtext.append("")
+        else:
+            break
+    return "\n".join(newtext), "\n".join(lines[len(newtext) :])
+
+
+def convert_admonitions_to_asides(
+    markdown_string: str, import_statement_set: set[str], components_dir_path: str
+) -> str:
+    """
+    Lots of code in this function is taken from
+    https://github.com/Python-Markdown/markdown/blob/64a3c0fbc00327fbfee1fd6b44da0e5453287fe4/markdown/extensions/admonition.py
+    """
+    RE = re.compile(r'(?:^|\n)!!! ?([\w\-]+(?: +[\w\-]+)*)(?: +"(.*?)")? *(?:\n|$)')
+    RE_SPACES = re.compile("  +")
+
+    def get_admonition_class_and_title(match: re.Match[str]) -> tuple[str, str | None]:
+        klass, title = match.group(1).lower(), match.group(2)
+        klass = RE_SPACES.sub(" ", klass)
+        if title is None:
+            # no title was provided, use the capitalized class name as title
+            title = klass.split(" ", 1)[0].capitalize()
+        elif title == "":
+            # an explicit blank title should not be rendered
+            title = None
+        return klass, title
+
+    def replace_with_mdx_syntax(text: str) -> str:
+        match = RE.search(text)
+        if match:
+            pre_admonition_declaration_text = text[: match.start()]
+            post_admonition_declaration_text = text[match.end() :]  # removes the first line
+            admonition_content, post_admonition_content_text = detab(
+                post_admonition_declaration_text
+            )
+            admonition_content = indent(admonition_content, INDENT_SPACES)
+
+            klass, title = get_admonition_class_and_title(match)
+            # We ignore the title obtained above in each of the if
+            # block since in our current help center files, we do not
+            # specify the title anywhere. This script only handles cases
+            # that exist in our help center files, nothing more than that
+            # is handled.
+            if klass == "warn":
+                # We have converted `warn` to `note` since that was the
+                # translation that remains most faithful to how we
+                # display `warn` admonitions in our current help center
+                # implementation.
+                # See https://chat.zulip.org/#narrow/channel/19-documentation/topic/Stage.202.3A.20New.20syntax.20for.20!!!tip.20in.20help-beta/near/2174415
+                # for more details.
+                type = "note"
+                title = ""
+                replacement = (
+                    f'\n<Aside type="{type}" title="{title}">\n{admonition_content}\n</Aside>\n'
+                )
+                import_statement_set.add("import { Aside } from '@astrojs/starlight/components'")
+            elif klass == "tip":
+                type = "tip"
+                title = "Tip"
+                replacement = (
+                    f'\n<Aside type="{type}" title="{title}">\n{admonition_content}\n</Aside>\n'
+                )
+                import_statement_set.add("import { Aside } from '@astrojs/starlight/components'")
+            elif klass == "keyboard_tip":
+                replacement = f"\n<KeyboardTip>\n{admonition_content}\n</KeyboardTip>\n"
+                import_statement_set.add(
+                    f"import KeyboardTip from '{components_dir_path}/KeyboardTip.astro';"
+                )
+            else:
+                raise Exception(f"Unexpected admonition class during conversion: {klass}")
+
+            text = pre_admonition_declaration_text + replacement + post_admonition_content_text
+            return replace_with_mdx_syntax(text)
+        else:
+            return text
+
+    return replace_with_mdx_syntax(markdown_string)
+
+
+def insert_imports(markdown_string: str, import_statement_set: set[str], line_number: int) -> str:
+    if len(import_statement_set) == 0:
+        return markdown_string
+
+    # This function is called when the frontmatter has not yet been
+    # inserted. First line of the file is always the heading/title of
+    # the file. We rely on the heading being the first line later in
+    # the conversion when inserting frontmatter. For this reason, we
+    # add the imports to the second line.
+    for import_statement in import_statement_set:
+        markdown_string = insert_string_at_line(import_statement, markdown_string, line_number)
+
+    # Add empty line at the end of import statement list.
+    markdown_string = insert_string_at_line(
+        "", markdown_string, line_number + len(import_statement_set)
+    )
+    return markdown_string
+
+
 def insert_frontmatter(markdown_string: str) -> str:
     """
     We use the heading in the first line for the
@@ -115,32 +347,70 @@ def insert_frontmatter(markdown_string: str) -> str:
     return title + markdown_string.split("\n", 1)[-1]
 
 
-def convert_string_to_mdx(markdown_string: str) -> str:
-    result = markdown_string
-    result = fix_file_imports(result)
-    result = escape_curly_braces(result)
-    result = fix_relative_path(result)
-    result = replace_emoticon_translation_table(result)
-    result = replace_image_path(result)
-    result = insert_frontmatter(result)
-    return result
+def get_markdown_string_from_file(markdown_file_path: str) -> str:
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
+    if markdown_file_path.startswith("/"):
+        with open(markdown_file_path) as fp:
+            return fp.read()
+
+    return jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
 
 
-def convert_file_to_mdx(
+def convert_help_center_file_to_mdx(
     markdown_file_path: str,
 ) -> str:
     """
     Given a path to a Markdown file, return the equivalent MDX file.
     """
-    jinja = engines["Jinja2"]
-    assert isinstance(jinja, Jinja2)
-    if markdown_file_path.startswith("/"):
-        with open(markdown_file_path) as fp:
-            markdown_string = fp.read()
-    else:
-        markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+    result = get_markdown_string_from_file(markdown_file_path)
 
-    return convert_string_to_mdx(markdown_string)
+    # All imports inserted during conversion should be tracked here.
+    import_statement_set: set[str] = set()
+
+    result = fix_file_imports(result, import_statement_set, "./include")
+    result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
+    result = convert_tab_syntax(result, import_statement_set)
+    result = escape_curly_braces(result)
+    result = fix_relative_path(result)
+    result = replace_emoticon_translation_table(result, import_statement_set)
+    result = replace_image_path(result, "../../../../static/images/help")
+    result = replace_icons(result, import_statement_set)
+    result = convert_comments(result)
+    result = insert_imports(result, import_statement_set, 2)
+    result = insert_frontmatter(result)
+    return result
+
+
+def convert_include_file_to_mdx(
+    markdown_file_path: str,
+) -> str:
+    """
+    Given a path to a Markdown file, return the equivalent MDX file.
+    We do not do certain operations that we do on a normal help file
+    since these files are not to be served standalone but instead as
+    macros in other files.
+    - replace_emoticon_translation_table is skipped since that
+    function only applies to one file, and that file is not an include
+    file.
+    - insert_frontmatter is skipped since frontmatter is not needed
+    in files that are not served standalone.
+    """
+    result = get_markdown_string_from_file(markdown_file_path)
+
+    # All imports inserted during conversion should be tracked here.
+    import_statement_set: set[str] = set()
+
+    result = fix_file_imports(result, import_statement_set, ".")
+    result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
+    result = convert_tab_syntax(result, import_statement_set)
+    result = escape_curly_braces(result)
+    result = fix_relative_path(result)
+    result = replace_image_path(result, "../../../../../static/images/help")
+    result = replace_icons(result, import_statement_set)
+    result = convert_comments(result)
+    result = insert_imports(result, import_statement_set, 1)
+    return result
 
 
 def run() -> None:
@@ -158,33 +428,34 @@ def run() -> None:
     for name in os.listdir(input_dir):
         if os.path.isfile(os.path.join(input_dir, name)):
             converted_count += 1
-            mdx = convert_file_to_mdx(os.path.join(input_dir, name))
+            mdx = convert_help_center_file_to_mdx(os.path.join(input_dir, name))
             with open(
                 os.path.join(
-                    BASE_DIR,
                     output_dir,
                     os.path.basename(name).split(".")[0] + ".mdx",
                 ),
                 "w",
             ) as mdx_file:
                 mdx_file.write(mdx)
-    print(f"Converted {converted_count} files. Conversion completed.")
+    print(f"Converted {converted_count} files. Proceeding to the conversion of include files ...")
 
-    # All files in the `include` folder will only be imports and not
-    # standalone files. Therefore we do not do any manipulation or
-    # them to mdx.
-    include_source_dir = os.path.join(BASE_DIR, "help/include")
-    include_destination_dir = os.path.join(BASE_DIR, "help-beta/src/content/docs/include")
-    shutil.copytree(include_source_dir, include_destination_dir)
-
-    # We do not want Astro to render these include files as standalone
-    # files, prefixing them with an underscore accomplishes that.
-    # https://docs.astro.build/en/guides/routing/#excluding-pages
-    for name in os.listdir(include_destination_dir):
-        os.rename(
-            os.path.join(include_destination_dir, name),
-            os.path.join(include_destination_dir, "_" + name),
-        )
+    include_converted_count = 0
+    include_input_dir = os.path.join(input_dir, "include")
+    include_output_dir = os.path.join(output_dir, "include")
+    os.makedirs(include_output_dir, exist_ok=True)
+    for name in os.listdir(include_input_dir):
+        if os.path.isfile(os.path.join(include_input_dir, name)):
+            include_converted_count += 1
+            mdx = convert_include_file_to_mdx(os.path.join(include_input_dir, name))
+            with open(
+                os.path.join(
+                    include_output_dir,
+                    "_" + convert_kebab_to_pascal(os.path.basename(name).split(".")[0]) + ".mdx",
+                ),
+                "w",
+            ) as mdx_file:
+                mdx_file.write(mdx)
+    print(f"Converted {include_converted_count} include files. Conversion completed.")
 
 
 run()

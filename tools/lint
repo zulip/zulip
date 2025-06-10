@@ -65,6 +65,7 @@ def run() -> None:
                 "js",
                 "mjs",
                 "mts",
+                "svg",
                 "ts",
             ],
         },

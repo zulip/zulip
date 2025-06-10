@@ -569,7 +569,7 @@
        preserve an apparent border around
        them, and a square aspect-ratio, even under
        `box-sizing: border-box` in the area. */
-    --length-input-pill-image: calc(var(--height-input-pill) - 2px);
+    --length-search-input-pill-image: calc(var(--height-input-pill) - 2px);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
@@ -1297,6 +1297,10 @@
         hsl(0deg 0% 15%),
         var(--color-text-default)
     );
+    --color-text-message-blockquote-border: light-dark(
+        hsl(0deg 0% 15% / 25%),
+        hsl(0deg 0% 87% / 40%)
+    );
     --color-text-message-header-archived: hsl(0deg 0% 50%);
     --color-text-message-view-header: light-dark(
         hsl(0deg 0% 20% / 100%),
@@ -1417,24 +1421,6 @@
     --color-text-generic-link: #08c;
     --color-text-generic-link-interactive: light-dark(
         #005580,
-        hsl(200deg 79% 66%)
-    );
-
-    /* Demo Organization colors */
-    --color-text-settings-demo-organization-warning: light-dark(
-        hsl(4deg 58% 33%),
-        hsl(3deg 73% 80%)
-    );
-    --color-background-settings-demo-organization-warning: light-dark(
-        hsl(4deg 35% 90%),
-        hsl(0deg 60% 19%)
-    );
-    --color-border-settings-demo-organization-warning: light-dark(
-        hsl(3deg 57% 33% / 40%),
-        hsl(3deg 73% 74% / 40%)
-    );
-    --color-focus-outline-settings-convert-demo-organization: light-dark(
-        hsl(200deg 100% 25%),
         hsl(200deg 79% 66%)
     );
 
@@ -1568,20 +1554,12 @@
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
     --color-background-image-thumbnail: light-dark(
-        hsl(0deg 0% 0% / 8%),
-        hsl(0deg 0% 100% / 13%)
+        hsl(0deg 0% 0% / 3%),
+        hsl(0deg 0% 100% / 3%)
     );
     --color-background-image-thumbnail-hover: light-dark(
         hsl(0deg 0% 0% / 30%),
         hsl(0deg 0% 100% / 45%)
-    );
-    --color-background-image-thumbnail-dinky: light-dark(
-        hsl(0deg 0% 0% / 3%),
-        hsl(0deg 0% 100% / 3%)
-    );
-    --color-background-image-thumbnail-dinky-hover: light-dark(
-        hsl(0deg 0% 0% / 15%),
-        hsl(0deg 0% 100% / 15%)
     );
 
     /* Icon colors */
@@ -1630,7 +1608,11 @@
     --color-tab-picker-icon: light-dark(hsl(200deg 100% 40%), hsl(0deg 0% 80%));
     --color-user-circle-active: light-dark(#43a35e, #4cdc75);
     --color-user-circle-idle: light-dark(#f5b266, #ae640a);
-    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-offline: light-dark(#bcc0cf, #545764);
+    --color-user-circle-offline-typeahead-highlight: light-dark(
+        #adb2c5,
+        #646671
+    );
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     --gradient-user-circle-idle: linear-gradient(
         to right,
@@ -1825,6 +1807,10 @@
     --color-background-input-pill-hover: light-dark(
         hsl(240deg 70% 70% / 30%),
         hsl(240deg 52% 60% / 45%)
+    );
+    --color-border-input-pill-image: light-dark(
+        hsl(237deg 68% 94% / 50%),
+        hsl(240deg 65% 60% / 60%)
     );
     --color-focus-outline-input-pill: light-dark(
         hsl(240deg 50% 50%),
@@ -2107,14 +2093,21 @@
         hsl(220deg 12% 100% / 7%)
     );
     --background-color-active-typeahead-item: light-dark(
-        hsl(221.14deg 89.74% 92.35%),
-        hsl(226.35deg 82.53% 55.1% / 38.82%)
+        hsl(220deg 12% 4.9% / 5%),
+        hsl(220deg 12% 100% / 7%)
     );
     --color-typeahead-option-label: light-dark(
         var(--grey-500),
         var(--grey-400)
     );
 
+    /* Shared button CSS variables */
+    --color-outline-button-focus: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
+    --outline-width-button-focus: 1.5px;
+    --outline-offset-button-focus: 1px;
     /* Actions buttons */
     --color-inner-shadow-action-button: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 20%, transparent),

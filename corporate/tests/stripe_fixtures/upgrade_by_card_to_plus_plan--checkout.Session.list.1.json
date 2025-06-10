@@ -9,15 +9,19 @@
       "automatic_tax": {
         "enabled": false,
         "liability": null,
+        "provider": null,
         "status": null
       },
       "billing_address_collection": "required",
       "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
       "client_reference_id": null,
       "client_secret": null,
+      "collected_information": {
+        "shipping_details": null
+      },
       "consent": null,
       "consent_collection": null,
-      "created": 1737009851,
+      "created": 1000000000,
       "currency": null,
       "currency_conversion": null,
       "custom_fields": [],
@@ -27,7 +31,7 @@
         "submit": null,
         "terms_of_service_acceptance": null
       },
-      "customer": "cus_Rayl61NfhWAqlU",
+      "customer": "cus_NORMALIZED",
       "customer_creation": null,
       "customer_details": {
         "address": null,
@@ -38,8 +42,9 @@
         "tax_ids": null
       },
       "customer_email": null,
-      "expires_at": 1737096251,
-      "id": "cs_test_c16UirF5t3RvdxxRF9LONCo4dKKVXB6b3SQvmN67fj8MjHITfxj9vDHZS8",
+      "discounts": null,
+      "expires_at": 1000000000,
+      "id": "upgrade_by_card_to_plus_plan--checkout.Session.create.1.json",
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
@@ -63,23 +68,24 @@
         "card"
       ],
       "payment_status": "no_payment_required",
+      "permissions": null,
       "phone_number_collection": {
         "enabled": false
       },
       "recovered_from": null,
       "saved_payment_method_options": null,
-      "setup_intent": "seti_1QhmoJDEQaroqDjsYzQANvMZ",
-      "shipping": null,
+      "setup_intent": "seti_NORMALIZED",
       "shipping_address_collection": null,
+      "shipping_cost": null,
       "shipping_options": [],
-      "shipping_rate": null,
       "status": "open",
       "submit_type": null,
       "subscription": null,
       "success_url": "http://zulip.testserver/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
-      "url": "https://checkout.stripe.com/c/pay/cs_test_c16UirF5t3RvdxxRF9LONCo4dKKVXB6b3SQvmN67fj8MjHITfxj9vDHZS8#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED",
+      "wallet_options": null
     }
   ],
   "has_more": false,

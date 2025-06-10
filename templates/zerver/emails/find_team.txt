@@ -8,8 +8,8 @@
 {% endif %}
 
 
-{% for realm in realms %}
-* {{ realm.name }}: {{ realm.url }}
+{% for realm_data in realms %}
+* {{ realm_data.name }}: {{ realm_data.url }}
 {% endfor %}
 
 {% trans %}If you have trouble logging in, you can reset your password.{% endtrans %}

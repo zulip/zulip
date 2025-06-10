@@ -16,6 +16,7 @@ const message_user_ids = mock_esm("../src/message_user_ids");
 const settings_data = mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
+const channel = mock_esm("../src/channel");
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -357,6 +358,7 @@ test_people("basics", ({override}) => {
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
+    assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
     let bot_user_ids = people.get_bot_ids();
     assert.equal(bot_user_ids.length, 0);
@@ -368,6 +370,7 @@ test_people("basics", ({override}) => {
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
+    assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
@@ -923,20 +926,17 @@ test_people("multi_user_methods", () => {
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
 });
 
-test_people("emails_to_full_names_string", () => {
+test_people("user_ids_to_full_names_string", () => {
     people.add_active_user(charles);
     people.add_active_user(maria);
     assert.equal(
-        people.emails_to_full_names_string([charles.email, maria.email]),
+        people.user_ids_to_full_names_string([charles.user_id, maria.user_id]),
         `${charles.full_name}, ${maria.full_name}`,
     );
 
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     assert.equal(
-        people.emails_to_full_names_string([
-            charles.email,
-            "unknown-email@example.com",
-            maria.email,
-        ]),
+        people.user_ids_to_full_names_string([charles.user_id, 9999, maria.user_id]),
         `${charles.full_name}, ${maria.full_name}, translated: Unknown user`,
     );
 });
@@ -1336,38 +1336,52 @@ test_people("initialize", () => {
 
     const params = {};
 
-    params.realm_non_active_users = [
-        {
-            email: "retiree@example.com",
-            user_id: 15,
-            full_name: "Retiree",
-        },
-    ];
+    const retiree = {
+        email: "retiree@example.com",
+        user_id: 15,
+        full_name: "Retiree",
+    };
+    params.realm_non_active_users = [retiree];
 
-    params.realm_users = [
-        {
-            email: "alice@example.com",
-            user_id: 16,
-            full_name: "Alice",
-        },
-    ];
-    params.cross_realm_bots = [
-        {
-            email: "bot@example.com",
-            user_id: 17,
-            full_name: "Test Bot",
-        },
-    ];
+    const current_user = {
+        email: "my_email@example.com",
+        user_id: 42,
+        full_name: "Me Myself",
+    };
+    const alice = {
+        email: "alice@example.com",
+        user_id: 16,
+        full_name: "Alice",
+    };
+    params.realm_users = [alice, current_user];
+    const test_bot = {
+        email: "bot@example.com",
+        user_id: 17,
+        full_name: "Test Bot",
+    };
+    params.cross_realm_bots = [test_bot];
+    const user_group_params = {
+        realm_user_groups: [
+            {
+                is_system_group: true,
+                members: [42, 17, 16, 15],
+            },
+        ],
+    };
 
-    const my_user_id = 42;
-    people.initialize(my_user_id, params);
+    people.initialize(current_user.user_id, params, user_group_params);
 
     assert.equal(people.is_active_user_for_popover(17), true);
     assert.ok(people.is_cross_realm_email("bot@example.com"));
     assert.ok(people.is_valid_email_for_compose("bot@example.com"));
+    assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
     assert.ok(people.is_valid_email_for_compose("alice@example.com"));
+    assert.ok(people.is_valid_user_id_for_compose(alice.user_id));
     assert.ok(people.is_valid_email_for_compose("retiree@example.com"));
+    assert.ok(people.is_valid_user_id_for_compose(retiree.user_id));
     assert.ok(!people.is_valid_email_for_compose("totally-bogus-username@example.com"));
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.ok(!people.is_valid_user_id_for_compose(9999));
     assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
     assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
     assert.ok(people.is_my_user_id(42));
@@ -1605,7 +1619,138 @@ test_people("user_can_initiate_direct_message_thread", ({override}) => {
     assert.ok(people.user_can_initiate_direct_message_thread("32"));
 });
 
+test_people("sort_by_username", () => {
+    people.add_active_user(maria);
+    people.add_active_user(cedar);
+    people.add_active_user(leo);
+
+    assert.deepEqual(
+        people.sort_user_ids_by_username([maria.user_id, cedar.user_id, leo.user_id]),
+        [cedar.user_id, leo.user_id, maria.user_id],
+    );
+
+    assert.deepEqual(people.sort_emails_by_username([maria.email, cedar.email, leo.email]), [
+        cedar.email,
+        leo.email,
+        maria.email,
+    ]);
+});
+
 // reset to native Date()
 run_test("reset MockDate", () => {
     MockDate.reset();
+});
+
+test_people("fetch_users", async ({override}) => {
+    people.init();
+
+    // Valid users missing from params data sent by server.
+    const users_in_response = [
+        {
+            email: "retiree@example.com",
+            user_id: 15,
+            full_name: "Retiree",
+            delivery_email: "",
+            date_joined: "",
+            is_active: true,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+        {
+            email: "alice@example.com",
+            user_id: 16,
+            full_name: "Alice",
+            delivery_email: "",
+            date_joined: "",
+            is_active: false,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+    ];
+
+    const params = {};
+    params.realm_users = [
+        {
+            email: "my_email@example.com",
+            user_id: 42,
+            full_name: "Me Myself",
+        },
+    ];
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [
+        {
+            email: "bot@example.com",
+            user_id: 17,
+            full_name: "Test Bot",
+        },
+    ];
+    const user_group_params = {
+        realm_user_groups: [
+            {
+                is_system_group: true,
+                members: [42, 17, 16, 15],
+            },
+        ],
+    };
+    const my_user_id = 42;
+
+    override(channel, "get", ({url, data, success, _error}) => {
+        assert.equal(url, "/json/users");
+        assert.ok(data.user_ids.includes("15"));
+        assert.ok(data.user_ids.includes("16"));
+        assert.ok(!data.user_ids.includes("42"));
+        assert.ok(!data.user_ids.includes("17"));
+        success({
+            members: users_in_response,
+            result: "success",
+            msg: "",
+        });
+    });
+
+    await people.initialize(my_user_id, params, user_group_params);
+
+    const retiree = people.get_by_user_id(15);
+    const alice = people.get_by_user_id(16);
+    assert.equal(retiree.full_name, "Retiree");
+    assert.equal(alice.full_name, "Alice");
+    assert.ok(people.is_valid_user_id(15));
+    assert.ok(people.is_valid_user_id(16));
+    assert.ok(people.is_valid_user_id(42));
+    assert.ok(people.is_valid_user_id(17));
+    assert.equal(people.get_by_email("alice@example.com").user_id, 16);
+    assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
+
+    override(channel, "get", ({url, _data, _success, error}) => {
+        assert.equal(url, "/json/users");
+        // Return error response.
+        error({responseJSON: {msg: "test error"}});
+    });
+
+    // fetch_users should reject with an Error object
+    blueslip.expect("error", "test error");
+    await assert.rejects(
+        async () => {
+            await people.fetch_users(new Set([15, 16]));
+        },
+        (err) => {
+            // Check that the error is an instance of Error and has the correct message
+            assert.ok(err instanceof Error);
+            assert.equal(err.message, "test error");
+            return true;
+        },
+    );
+
+    // Just for coverage, not actually checked by blueslip.
+    blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
+    await people.fetch_users(new Set([1, 2]));
 });

@@ -10,12 +10,14 @@
                 {{> settings_save_discard_widget section_name="join-settings" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                {{> settings_checkbox
-                  setting_name="realm_invite_required"
-                  prefix="id_"
-                  is_checked=realm_invite_required
-                  label=admin_settings_label.realm_invite_required}}
-
+                <div id="realm_invite_required_container" {{#unless user_has_email_set}}class="disabled_setting_tooltip"{{/unless}}>
+                    {{> settings_checkbox
+                      setting_name="realm_invite_required"
+                      prefix="id_"
+                      is_checked=realm_invite_required
+                      is_disabled=(not user_has_email_set)
+                      label=admin_settings_label.realm_invite_required}}
+                </div>
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_invite_users_group"
                   label=group_setting_labels.can_invite_users_group}}
@@ -221,7 +223,7 @@
                 </select>
                 <div class="dependent-settings-block">
                     <label for="id_realm_move_messages_between_streams_limit_minutes" class="inline-block realm-time-limit-label">
-                        {{t 'Duration editing is allowed after posting (minutes)'}}:&nbsp;
+                        {{t 'Duration moving is allowed after posting (minutes)'}}:&nbsp;
                     </label>
                     <input type="text" id="id_realm_move_messages_between_streams_limit_minutes"
                       name="realm_move_messages_between_streams_limit_minutes"

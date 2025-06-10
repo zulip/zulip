@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2020-08-27",
+      "api_version": "2025-04-30.basil",
       "created": 1000000000,
       "data": {
         "object": {
@@ -9,10 +9,9 @@
           "balance": 0,
           "created": 1000000000,
           "currency": null,
-          "default_currency": null,
           "default_source": null,
           "delinquent": false,
-          "description": "zulip.testserver 3383e261-95a",
+          "description": "zulip.testserver 5ae8113e-cd0",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "invoice_initial_remote_realm_upgrade--Customer.create.1.json",
@@ -26,7 +25,7 @@
           "livemode": false,
           "metadata": {
             "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "3383e261-95a9-4f36-ae0c-4ecf80fab561"
+            "remote_realm_uuid": "5ae8113e-cd0a-4aaf-990c-a2ddb35b37d8"
           },
           "name": null,
           "next_invoice_sequence": 1,

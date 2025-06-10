@@ -147,7 +147,10 @@ export function get_disabled_save_tooltip($container: JQuery): string {
     return "";
 }
 
-export function needs_subscribe_warning(user_id: number, stream_id: number): boolean {
+export async function needs_subscribe_warning(
+    user_id: number,
+    stream_id: number,
+): Promise<boolean> {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the user is not already subscribed to the stream
@@ -173,7 +176,7 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
         return false;
     }
 
-    if (stream_data.is_user_subscribed(stream_id, user_id)) {
+    if (await stream_data.maybe_fetch_is_user_subscribed(stream_id, user_id, false)) {
         // If our user is already subscribed
         return false;
     }
@@ -227,10 +230,10 @@ function get_stream_id_for_textarea($textarea: JQuery<HTMLTextAreaElement>): num
     return compose_state.stream_id();
 }
 
-export function warn_if_private_stream_is_linked(
+export async function warn_if_private_stream_is_linked(
     linked_stream: StreamSubscription,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): Promise<void> {
     const stream_id = get_stream_id_for_textarea($textarea);
 
     if (!stream_id) {
@@ -264,10 +267,24 @@ export function warn_if_private_stream_is_linked(
     // everyone will be subscribed to the linked stream and so
     // knows it exists.  (But always warn Zephyr users, since
     // we may not know their stream's subscribers.)
+    // Note: `is_subscriber_subset` can return `null` if we encounter
+    // an error fetching subscriber data. In that case, we just show
+    // the banner.
     if (
-        peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id) &&
+        (await peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id)) &&
         !realm.realm_is_zephyr_mirror_realm
     ) {
+        return;
+    }
+
+    // If we've changed streams since fetching subscriber data,
+    // don't update the UI anymore.
+    // Note: The user might have removed the mention of the private
+    // stream during the fetch, and in that case the banner will
+    // still (possibly) show up. If we add logic in the future to
+    // remove banners as the user edits their message, we could use
+    // that here as well.
+    if (stream_id !== get_stream_id_for_textarea($textarea)) {
         return;
     }
 
@@ -291,10 +308,10 @@ export function warn_if_private_stream_is_linked(
     }
 }
 
-export function warn_if_mentioning_unsubscribed_user(
+export async function warn_if_mentioning_unsubscribed_user(
     mentioned: UserOrMention,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): Promise<void> {
     // Disable for Zephyr mirroring realms, since we never have subscriber lists there
     if (realm.realm_is_zephyr_mirror_realm) {
         return;
@@ -310,7 +327,13 @@ export function warn_if_mentioning_unsubscribed_user(
         return;
     }
 
-    if (needs_subscribe_warning(user_id, stream_id)) {
+    if (await needs_subscribe_warning(user_id, stream_id)) {
+        // Double check that we're still composing to the same stream id
+        // after the awaited fetch for subscriber data.
+        if (get_stream_id_for_textarea($textarea) !== stream_id) {
+            return;
+        }
+
         const $banner_container = compose_banner.get_compose_banner_container($textarea);
         const $existing_invites_area = $banner_container.find(
             `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
@@ -343,11 +366,11 @@ export function warn_if_mentioning_unsubscribed_user(
     }
 }
 
-export function warn_if_mentioning_unsubscribed_group(
+export async function warn_if_mentioning_unsubscribed_group(
     mentioned_group: UserGroup,
     $textarea: JQuery<HTMLTextAreaElement>,
     is_silent: boolean,
-): void {
+): Promise<void> {
     if (is_silent) {
         return;
     }
@@ -361,7 +384,7 @@ export function warn_if_mentioning_unsubscribed_group(
     let any_member_subscribed = false;
     for (const user_id of group_members) {
         if (
-            stream_data.is_user_subscribed(stream_id, user_id) &&
+            (await stream_data.maybe_fetch_is_user_subscribed(stream_id, user_id, false)) &&
             people.is_person_active(user_id)
         ) {
             any_member_subscribed = true;
@@ -369,6 +392,12 @@ export function warn_if_mentioning_unsubscribed_group(
         }
     }
     if (any_member_subscribed) {
+        return;
+    }
+
+    // Double check that we're still composing to the same stream id
+    // after the awaited fetches for subscriber data.
+    if (get_stream_id_for_textarea($textarea) !== stream_id) {
         return;
     }
 
@@ -652,17 +681,6 @@ export function set_user_acknowledged_stream_wildcard_flag(value: boolean): void
     user_acknowledged_stream_wildcard = value;
 }
 
-export function get_invalid_recipient_emails(): string[] {
-    const private_recipients = util.extract_pm_recipients(
-        compose_state.private_message_recipient(),
-    );
-    const invalid_recipients = private_recipients.filter(
-        (email) => !people.is_valid_email_for_compose(email),
-    );
-
-    return invalid_recipients;
-}
-
 function is_recipient_large_stream(): boolean {
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
@@ -886,7 +904,7 @@ function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
-    const missing_direct_message_recipient = compose_state.private_message_recipient().length === 0;
+    const missing_direct_message_recipient = user_ids.length === 0;
 
     if (missing_direct_message_recipient) {
         report_validation_error(
@@ -915,42 +933,7 @@ function validate_private_message(show_banner = true): boolean {
         return false;
     }
 
-    const invalid_recipients = get_invalid_recipient_emails();
-
     let context = {};
-    if (invalid_recipients.length === 1) {
-        context = {recipient: invalid_recipients.join(",")};
-        const error_message = $t(
-            {defaultMessage: "The recipient {recipient} is not valid."},
-            context,
-        );
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.invalid_recipient,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message = error_message;
-        }
-        return false;
-    } else if (invalid_recipients.length > 1) {
-        context = {recipients: invalid_recipients.join(",")};
-        const error_message = $t(
-            {defaultMessage: "The recipients {recipients} are not valid."},
-            context,
-        );
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.invalid_recipients,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message = error_message;
-        }
-        return false;
-    }
 
     for (const user_id of user_ids) {
         if (!people.is_person_active(user_id)) {
@@ -1149,7 +1132,7 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         $("textarea#compose-textarea").toggleClass("invalid", false);
     }
 
-    if ($("#zephyr-mirror-error").is(":visible")) {
+    if ($("#zephyr-mirror-error").hasClass("show")) {
         const error_message = $t({
             defaultMessage: "You need to be running Zephyr mirroring in order to send messages!",
         });

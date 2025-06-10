@@ -2,8 +2,6 @@
 
 const assert = require("node:assert/strict");
 
-const {process_keydown} = require("../src/hotkey.js");
-
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -52,6 +50,7 @@ const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
 const message_actions_popover = mock_esm("../src/message_actions_popover");
 const message_edit = mock_esm("../src/message_edit");
+const message_edit_history = mock_esm("../src/message_edit_history");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const message_view = mock_esm("../src/message_view");
@@ -108,7 +107,9 @@ message_lists.current = {
     selected_row() {
         const $row = $.create("selected-row-stub");
         $row.set_find_results(".message-actions-menu-button", []);
-        $row.set_find_results(".emoji-message-control-button-container", {is: () => false});
+        $row.set_find_results(".emoji-message-control-button-container", {
+            closest: () => ({css: () => "none"}),
+        });
         return $row;
     },
     selected_message() {
@@ -131,6 +132,11 @@ emoji.initialize({
     emoji_codes,
 });
 
+const settings_config = zrequire("settings_config");
+const {set_realm} = zrequire("state_data");
+const realm = {};
+set_realm(realm);
+
 function stubbing(module, func_name_to_stub, test_function) {
     with_overrides(({override}) => {
         const stub = make_stub();
@@ -147,16 +153,9 @@ function test_while_not_editing_text(label, f) {
 }
 
 run_test("mappings", () => {
-    function map_press(which, shiftKey) {
-        return hotkey.get_keypress_hotkey({
-            which,
-            shiftKey,
-        });
-    }
-
-    function map_down(which, shiftKey, ctrlKey, metaKey, altKey) {
+    function map_down(key, shiftKey, ctrlKey, metaKey, altKey) {
         return hotkey.get_keydown_hotkey({
-            which,
+            key,
             shiftKey,
             ctrlKey,
             metaKey,
@@ -166,102 +165,185 @@ run_test("mappings", () => {
 
     // The next assertion protects against an iOS bug where we
     // treat "!" as a hotkey, because iOS sends the wrong code.
-    assert.equal(map_press(33), undefined);
+    assert.equal(map_down("!"), undefined);
 
     // Test page-up does work.
-    assert.equal(map_down(33).name, "page_up");
+    assert.equal(map_down("PageUp").name, "page_up");
 
     // Test other mappings.
-    assert.equal(map_down(9).name, "tab");
-    assert.equal(map_down(9, true).name, "shift_tab");
-    assert.equal(map_down(27).name, "escape");
-    assert.equal(map_down(37).name, "left_arrow");
-    assert.equal(map_down(13).name, "enter");
-    assert.equal(map_down(46).name, "delete");
-    assert.equal(map_down(13, true).name, "enter");
-    assert.equal(map_down(78, true).name, "narrow_to_next_unread_followed_topic");
-    assert.equal(map_down(86, true).name, "toggle_read_receipts"); // Shift + V
+    assert.equal(map_down("Tab").name, "tab");
+    assert.equal(map_down("Tab", true).name, "shift_tab");
+    assert.equal(map_down("Escape").name, "escape");
+    assert.equal(map_down("ArrowLeft").name, "left_arrow");
+    assert.equal(map_down("Enter").name, "enter");
+    assert.equal(map_down("Delete").name, "delete");
+    assert.equal(map_down("Enter", true).name, "enter");
+    assert.equal(map_down("H", true).name, "view_edit_history");
+    assert.equal(map_down("N", true).name, "narrow_to_next_unread_followed_topic");
+    assert.deepEqual(
+        map_down("V", true).map((item) => item.name),
+        ["view_selected_stream", "toggle_read_receipts"],
+    );
 
-    assert.equal(map_press(47).name, "search"); // slash
-    assert.equal(map_press(106).name, "vim_down"); // j
+    assert.equal(map_down("/").name, "search");
+    assert.equal(map_down("j").name, "vim_down");
 
-    assert.equal(map_down(219, false, true).name, "escape"); // Ctrl + [
-    assert.equal(map_down(67, false, true).name, "copy_with_c"); // Ctrl + C
-    assert.equal(map_down(75, false, true).name, "search_with_k"); // Ctrl + K
-    assert.equal(map_down(83, false, true).name, "star_message"); // Ctrl + S
-    assert.equal(map_down(190, false, true).name, "narrow_to_compose_target"); // Ctrl + .
+    assert.equal(map_down("[", false, true).name, "escape");
+    assert.equal(map_down("c", false, true).name, "copy_with_c");
+    assert.equal(map_down("k", false, true).name, "search_with_k");
+    assert.equal(map_down("s", false, true).name, "star_message");
+    assert.equal(map_down(".", false, true).name, "narrow_to_compose_target");
 
-    assert.equal(map_down(80, false, false, false, true).name, "toggle_compose_preview"); // Alt + P
+    assert.equal(map_down("p", false, false, false, true).name, "toggle_compose_preview"); // Alt + P
+    assert.equal(map_down("+", false).name, "thumbs_up_emoji");
+    assert.equal(map_down("+", true).name, "thumbs_up_emoji");
 
     // More negative tests.
-    assert.equal(map_down(47), undefined);
-    assert.equal(map_press(27), undefined);
-    assert.equal(map_down(27, true), undefined);
-    assert.equal(map_down(86, false, true), undefined); // Ctrl + V
-    assert.equal(map_down(90, false, true), undefined); // Ctrl + Z
-    assert.equal(map_down(84, false, true), undefined); // Ctrl + T
-    assert.equal(map_down(82, false, true), undefined); // Ctrl + R
-    assert.equal(map_down(79, false, true), undefined); // Ctrl + O
-    assert.equal(map_down(80, false, true), undefined); // Ctrl + P
-    assert.equal(map_down(65, false, true), undefined); // Ctrl + A
-    assert.equal(map_down(70, false, true), undefined); // Ctrl + F
-    assert.equal(map_down(72, false, true), undefined); // Ctrl + H
-    assert.equal(map_down(88, false, true), undefined); // Ctrl + X
-    assert.equal(map_down(78, false, true), undefined); // Ctrl + N
-    assert.equal(map_down(77, false, true), undefined); // Ctrl + M
-    assert.equal(map_down(67, false, false, true), undefined); // Cmd + C
-    assert.equal(map_down(75, false, false, true), undefined); // Cmd + K
-    assert.equal(map_down(83, false, false, true), undefined); // Cmd + S
-    assert.equal(map_down(75, true, true), undefined); // Shift + Ctrl + K
-    assert.equal(map_down(83, true, true), undefined); // Shift + Ctrl + S
-    assert.equal(map_down(219, true, true, false), undefined); // Shift + Ctrl + [
+    assert.equal(map_down("Escape", true), undefined);
+    assert.equal(map_down("v", false, true), undefined);
+    assert.equal(map_down("z", false, true), undefined);
+    assert.equal(map_down("t", false, true), undefined);
+    assert.equal(map_down("r", false, true), undefined);
+    assert.equal(map_down("o", false, true), undefined);
+    assert.equal(map_down("p", false, true), undefined);
+    assert.equal(map_down("a", false, true), undefined);
+    assert.equal(map_down("f", false, true), undefined);
+    assert.equal(map_down("h", false, true), undefined);
+    assert.equal(map_down("x", false, true), undefined);
+    assert.equal(map_down("n", false, true), undefined);
+    assert.equal(map_down("m", false, true), undefined);
+    assert.equal(map_down("c", false, false, true), undefined);
+    assert.equal(map_down("k", false, false, true), undefined);
+    assert.equal(map_down("s", false, false, true), undefined);
+    assert.equal(map_down("K", true, true), undefined);
+    assert.equal(map_down("S", true, true), undefined);
+    assert.equal(map_down("[", true, true, false), undefined);
+    assert.equal(map_down("P", true, false, false, true), undefined);
+    assert.equal(map_down("+", false, true), undefined);
 
     // Cmd tests for MacOS
     navigator.platform = "MacIntel";
-    assert.equal(map_down(219, false, true, false).name, "escape"); // Ctrl + [
-    assert.equal(map_down(219, false, false, true), undefined); // Cmd + [
-    assert.equal(map_down(67, false, true, true).name, "copy_with_c"); // Ctrl + C
-    assert.equal(map_down(67, false, true, false), undefined); // Cmd + C
-    assert.equal(map_down(75, false, false, true).name, "search_with_k"); // Cmd + K
-    assert.equal(map_down(75, false, true, false), undefined); // Ctrl + K
-    assert.equal(map_down(83, false, false, true).name, "star_message"); // Cmd + S
-    assert.equal(map_down(83, false, true, false), undefined); // Ctrl + S
-    assert.equal(map_down(190, false, false, true).name, "narrow_to_compose_target"); // Cmd + .
-    assert.equal(map_down(190, false, true, false), undefined); // Ctrl + .
+    assert.equal(map_down("[", false, true, false).name, "escape");
+    assert.equal(map_down("[", false, false, true), undefined);
+    assert.equal(map_down("c", false, false, true).name, "copy_with_c");
+    assert.equal(map_down("c", false, true, true), undefined);
+    assert.equal(map_down("c", false, true, false), undefined);
+    assert.equal(map_down("k", false, false, true).name, "search_with_k");
+    assert.equal(map_down("k", false, true, false), undefined);
+    assert.equal(map_down("s", false, false, true).name, "star_message");
+    assert.equal(map_down("s", false, true, false), undefined);
+    assert.equal(map_down(".", false, false, true).name, "narrow_to_compose_target");
+    assert.equal(map_down(".", false, true, false), undefined);
     // Reset platform
     navigator.platform = "";
+
+    // Caps Lock doesn't interfere with shortcuts.
+    assert.equal(map_down("A").name, "open_combined_feed");
+    assert.equal(map_down("A", true).name, "stream_cycle_backward");
+    assert.equal(map_down("C", false, true).name, "copy_with_c");
+    assert.equal(map_down("P", false, false, false, true).name, "toggle_compose_preview");
 });
 
-function process(s, shiftKey, keydown = false) {
+run_test("mappings non-latin keyboard", () => {
+    // This test replicates the logic of the "mappings" test above
+    // but uses a non-Latin (Russian) keyboard layout to verify that
+    // hotkeys work irrespective of the keyboard layout.
+    // Layout used: https://kbdlayout.info/kbdru/overview+virtualkeys?arrangement=ANSI104
+    function map_down(key, code, shiftKey, ctrlKey, metaKey, altKey) {
+        return hotkey.get_keydown_hotkey({
+            key,
+            code,
+            shiftKey,
+            ctrlKey,
+            metaKey,
+            altKey,
+        });
+    }
+
+    // Test mappings.
+    assert.equal(map_down("Р", "KeyH", true).name, "view_edit_history");
+    assert.equal(map_down("Т", "KeyN", true).name, "narrow_to_next_unread_followed_topic");
+    assert.deepEqual(
+        map_down("М", "KeyV", true).map((item) => item.name),
+        ["view_selected_stream", "toggle_read_receipts"],
+    );
+    assert.equal(map_down("о", "KeyJ").name, "vim_down");
+    assert.equal(map_down("х", "BracketLeft", false, true).name, "escape");
+    assert.equal(map_down("с", "KeyC", false, true).name, "copy_with_c");
+    assert.equal(map_down("л", "KeyK", false, true).name, "search_with_k");
+    assert.equal(map_down("ы", "KeyS", false, true).name, "star_message");
+    assert.equal(map_down("з", "KeyP", false, false, false, true).name, "toggle_compose_preview");
+
+    // More negative tests.
+    assert.equal(map_down("м", "KeyV", false, true), undefined);
+    assert.equal(map_down("я", "KeyZ", false, true), undefined);
+    assert.equal(map_down("е", "KeyT", false, true), undefined);
+    assert.equal(map_down("к", "KeyR", false, true), undefined);
+    assert.equal(map_down("щ", "KeyO", false, true), undefined);
+    assert.equal(map_down("з", "KeyP", false, true), undefined);
+    assert.equal(map_down("ф", "KeyA", false, true), undefined);
+    assert.equal(map_down("а", "KeyF", false, true), undefined);
+    assert.equal(map_down("р", "KeyH", false, true), undefined);
+    assert.equal(map_down("ч", "KeyX", false, true), undefined);
+    assert.equal(map_down("т", "KeyN", false, true), undefined);
+    assert.equal(map_down("ь", "KeyM", false, true), undefined);
+    assert.equal(map_down("с", "KeyC", false, false, true), undefined);
+    assert.equal(map_down("л", "KeyK", false, false, true), undefined);
+    assert.equal(map_down("ы", "KeyS", false, false, true), undefined);
+    assert.equal(map_down("Л", "KeyK", true, true), undefined);
+    assert.equal(map_down("Ы", "KeyS", true, true), undefined);
+    assert.equal(map_down("Х", "BracketLeft", true, true, false), undefined);
+    assert.equal(map_down("З", "KeyP", true, false, false, true), undefined);
+
+    // Cmd tests for MacOS
+    navigator.platform = "MacIntel";
+    assert.equal(map_down("х", "BracketLeft", false, true, false).name, "escape");
+    assert.equal(map_down("х", "BracketLeft", false, false, true), undefined);
+    assert.equal(map_down("с", "KeyC", false, false, true).name, "copy_with_c");
+    assert.equal(map_down("с", "KeyC", false, true, true), undefined);
+    assert.equal(map_down("с", "KeyC", false, true, false), undefined);
+    assert.equal(map_down("л", "KeyK", false, false, true).name, "search_with_k");
+    assert.equal(map_down("л", "KeyK", false, true, false), undefined);
+    assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
+    assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
+    // Reset platform
+    navigator.platform = "";
+
+    // Caps Lock doesn't interfere with shortcuts.
+    assert.equal(map_down("Ф", "KeyA").name, "open_combined_feed");
+    assert.equal(map_down("Ф", "KeyA", true).name, "stream_cycle_backward");
+    assert.equal(map_down("С", "KeyC", false, true).name, "copy_with_c");
+    assert.equal(map_down("З", "KeyP", false, false, false, true).name, "toggle_compose_preview");
+});
+
+function process(s, shiftKey) {
     const e = {
-        which: s.codePointAt(0),
+        key: s,
         shiftKey,
     };
     try {
-        if (keydown) {
-            return hotkey.process_keydown(e);
-        }
-        return hotkey.process_keypress(e);
+        return hotkey.process_keydown(e);
     } catch (error) /* istanbul ignore next */ {
         // An exception will be thrown here if a different
         // function is called than the one declared.  Try to
         // provide a useful error message.
         // add a newline to separate from other console output.
-        console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+        console.log('\nERROR: Mapping for character "' + e.key + '" does not match tests.');
         throw error;
     }
 }
 
-function assert_mapping(c, module, func_name, shiftKey, keydown) {
+function assert_mapping(c, module, func_name, shiftKey) {
     stubbing(module, func_name, (stub) => {
-        assert.ok(process(c, shiftKey, keydown));
+        assert.ok(process(c, shiftKey));
         assert.equal(stub.num_calls, 1);
     });
 }
 
 function assert_unmapped(s) {
     for (const c of s) {
-        assert.equal(process(c), false);
+        const shiftKey = /^[A-Z]$/.test(c);
+        assert.equal(process(c, shiftKey), false);
     }
 }
 
@@ -278,7 +360,7 @@ test_while_not_editing_text("unmapped keys return false easily", () => {
     // calling any functions outside of hotkey.js.
     // (unless we are editing text)
     assert_unmapped("bfoyz");
-    assert_unmapped("BEFHLNOQTWXYZ");
+    assert_unmapped("BEFLOQTWXYZ");
 });
 
 run_test("allow normal typing when editing text", ({override, override_rewire}) => {
@@ -291,6 +373,8 @@ run_test("allow normal typing when editing text", ({override, override_rewire}) 
     override(overlays, "any_active", () => any_active);
     override(overlays, "settings_open", () => settings_open);
     override(overlays, "info_overlay_open", () => info_overlay_open);
+
+    $.create(".navbar-item:focus", {children: []});
 
     for (settings_open of [true, false]) {
         for (any_active of [true, false]) {
@@ -307,8 +391,8 @@ test_while_not_editing_text("streams", ({override}) => {
     delete settings_data.user_can_create_web_public_streams;
     override(overlays, "streams_open", () => true);
     override(overlays, "any_active", () => true);
-    assert_mapping("S", stream_settings_ui, "keyboard_sub");
-    assert_mapping("V", stream_settings_ui, "view_stream");
+    assert_mapping("S", stream_settings_ui, "keyboard_sub", true);
+    assert_mapping("V", stream_settings_ui, "view_stream", true);
     assert_mapping("n", stream_settings_ui, "open_create_stream");
     settings_data.user_can_create_private_streams = () => false;
     settings_data.user_can_create_public_streams = () => false;
@@ -322,12 +406,12 @@ test_while_not_editing_text("basic mappings", () => {
     assert_mapping("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
-    assert_mapping("A", message_view, "stream_cycle_backward");
-    assert_mapping("D", message_view, "stream_cycle_forward");
+    assert_mapping("A", message_view, "stream_cycle_backward", true);
+    assert_mapping("D", message_view, "stream_cycle_forward", true);
 
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
-    assert_mapping("P", message_view, "show");
+    assert_mapping("P", message_view, "show", true);
     assert_mapping("g", gear_menu, "toggle");
 });
 
@@ -355,7 +439,7 @@ run_test("modal open", ({override}) => {
 
 test_while_not_editing_text("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
-    const message_view_only_keys = "@+>RjJkKsuvVi:GM";
+    const message_view_only_keys = "@+>RjJkKsuvVi:GMH";
 
     // Check that they do nothing without a selected message
     with_overrides(({override}) => {
@@ -366,7 +450,7 @@ test_while_not_editing_text("misc", ({override}) => {
     // Check that they do nothing while in the settings overlay
     with_overrides(({override}) => {
         override(overlays, "settings_open", () => true);
-        assert_unmapped("@*+->rRjJkKsSuvVi:GM");
+        assert_unmapped("@*+->rRjJkKsSuvVi:GMH");
     });
 
     // TODO: Similar check for being in the subs page
@@ -380,15 +464,22 @@ test_while_not_editing_text("misc", ({override}) => {
     assert_mapping("r", compose_reply, "respond_to_message");
     assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
-    assert_mapping("J", navigate, "page_down");
+    assert_mapping("J", navigate, "page_down", true);
     assert_mapping("k", navigate, "up");
-    assert_mapping("K", navigate, "page_up");
+    assert_mapping("K", navigate, "page_up", true);
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
     assert_mapping(">", compose_reply, "quote_message");
     assert_mapping("<", compose_reply, "quote_message");
     assert_mapping("e", message_edit, "start");
+
+    override(
+        realm,
+        "realm_message_edit_history_visibility_policy",
+        settings_config.message_edit_history_visibility_policy_values.always.code,
+    );
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
     assert_mapping("s", message_view, "narrow_by_recipient");
@@ -407,11 +498,11 @@ test_while_not_editing_text("misc", ({override}) => {
     override(message_edit, "can_move_message", () => false);
     assert_unmapped("m");
 
-    assert_mapping("V", read_receipts, "show_user_list", true, true);
+    assert_mapping("V", read_receipts, "show_user_list", true);
 
     override(modals, "any_active", () => true);
     override(modals, "active_modal", () => "#read_receipts_modal");
-    assert_mapping("V", read_receipts, "hide_user_list", true, true);
+    assert_mapping("V", read_receipts, "hide_user_list", true);
 });
 
 test_while_not_editing_text("lightbox overlay open", ({override}) => {
@@ -438,8 +529,8 @@ run_test("emoji picker", ({override}) => {
 
 test_while_not_editing_text("G/M keys", () => {
     // TODO: move
-    assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", user_topics_ui, "toggle_topic_visibility_policy");
+    assert_mapping("G", navigate, "to_end", true);
+    assert_mapping("M", user_topics_ui, "toggle_topic_visibility_policy", true);
 });
 
 test_while_not_editing_text("n/p keys", () => {
@@ -451,26 +542,27 @@ test_while_not_editing_text("n/p keys", () => {
 });
 
 test_while_not_editing_text("narrow next unread followed topic", () => {
-    assert_mapping("N", message_view, "narrow_to_next_topic", true, true);
+    assert_mapping("N", message_view, "narrow_to_next_topic", true);
 });
 
 test_while_not_editing_text("motion_keys", () => {
-    const codes = {
-        down_arrow: 40,
-        end: 35,
-        home: 36,
-        left_arrow: 37,
-        right_arrow: 39,
-        page_up: 33,
-        page_down: 34,
-        spacebar: 32,
-        up_arrow: 38,
-        "+": 187,
+    $.create(".navbar-item:focus", {children: []});
+
+    const keys = {
+        down_arrow: "ArrowDown",
+        end: "End",
+        home: "Home",
+        left_arrow: "ArrowLeft",
+        right_arrow: "ArrowRight",
+        page_up: "PageUp",
+        page_down: "PageDown",
+        spacebar: " ",
+        up_arrow: "ArrowUp",
     };
 
     function process(name) {
         const e = {
-            which: codes[name],
+            key: keys[name],
         };
 
         try {
@@ -480,7 +572,7 @@ test_while_not_editing_text("motion_keys", () => {
             // function is called than the one declared.  Try to
             // provide a useful error message.
             // add a newline to separate from other console output.
-            console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+            console.log('\nERROR: Mapping for character "' + e.key + '" does not match tests.');
             throw error;
         }
     }
@@ -563,21 +655,29 @@ run_test("test new user input hook called", () => {
         hook_called = true;
     });
 
-    hotkey.process_keydown({which: "S".codePointAt(0)});
+    // Currently, "b" is not a valid hotkey.
+    // But it serves our purpose here to verify
+    // `hook_called` on keydown.
+    hotkey.process_keydown({key: "b"});
     assert.ok(hook_called);
 });
 
-run_test("e shortcut works for anonymous users", ({override_rewire}) => {
+test_while_not_editing_text("e shortcut works for anonymous users", ({override_rewire}) => {
     page_params.is_spectator = true;
 
     const stub = make_stub();
     override_rewire(spectators, "login_to_access", stub.f);
+    overlays.any_active = () => false;
+    overlays.settings_open = () => false;
 
     const e = {
-        which: "e".codePointAt(0),
+        key: "e",
     };
 
-    process_keydown(e);
+    stubbing(message_edit, "start", (stub) => {
+        hotkey.process_keydown(e);
+        assert.equal(stub.num_calls, 1);
+    });
     assert.equal(stub.num_calls, 0, "login_to_access should not be called for 'e' shortcut");
     // Fake call to avoid warning about unused stub.
     spectators.login_to_access();

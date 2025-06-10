@@ -28,9 +28,16 @@ function MessageListView() {
         prepend: noop,
         clear_rendering_state: noop,
         get_row: () => ({
-            find: () => ({
-                is: () => false,
-            }),
+            find(selector) {
+                assert.equal(selector, ".message_controls .reaction_button");
+                return {
+                    length: 1,
+                    css(property) {
+                        assert.equal(property, "display");
+                        return "none";
+                    },
+                };
+            },
         }),
         message_containers: new Map(),
     };
@@ -153,8 +160,6 @@ function set_page_params_no_edit_restrictions({override}) {
 function test(label, f) {
     run_test(label, (helpers) => {
         // Stubs for calculate_timestamp_widths()
-        $("<div>").css = noop;
-        $(":root").css = noop;
         $("<div>").width = noop;
         $("<div>").remove = noop;
 

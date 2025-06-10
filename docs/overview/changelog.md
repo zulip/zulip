@@ -13,11 +13,35 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
-- Added support for using PostgreSQL 17 as the database. See the
-  [PostgreSQL upgrade
-  documentation](../production/upgrade.md#upgrading-postgresql) if
-  you’re interested in upgrading an existing server to newer
-  PostgreSQL.
+### Zulip Server 10.3
+
+_Released 2025-05-15_
+
+- CVE-2025-47930: Restrictions on creating public or private channels
+  were incorrectly not applied when editing the channel type for an
+  existing channel. This issue only impacted configurations where
+  users could create private channels but not public channels, or vice
+  versa.
+- Fixed an important bug where the LDAP integration could corrupt
+  system groups when changing a user’s role, resulting in permissions
+  not being applied correctly. This release also contains a migration
+  that corrects the corrupted state for affected systems.
+- Fixed a bug where uploaded files were incorrectly inaccessible to
+  users previewing a private channel that they had permission to join.
+- Fixed multiple live update bugs related to archiving/unarchiving
+  channels or losing access to a channel.
+- Fixed sorting of message IDs in the `unread_msgs` API.
+- Fixed appearance of the top-of-message-feed loading spinner with
+  non-default font sizes.
+- Fixed several glitches with save/discard buttons in organization
+  settings, and updated visual design.
+- Added the `manage.py thumbnail` management command. This management
+  command supports generating thumbnails for legacy images that were
+  uploaded prior to the introduction of thumbnailing in Zulip
+  9.0. This tools shares its queue with thumbnailing of newly sent
+  images, so be careful when enqueuing large numbers of images at
+  once.
+- Updated translations.
 
 #### Upgrade notes for 11.0
 
@@ -47,7 +71,10 @@ _Released 2025-04-15_
     profiles.
 - Fixed compatibility issues between the new `tusd` -based file upload backend
   and using a non-default port for the Zulip server.
-- Added support for PostgreSQL 17.
+- Added support for PostgreSQL 17. See the [PostgreSQL upgrade
+  documentation](../production/upgrade.md#upgrading-postgresql) if
+  you’re interested in upgrading an existing server to newer
+  PostgreSQL.
 - Direct message conversations are now allowed to wrap to two lines in the left
   sidebar using a 2-line format, just like topics.
 - Fixed an important server availability bug involving thumbnails for large
@@ -2500,7 +2527,7 @@ _Released 2021-05-13_
 - Code blocks now have a copy-to-clipboard button and can be
   integrated with external code playgrounds, making it convenient to
   work with code while discussing it in Zulip.
-- Added a new organization [Moderator role][roles-and-permissions].
+- Added a new organization [Moderator role][user-roles].
   Many permissions settings for sensitive features now support only
   allowing moderators and above to use the feature.
 - Added a native Giphy integration for sending animated GIFs.
@@ -2529,7 +2556,7 @@ _Released 2021-05-13_
 - Added support for moving topics to private streams, and for configuring
   which roles can move topics between streams.
 
-[roles-and-permissions]: https://zulip.com/help/roles-and-permissions
+[user-roles]: https://zulip.com/help/user-roles
 
 #### Upgrade notes for 4.0
 
@@ -3064,7 +3091,7 @@ possible CVE-2020-14215 caused a user to incorrectly join as an
 organization administrator in the past. See the release blog post for
 details.
 
-[audit-org-admin]: https://zulip.com/help/change-a-users-role
+[audit-org-admin]: https://zulip.com/help/user-roles
 
 ### Zulip Server 2.1.4
 

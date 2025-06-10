@@ -20,6 +20,94 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 390**
+
+* [`GET /events`](/api/get-events): Events with `type: "navigation_view"` are
+  sent to the user when a navigation view is created, updated, or removed.
+
+* [`POST /register`](/api/register-queue): Added `navigation_views` field in
+  response.
+
+* [`GET /navigation_views`](/api/get-navigation-views): Added a new endpoint for
+  fetching all navigation views of the user.
+
+* [`POST /navigation_views`](/api/add-navigation-view): Added a new endpoint for
+  creating a new navigation view.
+
+* [`PATCH /navigation_views/{fragment}`](/api/edit-navigation-view): Added a new
+  endpoint for editing the details of a navigation view.
+
+* [`DELETE /navigation_views/{fragment}`](/api/remove-navigation-view): Added a new
+  endpoint for removing a navigation view.
+
+**Feature level 389**
+
+* [`POST /channel_folders/create`](/api/create-channel-folder): Added
+  a new endpoint for creating a new channel folder.
+* [`GET /channel_folders`](/api/get-channel-folders): Added a new endpoint
+  to get all channel folders in the realm.
+* [`PATCH /channel_folders/{channel_folder_id}`](/api/update-channel-folder):
+  Added a new endpoint to update channel folder.
+* [`POST /register`](/api/register-queue): Added `channel_folders` field to
+  response.
+* [`GET /events`](/api/get-events): An event with `type: "channel_folder"` is
+  sent to all users when a channel folder is created.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `folder_id` field
+  to Stream and Subscription objects.
+* [`POST /users/me/subscriptions`](/api/subscribe): Added support to add
+  newly created channels to folder using `folder_id` parameter.
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added support
+  for updating folder to which the channel belongs.
+* [`GET /events`](/api/get-events): An event with `type: "channel_folder"` is
+  sent to all users when a channel folder is updated.
+* [`GET /events`](/api/get-events): `value` field in `stream/update`
+  events can have `null` when channel is removed from a folder.
+
+**Feature level 388**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `is_archived` parameter to support unarchiving previously archived
+  channels.
+
+**Feature level 387**
+
+* [`GET /users`](/api/get-users): This endpoint no longer requires
+  authentication for organizations using the [public access
+  option](/help/public-access-option).
+
+**Feature level 386**
+
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):
+  Added support to reactivate groups by passing `deactivated`
+  parameter as `False`.
+
+**Feature level 385**
+
+* [`POST /register`](/api/register-queue), [`PATCH/settings`](/api/update-settings),
+  [`PATCH/realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `resolved_topic_notice_auto_read_policy` setting, which controls
+  how resolved-topic notices are marked as read for a user.
+
+**Feature level 384**
+
+* [`GET /users`](/api/get-users): Added `user_ids` query parameter to
+  fetch data only for the provided `user_ids`.
+
+**Feature level 383**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new option in user setting `web_channel_default_view`, to show
+  inbox view style list of topics.
+
+**Feature level 382**
+
+* `POST /message/{message_id}/report`: Added a new endpoint for submitting
+  a moderation request for a message.
+
 **Feature level 381**
 
 * [`POST /reminders`](/api/create-message-reminder): Added a new endpoint to

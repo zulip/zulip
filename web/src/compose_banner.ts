@@ -274,5 +274,5 @@ export function show_unknown_zoom_user_error(email: string): void {
 }
 
 export function has_error(): boolean {
-    return $("#compose_banners .error:visible").length > 0;
+    return $("#compose_banners .error").length > 0;
 }

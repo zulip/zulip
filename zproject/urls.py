@@ -45,6 +45,11 @@ from zerver.views.auth import (
     start_social_login,
     start_social_signup,
 )
+from zerver.views.channel_folders import (
+    create_channel_folder,
+    get_channel_folders,
+    update_channel_folder,
+)
 from zerver.views.compatibility import check_global_compatibility
 from zerver.views.custom_profile_fields import (
     create_realm_custom_profile_field,
@@ -58,7 +63,6 @@ from zerver.views.custom_profile_fields import (
 from zerver.views.digest import digest_page
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
-from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
@@ -84,9 +88,16 @@ from zerver.views.message_flags import (
     update_message_flags,
     update_message_flags_for_narrow,
 )
+from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.message_summary import get_messages_summary
 from zerver.views.muted_users import mute_user, unmute_user
+from zerver.views.navigation_views import (
+    add_navigation_view,
+    get_navigation_views,
+    remove_navigation_view,
+    update_navigation_view,
+)
 from zerver.views.onboarding_steps import mark_onboarding_step_as_read
 from zerver.views.presence import (
     get_presence_backend,
@@ -145,7 +156,10 @@ from zerver.views.registration import (
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
+    import_realm_from_slack,
     new_realm_send_confirm,
+    realm_import_post_process,
+    realm_import_status,
     realm_redirect,
     realm_register,
     signup_send_confirm,
@@ -231,6 +245,7 @@ from zerver.views.users import (
     deactivate_user_backend,
     deactivate_user_own_backend,
     get_bots_backend,
+    get_member_backend,
     get_members_backend,
     get_profile_backend,
     get_subscription_backend,
@@ -318,12 +333,14 @@ v1_api_and_json_patterns = [
     # realm/deactivate -> zerver.views.deactivate_realm
     rest_path("realm/deactivate", POST=deactivate_realm),
     # users -> zerver.views.users
-    rest_path("users", GET=get_members_backend, POST=create_user_backend),
+    rest_path(
+        "users", GET=(get_members_backend, {"allow_anonymous_user_web"}), POST=create_user_backend
+    ),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),
     rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
     rest_path(
         "users/<int:user_id>",
-        GET=get_members_backend,
+        GET=get_member_backend,
         PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),
@@ -348,6 +365,13 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # navigation_views -> zerver.views.navigation_views
+    rest_path("navigation_views", GET=get_navigation_views, POST=add_navigation_view),
+    rest_path(
+        "navigation_views/<path:fragment>",
+        PATCH=update_navigation_view,
+        DELETE=remove_navigation_view,
+    ),
     # saved_snippets -> zerver.views.saved_snippets
     rest_path("saved_snippets", GET=get_saved_snippets, POST=create_saved_snippet),
     rest_path(
@@ -400,6 +424,8 @@ v1_api_and_json_patterns = [
     rest_path("messages/<int:message_id>/reactions", POST=add_reaction, DELETE=remove_reaction),
     # read_receipts -> zerver.views.read_receipts
     rest_path("messages/<int:message_id>/read_receipts", GET=read_receipts),
+    # report_message_backend -> zerver.views.message_report
+    rest_path("messages/<int:message_id>/report", POST=report_message_backend),
     # attachments -> zerver.views.attachments
     rest_path("attachments", GET=list_by_user),
     rest_path("attachments/<int:attachment_id>", DELETE=remove),
@@ -523,6 +549,9 @@ v1_api_and_json_patterns = [
         PATCH=update_subscriptions_backend,
         DELETE=remove_subscriptions_backend,
     ),
+    rest_path("channel_folders/create", POST=create_channel_folder),
+    rest_path("channel_folders", GET=get_channel_folders),
+    rest_path("channel_folders/<int:channel_folder_id>", PATCH=update_channel_folder),
     # topic-muting -> zerver.views.user_topics
     # (deprecated and will be removed once clients are migrated to use '/user_topics')
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
@@ -619,6 +648,16 @@ i18n_urls = [
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),
     path("realm/register/", realm_register, name="realm_register"),
+    path(
+        "realm/import/post_process/<confirmation_key>",
+        realm_import_post_process,
+        name="realm_import_post_process",
+    ),
+    path("new/import/slack/", import_realm_from_slack, name="import_realm_from_slack"),
+    path(
+        "json/realm/import/status/<confirmation_key>",
+        realm_import_status,
+    ),
     path(
         "accounts/do_confirm/<confirmation_key>",
         get_prereg_key_and_redirect,
@@ -792,7 +831,6 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 # Used internally for communication between command-line, tusd, Django,
 # and Tornado processes
 urls += [
-    path("api/internal/email_mirror_message", email_mirror_message),
     path("api/internal/notify_tornado", notify),
     path("api/internal/tusd", handle_tusd_hook),
     path("api/internal/web_reload_clients", web_reload_clients),

@@ -11,6 +11,7 @@ const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const narrow_state = zrequire("narrow_state");
 const message_lists = zrequire("message_lists");
+const inbox_util = zrequire("inbox_util");
 
 function set_filter(raw_terms) {
     const terms = raw_terms.map((op) => ({
@@ -161,7 +162,7 @@ test("terms", () => {
     assert.equal(result[1].operand, "Bar");
 
     assert.equal(result[2].operator, "search");
-    assert.equal(result[2].operand, "yo");
+    assert.equal(result[2].operand, "Yo");
 
     message_lists.set_current(undefined);
     result = narrow_state.search_terms();
@@ -239,13 +240,13 @@ test("set_compose_defaults", () => {
 
     set_filter([["dm", "john@doe.com"]]);
     dm_test = narrow_state.set_compose_defaults();
-    assert.equal(dm_test.private_message_recipient, "john@doe.com");
+    assert.deepEqual(dm_test.private_message_recipient_ids, [john.user_id]);
 
     // Even though we renamed "pm-with" to "dm",
     // compose defaults are set correctly.
     set_filter([["pm-with", "john@doe.com"]]);
     dm_test = narrow_state.set_compose_defaults();
-    assert.equal(dm_test.private_message_recipient, "john@doe.com");
+    assert.deepEqual(dm_test.private_message_recipient_ids, [john.user_id]);
 
     set_filter([
         ["topic", "duplicate"],
@@ -372,4 +373,16 @@ test("pm_ids_string", () => {
     set_filter([["dm", "bob@foo.com,alice@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), "444,555");
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set([444, 555]));
+});
+
+test("inbox_view_visible", () => {
+    const filter = new Filter([
+        {
+            operator: "channel",
+            operand: 10,
+        },
+    ]);
+    inbox_util.set_filter(filter);
+    inbox_util.set_visible(true);
+    assert.ok(narrow_state.filter() === filter);
 });

@@ -834,6 +834,10 @@ test("show_first_unread", () => {
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.allow_use_first_unread_when_narrowing());
 
+    terms = [{operator: "is", operand: "starred"}];
+    filter = new Filter(terms);
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+
     // Side case
     terms = [{operator: "is", operand: "any"}];
     filter = new Filter(terms);
@@ -978,7 +982,7 @@ test("canonicalization", () => {
 
     term = Filter.canonicalize_term({operator: "search", operand: "fOO"});
     assert.equal(term.operator, "search");
-    assert.equal(term.operand, "foo");
+    assert.equal(term.operand, "fOO");
 
     term = Filter.canonicalize_term({operator: "search", operand: 123});
     assert.equal(term.operator, "search");
@@ -1658,12 +1662,18 @@ test("describe", ({mock_template, override}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
     narrow = [{operator: "channels", operand: "public"}];
-    string = "channels public";
+    string = "all public channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "channels", operand: "public", negated: true}];
-    string = "exclude channels public";
+    string = "exclude all public channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    page_params.is_spectator = true;
+    narrow = [{operator: "channels", operand: "public"}];
+    string = "all public channels that you can view";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    page_params.is_spectator = false;
 
     const devel_id = new_stream_id();
     make_sub("devel", devel_id);

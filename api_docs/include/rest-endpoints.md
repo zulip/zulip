@@ -18,6 +18,7 @@
 * [Mark messages in a channel as read](/api/mark-stream-as-read)
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
+* [Report a message](/api/report-message)
 
 #### Scheduled messages
 
@@ -41,6 +42,13 @@
 * [Edit a saved snippet](/api/edit-saved-snippet)
 * [Delete a saved snippet](/api/delete-saved-snippet)
 
+#### Navigation views
+
+* [Get all navigation views](/api/get-navigation-views)
+* [Add a navigation view](/api/add-navigation-view)
+* [Update the navigation view](/api/edit-navigation-view)
+* [Remove a navigation view](/api/remove-navigation-view)
+
 #### Channels
 
 * [Get subscribed channels](/api/get-subscriptions)
@@ -62,13 +70,16 @@
 * [Delete a topic](/api/delete-topic)
 * [Add a default channel](/api/add-default-stream)
 * [Remove a default channel](/api/remove-default-stream)
+* [Create a channel folder](/api/create-channel-folder)
+* [Get channel folders](/api/get-channel-folders)
+* [Update a channel folder](/api/update-channel-folder)
 
 #### Users
 
 * [Get a user](/api/get-user)
 * [Get a user by email](/api/get-user-by-email)
 * [Get own user](/api/get-own-user)
-* [Get all users](/api/get-users)
+* [Get users](/api/get-users)
 * [Create a user](/api/create-user)
 * [Update a user](/api/update-user)
 * [Update a user by email](/api/update-user-by-email)

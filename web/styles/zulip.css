@@ -1,6 +1,6 @@
 html {
     overflow: hidden scroll;
-    overscroll-behavior-y: none;
+    overscroll-behavior: none;
     width: calc(100% - var(--disabled-scrollbar-width));
 }
 
@@ -858,9 +858,7 @@ strong {
 .copy-paste-text {
     /* Hide the text that we want copy paste to capture */
     position: absolute;
-    text-indent: -99999px;
-    float: left;
-    width: 0;
+    right: -99999px;
 }
 
 @keyframes rotate {
@@ -1221,12 +1219,12 @@ nav {
 }
 
 #loading_older_messages_indicator,
-#loading_newer_messages_indicator {
+#loading_more_indicator {
     margin: 10px;
 }
 
 #loading_older_messages_indicator_box_container,
-#loading_newer_messages_indicator_box_container {
+#loading_more_indicator_box_container {
     position: absolute;
     left: 50%;
 
@@ -1239,7 +1237,7 @@ nav {
 }
 
 #loading_older_messages_indicator_box,
-#loading_newer_messages_indicator_box {
+#loading_more_indicator_box {
     position: relative;
     left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
     top: -3.0714em; /* -43px at 14px/em */
@@ -1324,6 +1322,14 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     display: inline-block;
     overflow: hidden;
     vertical-align: bottom;
+}
+
+#invite-user-form .loading_indicator_spinner {
+    height: 1em;
+    width: fit-content;
+    display: inline-block;
+    float: none;
+    margin: 0 5px;
 }
 
 .add-user-group-container,
@@ -2225,7 +2231,8 @@ body:not(.spectator-view) {
 .dropdown-list-container .list-item {
     color: var(--color-dropdown-item);
 
-    &:focus {
+    &:focus,
+    &.current_selection {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
     }
@@ -2243,7 +2250,7 @@ body:not(.spectator-view) {
             background-color: transparent;
         }
 
-        &.active {
+        &.current_user_setting {
             background-color: var(--background-color-active-dropdown-item);
             outline: none;
         }
@@ -2340,12 +2347,22 @@ body:not(.spectator-view) {
 
 #personal-menu {
     .header-button-avatar {
+        /* Put styling on div rather than img to gracefully handle
+           uBlock Origin blocking of gravatar, which seems to make
+           the img disappear. */
         width: 1.5em; /* 24px at 16px em */
         height: 1.5em; /* 24px at 16px em */
         background-size: cover;
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
+        overflow: hidden;
+
+        .header-button-avatar-image {
+            /* Overcome `vertical-align: middle`. This prevents the
+               avatar in the navbar from being lower by a pixel. */
+            display: block;
+        }
     }
 }
 

@@ -3,6 +3,7 @@ import hashlib
 import logging
 import threading
 import traceback
+from collections.abc import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from logging import Logger
@@ -79,7 +80,7 @@ class _RateLimitFilter:
             if rate > 0:
                 (use_cache, should_reset_handling_exception) = self.can_use_remote_cache()
                 if use_cache:
-                    if record.exc_info is not None:
+                    if record.exc_info is not None and isinstance(record.exc_info, Iterable):
                         tb = "\n".join(traceback.format_exception(*record.exc_info))
                     else:
                         tb = str(record)

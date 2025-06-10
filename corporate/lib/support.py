@@ -126,10 +126,30 @@ class CloudSupportData:
     plan_data: PlanData
     sponsorship_data: SponsorshipData
     user_data: UserData
+    file_upload_usage: str
 
 
 def get_stripe_customer_url(stripe_id: str) -> str:
     return f"https://dashboard.stripe.com/customers/{stripe_id}"  # nocoverage
+
+
+def get_formatted_realm_upload_space_used(realm: Realm) -> str:  # nocoverage
+    realm_bytes_used = realm.currently_used_upload_space_bytes()
+    files_uploaded = realm_bytes_used > 0
+
+    realm_uploads = "No uploads"
+    if files_uploaded:
+        realm_uploads = str(round(realm_bytes_used / 1024 / 1024, 2))
+
+    quota = realm.upload_quota_bytes()
+    if quota is None:
+        if files_uploaded:
+            return f"{realm_uploads} MiB / No quota"
+        return f"{realm_uploads} / No quota"
+    if quota == 0:
+        return f"{realm_uploads} / 0.0 MiB"
+    quota_mb = round(quota / 1024 / 1024, 2)
+    return f"{realm_uploads} / {quota_mb} MiB"
 
 
 def get_realm_user_data(realm: Realm) -> UserData:
@@ -477,4 +497,5 @@ def get_data_for_cloud_support_view(billing_session: BillingSession) -> CloudSup
         plan_data=plan_data,
         sponsorship_data=sponsorship_data,
         user_data=user_data,
+        file_upload_usage=get_formatted_realm_upload_space_used(billing_session.realm),
     )

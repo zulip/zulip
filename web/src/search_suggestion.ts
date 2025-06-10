@@ -11,7 +11,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
-import {type NarrowTerm, current_user} from "./state_data.ts";
+import {type NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
@@ -421,7 +421,16 @@ function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
     if (terms.length === 0) {
         return [{description_html: "", search_string: "", is_people: false}];
     }
-    return terms.map((term) => format_as_suggestion([term]));
+    const suggestion_line = [];
+    const suggestion_strings = new Set();
+    for (const term of terms) {
+        const suggestion = format_as_suggestion([term]);
+        if (!suggestion_strings.has(suggestion.search_string)) {
+            suggestion_line.push(suggestion);
+            suggestion_strings.add(suggestion.search_string);
+        }
+    }
+    return suggestion_line;
 }
 
 export function get_topic_suggestions_from_candidates({
@@ -646,12 +655,8 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
         search_string = "streams:public";
     }
-    let description_html;
-    if (page_params.is_spectator || current_user.is_guest) {
-        description_html = "All public channels that you can view";
-    } else {
-        description_html = "All public channels";
-    }
+    let description_html = Filter.describe_public_channels(last.negated ?? false);
+    description_html = description_html.charAt(0).toUpperCase() + description_html.slice(1);
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string,
@@ -1050,7 +1055,7 @@ export function get_search_result(
     add_current_filter = false,
 ): Suggestion[] {
     let suggestion_line: SuggestionLine;
-
+    text_search_terms = text_search_terms.map((term) => Filter.canonicalize_term(term));
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
     // terms correspond to the terms for the entire query entered in the searchbox.

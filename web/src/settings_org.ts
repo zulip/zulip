@@ -33,7 +33,6 @@ import {
 } from "./settings_components.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
-import * as settings_data from "./settings_data.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_ui from "./settings_ui.ts";
@@ -402,16 +401,6 @@ export function populate_realm_domains_label(
     $("#allowed_domains_label").text($t({defaultMessage: "Allowed domains: {domains}"}, {domains}));
 }
 
-function can_configure_auth_methods(): boolean {
-    if (settings_data.user_email_not_configured()) {
-        return false;
-    }
-    if (current_user.is_owner) {
-        return true;
-    }
-    return false;
-}
-
 export function populate_auth_methods(auth_method_to_bool_map: Record<string, boolean>): void {
     if (!meta.loaded) {
         return;
@@ -433,7 +422,7 @@ export function populate_auth_methods(auth_method_to_bool_map: Record<string, bo
         const render_args = {
             method: auth_method,
             enabled: value,
-            disable_configure_auth_method: !can_configure_auth_methods() || cant_be_enabled,
+            disable_configure_auth_method: !current_user.is_owner || cant_be_enabled,
             // The negated character class regexp serves as an allowlist - the replace() will
             // remove *all* symbols *but* digits (\d) and lowercase letters (a-z),
             // so that we can make assumptions on this string elsewhere in the code.
@@ -628,7 +617,7 @@ export function discard_stream_property_element_changes(
 
             // Hide stream privacy warning banner
             const $stream_permissions_warning_banner = $(
-                "#stream_permission_settings .stream-permissions-warning-banner",
+                "#stream_settings .stream-permissions-warning-banner",
             );
             if (!$stream_permissions_warning_banner.is(":empty")) {
                 $stream_permissions_warning_banner.empty();
@@ -637,6 +626,9 @@ export function discard_stream_property_element_changes(
         }
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
+            break;
+        case "folder_id":
+            settings_components.set_channel_folder_dropdown_value(sub);
             break;
         default:
             if (property_value !== undefined) {
@@ -1132,6 +1124,8 @@ export let init_dropdown_widgets = (): void => {
 
         const disabled_option = {
             is_setting_disabled: true,
+            show_disabled_icon: true,
+            show_disabled_option_name: false,
             unique_id: DISABLED_STATE_ID,
             name: $t({defaultMessage: "Disabled"}),
         };
@@ -1180,6 +1174,8 @@ export const combined_code_language_options = (): dropdown_widget.Option[] => {
 
     const disabled_option = {
         is_setting_disabled: true,
+        show_disabled_icon: true,
+        show_disabled_option_name: false,
         unique_id: "",
         name: $t({defaultMessage: "No language set"}),
     };

@@ -10,6 +10,7 @@ import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
+import type {NarrowActivateOpts} from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
@@ -258,10 +259,7 @@ function create_and_update_message_list(
 function handle_post_message_list_change(
     id_info: TargetMessageIdInfo,
     msg_list: MessageList,
-    opts: {
-        change_hash: boolean;
-        show_more_topics: boolean;
-    } & ShowMessageViewOpts,
+    opts: NarrowActivateOpts,
     select_immediately: boolean,
     select_opts: SelectIdOpts,
     then_select_offset: number | undefined,
@@ -295,6 +293,14 @@ export function try_rendering_locally_for_same_narrow(
     filter: Filter,
     opts: ShowMessageViewOpts,
 ): boolean {
+    if (!narrow_state.is_message_feed_visible()) {
+        // This function only works when the message feed is visible.
+        //
+        // TODO: Ideally, excluding the inbox-style channels view from
+        // this code path should be further up the call chain.
+        return false;
+    }
+
     const current_filter = narrow_state.filter();
     let target_scroll_offset;
     if (!current_filter) {
@@ -913,6 +919,7 @@ function navigate_to_anchor_message(opts: {
     assert(message_lists.current !== undefined);
     if (fetch_status_shows_anchor_fetched(message_lists.current.data.fetch_status)) {
         select_msg_id(message_list_data_to_target_message_id(message_lists.current.data));
+        return;
     } else if (fetch_status_shows_anchor_fetched(all_messages_data.fetch_status)) {
         // We can load messages into `msg_list_data` but we don't know
         // the fetch status until we contact server. If we are contacting the
@@ -927,21 +934,26 @@ function navigate_to_anchor_message(opts: {
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
         });
         load_local_messages(msg_list_data, all_messages_data);
-        select_anchor_using_data(msg_list_data);
-    } else {
-        const msg_list_data = new MessageListData({
-            filter: message_lists.current.data.filter,
-            excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
-        });
-
-        message_fetch.load_messages_around_anchor(
-            anchor,
-            () => {
-                select_anchor_using_data(msg_list_data);
-            },
-            msg_list_data,
-        );
+        // It is still possible that `all_messages_data` doesn't have any messages
+        // for the current narrow, so we check for that.
+        if (!msg_list_data.visibly_empty()) {
+            select_anchor_using_data(msg_list_data);
+            return;
+        }
     }
+
+    const msg_list_data = new MessageListData({
+        filter: message_lists.current.data.filter,
+        excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+    });
+
+    message_fetch.load_messages_around_anchor(
+        anchor,
+        () => {
+            select_anchor_using_data(msg_list_data);
+        },
+        msg_list_data,
+    );
 }
 
 export function fast_track_current_msg_list_to_anchor(anchor: string): void {
@@ -1457,7 +1469,7 @@ export function to_compose_target(): void {
     }
 
     if (compose_state.get_message_type() === "private") {
-        const recipient_string = compose_state.private_message_recipient();
+        const recipient_string = compose_state.private_message_recipient_emails();
         const emails = util.extract_pm_recipients(recipient_string);
         const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is
@@ -1503,7 +1515,8 @@ function handle_post_view_change(
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
-    activity_ui.build_user_sidebar();
+    // This also builds the user sidebar.
+    activity_ui.clear_search();
 }
 
 export function rerender_combined_feed(combined_feed_msg_list: MessageList): void {

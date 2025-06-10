@@ -415,6 +415,26 @@ input[type="checkbox"] {
     }
 }
 
+.decorated-stream-name-dropdown-widget {
+    .dropdown_widget_value {
+        /* The max-width should account for the
+           16px-square box (at 16px/1em) for the
+           chevron icon. */
+        max-width: calc(100% - 1em);
+        display: flex;
+        align-items: baseline;
+        /* Mimic the space from the previous inline
+           layout. */
+        gap: 0.4ch;
+    }
+
+    .decorated-channel-name {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 .allow-subdomains,
 .new-realm-domain-allow-subdomains {
     margin: 0 !important;
@@ -489,9 +509,25 @@ input[type="checkbox"] {
     }
 }
 
+#customizable_stream_notifications_table .dropdown-widget-button {
+    /* 225px at 16px/1em */
+    width: 14.0625em;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 .advanced-configurations-container {
-    .advance-config-title-container {
+    .advance-config-toggle-area {
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0 0.625em;
 
         .stream_setting_subsection_title {
             margin: 4px 0;
@@ -544,6 +580,11 @@ input[type="checkbox"] {
     position: relative;
     bottom: 1px;
     margin: 0 2px;
+}
+
+.overlay-keyboard-shortcuts .popover-menu-hotkey-hints {
+    display: inline-flex;
+    padding-left: 0;
 }
 
 .edit-attachment-buttons {
@@ -719,6 +760,14 @@ input[type="checkbox"] {
     text-align: right;
 }
 
+.delete-choice {
+    display: inline-flex;
+
+    &.hide {
+        display: none;
+    }
+}
+
 #add-default-stream-modal {
     .dropdown-widget-button {
         display: inline-flex;
@@ -831,23 +880,6 @@ input[type="checkbox"] {
 #organization-settings {
     .dropdown-widget-button {
         color: hsl(0deg 0% 33%);
-
-        .dropdown_widget_value {
-            /* The max-width should account for the
-               16px-square box (at 16px/1em) for the
-               chevron icon. */
-            max-width: calc(100% - 1em);
-            display: flex;
-            align-items: baseline;
-            /* Mimic the space from the previous inline
-               layout. */
-            gap: 0.4ch;
-        }
-
-        .decorated-channel-name {
-            overflow-x: hidden;
-            text-overflow: ellipsis;
-        }
     }
 }
 
@@ -1722,6 +1754,11 @@ label.preferences-radio-choice-label {
     }
 }
 
+.profile-field-choices-wrapper > .alphabetize-choices-button {
+    display: block;
+    margin: 12px 0 0;
+}
+
 .custom_user_field,
 .bot_owner_user_field {
     .pill-container {
@@ -1819,8 +1856,8 @@ label.preferences-radio-choice-label {
     }
 }
 
-/* This value needs to match with the same in subscriptions.css, as
-   we have some shared styles declared there */
+/* We should eventually consolidate some of these styles with the styles
+   in subscriptions.css, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .profile-settings-form {
         .user-avatar-section {
@@ -1872,9 +1909,25 @@ label.preferences-radio-choice-label {
             #settings_content {
                 height: 100%;
             }
+        }
 
-            &.right {
-                top: 47px;
+        .content-wrapper.right {
+            position: absolute;
+            display: block;
+            left: 101%;
+            margin: 0;
+            width: 100%;
+            height: calc(100% - var(--settings-overlay-header-height));
+
+            top: var(--settings-overlay-header-height);
+            background-color: var(--color-background-modal);
+            border: none;
+
+            transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            z-index: 10;
+
+            &.show {
+                left: 0%;
             }
         }
 

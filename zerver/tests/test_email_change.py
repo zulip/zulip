@@ -1,6 +1,7 @@
 from datetime import timedelta
 from email.headerregistry import Address
 
+import orjson
 import time_machine
 from django.conf import settings
 from django.core import mail
@@ -20,6 +21,7 @@ from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import EmailChangeStatus, UserProfile
 from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import ScheduledEmail
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 
 
@@ -155,6 +157,8 @@ class EmailChangeTestCase(ZulipTestCase):
         do_deactivate_user(user_profile, acting_user=None)
         response = self.client_get(activation_url)
         self.assertEqual(response.status_code, 401)
+        error_page_title = "<title>Account is deactivated | Zulip</title>"
+        self.assert_in_response(error_page_title, response)
 
         do_reactivate_user(user_profile, acting_user=None)
         self.login_user(user_profile)
@@ -401,3 +405,20 @@ class EmailChangeTestCase(ZulipTestCase):
 
         user_profile = get_user_profile_by_id(desdemona.id)
         self.assertEqual(user_profile.delivery_email, "desdemona-new@zulip.com")
+
+        scheduled_emails = ScheduledEmail.objects.filter(users=user_profile).order_by(
+            "scheduled_timestamp"
+        )
+        self.assert_length(scheduled_emails, 3)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_topics",
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[2].data)["template_prefix"],
+            "zerver/emails/onboarding_team_to_zulip",
+        )

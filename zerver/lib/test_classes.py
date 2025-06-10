@@ -5,7 +5,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
@@ -330,11 +330,13 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -350,6 +352,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -359,10 +362,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -384,6 +389,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -392,9 +398,12 @@ Output:
         self,
         url: str,
         payload: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -406,7 +415,8 @@ Output:
             content_type="application/json",
             follow=follow,
             secure=secure,
-            headers=None,
+            headers=headers,
+            query_params=query_params,
             **extra,
         )
 
@@ -415,10 +425,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urlencode(info)
@@ -426,17 +438,25 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.put(
-            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+            url,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
         )
 
     def json_put(
         self,
         url: str,
         payload: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -449,6 +469,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             **extra,
         )
 
@@ -457,10 +478,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -477,6 +500,7 @@ Output:
                 "Content-Type": "application/x-www-form-urlencoded",  # https://code.djangoproject.com/ticket/33230
                 **(headers or {}),
             },
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -486,16 +510,24 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.options(
-            url, dict(info), follow=follow, secure=secure, headers=headers, **extra
+            url,
+            dict(info),
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
         )
 
     @instrument_url
@@ -503,25 +535,37 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.head(url, info, follow=follow, secure=secure, headers=headers, **extra)
+        return django_client.head(
+            url,
+            info,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
+        )
 
     @instrument_url
     def client_post(
         self,
         url: str,
         info: str | bytes | Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         content_type: str | None = None,
         **extra: str,
@@ -549,6 +593,7 @@ Output:
                 "Content-Type": content_type,  # https://code.djangoproject.com/ticket/33230
                 **(headers or {}),
             },
+            query_params=query_params,
             content_type=content_type,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
@@ -577,6 +622,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -588,6 +634,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -741,6 +788,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -884,6 +932,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -990,6 +1039,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1009,6 +1059,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1024,6 +1075,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1033,6 +1085,7 @@ Output:
         user: UserProfile,
         url: str,
         info: str | bytes | Mapping[str, Any] = {},
+        *,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -1044,6 +1097,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -1059,6 +1113,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1074,6 +1129,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1120,7 +1176,7 @@ Output:
         read_by_sender: bool = True,
     ) -> int:
         to_user_ids = [u.id for u in to_users]
-        assert len(to_user_ids) >= 2
+        assert len(to_user_ids) >= 1
 
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
@@ -1207,6 +1263,22 @@ Output:
     ) -> list[dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]
+
+    def get_user_ids_for_whom_message_read(self, message_id: int) -> set[int]:
+        user_ids = set(
+            UserMessage.objects.filter(message_id=message_id)
+            .extra(where=[UserMessage.where_read()])  # noqa: S610
+            .values_list("user_profile_id", flat=True)
+        )
+        return user_ids
+
+    def get_user_ids_for_whom_message_unread(self, message_id: int) -> set[int]:
+        user_ids = set(
+            UserMessage.objects.filter(message_id=message_id)
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
+            .values_list("user_profile_id", flat=True)
+        )
+        return user_ids
 
     def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> list[UserProfile]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
@@ -1380,6 +1452,31 @@ Output:
         stream = Stream.objects.get(id=stream_id)
         self.assertEqual(stream.recipient_id, message.recipient_id)
         self.assertEqual(stream.name, stream_name)
+
+    def assert_stream_subscriber_count(
+        self,
+        counts_before: dict[int, int],
+        counts_after: dict[int, int],
+        expected_difference: int,
+    ) -> None:
+        # Normally they should always be equal,
+        # but just in case this was called in some test where user/s streams have changed
+        # and we forgot to update streams,
+        # so this assertion catches that.
+        self.assertEqual(
+            set(counts_before),
+            set(counts_after),
+            msg="Different streams! You should compare subscriber_count for the same streams.",
+        )
+
+        for stream_id, count_before in counts_before.items():
+            self.assertEqual(
+                count_before + expected_difference,
+                counts_after[stream_id],
+                msg=f"""
+                stream of ID ({stream_id}) should have a subscriber_count of {count_before + expected_difference}.
+                """,
+            )
 
     def webhook_fixture_data(self, type: str, action: str, file_type: str = "json") -> str:
         fn = os.path.join(
@@ -1578,6 +1675,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -2168,6 +2266,20 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     ) -> None:
         with self.captureOnCommitCallbacks(execute=True):
             handle_missedmessage_emails(user_profile_id, message_ids)
+
+    def build_streams_subscriber_count(self, streams: Iterable[Stream]) -> dict[int, int]:
+        """
+        Callers MUST pass a new db-fetched version of streams each time.
+        """
+        return {stream.id: stream.subscriber_count for stream in streams}
+
+    def fetch_streams_subscriber_count(self, stream_ids: set[int]) -> dict[int, int]:
+        return self.build_streams_subscriber_count(streams=Stream.objects.filter(id__in=stream_ids))
+
+    def fetch_other_streams_subscriber_count(self, stream_ids: set[int]) -> dict[int, int]:
+        return self.build_streams_subscriber_count(
+            streams=Stream.objects.exclude(id__in=stream_ids)
+        )
 
 
 def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:

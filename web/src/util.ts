@@ -441,7 +441,7 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
-export function format_array_as_list_with_conjuction(
+export function format_array_as_list_with_conjunction(
     array: string[],
     // long uses "and", narrow uses commas.
     join_strategy: "long" | "narrow",
@@ -465,8 +465,10 @@ export function format_array_as_list_with_highlighted_elements(
     const formatted_parts = list_formatter.formatToParts(array);
     return formatted_parts
         .map((part) => {
+            // There are two types of parts: elements (the actual
+            // items), and literals (commas, etc.). We need to
+            // HTML-escape the elements, but not the literals.
             if (part.type === "element") {
-                // Only highlight the values passed in array and not commas, etc.
                 return `<b>${Handlebars.Utils.escapeExpression(part.value)}</b>`;
             }
             return part.value;
@@ -567,7 +569,7 @@ export function is_topic_name_considered_empty(topic: string): boolean {
 }
 
 export function get_retry_backoff_seconds(
-    xhr: JQuery.jqXHR<unknown>,
+    xhr: JQuery.jqXHR<unknown> | undefined,
     attempts: number,
     tighter_backoff = false,
 ): number {
@@ -592,8 +594,8 @@ export function get_retry_backoff_seconds(
         "retry-after": z.number(),
         code: z.literal("RATE_LIMIT_HIT"),
     });
-    const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-    if (xhr.status === 429 && parsed?.success && parsed?.data) {
+    const parsed = rate_limited_error_schema.safeParse(xhr?.responseJSON);
+    if (xhr?.status === 429 && parsed?.success && parsed?.data) {
         // Add a bit of jitter to the required delay suggested by the
         // server, because we may be racing with other copies of the web
         // app.

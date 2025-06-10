@@ -1,4 +1,4 @@
-<div class="hide" id="stream-creation" tabindex="-1" role="dialog"
+<div class="hide two-pane-settings-right-simplebar-container" id="stream-creation" tabindex="-1" role="dialog"
   aria-label="{{t 'Channel creation' }}">
     <form id="stream_creation_form">
         <div class="two-pane-settings-creation-simplebar-container" data-simplebar data-simplebar-tab-index="-1">
@@ -27,7 +27,8 @@
                         <div class="stream-types">
                             {{> stream_types .
                               is_stream_edit=false
-                              prefix="id_new_" }}
+                              prefix="id_new_"
+                              channel_folder_widget_name="new_channel_folder_id"}}
                         </div>
                     </section>
                 </div>

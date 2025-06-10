@@ -1,9 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import * as tippy from "tippy.js";
 
-import {LONG_HOVER_DELAY} from "./tippyjs.ts";
-import {parse_html} from "./ui_util.ts";
 import * as util from "./util.ts";
 
 export type Context = {
@@ -88,16 +85,16 @@ export function set_initial_element(element_id: string | undefined, context: Con
 
 function row_before_focus(context: Context): JQuery {
     const $focused_row = row_with_focus(context);
-    const $prev_row = $focused_row.prev(`.${CSS.escape(context.row_item_selector)}:visible`);
+    const $prev_row = $focused_row.prev(`.${CSS.escape(context.row_item_selector)}`);
     // The draft modal can have two sub-sections. This handles the edge case
     // when the user moves from the second "Other drafts" section to the first
     // section which contains drafts from a particular narrow.
     if (
         $prev_row.length === 0 &&
         $focused_row.parent().attr("id") === "other-drafts" &&
-        $("#drafts-from-conversation").is(":visible")
+        $("#drafts-from-conversation").css("display") !== "none"
     ) {
-        return $($("#drafts-from-conversation").children(".overlay-message-row:visible").last());
+        return $($("#drafts-from-conversation").children(".overlay-message-row").last());
     }
 
     return $prev_row;
@@ -105,16 +102,16 @@ function row_before_focus(context: Context): JQuery {
 
 function row_after_focus(context: Context): JQuery {
     const $focused_row = row_with_focus(context);
-    const $next_row = $focused_row.next(`.${CSS.escape(context.row_item_selector)}:visible`);
+    const $next_row = $focused_row.next(`.${CSS.escape(context.row_item_selector)}`);
     // The draft modal can have two sub-sections. This handles the edge case
     // when the user moves from the first section (drafts from a particular
     // narrow) to the second section which contains the rest of the drafts.
     if (
         $next_row.length === 0 &&
         $focused_row.parent().attr("id") === "drafts-from-conversation" &&
-        $("#other-drafts").is(":visible")
+        $("#other-drafts").css("display") !== "none"
     ) {
-        return $("#other-drafts").children(".overlay-message-row:visible").first();
+        return $("#other-drafts").children(".overlay-message-row").first();
     }
     return $next_row;
 }
@@ -185,33 +182,4 @@ function scroll_to_element($element: JQuery, context: Context): void {
 
 function get_element_by_id(id: string, context: Context): JQuery {
     return $(`.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id)}']`);
-}
-
-export function initialize_restore_overlay_message_tooltip(): void {
-    tippy.default(".message_content.restore-overlay-message", {
-        delay: LONG_HOVER_DELAY,
-        placement: "top",
-        content(reference) {
-            const template_id = $(reference).attr("data-tooltip-template-id");
-            assert(template_id !== undefined);
-            const $template = $(`#${CSS.escape(template_id)}`);
-            return parse_html($template.html());
-        },
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "preventOverflow",
-                    options: {
-                        // Prevent tooltip from overflowing the message list boundary.
-                        // If it overflows, tooltip uses bottom placement.
-                        // If it overflows from both top and bottom, tooltip is placed
-                        // at the top overlapping with message content.
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        boundary: document.querySelector(".overlay-messages-list")!,
-                        altAxis: true,
-                    },
-                },
-            ],
-        },
-    });
 }

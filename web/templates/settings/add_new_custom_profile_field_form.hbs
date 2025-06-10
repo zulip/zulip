@@ -26,11 +26,12 @@
             <input type="text" id="profile_field_hint" class="modal_text_input" name="hint" autocomplete="off" maxlength="80" />
             <div class="alert" id="admin-profile-field-hint-status"></div>
         </div>
-        <div class="input-group" id="profile_field_choices_row">
+        <div class="input-group profile-field-choices-wrapper" id="profile_field_choices_row">
             <label for="profile_field_choices" class="modal-field-label">{{t "Field choices" }}</label>
             <table class="profile_field_choices_table">
                 <tbody id="profile_field_choices" class="profile-field-choices"></tbody>
             </table>
+            <button type="button" class="button white rounded alphabetize-choices-button">{{t "Alphabetize choices" }}</button>
         </div>
         <div class="input-group" id="custom_external_account_url_pattern">
             <label for="custom_field_url_pattern" class="modal-field-label">{{t "URL pattern" }}</label>

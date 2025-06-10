@@ -361,10 +361,7 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                operand = operand
-                    .toString()
-                    .toLowerCase()
-                    .replaceAll(/[\u201C\u201D]/g, '"');
+                operand = operand.toString().replaceAll(/[\u201C\u201D]/g, '"');
                 break;
             default:
                 operand = operand.toString().toLowerCase();
@@ -807,6 +804,12 @@ export class Filter {
                     };
                 }
             }
+            if (canonicalized_operator === "channels" && operand === "public") {
+                return {
+                    type: "plain_text",
+                    content: this.describe_public_channels(term.negated ?? false),
+                };
+            }
             const prefix_for_operator = Filter.operator_to_prefix(
                 canonicalized_operator,
                 term.negated,
@@ -865,6 +868,14 @@ export class Filter {
             };
         });
         return [...parts, ...more_parts];
+    }
+
+    static describe_public_channels(negated: boolean): string {
+        const possible_prefix = negated ? "exclude " : "";
+        if (page_params.is_spectator || current_user.is_guest) {
+            return possible_prefix + "all public channels that you can view";
+        }
+        return possible_prefix + "all public channels";
     }
 
     static search_description_as_html(
@@ -1536,7 +1547,10 @@ export class Filter {
     }
 
     allow_use_first_unread_when_narrowing(): boolean {
-        return this.can_mark_messages_read() || this.has_operator("is");
+        return (
+            this.can_mark_messages_read() ||
+            (this.has_operator("is") && !this.has_operand("is", "starred"))
+        );
     }
 
     contains_only_private_messages(): boolean {

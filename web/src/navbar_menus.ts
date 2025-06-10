@@ -15,13 +15,11 @@ export function is_navbar_menus_displayed(): boolean {
 }
 
 export function any_focused(): boolean {
-    return $(".navbar-item:visible").is(":focus");
+    return $(".navbar-item:focus").length > 0;
 }
 
 export function blur_focused(): void {
-    if (any_focused()) {
-        $(".navbar-item:visible").filter(":focus").trigger("blur");
-    }
+    $(".navbar-item:focus").trigger("blur");
 }
 
 export function handle_keyboard_events(event_name: string): boolean {
@@ -35,7 +33,7 @@ export function handle_keyboard_events(event_name: string): boolean {
         gear_menu.toggle();
         return true;
     }
-    const $current_navbar_menu = $(".navbar-item:visible").filter(".active-navbar-menu, :focus");
+    const $current_navbar_menu = $(".navbar-item.active-navbar-menu, .navbar-item:focus");
     const target_menu = get_target_navbar_menu(event_name, $current_navbar_menu);
 
     if (!target_menu) {
@@ -70,22 +68,13 @@ function get_target_navbar_menu(
     event_name: string,
     $current_navbar_menu: JQuery,
 ): string | undefined {
-    const $visible_navbar_menus = $(".navbar-item:visible");
-    const index = $visible_navbar_menus.index($current_navbar_menu);
-    let $target_navbar_menu;
-
-    if (event_name === "left_arrow" && index === 0) {
-        return undefined;
-    } else if (event_name === "right_arrow" && index === $visible_navbar_menus.length - 1) {
-        return undefined;
-    }
-
-    if (event_name === "left_arrow") {
-        $target_navbar_menu = $visible_navbar_menus.eq(index - 1);
-        return $target_navbar_menu.attr("id");
-    } else if (event_name === "right_arrow") {
-        $target_navbar_menu = $visible_navbar_menus.eq(index + 1);
-        return $target_navbar_menu.attr("id");
+    const $navbar_menus = $(".navbar-item");
+    const index = $navbar_menus.index($current_navbar_menu);
+    if (event_name === "left_arrow" && index !== -1) {
+        return [...$navbar_menus].slice(0, index).findLast((menu) => menu.getClientRects().length)
+            ?.id;
+    } else if (event_name === "right_arrow" && index !== -1) {
+        return [...$navbar_menus].slice(index + 1).find((menu) => menu.getClientRects().length)?.id;
     }
     return undefined;
 }

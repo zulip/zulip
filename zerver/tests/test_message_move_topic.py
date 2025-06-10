@@ -20,11 +20,12 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, messages_for_topic
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
@@ -36,6 +37,7 @@ from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.streams import Stream
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 
 
 class MessageMoveTopicTest(ZulipTestCase):
@@ -1665,22 +1667,6 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
 
-        # Check topic resolved notification message is only unread for participants.
-        assert (
-            UserMessage.objects.filter(
-                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[2].id
-            )
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .count()
-            == 3
-        )
-
-        assert (
-            not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .exists()
-        )
-
         # Now move to a weird state and confirm we get the normal topic moved message.
         weird_topic_name = "✔ ✔✔" + original_topic_name
         result = self.client_patch(
@@ -1737,21 +1723,154 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
         )
 
-        # Check topic unresolved notification message is only unread for participants.
-        assert (
-            UserMessage.objects.filter(
-                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[4].id
-            )
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .count()
-            == 3
+    def test_resolved_topic_notice_auto_read_policy(self) -> None:
+        # Test that resolved and unresolved-topic notices are marked as
+        # read/unread based on the 'resolved_topic_notice_auto_read_policy'
+        # setting for followed and unfollowed topics.
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        do_change_user_setting(
+            aaron,
+            "resolved_topic_notice_auto_read_policy",
+            ResolvedTopicNoticeAutoReadPolicyEnum.always,
+            acting_user=None,
+        )
+        do_change_user_setting(
+            cordelia,
+            "resolved_topic_notice_auto_read_policy",
+            ResolvedTopicNoticeAutoReadPolicyEnum.except_followed,
+            acting_user=None,
+        )
+        do_change_user_setting(
+            hamlet,
+            "resolved_topic_notice_auto_read_policy",
+            ResolvedTopicNoticeAutoReadPolicyEnum.never,
+            acting_user=None,
         )
 
-        assert (
-            not UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
-            .extra(where=[UserMessage.where_unread()])  # noqa: S610
-            .exists()
+        stream = self.make_stream("stream")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(aaron, stream.name)
+        self.subscribe(cordelia, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        followed_topic_name = "followed"
+        msg_id_1 = self.send_stream_message(admin_user, "stream", topic_name=followed_topic_name)
+
+        do_set_user_topic_visibility_policy(
+            aaron,
+            stream,
+            followed_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
+        do_set_user_topic_visibility_policy(
+            cordelia,
+            stream,
+            followed_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            followed_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        resolved_followed_topic_name = RESOLVED_TOPIC_PREFIX + followed_topic_name
+        result_1 = self.resolve_topic_containing_message(
+            admin_user,
+            msg_id_1,
+        )
+        self.assert_json_success(result_1)
+        msg_1 = Message.objects.get(id=msg_id_1)
+        self.assertEqual(resolved_followed_topic_name, msg_1.topic_name())
+
+        messages = get_topic_messages(admin_user, stream, resolved_followed_topic_name)
+        self.assert_length(messages, 2)
+
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(messages[1].id)
+        read_user_ids = self.get_user_ids_for_whom_message_read(messages[1].id)
+
+        # For the resolved-topic notice in a "followed" topic:
+        # - aaron: policy 'always' -> notice is marked as read.
+        # - cordelia: policy 'except_followed' and is following -> notice remains unread.
+        # - hamlet: policy 'never' -> notice is remains unread.
+        # - admin_user: is the one who resolved the topic -> notice is marked as read.
+        self.assertEqual(unread_user_ids, {hamlet.id, cordelia.id})
+        self.assertEqual(read_user_ids, {aaron.id, admin_user.id})
+
+        unfollowed_topic_name = "unfollowed"
+        msg_id_2 = self.send_stream_message(admin_user, "stream", topic_name=unfollowed_topic_name)
+        resolved_unfollowed_topic_name = RESOLVED_TOPIC_PREFIX + unfollowed_topic_name
+        result_2 = self.resolve_topic_containing_message(
+            admin_user,
+            msg_id_2,
+        )
+        self.assert_json_success(result_2)
+        msg_2 = Message.objects.get(id=msg_id_2)
+        self.assertEqual(resolved_unfollowed_topic_name, msg_2.topic_name())
+
+        messages = get_topic_messages(admin_user, stream, resolved_unfollowed_topic_name)
+        self.assert_length(messages, 2)
+
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(messages[1].id)
+        read_user_ids = self.get_user_ids_for_whom_message_read(messages[1].id)
+
+        # For the resolved-topic notice in an "unfollowed" topic:
+        # - aaron: policy 'always' -> notice is marked as read.
+        # - cordelia: policy 'except_followed' but not following -> notice is marked as read.
+        # - hamlet: policy 'never' -> notice remains unread.
+        # - admin_user: is the one who resolved the topic -> notice is marked as read.
+        self.assertEqual(unread_user_ids, {hamlet.id})
+        self.assertEqual(read_user_ids, {aaron.id, cordelia.id, admin_user.id})
+
+        result_3 = self.client_patch(
+            "/json/messages/" + str(msg_id_1),
+            {
+                "topic": followed_topic_name,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result_3)
+        msg_3 = Message.objects.get(id=msg_id_1)
+        self.assertEqual(followed_topic_name, msg_3.topic_name())
+
+        messages = get_topic_messages(admin_user, stream, followed_topic_name)
+        self.assert_length(messages, 3)
+
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(messages[2].id)
+        read_user_ids = self.get_user_ids_for_whom_message_read(messages[2].id)
+
+        # Unresolved-topic notices in a "followed" topic
+        # behave similar to resolved-topic notices.
+        self.assertEqual(unread_user_ids, {hamlet.id, cordelia.id})
+        self.assertEqual(read_user_ids, {aaron.id, admin_user.id})
+
+        result_4 = self.client_patch(
+            "/json/messages/" + str(msg_id_2),
+            {
+                "topic": unfollowed_topic_name,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result_4)
+        msg_4 = Message.objects.get(id=msg_id_2)
+        self.assertEqual(unfollowed_topic_name, msg_4.topic_name())
+
+        messages = get_topic_messages(admin_user, stream, unfollowed_topic_name)
+        self.assert_length(messages, 3)
+
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(messages[2].id)
+        read_user_ids = self.get_user_ids_for_whom_message_read(messages[2].id)
+
+        # Unresolved-topic notices in an "unfollowed" topic
+        # behave similar to resolved-topic notices.
+        self.assertEqual(unread_user_ids, {hamlet.id})
+        self.assertEqual(read_user_ids, {aaron.id, cordelia.id, admin_user.id})
 
     @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
     def test_mark_topic_as_resolved_within_grace_period(self) -> None:
@@ -1865,7 +1984,6 @@ class MessageMoveTopicTest(ZulipTestCase):
         do_delete_messages(admin_user.realm, [message], acting_user=None)
 
         assert stream.recipient_id is not None
-        changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
         resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
         message_edit_request = build_message_edit_request(
             message=message,
@@ -1879,7 +1997,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         maybe_send_resolve_topic_notifications(
             user_profile=admin_user,
             message_edit_request=message_edit_request,
-            changed_messages=changed_messages,
+            users_following_topic=None,
         )
 
         topic_messages = get_topic_messages(admin_user, stream, resolve_topic)

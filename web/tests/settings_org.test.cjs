@@ -22,6 +22,10 @@ mock_esm("../src/buttons", {
     modify_action_button_style: noop,
 });
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
+mock_esm("../src/ui_util", {
+    disable_element_and_add_tooltip: noop,
+    enable_element_and_remove_tooltip: noop,
+});
 set_global("document", "document-stub");
 
 set_global("requestAnimationFrame", (func) => func());
@@ -95,6 +99,7 @@ function createSaveButtons(subsection) {
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
     $stub_save_button_header.set_find_results(".pill-container", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
+    $stub_save_button_header.set_find_results(".save-button", $stub_save_button);
 
     return {
         props,
@@ -713,7 +718,13 @@ test("test combined_code_language_options", ({override}) => {
     }));
 
     const expected_options_without_realm_playgrounds = [
-        {is_setting_disabled: true, unique_id: "", name: $t({defaultMessage: "No language set"})},
+        {
+            is_setting_disabled: true,
+            unique_id: "",
+            name: $t({defaultMessage: "No language set"}),
+            show_disabled_icon: true,
+            show_disabled_option_name: false,
+        },
         ...default_options,
     ];
 
@@ -726,7 +737,13 @@ test("test combined_code_language_options", ({override}) => {
     ]);
 
     const expected_options_with_realm_playgrounds = [
-        {is_setting_disabled: true, unique_id: "", name: $t({defaultMessage: "No language set"})},
+        {
+            is_setting_disabled: true,
+            unique_id: "",
+            name: $t({defaultMessage: "No language set"}),
+            show_disabled_icon: true,
+            show_disabled_option_name: false,
+        },
         {unique_id: "custom_lang_1", name: "custom_lang_1"},
         {unique_id: "custom_lang_2", name: "custom_lang_2"},
         ...default_options,

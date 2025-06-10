@@ -101,6 +101,9 @@
             text-overflow: ellipsis;
             overflow: hidden;
             max-width: var(--width-inbox-search);
+            /* Setting width to 100% ensures the search box takes the full width of its container,
+               preventing overflow issues by making sure it doesn't exceed the available space. */
+            width: 100%;
             height: var(--height-inbox-search);
             /* top/bottom default 1px padding / 14px em */
             /* left padding 30px / 14px em */
@@ -132,16 +135,28 @@
             display: none;
         }
 
+        #inbox-loading-indicator {
+            margin-top: 20px;
+            margin-bottom: var(--max-unmaximized-compose-height);
+
+            .searching-for-more-topics {
+                margin-left: 0;
+            }
+        }
+
         #inbox-list {
             overflow: hidden;
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
-            margin-bottom: var(--max-unmaximized-compose-height);
             /* margin(5) + search left padding(30) + search right padding (28) = 63px at 14px em */
             max-width: calc(
                 var(--width-inbox-search) +
                     var(--width-inbox-filters-dropdown) + 4.5em
             );
+
+            .inbox-channel-topic-list {
+                margin: 0;
+            }
 
             .inbox-focus-border {
                 display: flex;
@@ -191,14 +206,16 @@
                         padding-left: 4px;
                     }
 
-                    &:focus .inbox-header-name-focus-border {
+                    &:focus-visible .inbox-header-name-focus-border {
                         border-color: var(--color-outline-focus);
                     }
                 }
 
                 &:focus {
                     outline: 0;
+                }
 
+                &:focus-visible {
                     .inbox-focus-border {
                         border-color: var(--color-outline-focus);
                     }
@@ -267,7 +284,7 @@
                     background: var(--color-background-inbox-row-hover);
                 }
 
-                &:focus {
+                &:focus-visible {
                     .inbox-focus-border {
                         border: 2px solid var(--color-outline-focus);
                         border-radius: 3px;
@@ -310,7 +327,7 @@
                     border-radius: 3px;
                     margin-left: 3px;
 
-                    &:focus {
+                    &:focus-visible {
                         outline: 2px solid var(--color-outline-focus);
                     }
                 }
@@ -334,7 +351,7 @@
                    size as test scales up. */
                 align-self: stretch;
 
-                &:focus {
+                &:focus-visible {
                     outline: 2px solid var(--color-outline-focus);
                 }
             }
@@ -378,7 +395,7 @@
                 /* Since a direct message row can have span to multiple lines,
                    having an underline focus will not work very well.
                 */
-                .inbox-row:focus {
+                .inbox-row:focus-visible {
                     box-shadow: inset 0 0 0 2px var(--color-outline-focus);
                 }
             }
@@ -463,7 +480,7 @@
                 display: none;
             }
 
-            &:focus {
+            &:focus-visible {
                 box-shadow: 0 0 0 2px var(--color-outline-focus);
             }
 

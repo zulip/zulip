@@ -6,6 +6,7 @@ import {z} from "zod";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
 import render_topic_already_exists_warning_banner from "../templates/modal_banner/topic_already_exists_warning_banner.hbs";
+import render_unsubscribed_participants_warning_banner from "../templates/modal_banner/unsubscribed_participants_warning_banner.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
 
@@ -15,6 +16,7 @@ import * as browser_history from "./browser_history.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
+import {ConversationParticipants} from "./conversation_participants.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
@@ -25,6 +27,9 @@ import type {Message} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
+import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
@@ -36,6 +41,7 @@ import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
+import * as subscriber_api from "./subscriber_api.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
@@ -102,10 +108,14 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         return;
     }
 
-    const stream_hash = hash_util.by_stream_url(stream_id);
+    const stream_hash = hash_util.channel_url_by_user_setting(stream_id);
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
+    const show_go_to_list_of_topics =
+        user_settings.web_channel_default_view !==
+            web_channel_default_view_values.list_of_topics.code &&
+        page_params.development_environment;
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
@@ -113,9 +123,11 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         stream: {
             ...sub_store.get(stream_id),
             url: browser_history.get_full_url(stream_hash),
+            list_of_topics_view_url: hash_util.by_channel_topic_list_url(stream_id),
         },
         has_unread_messages,
         show_go_to_channel_feed,
+        show_go_to_list_of_topics,
     });
 
     popover_menus.toggle_popover_menu(elt, {
@@ -149,6 +161,11 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                     ],
                     {trigger: "stream-popover"},
                 );
+            });
+
+            $popper.on("click", ".stream-popover-go-to-list-of-topics", (e) => {
+                e.stopPropagation();
+                hide_stream_popover(instance);
             });
 
             // Stream settings
@@ -500,6 +517,113 @@ export async function build_move_topic_to_stream_popover(
             is_disabled;
     }
 
+    let curr_selected_stream: number;
+    // Warn if any of current topic participants are NOT subscribed
+    // to the destination stream.
+    async function warn_unsubscribed_participants(destination_stream_id: number): Promise<void> {
+        $("#move_topic_modal .unsubscribed-participants-warning").remove();
+
+        // Do nothing if it's the same stream.
+        if (destination_stream_id === current_stream_id) {
+            return;
+        }
+
+        const locally_cached_conversation_messages = message_util.get_loaded_messages_in_topic(
+            current_stream_id,
+            topic_name,
+        );
+
+        const active_human_participant_ids = new ConversationParticipants(
+            locally_cached_conversation_messages,
+        ).visible();
+
+        const unsubscribed_participant_ids: number[] = [];
+        for (const user_id of active_human_participant_ids) {
+            const is_subscribed = await peer_data.maybe_fetch_is_user_subscribed(
+                destination_stream_id,
+                user_id,
+                false,
+            );
+            if (!is_subscribed) {
+                unsubscribed_participant_ids.push(user_id);
+            }
+        }
+
+        if (destination_stream_id !== curr_selected_stream) {
+            // If user selects another stream after the above await finishes
+            // but before the function finishes, we should NOT show
+            // the banner, as it would belong to the previously selected stream.
+            return;
+        }
+
+        const unsubscribed_participants_count = unsubscribed_participant_ids.length;
+
+        if (unsubscribed_participants_count === 0) {
+            // This is true in the following cases, for all of which we do nothing :
+            // 1- Conversation (topic) has no participants.
+            // 2- All participants are subscribed to the destination stream.
+            return;
+        }
+
+        const participant_names = unsubscribed_participant_ids.map(
+            (user_id) => people.get_user_by_id_assert_valid(user_id).full_name,
+        );
+        const unsubscribed_participant_formatted_names_list =
+            util.format_array_as_list_with_highlighted_elements(
+                participant_names,
+                "long",
+                "conjunction",
+            );
+
+        const destination_stream = stream_data.get_sub_by_id(destination_stream_id)!;
+        const can_subscribe_other_users = stream_data.can_subscribe_others(destination_stream);
+        const few_unsubscribed_participants = unsubscribed_participants_count <= 5;
+
+        const context = {
+            banner_type: compose_banner.WARNING,
+            classname: "unsubscribed-participants-warning",
+            button_text: can_subscribe_other_users
+                ? few_unsubscribed_participants
+                    ? $t({defaultMessage: "Subscribe them"})
+                    : $t({defaultMessage: "Subscribe all of them"})
+                : null,
+            hide_close_button: true,
+            stream: destination_stream,
+            unsubscribed_participant_formatted_names_list,
+            unsubscribed_participants_count,
+            few_unsubscribed_participants,
+        };
+
+        const warning_banner = render_unsubscribed_participants_warning_banner(context);
+        $("#move_topic_modal .simplebar-content").prepend($(warning_banner));
+
+        $(
+            "#move_topic_modal .unsubscribed-participants-warning .main-view-banner-action-button",
+        ).on("click", (event) => {
+            event.preventDefault();
+
+            function success(): void {
+                $(event.target).parents(".main-view-banner").remove();
+            }
+
+            function xhr_failure(xhr: JQuery.jqXHR): void {
+                $(event.target).parents(".main-view-banner").remove();
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed to subscribe participants"}),
+                    xhr,
+                    $("#move_topic_modal #dialog_error"),
+                );
+            }
+
+            subscriber_api.add_user_ids_to_stream(
+                unsubscribed_participant_ids,
+                destination_stream,
+                success,
+                xhr_failure,
+            );
+        });
+    }
+
     function move_topic(): void {
         const params = get_params_from_form();
 
@@ -679,11 +803,13 @@ export async function build_move_topic_to_stream_popover(
 
     function move_topic_on_update(event: JQuery.ClickEvent, dropdown: {hide: () => void}): void {
         stream_widget_value = Number.parseInt($(event.currentTarget).attr("data-unique-id")!, 10);
+        curr_selected_stream = stream_widget_value;
 
         update_submit_button_disabled_state(stream_widget_value);
         set_stream_topic_typeahead();
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
+        void warn_unsubscribed_participants(stream_widget_value);
 
         dropdown.hide();
         event.preventDefault();
@@ -711,7 +837,7 @@ export async function build_move_topic_to_stream_popover(
                 message_id,
             );
         }
-        return message_util.get_messages_in_topic(current_stream_id, topic_name).length;
+        return message_util.get_loaded_messages_in_topic(current_stream_id, topic_name).length;
     }
 
     function update_move_messages_count_text(selected_option: string, message_id?: number): void {
@@ -850,7 +976,7 @@ export async function build_move_topic_to_stream_popover(
         });
 
         if (only_topic_edit) {
-            // Set select_stream_id to current_stream_id since we user is not allowed
+            // Set select_stream_id to current_stream_id since user is not allowed
             // to edit stream in topic-edit only UI.
             const select_stream_id = current_stream_id;
             $topic_input.on("input", () => {
@@ -866,7 +992,7 @@ export async function build_move_topic_to_stream_popover(
 
         stream_widget_value = current_stream_id;
         const streams_list_options = (): dropdown_widget.Option[] =>
-            stream_data.get_options_for_dropdown_widget().filter(({stream}) => {
+            stream_data.get_streams_for_move_messages_widget().filter(({stream}) => {
                 if (stream.stream_id === current_stream_id) {
                     return true;
                 }

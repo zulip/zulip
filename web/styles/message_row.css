@@ -72,7 +72,6 @@
 .messagebox {
     grid-area: messagebox;
     word-wrap: break-word;
-    cursor: pointer;
     border: none;
     /* The left padding value accounts for a 2px
       unread marker, ensuring a uniform 5px of
@@ -982,6 +981,7 @@ of the base style defined for a read-only textarea in dark mode. */
     overflow-x: clip;
     text-overflow: ellipsis;
     padding-right: 5.5px;
+    cursor: pointer;
 }
 
 .fade-in-message {

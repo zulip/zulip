@@ -38,6 +38,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     # to fix everything until we migrate the DB to "topic".
     "zerver/tests/test_message_fetch.py",
     "zerver/tests/test_message_topics.py",
+    # This is actually email subjects
+    "zerver/lib/email_mirror_server.py",
 }
 
 shebang_rules: list["Rule"] = [
@@ -569,6 +571,7 @@ html_rules: list["Rule"] = [
         "description": "`placeholder` value should be translatable.",
         "exclude_line": {
             ("templates/zerver/realm_creation_form.html", 'placeholder="acme"'),
+            ("templates/zerver/slack_import.html", 'placeholder="xoxb-…"'),
         },
         "exclude": {
             "templates/corporate",
@@ -963,6 +966,28 @@ txt_rules = RuleList(
     langs=["txt", "text", "yaml", "yml"],
     rules=whitespace_rules,
 )
+
+svg_rules = RuleList(
+    langs=["svg"],
+    rules=[
+        {
+            "pattern": r"fill=(['\"])(.*?)\1",
+            "description": "System icons ignore fill values, so do not include the fill property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": r"fill-rule=(['\"])(.*?)\1",
+            "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": r"stroke=(['\"])(.*?)\1",
+            "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+    ],
+)
+
 non_py_rules = [
     handlebars_rules,
     jinja2_rules,
@@ -975,4 +1000,5 @@ non_py_rules = [
     txt_rules,
     puppet_rules,
     openapi_rules,
+    svg_rules,
 ]

@@ -62,6 +62,7 @@ from zerver.models import (
     Attachment,
     BotConfigData,
     BotStorageData,
+    ChannelFolder,
     Client,
     CustomProfileField,
     CustomProfileFieldValue,
@@ -71,6 +72,7 @@ from zerver.models import (
     Message,
     MutedUser,
     NamedUserGroup,
+    NavigationView,
     OnboardingStep,
     OnboardingUserMessage,
     Reaction,
@@ -169,6 +171,8 @@ ID_MAP: dict[str, dict[int, int]] = {
     "scheduledmessage": {},
     "onboardingusermessage": {},
     "savedsnippet": {},
+    "channelfolder": {},
+    "navigationview": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -1231,6 +1235,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(UserGroup, data, "usergroup")
     if "zerver_presencesequence" in data:
         update_model_ids(PresenceSequence, data, "presencesequence")
+    if "zerver_channelfolder" in data:
+        update_model_ids(ChannelFolder, data, "channelfolder")
 
     # Now we prepare to import the Realm table
     re_map_foreign_keys(data, "zerver_realm", "moderation_request_channel", related_table="stream")
@@ -1309,12 +1315,33 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         if "zerver_usergroup" not in data:
             system_groups_name_dict = create_system_user_groups_for_realm(realm)
 
+        channel_folder_id_to_creator_id = {}
+        if "zerver_channelfolder" in data:
+            fix_datetime_fields(data, "zerver_channelfolder")
+            re_map_foreign_keys(data, "zerver_channelfolder", "realm", related_table="realm")
+            re_map_foreign_keys(
+                data, "zerver_channelfolder", "creator", related_table="user_profile"
+            )
+
+            # To correctly set .folder attribute for streams, we
+            # would need to create ChannelFolder objects before
+            # creating Stream objects. So we retain the .creator
+            # attribute data in a mapping, so that we can update it
+            # once the UserProfile objects are created.
+            for channel_folder in data["zerver_channelfolder"]:
+                creator_id = channel_folder.pop("creator_id", None)
+                channel_folder_id_to_creator_id[channel_folder["id"]] = creator_id
+
+            bulk_import_model(data, ChannelFolder)
+
         # Email tokens will automatically be randomly generated when the
         # Stream objects are created by Django.
         fix_datetime_fields(data, "zerver_stream")
         re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
 
         re_map_foreign_keys(data, "zerver_stream", "creator", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_stream", "folder", related_table="channelfolder")
+
         # There's a circular dependency between Stream and UserProfile due to
         # the .creator attribute. We untangle it by first remembering the creator_id
         # for all the streams and then removing those fields from the data.
@@ -1336,6 +1363,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # Handle rendering of stream descriptions for import from non-Zulip
         for stream in data["zerver_stream"]:
             stream["rendered_description"] = render_stream_description(stream["description"], realm)
+            stream["name"] = stream["name"][: Stream.MAX_NAME_LENGTH]
         bulk_import_model(data, Stream)
 
         if "zerver_usergroup" not in data:
@@ -1384,6 +1412,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     for stream in streams:
         stream.creator_id = stream_id_to_creator_id[stream.id]
     Stream.objects.bulk_update(streams, ["creator_id"])
+
+    channel_folders = ChannelFolder.objects.filter(id__in=channel_folder_id_to_creator_id.keys())
+    for channel_folder in channel_folders:
+        channel_folder.creator_id = channel_folder_id_to_creator_id[channel_folder.id]
+    ChannelFolder.objects.bulk_update(channel_folders, ["creator_id"])
 
     if "zerver_namedusergroup" in data:
         # UserProfiles have been loaded, so now we're ready to set .creator_id
@@ -1518,6 +1551,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_alertword", "realm", related_table="realm")
         update_model_ids(AlertWord, data, "alertword")
         bulk_import_model(data, AlertWord)
+
+    if "zerver_navigationview" in data:
+        re_map_foreign_keys(data, "zerver_navigationview", "user", related_table="user_profile")
+        update_model_ids(NavigationView, data, "navigationview")
+        bulk_import_model(data, NavigationView)
 
     if "zerver_savedsnippet" in data:
         fix_datetime_fields(data, "zerver_savedsnippet")

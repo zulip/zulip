@@ -1,3 +1,15 @@
+/* We use a custom counter here for Safari to
+   get better control of its counter positioning.
+   Because Safari does not recognize `content`
+   properties on `::marker`, the style here better
+   approximates the same styles set on `::marker`
+   below. */
+@counter-style numbers {
+    system: numeric;
+    symbols: "0" "1" "2" "3" "4" "5" "6" "7" "8" "9";
+    suffix: ".";
+}
+
 .rendered_markdown {
     & p {
         margin: 0 0 var(--markdown-interelement-space-px);
@@ -12,12 +24,62 @@
 
     & ul {
         margin: 0 0 var(--markdown-interelement-space-px) 0;
-        margin-inline-start: 3.5ch;
+        /* Because browsers use inline padding, we set the
+           same property here to offset bullets. */
+        padding-inline-start: 1.1ch;
+        /* By setting Unicode characters of our own, we
+           gain better, cross-browser alignment of bullets. */
+        list-style-type: "•";
+
+        & ul {
+            list-style-type: "◦";
+
+            & ul {
+                list-style-type: "▪︎";
+            }
+        }
+
+        li {
+            /* This aligns bullets to roughly the
+               center of a single-digit counter.
+               11.2px at 16px/1em */
+            padding-inline-start: 0.7em;
+        }
+
+        & li::marker {
+            /* This is an eyeballed value, but it makes the
+               otherwise diminutive markers specified above
+               both larger *and* better vertically centered. */
+            font-size: 1.3em;
+            /* We do not want the line-height for the item text
+               affected by the larger font-size, though. So we
+               zero it out. */
+            line-height: 0;
+        }
     }
 
     & ol {
+        /* For the sake of Safari, we reference the `numbers`
+           counter defined on `@counter-style` above. */
+        list-style: numbers;
+        /* To preserve the `start` attribute on lists that
+           begin with a number other than 1, we update the
+           `counter-reset` in postprocess_content.ts. */
+        counter-reset: count;
         margin: 0 0 var(--markdown-interelement-space-px) 0;
-        margin-inline-start: 3.5ch;
+        /* Because browsers use inline padding, we set the
+           same here to offset the counters. */
+        padding-inline-start: 2.1ch;
+
+        & li {
+            counter-increment: count 1;
+            /* 3.2px at 16px/1em */
+            padding-inline-start: 0.2em;
+        }
+
+        & li::marker {
+            content: counter(count, decimal) ". ";
+        }
     }
 
     /* To avoid cutting off the focus ring on links, we set
@@ -29,29 +91,31 @@
         padding-top: var(--message-box-link-focus-ring-block-padding);
     }
 
-    /* We set margin according to the length of the longest list counter. */
+    /* We set margin according to the length of the longest list counter.
+       The values here keep the counters flush left, just like paragraph
+       text. */
     .counter-length-1 {
-        margin-inline-start: 2.5ch;
+        padding-inline-start: 2.1ch;
     }
 
     .counter-length-2 {
-        margin-inline-start: 3.5ch;
+        padding-inline-start: 3.1ch;
     }
 
     .counter-length-3 {
-        margin-inline-start: 4.5ch;
+        padding-inline-start: 4.1ch;
     }
 
     .counter-length-4 {
-        margin-inline-start: 5.5ch;
+        padding-inline-start: 5.1ch;
     }
 
     .counter-length-5 {
-        margin-inline-start: 6.5ch;
+        padding-inline-start: 6.1ch;
     }
 
     .counter-length-6 {
-        margin-inline-start: 7.5ch;
+        padding-inline-start: 7.1ch;
     }
 
     & hr {
@@ -116,18 +180,18 @@
 
     /* Formatting for blockquotes */
     & blockquote {
-        padding-left: 5px;
-        margin: 0 0 var(--markdown-interelement-space-px) 10px;
-        border-left: 5px solid hsl(0deg 0% 87%);
-    }
-
-    &.rtl blockquote {
-        padding-left: unset;
-        padding-right: 5px;
-        margin-left: unset;
-        margin-right: 10px;
-        border-left: unset;
-        border-right: 5px solid hsl(0deg 0% 87%);
+        /* This keeps the blockquote text block
+           aligned with list-item text blocks.
+           12.4px at 16px/1em */
+        padding: 0;
+        padding-inline-start: 0.775em;
+        /* We want to keep the border roughly centered
+           with bullets and single-digit list markers.
+           3.5px at 16px/1em */
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 0.2188em;
+        border-inline-start: 4px solid
+            var(--color-text-message-blockquote-border);
     }
 
     /* Formatting for Markdown tables */
@@ -434,18 +498,6 @@
         transition: background 0.3s ease;
         background: var(--color-background-image-thumbnail);
 
-        /* Inline videos also take the dinky color, as they
-           currently display a larger clickable area than
-           necessary. */
-        &.message_inline_video,
-        &:has(.dinky-thumbnail, .extreme-aspect-ratio) {
-            background: var(--color-background-image-thumbnail-dinky);
-
-            &:hover {
-                background: var(--color-background-image-thumbnail-dinky-hover);
-            }
-        }
-
         &:hover {
             background: var(--color-background-image-thumbnail-hover);
         }
@@ -470,7 +522,7 @@
                but further care is needed because different layout mechanisms,
                including inline-block, can ignore those dimensions. For that
                reason, we enforce a minimum 4em square for "dinky" images,
-               and a maximum 10em square for all others.
+               and set the scaled-down width on all others via JavaScript.
 
                If there are several images next to each other, we display
                them in a grid format; the same considerations require
@@ -483,34 +535,19 @@
             min-width: 4em;
             min-height: 4em;
 
-            /* Constrain height and width to a 10em box. */
-            max-width: 10em;
+            /* Constrain height to 10em, but otherwise keep
+               the width to the size of the gallery, and
+               therefore the message area. */
             max-height: 10em;
+            max-width: 100%;
 
-            /* Allow height and width to grow as needed... */
+            /* Allow height and width to grow as needed, though
+               note we set the scaled-down `width` property on
+               each image in JavaScript to keep flexbox from
+               collapsing to the min-height and min-width values
+               set above... */
             width: auto;
             height: auto;
-
-            /* But set specific widths based on the image's
-               orientation. */
-            &.landscape-thumbnail {
-                width: 10em;
-
-                /* For dinky thumbnails (those whose dimensions are
-                   less than 10em on both sides), we set a 4em
-                   thumbnail. */
-                &.dinky-thumbnail {
-                    width: 4em;
-                }
-            }
-
-            &.portrait-thumbnail {
-                height: 10em;
-
-                &.dinky-thumbnail {
-                    height: 4em;
-                }
-            }
         }
 
         img.image-loading-placeholder {
@@ -605,15 +642,10 @@
 
     .message_inline_ref {
         margin-bottom: var(--markdown-interelement-space-px);
-        margin-left: 5px;
+        margin-inline-start: 5px;
         height: 50px;
         display: block !important;
         border: none !important;
-    }
-
-    &.rtl .message_inline_ref {
-        margin-left: unset;
-        margin-right: 5px;
     }
 
     .message_inline_image .media-image-element {
@@ -715,7 +747,7 @@
            text works as expected. */
         height: calc(var(--length-message-preview-embeds) + 10px);
         padding: 5px;
-        border-left: 3px solid hsl(0deg 0% 93%);
+        border-inline-start: 3px solid hsl(0deg 0% 93%);
 
         .message_embed_title {
             font-size: 1.2em;
@@ -766,14 +798,6 @@
             grid-area: data-container;
             overflow: hidden;
         }
-    }
-
-    /* Although grid will automatically respond to
-       RTL languages, we still need to manually fix
-       the border here, which is not part of grid. */
-    &.rtl .message_embed {
-        border-left: unset;
-        border-right: 3px solid hsl(0deg 0% 93%);
     }
 
     & a {

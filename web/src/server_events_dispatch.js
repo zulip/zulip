@@ -9,6 +9,7 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_call from "./compose_call.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -21,6 +22,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
+import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -43,6 +45,7 @@ import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload from "./reload.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
@@ -109,6 +112,18 @@ export function dispatch_normal_event(event) {
 
         case "attachment":
             attachments_ui.update_attachments(event);
+            break;
+
+        case "channel_folder":
+            switch (event.op) {
+                case "add": {
+                    channel_folders.add(event.channel_folder);
+                    break;
+                }
+                default:
+                    blueslip.error("Unexpected event type channel_folder/" + event.op);
+                    break;
+            }
             break;
 
         case "custom_profile_fields":
@@ -219,7 +234,7 @@ export function dispatch_normal_event(event) {
                 can_add_custom_emoji_group: settings_emoji.update_custom_emoji_ui,
                 can_add_subscribers_group: noop,
                 can_create_bots_group: settings_bots.update_bot_permissions_ui,
-                can_create_groups: noop,
+                can_create_groups: user_group_edit.update_group_creation_ui,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
                 can_create_web_public_channel_group: noop,
@@ -538,7 +553,7 @@ export function dispatch_normal_event(event) {
                         event.person.user_id,
                     );
 
-                    people.add_active_user(event.person);
+                    people.add_active_user(event.person, "server_events");
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
@@ -843,6 +858,7 @@ export function dispatch_normal_event(event) {
                 "hide_ai_features",
                 "high_contrast_mode",
                 "receives_typing_notifications",
+                "resolved_topic_notice_auto_read_policy",
                 "starred_message_counts",
                 "timezone",
                 "translate_emoticons",
@@ -895,7 +911,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "high_contrast_mode") {
-                $("body").toggleClass("high-contrast");
+                $("body").toggleClass("high-contrast", event.value);
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list_sort.set_filter_out_inactives();
@@ -976,6 +992,21 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_suggest_update_timezone") {
                 $("#automatically_offer_update_time_zone").prop("checked", event.value);
+            }
+            if (event.property === "web_channel_default_view") {
+                // We need to rerender wherever `channel_url_by_user_setting` is used in the DOM.
+                // Left sidebar
+                const force_rerender = true;
+                stream_list.create_initial_sidebar_rows(force_rerender);
+                stream_list.update_streams_sidebar(force_rerender);
+                // Inbox View
+                inbox_ui.complete_rerender();
+                // Recent View
+                recent_view_ui.complete_rerender();
+                // Message feed
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
+                }
             }
             settings_preferences.update_page(event.property);
             break;

@@ -82,19 +82,64 @@ discount](#apply-for-a-paid-plan-discount).
 
 {tab|organization-billing}
 
-{!self-hosted-billing-admin-only.md!}
+!!! warn ""
 
-{!register-server.md!}
+    This feature is only available to organization [owners](/help/user-roles) and billing administrators.
 
-{!self-hosted-log-in.md!}
+1. Your Zulip server administrator should register the server with Zulip's
+   Mobile Push Notification Service, following [these
+   instructions](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html).
+   The Zulip Server 10.0+ installer includes a `--push-notifications` flag that
+   automates this registration process.
+
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
+   the upper right corner of the web or desktop app.
+
+1. Select <i class="zulip-icon zulip-icon-rocket"></i> **Plan management**.
+
+1. *(first-time log in)* Enter the email address you want to use for plan
+   management, and click **Continue**.
+
+1. *(first-time log in)* In your email account, open the email you received
+   (Subject: Confirm email for Zulip plan management), and click **Confirm and
+   log in**.
+
+1. *(first-time log in)* Enter your name, configure your email preferences, and
+   accept the [Terms of Service](https://zulip.com/policies/terms).
+
+1. Verify your information, and click **Continue**.
 
 {tab|server-billing}
 
-{!legacy-log-in-intro.md!}
+!!! tip ""
 
-{!register-server-legacy.md!}
+    A **server administrator** is anyone who sets up and manages your Zulip
+    installation. A **billing administrator** is anyone responsible for managing
+    your Zulip plan.
 
-{!legacy-log-in.md!}
+**Server administrator steps:**
+
+1. Register the server with Zulip's Mobile Push Notification Service, following
+   [these
+   instructions](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html).
+   The Zulip Server 10.0+ installer includes a `--push-notifications` flag that
+   automates this registration process.
+
+1. Go to [https://selfhosting.zulip.com/serverlogin/](https://selfhosting.zulip.com/serverlogin/).
+
+1. Fill out the requested server information, and click **Continue**.
+
+1. Enter the email address of the billing contact for your organization,
+   and click **Confirm email**.
+
+**Billing administrator steps:**
+
+1. In your email account, open the email you received
+   (Subject: Log in to Zulip plan management), and click **Log in**.
+
+1. Verify your information, and click **Continue**. If you are logging in for
+   the first time, you will need to enter your name and accept the [Terms of
+   Service](https://zulip.com/policies/terms).
 
 {end_tabs}
 
@@ -132,7 +177,8 @@ An organization is considered to be a new customer if:
 !!! tip ""
 
     Once you start the trial, you can switch between monthly and annual
-    billing on your organization's billing page.
+    billing on your organization's billing page. You can
+    [cancel](#cancel-paid-plan) any time during your trial to avoid any charges.
 
 {tab|by-invoice}
 

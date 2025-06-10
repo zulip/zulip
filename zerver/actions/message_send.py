@@ -75,6 +75,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
+from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     check_any_user_has_permission_by_role,
@@ -1536,7 +1537,7 @@ def send_pm_if_empty_stream(
                     return
                 arg_dict = {
                     **arg_dict,
-                    "channel_name": f"#**{stream.name}**",
+                    "channel_name": f"{get_stream_link_syntax(stream.id, stream.name)}",
                 }
                 content = _(
                     "Your bot {bot_identity} tried to send a message to "

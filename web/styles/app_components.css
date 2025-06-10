@@ -531,6 +531,17 @@ input.settings_text_input {
     margin: 10px 0;
 }
 
+.demo-organization-add-email-banner {
+    margin-bottom: 10px;
+}
+
+#convert-demo-organization-form,
+#invite-user-form {
+    .banner-action-buttons {
+        padding: 0.085em 0;
+    }
+}
+
 .invite-stream-notice {
     margin-bottom: 20px;
 }
@@ -541,30 +552,7 @@ input.settings_text_input {
 }
 
 .demo-organization-warning {
-    position: relative;
-    display: block;
-    background-color: var(
-        --color-background-settings-demo-organization-warning
-    );
-    border: 1px solid var(--color-border-settings-demo-organization-warning);
-    border-radius: 4px;
-    padding: 10px;
     margin: 10px 0;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--color-text-settings-demo-organization-warning);
-
-    a {
-        text-decoration: none;
-    }
-
-    .convert-demo-organization-button {
-        &:focus {
-            outline: 1px solid
-                var(--color-focus-outline-settings-convert-demo-organization);
-            outline-offset: 0;
-        }
-    }
 }
 
 .user_status_icon_wrapper {
@@ -1070,6 +1058,8 @@ input.settings_text_input {
                 cursor: pointer;
                 color: hsl(357deg 52% 57%);
                 opacity: 0.7;
+                padding: 0;
+                font-size: 1.2em;
 
                 &:hover {
                     opacity: 1;
@@ -1084,6 +1074,10 @@ input.settings_text_input {
             background: transparent;
         }
     }
+}
+
+.delete-selected-drafts-button-container {
+    display: flex;
 }
 
 .dropdown-widget-button {
@@ -1336,7 +1330,8 @@ input.settings_text_input {
         background-color: var(--background-color-active-dropdown-item);
     }
 
-    &:focus {
+    &:focus,
+    &.current_selection {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
     }

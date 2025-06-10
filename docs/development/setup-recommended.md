@@ -28,23 +28,6 @@ Contents:
 - [Specifying a proxy](#specifying-a-proxy)
 - [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
-**If you encounter errors installing the Zulip development
-environment,** check [troubleshooting and common
-errors](#troubleshooting-and-common-errors). If that doesn't help,
-please visit [#provision
-help](https://chat.zulip.org/#narrow/channel/21-provision-help) in the
-[Zulip development community
-server](https://zulip.com/development-community/) for real-time help or
-[file an issue](https://github.com/zulip/zulip/issues).
-
-When reporting your issue, please include the following information:
-
-- host operating system
-- installation method (Vagrant or direct)
-- whether or not you are using a proxy
-- a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/provision.log` on your virtual machine
-
 ### Requirements
 
 Installing the Zulip development environment requires downloading several
@@ -741,9 +724,10 @@ Next, read the following to learn more about developing for Zulip:
 ### Troubleshooting and common errors
 
 Below you'll find a list of common errors and their solutions. Most
-issues are resolved by just provisioning again (by running
-`./tools/provision` (from `/srv/zulip`) inside the Vagrant guest or
-equivalently `vagrant provision` from outside).
+issues are resolved by just provisioning again by running
+`./tools/provision` (from `/srv/zulip`) inside the Vagrant guest (or
+equivalently `vagrant provision` from outside) or by running
+`./tools/provision` in `~/zulip` inside the WSL instance.
 
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
@@ -754,350 +738,81 @@ documented below, there are a few ways to get further help:
 
 When reporting your issue, please include the following information:
 
-- host operating system
-- installation method (Vagrant or direct)
-- whether or not you are using a proxy
-- a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/provision.log` on your virtual machine. If you choose to
-  post just the error output, please include the **beginning of the
-  error output**, not just the last few lines.
+- The host operating system
+- The installation method (e.g., Vagrant or WSL)
+- Whether or not you are using a proxy
+- A copy of Zulip's `vagrant` provisioning logs, available in
+  `/var/log/provision.log` on your virtual machine or
+  `~/zulip/var/log/provision.log` on your WSL instance. If you
+  choose to post just the error output, please include the
+  **beginning of the error output**, not just the last few lines.
 
-The output of `tools/diagnose` run inside the Vagrant guest is also
-usually helpful.
+The output of `tools/diagnose` (run inside the Vagrant guest or
+WSL instance) is also usually helpful.
 
-#### Vagrant guest doesn't show (zulip-server) at start of prompt
+::::{tab-set}
 
-This is caused by provisioning failing to complete successfully. You
-can see the errors in `var/log/provision.log`; it should end with
-something like this:
+:::{tab-item} Windows (WSL)
+:sync: os-windows
 
-```text
-ESC[94mZulip development environment setup succeeded!ESC[0m
+```{include} setup/wsl-troubleshoot.md
+
 ```
 
-The `ESC` stuff are the terminal color codes that make it show as a nice
-blue in the terminal, which unfortunately looks ugly in the logs.
+:::
 
-If you encounter an incomplete `/var/log/provision.log file`, you need to
-update your environment. Re-provision your Vagrant machine; if the problem
-persists, please come chat with us (see instructions above) for help.
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
 
-After you provision successfully, you'll need to exit your `vagrant ssh`
-shell and run `vagrant ssh` again to get the virtualenv setup properly.
+```{include} setup/shared-vagrant-errors.md
 
-#### Vagrant was unable to mount VirtualBox shared folders
-
-For the following error:
-
-```console
-Vagrant was unable to mount VirtualBox shared folders. This is usually
-because the filesystem "vboxsf" is not available. This filesystem is
-made available via the VirtualBox Guest Additions and kernel
-module. Please verify that these guest additions are properly
-installed in the guest. This is not a bug in Vagrant and is usually
-caused by a faulty Vagrant box. For context, the command attempted
-was:
-
- mount -t vboxsf -o uid=1000,gid=1000 keys /keys
 ```
 
-If this error starts happening unexpectedly, then just run:
+```{include} setup/winvm-troubleshoot.md
 
-```console
-$ vagrant halt
-$ vagrant up
 ```
 
-to reboot the guest. After this, you can do `vagrant provision` and
-`vagrant ssh`.
+:::
 
-#### ssl read error
+:::{tab-item} macOS
+:sync: os-mac
 
-If you receive the following error while running `vagrant up`:
+```{include} setup/shared-vagrant-errors.md
 
-```console
-SSL read: error:00000000:lib(0):func(0):reason(0), errno 104
 ```
 
-It means that either your network connection is unstable and/or very
-slow. To resolve it, run `vagrant up` until it works (possibly on a
-better network connection).
+```{include} setup/unix-troubleshoot.md
 
-#### Unmet dependencies error
-
-When running `vagrant up` or `provision`, if you see the following error:
-
-```console
-==> default: E:unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).
 ```
 
-It means that your local apt repository has been corrupted, which can
-usually be resolved by executing the command:
+:::
 
-```console
-$ apt-get -f install
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+```{include} setup/shared-vagrant-errors.md
+
 ```
 
-#### ssh connection closed by remote host
+```{include} setup/unix-troubleshoot.md
 
-On running `vagrant ssh`, if you see the following error:
-
-```console
-ssh_exchange_identification: Connection closed by remote host
 ```
 
-It usually means the Vagrant guest is not running, which is usually
-solved by rebooting the Vagrant guest via `vagrant halt; vagrant up`. See
-[Vagrant was unable to communicate with the guest machine](#vagrant-was-unable-to-communicate-with-the-guest-machine)
-for more details.
+:::
 
-#### os.symlink error
+:::{tab-item} Fedora
+:sync: os-fedora
 
-If you receive the following error while running `vagrant up`:
+```{include} setup/shared-vagrant-errors.md
 
-```console
-==> default: Traceback (most recent call last):
-==> default: File "./emoji_dump.py", line 75, in <module>
-==> default:
-==> default: os.symlink('unicode/{}.png'.format(code_point), 'out/{}.png'.format(name))
-==> default: OSError
-==> default: :
-==> default: [Errno 71] Protocol error
 ```
 
-Then Vagrant was not able to create a symbolic link.
+```{include} setup/unix-troubleshoot.md
 
-First, if you are using Windows, **make sure you have run Git BASH (or
-Cygwin) as an administrator**. By default, only administrators can
-create symbolic links on Windows. Additionally [UAC][windows-uac], a
-Windows feature intended to limit the impact of malware, can prevent
-even administrator accounts from creating symlinks. [Turning off
-UAC][disable-uac] will allow you to create symlinks. You can also try
-some of the solutions mentioned
-[here](https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user).
-
-[windows-uac]: https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
-[disable-uac]: https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8
-
-If you ran Git BASH as administrator but you already had VirtualBox
-running, you might still get this error because VirtualBox is not
-running as administrator. In that case: close the Zulip VM with
-`vagrant halt`; close any other VirtualBox VMs that may be running;
-exit VirtualBox; and try again with `vagrant up --provision` from a
-Git BASH running as administrator.
-
-Second, VirtualBox does not enable symbolic links by default. Vagrant
-starting with version 1.6.0 enables symbolic links for VirtualBox shared
-folder.
-
-You can check to see that this is enabled for your virtual machine with
-`vboxmanage` command.
-
-Get the name of your virtual machine by running `vboxmanage list vms` and
-then print out the custom settings for this virtual machine with
-`vboxmanage getextradata YOURVMNAME enumerate`:
-
-```console
-$ vboxmanage list vms
-"zulip_default_1462498139595_55484" {5a65199d-8afa-4265-b2f6-6b1f162f157d}
-
-$ vboxmanage getextradata zulip_default_1462498139595_55484 enumerate
-Key: VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, Value: 1
-Key: supported, Value: false
 ```
 
-If you see "command not found" when you try to run VBoxManage, you need to
-add the VirtualBox directory to your path. On Windows this is mostly likely
-`C:\Program Files\Oracle\VirtualBox\`.
-
-If `vboxmanage enumerate` prints nothing, or shows a value of 0 for
-VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, then enable
-symbolic links by running this command in Terminal/Git BASH/Cygwin:
-
-```console
-$ vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip 1
-```
-
-The virtual machine needs to be shut down when you run this command.
-
-#### Hyper-V error messages
-
-If you get an error message on Windows about lack of Windows Home
-support for Hyper-V when running `vagrant up`, the problem is that
-Windows is incorrectly attempting to use Hyper-V rather than
-Virtualbox as the virtualization provider. You can fix this by
-explicitly passing the virtualbox provider to `vagrant up`:
-
-```console
-$ vagrant up --provide=virtualbox
-```
-
-#### Connection timeout on `vagrant up`
-
-If you see the following error after running `vagrant up`:
-
-```console
-default: SSH address: 127.0.0.1:2222
-default: SSH username: vagrant
-default: SSH auth method: private key
-default: Error: Connection timeout. Retrying...
-default: Error: Connection timeout. Retrying...
-default: Error: Connection timeout. Retrying...
-```
-
-A likely cause is that hardware virtualization is not enabled for your
-computer. This must be done via your computer's BIOS settings. Look for a
-setting called VT-x (Intel) or (AMD-V).
-
-If this is already enabled in your BIOS, double-check that you are running a
-64-bit operating system.
-
-For further information about troubleshooting Vagrant timeout errors [see
-this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
-
-#### Vagrant was unable to communicate with the guest machine
-
-If you see the following error when you run `vagrant up`:
-
-```console
-Timed out while waiting for the machine to boot. This means that
-Vagrant was unable to communicate with the guest machine within
-the configured ("config.vm.boot_timeout" value) time period.
-
-If you look above, you should be able to see the error(s) that
-Vagrant had when attempting to connect to the machine. These errors
-are usually good hints as to what may be wrong.
-
-If you're using a custom box, make sure that networking is properly
-working and you're able to connect to the machine. It is a common
-problem that networking isn't setup properly in these boxes.
-Verify that authentication configurations are also setup properly,
-as well.
-
-If the box appears to be booting properly, you may want to increase
-the timeout ("config.vm.boot_timeout") value.
-```
-
-This has a range of possible causes, that usually amount to a bug in
-Virtualbox or Vagrant. If you see this error, you usually can fix it
-by rebooting the guest via `vagrant halt; vagrant up`.
-
-#### Vagrant up fails with subprocess.CalledProcessError
-
-The `vagrant up` command basically does the following:
-
-- Downloads an Ubuntu image and starts it using a Vagrant provider.
-- Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
-  `tools/provision`, which has a lot of subcommands that are
-  executed via Python's `subprocess` module. These errors mean that
-  one of those subcommands failed.
-
-To debug such errors, you can log in to the Vagrant guest machine by
-running `vagrant ssh`, which should present you with a standard shell
-prompt. You can debug interactively by using, for example,
-`cd zulip && ./tools/provision`, and then running the individual
-subcommands that failed. Once you've resolved the problem, you can
-rerun `tools/provision` to proceed; the provisioning system is
-designed to recover well from failures.
-
-The Zulip provisioning system is generally highly reliable; the most common
-cause of issues here is a poor network connection (or one where you need a
-proxy to access the Internet and haven't [configured the development
-environment to use it](#specifying-a-proxy).
-
-Once you've provisioned successfully, you'll get output like this:
-
-```console
-Zulip development environment setup succeeded!
-(zulip-server) vagrant@vagrant:/srv/zulip$
-```
-
-If the `(zulip-server)` part is missing, this is because your
-installation failed the first time before the Zulip virtualenv was
-created. You can fix this by just closing the shell and running
-`vagrant ssh` again, or using `source .venv/bin/activate`.
-
-Finally, if you encounter any issues that weren't caused by your
-Internet connection, please report them! We try hard to keep Zulip
-development environment provisioning free of bugs.
-
-##### `pip install` fails during `vagrant up` on Linux
-
-Likely causes are:
-
-1. Networking issues
-2. Insufficient RAM. Check whether you've allotted at least two
-   gigabytes of RAM, which is the minimum Zulip
-   [requires](#requirements). If
-   not, go to your VM settings and increase the RAM, then restart
-   the VM.
-
-#### VBoxManage errors related to VT-x or WHvSetupPartition
-
-```console
-There was an error while executing `VBoxManage`, a CLI used by Vagrant
-for controlling VirtualBox. The command and stderr is shown below.
-
-Command: ["startvm", "8924a681-b4e4-4b7a-96f2-4cb11619f123", "--type", "headless"]
-
-Stderr: VBoxManage.exe: error: (VERR_NEM_MISSING_KERNEL_API).
-VBoxManage.exe: error: VT-x is not available (VERR_VMX_NO_VMX)
-VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
-```
-
-or
-
-```console
-Stderr: VBoxManage.exe: error: Call to WHvSetupPartition failed: ERROR_SUCCESS (Last=0xc000000d/87) (VERR_NEM_VM_CREATE_FAILED)
-VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
-```
-
-First, ensure that hardware virtualization support (VT-x or AMD-V) is
-enabled in your BIOS.
-
-If the error persists, you may have run into an incompatibility
-between VirtualBox and Hyper-V on Windows. To disable Hyper-V, open
-command prompt as administrator, run
-`bcdedit /set hypervisorlaunchtype off`, and reboot. If you need to
-enable it later, run `bcdedit /deletevalue hypervisorlaunchtype`, and
-reboot.
-
-#### OSError: [Errno 26] Text file busy
-
-```console
-default: Traceback (most recent call last):
-…
-default:   File "/srv/zulip-py3-venv/lib/python3.6/shutil.py", line 426, in _rmtree_safe_fd
-default:     os.rmdir(name, dir_fd=topfd)
-default: OSError: [Errno 26] Text file busy: 'baremetrics'
-```
-
-This error is caused by a
-[bug](https://www.virtualbox.org/ticket/19004) in recent versions of
-the VirtualBox Guest Additions for Linux on Windows hosts. You can
-check the running version of VirtualBox Guest Additions with this
-command:
-
-```console
-$ vagrant ssh -- 'sudo modinfo -F version vboxsf'
-```
-
-The bug has not been fixed upstream as of this writing, but you may be
-able to work around it by downgrading VirtualBox Guest Additions to
-5.2.44. To do this, create a `~/.zulip-vagrant-config` file and add
-this line:
-
-```text
-VBOXADD_VERSION 5.2.44
-```
-
-Then run these commands (yes, reload is needed twice):
-
-```console
-$ vagrant plugin install vagrant-vbguest
-$ vagrant reload
-$ vagrant reload --provision
-```
+:::
+::::
 
 ### Specifying an Ubuntu mirror
 

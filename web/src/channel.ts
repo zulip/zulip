@@ -24,11 +24,7 @@ type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
     error?: JQuery.Ajax.ErrorCallback<unknown>;
 };
 
-type PatchRequestData =
-    | {processData: false; data: FormData}
-    | {processData?: true | undefined; data: Record<string, unknown>};
-
-export type AjaxRequestHandler = typeof call | typeof patch;
+export type AjaxRequestHandler = typeof call;
 
 let password_change_in_progress = false;
 export let password_changes = 0;
@@ -195,19 +191,9 @@ export function del(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> |
     return call(args);
 }
 
-export function patch(
-    options: Omit<AjaxRequestHandlerOptions, "data"> & PatchRequestData,
-): JQuery.jqXHR<unknown> | undefined {
-    // Send a PATCH as a POST in order to work around QtWebkit
-    // (Linux/Windows desktop app) not supporting PATCH body.
-    if (options.processData === false) {
-        // If we're submitting a FormData object, we need to add the
-        // method this way
-        options.data.append("method", "PATCH");
-    } else {
-        options.data = {...options.data, method: "PATCH"};
-    }
-    return post(options);
+export function patch(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
+    const args = {type: "PATCH", dataType: "json", ...options};
+    return call(args);
 }
 
 export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {

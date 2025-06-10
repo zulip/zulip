@@ -62,6 +62,10 @@ for queue_name, count in consumers.items():
         target_count = int(
             get_config(config_file, "application_server", "mobile_notification_shards", "1")
         )
+    elif queue_name == "user_activity":
+        target_count = int(
+            get_config(config_file, "application_server", "user_activity_shards", "1")
+        )
     else:
         target_count = int(
             get_config(config_file, "application_server", f"{queue_name}_workers", "1")

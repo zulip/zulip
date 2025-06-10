@@ -394,7 +394,7 @@ export let insert_new_reaction = (
                 message_reactions: [context],
             },
         };
-        const $msg_reaction_section = render_message_reactions(reaction_section_context);
+        const $msg_reaction_section = $(render_message_reactions(reaction_section_context));
         $rows.find(".messagebox-content").append($msg_reaction_section);
     } else {
         const $new_reaction = $(render_message_reaction(context));

@@ -4,12 +4,12 @@ from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from typing import Any, TypedDict
 
+import sentry_sdk
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Exists, F, Max, OuterRef, QuerySet
 from django.db.models.functions import Greatest
 from django.utils.timezone import now as timezone_now
-from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_event_on_commit
@@ -369,12 +369,16 @@ def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> list[Use
     failures = []
     for user_profile in users:
         if user_profile.long_term_idle:
-            try:
-                add_missing_messages(user_profile)
-                users_caught_up.append(user_profile)
-            except Exception:  # nocoverage
-                capture_exception()  # nocoverage
-                failures.append(user_profile)  # nocoverage
+            with sentry_sdk.isolation_scope() as scope:
+                scope.set_user({"id": str(user_profile.id)})
+                try:
+                    add_missing_messages(user_profile)
+                    users_caught_up.append(user_profile)
+                except Exception:  # nocoverage
+                    logger.exception(
+                        "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
+                    )
+                    failures.append(user_profile)
     logger.info("Caught up %d soft-deactivated users", len(users_caught_up))
     if failures:
         logger.error("Failed to catch up %d soft-deactivated users", len(failures))  # nocoverage

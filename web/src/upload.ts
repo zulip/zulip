@@ -1,6 +1,7 @@
-import type {Meta, UppyFile} from "@uppy/core";
+import type {Meta} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
+import {getSafeFileId} from "@uppy/utils/lib/generateFileID";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -19,9 +20,13 @@ import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 
+type ZulipMeta = {
+    zulip_url: string;
+} & Meta;
+
 let drag_drop_img: HTMLElement | null = null;
-let compose_upload_object: Uppy<Meta, TusBody>;
-const upload_objects_by_message_edit_row = new Map<number, Uppy<Meta, TusBody>>();
+let compose_upload_object: Uppy<ZulipMeta, TusBody>;
+const upload_objects_by_message_edit_row = new Map<number, Uppy<ZulipMeta, TusBody>>();
 
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
@@ -32,8 +37,8 @@ export function feature_check(): XMLHttpRequestUpload {
     return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
 }
 
-export function get_translated_status(file: File | UppyFile<Meta, TusBody>): string {
-    const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
+export function get_translated_status(filename: string): string {
+    const status = $t({defaultMessage: "Uploading {filename}…"}, {filename});
     return "[" + status + "]()";
 }
 
@@ -126,7 +131,7 @@ export function edit_config(row: number): Config {
 }
 
 export let hide_upload_banner = (
-    uppy: Uppy<Meta, TusBody>,
+    uppy: Uppy<ZulipMeta, TusBody>,
     config: Config,
     file_id: string,
     delay = 0,
@@ -193,7 +198,7 @@ export function show_error_message(
 }
 
 export let upload_files = (
-    uppy: Uppy<Meta, TusBody>,
+    uppy: Uppy<ZulipMeta, TusBody>,
     config: Config,
     files: File[] | FileList,
 ): void => {
@@ -217,7 +222,7 @@ export let upload_files = (
     // We implement this transition through triggering a click on the
     // toggle button to take advantage of the existing plumbing for
     // handling the compose and edit UIs.
-    if (config.markdown_preview_hide_button().is(":visible")) {
+    if (config.markdown_preview_hide_button().css("display") !== "none") {
         config.markdown_preview_hide_button().trigger("click");
     }
 
@@ -225,7 +230,7 @@ export let upload_files = (
         let file_id;
         try {
             compose_ui.insert_syntax_and_focus(
-                get_translated_status(file),
+                get_translated_status(file.name),
                 config.textarea(),
                 "block",
                 1,
@@ -255,8 +260,8 @@ export let upload_files = (
             true,
         );
         // eslint-disable-next-line @typescript-eslint/no-loop-func
-        config.upload_banner_cancel_button(file_id).one("click", () => {
-            compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+        config.upload_banner_cancel_button(file_id).on("click", () => {
+            compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
             compose_ui.autosize_textarea(config.textarea());
             config.textarea().trigger("focus");
 
@@ -264,7 +269,7 @@ export let upload_files = (
             hide_upload_banner(uppy, config, file_id);
         });
         // eslint-disable-next-line @typescript-eslint/no-loop-func
-        config.upload_banner_hide_button(file_id).one("click", () => {
+        config.upload_banner_hide_button(file_id).on("click", () => {
             hide_upload_banner(uppy, config, file_id);
         });
     }
@@ -335,8 +340,8 @@ const zulip_upload_response_schema = z.object({
     filename: z.string(),
 });
 
-export function setup_upload(config: Config): Uppy<Meta, TusBody> {
-    const uppy = new Uppy<Meta, TusBody>({
+export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
+    const uppy = new Uppy<ZulipMeta, TusBody>({
         debug: false,
         autoProceed: true,
         restrictions: {
@@ -355,7 +360,20 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
             },
             pluralize: (_n) => 0,
         },
-        onBeforeFileAdded: () => true, // Allow duplicate file uploads
+        onBeforeFileAdded(file, files) {
+            const file_id = getSafeFileId(file, uppy.getID());
+
+            if (files[file_id]) {
+                // We have a duplicate file upload on our hands.
+                // Since we don't get a response with a body back from
+                // the server, pull the values that we got the last
+                // time around.
+                file.meta.zulip_url = files[file_id].meta.zulip_url!;
+                file.name = files[file_id].name!;
+            }
+
+            return file;
+        }, // Allow duplicate file uploads
     });
     uppy.use(Tus, {
         // https://uppy.io/docs/tus/#options
@@ -464,25 +482,54 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        let upload_response;
-        try {
-            upload_response = zulip_upload_response_schema.parse(
-                JSON.parse(response.body!.xhr.responseText),
-            );
-        } catch {
-            blueslip.warn("Invalid JSON response from tus server", {
-                body: response.body!.xhr.responseText,
+        if (response.status !== 200) {
+            blueslip.warn("Tus server returned an error, expected a 200 OK response code.", {
+                response,
             });
             return;
         }
-        const filename = upload_response.filename;
-        const url = upload_response.url;
 
-        const filtered_filename = filename.replaceAll("[", "").replaceAll("]", "");
-        const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
+        // We do not receive response text if the file has already
+        // been uploaded. For an existing upload, TUS js client sends
+        // a HEAD request to the TUS server to check `Upload-Offset`
+        // and if some part of the upload is left to be done -- and
+        // when the upload offset is the same as the file length, it
+        // will not send any further requests, meaning we will not
+        // have a response body.  See the beforeUpload hook, above.
+        if (response.body!.xhr.responseText === "") {
+            if (!file.meta.zulip_url) {
+                blueslip.warn("No zulip_url retrieved from previous upload", {file});
+                return;
+            }
+        } else {
+            try {
+                const upload_response = zulip_upload_response_schema.parse(
+                    JSON.parse(response.body!.xhr.responseText),
+                );
+                uppy.setFileState(file.id, {
+                    name: upload_response.filename,
+                });
+                uppy.setFileMeta(file.id, {
+                    zulip_url: upload_response.url,
+                });
+                file = uppy.getFile(file.id);
+            } catch {
+                blueslip.warn("Invalid JSON response from the tus server", {
+                    body: response.body!.xhr.responseText,
+                });
+                return;
+            }
+        }
+
+        const filtered_filename = file.name!.replaceAll("[", "").replaceAll("]", "");
+        const syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
-            get_translated_status(file),
+            // We need to replace the original file name, and not the
+            // possibly modified filename returned in the response by
+            // the server. file.meta.name remains unchanged by us
+            // unlike file.name
+            get_translated_status(file.meta.name),
             syntax_to_insert,
             $text_area,
         );
@@ -543,13 +590,13 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
-        compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
     uppy.on("restriction-failed", (file) => {
         assert(file !== undefined);
-        compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 

@@ -6,10 +6,6 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
-});
-
 const input_pill = mock_esm("../src/input_pill");
 const people = zrequire("people");
 
@@ -207,6 +203,10 @@ run_test("pills", ({override, override_rewire}) => {
 
     user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id]);
+
+    compose_pm_pill.set_from_user_ids([hamlet.user_id]);
+    user_ids = compose_pm_pill.get_user_ids();
+    assert.deepEqual(user_ids, [hamlet.user_id]);
 });
 
 run_test("has_unconverted_data", ({override}) => {

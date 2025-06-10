@@ -21,7 +21,6 @@ mock_esm("../src/buddy_list", {
 const compose_fade_helper = zrequire("compose_fade_helper");
 const activity_ui = zrequire("activity_ui");
 const muted_users = zrequire("muted_users");
-const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
@@ -369,9 +368,14 @@ test("always show me", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
 });
 
-test("always show pm users", ({override_rewire}) => {
+test("always show pm users", () => {
     people.add_active_user(selma);
-    override_rewire(narrow_state, "pm_ids_set", () => new Set([selma.user_id]));
+    message_lists.set_current({
+        data: {
+            filter: new Filter([{operator: "dm", operand: selma.email}]),
+        },
+    });
+
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
 
@@ -410,7 +414,18 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
         me.user_id,
     ]);
 
-    override_rewire(narrow_state, "stream_id", () => stream_id);
+    const filter = new Filter([
+        {operator: "channel", operand: sub.stream_id},
+        {operator: "topic", operand: "Foo"},
+    ]);
+    message_lists.set_current({
+        data: {
+            filter,
+            participants: {
+                visible: () => new Set(),
+            },
+        },
+    });
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [
         me.user_id,
         alice.user_id,
@@ -424,7 +439,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
 });
 
-test("get_conversation_participants", ({override_rewire}) => {
+test("get_conversation_participants", () => {
     people.add_active_user(selma);
 
     const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
@@ -432,7 +447,7 @@ test("get_conversation_participants", ({override_rewire}) => {
     peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
     const filter = new Filter([
-        {operator: "channel", operand: rome_sub.channel_id},
+        {operator: "channel", operand: rome_sub.stream_id},
         {operator: "topic", operand: "Foo"},
     ]);
     message_lists.set_current({
@@ -443,8 +458,6 @@ test("get_conversation_participants", ({override_rewire}) => {
             },
         },
     });
-    override_rewire(narrow_state, "stream_id", () => rome_sub.stream_id);
-    override_rewire(narrow_state, "topic", () => "Foo");
 
     activity_ui.rerender_user_sidebar_participants();
     assert.deepEqual(

@@ -113,6 +113,12 @@ In Zulip 10.0 (feature level 319), added Markdown syntax
 for linking to a specific message in a conversation. Declared the
 `data-stream-id` field to be deprecated as detailed above.
 
+In Zulip 11.0 (feature level 383), clients can decide what
+channel view a.stream channel link elements take you to -- i.e.,
+the href for those is the default behavior of the link that also
+encodes the channel alongside the data-stream-id field, but clients
+can override that default based on `web_channel_default_view` setting.
+
 ## Image previews
 
 When a Zulip message is sent linking to an uploaded image, Zulip will
@@ -234,6 +240,20 @@ assume that `data-original-dimensions` is present. Clients should not
 assume that messages sent prior to the introduction of thumbnailing
 have been re-rendered to use the new format or have thumbnails
 available.
+
+## Video previews
+
+When a Zulip message is sent linking to an uploaded video, Zulip will
+generate a video preview element with the following format.
+
+``` html
+<div class="message_inline_image message_inline_video">
+  <a href="/user_uploads/path/to/video.mp4">
+    <video preload="metadata" src="/user_uploads/path/to/video.mp4">
+    </video>
+  </a>
+</div>
+```
 
 ## Mentions and silent mentions
 

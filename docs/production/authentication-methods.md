@@ -609,7 +609,7 @@ other IdPs (identity providers). You can configure it as follows:
    IdP.
 
 [saml-help-center]: https://zulip.com/help/saml-authentication
-[user-role-help-center]: https://zulip.com/help/roles-and-permissions
+[user-role-help-center]: https://zulip.com/help/user-roles
 
 ### IdP-initiated SSO
 

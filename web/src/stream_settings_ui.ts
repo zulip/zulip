@@ -26,6 +26,7 @@ import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as overlays from "./overlays.ts";
+import {page_params} from "./page_params.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -231,6 +232,11 @@ export function update_is_default_stream(): void {
     }
 }
 
+export function update_channel_folder(sub: StreamSubscription, folder_id: number | null): void {
+    stream_data.update_channel_folder(sub, folder_id);
+    stream_ui_updates.update_channel_folder_dropdown(sub);
+}
+
 export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
@@ -300,7 +306,7 @@ export function add_sub_to_table(sub: StreamSubscription): void {
                 banner_type: compose_banner.SUCCESS,
                 classname: "stream_creation_confirmation",
                 stream_name: sub.name,
-                stream_url: hash_util.by_stream_url(sub.stream_id),
+                stream_url: hash_util.channel_url_by_user_setting(sub.stream_id),
             };
             $("#stream_settings .stream-creation-confirmation-banner").html(
                 render_stream_creation_confirmation_banner(context),
@@ -361,29 +367,33 @@ export function update_settings_for_subscribed(slim_sub: StreamSubscription): vo
     update_empty_left_panel_message();
 }
 
-export function update_settings_for_archived(slim_sub: StreamSubscription): void {
+export function update_settings_for_archived_and_unarchived(slim_sub: StreamSubscription): void {
     if (!overlays.streams_open()) {
         return;
     }
 
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     update_left_panel_row(sub);
+
+    const has_archived_channels = stream_data.get_archived_subs().length > 0;
+    if (has_archived_channels) {
+        $(".stream_settings_filter_container").removeClass("hide_filter");
+    } else {
+        $(".stream_settings_filter_container").addClass("hide_filter");
+        stream_settings_components.set_filter_dropdown_value(
+            stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+        );
+    }
     redraw_left_panel();
-    $(".stream_settings_filter_container").removeClass("hide_filter");
 
     const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
-        const $archive_button = $(".stream_settings_header .deactivate");
-
-        if ($archive_button.length > 0) {
-            $archive_button.remove();
-        }
-
         stream_settings_components.set_right_panel_title(sub);
+        stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
         stream_ui_updates.update_toggler_for_sub(sub);
         stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
         stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
-        stream_ui_updates.update_regular_sub_settings(sub);
+        stream_ui_updates.enable_or_disable_generate_email_button(sub);
     }
 }
 
@@ -860,6 +870,8 @@ function setup_page(callback: () => void): void {
             group_setting_labels: settings_config.all_group_setting_labels.stream,
             realm_has_archived_channels,
             has_billing_access: settings_data.user_has_billing_access(),
+            is_admin: current_user.is_admin,
+            is_development_environment: page_params.development_environment,
         };
 
         const rendered = render_stream_settings_overlay(template_data);
@@ -955,7 +967,7 @@ export function change_state(
     if (section === "new") {
         do_open_create_stream();
         show_right_section();
-        resize.resize_settings_creation_overlay();
+        resize.resize_settings_creation_overlay($("#channels_overlay_container"));
         return;
     }
 
@@ -1033,6 +1045,7 @@ export function launch(
                 }
             }
         }, 0);
+        resize.resize_settings_overlay($("#channels_overlay_container"));
     });
 }
 
@@ -1179,5 +1192,10 @@ export function initialize(): void {
     $("#channels_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#channels_overlay_container .two-pane-settings-header").removeClass("slide-left");
+    });
+
+    $("#channels_overlay_container").on("click", "#preview-stream-button", () => {
+        const stream_id = Number.parseInt($(".stream_settings_header").attr("data-stream-id")!, 10);
+        window.location.href = hash_util.by_stream_url(stream_id);
     });
 }

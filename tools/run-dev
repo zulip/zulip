@@ -18,6 +18,8 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
+from urllib.parse import urlsplit
+
 import aiohttp
 import aiohttp.web_fileresponse
 from aiohttp import hdrs, web
@@ -286,9 +288,16 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
     return response
 
 
-def run_help_center_dev_server() -> "subprocess.Popen[bytes]":
+def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
     return subprocess.Popen(
-        ["/usr/local/bin/corepack", "pnpm", "dev", f"--port={help_center_port}", "--host"],
+        [
+            "/usr/local/bin/corepack",
+            "pnpm",
+            "dev",
+            f"--port={help_center_port}",
+            "--host",
+            f"--allowed-hosts={urlsplit(external_host).hostname}",
+        ],
         cwd="help-beta",
     )
 
@@ -350,22 +359,8 @@ build step and rerun `run-dev`.""")
     )
 
 
-def print_listeners() -> None:
-    # Since we can't import settings from here, we duplicate some
-    # EXTERNAL_HOST logic from dev_settings.py.
-    IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
-    if IS_DEV_DROPLET:
-        # Technically, the `zulip.` is a subdomain of the server, so
-        # this is kinda misleading, but 99% of development is done on
-        # the default/zulip subdomain.
-        default_hostname = "zulip." + os.uname()[1].lower()
-    else:
-        default_hostname = "localhost"
-    external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
-    http_protocol = "https" if options.behind_https_proxy else "http"
-    print(
-        f"\nStarting Zulip on:\n\n\t{CYAN}{http_protocol}://{external_host}/{ENDC}\n\nInternal ports:"
-    )
+def print_listeners(external_host_url: str) -> None:
+    print(f"\nStarting Zulip on:\n\n\t{CYAN}{external_host_url}/{ENDC}\n\nInternal ports:")
     ports = [
         (proxy_port, "Development server proxy (connect here)"),
         (django_port, "Django"),
@@ -414,13 +409,28 @@ children: list["subprocess.Popen[bytes]"] = []
 async def serve() -> None:
     global runner, session
 
+    # Since we can't import settings from here, we duplicate some
+    # EXTERNAL_HOST logic from dev_settings.py.
+    IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
+    if IS_DEV_DROPLET:
+        # Technically, the `zulip.` is a subdomain of the server, so
+        # this is kinda misleading, but 99% of development is done on
+        # the default/zulip subdomain.
+        default_hostname = "zulip." + os.uname()[1].lower()
+    else:
+        default_hostname = "localhost"
+
+    external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
+    http_protocol = "https" if options.behind_https_proxy else "http"
+    external_host_url = f"{http_protocol}://{external_host}"
+
     if options.test:
         do_one_time_webpack_compile()
     else:
         children.append(start_webpack_watcher())
 
     if help_center_dev_server_enabled:
-        children.append(run_help_center_dev_server())
+        children.append(run_help_center_dev_server(external_host_url))
 
     setup_routes(options.help_center, options.help_center_dev_server)
 
@@ -437,7 +447,7 @@ async def serve() -> None:
             print("\n\nERROR: You probably have another server running!!!\n\n")
         raise
 
-    print_listeners()
+    print_listeners(external_host_url)
 
 
 loop = asyncio.new_event_loop()

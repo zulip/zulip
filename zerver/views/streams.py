@@ -11,6 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from pydantic import BaseModel, Field, Json, NonNegativeInt, StringConstraints, model_validator
+from pydantic_partials.sentinels import Missing, MissingType
 
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -32,12 +33,14 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
+    do_change_stream_folder,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
+    do_unarchive_stream,
     get_subscriber_ids,
 )
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
@@ -47,6 +50,7 @@ from zerver.decorator import (
     require_non_guest_user,
     require_realm_admin,
 )
+from zerver.lib.channel_folders import get_channel_folder_by_id
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
@@ -84,6 +88,7 @@ from zerver.lib.topic import (
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
+from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color
 from zerver.lib.types import UserGroupMembersData
@@ -101,7 +106,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import ChannelFolder, Realm, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
 
@@ -268,11 +273,13 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
+    is_archived: Json[bool] | None = None,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
+    folder_id: Json[int | None] | MissingType = Missing,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -347,6 +354,13 @@ def update_stream_backend(
         # public/private status for channels requires content access
         # to the channel.
 
+    if is_private is not None:
+        if is_private and not user_profile.can_create_private_streams():
+            raise JsonableError(_("Insufficient permission"))
+
+        if not is_private and not user_profile.can_create_public_streams():
+            raise JsonableError(_("Insufficient permission"))
+
     # Enforce restrictions on creating web-public streams. Since these
     # checks are only required when changing a stream to be
     # web-public, we don't use an "is not None" check.
@@ -388,6 +402,9 @@ def update_stream_backend(
             stream, user_profile, new_message_retention_days_value
         )
 
+    if is_archived is not None and not is_archived:
+        do_unarchive_stream(stream, stream.name, acting_user=None)
+
     if description is not None:
         if "\n" in description:
             # We don't allow newline characters in stream descriptions.
@@ -402,6 +419,12 @@ def update_stream_backend(
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
+
+    if not isinstance(folder_id, MissingType):
+        folder: ChannelFolder | None = None
+        if folder_id is not None:
+            folder = get_channel_folder_by_id(folder_id, user_profile.realm)
+        do_change_stream_folder(stream, folder, acting_user=user_profile)
 
     nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     request_settings_dict = locals()
@@ -611,6 +634,7 @@ def add_subscriptions_backend(
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
+    folder_id: Json[int] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -655,6 +679,10 @@ def add_subscriptions_backend(
                     UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
                 )
 
+    folder: ChannelFolder | None = None
+    if folder_id is not None:
+        folder = get_channel_folder_by_id(folder_id, realm)
+
     for stream_obj in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -685,6 +713,7 @@ def add_subscriptions_backend(
             "can_remove_subscribers_group"
         ]
         stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
+        stream_dict_copy["folder"] = folder
 
         stream_dicts.append(stream_dict_copy)
 
@@ -855,7 +884,9 @@ def send_messages_for_new_subscribers(
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),
-                new_channels=", ".join(f"#**{s.name}**" for s in created_streams),
+                new_channels=", ".join(
+                    f"{get_stream_link_syntax(s.id, s.name)}" for s in created_streams
+                ),
             )
 
             sender = get_system_bot(

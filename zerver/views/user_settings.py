@@ -14,6 +14,7 @@ from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from pydantic import Json
+from pydantic.functional_validators import AfterValidator
 
 from confirmation.models import (
     Confirmation,
@@ -33,6 +34,7 @@ from zerver.actions.user_settings import (
 from zerver.actions.users import generate_password_reset_url
 from zerver.decorator import human_users_only
 from zerver.lib.avatar import avatar_url
+from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
@@ -48,11 +50,13 @@ from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_par
 from zerver.lib.typed_endpoint_validators import (
     check_int_in_validator,
     check_string_in_validator,
+    parse_enum_from_string_value,
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import EmailChangeStatus, UserProfile
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
@@ -61,7 +65,6 @@ AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in thi
 
 def validate_email_change_request(user_profile: UserProfile, new_email: str) -> None:
     if not user_profile.is_active:
-        # TODO: Make this into a user-facing error, not JSON
         raise UserDeactivatedError
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
@@ -110,8 +113,16 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
         if user_profile.realm.deactivated:
             return redirect_to_deactivation_notice()
-
-        validate_email_change_request(user_profile, new_email)
+        try:
+            validate_email_change_request(user_profile, new_email)
+        except UserDeactivatedError:
+            context = {"realm_url": user_profile.realm.url}
+            return render(
+                request,
+                "zerver/portico_error_pages/user_deactivated.html",
+                context=context,
+                status=401,
+            )
         do_change_user_delivery_email(user_profile, new_email, acting_user=user_profile)
 
     user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)
@@ -125,6 +136,9 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
             user_profile.realm.demo_organization_scheduled_deletion_date is not None
             and user_profile.is_realm_owner
         )
+        # Schedule onboarding emails for demo organization owner now that we have an
+        # email address for their account.
+        enqueue_welcome_emails(user_profile, demo_organization_creator=True)
         # Because demo organizations are created without setting an email and password
         # we want to redirect to setting a password after configuring and confirming
         # an email for the owner's account.
@@ -300,6 +314,16 @@ def json_change_settings(
     web_navigate_to_sent_message: Json[bool] | None = None,
     web_suggest_update_timezone: Json[bool] | None = None,
     hide_ai_features: Json[bool] | None = None,
+    resolved_topic_notice_auto_read_policy: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "resolved_topic_notice_auto_read_policy",
+                ResolvedTopicNoticeAutoReadPolicyEnum,
+            )
+        ),
+    ] = None,
 ) -> HttpResponse:
     # UserProfile object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a

@@ -279,7 +279,7 @@ export function initialize(): void {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id")!, 10);
         if (stream_id) {
-            browser_history.go_to_location(hash_util.by_stream_url(stream_id));
+            browser_history.go_to_location(hash_util.channel_url_by_user_setting(stream_id));
             return;
         }
         window.location.href = this.href;
@@ -436,6 +436,8 @@ export function initialize(): void {
             }
             e.preventDefault();
             const row_id = get_row_id_for_narrowing(this);
+            // TODO: Navigate user according to `web_channel_default_view` setting.
+            // Also, update the tooltip hotkey in recipient bar.
             message_view.narrow_by_recipient(row_id, {trigger: "message header"});
         },
     );

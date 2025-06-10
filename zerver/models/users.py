@@ -1,4 +1,5 @@
 from email.headerregistry import Address
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
 
@@ -33,6 +34,13 @@ from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
 
 if TYPE_CHECKING:
     from zerver.models import Realm
+
+
+class ResolvedTopicNoticeAutoReadPolicyEnum(Enum):
+    # The case is used by Pydantic in the API
+    always = 1
+    except_followed = 2
+    never = 3
 
 
 class UserBaseSettings(models.Model):
@@ -125,9 +133,11 @@ class UserBaseSettings(models.Model):
 
     WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC = 1
     WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED = 2
+    WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST = 3
 
     WEB_CHANNEL_DEFAULT_VIEW_CHOICES = [
         WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+        WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST,
         WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED,
     ]
 
@@ -261,6 +271,12 @@ class UserBaseSettings(models.Model):
     )
     automatically_follow_topics_where_mentioned = models.BooleanField(default=True)
 
+    resolved_topic_notice_auto_read_policy = models.PositiveSmallIntegerField(
+        default=ResolvedTopicNoticeAutoReadPolicyEnum.except_followed.value,
+        db_default=ResolvedTopicNoticeAutoReadPolicyEnum.except_followed.value,
+    )
+    RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES = list(ResolvedTopicNoticeAutoReadPolicyEnum)
+
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
@@ -362,6 +378,7 @@ class UserBaseSettings(models.Model):
         web_navigate_to_sent_message=bool,
         web_suggest_update_timezone=bool,
         hide_ai_features=bool,
+        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
     )
 
     modern_notification_settings = dict(
@@ -1095,6 +1112,36 @@ def get_realm_user_dicts(realm_id: int) -> list[RawUserDict]:
     return list(
         UserProfile.objects.filter(
             realm_id=realm_id,
+        ).values(*realm_user_dict_fields)
+    )
+
+
+def get_partial_realm_user_dicts(
+    realm_id: int, user_profile: UserProfile | None
+) -> list[RawUserDict]:
+    """Returns a subset of the users in the realm, guaranteed to
+    include the current user as well as all bots in the realm.
+    """
+
+    # Currently, we send the minimum set of users permitted by the API.
+    user_selection_clause = Q(is_bot=True)
+    if user_profile is not None:
+        user_selection_clause |= Q(id=user_profile.id)
+
+    return list(
+        UserProfile.objects.filter(realm_id=realm_id)
+        .filter(
+            user_selection_clause,
+        )
+        .values(*realm_user_dict_fields)
+    )
+
+
+def get_realm_user_dicts_from_ids(realm_id: int, user_ids: list[int]) -> list[RawUserDict]:
+    return list(
+        UserProfile.objects.filter(
+            realm_id=realm_id,
+            id__in=user_ids,
         ).values(*realm_user_dict_fields)
     )
 

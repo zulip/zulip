@@ -11,15 +11,13 @@
             <div class="left">
                 <div class="list-toggler-container">
                     <div id="add_new_user_group">
-                        {{#if can_create_user_groups}}
-                        <button class="create_user_group_button two-pane-settings-plus-button" {{#if (not zulip_plan_is_not_limited)}}disabled{{/if}}>
+                        <button class="create_user_group_button two-pane-settings-plus-button">
                             <i class="create_button_plus_sign zulip-icon zulip-icon-user-group-plus" aria-hidden="true"></i>
                         </button>
-                        {{/if}}
                         <div class="float-clear"></div>
                     </div>
                 </div>
-                <div class="input-append group_name_search_section" id="group_filter">
+                <div class="input-append group_name_search_section two-pane-settings-search" id="group_filter">
                     <input type="text" name="group_name" id="search_group_name" class="filter_text_input" autocomplete="off"
                       placeholder="{{t 'Filter' }}" value=""/>
                     <button type="button" class="clear_search_button" id="clear_search_group_name">
@@ -33,7 +31,8 @@
                 </div>
                 <div class="no-groups-to-show">
                 </div>
-                <div class="user-groups-list" data-simplebar data-simplebar-tab-index="-1">
+                <div class="user-groups-list-wrapper two-pane-settings-left-simplebar-container" data-simplebar data-simplebar-tab-index="-1">
+                    <div class="user-groups-list"></div>
                 </div>
             </div>
             <div class="right">
@@ -45,15 +44,13 @@
                     <div class="group-info-banner"></div>
                     <div class="create-group-button-container">
                         {{> ../settings/upgrade_tip_widget . }}
-                        <button type="button" class="create_user_group_button animated-purple-button" {{#unless (and can_create_user_groups zulip_plan_is_not_limited)}}disabled{{/unless}}>{{t 'Create user group' }}</button>
-                        {{#unless can_create_user_groups}}
-                        <span class="settings-empty-option-text">
+                        <button type="button" class="create_user_group_button animated-purple-button">{{t 'Create user group' }}</button>
+                        <span class="settings-empty-option-text creation-permission-text">
                             {{t 'You do not have permission to create user groups.' }}
                         </span>
-                        {{/unless}}
                     </div>
                 </div>
-                <div id="user_group_settings" class="settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                <div id="user_group_settings" class="two-pane-settings-right-simplebar-container settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                     {{!-- edit user group here --}}
                 </div>
                 {{> user_group_creation_form . }}

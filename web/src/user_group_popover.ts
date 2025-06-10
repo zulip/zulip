@@ -46,7 +46,7 @@ function get_user_group_popover_items(): JQuery | undefined {
         return undefined;
     }
 
-    return $("li:not(.divider):visible a", $popover);
+    return $("li:not(.divider) a", $popover);
 }
 
 export function handle_keyboard(key: string): void {

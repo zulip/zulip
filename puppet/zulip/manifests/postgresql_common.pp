@@ -61,6 +61,7 @@ class zulip::postgresql_common {
   zulip::safepackage { $postgresql_packages:
     ensure  => installed,
     require => Exec['generate-default-snakeoil'],
+    tag     => ['postgresql_upgrade'],
   }
 
   if $facts['os']['family'] == 'Debian' {

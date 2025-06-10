@@ -130,13 +130,13 @@ export function do_schedule_message(send_at_time) {
 }
 
 function get_send_later_menu_items() {
-    const $current_schedule_popover_elem = $("[data-tippy-root] #send_later_popover");
-    if (!$current_schedule_popover_elem) {
+    const $send_later_options = $("#send_later_options");
+    if ($send_later_options.length === 0) {
         blueslip.error("Trying to get menu items when schedule popover is closed.");
         return undefined;
     }
 
-    return $current_schedule_popover_elem.find("li:not(.divider):visible a");
+    return $send_later_options.find(".send_later_option");
 }
 
 function focus_first_send_later_popover_item() {

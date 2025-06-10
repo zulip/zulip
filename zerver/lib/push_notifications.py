@@ -182,9 +182,13 @@ def get_apns_context() -> APNsContext | None:
         pass  # nocoverage
 
     async def make_apns() -> aioapns.APNs:
+        key: str | None = None
+        if settings.APNS_TOKEN_KEY_FILE:  # nocoverage
+            with open(settings.APNS_TOKEN_KEY_FILE) as f:
+                key = f.read()
         return aioapns.APNs(
             client_cert=settings.APNS_CERT_FILE,
-            key=settings.APNS_TOKEN_KEY_FILE,
+            key=key,
             key_id=settings.APNS_TOKEN_KEY_ID,
             team_id=settings.APNS_TEAM_ID,
             max_connection_attempts=APNS_MAX_RETRIES,

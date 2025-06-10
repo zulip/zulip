@@ -100,7 +100,7 @@ export function show_streamlist_sidebar(): void {
 export function show_left_sidebar(): void {
     if (
         // Check if left column is a overlay and is not visible.
-        $("#streamlist-toggle").is(":visible") &&
+        $("#streamlist-toggle").css("display") !== "none" &&
         !left_sidebar_expanded_as_overlay
     ) {
         popovers.hide_all();

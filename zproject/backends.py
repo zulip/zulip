@@ -100,6 +100,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -954,74 +955,21 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             raise ZulipLDAPError(str(e)) from e
 
     def sync_groups_from_ldap(self, user_profile: UserProfile, ldap_user: _LDAPUser) -> None:
-        """
-        For the groups set up for syncing for the realm in LDAP_SYNCHRONIZED_GROUPS_BY_REALM:
-
-        (1) Makes sure the user has membership in the Zulip UserGroups corresponding
-            to the LDAP groups ldap_user belongs to.
-        (2) Makes sure the user doesn't have membership in the Zulip UserGroups corresponding
-            to the LDAP groups ldap_user doesn't belong to.
-        """
-
         if user_profile.realm.string_id not in settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM:
-            # no groups to sync for this realm
             return
 
-        configured_ldap_group_names_for_sync = set(
+        configured_group_names = set(
             settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
         )
 
         try:
-            ldap_logger.debug("Syncing groups for user: %s", user_profile.id)
-            intended_group_name_set_for_user = set(ldap_user.group_names).intersection(
-                configured_ldap_group_names_for_sync
+            intended_group_names = set(ldap_user.group_names) & configured_group_names
+            sync_groups(
+                all_group_names=configured_group_names,
+                intended_group_names=intended_group_names,
+                user_profile=user_profile,
+                logger=ldap_logger,
             )
-
-            existing_group_name_set_for_user = set(
-                UserGroupMembership.objects.filter(
-                    user_group__realm=user_profile.realm,
-                    user_group__named_user_group__name__in=set(
-                        settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
-                    ),
-                    user_profile=user_profile,
-                ).values_list("user_group__named_user_group__name", flat=True)
-            )
-
-            ldap_logger.debug(
-                "intended groups: %s; zulip groups: %s",
-                repr(intended_group_name_set_for_user),
-                repr(existing_group_name_set_for_user),
-            )
-
-            new_groups = NamedUserGroup.objects.filter(
-                name__in=intended_group_name_set_for_user.difference(
-                    existing_group_name_set_for_user
-                ),
-                realm=user_profile.realm,
-            )
-            if new_groups:
-                ldap_logger.debug(
-                    "add %s to %s", user_profile.id, [group.name for group in new_groups]
-                )
-                bulk_add_members_to_user_groups(new_groups, [user_profile.id], acting_user=None)
-
-            group_names_for_membership_deletion = existing_group_name_set_for_user.difference(
-                intended_group_name_set_for_user
-            )
-            groups_for_membership_deletion = NamedUserGroup.objects.filter(
-                name__in=group_names_for_membership_deletion, realm=user_profile.realm
-            )
-
-            if group_names_for_membership_deletion:
-                ldap_logger.debug(
-                    "removing groups %s from %s",
-                    group_names_for_membership_deletion,
-                    user_profile.id,
-                )
-                bulk_remove_members_from_user_groups(
-                    groups_for_membership_deletion, [user_profile.id], acting_user=None
-                )
-
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
 
@@ -1694,6 +1642,59 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
         realm.url + login_url, urlencode({"is_deactivated": email})
     )
     return HttpResponseRedirect(redirect_url)
+
+
+def sync_groups(
+    all_group_names: set[str],
+    intended_group_names: set[str],
+    user_profile: UserProfile,
+    logger: logging.Logger,
+) -> None:
+    """
+    Ensure that for this user:
+      - They are in every NamedUserGroup named in intended_names.
+      - They are not in any NamedUserGroup in all_group_names minus intended_names.
+    The idea is that intended_group_names is the set of names of groups to which
+    the user should belong, within the universe specified by all_group_names.
+    """
+    for system_group_name in SystemGroups.GROUP_DISPLAY_NAME_MAP:
+        # system groups are not allowed to be synced.
+        assert system_group_name not in all_group_names
+        assert system_group_name not in intended_group_names
+
+    user_id = user_profile.id
+    realm = user_profile.realm
+    logger.debug("Starting group sync for user %s in realm %s", user_id, realm.string_id)
+
+    existing = set(
+        UserGroupMembership.objects.filter(
+            user_group__realm=realm,
+            user_group__named_user_group__name__in=all_group_names,
+            user_group__named_user_group__is_system_group=False,
+            user_profile__id=user_id,
+        ).values_list("user_group__named_user_group__name", flat=True)
+    )
+    logger.debug(
+        "intended groups for user <%s>: %s; current groups: %s",
+        user_id,
+        intended_group_names,
+        existing,
+    )
+
+    to_add = intended_group_names - existing
+    to_remove = existing - intended_group_names
+
+    if to_add:
+        logger.debug("Adding user %s to groups %s", user_id, to_add)
+        add_groups = list(NamedUserGroup.objects.filter(name__in=to_add, realm=realm))
+        bulk_add_members_to_user_groups(add_groups, [user_id], acting_user=None)
+
+    if to_remove:
+        logger.debug("Removing user %s from groups %s", user_id, to_remove)
+        remove_groups = list(NamedUserGroup.objects.filter(name__in=to_remove, realm=realm))
+        bulk_remove_members_from_user_groups(remove_groups, [user_id], acting_user=None)
+
+    logger.debug("Finished group sync for user %s", user_id)
 
 
 def social_auth_sync_user_attributes(

@@ -5,7 +5,6 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_copy_invite_link from "../templates/copy_invite_link.hbs";
-import render_guest_visible_users_message from "../templates/guest_visible_users_message.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
@@ -17,10 +16,12 @@ import * as components from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
+import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
+import * as loading from "./loading.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as settings_components from "./settings_components.ts";
@@ -301,7 +302,7 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
-function update_guest_visible_users_count_and_stream_ids(): void {
+async function update_guest_visible_users_count_and_stream_ids(): Promise<void> {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
@@ -320,13 +321,14 @@ function update_guest_visible_users_count_and_stream_ids(): void {
     const stream_ids = $("#invite_select_default_streams").is(":checked")
         ? stream_data.get_default_stream_ids()
         : stream_pill.get_stream_ids(stream_pill_widget);
-    const visible_users_count = peer_data.get_unique_subscriber_count_for_streams(stream_ids);
 
-    const message_html = render_guest_visible_users_message({
-        user_count: visible_users_count,
-    });
+    $(".guest-visible-users-count").empty();
+    loading.make_indicator($(".guest_visible_users_loading"));
+    $("#guest_visible_users_container").show();
 
-    $("#guest_visible_users_container").html(message_html).show();
+    const visible_users_count = await peer_data.get_unique_subscriber_count_for_streams(stream_ids);
+    $(".guest-visible-users-count").text(visible_users_count);
+    loading.destroy_indicator($(".guest_visible_users_loading"));
 }
 
 function generate_invite_tips_data(): Record<string, boolean> {
@@ -415,12 +417,12 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_streams_container .input, #invite_select_default_streams").on(
             "change",
-            update_guest_visible_users_count_and_stream_ids,
+            () => void update_guest_visible_users_count_and_stream_ids(),
         );
 
         $("#invite_as").on("change", () => {
             update_stream_list();
-            update_guest_visible_users_count_and_stream_ids();
+            void update_guest_visible_users_count_and_stream_ids();
         });
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
@@ -515,6 +517,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 "disabled",
                 true,
             );
+            demo_organizations_ui.show_configure_email_banner();
         }
 
         // Render organization settings tips for non-demo organizations

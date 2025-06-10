@@ -66,10 +66,10 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
         )}']`,
     );
 
-    const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
+    const for_stream_edit_panel = $container.attr("id") === "stream_settings";
     if (for_stream_edit_panel) {
         const stream_id = Number.parseInt(
-            $container.closest(".subscription_settings.show").attr("data-stream-id")!,
+            $container.find(".subscription_settings.show").attr("data-stream-id")!,
             10,
         );
         const sub = sub_store.get(stream_id);
@@ -89,18 +89,18 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
             $web_public_stream_elem.prop("disabled", true);
             return;
         }
-        $web_public_stream_elem.closest(".settings-radio-input-parent").hide();
+        $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", true);
         $container
-            .find(".stream-privacy-values .settings-radio-input-parent:visible")
+            .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
             .last()
             .css("border-bottom", "none");
     } else {
-        if (!$web_public_stream_elem.is(":visible")) {
+        if ($web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden")) {
             $container
-                .find(".stream-privacy-values .settings-radio-input-parent:visible")
+                .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
                 .last()
                 .css("border-bottom", "");
-            $web_public_stream_elem.closest(".settings-radio-input-parent").show();
+            $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", false);
         }
         $web_public_stream_elem.prop(
             "disabled",
@@ -198,9 +198,15 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 
     if (sub.subscribed) {
-        $settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
+        $settings_button
+            .text($t({defaultMessage: "Unsubscribe"}))
+            .removeClass("unsubscribed action-button-quiet-brand")
+            .addClass("action-button-quiet-neutral");
     } else {
-        $settings_button.text($t({defaultMessage: "Subscribe"})).addClass("unsubscribed");
+        $settings_button
+            .text($t({defaultMessage: "Subscribe"}))
+            .addClass("unsubscribed action-button-quiet-brand")
+            .removeClass("action-button-quiet-neutral");
     }
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
@@ -218,6 +224,34 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 }
 
+export function update_settings_button_for_archive_and_unarchive(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    // This is for the Archive/Unarchive button in the right panel.
+    const $archive_button = $(
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
+    );
+    const $unarchive_button = $(
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
+    );
+
+    if (!stream_data.can_administer_channel(sub)) {
+        $archive_button.hide();
+        $unarchive_button.hide();
+        return;
+    }
+
+    if (sub.is_archived) {
+        $archive_button.hide();
+        $unarchive_button.show();
+    } else {
+        $unarchive_button.hide();
+        $archive_button.show();
+    }
+}
+
 export function update_regular_sub_settings(sub: StreamSubscription): void {
     // These are in the right panel.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
@@ -230,6 +264,28 @@ export function update_regular_sub_settings(sub: StreamSubscription): void {
         $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".stream-email-box").hide();
+    }
+}
+
+export function enable_or_disable_generate_email_button(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    const $settings = $(
+        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
+    );
+    const $generate_email_button_container = $settings.find(
+        ".generate-channel-email-button-container",
+    );
+    const $generate_email_button = $generate_email_button_container.find(".copy_email_button");
+
+    if (stream_data.can_access_stream_email(sub)) {
+        $generate_email_button.prop("disabled", false);
+        $generate_email_button_container.removeClass("disabled_setting_tooltip");
+    } else {
+        $generate_email_button.prop("disabled", true);
+        $generate_email_button_container.addClass("disabled_setting_tooltip");
     }
 }
 
@@ -278,13 +334,13 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
+    const $general_settings_container = $stream_settings.find(".stream-permissions");
     $general_settings_container
         .find("input, button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     const $advanced_configurations_container = $stream_settings.find(
-        $("#stream-advanced-configurations"),
+        $(".advanced-configurations-container"),
     );
     $advanced_configurations_container
         .find("input, select, button")
@@ -295,6 +351,10 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     $permission_pill_container_elements
         .find(".input")
         .prop("contenteditable", sub.can_change_stream_permissions_requiring_metadata_access);
+
+    $stream_settings
+        .find(".channel-folder-widget-container button")
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         $general_settings_container.find(".default-stream").addClass("control-label-disabled");
@@ -314,7 +374,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         $advanced_configurations_container,
     );
 
-    update_default_stream_and_stream_privacy_state($stream_settings);
+    update_default_stream_and_stream_privacy_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -325,7 +385,8 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find(".message-retention-setting-custom-input")
         .prop("disabled", disable_message_retention_setting);
 
-    update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
+    update_web_public_stream_privacy_option_state($("#stream_settings"));
+    update_public_stream_privacy_option_state($("#stream_settings"));
 
     if (!sub.can_change_stream_permissions_requiring_content_access) {
         const $stream_privacy_values = $stream_settings
@@ -531,15 +592,13 @@ export function update_stream_privacy_choices(policy: string): void {
     if (!overlays.streams_open()) {
         return;
     }
-    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
-    const stream_creation_form_opened = $("#stream-creation").is(":visible");
 
-    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
+    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
         return;
     }
     let $container = $("#stream-creation");
-    if (stream_edit_panel_opened) {
-        $container = $("#stream_permission_settings");
+    if ($("#stream_settings").css("display") !== "none") {
+        $container = $("#stream_settings");
     }
 
     if (policy === "can_create_private_channel_group") {
@@ -551,4 +610,12 @@ export function update_stream_privacy_choices(policy: string): void {
     if (policy === "can_create_web_public_channel_group") {
         update_web_public_stream_privacy_option_state($container);
     }
+}
+
+export function update_channel_folder_dropdown(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    settings_components.set_channel_folder_dropdown_value(sub);
 }

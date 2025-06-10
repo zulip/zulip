@@ -70,12 +70,26 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         }
     }
 
-    override(bootstrap_typeahead, "Typeahead", (input_element, opts) => {
+    let opts;
+    override(bootstrap_typeahead, "Typeahead", (input_element, opts_) => {
+        opts = opts_;
         assert.equal(input_element.$element, $search_query_box);
         assert.equal(opts.items, 999);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
 
+        return {
+            lookup() {
+                typeahead_forced_open = true;
+            },
+        };
+    });
+
+    search.initialize({
+        on_narrow_search() {},
+    });
+
+    {
         {
             const search_suggestions = {
                 lookup_table: new Map([
@@ -195,13 +209,13 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[3]), expected_value);
 
             /* Test sorter */
@@ -218,6 +232,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                 search_pill.set_search_bar_contents(
                     terms,
                     search.search_pill_widget,
+                    false,
                     $search_query_box.text,
                 );
             };
@@ -259,16 +274,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
             assert.ok(input_pill_displayed);
         }
-        return {
-            lookup() {
-                typeahead_forced_open = true;
-            },
-        };
-    });
-
-    search.initialize({
-        on_narrow_search() {},
-    });
+    }
 
     $search_query_box.text("test string");
 
@@ -310,6 +316,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         search_pill.set_search_bar_contents(
             terms,
             search.search_pill_widget,
+            false,
             $search_query_box.text,
         );
     };
@@ -376,4 +383,33 @@ run_test("initiate_search", ({override_rewire}) => {
     assert.ok(typeahead_forced_open);
     assert.ok(search_bar_opened);
     assert.equal($("#search_query").text(), "");
+});
+
+run_test("set_search_bar_contents with duplicate pills", () => {
+    const duplicate_attachment_terms = [
+        {
+            negated: false,
+            operator: "has",
+            operand: "attachment",
+        },
+        {
+            negated: false,
+            operator: "has",
+            operand: "attachment",
+        },
+    ];
+    search_pill.set_search_bar_contents(
+        duplicate_attachment_terms,
+        search.search_pill_widget,
+        false,
+        noop,
+    );
+    const pills = search.search_pill_widget._get_pills_for_testing();
+    assert.equal(pills.length, 1);
+    assert.deepEqual(pills[0].item, {
+        type: "search",
+        operator: "has",
+        operand: "attachment",
+        negated: false,
+    });
 });

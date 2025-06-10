@@ -203,12 +203,15 @@ export function build_display_recipient(message: LocalMessage): DisplayRecipient
     // recipient.  Note that it's important that use
     // util.extract_pm_recipients, which filters out any spurious
     // ", " at the end of the recipient list
-    const emails = util.extract_pm_recipients(message.private_message_recipient);
+    // `to_user_ids` is set in `compose` and since user sent this
+    // message, it is should be set.
+    assert(message.to_user_ids !== undefined);
+    const user_ids = util.extract_pm_recipients(message.to_user_ids);
 
     let sender_in_display_recipients = false;
-    const display_recipient = emails.map((email) => {
-        email = email.trim();
-        const person = people.get_by_email(email);
+    const display_recipient = user_ids.map((user_id) => {
+        user_id = user_id.trim();
+        const person = people.get_by_user_id(Number(user_id));
         assert(person !== undefined);
 
         if (person.user_id === message.sender_id) {

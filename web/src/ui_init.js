@@ -5,10 +5,10 @@ import assert from "minimalistic-assert";
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
-import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
 import render_try_zulip_modal from "../templates/try_zulip_modal.hbs";
+import render_view_bottom_loading_indicator from "../templates/view_bottom_loading_indicator.hbs";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as activity from "./activity.ts";
@@ -21,6 +21,7 @@ import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
@@ -111,6 +112,7 @@ import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
 import * as server_events from "./server_events.js";
+import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -178,7 +180,7 @@ import * as widgets from "./widgets.js";
    things jumping around slightly when the email address is shown. */
 
 function initialize_bottom_whitespace() {
-    $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
+    $("#bottom_whitespace").html(render_view_bottom_loading_indicator());
 }
 
 function initialize_navbar() {
@@ -397,7 +399,7 @@ function initialize_unread_ui() {
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
-export function initialize_everything(state_data) {
+export async function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -459,7 +461,7 @@ export function initialize_everything(state_data) {
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
-    people.initialize(current_user.user_id, state_data.people);
+    await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
     // The emoji module must be initialized before the right sidebar
@@ -473,6 +475,9 @@ export function initialize_everything(state_data) {
     // module, so that we can tell whether user is member of
     // user_group whose members are allowed to create multiuse invite.
     user_groups.initialize(state_data.user_groups);
+
+    // Channel folders data must be initialized before left sidebar.
+    channel_folders.initialize(state_data.channel_folders);
 
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
@@ -563,6 +568,7 @@ export function initialize_everything(state_data) {
                 {trigger},
             );
         },
+        update_inbox_channel_view: inbox_ui.update_channel_view,
     });
     condense.initialize();
     spoilers.initialize();
@@ -578,6 +584,11 @@ export function initialize_everything(state_data) {
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
+    server_events_state.initialize({
+        ...state_data.server_events_state,
+        assert_get_events_running: server_events.assert_get_events_running,
+        restart_get_events: server_events.restart_get_events,
+    });
     server_events.initialize(state_data.server_events);
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();

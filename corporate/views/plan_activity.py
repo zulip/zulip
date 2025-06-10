@@ -56,7 +56,7 @@ def get_plan_ledger(request: HttpRequest, plan_id: int) -> HttpResponse:
     if plan.invoiced_through is not None:
         header_entries.append(
             ActivityHeaderEntry(
-                name="Entry for last invoice",
+                name="Entry last checked during invoicing",
                 value=str(plan.invoiced_through),
             )
         )

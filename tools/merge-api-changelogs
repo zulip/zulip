@@ -57,6 +57,16 @@ def increment_and_get_feature_level() -> int:
     return new_feature_level
 
 
+def get_current_major_version() -> str | None:
+    changelog_path = Path("api_docs/changelog.md")
+    with open(changelog_path) as file:
+        for line in file:
+            match = re.search(r"## Changes in Zulip (\d+\.\d+)", line)
+            if match:
+                return match.group(1)
+    return None
+
+
 def merge_changelogs(changelogs: str, new_feature_level: int) -> None:
     changelogs_merged = False
     changelog_path = Path("api_docs/changelog.md")
@@ -82,29 +92,36 @@ def merge_changelogs(changelogs: str, new_feature_level: int) -> None:
 def update_feature_level_in_api_docs(new_feature_level: int) -> None:
     changelog_files_list = get_changelog_files_list()
     num_replaces = 0
-    api_docs_path = Path("zerver/openapi/zulip.yaml")
+    current_version = get_current_major_version()
 
-    with open(api_docs_path) as file:
-        lines = file.readlines()
+    # Get all the markdown files in api_docs folder along with zulip.yaml.
+    api_docs_folder = Path("api_docs")
+    api_docs_paths = list(api_docs_folder.glob("*.md"))
+    api_docs_paths.append(Path("zerver/openapi/zulip.yaml"))
 
-    num_replaces = 0
+    for api_docs_path in api_docs_paths:
+        with open(api_docs_path) as file:
+            lines = file.readlines()
 
-    with open(api_docs_path, "w") as file:
-        for line in lines:
-            old_line = line
-            for file_name in changelog_files_list:
-                temporary_feature_level = file_name
-                line = line.replace(temporary_feature_level, str(new_feature_level))
+        num_replaces = 0
 
-            if old_line != line:
-                num_replaces += 1
+        with open(api_docs_path, "w") as file:
+            for line in lines:
+                old_line = line
+                for file_name in changelog_files_list:
+                    temporary_feature_level = file_name[: -len(".md")]
 
-            file.write(line)
+                    pattern = rf"Zulip \d+\.\d+ \(feature level {temporary_feature_level}\)"
+                    replacement = f"Zulip {current_version} (feature level {new_feature_level})"
+                    line = re.sub(pattern, replacement, line)
 
-    if num_replaces:
-        print(f"Updated {api_docs_path}; {num_replaces} replaces were made.")
-    else:
-        print(f"No changes were made to {api_docs_path}; no matching file name found.")
+                if old_line != line:
+                    num_replaces += 1
+
+                file.write(line)
+
+        if num_replaces:
+            print(f"Updated {api_docs_path}; {num_replaces} replaces were made.")
 
 
 def remove_unmerged_changelog_files() -> None:

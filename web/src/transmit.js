@@ -4,7 +4,7 @@ import * as people from "./people.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
-import * as server_events from "./server_events.js";
+import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 
@@ -48,7 +48,7 @@ export function send_message(request, on_success, error) {
                             `Restarting get_events due to delayed receipt of sent message ${request.local_id}`,
                         );
 
-                        server_events.restart_get_events();
+                        server_events_state.restart_get_events();
                     }, 5000);
                 }
             },
@@ -101,7 +101,7 @@ export function reply_message(opts) {
 
     const reply = {
         sender_id: current_user.user_id,
-        queue_id: server_events.queue_id,
+        queue_id: server_events_state.queue_id,
         local_id,
     };
 

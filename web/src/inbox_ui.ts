@@ -15,19 +15,29 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import type {Filter} from "./filter";
 import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
-import {is_visible, set_visible} from "./inbox_util.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as list_widget from "./list_widget.ts";
+import * as loading from "./loading.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
+import * as pm_list from "./pm_list.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_list from "./stream_list.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
+import {TopicListWidget} from "./topic_list.ts";
+import * as topic_list_data from "./topic_list_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
@@ -150,6 +160,7 @@ let topics_dict = new Map<string, Map<string, TopicContext>>();
 let streams_dict = new Map<string, StreamContext>();
 let update_triggered_by_user = false;
 let filters_dropdown_widget;
+let channel_view_topic_widget: InboxTopicListWidget | undefined;
 
 const COLUMNS = {
     COLLAPSE_BUTTON: 0,
@@ -158,8 +169,23 @@ const COLUMNS = {
     TOPIC_VISIBILITY: 3,
     ACTION_MENU: 4,
 };
-let col_focus = COLUMNS.COLLAPSE_BUTTON;
-let row_focus = 0;
+
+const DEFAULT_ROW_FOCUS = 0;
+const DEFAULT_COL_FOCUS = COLUMNS.COLLAPSE_BUTTON;
+
+const channel_view_navigation_state = {
+    channel_id: -1,
+    col_focus: DEFAULT_COL_FOCUS,
+    row_focus: DEFAULT_ROW_FOCUS,
+};
+
+const inbox_view_navigation_state = {
+    col_focus: DEFAULT_COL_FOCUS,
+    row_focus: DEFAULT_ROW_FOCUS,
+};
+
+let col_focus = DEFAULT_COL_FOCUS;
+let row_focus = DEFAULT_ROW_FOCUS;
 
 let hide_other_views_callback: (() => void) | undefined;
 
@@ -190,23 +216,102 @@ function save_data_to_ls(): void {
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
 
-export function show(): void {
+function save_channel_view_navigation_state(): void {
+    channel_view_navigation_state.col_focus = col_focus;
+    channel_view_navigation_state.row_focus = row_focus;
+    channel_view_navigation_state.channel_id = inbox_util.get_channel_id();
+}
+
+function save_inbox_view_navigation_state(): void {
+    inbox_view_navigation_state.col_focus = col_focus;
+    inbox_view_navigation_state.row_focus = row_focus;
+}
+
+function restore_channel_view_navigation_state(): void {
+    if (channel_view_navigation_state.channel_id === inbox_util.get_channel_id()) {
+        col_focus = channel_view_navigation_state.col_focus;
+        row_focus = channel_view_navigation_state.row_focus;
+        return;
+    }
+
+    // Restore default state if channel_id doesn't match.
+    col_focus = DEFAULT_COL_FOCUS;
+    row_focus = DEFAULT_ROW_FOCUS;
+}
+
+function restore_inbox_view_navigation_state(): void {
+    col_focus = inbox_view_navigation_state.col_focus;
+    row_focus = inbox_view_navigation_state.row_focus;
+}
+
+export function show(filter?: Filter): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
     // Avoid setting col_focus to recipient when moving to inbox from other narrows.
     // We prefer to focus entire row instead of stream name for inbox-header.
     // Since inbox-row doesn't has a collapse button, focus on COLUMNS.COLLAPSE_BUTTON
     // is same as focus on COLUMNS.RECIPIENT. See `set_list_focus` for details.
-    if (col_focus === COLUMNS.RECIPIENT) {
+    if (!inbox_util.is_visible() && col_focus === COLUMNS.RECIPIENT) {
         col_focus = COLUMNS.COLLAPSE_BUTTON;
     }
 
+    // Check if we are already narrowed to the same channel view.
+    const was_inbox_channel_view = inbox_util.is_channel_view();
+    const is_new_filter_channel_view = filter?.is_channel_view();
+    if (was_inbox_channel_view && is_new_filter_channel_view) {
+        assert(filter !== undefined);
+        const filter_channel_id_string = filter.operands("channel")[0];
+        assert(filter_channel_id_string !== undefined);
+        const filter_channel_id = Number.parseInt(filter_channel_id_string, 10);
+
+        if (inbox_util.get_channel_id() === filter_channel_id) {
+            // We expect `update` to handle any live updates such that we don't need
+            // do anything here if view for the same channel is visible.
+            return;
+        }
+    } else if (!was_inbox_channel_view && is_new_filter_channel_view) {
+        save_inbox_view_navigation_state();
+    }
+
+    if (was_inbox_channel_view) {
+        save_channel_view_navigation_state();
+    }
+
+    // Before we set the filter, we need to check if the inbox view is already visible.
+    const normal_inbox_view_is_visible = inbox_util.is_visible() && !was_inbox_channel_view;
+
+    inbox_util.set_filter(filter);
+    if (inbox_util.is_channel_view()) {
+        restore_channel_view_navigation_state();
+        views_util.show({
+            highlight_view_in_left_sidebar() {
+                assert(filter !== undefined);
+                left_sidebar_navigation_area.handle_narrow_activated(filter);
+                stream_list.handle_narrow_activated(filter, false, false);
+                pm_list.handle_narrow_activated(filter);
+            },
+            $view: $("#inbox-view"),
+            update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+            // We already did a check above for that.
+            is_visible: () => false,
+            set_visible: inbox_util.set_visible,
+            complete_rerender,
+            is_recent_view: false,
+        });
+        return;
+    }
+
+    restore_inbox_view_navigation_state();
     views_util.show({
-        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
+        highlight_view_in_left_sidebar() {
+            views_util.handle_message_view_deactivated(
+                left_sidebar_navigation_area.highlight_inbox_view,
+            );
+        },
         $view: $("#inbox-view"),
         update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
-        is_visible,
-        set_visible,
+        is_visible: () => normal_inbox_view_is_visible,
+        set_visible: inbox_util.set_visible,
         complete_rerender,
     });
 
@@ -235,13 +340,15 @@ export function show(): void {
 }
 
 export function hide(): void {
-    if (!is_visible()) {
+    if (!inbox_util.is_visible()) {
         return;
     }
     views_util.hide({
         $view: $("#inbox-view"),
-        set_visible,
+        set_visible: inbox_util.set_visible,
     });
+
+    inbox_util.set_filter(undefined);
 }
 
 function get_topic_key(stream_id: number, topic: string): string {
@@ -319,7 +426,7 @@ function format_dm(
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with: util.format_array_as_list_with_conjuction(rendered_dm_with, "long"),
+        rendered_dm_with: util.format_array_as_list_with_conjunction(rendered_dm_with, "long"),
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
@@ -401,7 +508,7 @@ function format_stream(stream_id: number): StreamContext {
         is_muted: stream_info.is_muted,
         stream_color: stream_color.get_stream_privacy_icon_color(stream_info.color),
         stream_header_color: stream_color.get_recipient_bar_color(stream_info.color),
-        stream_url: hash_util.by_stream_url(stream_id),
+        stream_url: hash_util.channel_url_by_user_setting(stream_id),
         stream_id,
         // Will be displayed if any topic is visible.
         is_hidden: true,
@@ -461,8 +568,9 @@ function format_topic(
     topic: string,
     topic_unread_count: number,
     latest_msg_id: number,
+    is_channel_view = false,
 ): TopicContext {
-    const context = {
+    const common_context = {
         is_topic: true,
         stream_id,
         stream_archived,
@@ -472,10 +580,8 @@ function format_topic(
         unread_count: topic_unread_count,
         conversation_key: get_topic_key(stream_id, topic),
         topic_url: hash_util.by_channel_topic_permalink(stream_id, topic),
-        is_hidden: filter_should_hide_stream_row({stream_id, topic}),
-        is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
-        mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
         latest_msg_id,
+        mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
         // The 'all_visibility_policies' field is not specific to this context,
         // but this is the easiest way we've figured out for passing the data
         // to the template rendering.
@@ -484,7 +590,24 @@ function format_topic(
         column_indexes: COLUMNS,
     };
 
-    return context;
+    if (is_channel_view) {
+        return {
+            ...common_context,
+            // We use TopicListWidget to check which topics to show so
+            // that `update` works correctly. So we're not using the
+            // inbox_ui filtering/hiding logic here.
+            is_hidden: false,
+            // Inbox view setting for collapsed containers is not
+            // relevant in the single-channel view.
+            is_collapsed: false,
+        };
+    }
+
+    return {
+        ...common_context,
+        is_hidden: filter_should_hide_stream_row({stream_id, topic}),
+        is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
+    };
 }
 
 function insert_stream(
@@ -707,23 +830,184 @@ function filter_click_handler(
     update();
 }
 
+export function update_channel_view(channel_id: number): void {
+    if (
+        inbox_util.is_visible() &&
+        inbox_util.is_channel_view() &&
+        inbox_util.get_channel_id() === channel_id
+    ) {
+        channel_view_topic_widget?.build();
+    }
+}
+
+function show_empty_inbox_channel_view_text(is_empty: boolean): void {
+    if (is_empty) {
+        $("#inbox-list").css("border-width", "0");
+        if (search_keyword) {
+            $("#inbox-empty-channel-view-with-search").show();
+            $("#inbox-empty-channel-view-without-search").hide();
+        } else {
+            $("#inbox-empty-channel-view-with-search").hide();
+            $("#inbox-empty-channel-view-without-search").show();
+        }
+    } else {
+        $("#inbox-empty-channel-view-with-search").hide();
+        $("#inbox-empty-channel-view-without-search").hide();
+        $("#inbox-list").css("border-width", "1px");
+    }
+}
+
+function get_min_load_count(already_rendered_count: number, load_count: number): number {
+    // Height of inbox row is ~28px at 16px = 1.75rem and we want this render to fill the entire view height.
+    const view_height = message_viewport.height();
+    const row_height = 1.75 * user_settings.web_font_size_px;
+    const extra_rows_for_viewing_pleasure = view_height / row_height;
+    const ideal_rendered_rows_count = row_focus + extra_rows_for_viewing_pleasure;
+    if (ideal_rendered_rows_count > already_rendered_count + load_count) {
+        return ideal_rendered_rows_count - already_rendered_count;
+    }
+    return load_count;
+}
+
+function show_channel_view_loading_indicator(): void {
+    $("#inbox-loading-indicator .bottom-messages-logo").show();
+    loading.make_indicator($("#inbox-loading-indicator #loading_more_indicator"), {
+        abs_positioned: true,
+    });
+}
+
+function hide_channel_view_loading_indicator(): void {
+    $("#inbox-loading-indicator .bottom-messages-logo").hide();
+    loading.destroy_indicator($("#inbox-loading-indicator #loading_more_indicator"));
+}
+
+class InboxTopicListWidget extends TopicListWidget {
+    override topic_list_class_name = "inbox-channel-topic-list";
+    topics_widget?: list_widget.ListWidget<topic_list_data.TopicInfo>;
+
+    override build(): this {
+        // Hide any existing loading indicators.
+        hide_channel_view_loading_indicator();
+        const is_zoomed = true;
+        const $container = $("#inbox-list");
+        const list_info = topic_list_data.get_list_info(
+            this.my_stream_id,
+            is_zoomed,
+            this.filter_topics,
+        );
+
+        const all_topics = list_info.items;
+        this.topics_widget = list_widget.create($container, all_topics, {
+            name: "inbox-channel-topics-list",
+            get_item: list_widget.default_get_item,
+            $parent_container: $("#inbox-view"),
+            modifier_html(item) {
+                const topic_context = format_topic(
+                    item.stream_id,
+                    false,
+                    item.topic_name,
+                    item.unread,
+                    -1,
+                    true,
+                );
+                return render_inbox_row(topic_context);
+            },
+            $simplebar_container: $("html"),
+            is_scroll_position_for_render: views_util.is_scroll_position_for_render,
+            get_min_load_count,
+        });
+
+        if (!stream_topic_history.is_complete_for_stream_id(this.my_stream_id)) {
+            show_channel_view_loading_indicator();
+            stream_topic_history_util.get_server_history(this.my_stream_id, () => {
+                if (channel_view_topic_widget?.get_stream_id() !== this.my_stream_id) {
+                    return;
+                }
+
+                channel_view_topic_widget.build();
+            });
+        } else {
+            show_empty_inbox_channel_view_text(this.is_empty());
+        }
+        setTimeout(() => {
+            revive_current_focus();
+        }, 0);
+        return this;
+    }
+
+    override is_empty(): boolean {
+        if (this.topics_widget === undefined) {
+            return true;
+        }
+        return this.topics_widget.get_current_list().length === 0;
+    }
+}
+
+function filter_topics_in_channel(channel_id: number, topics: string[]): string[] {
+    return topics.filter((topic) => !filter_should_hide_stream_row({stream_id: channel_id, topic}));
+}
+
+function render_channel_view(channel_id: number): void {
+    $("#inbox-pane").html(
+        render_inbox_view({
+            normal_view: false,
+            search_val: search_keyword,
+            INBOX_SEARCH_ID,
+        }),
+    );
+    // Hide any empty inbox text by default.
+    show_empty_inbox_text(true);
+    channel_view_topic_widget = new InboxTopicListWidget(
+        $("#inbox-list"),
+        channel_id,
+        (topic_names: string[]) => filter_topics_in_channel(channel_id, topic_names),
+    );
+    channel_view_topic_widget.build();
+}
+
 export function complete_rerender(): void {
-    if (!is_visible()) {
+    if (!inbox_util.is_visible()) {
         return;
     }
     load_data_from_ls();
-    const {has_visible_unreads, ...additional_context} = reset_data();
-    $("#inbox-pane").html(
-        render_inbox_view({
-            search_val: search_keyword,
-            INBOX_SEARCH_ID,
-            dms_dict,
-            topics_dict,
-            streams_dict,
-            ...additional_context,
-        }),
-    );
-    show_empty_inbox_text(has_visible_unreads);
+
+    if (inbox_util.is_channel_view()) {
+        const channel_id = inbox_util.get_channel_id();
+        assert(channel_id !== undefined);
+
+        if (channel_view_topic_widget?.get_stream_id() === channel_id) {
+            channel_view_topic_widget.build();
+        } else {
+            // Show unknown channel message if we don't have data for channel.
+            if (!stream_data.get_sub_by_id(channel_id)) {
+                $("#inbox-pane").html(
+                    render_inbox_view({
+                        unknown_channel: true,
+                    }),
+                );
+                return;
+            }
+
+            render_channel_view(channel_id);
+        }
+    } else {
+        channel_view_topic_widget = undefined;
+        const {has_visible_unreads, ...additional_context} = reset_data();
+        $("#inbox-pane").html(
+            render_inbox_view({
+                normal_view: true,
+                search_val: search_keyword,
+                INBOX_SEARCH_ID,
+                dms_dict,
+                topics_dict,
+                streams_dict,
+                ...additional_context,
+            }),
+        );
+        show_empty_inbox_channel_view_text(false);
+        show_empty_inbox_text(has_visible_unreads);
+    }
+
     // If the focus is not on the inbox rows, the inbox view scrolls
     // down when moving from other views to the inbox view. To avoid
     // this, we scroll to top before restoring focus via revive_current_focus.
@@ -1286,7 +1570,12 @@ export function change_focused_element(input_key: string): boolean {
 }
 
 export function update(): void {
-    if (!is_visible()) {
+    if (!inbox_util.is_visible()) {
+        return;
+    }
+
+    if (inbox_util.is_channel_view()) {
+        channel_view_topic_widget?.build();
         return;
     }
 
@@ -1484,7 +1773,7 @@ function center_focus_if_offscreen(): void {
 function move_focus_to_visible_area(): void {
     // Focus on the row below inbox filters if the focused
     // row is not visible.
-    if (!is_visible() || !is_list_focused()) {
+    if (!inbox_util.is_visible() || !is_list_focused()) {
         return;
     }
 
@@ -1536,7 +1825,7 @@ function move_focus_to_visible_area(): void {
 }
 
 export function is_in_focus(): boolean {
-    return is_visible() && views_util.is_in_focus();
+    return inbox_util.is_visible() && views_util.is_in_focus();
 }
 
 export function initialize({hide_other_views}: {hide_other_views: () => void}): void {
@@ -1677,7 +1966,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
     });
 
     $(document).on("compose_canceled.zulip", () => {
-        if (is_visible()) {
+        if (inbox_util.is_visible()) {
             revive_current_focus();
         }
     });

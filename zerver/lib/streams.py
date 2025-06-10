@@ -35,6 +35,7 @@ from zerver.lib.user_groups import (
     user_has_permission_for_group_setting,
 )
 from zerver.models import (
+    ChannelFolder,
     DefaultStreamGroup,
     Message,
     NamedUserGroup,
@@ -88,6 +89,7 @@ class StreamDict(TypedDict, total=False):
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
     can_subscribe_group: UserGroup | None
+    folder: ChannelFolder | None
 
 
 def get_stream_permission_policy_key(
@@ -265,6 +267,7 @@ def create_stream_if_needed(
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
+    folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[Stream, bool]:
@@ -304,6 +307,7 @@ def create_stream_if_needed(
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
+            folder=folder,
             **group_setting_values,
         ),
     )
@@ -383,6 +387,7 @@ def create_streams_if_needed(
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
+            folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
         )
@@ -875,7 +880,7 @@ def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
         # these in the query.
         invite_only=False,
         history_public_to_subscribers=True,
-    ).select_related("can_send_message_group", "can_send_message_group__named_user_group")
+    )
 
 
 def check_stream_name_available(realm: Realm, name: str) -> None:
@@ -1507,6 +1512,7 @@ def stream_to_dict(
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
         first_message_id=stream.first_message_id,
+        folder_id=stream.folder_id,
         is_recently_active=stream.is_recently_active,
         history_public_to_subscribers=stream.history_public_to_subscribers,
         invite_only=stream.invite_only,
@@ -1524,7 +1530,13 @@ def stream_to_dict(
 def get_web_public_streams(
     realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersData]
 ) -> list[APIStreamDict]:  # nocoverage
-    query = get_web_public_streams_queryset(realm)
+    query = get_web_public_streams_queryset(realm).select_related(
+        # TODO: We need these fields to compute stream_post_policy; we
+        # can drop this select_related clause once that legacy field
+        # is removed from the API.
+        "can_send_message_group",
+        "can_send_message_group__named_user_group",
+    )
     streams = query.only(*Stream.API_FIELDS)
     stream_dicts = [stream_to_dict(stream, None, anonymous_group_membership) for stream in streams]
     return stream_dicts

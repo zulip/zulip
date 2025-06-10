@@ -8,12 +8,15 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 
 import * as blueslip from "./blueslip.ts";
 import * as buttons from "./buttons.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -35,6 +38,7 @@ import {stream_subscription_schema} from "./sub_store.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import {group_setting_value_schema} from "./types.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_util from "./ui_util.ts";
 import * as user_group_pill from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
@@ -370,9 +374,6 @@ function get_message_retention_setting_value(
         .parent()
         .find<HTMLInputElement>(".message-retention-setting-custom-input")
         .val()!;
-    if (custom_input_val.length === 0) {
-        return settings_config.retain_message_forever;
-    }
     return util.check_time_input(custom_input_val);
 }
 
@@ -478,6 +479,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_default_code_block_language", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
+    ["folder_id", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -904,6 +906,9 @@ export function check_stream_settings_property_changed(
         case "stream_privacy":
             proposed_val = get_input_element_value(elem, "radio-group");
             break;
+        case "folder_id":
+            proposed_val = get_channel_folder_value_from_dropdown_widget($(elem));
+            break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
@@ -1156,6 +1161,12 @@ export function populate_data_for_stream_settings_request(
                     continue;
                 }
 
+                if (property_name === "folder_id") {
+                    const folder_id = get_channel_folder_value_from_dropdown_widget($input_elem);
+                    data[property_name] = JSON.stringify(folder_id);
+                    continue;
+                }
+
                 assert(typeof input_value !== "object");
                 data[property_name] = input_value;
             }
@@ -1283,7 +1294,7 @@ export function save_discard_stream_settings_widget_status_handler(
         !sub.subscribed &&
         switching_to_private(properties_elements)
     ) {
-        if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+        if ($("#stream_settings .stream_privacy_warning").length > 0) {
             return;
         }
         const context = {
@@ -1296,11 +1307,11 @@ export function save_discard_stream_settings_widget_status_handler(
             classname: "stream_privacy_warning",
             stream_id: sub.stream_id,
         };
-        $("#stream_permission_settings .stream-permissions-warning-banner").append(
+        $("#stream_settings .stream-permissions-warning-banner").append(
             $(render_compose_banner(context)),
         );
     } else {
-        $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+        $("#stream_settings .stream-permissions-warning-banner").empty();
     }
 }
 
@@ -1445,45 +1456,52 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
 }
 
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
+    const $save_button = $subsection_elem.find(".save-button");
+
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
-
-    let disable_save_button = false;
-    if (time_limit_settings.length > 0) {
-        disable_save_button =
-            should_disable_save_button_for_time_limit_settings(time_limit_settings);
-    } else if ($subsection_elem.attr("id") === "org-compose-settings") {
-        disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
-        const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
-            ".subsection-changes-save",
-        );
-        const tippy_instance = util.the($button_wrapper)._tippy;
-        if (disable_save_button) {
-            // avoid duplication of tippy
-            if (!tippy_instance) {
-                const opts: Partial<tippy.Props> = {placement: "top"};
-                initialize_disable_button_hint_popover(
-                    $button_wrapper,
-                    $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
-                    opts,
-                );
-            }
-        } else {
-            if (tippy_instance) {
-                tippy_instance.destroy();
-            }
+    if (
+        time_limit_settings.length > 0 &&
+        should_disable_save_button_for_time_limit_settings(time_limit_settings)
+    ) {
+        if (
+            $subsection_elem.attr("id") === "org-message-retention" ||
+            $subsection_elem.hasClass("advanced-configurations-container")
+        ) {
+            ui_util.disable_element_and_add_tooltip(
+                $save_button,
+                $t({
+                    defaultMessage: "Cannot save invalid message retention period.",
+                }),
+            );
+            return;
         }
+        $save_button.prop("disabled", true);
+        return;
     }
 
-    if (!disable_save_button) {
-        const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
-            extract_property_name($(elem)),
+    if (
+        $subsection_elem.attr("id") === "org-compose-settings" &&
+        should_disable_save_button_for_jitsi_server_url_setting()
+    ) {
+        ui_util.disable_element_and_add_tooltip(
+            $save_button,
+            $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
         );
-        if (group_settings.length > 0) {
-            disable_save_button = should_disable_save_button_for_group_settings(group_settings);
-        }
+        return;
     }
 
-    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_button);
+    const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
+        extract_property_name($(elem)),
+    );
+    if (
+        group_settings.length > 0 &&
+        should_disable_save_button_for_group_settings(group_settings)
+    ) {
+        $save_button.prop("disabled", true);
+        return;
+    }
+
+    ui_util.enable_element_and_remove_tooltip($save_button);
 }
 
 export function initialize_disable_button_hint_popover(
@@ -1934,4 +1952,86 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
     }
 
     return group_assigned_user_group_permissions;
+}
+
+export function set_up_folder_dropdown_widget(
+    sub?: StreamSubscription,
+): DropdownWidget | undefined {
+    if (!page_params.development_environment) {
+        return undefined;
+    }
+
+    const folder_options = (): dropdown_widget.Option[] => {
+        const folders = channel_folders.get_channel_folders();
+        const options: dropdown_widget.Option[] = folders.map((folder) => ({
+            name: folder.name,
+            unique_id: folder.id,
+        }));
+
+        const disabled_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: settings_config.no_folder_selected,
+            name: $t({defaultMessage: "None"}),
+        };
+
+        options.unshift(disabled_option);
+        return options;
+    };
+
+    const default_id = sub?.folder_id ?? settings_config.no_folder_selected;
+
+    let widget_name = "folder_id";
+    if (sub === undefined) {
+        widget_name = "new_channel_folder_id";
+    }
+
+    let $events_container = $("#stream_settings .subscription_settings");
+    if (sub === undefined) {
+        $events_container = $("#stream_creation_form");
+    }
+
+    const folder_widget = new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: folder_options,
+        $events_container,
+        item_click_callback(event, dropdown, this_widget) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            this_widget.render();
+            if (sub !== undefined) {
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                save_discard_stream_settings_widget_status_handler(
+                    $edit_container.find(".channel-folder-subsection"),
+                    stream_data.get_sub_by_id(sub.stream_id),
+                );
+            }
+        },
+        default_id,
+        unique_id_type: "number",
+    });
+    if (sub !== undefined) {
+        set_dropdown_setting_widget("folder_id", folder_widget);
+    }
+    folder_widget.setup();
+    return folder_widget;
+}
+
+export function set_channel_folder_dropdown_value(sub: StreamSubscription): void {
+    if (sub.folder_id === null) {
+        set_dropdown_list_widget_setting_value("folder_id", settings_config.no_folder_selected);
+        return;
+    }
+    set_dropdown_list_widget_setting_value("folder_id", sub.folder_id);
+}
+
+export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): number | null {
+    const value = get_dropdown_list_widget_setting_value($elem);
+    assert(typeof value === "number");
+    if (value === settings_config.no_folder_selected) {
+        return null;
+    }
+    return value;
 }

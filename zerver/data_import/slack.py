@@ -46,6 +46,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
@@ -471,7 +472,7 @@ def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str]
         avatar_hash = user["profile"]["avatar_hash"]
         avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
         avatar_source = UserProfile.AVATAR_FROM_USER
-    elif user.get("is_integration_bot"):
+    elif user.get("is_integration_bot") and "image_72" in user["profile"]:
         # Unlike other Slack user types, Slacks integration bot avatar URL ends with
         # a file type extension (.png, in this case).
         # e.g https://avatars.slack-edge.com/2024-05-01/7218497908_deb94eac4c_512.png
@@ -707,10 +708,18 @@ def get_subscription(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
     subscription_id: int,
 ) -> int:
+    processed_zulip_user_ids = set()
     for slack_user_id in channel_members:
-        sub = build_subscription(
-            recipient_id, slack_user_id_to_zulip_user_id[slack_user_id], subscription_id
-        )
+        zulip_user_id = slack_user_id_to_zulip_user_id[slack_user_id]
+        if zulip_user_id in processed_zulip_user_ids:
+            # Multiple slack user ids can map to the same Zulip user id,
+            # due to merging of accounts which share the same email address.
+            # We don't want to create duplicate subscriptions for a user,
+            # so if we've already seen this zulip_user_id, we skip ahead.
+            continue
+
+        processed_zulip_user_ids.add(zulip_user_id)
+        sub = build_subscription(recipient_id, zulip_user_id, subscription_id)
         zerver_subscription.append(sub)
         subscription_id += 1
     return subscription_id
@@ -931,6 +940,15 @@ def channel_message_to_zerver_message(
             "channel_name",
         ]:
             continue
+
+        formatted_block = process_slack_block_and_attachment(message)
+
+        # Leave it as is if formatted_block is an empty string, it's likely
+        # one of the unhandled_types.
+        if formatted_block != "":
+            # For most cases, the value of message["text"] will be just an
+            # empty string.
+            message["text"] = formatted_block
 
         try:
             content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
@@ -1205,6 +1223,7 @@ def build_reactions(
         merged_reactions[emoji_name].update(slack_reaction["users"])
     reactions = [{"name": k, "users": v, "count": len(v)} for k, v in merged_reactions.items()]
 
+    processed_reactions: set[tuple[int, int, str, str]] = set()
     # For the Unicode emoji codes, we use equivalent of
     # function 'get_emoji_data' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
@@ -1241,7 +1260,17 @@ def build_reactions(
 
             reaction_dict = model_to_dict(reaction, exclude=["message", "user_profile"])
             reaction_dict["message"] = message_id
-            reaction_dict["user_profile"] = slack_user_id_to_zulip_user_id[slack_user_id]
+            zulip_user_id = slack_user_id_to_zulip_user_id[slack_user_id]
+            reaction_dict["user_profile"] = zulip_user_id
+
+            reaction_tuple = (zulip_user_id, message_id, reaction_type, emoji_code)
+            if reaction_tuple in processed_reactions:
+                # Due to possible merging of Slack accounts into a single Zulip account,
+                # we need to ensure reactions don't get duplicated, violating the unique
+                # constraint on the (user_profile_id, message_id, reaction_type, emoji_code)
+                # index.
+                continue
+            processed_reactions.add(reaction_tuple)
 
             reaction_list.append(reaction_dict)
 
@@ -1272,6 +1301,8 @@ def get_message_sending_user(message: ZerverFieldsT) -> str | None:
         return message["user"]
     if message.get("file"):
         return message["file"].get("user")
+    if message.get("bot_id"):
+        return message.get("bot_id")
     return None
 
 
@@ -1297,9 +1328,30 @@ def convert_bot_info_to_slack_user(bot_info: dict[str, Any]) -> ZerverFieldsT:
         "real_name": bot_info["name"],
         "is_integration_bot": True,
         "profile": {
-            "image_72": bot_info["icons"]["image_72"],
             "bot_id": bot_info["id"],
             "first_name": bot_info["name"],
+        },
+    }
+    if "image_72" in bot_info["icons"]:
+        # Otherwise, gravatar will be used.
+        bot_user["profile"]["image_72"] = bot_info["icons"]["image_72"]
+
+    return bot_user
+
+
+def make_deleted_placeholder(bot_id: str) -> ZerverFieldsT:
+    name = f"Deleted Slack Bot {bot_id}"
+    bot_user = {
+        "id": bot_id,
+        "name": name,
+        "deleted": True,
+        "is_mirror_dummy": False,
+        "real_name": name,
+        "is_integration_bot": True,
+        "profile": {
+            # Intentionally skip image_72. Gravatar should be used.
+            "bot_id": bot_id,
+            "first_name": name,
         },
     }
     return bot_user
@@ -1347,10 +1399,15 @@ def fetch_shared_channel_users(
             bot_id = message["bot_id"]
             if bot_id in integration_bot_users:
                 continue
-            bot_info = get_slack_api_data(
-                "https://slack.com/api/bots.info", "bot", token=token, bot=bot_id
-            )
-            bot_user = convert_bot_info_to_slack_user(bot_info)
+            try:
+                bot_info = get_slack_api_data(
+                    "https://slack.com/api/bots.info", "bot", token=token, bot=bot_id
+                )
+            except SlackBotNotFoundError:
+                logging.info("Bot %s not found, creating a deleted placeholder", bot_id)
+                bot_user = make_deleted_placeholder(bot_id)
+            else:
+                bot_user = convert_bot_info_to_slack_user(bot_info)
 
             user_list.append(bot_user)
             integration_bot_users.append(bot_id)
@@ -1610,7 +1667,8 @@ def check_token_access(token: str, required_scopes: set[str]) -> None:
         if not data.json()["ok"]:
             error = data.json()["error"]
             if error != "missing_scope":
-                raise ValueError(f"Invalid Slack token: {token}, {error}")
+                logging.error("Slack token is invalid: %s", error)
+                raise ValueError(f"Invalid token: {token}")
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         missing_scopes = required_scopes - has_scopes
         if missing_scopes:
@@ -1618,7 +1676,7 @@ def check_token_access(token: str, required_scopes: set[str]) -> None:
                 f"Slack token is missing the following required scopes: {sorted(missing_scopes)}"
             )
     else:
-        raise Exception("Unknown token type -- must start with xoxb- or xoxp-")
+        raise Exception("Invalid token. Valid tokens start with xoxb-.")
 
 
 def get_slack_api_data(
@@ -1669,6 +1727,9 @@ def get_slack_api_data(
 
         result = response.json()
         if not result["ok"]:
+            if result["error"] == "bot_not_found":
+                raise SlackBotNotFoundError
+
             raise Exception("Error accessing Slack API: {}".format(result["error"]))
 
         result_data = result[get_param]
@@ -1685,3 +1746,7 @@ def get_slack_api_data(
         cursor = result["response_metadata"]["next_cursor"]
 
     return accumulated_result
+
+
+class SlackBotNotFoundError(Exception):
+    pass

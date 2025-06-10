@@ -75,16 +75,20 @@ fi
     cp /etc/zulip/zulip.conf "$TEMP_CONF_DIR"
     ZULIP_CONF="${TEMP_CONF_DIR}/zulip.conf"
     crudini --set "$ZULIP_CONF" postgresql version "$UPGRADE_TO"
-    crudini --set "$ZULIP_CONF" machine puppet_classes zulip::profile::base,zulip::postgresql_base
-    touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
 
-    FACTER_LEAVE_SUPERVISOR=true "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"
+    if [ -f "/usr/share/postgresql/$UPGRADE_FROM/pgroonga_setup.sql.applied" ]; then
+        # This file is intentionally blank, to trigger always running
+        # `ALTER EXTENSION pgroonga UPDATE` and not `CREATE EXTENSION pgroonga`.
+        touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
+    fi
+
+    "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF" --tags postgresql_upgrade
     rm -rf "$TEMP_CONF_DIR"
 )
 
 # Capture the output so we know where the path to the post-upgrade scripts is
 UPGRADE_LOG=$(mktemp "/var/log/zulip/upgrade-postgresql-$UPGRADE_FROM-$UPGRADE_TO.XXXXXXXXX.log")
-pg_upgradecluster -v "$UPGRADE_TO" "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
+pg_upgradecluster -v "$UPGRADE_TO" "$UPGRADE_FROM" main --method=upgrade --link --no-start | tee "$UPGRADE_LOG"
 SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPGRADE_TO-main.*" "$UPGRADE_LOG" || true)
 
 # If the upgrade completed successfully, lock in the new version in
@@ -92,17 +96,16 @@ SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPG
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
 # Make sure the new PostgreSQL is running
-start_main_cluster="$(
-    pg_lsclusters --json \
-        | jq --arg pg_version "$UPGRADE_TO" -r \
-            '.[] | select((.version|tostring == $ARGS.named.pg_version) and (.cluster == "main") and (.running != 1)) | .cluster'
-)"
-if [ -n "$start_main_cluster" ]; then
-    pg_ctlcluster "$UPGRADE_TO" main start
-fi
+pg_ctlcluster "$UPGRADE_TO" main start
 
 # Update the statistics
 su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"
+
+# Update extensions
+if [ -n "$SCRIPTS_PATH" ] && [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
+    su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
+    rm "$SCRIPTS_PATH/update_extensions.sql"
+fi
 
 # Start the database up cleanly
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
@@ -110,12 +113,22 @@ su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-onl
 # Drop the old data, binaries, and scripts
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
-if [ -n "$SCRIPTS_PATH" ]; then
-    if [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
-        su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
-    fi
+if [ -n "$SCRIPTS_PATH" ] && [ -f "$SCRIPTS_PATH/delete_old_cluster.sh" ]; then
     su postgres -c "$SCRIPTS_PATH/delete_old_cluster.sh"
-    rm -rf "$SCRIPTS_PATH"
+    rm "$SCRIPTS_PATH/delete_old_cluster.sh"
+fi
+
+if [ -n "$SCRIPTS_PATH" ]; then
+    if [ -n "$(ls -A "$SCRIPTS_PATH")" ]; then
+        set +x
+        echo
+        echo
+        echo ">>>>> pg_upgradecluster succeeded, but unexpected post-upgrade scripts"
+        echo "      were found:"
+        ls -A1 "$SCRIPTS_PATH"
+    else
+        rmdir "$SCRIPTS_PATH"
+    fi
 else
     set +x
     echo

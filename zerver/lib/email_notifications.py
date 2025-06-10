@@ -621,6 +621,18 @@ def handle_missedmessage_emails(
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
+    if user_profile.delivery_email == "":
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user_profile.realm.demo_organization_scheduled_deletion_date is not None
+            and user_profile.is_realm_owner
+        )
+        # Because demo organizations are created without setting an email, we can't
+        # send any missed message emails until they add an email to their account,
+        # e.g., they receive a direct message from the Welcome or Notification bot.
+        return
+
     # Note: This query structure automatically filters out any
     # messages that were permanently deleted, since those would now be
     # in the ArchivedMessage table, not the Message table.
@@ -686,7 +698,9 @@ def handle_missedmessage_emails(
         )
 
 
-def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
+def get_onboarding_email_schedule(
+    user: UserProfile, demo_organization_creator: bool = False
+) -> dict[str, timedelta]:
     onboarding_emails = {
         # The delay should be 1 hour before the below specified number of days
         # as our goal is to maximize the chance that this email is near the top
@@ -700,7 +714,16 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
     user_tz = user.timezone
     if user_tz == "":
         user_tz = "UTC"
-    signup_day = user.date_joined.astimezone(
+
+    # Because demo organizations are created without setting an email for the
+    # owner's account, we schedule these emails when/if they add an email to
+    # their account.
+    if demo_organization_creator:
+        start_date = timezone_now()
+    else:
+        start_date = user.date_joined
+
+    day_of_week_user_registered = start_date.astimezone(
         zoneinfo.ZoneInfo(canonicalize_timezone(user_tz))
     ).isoweekday()
 
@@ -708,27 +731,27 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
     # -Do not send emails on Saturday or Sunday
     # -Have at least one weekday between each (potential) email
 
-    # User signed up on Monday
-    if signup_day == 1:
+    # User registered on Monday
+    if day_of_week_user_registered == 1:
         # Send onboarding_team_to_zulip on Tuesday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Tuesday
-    if signup_day == 2:
+    # User registered on Tuesday
+    if day_of_week_user_registered == 2:
         # Send onboarding_zulip_guide on Monday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
         # Send onboarding_team_to_zulip on Wednesday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Wednesday
-    if signup_day == 3:
+    # User registered on Wednesday
+    if day_of_week_user_registered == 3:
         # Send onboarding_zulip_guide on Tuesday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
         # Send onboarding_team_to_zulip on Thursday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Thursday
-    if signup_day == 4:
+    # User registered on Thursday
+    if day_of_week_user_registered == 4:
         # Send onboarding_zulip_topics on Monday
         onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Wednesday
@@ -736,8 +759,8 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
         # Send onboarding_team_to_zulip on Friday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Friday
-    if signup_day == 5:
+    # User registered on Friday
+    if day_of_week_user_registered == 5:
         # Send onboarding_zulip_topics on Tuesday
         onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Thursday
@@ -745,10 +768,10 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
         # Send onboarding_team_to_zulip on Monday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=10, hours=-1)
 
-    # User signed up on Saturday; no adjustments needed
+    # User registered on Saturday; no adjustments needed
 
-    # User signed up on Sunday
-    if signup_day == 7:
+    # User registered on Sunday
+    if day_of_week_user_registered == 7:
         # Send onboarding_team_to_zulip on Monday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
@@ -838,7 +861,9 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
     )
 
 
-def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
+def enqueue_welcome_emails(
+    user: UserProfile, realm_creation: bool = False, demo_organization_creator: bool = False
+) -> None:
     # Imported here to avoid import cycles.
     from zerver.context_processors import common_context
 
@@ -860,7 +885,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 
     # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
     # to determine how long to delay sending the email based on when the user signed up.
-    onboarding_email_schedule = get_onboarding_email_schedule(user)
+    onboarding_email_schedule = get_onboarding_email_schedule(user, demo_organization_creator)
 
     if other_account_count == 0:
         onboarding_zulip_topics_context = common_context(user)
@@ -915,7 +940,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         )
 
     # We only send the onboarding_team_to_zulip email to user who created the organization.
-    if realm_creation:
+    if realm_creation or demo_organization_creator:
         onboarding_team_to_zulip_context = common_context(user)
         onboarding_team_to_zulip_context.update(
             unsubscribe_link=unsubscribe_link,

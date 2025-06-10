@@ -49,7 +49,9 @@ export const pm_recipient = {
     },
 
     async expect(page: Page, expected: string): Promise<void> {
-        const actual_recipients = await page.evaluate(() => zulip_test.private_message_recipient());
+        const actual_recipients = await page.evaluate(() =>
+            zulip_test.private_message_recipient_emails(),
+        );
         assert.equal(actual_recipients, expected);
     },
 };
@@ -92,9 +94,8 @@ export async function screenshot(page: Page, name: string | null = null): Promis
         screenshot_id += 1;
     }
 
-    const screenshot_path = path.join(puppeteer_dir, `${name}.png`);
     await page.screenshot({
-        path: screenshot_path,
+        path: `${path.join(puppeteer_dir, name)}.png`,
     });
 }
 

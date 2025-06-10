@@ -147,6 +147,7 @@ landing_page_urls = [
     path("team/", team_view),
     path("history/", landing_view, {"template_name": "corporate/history.html"}),
     path("values/", landing_view, {"template_name": "corporate/values.html"}),
+    path("partners/", landing_view, {"template_name": "corporate/partners.html"}),
     path("why-zulip/", landing_view, {"template_name": "corporate/why-zulip.html"}),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
     path("security/", landing_view, {"template_name": "corporate/security.html"}),

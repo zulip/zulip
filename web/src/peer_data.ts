@@ -8,6 +8,7 @@ import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as sub_store from "./sub_store.ts";
+import * as util from "./util.ts";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();
@@ -29,11 +30,29 @@ const pending_subscriber_requests = new Map<
 export function clear_for_testing(): void {
     stream_subscribers.clear();
     fetched_stream_ids.clear();
+    pending_subscriber_requests.clear();
 }
 
 const fetch_stream_subscribers_response_schema = z.object({
     subscribers: z.array(z.number()),
 });
+
+// This function will always resolve to a LazySet but could hang
+// indefinitely trying to fetch data. `num_attempts` should only
+// be set in the recursive call.
+export async function maybe_fetch_stream_subscribers_with_retry(
+    stream_id: number,
+    num_attempts = 1,
+): Promise<LazySet> {
+    const subscribers = await maybe_fetch_stream_subscribers(stream_id);
+    if (subscribers === null) {
+        num_attempts += 1;
+        const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+        await new Promise((resolve) => setTimeout(resolve, retry_delay_secs));
+        return maybe_fetch_stream_subscribers_with_retry(stream_id, num_attempts);
+    }
+    return subscribers;
+}
 
 export async function maybe_fetch_stream_subscribers(stream_id: number): Promise<LazySet | null> {
     if (pending_subscriber_requests.has(stream_id)) {
@@ -42,10 +61,10 @@ export async function maybe_fetch_stream_subscribers(stream_id: number): Promise
     const subscribers_promise = (async () => {
         let subscribers: number[];
         try {
-            const xhr = await channel.get({
+            const result = await channel.get({
                 url: `/json/streams/${stream_id}/members`,
             });
-            subscribers = fetch_stream_subscribers_response_schema.parse(xhr).subscribers;
+            subscribers = fetch_stream_subscribers_response_schema.parse(result).subscribers;
         } catch {
             blueslip.error("Failure fetching channel subscribers", {
                 stream_id,
@@ -93,12 +112,25 @@ function get_loaded_subscriber_subset(stream_id: number): LazySet {
     return subscribers;
 }
 
-async function get_full_subscriber_set(stream_id: number): Promise<LazySet | null> {
+async function get_full_subscriber_set(stream_id: number, retry_on_failure: true): Promise<LazySet>;
+async function get_full_subscriber_set(
+    stream_id: number,
+    retry_on_failure: boolean,
+): Promise<LazySet | null>;
+async function get_full_subscriber_set(
+    stream_id: number,
+    retry_on_failure: boolean,
+): Promise<LazySet | null> {
     assert(!page_params.is_spectator);
     // This function parallels `get_loaded_subscriber_subset` but ensures we include all
     // subscribers, possibly fetching that data from the server.
     if (!fetched_stream_ids.has(stream_id) && sub_store.get(stream_id)) {
-        const fetched_subscribers = await maybe_fetch_stream_subscribers(stream_id);
+        let fetched_subscribers: LazySet | null;
+        if (retry_on_failure) {
+            fetched_subscribers = await maybe_fetch_stream_subscribers_with_retry(stream_id);
+        } else {
+            fetched_subscribers = await maybe_fetch_stream_subscribers(stream_id);
+        }
         // This means a request failed and we don't know who the subscribers are.
         if (fetched_subscribers === null) {
             return null;
@@ -108,9 +140,18 @@ async function get_full_subscriber_set(stream_id: number): Promise<LazySet | nul
     return get_loaded_subscriber_subset(stream_id);
 }
 
-export function is_subscriber_subset(stream_id1: number, stream_id2: number): boolean {
-    const sub1_set = get_loaded_subscriber_subset(stream_id1);
-    const sub2_set = get_loaded_subscriber_subset(stream_id2);
+export async function is_subscriber_subset(
+    stream_id1: number,
+    stream_id2: number,
+): Promise<boolean | null> {
+    const sub1_promise = get_full_subscriber_set(stream_id1, false);
+    const sub2_promise = get_full_subscriber_set(stream_id2, false);
+    const sub1_set = await sub1_promise;
+    const sub2_set = await sub2_promise;
+    // This happens if we encountered an error feteching subscribers.
+    if (sub1_set === null || sub2_set === null) {
+        return null;
+    }
 
     return [...sub1_set.keys()].every((key) => sub2_set.has(key));
 }
@@ -132,7 +173,11 @@ export function potential_subscribers(stream_id: number): User[] {
         other than typeahead.  (The guest use case
         may be moot now for other reasons.)
     */
-
+    if (!fetched_stream_ids.has(stream_id)) {
+        blueslip.error("Fetching potential subscribers for stream without full subscriber data", {
+            stream_id,
+        });
+    }
     const subscribers = get_loaded_subscriber_subset(stream_id);
 
     function is_potential_subscriber(person: User): boolean {
@@ -172,6 +217,21 @@ export function get_subscribers(stream_id: number): number[] {
     // want an array of user_ids who are subscribed to a stream.
     const subscribers = get_loaded_subscriber_subset(stream_id);
 
+    return [...subscribers.keys()];
+}
+
+export async function get_all_subscribers(
+    stream_id: number,
+    retry_on_failure = true,
+): Promise<number[] | null> {
+    // This function parallels `get_subscribers` but ensures we include all
+    // subscribers, possibly fetching that data from the server.
+    const subscribers = await get_full_subscriber_set(stream_id, retry_on_failure);
+    // This means the request failed, which can only happen if `retry_on_failure`
+    // is false.
+    if (subscribers === null) {
+        return null;
+    }
     return [...subscribers.keys()];
 }
 
@@ -266,8 +326,9 @@ export function is_user_subscribed(stream_id: number, user_id: number): boolean 
 export async function maybe_fetch_is_user_subscribed(
     stream_id: number,
     user_id: number,
+    retry_on_failure: boolean,
 ): Promise<boolean | null> {
-    const subscribers = await get_full_subscriber_set(stream_id);
+    const subscribers = await get_full_subscriber_set(stream_id, retry_on_failure);
     // This means the request failed. We will return `null` here if
     // we can't determine if this user is subscribed or not.
     if (subscribers === null) {
@@ -280,11 +341,19 @@ export async function maybe_fetch_is_user_subscribed(
     return subscribers.has(user_id);
 }
 
-export function get_unique_subscriber_count_for_streams(stream_ids: number[]): number {
+export async function get_unique_subscriber_count_for_streams(
+    stream_ids: number[],
+): Promise<number> {
     const valid_subscribers = new LazySet([]);
+    const promises: Record<number, Promise<LazySet>> = {};
+    for (const stream_id of stream_ids) {
+        promises[stream_id] = get_full_subscriber_set(stream_id, true);
+    }
 
     for (const stream_id of stream_ids) {
-        const subscribers = get_loaded_subscriber_subset(stream_id);
+        // If it's `null`, that means a request failed and we don't know the
+        // full subscribers set, so just use whatever we have already.
+        const subscribers = await promises[stream_id]!;
 
         for (const user_id of subscribers.keys()) {
             if (!people.is_valid_bot_user(user_id)) {

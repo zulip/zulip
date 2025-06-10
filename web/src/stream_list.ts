@@ -41,6 +41,11 @@ import {user_settings} from "./user_settings.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
+let update_inbox_channel_view_callback: (channel_id: number) => void;
+
+export function set_update_inbox_channel_view_callback(value: (channel_id: number) => void): void {
+    update_inbox_channel_view_callback = value;
+}
 
 export let stream_cursor: ListCursor<number>;
 
@@ -234,7 +239,7 @@ export function remove_sidebar_row(stream_id: number): void {
     update_streams_sidebar(force_rerender);
 }
 
-export function create_initial_sidebar_rows(): void {
+export function create_initial_sidebar_rows(force_rerender = false): void {
     // This code is slightly opaque, but it ends up building
     // up list items and attaching them to the "sub" data
     // structures that are kept in stream_data.js.
@@ -242,7 +247,7 @@ export function create_initial_sidebar_rows(): void {
     subs = subs.filter((sub) => !sub.is_archived);
 
     for (const sub of subs) {
-        create_sidebar_row(sub);
+        create_sidebar_row(sub, force_rerender);
     }
 }
 
@@ -458,10 +463,17 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
+    let url = hash_util.channel_url_by_user_setting(sub.stream_id);
+    if (
+        web_channel_default_view_values.list_of_topics.code ===
+        user_settings.web_channel_default_view
+    ) {
+        url = hash_util.by_channel_topic_list_url(sub.stream_id);
+    }
     const args = {
         name,
         id: sub.stream_id,
-        url: hash_util.by_stream_url(sub.stream_id),
+        url,
         is_muted,
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,
@@ -526,8 +538,8 @@ function build_stream_sidebar_row(sub: StreamSubscription): void {
     stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
 }
 
-export function create_sidebar_row(sub: StreamSubscription): void {
-    if (stream_sidebar.has_row_for(sub.stream_id)) {
+export function create_sidebar_row(sub: StreamSubscription, force_rerender = false): void {
+    if (!force_rerender && stream_sidebar.has_row_for(sub.stream_id)) {
         // already exists
         blueslip.warn("Dup try to build sidebar row for stream", {stream_id: sub.stream_id});
         return;
@@ -759,6 +771,9 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
         clear_topics();
     }
 
+    // We want to update channel view for inbox for the same reasons
+    // we want to the topics list here.
+    update_inbox_channel_view_callback(stream_id);
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
 
     return $stream_li;
@@ -824,9 +839,12 @@ export function initialize_stream_cursor(): void {
 
 export function initialize({
     on_stream_click,
+    update_inbox_channel_view,
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
+    update_inbox_channel_view: (channel_id: number) => void;
 }): void {
+    update_inbox_channel_view_callback = update_inbox_channel_view;
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -901,8 +919,16 @@ export function set_event_handlers({
         const current_narrow_stream_id = narrow_state.stream_id();
         const current_topic = narrow_state.topic();
 
+        if (
+            user_settings.web_channel_default_view ===
+            web_channel_default_view_values.list_of_topics.code
+        ) {
+            browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
+            return;
+        }
+
         if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
-            const channel_feed_url = hash_util.by_stream_url(stream_id);
+            const channel_feed_url = hash_util.channel_url_by_user_setting(stream_id);
             browser_history.go_to_location(channel_feed_url);
             return;
         }

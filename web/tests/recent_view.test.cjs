@@ -98,7 +98,7 @@ mock_esm("../src/compose_closed_ui", {
     update_buttons_for_non_specific_views: noop,
 });
 mock_esm("../src/hash_util", {
-    by_stream_url: test_url,
+    channel_url_by_user_setting: test_url,
     by_stream_topic_url: test_url,
     by_channel_topic_permalink: test_permalink,
     by_conversation_and_time_url: test_url,

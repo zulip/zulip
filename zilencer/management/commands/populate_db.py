@@ -30,6 +30,7 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_linkifiers import do_add_linkifier
+from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
@@ -45,6 +46,7 @@ from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+from zerver.lib.stream_subscription import bulk_create_stream_subscriptions
 from zerver.lib.types import AnalyticsDataUploadLevel, ProfileFieldData
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
@@ -155,6 +157,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
     subscriptions_to_add = []
     event_time = timezone_now()
     all_subscription_logs = []
+    subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
     for i, stream_name in enumerate(stream_dict):
         stream = Stream.objects.get(name=stream_name, realm=realm)
@@ -168,6 +171,8 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
             )
             subscriptions_to_add.append(s)
+            if profile.is_active:
+                subscriber_count_changes[stream.id].add(profile.id)
 
             log = RealmAuditLog(
                 realm=profile.realm,
@@ -178,7 +183,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 event_time=event_time,
             )
             all_subscription_logs.append(log)
-    Subscription.objects.bulk_create(subscriptions_to_add)
+    bulk_create_stream_subscriptions(subs=subscriptions_to_add, streams=subscriber_count_changes)
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
@@ -726,6 +731,7 @@ class Command(ZulipBaseCommand):
                         subscriptions_list.append((profile, r))
 
             subscriptions_to_add: list[Subscription] = []
+            subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
             event_time = timezone_now()
             all_subscription_logs: list[RealmAuditLog] = []
 
@@ -741,6 +747,8 @@ class Command(ZulipBaseCommand):
                 )
 
                 subscriptions_to_add.append(s)
+                if profile.is_active:
+                    subscriber_count_changes[recipient.type_id].add(profile.id)
 
                 log = RealmAuditLog(
                     realm=profile.realm,
@@ -752,7 +760,9 @@ class Command(ZulipBaseCommand):
                 )
                 all_subscription_logs.append(log)
 
-            Subscription.objects.bulk_create(subscriptions_to_add)
+            bulk_create_stream_subscriptions(
+                subs=subscriptions_to_add, streams=subscriber_count_changes
+            )
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
             # Create custom profile field data
@@ -835,7 +845,7 @@ class Command(ZulipBaseCommand):
             # cURL example to delete an existing scheduled message.
             check_schedule_message(
                 sender=iago,
-                client=get_client("populate_db"),
+                client=get_client("ZulipDataImport"),
                 recipient_type_name="stream",
                 message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
                 topic_name="test-api",
@@ -845,7 +855,7 @@ class Command(ZulipBaseCommand):
             )
             check_schedule_message(
                 sender=iago,
-                client=get_client("populate_db"),
+                client=get_client("ZulipDataImport"),
                 recipient_type_name="private",
                 message_to=[iago.id],
                 topic_name=None,
@@ -1009,6 +1019,11 @@ class Command(ZulipBaseCommand):
                 core_team_stream = Stream.objects.get(name="core team", realm=lear_realm)
                 bulk_add_subscriptions(
                     lear_realm, [core_team_stream], [lear_user], acting_user=None
+                )
+
+                core_team_stream = Stream.objects.get(name="core team", realm=zulip_realm)
+                do_set_realm_moderation_request_channel(
+                    zulip_realm, core_team_stream, core_team_stream.id, acting_user=None
                 )
 
             if not options["test_suite"]:
@@ -1236,7 +1251,7 @@ def generate_and_send_messages(
     while num_messages < tot_messages:
         saved_data: dict[str, Any] = {}
         message = Message(realm=realm)
-        message.sending_client = get_client("populate_db")
+        message.sending_client = get_client("ZulipDataImport")
 
         message.content = next(texts)
 

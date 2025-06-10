@@ -109,6 +109,7 @@ type GearMenuContext = {
     is_spectator: boolean;
     is_self_hosted: boolean;
     is_development_environment: boolean;
+    is_demo_organization: boolean;
     is_plan_limited: boolean;
     is_plan_standard: boolean;
     is_plan_standard_sponsored_for_free: boolean;
@@ -217,7 +218,8 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     function is_add_reaction_icon_visible(): boolean {
         assert(message_lists.current !== undefined);
         const $message_row = message_lists.current.get_row(message_id);
-        return $message_row.find(".message_controls .reaction_button").is(":visible");
+        const $reaction_button = $message_row.find(".message_controls .reaction_button");
+        return $reaction_button.length === 1 && $reaction_button.css("display") !== "none";
     }
 
     // Since we only display msg actions and star icons on windows smaller than
@@ -386,6 +388,7 @@ export function get_gear_menu_content_context(): GearMenuContext {
         is_spectator: page_params.is_spectator,
         is_self_hosted: realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code,
         is_development_environment: page_params.development_environment,
+        is_demo_organization: realm.demo_organization_scheduled_deletion_date !== undefined,
         is_plan_limited: realm.realm_plan_type === settings_config.realm_plan_types.limited.code,
         is_plan_standard,
         is_plan_standard_sponsored_for_free:

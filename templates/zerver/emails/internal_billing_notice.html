@@ -6,8 +6,8 @@
 
 {% if notice_reason == "fixed_price_plan_ends_soon" %}
 <p>Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.</p>
-{% elif notice_reason == "invoice_overdue" %}
-<p>Recent invoice is overdue for payment.</p>
+{% elif notice_reason == "stale_audit_log_data" %}
+<p>Unable to verify current licenses in use, which delays invoicing for this customer.</p>
 <b>Last data upload</b>: {{ last_audit_log_update }}
 {% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
 <p>Investigate why remote realm is marked as locally deleted when it's on a paid plan.</p>

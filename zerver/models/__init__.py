@@ -3,6 +3,7 @@ from zerver.models.alert_words import AlertWord as AlertWord
 from zerver.models.bots import BotConfigData as BotConfigData
 from zerver.models.bots import BotStorageData as BotStorageData
 from zerver.models.bots import Service as Service
+from zerver.models.channel_folders import ChannelFolder as ChannelFolder
 from zerver.models.clients import Client as Client
 from zerver.models.custom_profile_fields import CustomProfileField as CustomProfileField
 from zerver.models.custom_profile_fields import CustomProfileFieldValue as CustomProfileFieldValue
@@ -32,6 +33,7 @@ from zerver.models.messages import Reaction as Reaction
 from zerver.models.messages import SubMessage as SubMessage
 from zerver.models.messages import UserMessage as UserMessage
 from zerver.models.muted_users import MutedUser as MutedUser
+from zerver.models.navigation_views import NavigationView as NavigationView
 from zerver.models.onboarding_steps import OnboardingStep as OnboardingStep
 from zerver.models.prereg_users import EmailChangeStatus as EmailChangeStatus
 from zerver.models.prereg_users import MultiuseInvite as MultiuseInvite

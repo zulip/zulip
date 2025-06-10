@@ -449,7 +449,10 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#user_email_address_dropdown_container.disabled_setting_tooltip",
+        target: [
+            "#user_email_address_dropdown_container.disabled_setting_tooltip",
+            "#realm_invite_required_container.disabled_setting_tooltip",
+        ].join(","),
         content: $t({
             defaultMessage: "Configure your email to access this feature.",
         }),
@@ -507,6 +510,36 @@ export function initialize(): void {
                 "You do not have permission to add other users to channels in this organization.",
         }),
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".add-users-button-wrapper",
+        onShow(instance) {
+            const $wrapper = $(instance.reference);
+            const $button = $wrapper.find("button");
+            const $container = $wrapper.closest(".add-button-container").find(".pill-container");
+
+            const button_is_disabled = Boolean($button.prop("disabled"));
+            const container_is_enabled =
+                $container.find(".input").prop("contenteditable") === "true";
+
+            if (button_is_disabled && container_is_enabled) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Enter who should be added.",
+                    }),
+                );
+                return undefined;
+            }
+
+            return false;
+        },
+        appendTo: () => document.body,
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
         onHidden(instance) {
             instance.destroy();
         },
@@ -627,7 +660,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             let template = "show-userlist-tooltip-template";
-            if ($("#right-sidebar-container").is(":visible")) {
+            if ($("#right-sidebar-container").css("display") !== "none") {
                 template = "hide-userlist-tooltip-template";
             }
             $(instance.reference).attr("data-tooltip-template-id", template);
@@ -731,6 +764,22 @@ export function initialize(): void {
         target: ".disabled-tooltip",
         trigger: "focus mouseenter",
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".delete-option",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            /* Ensure the tooltip remains visible even when data-reference-hidden is set. */
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+
+            instance.setContent($t({defaultMessage: "Delete"}));
+        },
         onHidden(instance) {
             instance.destroy();
         },

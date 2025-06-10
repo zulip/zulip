@@ -55,7 +55,7 @@ def clear_supported_auth_backends_cache() -> None:
 class RealmAuthenticationMethod(models.Model):
     """
     Tracks which authentication backends are enabled for a realm.
-    An enabled backend is represented in this table a row with appropriate
+    An enabled backend is represented in this table as a row with appropriate
     .realm value and .name matching the name of the target backend in the
     AUTH_BACKEND_NAME_MAP dict.
     """
@@ -419,6 +419,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     ZULIP_SANDBOX_CHANNEL_NAME = gettext_lazy("sandbox")
     DEFAULT_NOTIFICATION_STREAM_NAME = gettext_lazy("general")
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
+    REPORT_MESSAGE_REASONS = {
+        "spam": gettext_lazy("Spam"),
+        "harassment": gettext_lazy("Harassment"),
+        "inappropriate": gettext_lazy("Inappropriate content"),
+        "norms": gettext_lazy("Violates community norms"),
+        "other": gettext_lazy("Other reason"),
+    }
+    MAX_REPORT_MESSAGE_EXPLANATION_LENGTH = 1000
     moderation_request_channel = models.ForeignKey(
         "Stream",
         related_name="+",
@@ -722,6 +730,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+            # Note that user_can_access_all_other_users in the web
+            # app is relying on members always have access.
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
         can_add_subscribers_group=GroupPermissionSetting(

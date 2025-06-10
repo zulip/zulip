@@ -26,6 +26,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.realm_settings import (
     clean_deactivated_realm_data,
+    delete_expired_demo_organizations,
     do_add_deactivated_redirect,
     do_change_realm_max_invites,
     do_change_realm_org_type,
@@ -244,6 +245,37 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertNotEqual(realm.description, new_description)
 
+    def test_demo_organization_invite_required(self) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(realm.invite_required)
+
+        self.login("desdemona")
+        data = dict(invite_required="true")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertTrue(realm.invite_required)
+
+        # Update realm to be a demo organization
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
+        realm.save()
+
+        # Demo organization owner's don't have an email address set initially
+        desdemona = self.example_user("desdemona")
+        desdemona.delivery_email = ""
+        desdemona.save()
+
+        data = dict(invite_required="false")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Configure owner account email address.")
+
+        desdemona.delivery_email = "desdemona@zulip.com"
+        desdemona.save()
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertFalse(realm.invite_required)
+
     def test_realm_convert_demo_realm(self) -> None:
         data = dict(string_id="coolrealm")
 
@@ -255,11 +287,22 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", data)
         self.assert_json_error(result, "Must be a demo organization.")
 
-        data = dict(string_id="lear")
-        self.login("desdemona")
         realm = get_realm("zulip")
         realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
         realm.save()
+
+        # Demo organization owner must have added an email before converting.
+        desdemona = self.example_user("desdemona")
+        desdemona.delivery_email = ""
+        desdemona.save()
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Configure owner account email address.")
+
+        desdemona.delivery_email = "desdemona@zulip.com"
+        desdemona.save()
+
+        # Subdomain must be available to convert demo organization.
+        data = dict(string_id="lear")
         result = self.client_patch("/json/realm", data)
         self.assert_json_error(
             result, "Subdomain is already in use. Please choose a different one."
@@ -1183,6 +1226,64 @@ class RealmTest(ZulipTestCase):
             clean_deactivated_realm_data()
             mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
 
+    def test_delete_expired_demo_organizations(self) -> None:
+        zulip = get_realm("zulip")
+        assert not zulip.deactivated
+        assert zulip.demo_organization_scheduled_deletion_date is None
+
+        with mock.patch(
+            "zerver.actions.realm_settings.do_deactivate_realm"
+        ) as mock_deactivate_realm:
+            delete_expired_demo_organizations()
+            mock_deactivate_realm.assert_not_called()
+
+        # Add scheduled demo organization deletion date
+        zulip.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=4)
+        zulip.save()
+
+        # Before deletion date
+        with mock.patch(
+            "zerver.actions.realm_settings.do_deactivate_realm"
+        ) as mock_deactivate_realm:
+            delete_expired_demo_organizations()
+            mock_deactivate_realm.assert_not_called()
+
+        # After deletion date, when owner email is set.
+        with (
+            time_machine.travel(timezone_now() + timedelta(days=5), tick=False),
+            mock.patch(
+                "zerver.actions.realm_settings.do_deactivate_realm"
+            ) as mock_deactivate_realm,
+        ):
+            delete_expired_demo_organizations()
+            mock_deactivate_realm.assert_called_once_with(
+                realm=zulip,
+                acting_user=None,
+                deactivation_reason="demo_expired",
+                deletion_delay_days=0,
+                email_owners=True,
+            )
+
+        # After deletion date, when owner email is not set.
+        desdemona = self.example_user("desdemona")
+        desdemona.delivery_email = ""
+        desdemona.save()
+
+        with (
+            time_machine.travel(timezone_now() + timedelta(days=5), tick=False),
+            mock.patch(
+                "zerver.actions.realm_settings.do_deactivate_realm"
+            ) as mock_deactivate_realm,
+        ):
+            delete_expired_demo_organizations()
+            mock_deactivate_realm.assert_called_once_with(
+                realm=zulip,
+                acting_user=None,
+                deactivation_reason="demo_expired",
+                deletion_delay_days=0,
+                email_owners=False,
+            )
+
     def test_initial_plan_type(self) -> None:
         with self.settings(BILLING_ENABLED=True):
             self.assertEqual(do_create_realm("hosted", "hosted").plan_type, Realm.PLAN_TYPE_LIMITED)
@@ -1909,6 +2010,15 @@ class RealmAPITest(ZulipTestCase):
         super().setUp()
         self.login("desdemona")
 
+    def process_value_for_enum_settings(self, raw_value: Any) -> tuple[Any, Any]:
+        if isinstance(raw_value, Enum):
+            api_value = raw_value.name
+            value = raw_value.value
+        else:
+            api_value = raw_value
+            value = raw_value
+        return (api_value, value)
+
     def update_with_api(self, name: str, value: int | str) -> Realm:
         if not isinstance(value, str):
             value = orjson.dumps(value).decode()
@@ -1967,22 +2077,14 @@ class RealmAPITest(ZulipTestCase):
 
         do_set_realm_property(get_realm("zulip"), name, vals[0], acting_user=None)
 
-        if isinstance(vals[0], Enum):
-            for val in vals[1:]:
-                raw_value = val.name
-                value = val.value
-                realm = self.update_with_api(name, raw_value)
-                self.assertEqual(getattr(realm, name), value)
-            realm = self.update_with_api(name, vals[0].name)
-            self.assertEqual(getattr(realm, name), vals[0].value)
-            return
-
         for val in vals[1:]:
-            realm = self.update_with_api(name, val)
-            self.assertEqual(getattr(realm, name), val)
+            api_value, value = self.process_value_for_enum_settings(val)
+            realm = self.update_with_api(name, api_value)
+            self.assertEqual(getattr(realm, name), value)
 
-        realm = self.update_with_api(name, vals[0])
-        self.assertEqual(getattr(realm, name), vals[0])
+        api_value, value = self.process_value_for_enum_settings(vals[0])
+        realm = self.update_with_api(name, api_value)
+        self.assertEqual(getattr(realm, name), value)
 
     def do_test_realm_permission_group_setting_update_api(self, setting_name: str) -> None:
         realm = get_realm("zulip")
@@ -2367,6 +2469,7 @@ class RealmAPITest(ZulipTestCase):
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_follow_topics_where_mentioned=[True, False],
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -2383,13 +2486,15 @@ class RealmAPITest(ZulipTestCase):
         do_set_realm_user_default_setting(realm_user_default, name, vals[0], acting_user=None)
 
         for val in vals[1:]:
-            self.update_with_realm_default_api(name, val)
+            api_value, value = self.process_value_for_enum_settings(val)
+            self.update_with_realm_default_api(name, api_value)
             realm_user_default = RealmUserDefault.objects.get(realm=realm)
-            self.assertEqual(getattr(realm_user_default, name), val)
+            self.assertEqual(getattr(realm_user_default, name), value)
 
-        self.update_with_realm_default_api(name, vals[0])
+        api_value, value = self.process_value_for_enum_settings(vals[0])
+        self.update_with_realm_default_api(name, api_value)
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
-        self.assertEqual(getattr(realm_user_default, name), vals[0])
+        self.assertEqual(getattr(realm_user_default, name), value)
 
     def test_update_default_realm_settings(self) -> None:
         for prop in RealmUserDefault.property_types:
@@ -2485,6 +2590,13 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_error(
             result, "Invalid emojiset: Value error, Not in the list of possible values"
         )
+
+    def test_invalid_resolved_topic_notice_auto_read_policy(self) -> None:
+        result = self.client_patch(
+            "/json/realm/user_settings_defaults",
+            {"resolved_topic_notice_auto_read_policy": "invalid"},
+        )
+        self.assert_json_error(result, "Invalid resolved_topic_notice_auto_read_policy")
 
     def test_ignored_parameters_in_realm_default_endpoint(self) -> None:
         params = {"starred_message_counts": orjson.dumps(False).decode(), "emoji_set": "twitter"}

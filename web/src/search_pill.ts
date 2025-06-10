@@ -171,15 +171,20 @@ const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
 export function set_search_bar_contents(
     search_terms: NarrowTerm[],
     pill_widget: SearchPillWidget,
+    is_typeahead_visible: boolean,
     set_search_bar_text: (text: string) => void,
 ): void {
     pill_widget.clear(true);
     let partial_pill = "";
     const invalid_inputs = [];
     const search_operator_strings = [];
+    const added_pills_as_input_strings = new Set(); // to prevent duplicating terms
 
     for (const term of search_terms) {
         const input = Filter.unparse([term]);
+        if (added_pills_as_input_strings.has(input)) {
+            return;
+        }
 
         // If the last term looks something like `dm:`, we
         // don't want to make it a pill, since it isn't isn't
@@ -189,18 +194,16 @@ export function set_search_bar_contents(
         // typeahead to show operand suggestions.
         // Note: We make a pill for `topic:` as it represents empty string topic
         // except the case where it suggests `topic` operator.
-        if (input.at(-1) === ":" && term.operand === "" && term === search_terms.at(-1)) {
-            const is_topic_operator_suggestion = (): boolean => {
-                const is_typeahead_visible = $("#searchbox_form .typeahead").is(":visible");
-                return (
-                    is_typeahead_visible &&
-                    $("#searchbox_form .typeahead-item.active .empty-topic-display").length === 0
-                );
-            };
-            if (term.operator !== "topic" || is_topic_operator_suggestion()) {
-                partial_pill = input;
-                continue;
-            }
+        if (
+            input.at(-1) === ":" &&
+            term.operand === "" &&
+            term === search_terms.at(-1) &&
+            (term.operator !== "topic" ||
+                (is_typeahead_visible &&
+                    $("#searchbox_form .typeahead-item.active .empty-topic-display").length === 0))
+        ) {
+            partial_pill = input;
+            continue;
         }
 
         if (!Filter.is_valid_search_term(term)) {
@@ -216,10 +219,13 @@ export function set_search_bar_contents(
                 return user;
             });
             append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+            added_pills_as_input_strings.add(input);
         } else if (term.operator === "search") {
+            // This isn't a pill, so we don't add it to `added_pills_as_input_strings`
             search_operator_strings.push(input);
         } else {
             pill_widget.appendValue(input);
+            added_pills_as_input_strings.add(input);
         }
     }
     pill_widget.clear_text();

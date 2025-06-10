@@ -11,7 +11,8 @@
     },
     "email": null,
     "name": "John Doe",
-    "phone": null
+    "phone": null,
+    "tax_id": null
   },
   "card": {
     "brand": "visa",

@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from typing_extensions import override
 
+from zerver.actions.data_import import import_slack_data
 from zerver.actions.message_flags import do_mark_stream_messages_as_read
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_export import notify_realm_export
@@ -236,6 +237,8 @@ class DeferredWorker(QueueProcessingWorker):
             )
             for realm in realms_to_scrub:
                 scrub_deactivated_realm(realm)
+        elif event["type"] == "import_slack_data":
+            import_slack_data(event)
 
         end = time.time()
         logger.info(

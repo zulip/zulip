@@ -1,0 +1,25 @@
+---
+import ZulipIconsKeyboard from "~icons/zulip-icon/keyboard"
+
+let { title } = Astro.props;
+if (!title) {
+	title = "Keyboard Shortcut";
+}
+---
+
+<!--
+We have an open PR to the upstream starlight repository to add support
+for custom icons in the Aside starlight component. The PR is stalled
+due to dependency on some of the custom icons work being done on 
+starlight. We should replace the code below with the Aside starlight
+component along with a custom icon (keyboard in out case).
+Link: https://github.com/withastro/starlight/pull/2261
+-->
+<aside aria-label={title} class={`starlight-aside starlight-aside--tip`}>
+	<p class="starlight-aside__title" aria-hidden="true">
+		<ZulipIconsKeyboard fill="currentColor" class="starlight-aside__icon" />{title}
+	</p>
+	<div class="starlight-aside__content">
+		<slot />
+	</div>
+</aside>

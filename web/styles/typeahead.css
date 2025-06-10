@@ -64,7 +64,7 @@
             }
 
             &.topic-typeahead-link {
-                gap: 0;
+                gap: 5px;
             }
 
             &.topic-edit-typeahead {
@@ -108,6 +108,12 @@
         &:focus {
             color: var(--color-active-dropdown-item);
             background-color: var(--background-color-active-typeahead-item);
+        }
+
+        & .user-circle-offline {
+            /* Ensure better contrast on highlighted
+               typeahead items. */
+            color: var(--color-user-circle-offline-typeahead-highlight);
         }
     }
 

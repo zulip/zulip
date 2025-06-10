@@ -3,7 +3,7 @@
 // Puppeteer tests.  It should not be used in the code itself.
 
 export {set_wildcard_mention_threshold, wildcard_mention_threshold} from "./compose_validate.ts";
-export {private_message_recipient} from "./compose_state.ts";
+export {private_message_recipient_emails} from "./compose_state.ts";
 export {current as current_msg_list} from "./message_lists.ts";
 export {get_stream_id, get_sub, get_subscriber_count} from "./stream_data.ts";
 export {get_by_user_id as get_person_by_user_id, get_user_id_from_name} from "./people.ts";

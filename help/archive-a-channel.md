@@ -15,12 +15,6 @@ content](#hide-content-in-an-archived-channel).
 
 ## Archive a channel
 
-!!! warn ""
-
-    Channels can be [unarchived](#unarchiving-archived-channels) only by
-    [contacting support](/help/contact-support) for organizations hosted
-    on Zulip Cloud, or by your self-hosted server's administrator.
-
 {start_tabs}
 
 {tab|desktop-web}
@@ -85,18 +79,24 @@ content](#hide-content-in-an-archived-channel).
 
 You can also make these configuration changes prior to archiving a channel.
 
-## Unarchiving archived channels
+## Unarchive a channel
 
-Zulip Cloud organizations that need to unarchive a channel can [contact Zulip
-support](/help/contact-support).
+{start_tabs}
 
-If you are self-hosting, you can unarchive an archived channel using the
-`unarchive_channel` [management command][management-command]. This will restore
-it as a private channel with shared history, and subscribe all organization
-owners to it.
+{tab|desktop-web}
 
-[management-command]:
-https://zulip.readthedocs.io/en/latest/production/management-commands.html#other-useful-manage-py-commands
+{relative|channel|all}
+
+1. Select **Archived channels** from the dropdown in the upper left.
+
+1. Select a channel.
+
+1. Click the **unarchive** (<i class="zulip-icon zulip-icon-unarchive"></i>)
+   icon in the upper right corner of the channel settings panel.
+
+1. Click **Confirm**.
+
+{end_tabs}
 
 ## Related articles
 

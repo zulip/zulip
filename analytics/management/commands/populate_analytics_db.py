@@ -18,15 +18,16 @@ from analytics.models import (
     UserCount,
 )
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.users import do_change_user_role
 from zerver.lib.create_user import create_user
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+from zerver.lib.stream_subscription import create_stream_subscription
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
-from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, Subscription, UserProfile
+from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
+from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroupMembership
 from zerver.models.realm_audit_logs import AuditLogEventType
 
 
@@ -86,6 +87,13 @@ class Command(ZulipBaseCommand):
             string_id="analytics", name="Analytics", date_created=installation_time
         )
 
+        owners_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        guests_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+
         shylock = create_user(
             "shylock@analytics.ds",
             "Shylock",
@@ -94,10 +102,10 @@ class Command(ZulipBaseCommand):
             role=UserProfile.ROLE_REALM_OWNER,
             force_date_joined=installation_time,
         )
-        do_change_user_role(shylock, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        UserGroupMembership.objects.create(user_profile=shylock, user_group=owners_system_group)
 
         # Create guest user for set_guest_users_statistic.
-        create_user(
+        bassanio = create_user(
             "bassanio@analytics.ds",
             "Bassanio",
             realm,
@@ -105,6 +113,7 @@ class Command(ZulipBaseCommand):
             role=UserProfile.ROLE_GUEST,
             force_date_joined=installation_time,
         )
+        UserGroupMembership.objects.create(user_profile=bassanio, user_group=guests_system_group)
 
         stream = Stream.objects.create(
             name="all",
@@ -117,10 +126,10 @@ class Command(ZulipBaseCommand):
         stream.save(update_fields=["recipient"])
 
         # Subscribe shylock to the stream to avoid invariant failures.
-        Subscription.objects.create(
-            recipient=recipient,
+        create_stream_subscription(
             user_profile=shylock,
-            is_user_active=shylock.is_active,
+            recipient=recipient,
+            stream=stream,
             color=STREAM_ASSIGNMENT_COLORS[0],
         )
         RealmAuditLog.objects.create(

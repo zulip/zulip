@@ -72,6 +72,7 @@ from zerver.lib.topic import (
     update_edit_history,
     update_messages_for_topic_edit,
 )
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
@@ -82,7 +83,6 @@ from zerver.models import (
     ArchivedMessage,
     Attachment,
     Message,
-    Reaction,
     Recipient,
     Stream,
     Subscription,
@@ -91,7 +91,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.streams import get_stream_by_id_in_realm
-from zerver.models.users import get_system_bot
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -175,11 +175,53 @@ def validate_user_can_edit_message(
             raise JsonableError(_("The time limit for editing this message has passed"))
 
 
+def get_unread_user_ids_for_resolved_topic_notifications(
+    stream: Stream,
+    topic_name: str,
+    users_following_topic: set[UserProfile] | None,
+) -> set[int]:
+    unread_user_ids: set[int] = set()
+
+    all_stream_user_profiles = UserProfile.objects.filter(
+        id__in=get_active_subscriptions_for_stream_id(
+            stream.id, include_deactivated_users=False
+        ).values_list("user_profile_id", flat=True),
+        is_bot=False,
+    )
+
+    user_ids_following_topic: set[int] = set()
+    if users_following_topic is not None:
+        user_ids_following_topic = {user.id for user in users_following_topic}
+    else:
+        user_ids_following_topic = set(
+            UserTopic.objects.filter(
+                stream=stream,
+                topic_name__iexact=topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            ).values_list("user_profile_id", flat=True)
+        )
+
+    for user_profile in all_stream_user_profiles:
+        if (
+            user_profile.resolved_topic_notice_auto_read_policy
+            == ResolvedTopicNoticeAutoReadPolicyEnum.never.value
+        ):
+            unread_user_ids.add(user_profile.id)
+        elif (
+            user_profile.resolved_topic_notice_auto_read_policy
+            == ResolvedTopicNoticeAutoReadPolicyEnum.except_followed.value
+            and user_profile.id in user_ids_following_topic
+        ):
+            unread_user_ids.add(user_profile.id)
+
+    return unread_user_ids
+
+
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
     message_edit_request: StreamMessageEditRequest,
-    changed_messages: QuerySet[Message],
+    users_following_topic: set[UserProfile] | None,
 ) -> tuple[int | None, bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
@@ -213,16 +255,15 @@ def maybe_send_resolve_topic_notifications(
     ):
         return None, True
 
-    # Compute the users who either sent or reacted to messages that
-    # were moved via the "resolve topic' action. Only those users
-    # should be eligible for this message being managed as unread.
-    affected_participant_ids = set(
-        changed_messages.values_list("sender_id", flat=True).union(
-            Reaction.objects.filter(message__in=changed_messages).values_list(
-                "user_profile_id", flat=True
-            )
-        )
+    # Compute the users for whom this message should be marked as unread
+    # based on the `resolved_topic_notice_auto_read_policy` user setting.
+    topic_name = message_edit_request.target_topic_name
+    unread_user_ids = get_unread_user_ids_for_resolved_topic_notifications(
+        stream=stream,
+        topic_name=topic_name,
+        users_following_topic=users_following_topic,
     )
+
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
     with override_language(stream.realm.default_language):
@@ -234,12 +275,12 @@ def maybe_send_resolve_topic_notifications(
         resolved_topic_message_id = internal_send_stream_message(
             sender,
             stream,
-            message_edit_request.target_topic_name,
+            topic_name,
             notification_string.format(
                 user=user_mention,
             ),
             message_type=Message.MessageType.RESOLVE_TOPIC_NOTIFICATION,
-            limit_unread_user_ids=affected_participant_ids,
+            limit_unread_user_ids=unread_user_ids,
             acting_user=user_profile,
         )
 
@@ -286,8 +327,8 @@ def send_message_moved_breadcrumbs(
     old_topic_name = message_edit_request.orig_topic_name
     new_stream = message_edit_request.target_stream
     new_topic_name = message_edit_request.target_topic_name
-    old_topic_link = f"#**{old_stream.name}>{old_topic_name}**"
-    new_topic_link = f"#**{new_stream.name}>{new_topic_name}**"
+    old_topic_link = get_stream_topic_link_syntax(old_stream.id, old_stream.name, old_topic_name)
+    new_topic_link = get_stream_topic_link_syntax(new_stream.id, new_stream.name, new_topic_name)
     message = {
         "id": target_message.id,
         "stream_id": new_stream.id,
@@ -1113,6 +1154,17 @@ def do_update_message(
 
     resolved_topic_message_id = None
     resolved_topic_message_deleted = False
+    # We calculate the users for which the resolved-topic notification
+    # should be marked as unread using the topic visibility policy and
+    # the `resolved_topic_notice_auto_read_policy` user setting.
+    users_following_original_topic = None
+    if moved_all_visible_messages:
+        users_following_original_topic = {
+            user
+            for user, visibility_policy in orig_topic_user_profile_to_visibility_policy.items()
+            if visibility_policy == UserTopic.VisibilityPolicy.FOLLOWED
+        }
+
     if (
         message_edit_request.is_topic_edited
         and not message_edit_request.is_content_edited
@@ -1122,7 +1174,7 @@ def do_update_message(
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
                 message_edit_request=message_edit_request,
-                changed_messages=changed_messages,
+                users_following_topic=users_following_original_topic,
             )
         )
 

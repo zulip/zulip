@@ -66,6 +66,10 @@ export const web_channel_default_view_values = {
         code: 1,
         description: $t({defaultMessage: "Top topic in the channel"}),
     },
+    list_of_topics: {
+        code: 3,
+        description: $t({defaultMessage: "List of topics"}),
+    },
     channel_feed: {
         code: 2,
         description: $t({defaultMessage: "Channel feed"}),
@@ -112,6 +116,21 @@ export const web_animate_image_previews_values = {
     never: {
         code: "never",
         description: $t({defaultMessage: "Only in image viewer"}),
+    },
+};
+
+export const resolved_topic_notice_auto_read_policy_values = {
+    always: {
+        code: "always",
+        description: $t({defaultMessage: "Always"}),
+    },
+    except_followed: {
+        code: "except_followed",
+        description: $t({defaultMessage: "Except in topics I'm following"}),
+    },
+    never: {
+        code: "never",
+        description: $t({defaultMessage: "Never"}),
     },
 };
 
@@ -954,6 +973,7 @@ type NotificationSettingCheckbox = {
     is_disabled: boolean;
     is_checked: boolean;
     is_mobile_checkbox: boolean;
+    push_notifications_disabled: boolean;
 };
 
 export function get_notifications_table_row_data(
@@ -968,6 +988,7 @@ export function get_notifications_table_row_data(
                 is_disabled: true,
                 is_checked: false,
                 is_mobile_checkbox: false,
+                push_notifications_disabled: false,
             };
         }
 
@@ -981,11 +1002,27 @@ export function get_notifications_table_row_data(
             is_disabled: false,
             is_checked: checked,
             is_mobile_checkbox: false,
+            push_notifications_disabled: !realm.realm_push_notifications_enabled,
         };
         if (column === "mobile") {
             checkbox.is_disabled = !realm.realm_push_notifications_enabled;
             checkbox.is_mobile_checkbox = true;
         }
+        return checkbox;
+    });
+}
+
+export function get_custom_stream_specific_notifications_table_row_data(): NotificationSettingCheckbox[] {
+    // Returns an array of NotificationSettingCheckbox for the special row that
+    // allows adding new configuration for a previously uncustomized channel.
+    return stream_specific_notification_settings.map((setting_name) => {
+        const checkbox = {
+            setting_name,
+            is_disabled: true,
+            is_checked: false,
+            is_mobile_checkbox: setting_name === "push_notifications",
+            push_notifications_disabled: !realm.realm_push_notifications_enabled,
+        };
         return checkbox;
     });
 }
@@ -1237,3 +1274,5 @@ export const realm_plan_types = {
     standard_free: {code: 4},
     plus: {code: 10},
 };
+
+export const no_folder_selected = -1;

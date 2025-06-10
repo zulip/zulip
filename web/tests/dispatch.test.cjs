@@ -137,6 +137,7 @@ page_params.test_suite = false;
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
+const channel_folders = zrequire("channel_folders");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
@@ -485,6 +486,23 @@ run_test("scheduled_messages", ({override}) => {
         const args = stub.get_args("scheduled_message_id");
         assert_same(args.scheduled_message_id, event.scheduled_message_id);
     }
+});
+
+run_test("channel_folders", () => {
+    channel_folders.initialize({channel_folders: []});
+
+    const event = event_fixtures.channel_folder__add;
+    {
+        dispatch(event);
+
+        const folders = channel_folders.get_channel_folders();
+        assert.equal(folders.length, 1);
+        assert.equal(folders[0].id, event.channel_folder.id);
+        assert.equal(folders[0].name, event.channel_folder.name);
+    }
+
+    blueslip.expect("error", "Unexpected event type channel_folder/other");
+    server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
 });
 
 run_test("realm settings", ({override}) => {
@@ -1067,8 +1085,18 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__web_channel_default_view;
     override(user_settings, "web_channel_default_view", 2);
+    let called_create_initial_sidebar_rows = false;
+    let called_update_streams_sidebar = false;
+    override(stream_list, "create_initial_sidebar_rows", () => {
+        called_create_initial_sidebar_rows = true;
+    });
+    override(stream_list, "update_streams_sidebar", () => {
+        called_update_streams_sidebar = true;
+    });
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
+    assert.equal(called_create_initial_sidebar_rows, true);
+    assert.equal(called_update_streams_sidebar, true);
 
     event = event_fixtures.user_settings__web_font_size_px;
     override(user_settings, "web_font_size_px", 14);

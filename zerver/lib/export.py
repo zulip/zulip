@@ -49,6 +49,7 @@ from zerver.models import (
     Attachment,
     BotConfigData,
     BotStorageData,
+    ChannelFolder,
     Client,
     CustomProfileField,
     CustomProfileFieldValue,
@@ -58,6 +59,7 @@ from zerver.models import (
     Message,
     MutedUser,
     NamedUserGroup,
+    NavigationView,
     OnboardingStep,
     OnboardingUserMessage,
     Reaction,
@@ -147,6 +149,7 @@ ALL_ZULIP_TABLES = {
     "zerver_botconfigdata",
     "zerver_botstoragedata",
     "zerver_channelemailaddress",
+    "zerver_channelfolder",
     "zerver_client",
     "zerver_customprofilefield",
     "zerver_customprofilefieldvalue",
@@ -164,6 +167,7 @@ ALL_ZULIP_TABLES = {
     "zerver_multiuseinvite_streams",
     "zerver_multiuseinvite_groups",
     "zerver_namedusergroup",
+    "zerver_navigationview",
     "zerver_onboardingstep",
     "zerver_onboardingusermessage",
     "zerver_preregistrationrealm",
@@ -327,6 +331,7 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "analytics_streamcount": ["end_time"],
     "analytics_usercount": ["end_time"],
     "zerver_attachment": ["create_time"],
+    "zerver_channelfolder": ["date_created"],
     "zerver_message": ["last_edit_time", "date_sent"],
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
@@ -1081,6 +1086,13 @@ def get_realm_config() -> Config:
         custom_process_results=custom_process_subscription_in_realm_config,
     )
 
+    Config(
+        table="zerver_channelfolder",
+        model=ChannelFolder,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
+    )
+
     add_user_profile_child_configs(user_profile_config)
 
     return realm_config
@@ -1163,6 +1175,14 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=MutedUser,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
+    )
+
+    Config(
+        table="zerver_navigationview",
+        model=NavigationView,
+        normal_parent=user_profile_config,
+        include_rows="user_id__in",
         limit_to_consenting_users=True,
     )
 

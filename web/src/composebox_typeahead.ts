@@ -1192,7 +1192,7 @@ export function content_typeahead_selected(
                 let user_group_mention_text = is_silent ? "@_*" : "@*";
                 user_group_mention_text += item.name + "* ";
                 beginning += user_group_mention_text;
-                compose_validate.warn_if_mentioning_unsubscribed_group(
+                void compose_validate.warn_if_mentioning_unsubscribed_group(
                     item,
                     $textbox,
                     is_silent ?? false,
@@ -1210,7 +1210,7 @@ export function content_typeahead_selected(
                     is_silent,
                 );
                 if (!is_silent && item.type !== "broadcast") {
-                    compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
+                    void compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
                     mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
                         mention_text,
                         item.user.full_name,
@@ -1244,7 +1244,7 @@ export function content_typeahead_selected(
                 beginning += "#**" + item.name + ">";
             }
 
-            compose_validate.warn_if_private_stream_is_linked(item, $textbox);
+            void compose_validate.warn_if_private_stream_is_linked(item, $textbox);
             break;
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
@@ -1534,6 +1534,11 @@ export function initialize({
                 sorted.unshift(query);
             }
             return sorted;
+        },
+        updater(item: string, _query: string): string {
+            $("textarea#compose-textarea").trigger("focus");
+            $nextFocus = undefined;
+            return item;
         },
         option_label(matching_items: string[], item: string): string | false {
             if (!matching_items.includes(item)) {

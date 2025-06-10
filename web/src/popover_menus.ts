@@ -66,9 +66,9 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
         return;
     }
 
-    let index = $items.index($items.filter(":focus"));
+    const index = $items.index($items.filter(":focus"));
 
-    if (key === "enter" && index >= 0 && index < $items.length) {
+    if (key === "enter") {
         // This is not enough for some elements which need to trigger
         // natural click for them to work like ClipboardJS and follow
         // the link for anchor tags. For those elements, we need to
@@ -77,14 +77,17 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
         return;
     }
 
-    if (index === -1) {
-        index = 0;
-    } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
-        index += 1;
-    } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
-        index -= 1;
+    if (key === "down_arrow" || key === "vim_down") {
+        [...$items]
+            .slice(index === -1 ? 0 : index + 1)
+            .find((item) => item.getClientRects().length)
+            ?.focus();
+    } else if (key === "up_arrow" || key === "vim_up") {
+        [...$items]
+            .slice(0, index === -1 ? $items.length : index)
+            .findLast((item) => item.getClientRects().length)
+            ?.focus();
     }
-    $items.eq(index).trigger("focus");
 }
 
 export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {
@@ -173,7 +176,7 @@ export function get_popover_items_for_instance(instance: tippy.Instance): JQuery
         return undefined;
     }
 
-    return $current_elem.find("a, [tabindex='0']").filter(":visible");
+    return $current_elem.find("a, [tabindex='0']");
 }
 
 export function hide_current_popover_if_visible(instance: tippy.Instance | null): void {

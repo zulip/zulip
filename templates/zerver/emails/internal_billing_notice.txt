@@ -2,8 +2,8 @@ Internal billing notice for {{ billing_entity }}.
 
 {% if notice_reason == "fixed_price_plan_ends_soon" %}
 Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.
-{% elif notice_reason == "invoice_overdue" %}
-Recent invoice is overdue for payment.
+{% elif notice_reason == "stale_audit_log_data" %}
+Unable to verify current licenses in use, which delays invoicing for this customer.
 
 Last data upload: {{ last_audit_log_update }}
 {% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}

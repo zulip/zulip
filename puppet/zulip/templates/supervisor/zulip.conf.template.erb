@@ -84,6 +84,9 @@ directory=/home/zulip/deployments/current/
   if queue == "missedmessage_mobile_notifications"
     numprocs = @mobile_notification_shards
     term = "shard"
+  elsif queue == "user_activity"
+    numprocs = @user_activity_shards
+    term = "shard"
   elsif @worker_counts.has_key?(queue)
     numprocs = @worker_counts[queue]
   end -%>

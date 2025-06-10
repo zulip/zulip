@@ -215,7 +215,7 @@ export function focus_in_empty_compose(
     // Check whether the current input element is empty for each input type.
     switch (focused_element_id) {
         case "private_message_recipient":
-            return private_message_recipient().length === 0;
+            return private_message_recipient_ids().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
         case "compose_select_recipient_widget_wrapper":
@@ -225,14 +225,24 @@ export function focus_in_empty_compose(
     return false;
 }
 
-export function private_message_recipient(): string;
-export function private_message_recipient(value: string): undefined;
-export function private_message_recipient(value?: string): string | undefined {
+export function private_message_recipient_emails(): string;
+export function private_message_recipient_emails(value: string): undefined;
+export function private_message_recipient_emails(value?: string): string | undefined {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
         return undefined;
     }
     return compose_pm_pill.get_emails();
+}
+
+export function private_message_recipient_ids(): number[];
+export function private_message_recipient_ids(value: number[]): undefined;
+export function private_message_recipient_ids(value?: number[]): number[] | undefined {
+    if (value === undefined) {
+        return compose_pm_pill.get_user_ids();
+    }
+    compose_pm_pill.set_from_user_ids(value);
+    return undefined;
 }
 
 export function has_message_content(): boolean {
@@ -253,11 +263,11 @@ export function has_full_recipient(): boolean {
         const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
         return stream_id() !== undefined && has_topic;
     }
-    return private_message_recipient() !== "";
+    return private_message_recipient_ids().length > 0;
 }
 
 export function update_email(user_id: number, new_email: string): void {
-    let reply_to = private_message_recipient();
+    let reply_to = private_message_recipient_emails();
 
     if (!reply_to) {
         return;
@@ -265,7 +275,7 @@ export function update_email(user_id: number, new_email: string): void {
 
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
-    private_message_recipient(reply_to);
+    private_message_recipient_emails(reply_to);
 }
 
 let _can_restore_drafts = true;
