@@ -49,6 +49,12 @@ unnecessarily mentioning someone twice.
 
 1. Send your message.
 
+!!! tip ""
+
+    If you are in a channel view, you can set a different destination
+    topic by tapping the compose box and selecting an existing topic
+    or typing a new topic name.
+
 {end_tabs}
 
 ## Forward a message
@@ -74,24 +80,6 @@ unnecessarily mentioning someone twice.
 !!! keyboard_tip ""
 
     You can also use <kbd>&lt;</kbd> to forward the selected message.
-
-{tab|mobile}
-
-{!message-long-press-menu.md!}
-
-1. Tap **Quote message**.
-
-1. *(optional)* Delete any parts of the quoted message that you don't want to
-   forward.
-
-1. If you are in a channel view, choose a destination topic by tapping the
-   compose box and selecting an existing topic or typing a new topic name.
-
-1. Send your message.
-
-!!! tip ""
-    To forward a message to a different channel or direct message recipient,
-    you will need to copy-paste the contents of the compose box.
 
 {end_tabs}
 
