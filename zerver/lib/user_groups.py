@@ -593,7 +593,7 @@ def get_group_setting_value_for_register_api(
 
 
 def get_members_and_subgroups_of_groups(
-    group_ids: set[int],
+    group_ids: Iterable[int],
 ) -> dict[int, UserGroupMembersData]:
     user_members = (
         UserGroupMembership.objects.filter(user_group_id__in=group_ids)
