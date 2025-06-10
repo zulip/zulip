@@ -149,6 +149,7 @@ export function build_page(): void {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         user_can_change_password: user_can_change_password(),
+        user_role_values: settings_config.user_role_values,
         user_has_email_set: !settings_data.user_email_not_configured(),
         automatically_follow_topics_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
