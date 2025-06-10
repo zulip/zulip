@@ -265,21 +265,25 @@ export function add_a_new_bot(): void {
         formData.append("full_name", full_name);
         formData.append("short_name", short_name);
 
-        // If the selected bot_type is Outgoing webhook
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-            formData.append("payload_url", JSON.stringify(payload_url));
-            formData.append("interface_type", interface_type);
-        } else if (bot_type === EMBEDDED_BOT_TYPE) {
-            formData.append("service_name", service_name);
-            const config_data: Record<string, string> = {};
-            $<HTMLInputElement>(
-                `#config_inputbox [name*='${CSS.escape(service_name)}'] input`,
-            ).each(function () {
-                const key = $(this).attr("name")!;
-                const value = $(this).val()!;
-                config_data[key] = value;
-            });
-            formData.append("config_data", JSON.stringify(config_data));
+        switch (bot_type) {
+            case OUTGOING_WEBHOOK_BOT_TYPE: {
+                formData.append("payload_url", JSON.stringify(payload_url));
+                formData.append("interface_type", interface_type);
+                break;
+            }
+            case EMBEDDED_BOT_TYPE: {
+                formData.append("service_name", service_name);
+                const config_data: Record<string, string> = {};
+                $<HTMLInputElement>(
+                    `#config_inputbox [name*='${CSS.escape(service_name)}'] input`,
+                ).each(function () {
+                    const key = $(this).attr("name")!;
+                    const value = $(this).val()!;
+                    config_data[key] = value;
+                });
+                formData.append("config_data", JSON.stringify(config_data));
+                break;
+            }
         }
         const files = $<HTMLInputElement>("input#bot_avatar_file_input")[0]!.files;
         assert(files !== null);
@@ -326,14 +330,19 @@ export function add_a_new_bot(): void {
 
             $("#payload_url_inputbox").hide();
             $("#create_payload_url").removeClass("required");
-            if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                $("#payload_url_inputbox").show();
-                $("#create_payload_url").addClass("required");
-            } else if (bot_type === EMBEDDED_BOT_TYPE) {
-                $("#service_name_list").show();
-                $("#select_service_name").addClass("required");
-                $("#select_service_name").trigger("change");
-                $("#config_inputbox").show();
+            switch (bot_type) {
+                case OUTGOING_WEBHOOK_BOT_TYPE: {
+                    $("#payload_url_inputbox").show();
+                    $("#create_payload_url").addClass("required");
+                    break;
+                }
+                case EMBEDDED_BOT_TYPE: {
+                    $("#service_name_list").show();
+                    $("#select_service_name").addClass("required");
+                    $("#select_service_name").trigger("change");
+                    $("#config_inputbox").show();
+                    break;
+                }
             }
         });
 
