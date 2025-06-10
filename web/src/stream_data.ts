@@ -790,6 +790,32 @@ export let can_post_messages_in_stream = function (
     );
 };
 
+export function can_create_new_topics_in_stream(
+    stream: Stream,
+    user_id: number = current_user.user_id,
+): boolean {
+    if (stream.is_archived) {
+        return false;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
+    }
+    let user: CurrentUser | User;
+    if (user_id === current_user.user_id) {
+        user = current_user;
+    } else {
+        user = people.get_by_user_id(user_id);
+    }
+    const can_create_topic_group = stream.can_create_topic_group;
+    return settings_data.user_has_permission_for_group_setting(
+        can_create_topic_group,
+        "can_create_topic_group",
+        "stream",
+        user,
+    );
+}
+
 export function rewire_can_post_messages_in_stream(
     value: typeof can_post_messages_in_stream,
 ): void {
