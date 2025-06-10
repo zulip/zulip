@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 391
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (331, 0)  # bumped 2025-06-10 to upgrade django-cte
+PROVISION_VERSION = (332, 0)  # bumped 2025-06-10 to upgrade Django
