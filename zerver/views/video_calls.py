@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import random
 from base64 import b64encode
 from urllib.parse import quote, urlencode, urljoin
 
@@ -311,7 +310,7 @@ def get_bigbluebutton_url(
 ) -> HttpResponse:
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
-    id = "zulip-" + str(random.randint(100000000000, 999999999999))
+    id = "zulip-" + str(user_profile.uuid)
 
     # We sign our data here to ensure a Zulip user cannot tamper with
     # the join link to gain access to other meetings that are on the
