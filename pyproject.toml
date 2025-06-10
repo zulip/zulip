@@ -169,7 +169,7 @@ prod = [
   "google-re2",
 
   # For querying recursive group membership
-  "django-cte",
+  "django-cte>=2.0.0.dev20250610173146", # https://github.com/dimagi/django-cte/pull/116
 
   # SCIM integration
   "django-scim2",

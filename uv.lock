@@ -895,11 +895,14 @@ sdist = { url = "https://files.pythonhosted.org/packages/de/a2/7db0b55ff84260aa1
 
 [[package]]
 name = "django-cte"
-version = "1.3.3"
+version = "2.0.0.dev20250610173146"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a0/56/951f6e176c83bf5e500ef7108c9e8de38785e249b62fa29be12b4c71c4eb/django-cte-1.3.3.tar.gz", hash = "sha256:0c1aeef067278a22886151c1d27f6f665a303952d058900e5ca82a24cde40697", size = 10931, upload-time = "2024-06-07T12:51:06.089Z" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/08/9c/7699e716095bc87151a1c8937c188d9734a341f414f4491e35375a669ba3/django_cte-2.0.0.dev20250610173146.tar.gz", hash = "sha256:4661c142def3c96b1a579ed23b813f44a3e81e1d68aaf03bb425583688cf538d", size = 11282, upload-time = "2025-06-10T17:32:10.299Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/02/a9d12e8c1cb767b2541bf7d759fbe713f84238f1c2bd22ed2ef3bed14606/django_cte-1.3.3-py2.py3-none-any.whl", hash = "sha256:85bbc3efb30c2f8c9ae3080ca6f0b9570e43d2cb4b6be10846c8ef9f046873fa", size = 11989, upload-time = "2024-06-07T12:51:04.827Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/15/1f508d7c05b250d0772141a1f020033723f71dd232e17d3a802b48f72bd5/django_cte-2.0.0.dev20250610173146-py3-none-any.whl", hash = "sha256:c75c97f6230b7af6ae364b3e970a7568e05706540fde6d155368bd92467cb2b1", size = 13166, upload-time = "2025-06-10T17:32:08.832Z" },
 ]
 
 [[package]]
@@ -1260,6 +1263,9 @@ dependencies = [
     { name = "uritemplate" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/35/99/237cd2510aecca9fabb54007e58553274cc43cb3c18512ee1ea574d11b87/google_api_python_client-2.171.0.tar.gz", hash = "sha256:057a5c08d28463c6b9eb89746355de5f14b7ed27a65c11fdbf1d06c66bb66b23", size = 13028937, upload-time = "2025-06-03T18:57:38.732Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/db/c397e3eb3ea18f423855479d0a5852bdc9c3f644e3d4194931fa664a70b4/google_api_python_client-2.171.0-py3-none-any.whl", hash = "sha256:c9c9b76f561e9d9ac14e54a9e2c0842876201d5b96e69e48f967373f0784cbe9", size = 13547393, upload-time = "2025-06-10T02:14:38.225Z" },
+]
 
 [[package]]
 name = "google-auth"
@@ -5492,7 +5498,7 @@ dev = [
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
-    { name = "django-cte" },
+    { name = "django-cte", specifier = ">=2.0.0.dev20250610173146" },
     { name = "django-scim2" },
     { name = "django-stubs" },
     { name = "django-stubs-ext" },
@@ -5624,7 +5630,7 @@ prod = [
     { name = "django-auth-ldap" },
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
-    { name = "django-cte" },
+    { name = "django-cte", specifier = ">=2.0.0.dev20250610173146" },
     { name = "django-scim2" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extras = ["call", "phonenumberslite", "sms"] },

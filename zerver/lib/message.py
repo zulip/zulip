@@ -9,7 +9,7 @@ from django.db import connection
 from django.db.models import Exists, F, Max, OuterRef, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from django_cte import With
+from django_cte import CTE, with_cte
 from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
@@ -882,11 +882,10 @@ def get_raw_unread_data(
             # inside a CTE, such that the join to Recipients, below, can't be
             # implied to remove rows, and thus allows a Nested Loop join,
             # potentially memoized to reduce the number of Recipient lookups.
-            cte = With(user_msgs[:MAX_UNREAD_MESSAGES])
+            cte = CTE(user_msgs[:MAX_UNREAD_MESSAGES])
 
             user_msgs = (
-                cte.join(Recipient, id=cte.col.recipient_id)
-                .with_cte(cte)
+                with_cte(cte, select=cte.join(Recipient, id=cte.col.recipient_id))
                 .annotate(
                     message_id=cte.col.message_id,
                     sender_id=cte.col.sender_id,

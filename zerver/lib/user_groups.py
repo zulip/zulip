@@ -7,7 +7,7 @@ from django.db import connection, transaction
 from django.db.models import F, Q, QuerySet, Value
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from django_cte import With
+from django_cte import CTE, with_cte
 from psycopg2.sql import SQL, Literal
 
 from zerver.lib.exceptions import (
@@ -777,23 +777,23 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserPro
 
 
 def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
-    cte = With.recursive(
+    cte = CTE.recursive(
         lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
         .values(group_id=F("id"))
         .union(
             cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
         )
     )
-    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
 
 def get_recursive_supergroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
-    cte = With.recursive(
+    cte = CTE.recursive(
         lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
         .values(group_id=F("id"))
         .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
     )
-    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
 
 def get_recursive_subgroups(user_group_id: int) -> QuerySet[UserGroup]:
@@ -804,14 +804,14 @@ def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserG
     # Same as get_recursive_subgroups but does not include the
     # user_group passed.
     direct_subgroup_ids = user_group.direct_subgroups.all().values("id")
-    cte = With.recursive(
+    cte = CTE.recursive(
         lambda cte: NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
         .values(group_id=F("id"))
         .union(
             cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
         )
     )
-    return cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
 
 
 def get_recursive_group_members(user_group_id: int) -> QuerySet[UserProfile]:
@@ -828,12 +828,12 @@ def get_recursive_group_members_union_for_groups(
 
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:
-    cte = With.recursive(
+    cte = CTE.recursive(
         lambda cte: user_profile.direct_groups.values(group_id=F("id")).union(
             cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id"))
         )
     )
-    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
 
 def user_has_permission_for_group_setting(
@@ -896,14 +896,14 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
 def get_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm: Realm
 ) -> QuerySet[NamedUserGroup]:
-    cte = With.recursive(
+    cte = CTE.recursive(
         lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm=realm)
         .values(group_id=F("id"))
         .union(
             cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
         )
     )
-    recursive_subgroups = cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
+    recursive_subgroups = with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
     return recursive_subgroups
 
 
@@ -913,7 +913,7 @@ def get_root_id_annotated_recursive_subgroups_for_groups(
     # Same as get_recursive_subgroups_for_groups but keeps track of
     # each group root_id and annotates it with that group.
 
-    cte = With.recursive(
+    cte = CTE.recursive(
         lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
         .values(group_id=F("id"), root_id=F("id"))
         .union(
@@ -922,8 +922,8 @@ def get_root_id_annotated_recursive_subgroups_for_groups(
             )
         )
     )
-    recursive_subgroups = (
-        cte.join(UserGroup, id=cte.col.group_id).with_cte(cte).annotate(root_id=cte.col.root_id)
+    recursive_subgroups = with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id)).annotate(
+        root_id=cte.col.root_id
     )
 
     return recursive_subgroups
