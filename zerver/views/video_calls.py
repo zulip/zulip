@@ -312,14 +312,14 @@ def get_bigbluebutton_url(
 ) -> HttpResponse:
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
-    id = "zulip-" + str(user_profile.uuid)
+    meeting_id = "zulip-" + str(user_profile.uuid)
 
     # We sign our data here to ensure a Zulip user cannot tamper with
     # the join link to gain access to other meetings that are on the
     # same bigbluebutton server.
     signed = Signer().sign_object(
         {
-            "meeting_id": id,
+            "meeting_id": meeting_id,
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
             "bbb_origin": "Zulip",
