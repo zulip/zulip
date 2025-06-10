@@ -45,7 +45,7 @@ formatted, or to copy the Markdown source for a reply.
 
 {!message-long-press-menu.md!}
 
-1. Tap **Copy to clipboard**.
+1. Tap **Copy message text**.
 
 {end_tabs}
 
