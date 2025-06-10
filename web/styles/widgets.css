@@ -156,7 +156,13 @@
         font-weight: 400;
     }
 
-    & span.poll-option {
+    .poll-option-label {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+    }
+
+    .poll-option-text {
         font-weight: 600;
         /* Start with max-content, but allow options
            to shrink, so that voting names wrap comfortably. */
