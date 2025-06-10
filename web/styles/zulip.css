@@ -1219,12 +1219,12 @@ nav {
 }
 
 #loading_older_messages_indicator,
-#loading_newer_messages_indicator {
+#loading_more_indicator {
     margin: 10px;
 }
 
 #loading_older_messages_indicator_box_container,
-#loading_newer_messages_indicator_box_container {
+#loading_more_indicator_box_container {
     position: absolute;
     left: 50%;
 
@@ -1237,7 +1237,7 @@ nav {
 }
 
 #loading_older_messages_indicator_box,
-#loading_newer_messages_indicator_box {
+#loading_more_indicator_box {
     position: relative;
     left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
     top: -3.0714em; /* -43px at 14px/em */
