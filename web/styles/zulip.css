@@ -881,13 +881,17 @@ strong {
     }
 }
 
-@keyframes fadeInEditNotice {
+@keyframes pulseEditedIconOnSave {
     0% {
-        transform: translateX(-10px);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.5;
     }
 
     100% {
-        transform: translateX(0);
+        opacity: 0;
     }
 }
 

@@ -1,11 +1,7 @@
 <div class="edit-notifications"></div>
 {{#if modified}}
-    {{#if msg/local_edit_timestamp}}
-        <div class="message_edit_notice">
-            <i class="message-saving-icon zulip-icon zulip-icon-message-edited"></i>
-        </div>
-    {{else if edited}}
-        <div class="message_edit_notice">
+    {{#if edited}}
+        <div class="message_edit_notice {{#if msg/local_edit_timestamp}}locally-echoed-edit{{/if}}">
             <i class="message-edited-icon zulip-icon zulip-icon-message-edited"></i>
         </div>
     {{else}}
