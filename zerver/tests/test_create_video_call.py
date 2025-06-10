@@ -379,6 +379,9 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
+                "bbb_origin": "Zulip",
+                "bbb_origin_version": "version.ZULIP_VERSION",
+                "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
                 "moderator": self.user.id,
             }
         )
@@ -388,6 +391,9 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
+                "bbb_origin": "Zulip",
+                "bbb_origin_version": "version.ZULIP_VERSION",
+                "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
                 "moderator": self.example_user("cordelia").id,
             }
         )
@@ -412,6 +418,9 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                             "meeting_id": "zulip-1",
                             "name": "general > meeting",
                             "lock_settings_disable_cam": False,
+                            "bbb_origin": "Zulip",
+                            "bbb_origin_version": "version.ZULIP_VERSION",
+                            "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
                             "moderator": self.user.id,
                         }
                     ),
@@ -433,6 +442,9 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                             "meeting_id": "zulip-1",
                             "name": "general > meeting",
                             "lock_settings_disable_cam": True,
+                            "bbb_origin": "Zulip",
+                            "bbb_origin_version": "version.ZULIP_VERSION",
+                            "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
                             "moderator": self.user.id,
                         }
                     ),
