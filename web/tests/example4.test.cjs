@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_bot} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const {create} = require("./lib/zjquery.cjs");
 
 /*
 
@@ -118,6 +119,8 @@ run_test("add users with event", ({override}) => {
 run_test("update user with event", ({override}) => {
     people.init();
     people.add_active_user(bob);
+
+    create("select#user-self-role-select").has = () => false;
 
     const new_bob = make_bot({
         email: "bob@example.com",
