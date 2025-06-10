@@ -4,6 +4,7 @@ from typing_extensions import override
 from zerver.actions.message_send import internal_send_private_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import message_stream_count, most_recent_message
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.users import get_system_bot
 
 
@@ -145,11 +146,77 @@ class TutorialTests(ZulipTestCase):
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
+    def test_response_to_pm_for_help_using_direct_message_group(self) -> None:
+        user = self.example_user("hamlet")
+        bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
+
+        direct_group_message = get_or_create_direct_message_group(id_list=[user.id, bot.id])
+
+        messages = ["help", "Help", "?"]
+        self.login_user(user)
+        for content in messages:
+            self.send_personal_message(user, bot, content)
+            expected_response = (
+                "Here are a few messages I understand: "
+                "`apps`, `profile`, `theme`, "
+                "`channels`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
+                "Check out our [Getting started guide](/help/getting-started-with-zulip), "
+                "or browse the [Help center](/help/) to learn more!"
+            )
+            message = most_recent_message(user)
+            self.assertEqual(message.content, expected_response)
+            self.assertEqual(message.recipient, direct_group_message.recipient)
+
+    def test_no_response_to_direct_message_group_with_a_soft_diactivated_user(self) -> None:
+        user = self.example_user("hamlet")
+        soft_deactivated_user = self.example_user("cordelia")
+        self.soft_deactivate_user(soft_deactivated_user)
+        bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
+
+        messages = ["help", "Help", "?"]
+        self.login_user(user)
+        for content in messages:
+            self.send_group_direct_message(user, [soft_deactivated_user, bot], content)
+            message = most_recent_message(user)
+            self.assertEqual(message.content, content)
+            self.assertEqual(message.sender, user)
+
     def test_response_to_pm_for_undefined(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Hello", "HAHAHA", "OKOK", "LalulaLapas"]
         self.login_user(user)
+        # First undefined message sent.
+        self.send_personal_message(user, bot, "Hello")
+        expected_response = (
+            "You can chat with me as much as you like! To get help, try one of the following messages: "
+            "`apps`, `profile`, `theme`, `channels`, "
+            "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
+        )
+        self.assertEqual(most_recent_message(user).content, expected_response)
+
+        # For future undefined messages, welcome bot won't send a reply.
+        for content in messages:
+            self.send_personal_message(user, bot, content)
+            self.assertEqual(most_recent_message(user).content, content)
+
+        # Check if Welcome bot still replies for bot commands
+        self.send_personal_message(user, bot, "apps")
+        expected_response = (
+            "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
+            "Zulip also works great in a browser."
+        )
+        self.assertEqual(most_recent_message(user).content, expected_response)
+
+    def test_response_to_pm_for_undefined_using_direct_group_message(self) -> None:
+        user = self.example_user("hamlet")
+        bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
+
+        get_or_create_direct_message_group(id_list=[user.id, bot.id])
+
+        messages = ["Hello", "HAHAHA", "OKOK", "LalulaLapas"]
+        self.login_user(user)
+
         # First undefined message sent.
         self.send_personal_message(user, bot, "Hello")
         expected_response = (

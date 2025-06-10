@@ -16,6 +16,7 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, OnboardingUserMessage, Realm, UserProfile
+from zerver.models.recipients import Recipient
 from zerver.models.users import get_system_bot
 
 
@@ -212,8 +213,12 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     to welcome-bot, trigger the welcome-bot reply."""
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
-    human_user_recipient_id = send_request.message.sender.recipient_id
-    assert human_user_recipient_id is not None
+    if send_request.message.recipient.type == Recipient.PERSONAL:
+        conversation_recipient_id = send_request.message.sender.recipient_id
+        assert conversation_recipient_id is not None
+    else:
+        assert send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        conversation_recipient_id = send_request.message.recipient.id
     content = select_welcome_bot_response(human_response_lower)
     realm_id = send_request.realm.id
     commands = bot_commands()
@@ -222,7 +227,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
         and Message.objects.filter(
             realm_id=realm_id,
             sender_id=welcome_bot.id,
-            recipient_id=human_user_recipient_id,
+            recipient_id=conversation_recipient_id,
             content__icontains=commands,
         ).exists()
         # Uses index 'zerver_message_realm_sender_recipient'
