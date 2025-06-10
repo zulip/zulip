@@ -765,6 +765,37 @@ test_people("is_current_user_only_owner", ({override}) => {
     assert.ok(!people.is_current_user_only_owner());
 });
 
+test_people("user_can_change_their_own_role", ({override}) => {
+    const bob = {
+        email: "bob@example.com",
+        user_id: 1,
+        full_name: "Bob",
+        is_owner: false,
+        is_admin: false,
+    };
+    people.add_active_user(bob);
+
+    const person = people.get_by_email(bob.email);
+    assert.ok(person);
+
+    person.is_owner = false;
+    override(current_user, "is_owner", true);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", false);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    person.is_owner = true;
+    override(current_user, "is_owner", true);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
+});
+
 test_people("recipient_counts", () => {
     const user_id = 99;
     assert.equal(people.get_recipient_count({user_id}), 0);
