@@ -653,9 +653,10 @@ def user_groups_in_realm_serialized(
     """
     anonymous_group_ids: set[int] = set()
     if not fetch_anonymous_group_membership:
-        realm_groups = NamedUserGroup.objects.filter(realm=realm)
+        realm_groups_query = NamedUserGroup.objects.filter(realm=realm)
         if not include_deactivated_groups:
-            realm_groups = realm_groups.filter(deactivated=False)
+            realm_groups_query = realm_groups_query.filter(deactivated=False)
+        realm_groups = list(realm_groups_query)
     else:
         groups = UserGroup.objects.filter(realm=realm).select_related("named_user_group")
         realm_groups = []
