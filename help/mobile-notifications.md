@@ -37,52 +37,6 @@ notifications while you are actively using one of the Zulip apps.
 
 ## Testing mobile notifications
 
-### For users on Zulip Cloud and Zulip Server 8.0+
-
-!!! tip ""
-
-    Follow [these instructions](/help/view-zulip-version) to check the Zulip
-    version for your organization.
-
-To verify that mobile notifications are working as desired, you can send
-yourself a test notification from the Zulip mobile app. If you belong to more
-than one Zulip organization, you can separately test notifications for each
-account.
-
-{start_tabs}
-
-{tab|mobile}
-
-1. [Download](https://zulip.com/apps/) and install the Zulip mobile app if you
-   have not done so already.
-
-1. [Log in](/help/logging-in) to the account you want to test.
-
-{!mobile-profile-menu.md!}
-
-1. Tap **Settings**.
-
-1. Tap **Notifications**.
-
-1. Tap **Send a test notification**. If notifications are working, you will
-   receive a **Test notification**.
-
-!!! tip ""
-
-    If you see a banner indicating that notifications have not been enabled
-    for your Zulip server, try [logging out](/help/logging-out) of your account
-    and [logging in](/help/logging-in) again. This will help if notifications
-    were enabled very recently.
-
-{end_tabs}
-
-### For users on older Zulip servers
-
-!!! tip ""
-
-    Follow [these instructions](/help/view-zulip-version) to check the Zulip
-    version for your organization.
-
 Start by configuring your notifications settings to make it easy to trigger a
 notification.
 
@@ -155,88 +109,11 @@ To enable push notifications for your organization:
 
 {end_tabs}
 
-#### Check whether notifications are enabled on your Zulip server
-
-{start_tabs}
-
-{tab|mobile}
-
-{!mobile-profile-menu.md!}
-
-1. Tap **Settings**.
-
-1. Tap **Notifications**. If notifications are not enabled, you will see a
-   banner that indicates this.
-
-{end_tabs}
-
-### Warning banners
-
-To make sure that you are aware when mobile notifications will not work, you will
-see a warning banner in the mobile app if:
-
-- Your server is not registered with the [Zulip Mobile Push Notification
-  Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
-
-- There is a problem with your server's registration, such as failing to [upload
-  required
-  basic metadata](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-basic-metadata).
-
-- Your organization's [plan](https://zulip.com/plans/#self-hosted) does not
-  include access to mobile notifications.
-
-- Your organization's access to mobile push notifications is about to
-  end. This banner is first shown to server administrators, and then
-  to all users.
-
-These banners can be snoozed temporarily, or permanently silenced in
-notification settings.
-
-#### Configure warnings about mobile notifications
-
-{start_tabs}
-
-{tab|mobile}
-
-{!mobile-profile-menu.md!}
-
-1. Tap **Settings**.
-
-1. Tap **Notifications**.
-
-1. Toggle **Silence warnings about disabled mobile notifications** to
-   configure warning banners in the mobile app.
-
-{end_tabs}
-
 ### Why am I seeing “New message” in place of message text?
 
 Administrators of self-hosted Zulip servers can
 [configure](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#security-and-privacy)
 push notifications not to include any message content.
-
-### Contacting Zulip support
-
-If you are still having trouble with your push notifications, you can send an
-email to [Zulip support](/help/contact-support). Please be sure to include the
-troubleshooting data provided by the mobile app.
-
-{start_tabs}
-
-{tab|mobile}
-
-{!mobile-profile-menu.md!}
-
-1. Tap **Settings**.
-
-1. Tap **Notifications**.
-
-1. Tap **Troubleshooting**.
-
-1. Use the **Copy to clipboard** button or the **Email support@zulip.com**
-   button to email the troubleshooting data to the Zulip support team.
-
-{end_tabs}
 
 ## Related articles
 
