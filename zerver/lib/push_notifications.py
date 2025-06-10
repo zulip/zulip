@@ -85,6 +85,9 @@ def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
 
 
+PUSH_REGISTRATION_LIVENESS_TIMEOUT = 24 * 60 * 60
+
+
 def get_message_stream_name_from_database(message: Message) -> str:
     """
     Never use this function outside of the push-notifications
