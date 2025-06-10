@@ -638,9 +638,10 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     // We currently have the main UI for editing your own profile in
     // settings, so can_manage_profile is artificially false for those.
     const can_manage_profile =
-        (people.can_admin_user(user) || current_user.is_admin) &&
-        !user.is_system_bot &&
-        !people.is_my_user_id(user.user_id);
+        (people.can_admin_user(user) ||
+            current_user.is_admin ||
+            people.is_my_user_id(user.user_id)) &&
+        !user.is_system_bot;
     const args: Record<string, unknown> = {
         can_manage_profile,
         date_joined: timerender.get_localized_date_or_time_for_format(
@@ -1443,11 +1444,6 @@ export function initialize(): void {
             e.preventDefault();
         },
     );
-
-    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
-        browser_history.go_to_location("#settings/profile");
-        hide_user_profile();
-    });
 
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
