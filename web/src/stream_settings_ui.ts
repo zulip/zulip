@@ -906,7 +906,7 @@ function setup_page(callback: () => void): void {
         // is only useful if the user has permission to create
         // streams, either explicitly via user_can_create_streams, or
         // implicitly because realm.realm_is_zephyr_mirror_realm.
-        $("#stream_filter input[type='text']").on("keypress", (e) => {
+        $("#stream_filter input[type='text']").on("keydown", (e) => {
             if (!keydown_util.is_enter_event(e)) {
                 return;
             }

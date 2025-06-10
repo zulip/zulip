@@ -164,7 +164,7 @@ function user_status_post_render(): void {
         update_button();
     });
 
-    input_field().on("keypress", (event) => {
+    input_field().on("keydown", (event) => {
         if (keydown_util.is_enter_event(event)) {
             event.preventDefault();
 

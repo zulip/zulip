@@ -319,8 +319,8 @@ $(() => {
         $("#new-user-email-address-visibility .current-selected-option").text(selected_option_text);
     });
 
-    $("#registration").on("click keypress", ".edit-realm-details", (e) => {
-        if (e.type === "keypress" && e.key !== "Enter") {
+    $("#registration").on("click keydown", ".edit-realm-details", (e) => {
+        if (e.type === "keydown" && e.key !== "Enter") {
             return;
         }
 
