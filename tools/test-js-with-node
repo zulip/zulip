@@ -62,6 +62,7 @@ EXEMPT_FILES = make_set(
         "web/src/blueslip.ts",
         "web/src/blueslip_stacktrace.ts",
         "web/src/bootstrap_typeahead.ts",
+        "web/src/bot_helper.ts",
         "web/src/browser_history.ts",
         "web/src/buddy_list.ts",
         "web/src/buttons.ts",

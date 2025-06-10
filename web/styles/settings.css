@@ -394,6 +394,23 @@ select.settings_select {
     }
 }
 
+.bot-modal-value-and-button {
+    display: flex;
+    align-items: center;
+}
+
+.bot-modal-buttons {
+    display: flex;
+    align-items: center;
+    margin-left: 0.25em;
+}
+
+#zuliprc-section {
+    .modal-field-label {
+        margin-bottom: 0;
+    }
+}
+
 /* Class for displaying an input with an
    auxiliary control, e.g., the play button
    next to the notification sound dropdown. */
