@@ -46,75 +46,82 @@ def check_update_first_message_id(
     send_event_on_commit(realm, stream_event, users_to_notify)
 
 
+def _process_grouped_messages_deletion(
+    realm: Realm,
+    grouped_messages: list[Message],
+    *,
+    stream_id: int | None,
+    topic: str | None,
+    acting_user: UserProfile | None,
+) -> None:
+    """
+    Helper for do_delete_messages. Should not be called directly otherwise.
+    """
+
+    message_ids = [message.id for message in grouped_messages]
+    if not message_ids:
+        return  # nocoverage
+
+    event: DeleteMessagesEvent = {
+        "type": "delete_message",
+        "message_ids": message_ids,
+    }
+    if stream_id is None:
+        assert topic is None
+        message_type = "private"
+        archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
+    else:
+        assert topic is not None
+        message_type = "stream"
+        event["stream_id"] = stream_id
+        event["topic"] = topic
+        stream = Stream.objects.get(id=stream_id)
+        archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
+    event["message_type"] = message_type
+
+    # We exclude long-term idle users, since they by definition have no active clients.
+    users_to_notify = event_recipient_ids_for_action_on_messages(
+        grouped_messages,
+        channel=stream if message_type == "stream" else None,
+    )
+
+    if acting_user is not None:
+        # Always send event to the user who deleted the message.
+        users_to_notify.add(acting_user.id)
+
+    move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
+    if message_type == "stream":
+        check_update_first_message_id(realm, stream, message_ids, users_to_notify)
+
+    send_event_on_commit(realm, event, users_to_notify)
+
+
 def do_delete_messages(
     realm: Realm, messages: Iterable[Message], *, acting_user: UserProfile | None
 ) -> None:
     private_messages_by_recipient: defaultdict[int, list[Message]] = defaultdict(list)
-    stream_messages_by_stream_and_topic: defaultdict[int, defaultdict[str, list[Message]]] = (
-        defaultdict(lambda: defaultdict(list))
+    stream_messages_by_stream_and_topic: defaultdict[tuple[int, str], list[Message]] = defaultdict(
+        list
     )
-
     for message in messages:
         if message.is_stream_message():
             stream_id = message.recipient.type_id
-            topic_name = message.topic_name()
-            stream_messages_by_stream_and_topic[stream_id][topic_name].append(message)
+            # topics are case-insensitive.
+            topic_name = message.topic_name().lower()
+            stream_messages_by_stream_and_topic[(stream_id, topic_name)].append(message)
         else:
             recipient_id = message.recipient.id
             private_messages_by_recipient[recipient_id].append(message)
 
     for recipient_id, grouped_messages in private_messages_by_recipient.items():
-        message_ids = [message.id for message in grouped_messages]
-        if not message_ids:
-            continue  # nocoverage
+        _process_grouped_messages_deletion(
+            realm, grouped_messages, stream_id=None, topic=None, acting_user=acting_user
+        )
 
-        private_event: DeleteMessagesEvent = {
-            "type": "delete_message",
-            "message_ids": message_ids,
-            "message_type": "private",
-        }
-
-        # We exclude long-term idle users, since they by definition have no active clients.
-        users_to_notify = event_recipient_ids_for_action_on_messages(grouped_messages)
-
-        if acting_user is not None:
-            # Always send event to the user who deleted the message.
-            users_to_notify.add(acting_user.id)
-
-        move_messages_to_archive(message_ids, realm=realm, chunk_size=retention.MESSAGE_BATCH_SIZE)
-        send_event_on_commit(realm, private_event, users_to_notify)
-
-    for stream_id, topics in stream_messages_by_stream_and_topic.items():
-        for topic_name, grouped_messages in topics.items():
-            message_ids = [message.id for message in grouped_messages]
-            if not message_ids:
-                continue  # nocoverage
-
-            event: DeleteMessagesEvent = {
-                "type": "delete_message",
-                "message_ids": message_ids,
-                "message_type": "stream",
-                "stream_id": stream_id,
-                "topic": topic_name,
-            }
-
-            stream = Stream.objects.get(id=stream_id)
-
-            # We exclude long-term idle users, since they by definition have no active clients.
-            users_to_notify = event_recipient_ids_for_action_on_messages(
-                grouped_messages,
-                channel=stream,
-            )
-
-            if acting_user is not None:
-                # Always send event to the user who deleted the message.
-                users_to_notify.add(acting_user.id)
-
-            move_messages_to_archive(
-                message_ids, realm=realm, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE
-            )
-            check_update_first_message_id(realm, stream, message_ids, users_to_notify)
-            send_event_on_commit(realm, event, users_to_notify)
+    for (stream_id, topic_name), grouped_messages in stream_messages_by_stream_and_topic.items():
+        _process_grouped_messages_deletion(
+            realm, grouped_messages, stream_id=stream_id, topic=topic_name, acting_user=acting_user
+        )
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
