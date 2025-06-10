@@ -427,7 +427,9 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
         url = get_public_upload_root_url() + path
         return redirect(url, permanent=True)
 
-    local_path = os.path.join(settings.LOCAL_AVATARS_DIR, path)
+    local_path = os.path.normpath(os.path.join(settings.LOCAL_AVATARS_DIR, path))
+    if not local_path.startswith(os.path.normpath(settings.LOCAL_AVATARS_DIR)):
+        raise JsonableError(_("Invalid path"))
     assert_is_local_storage_path("avatars", local_path)
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
