@@ -1682,6 +1682,13 @@ export function add_cross_realm_user(person: User): void {
     }
 }
 
+export function user_can_change_their_own_role(): boolean {
+    if (is_current_user_only_owner()) {
+        return false;
+    }
+    return current_user.is_admin;
+}
+
 export function deactivate(person: User): void {
     // We don't fully remove a person from all of our data
     // structures, because deactivated users can be part

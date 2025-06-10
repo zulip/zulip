@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_bot} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 /*
 
@@ -119,6 +120,12 @@ run_test("add users with event", ({override}) => {
 run_test("update user with event", ({override}) => {
     people.init();
     people.add_active_user(bob);
+
+    set_current_user({user_id: bob.user_id});
+
+    const $select = $.create("#user-self-role-select");
+    const $option = $.create('option[value="100"]');
+    $select.set_find_results('option[value="100"]', $option);
 
     const new_bob = make_bot({
         email: "bob@example.com",
