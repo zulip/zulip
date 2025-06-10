@@ -59,6 +59,8 @@ class ErrorCode(Enum):
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
+    INVALID_BOUNCER_PUBLIC_KEY = auto()
+    REQUEST_EXPIRED = auto()
 
 
 class JsonableError(Exception):
@@ -827,3 +829,37 @@ class SlackImportInvalidFileError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class InvalidBouncerPublicKeyError(JsonableError):
+    code = ErrorCode.INVALID_BOUNCER_PUBLIC_KEY
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid bouncer_public_key")
+
+
+class RequestExpiredError(JsonableError):
+    code = ErrorCode.REQUEST_EXPIRED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Request expired")
+
+
+class InvalidEncryptedPushRegistrationError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid encrypted_push_registration")

@@ -643,6 +643,9 @@ class RemotePushDevice(models.Model):
                 # Each app install (token) can have multiple accounts (push_account_id).
                 # The (push_account_id, token) pair needs to be unique to avoid sending
                 # redundant notifications to the same account on a device.
+                #
+                # Also, the unique index created is used by a query in
+                # 'do_register_remote_push_device'.
                 fields=["push_account_id", "token"],
                 name="unique_remote_push_device_push_account_id_token",
             ),

@@ -73,6 +73,12 @@ logger = logging.getLogger(__name__)
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
+# Time (in seconds) for which the server should retry registering
+# a push device to the bouncer. 24 hrs is a good time limit because
+# a day is longer than any minor outage.
+PUSH_REGISTRATION_LIVENESS_TIMEOUT = 24 * 60 * 60
+
+
 DeviceToken: TypeAlias = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 
