@@ -65,9 +65,9 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 1. Navigate to a channel, topic, or direct message view.
 
 1. Tap the
-   **paperclip** (<img src="/static/images/help/mobile-paperclip-icon.svg" alt="paperclip" class="help-center-icon"/>),
-   **image** (<img src="/static/images/help/mobile-image-icon.svg" alt="image" class="help-center-icon"/>),
-   or **camera** (<img src="/static/images/help/mobile-camera-icon.svg" alt="camera" class="help-center-icon"/>)
+   **paperclip** (<i class="zulip-icon zulip-icon-attachment mobile-help"></i>),
+   **image** (<i class="zulip-icon zulip-icon-mobile-image mobile-help"></i>),
+   or **camera** (<i class="zulip-icon zulip-icon-mobile-camera mobile-help"></i>)
    button at the bottom of the app to select one or more files. Zulip will
    upload the files, and insert named links using
    [Markdown formatting](/help/format-your-message-using-markdown#links):
