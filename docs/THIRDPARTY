@@ -101,6 +101,14 @@ Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/arrow-left-right)
 License: ISC License
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/shared/icons/mobile-camera.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/camera)
+License: ISC License
+
+Files: web/shared/icons/mobile-image.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/image)
+License: ISC License
+
 Files: web/shared/icons/mobile-menu.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
