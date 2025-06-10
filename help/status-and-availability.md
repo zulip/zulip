@@ -32,17 +32,6 @@ You can set a status emoji, status message, or both.
 
 {!set-status.md!}
 
-{tab|mobile}
-
-{!mobile-profile-menu.md!}
-
-1. Tap **Set your status**.
-
-1. Tap to select one of the common statuses, *or* choose any emoji and/or
-   write a short message.
-
-1. Tap **Save**.
-
 {end_tabs}
 
 ### Clear a status
@@ -60,18 +49,6 @@ You can set a status emoji, status message, or both.
 {!personal-menu.md!}
 
 {!clear-status.md!}
-
-{tab|mobile}
-
-{!mobile-profile-menu.md!}
-
-1. Tap **Set your status**.
-
-1. Tap the **x**
-   (<img src="/static/images/help/mobile-x-icon.svg" alt="x" class="help-center-icon"/>)
-   to the right of your current status.
-
-1. Tap **Save**.
 
 {end_tabs}
 
@@ -94,15 +71,6 @@ and compose box. Status emoji and status messages are also shown on
     You can also click on a user's profile picture or name on a message they
     sent to view their status in their **user card**, or configure status text
     to always be shown in the right sidebar.
-
-{tab|mobile}
-
-1. Tap on a user's profile picture or name to open their profile.
-
-1. Look for their status below the user's role (e.g., Member) if they have one
-   set.
-
-{!mobile-view-user-profile-tip.md!}
 
 {end_tabs}
 
@@ -177,12 +145,6 @@ Your activity will still be included in your organization's [statistics](/help/a
 
     You can also toggle this setting in the **Account & privacy**
     tab of your **Personal settings** menu.
-
-{tab|mobile}
-
-{!mobile-profile-menu.md!}
-
-1. Toggle **Invisible mode**.
 
 {end_tabs}
 
