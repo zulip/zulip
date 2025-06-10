@@ -119,6 +119,7 @@ export const update_person = function update(event: UserUpdate): void {
             settings_org.maybe_disable_widgets();
             settings_org.enable_or_disable_group_permission_settings();
             settings.update_lock_icon_in_sidebar();
+            settings.remove_owner_from_role_select();
         }
 
         if (people.is_my_user_id(event.user_id) && current_user.is_admin !== user.is_admin) {
@@ -131,6 +132,7 @@ export const update_person = function update(event: UserUpdate): void {
             settings_realm_user_settings_defaults.maybe_disable_widgets();
             settings_account.update_account_settings_display();
             settings.update_lock_icon_in_sidebar();
+            settings.update_user_self_role_select_state();
         }
 
         if (
