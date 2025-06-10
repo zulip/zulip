@@ -274,7 +274,7 @@ function toggle_categories_dropdown(): void {
 }
 
 function integration_events(): void {
-    $<HTMLInputElement>('#integration-search input[type="text"]').on("keypress", function (e) {
+    $<HTMLInputElement>('#integration-search input[type="text"]').on("keydown", function (e) {
         if (e.key === "Enter" && this.value !== "") {
             $(".integration-lozenges .integration-lozenge:not([hidden])")[0]?.closest("a")?.click();
         }

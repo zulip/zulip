@@ -572,7 +572,7 @@ export function initialize(): void {
         },
     );
 
-    $("#channels_overlay_container").on("keypress", "#change_stream_description", (e) => {
+    $("#channels_overlay_container").on("keydown", "#change_stream_description", (e) => {
         // Stream descriptions cannot be multiline, so disable enter key
         // to prevent new line
         if (keydown_util.is_enter_event(e)) {
