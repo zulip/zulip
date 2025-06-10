@@ -81,27 +81,6 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 
     The link text will default to the name of the uploaded file.
 
-## Sharing files
-
-You can share files from other apps on Zulip.
-
-{start_tabs}
-
-{tab|android}
-
-1. Select one or more files and tap the **Zulip**
-   (<img src="/static/images/logo/zulip-icon-circle.svg" alt="logo" class="help-center-icon"/>)
-   logo.
-
-1. Select a channel name and topic name, or tap the
-   **Direct message** tab and **Choose recipients**.
-
-1. _(optional)_ Write a message.
-
-1. Tap the **Send** button.
-
-{end_tabs}
-
 ## Named file example
 
 ### What you type
