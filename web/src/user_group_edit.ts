@@ -2000,6 +2000,11 @@ export function initialize(): void {
                         .addClass("save-button")
                         .attr("data-group-id", user_group_id);
                 },
+                on_hidden() {
+                    resize.resize_settings_overlay_list_toggler_container(
+                        $("#groups_overlay_container"),
+                    );
+                },
                 update_submit_disabled_state_on_change: true,
             });
         },
