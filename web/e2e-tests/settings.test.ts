@@ -114,7 +114,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
         "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal.modal--open .dialog_submit_button"),
         "Add",
         "Deactivate button has incorrect text.",
     );
@@ -124,7 +124,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
         bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
         payload_url: "http://hostname.example.com/bots/followup",
     });
-    await page.click(".micromodal .dialog_submit_button");
+    await page.click(".micromodal.modal--open .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "1-bot@zulip.testserver";
@@ -154,7 +154,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
         "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal.modal--open .dialog_submit_button"),
         "Add",
         "Deactivate button has incorrect text.",
     );
@@ -163,7 +163,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
         bot_short_name: "2",
         bot_type: GENERIC_BOT_TYPE,
     });
-    await page.click(".micromodal .dialog_submit_button");
+    await page.click(".micromodal.modal--open .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "2-bot@zulip.testserver";

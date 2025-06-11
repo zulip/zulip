@@ -68,7 +68,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
         pattern: "(?P<num>[0-9a-f]{40})",
         url_template: "https://trac.example.com/commit/{num}",
     });
-    await page.click(".dialog_submit_button");
+    await page.click(".modal--open .dialog_submit_button");
 
     await page.waitForSelector(".micromodal", {hidden: true});
     await common.wait_for_micromodal_to_close(page);
@@ -95,7 +95,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         pattern: "#(?P<id>d????)",
         url_template: "{id",
     });
-    await page.click(".dialog_submit_button");
+    await page.click(".modal--open .dialog_submit_button");
 
     const edit_linkifier_pattern_status_selector = "div#dialog_error";
     await page.waitForSelector(edit_linkifier_pattern_status_selector, {visible: true});
@@ -116,7 +116,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     );
     assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
-    await page.click(".dialog_exit_button");
+    await page.click(".modal--open .dialog_exit_button");
     await page.waitForSelector(".micromodal", {hidden: true});
 
     await page.waitForSelector(".linkifier_row:nth-last-child(1)", {visible: true});

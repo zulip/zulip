@@ -1642,22 +1642,15 @@ export function build_page(): void {
         $delete_button.hide();
     }
 
-    function upload_realm_logo_or_icon(
-        $file_input: JQuery<HTMLInputElement>,
-        night: boolean | null,
-        icon: boolean,
-    ): void {
+    function upload_realm_logo_or_icon(file: File, night: boolean | null, icon: boolean): void {
         const form_data = new FormData();
         let widget;
         let url;
 
         assert(csrf_token !== undefined);
         form_data.append("csrfmiddlewaretoken", csrf_token);
-        const files = util.the($file_input).files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            form_data.append("file-" + i, file);
-        }
+        form_data.append("file", file);
+
         if (icon) {
             url = "/json/realm/icon";
             widget = "#realm-icon-upload-widget";
