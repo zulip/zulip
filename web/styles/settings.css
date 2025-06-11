@@ -999,154 +999,6 @@ input[type="checkbox"] {
     max-height: calc(95vh - 280px);
 }
 
-#bot-settings {
-    .add-a-new-bot {
-        margin-bottom: 2px;
-        margin-top: 10px;
-    }
-
-    hr {
-        margin: 10px 0;
-        border-color: hsl(0deg 0% 85%);
-    }
-
-    .config-download-text {
-        margin-left: 5px;
-    }
-
-    .ind-tab {
-        width: auto;
-        min-width: 90px;
-    }
-}
-
-.bots_list {
-    list-style-type: none;
-    margin-left: 0;
-
-    .bot-card-image {
-        vertical-align: top;
-    }
-
-    .bot-card-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin: 7px 5px;
-
-        overflow: hidden;
-        line-height: 1.3em;
-        text-overflow: ellipsis;
-        white-space: pre;
-    }
-
-    .bot-card-regenerate-bot-api-key {
-        position: relative;
-        margin-left: 5px;
-        color: hsl(0deg 0% 67%);
-        transition: color 0.3s ease;
-
-        &:hover {
-            color: hsl(0deg 0% 27%);
-        }
-    }
-
-    .edit-bot-buttons {
-        padding-top: 5px;
-
-        & button {
-            background-color: transparent;
-        }
-
-        .bootstrap-btn {
-            padding: 4px;
-        }
-
-        .sea-green {
-            color: hsl(177deg 70% 46%);
-        }
-
-        .blue {
-            color: hsl(203deg 77% 56%);
-        }
-
-        .danger-red {
-            color: hsl(0deg 56% 73%);
-        }
-
-        .copy_zuliprc {
-            color: hsl(51deg 90% 50%);
-        }
-
-        .purple {
-            color: hsl(278deg 62% 68%);
-        }
-
-        .steel-blue {
-            color: hsl(207deg 44% 49%);
-        }
-    }
-
-    .bot-information-box {
-        position: relative;
-        display: inline-block;
-        width: calc(50% - 10px);
-        margin: 5px;
-
-        border-radius: 4px;
-        box-sizing: border-box;
-
-        overflow: auto;
-
-        .bot-card-details {
-            display: inline-block;
-            width: calc(100% - 75px);
-        }
-    }
-
-    & img.bot-card-avatar {
-        margin: 10px 5px 0 10px;
-        height: 50px;
-        width: 50px;
-        border-radius: 4px;
-        vertical-align: top;
-        box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
-    }
-
-    .bot-card-email,
-    .bot-card-type {
-        margin-bottom: 5px;
-    }
-
-    .bot-card-email .bot-card-value,
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        display: block;
-        margin-left: 0;
-        overflow-wrap: break-word;
-        word-break: break-all;
-        white-space: normal;
-    }
-
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        font-family: "Source Code Pro", monospace;
-        font-size: 0.85em;
-        display: flex;
-    }
-
-    .bot-card-info {
-        padding: 10px;
-    }
-
-    .bot-card-field {
-        text-transform: uppercase;
-        font-weight: 600;
-        color: hsl(0deg 0% 67%);
-    }
-}
-
-#inactive_bots_list .bot_info .reactivate_bot {
-    margin-top: 5px;
-}
-
 .edit_bot_form {
     font-size: 100%;
     margin: 0;
@@ -1500,6 +1352,11 @@ label.preferences-radio-choice-label {
         height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
         border-right: 1px solid var(--color-border-modal);
+
+        .your-bots-link {
+            text-decoration: none;
+            color: inherit;
+        }
 
         .header {
             height: auto;
@@ -2158,15 +2015,6 @@ label.preferences-radio-choice-label {
 @media (width < $mm_min) {
     .deactivate_realm_button {
         margin-top: 20px;
-    }
-}
-
-@media only screen and (width < $lg_min) {
-    /* Show bot-information-box at full width on small
-       screen sizes. Not having this media query breaks the
-       information box */
-    .bots_list .bot-information-box {
-        width: calc(100% - 10px);
     }
 }
 
