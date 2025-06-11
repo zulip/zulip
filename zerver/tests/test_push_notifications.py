@@ -75,6 +75,7 @@ from zerver.models import (
 from zerver.models.clients import get_client
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 from zilencer.auth import (
@@ -1539,6 +1540,49 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             "Content of personal message",
         )
         message = Message.objects.get(id=message_id)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
+        )
+        expected = {
+            "alert": {
+                "title": "King Hamlet",
+                "subtitle": "",
+                "body": message.content,
+            },
+            "badge": 0,
+            "sound": "default",
+            "custom": {
+                "zulip": {
+                    "message_ids": [message.id],
+                    "recipient_type": "private",
+                    "sender_email": self.sender.email,
+                    "sender_id": self.sender.id,
+                    "server": settings.EXTERNAL_HOST,
+                    "realm_id": self.sender.realm.id,
+                    "realm_name": self.sender.realm.name,
+                    "realm_uri": self.sender.realm.url,
+                    "realm_url": self.sender.realm.url,
+                    "user_id": user_profile.id,
+                    "time": datetime_to_timestamp(message.date_sent),
+                },
+            },
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_message_payload_apns_personal_message_using_direct_message_group(self) -> None:
+        user_profile = self.example_user("othello")
+
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[self.sender.id, user_profile.id],
+        )
+
+        message_id = self.send_personal_message(
+            self.sender,
+            user_profile,
+            "Content of personal message",
+        )
+        message = Message.objects.get(id=message_id)
+        self.assertEqual(message.recipient, direct_message_group.recipient)
         payload = get_message_payload_apns(
             user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
