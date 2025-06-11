@@ -1177,6 +1177,21 @@ li.top_left_scheduled_messages {
         var(--left-sidebar-icon-content-gap)
         minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+        opacity: 1;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &:not(:active):focus {
+        text-decoration: none;
+        border: none;
+        outline: none;
+        color: inherit;
+    }
 }
 
 .searching-for-more-topics {
