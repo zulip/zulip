@@ -89,6 +89,9 @@ function handle_invalid_section_url(section: "bots" | "users", settings_tab: str
 function get_settings_tab(section: string): string | undefined {
     if (section === "users" || section === "bots") {
         const current_tab = hash_parser.get_current_nth_hash_section(2);
+        if (section === "bots" && window.location.hash.includes("your-bots")) {
+            return "your-bots";
+        }
         return handle_invalid_section_url(section, current_tab);
     }
     return undefined;
@@ -303,6 +306,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
         section = "users";
     }
+    if (section === "your-bots") {
+        // #settings/your-bots is being redirected to #organization/bots/your-bots.
+        section = "bots";
+        base = "organization";
+        window.history.replaceState(null, "", "#organization/bots/your-bots");
+    }
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {
@@ -399,7 +408,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            if (section === "users") {
+                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            } else {
+                settings_panel_menu.org_settings.set_bot_settings_tab(get_settings_tab(section));
+            }
         }
         settings_toggle.goto(base);
         return;
