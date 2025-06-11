@@ -449,15 +449,12 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
-                    settings_bots.render_bots();
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
-                    settings_bots.render_bots();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    settings_bots.render_bots();
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);
