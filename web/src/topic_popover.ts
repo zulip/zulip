@@ -38,7 +38,7 @@ function get_conversation(instance: tippy.Instance): {
         const $elt = $(instance.reference).closest(".topic-sidebar-menu-icon").expectOne();
         const $stream_li = $elt.closest(".narrow-filter").expectOne();
         topic_name = $elt.closest("li").expectOne().attr("data-topic-name")!;
-        url = util.the($elt.closest("li").find<HTMLAnchorElement>("a.sidebar-topic-name")).href;
+        url = util.the($elt.closest("li").find<HTMLAnchorElement>("a.topic-box")).href;
         stream_id = stream_popover.elem_to_stream_id($stream_li);
     }
 
