@@ -156,7 +156,6 @@ export function build_page(): void {
     });
 
     $(".settings-box").html(rendered_settings_tab);
-    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"));
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
 }
 
