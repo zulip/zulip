@@ -52,6 +52,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         $upload_button_elem.expectOne(),
         upload_function,
         realm.max_logo_file_size_mib,
+        "realm_logo",
     );
 }
 
