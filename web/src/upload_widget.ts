@@ -1,4 +1,17 @@
-import {$t} from "./i18n.ts";
+import Uppy from "@uppy/core";
+import type {Body, Meta} from "@uppy/core";
+import Dashboard from "@uppy/dashboard";
+import ImageEditor from "@uppy/image-editor";
+import $ from "jquery";
+import assert from "minimalistic-assert";
+
+import render_image_editor_modal from "../templates/image_editor_modal.hbs";
+
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as loading from "./loading.ts";
+import * as scroll_util from "./scroll_util.ts";
+import * as settings_data from "./settings_data.ts";
 import * as util from "./util.ts";
 
 export type UploadWidget = {
@@ -6,13 +19,11 @@ export type UploadWidget = {
     close: () => void;
 };
 
-export type UploadFunction = (
-    $file_input: JQuery<HTMLInputElement>,
-    night: boolean | null,
-    icon: boolean,
-) => void;
+export type UploadFunction = (file: File, night: boolean | null, icon: boolean) => void;
 
 const default_max_file_size = 5;
+
+let uppy_widget: Uppy<Meta, Body> | undefined;
 
 // These formats do not need to be universally understood by clients; they are all
 // converted, server-side, currently to PNGs.  This list should be kept in sync with
@@ -26,6 +37,15 @@ const supported_types = [
     "image/tiff",
     "image/webp",
 ];
+
+const cropper_opts = {
+    viewMode: 1,
+    autoCropArea: 1,
+    croppedCanvasOptions: {},
+    dragMode: "move",
+    minCropBoxHeight: 50,
+    background: true,
+};
 
 function is_image_format(file: File): boolean {
     const type = file.type;
@@ -139,6 +159,113 @@ export function build_widget(
     };
 }
 
+function set_up_uppy_widget(): void {
+    uppy_widget = new Uppy<Meta, Body>({
+        restrictions: {
+            allowedFileTypes: supported_types,
+            maxNumberOfFiles: 1,
+        },
+    })
+        .use(Dashboard, {
+            target: scroll_util.get_content_element($("#uppy-editor .modal__content"))[0]!,
+            inline: true,
+            theme: settings_data.using_dark_theme() ? "dark" : "light",
+            autoOpen: "imageEditor",
+            hideUploadButton: true,
+            singleFileFullScreen: true,
+        })
+        .use(ImageEditor, {
+            id: "ImageEditor",
+            quality: 1,
+            actions: {
+                cropSquare: false,
+                cropWidescreen: false,
+                cropWidescreenVertical: false,
+                zoomIn: true,
+                zoomOut: true,
+                revert: false,
+                rotate: false,
+                granularRotate: false,
+                flip: false,
+            },
+        });
+}
+
+function open_uppy_editor(
+    file: File,
+    property_name: "realm_icon" | "realm_logo" | "user_avatar",
+    $file_input: JQuery<HTMLInputElement>,
+    $upload_button: JQuery,
+    upload_function: UploadFunction,
+): void {
+    const rendered_image_editor_modal = render_image_editor_modal();
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Editing {file_name}"}, {file_name: file.name}),
+        html_body: rendered_image_editor_modal,
+        id: "uppy-editor",
+        loading_spinner: true,
+        on_click() {
+            assert(uppy_widget !== undefined);
+            uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
+        },
+        post_render() {
+            set_up_uppy_widget();
+            assert(uppy_widget !== undefined);
+
+            if (property_name === "realm_logo") {
+                uppy_widget.getPlugin("ImageEditor")!.setOptions({
+                    cropperOptions: {...cropper_opts, aspectRatio: 8},
+                });
+            } else {
+                uppy_widget.getPlugin("ImageEditor")!.setOptions({
+                    cropperOptions: {...cropper_opts, aspectRatio: 1},
+                });
+            }
+
+            uppy_widget.addFile({
+                name: file.name,
+                type: "image/png",
+                data: file,
+                source: "Local",
+                isRemote: false,
+            });
+
+            uppy_widget.once("file-editor:complete", (file) => {
+                const updated_image_blob = file.data;
+                const updated_image_file = new File([updated_image_blob], file.name!, {
+                    type: file.type,
+                    lastModified: Date.now(),
+                });
+                if (property_name === "realm_logo") {
+                    const $realm_logo_section = $upload_button.closest(".image_upload_widget");
+                    const is_night =
+                        $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
+                    upload_function(updated_image_file, is_night, false);
+                } else {
+                    upload_function(updated_image_file, null, true);
+                }
+            });
+
+            // We keep the uppy-Root element hidden initially and show the
+            // loading indicator so that we do not show uppy dashboard UI
+            // momentarily before showing the image editor.
+            $("#uppy-editor .modal__content .uppy-Root").css("visibility", "hidden");
+            loading.make_indicator($("#uppy-editor .loading-placeholder"));
+
+            setTimeout(() => {
+                loading.destroy_indicator($("#uppy-editor .loading-placeholder"));
+                $("#uppy-editor .modal__content .uppy-Root").css("visibility", "");
+            }, 1000);
+        },
+        on_hidden() {
+            assert(uppy_widget !== undefined);
+            uppy_widget.getPlugin<Dashboard<Meta, Body>>("Dashboard")!.hideAllPanels();
+            uppy_widget.destroy();
+            $file_input.val("");
+        },
+    });
+}
+
 export function build_direct_upload_widget(
     // function returns a jQuery file input object
     get_file_input: () => JQuery<HTMLInputElement>,
@@ -148,18 +275,17 @@ export function build_direct_upload_widget(
     $upload_button: JQuery,
     upload_function: UploadFunction,
     max_file_upload_size: number,
+    property_name: "realm_icon" | "realm_logo" | "user_avatar",
 ): void {
     // default value of max uploaded file size
     function accept(): void {
         $input_error.hide();
-        const $realm_logo_section = $upload_button.closest(".image_upload_widget");
-        if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
-            upload_function(get_file_input(), true, false);
-        } else if ($realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
-            upload_function(get_file_input(), false, false);
-        } else {
-            upload_function(get_file_input(), null, true);
-        }
+
+        const $file_input = get_file_input();
+        const files = util.the($file_input).files;
+        assert(files !== null);
+        assert(files[0] !== undefined);
+        open_uppy_editor(files[0], property_name, $file_input, $upload_button, upload_function);
     }
 
     function clear(): void {

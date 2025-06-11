@@ -93,30 +93,12 @@ export function update_email_change_display(): void {
     }
 }
 
-function display_avatar_upload_complete(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
-    $("#user-avatar-upload-widget .image-upload-text").show();
-    $("#user-avatar-upload-widget .image-delete-button").show();
-}
-
-function display_avatar_upload_started(): void {
-    $("#user-avatar-source").hide();
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
-    $("#user-avatar-upload-widget .image-upload-text").hide();
-    $("#user-avatar-upload-widget .image-delete-button").hide();
-}
-
-function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
+function upload_avatar(file: File): void {
     const form_data = new FormData();
 
     assert(csrf_token !== undefined);
     form_data.append("csrfmiddlewaretoken", csrf_token);
-    const files = util.the($file_input).files;
-    assert(files !== null);
-    for (const [i, file] of [...files].entries()) {
-        form_data.append("file-" + i, file);
-    }
-    display_avatar_upload_started();
+    form_data.append("file", file);
     channel.post({
         url: "/json/users/me/avatar",
         data: form_data,
@@ -124,22 +106,16 @@ function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
         processData: false,
         contentType: false,
         success() {
-            display_avatar_upload_complete();
-            $("#user-avatar-upload-widget .image_file_input_error").hide();
+            dialog_widget.close();
+            $("#user-avatar-upload-widget .image-delete-button").show();
             $("#user-avatar-source").hide();
             // Rest of the work is done via the user_events -> avatar_url event we will get
         },
         error(xhr) {
-            display_avatar_upload_complete();
             if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();
             }
-            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-            if (parsed.success) {
-                const $error = $("#user-avatar-upload-widget .image_file_input_error");
-                $error.text(parsed.data.msg);
-                $error.show();
-            }
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
         },
     });
 }
