@@ -41,16 +41,30 @@
             <div class="edit_bot_avatar_preview_text">
                 <img class="edit_bot_avatar_preview_image" />
             </div>
-            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Change avatar" }}</button>
-            <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
+            {{> ../components/action_button
+              label=(t "Change avatar")
+              attention="quiet"
+              intent="neutral"
+              custom_classes="edit_bot_avatar_upload_button"
+              }}
+            {{> ../components/action_button
+              label=(t "Clear profile picture")
+              attention="quiet"
+              intent="danger"
+              custom_classes="edit_bot_avatar_clear_button"
+              hidden=true
+              }}
             <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
         </div>
     </form>
     {{#if is_incoming_webhook_bot}}
     <div class="input-group">
-        <button class="button rounded generate_url_for_integration">
-            {{t 'Generate URL for an integration' }}
-        </button>
+        {{> ../components/action_button
+          label=(t "Generate URL for an integration")
+          attention="quiet"
+          intent="neutral"
+          custom_classes="generate_url_for_integration"
+          }}
     </div>
     {{/if}}
     {{#if (and is_active is_bot_owner_current_user)}}
@@ -106,14 +120,20 @@
     {{/if}}
     <div class="input-group">
         {{#if is_active}}
-        <button class="button rounded button-danger deactivate-bot-button">
-            {{t 'Deactivate bot' }}
-        </button>
+        {{> ../components/action_button
+          label=(t "Deactivate bot")
+          attention="quiet"
+          intent="danger"
+          custom_classes="deactivate-bot-button"
+          }}
         {{else}}
         <span>
-            <button class="button rounded reactivate-user-button">
-                {{t 'Reactivate bot' }}
-            </button>
+            {{> ../components/action_button
+              label=(t "Reactivate bot")
+              attention="quiet"
+              intent="success"
+              custom_classes="reactivate-user-button"
+              }}
         </span>
         {{/if}}
     </div>
