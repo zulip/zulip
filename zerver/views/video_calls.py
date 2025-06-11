@@ -21,8 +21,7 @@ from pydantic import Json
 from requests_oauthlib import OAuth2Session
 from typing_extensions import TypedDict
 
-import version
-from version import ZULIP_VERSION
+from version import ZULIP_VERSION, ZULIP_MERGE_BASE
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.cache import (
@@ -323,8 +322,8 @@ def get_bigbluebutton_url(
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
             "bbb_origin": "Zulip",
-            "bbb_origin_version": version.ZULIP_VERSION,
-            "bbb_origin_tag": version.ZULIP_MERGE_BASE,
+            "bbb_origin_version": ZULIP_VERSION,
+            "bbb_origin_tag": ZULIP_MERGE_BASE,
             "moderator": request.user.id
         }
     )
