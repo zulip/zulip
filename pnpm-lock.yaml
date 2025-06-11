@@ -77,6 +77,9 @@ importers:
       '@uppy/drag-drop':
         specifier: ^5.0.1
         version: 5.0.2(@uppy/core@5.1.1)
+      '@uppy/image-editor':
+        specifier: ^4.0.2
+        version: 4.0.2(@uppy/core@5.1.1)
       '@uppy/tus':
         specifier: ^5.0.0
         version: 5.0.2(@uppy/core@5.1.1)
@@ -2973,6 +2976,11 @@ packages:
     peerDependencies:
       '@uppy/core': ^5.0.2
 
+  '@uppy/image-editor@4.0.2':
+    resolution: {integrity: sha512-RpD23Wu0KLFKMnCAFPZxZLMSWg8bHISGZnk9Q1scrcxJbVyEkpBs836tJFFiKWMFUvW1FVqua38HHPu1cGneFg==}
+    peerDependencies:
+      '@uppy/core': ^5.1.1
+
   '@uppy/store-default@5.0.0':
     resolution: {integrity: sha512-hQtCSQ1yGiaval/wVYUWquYGDJ+bpQ7e4FhUUAsRQz1x1K+o7NBtjfp63O9I4Ks1WRoKunpkarZ+as09l02cPw==}
 
@@ -4005,6 +4013,9 @@ packages:
 
   create-emotion@10.0.27:
     resolution: {integrity: sha512-fIK73w82HPPn/RsAij7+Zt8eCE8SptcJ3WoRMfxMtjteYxud8GDTKKld7MYwAX2TVhrw29uR1N/bVGxeStHILg==}
+
+  cropperjs@1.6.2:
+    resolution: {integrity: sha512-nhymn9GdnV3CqiEHJVai54TULFAE3VshJTXSqSJKa8yXAKyBKDWdhHarnlIPrshJ0WMFTGuFvG02YjLXfPiuOA==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -12670,6 +12681,13 @@ snapshots:
       '@uppy/utils': 7.1.2(patch_hash=7ff02b9be1df41a3ba1f786e42045424d40f814a420ad05e6252979768ac3923)
       preact: 10.27.2
 
+  '@uppy/image-editor@4.0.2(@uppy/core@5.1.1)':
+    dependencies:
+      '@uppy/core': 5.1.1
+      '@uppy/utils': 7.1.2(patch_hash=7ff02b9be1df41a3ba1f786e42045424d40f814a420ad05e6252979768ac3923)
+      cropperjs: 1.6.2
+      preact: 10.27.2
+
   '@uppy/store-default@5.0.0': {}
 
   '@uppy/tus@5.0.2(@uppy/core@5.1.1)':
@@ -13919,6 +13937,8 @@ snapshots:
       '@emotion/serialize': 0.11.16
       '@emotion/sheet': 0.9.4
       '@emotion/utils': 0.11.3
+
+  cropperjs@1.6.2: {}
 
   cross-spawn@7.0.6:
     dependencies:

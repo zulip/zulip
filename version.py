@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (356, 0)  # bumped 2025-10-31 to upgrade JavaScript dependencies
+PROVISION_VERSION = (356, 1)  # bumped 2025-11-03 to add uppy/image-editor.
