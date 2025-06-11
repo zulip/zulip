@@ -365,6 +365,11 @@ features.
 
 ## Removed features
 
+**Changes**: In Zulip 11.0 (feature level ZF-40eea4), legacy Dropbox link
+previews are no longer generated. Dropbox images are rendered as any other
+image uploaded to the platform, while non-image files and folders are
+treated as any other link preview inside Zulip.
+
 **Changes**: In Zulip 4.0 (feature level 24), the rarely used `!avatar()`
 and `!gravatar()` markup syntax, which was never documented and had an
 inconsistent syntax, were removed.
