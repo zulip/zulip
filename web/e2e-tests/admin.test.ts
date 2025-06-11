@@ -180,10 +180,11 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
     assert.ok(upload_handle);
     await upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
-    await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
+    await page.waitForSelector("#uppy-editor .uppy-DashboardContent-save", {
         visible: true,
     });
-    await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
+    await page.click("#uppy-editor .uppy-DashboardContent-save");
+    await page.waitForSelector("#uppy-editor .uppy-DashboardContent-save", {
         hidden: true,
     });
     await page.waitForSelector(

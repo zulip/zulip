@@ -1474,3 +1474,36 @@ input.invalid-input {
         }
     }
 }
+
+#uppy-editor {
+    .uppy-Dashboard-close {
+        display: none;
+    }
+
+    .loading-placeholder {
+        position: absolute;
+        top: calc(50% - 1.3572em);
+        left: calc(50% - 1.3572em);
+    }
+
+    .modal__content {
+        padding: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .uppy-Dashboard-FileCard,
+    .uppy-Dashboard-files {
+        display: none;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
+        }
+    }
+}
