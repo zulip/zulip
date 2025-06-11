@@ -71,9 +71,15 @@ importers:
       '@uppy/core':
         specifier: ^5.0.1
         version: 5.0.1
+      '@uppy/dashboard':
+        specifier: ^5.0.1
+        version: 5.0.1(@uppy/core@5.0.1)
       '@uppy/drag-drop':
         specifier: ^5.0.1
         version: 5.0.1(@uppy/core@5.0.1)
+      '@uppy/image-editor':
+        specifier: ^4.0.0
+        version: 4.0.0(@uppy/core@5.0.1)
       '@uppy/tus':
         specifier: ^5.0.0
         version: 5.0.0(@uppy/core@5.0.1)
@@ -2907,13 +2913,33 @@ packages:
   '@uppy/core@5.0.1':
     resolution: {integrity: sha512-4hLCSjwkJtSZ/W/vJp+GX+4GkSXk/ilrL5ldH0gefAg+mQVxucuLFE7Rc1QdwmUQlnhqIFOSwLAkv2jTTNXGgw==}
 
+  '@uppy/dashboard@5.0.1':
+    resolution: {integrity: sha512-AamgqwlLakPA4I2V51OOiwkv35B6SGXmg/++oVr1JS3IiWXDVHTznzqARxd9npvrcxE0tq4cA5bCEooXmQC8Cw==}
+    peerDependencies:
+      '@uppy/core': ^5.0.1
+
   '@uppy/drag-drop@5.0.1':
     resolution: {integrity: sha512-82uzOwwjbfQXH8VuEWHbe21QWLwN9LJfG/q1ZCz/iGnD0f6FYivcBMr9UD86N/5fjXfzVtNKYhjrWJEs2NySWA==}
     peerDependencies:
       '@uppy/core': ^5.0.1
 
+  '@uppy/image-editor@4.0.0':
+    resolution: {integrity: sha512-5vcVLpalC+0L/7UPNRVXOHt/ZgZO0dwJfKirVwAYhOlym2aEQN8ktopgxaTLRVsYD51l25dJRwjita0aMs0SMQ==}
+    peerDependencies:
+      '@uppy/core': ^5.0.0
+
+  '@uppy/provider-views@5.0.1':
+    resolution: {integrity: sha512-kwOjJgQUFr+cCZkKRpkAeql2fiVZKWYj/9FgbvF7abtwm9tVp9r80P10jyYLUpbCZyvAwvvomLEXBKm2Qdf+Dw==}
+    peerDependencies:
+      '@uppy/core': ^5.0.1
+
   '@uppy/store-default@5.0.0':
     resolution: {integrity: sha512-hQtCSQ1yGiaval/wVYUWquYGDJ+bpQ7e4FhUUAsRQz1x1K+o7NBtjfp63O9I4Ks1WRoKunpkarZ+as09l02cPw==}
+
+  '@uppy/thumbnail-generator@5.0.0':
+    resolution: {integrity: sha512-dqnsVOpGR+QtpBKwXYEgiIy1cEl+wfiwm/411gwsAiaYITtEGePsXfTiYNFN/dkCVfrDqWw+r/MFTxRNXZKm9A==}
+    peerDependencies:
+      '@uppy/core': ^5.0.0
 
   '@uppy/tus@5.0.0':
     resolution: {integrity: sha512-wGV8LgQAIdlMEQji91/glBy+TXlp6917z+nUCag4KhpW63WhQcd37xh34JjvQIf3IvaBa3Zjj37btQ3TL/aVeA==}
@@ -3649,6 +3675,9 @@ packages:
   clamp@1.0.1:
     resolution: {integrity: sha512-kgMuFyE78OC6Dyu3Dy7vcx4uy97EIbVxJB/B0eJ3bUNAkwdNcxYzgKltnyADiYwsR7SEqkkUPsEUT//OVS6XMA==}
 
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
+
   cldr-annotations-derived-full@47.0.0:
     resolution: {integrity: sha512-4DFjfdmPlZZTcVeOVTbWqe6bKTd3U+3q+KtpkzAR3awTexZ6nwNRRbadKCgNinT54XP1h4KV+Ws5Vm6R5Uvxgw==}
 
@@ -3930,6 +3959,9 @@ packages:
 
   create-emotion@10.0.27:
     resolution: {integrity: sha512-fIK73w82HPPn/RsAij7+Zt8eCE8SptcJ3WoRMfxMtjteYxud8GDTKKld7MYwAX2TVhrw29uR1N/bVGxeStHILg==}
+
+  cropperjs@1.6.2:
+    resolution: {integrity: sha512-nhymn9GdnV3CqiEHJVai54TULFAE3VshJTXSqSJKa8yXAKyBKDWdhHarnlIPrshJ0WMFTGuFvG02YjLXfPiuOA==}
 
   cross-fetch@3.2.0:
     resolution: {integrity: sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==}
@@ -4791,6 +4823,9 @@ packages:
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
+
+  exifr@7.1.3:
+    resolution: {integrity: sha512-g/aje2noHivrRSLbAUtBPWFbxKdKhgj/xr1vATDdUXPOFYJlQ62Ft0oy+72V6XLIpDJfHs6gXLbBLAolqOXYRw==}
 
   exponential-backoff@3.1.2:
     resolution: {integrity: sha512-8QxYTVXUkuy7fIIoitQkPwGonB8F3Zj8eEO8Sqg9Zv/bkI7RJAzowee4gr81Hak/dUTpA2Z7VfQgoijjPNlUZA==}
@@ -8372,6 +8407,9 @@ packages:
 
   shallow-copy@0.0.1:
     resolution: {integrity: sha512-b6i4ZpVuUxB9h5gfCxPiusKYkqTMOjEbBs4wMaFbkfia4yFv92UKZ6Df8WXcKbn08JNL/abvg3FnMAOfakDvUw==}
+
+  shallow-equal@3.1.0:
+    resolution: {integrity: sha512-pfVOw8QZIXpMbhBWvzBISicvToTiM5WBF1EeAUZDDSb5Dt29yl4AYbyywbJFSEsRUMr7gJaxqCdr4L3tQf9wVg==}
 
   sharp@0.33.5:
     resolution: {integrity: sha512-haPVm1EkS9pgvHrQ/F3Xy+hgcuMV0Wm9vfIBSiwZ05k+xgb0PkBQpGsAA/oWdDobNaZTH5ppvHtzCFbnSEwHVw==}
@@ -12545,13 +12583,48 @@ snapshots:
       nanoid: 5.1.5
       preact: 10.27.1
 
+  '@uppy/dashboard@5.0.1(@uppy/core@5.0.1)':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.3.5
+      '@uppy/core': 5.0.1
+      '@uppy/provider-views': 5.0.1(@uppy/core@5.0.1)
+      '@uppy/thumbnail-generator': 5.0.0(@uppy/core@5.0.1)
+      '@uppy/utils': 7.0.1
+      classnames: 2.5.1
+      lodash: 4.17.21
+      nanoid: 5.1.5
+      preact: 10.27.1
+      shallow-equal: 3.1.0
+
   '@uppy/drag-drop@5.0.1(@uppy/core@5.0.1)':
     dependencies:
       '@uppy/core': 5.0.1
       '@uppy/utils': 7.0.1
       preact: 10.27.1
 
+  '@uppy/image-editor@4.0.0(@uppy/core@5.0.1)':
+    dependencies:
+      '@uppy/core': 5.0.1
+      '@uppy/utils': 7.0.1
+      cropperjs: 1.6.2
+      preact: 10.27.1
+
+  '@uppy/provider-views@5.0.1(@uppy/core@5.0.1)':
+    dependencies:
+      '@uppy/core': 5.0.1
+      '@uppy/utils': 7.0.1
+      classnames: 2.5.1
+      nanoid: 5.1.5
+      p-queue: 8.1.0
+      preact: 10.27.1
+
   '@uppy/store-default@5.0.0': {}
+
+  '@uppy/thumbnail-generator@5.0.0(@uppy/core@5.0.1)':
+    dependencies:
+      '@uppy/core': 5.0.1
+      '@uppy/utils': 7.0.1
+      exifr: 7.1.3
 
   '@uppy/tus@5.0.0(@uppy/core@5.0.1)':
     dependencies:
@@ -13504,6 +13577,8 @@ snapshots:
 
   clamp@1.0.1: {}
 
+  classnames@2.5.1: {}
+
   cldr-annotations-derived-full@47.0.0: {}
 
   cldr-annotations-full@47.0.0: {}
@@ -13791,6 +13866,8 @@ snapshots:
       '@emotion/serialize': 0.11.16
       '@emotion/sheet': 0.9.4
       '@emotion/utils': 0.11.3
+
+  cropperjs@1.6.2: {}
 
   cross-fetch@3.2.0(encoding@0.1.13):
     dependencies:
@@ -14837,6 +14914,8 @@ snapshots:
   eventemitter3@5.0.1: {}
 
   events@3.3.0: {}
+
+  exifr@7.1.3: {}
 
   exponential-backoff@3.1.2: {}
 
@@ -19772,6 +19851,8 @@ snapshots:
       kind-of: 6.0.3
 
   shallow-copy@0.0.1: {}
+
+  shallow-equal@3.1.0: {}
 
   sharp@0.33.5:
     dependencies:
