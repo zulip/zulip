@@ -58,13 +58,15 @@
         <div class="bot-modal-value-and-button">
             <label class="modal-field-label">{{t "Zuliprc configuration" }} {{> ../help_link_widget link="/api/configuring-python-bindings" }}</label>
             <div class="bot-modal-buttons">
-                <a type="submit" download="{{zuliprc}}" data-email="{{email}}" data-user-id="{{user_id}}" class="hidden-zuliprc-download" hidden></a>
-                {{> ../components/icon_button
-                  custom_classes="download-bot-zuliprc tippy-zulip-delayed-tooltip"
-                  icon="download"
-                  intent="brand"
-                  data-tippy-content=(t 'Download zuliprc')
-                  }}
+                <span>
+                    <a type="submit" download="{{zuliprc}}" data-email="{{email}}" data-user-id="{{user_id}}" class="hidden-zuliprc-download" hidden></a>
+                    {{> ../components/icon_button
+                      custom_classes="download-bot-zuliprc tippy-zulip-delayed-tooltip"
+                      icon="download"
+                      intent="brand"
+                      data-tippy-content=(t 'Download zuliprc')
+                      }}
+                </span>
                 {{> ../components/icon_button
                   icon="copy"
                   intent="success"

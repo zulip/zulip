@@ -305,6 +305,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
         section = "users";
     }
+    if (section === "your-bots") {
+        // #settings/your-bots is being redirected to #organization/bots/your-bots.
+        section = "bots";
+        base = "organization";
+        window.history.replaceState(null, "", "#organization/bots/your-bots");
+    }
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {
@@ -381,6 +387,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
                 section,
                 get_settings_tab(section),
             );
+            settings_panel_menu.org_settings.activate_section_or_default(
+                section,
+                section === "bots" && window.location.hash.includes("your-bots")
+                    ? "your-bots"
+                    : get_settings_tab(section),
+            );
             return;
         }
 
@@ -401,7 +413,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            if (section === "users") {
+                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            } else {
+                settings_panel_menu.org_settings.set_bot_settings_tab(get_settings_tab(section));
+            }
         }
         settings_toggle.goto(base);
         return;
@@ -469,7 +485,16 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section, get_settings_tab(section));
+        if (section === "users") {
+            admin.launch(section, get_settings_tab(section));
+        } else {
+            admin.launch(
+                section,
+                section === "bots" && window.location.hash.includes("your-bots")
+                    ? "your-bots"
+                    : get_settings_tab(section),
+            );
+        }
         return;
     }
 
