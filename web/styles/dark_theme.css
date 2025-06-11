@@ -305,6 +305,30 @@
     .help_link_widget:hover {
         color: inherit;
     }
+
+    #uppy-editor .uppy-ImageCropper {
+        /* Uppy cropper canvas has some CSS properties set for the background that
+        do not look good for dark theme. When using Uppy Dashboard, this can be
+        solved by passing `theme` field with value as true in config options.
+        However we are not using that plugin so we need to provide our own dark
+        theme CSS for this detail.
+
+        Link for source from where the CSS properties are taken -
+        https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L123
+        and https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L133 */
+        .cropper-modal {
+            opacity: 0.7;
+            background-color: hsl(0deg 0% 0%);
+        }
+
+        .cropper-view-box {
+            background: repeating-conic-gradient(
+                    hsl(0deg 1.18% 16.67%) 0% 25%,
+                    hsl(0deg 0% 0%) 0% 50%
+                )
+                50%/16px 16px;
+        }
+    }
 }
 
 @media screen {
