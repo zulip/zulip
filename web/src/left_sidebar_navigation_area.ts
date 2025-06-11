@@ -1,19 +1,27 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_left_sidebar_navigation_expanded_item from "../templates/left_sidebar_navigation_expanded_item.hbs";
+
+import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
+import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import * as starred_messages from "./starred_messages.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
 const ls = localstorage();
+
+let currently_active_unpinned_view: string | null = null;
 
 const STATES = {
     EXPANDED: "expanded",
@@ -104,11 +112,18 @@ export function handle_narrow_activated(filter: Filter): void {
     let ops: string[];
     let filter_name: string;
 
+    // Clear any previously active unpinned view
+    const had_unpinned_view = currently_active_unpinned_view !== null;
+    currently_active_unpinned_view = null;
+
     // TODO: handle confused filters like "in:all stream:foo"
     ops = filter.operands("in");
     if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "home") {
+            if (had_unpinned_view) {
+                update_navigation_views_visibility();
+            }
             highlight_all_messages_view();
             return;
         }
@@ -117,9 +132,17 @@ export function handle_narrow_activated(filter: Filter): void {
     if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "starred") {
+            if ($(".top_left_starred_messages").length < 2) {
+                currently_active_unpinned_view = "narrow/is/starred";
+                update_navigation_views_visibility();
+            }
             select_top_left_corner_item(".top_left_starred_messages");
             return;
         } else if (filter_name === "mentioned") {
+            if ($(".top_left_mentions").length < 2) {
+                currently_active_unpinned_view = "narrow/is/mentioned";
+                update_navigation_views_visibility();
+            }
             select_top_left_corner_item(".top_left_mentions");
             return;
         }
@@ -129,12 +152,27 @@ export function handle_narrow_activated(filter: Filter): void {
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
         filter.operands("sender")[0] === people.my_current_email()
     ) {
+        if ($(".top_left_my_reactions").length < 2) {
+            currently_active_unpinned_view = "narrow/has/reaction/sender/me";
+            update_navigation_views_visibility();
+        }
         select_top_left_corner_item(".top_left_my_reactions");
         return;
     }
 
+    if (had_unpinned_view) {
+        update_navigation_views_visibility();
+    }
+
     // If we don't have a specific handler for this narrow, we just clear all.
     select_top_left_corner_item("");
+}
+
+function clear_unpinned_view_if_needed(): void {
+    if (currently_active_unpinned_view !== null) {
+        currently_active_unpinned_view = null;
+        update_navigation_views_visibility();
+    }
 }
 
 function toggle_condensed_navigation_area(): void {
@@ -185,6 +223,11 @@ function do_new_messages_animation($li: JQuery): void {
 }
 
 export function highlight_inbox_view(): void {
+    clear_unpinned_view_if_needed();
+    if ($(".top_left_inbox").length < 2) {
+        currently_active_unpinned_view = "inbox";
+        update_navigation_views_visibility();
+    }
     select_top_left_corner_item(".top_left_inbox");
 
     setTimeout(() => {
@@ -193,6 +236,11 @@ export function highlight_inbox_view(): void {
 }
 
 export function highlight_recent_view(): void {
+    clear_unpinned_view_if_needed();
+    if ($(".top_left_recent_view").length < 2) {
+        currently_active_unpinned_view = "recent";
+        update_navigation_views_visibility();
+    }
     select_top_left_corner_item(".top_left_recent_view");
 
     setTimeout(() => {
@@ -201,6 +249,11 @@ export function highlight_recent_view(): void {
 }
 
 export function highlight_all_messages_view(): void {
+    clear_unpinned_view_if_needed();
+    if ($(".top_left_all_messages").length < 2) {
+        currently_active_unpinned_view = "feed";
+        update_navigation_views_visibility();
+    }
     select_top_left_corner_item(".top_left_all_messages");
 
     setTimeout(() => {
@@ -272,4 +325,22 @@ export function initialize(): void {
             toggle_condensed_navigation_area();
         },
     );
+}
+
+export function update_navigation_views_visibility(): void {
+    const built_in_views = navigation_views.get_built_in_views().map((view) => ({
+        ...view,
+        is_selected: view.home_view_code === user_settings.web_home_view,
+    }));
+
+    const navigation_items_html = built_in_views
+        .filter((view) => view.is_pinned || view.fragment === currently_active_unpinned_view)
+        .map((view) => render_left_sidebar_navigation_expanded_item(view))
+        .join("");
+
+    $("#left-sidebar-navigation-list").html(navigation_items_html);
+    update_dom_with_unread_counts(unread.get_counts(), true);
+    update_starred_count(starred_messages.get_count(), !user_settings.starred_message_counts);
+    update_scheduled_messages_row();
+    drafts.set_count(drafts.draft_model.getDraftCount());
 }

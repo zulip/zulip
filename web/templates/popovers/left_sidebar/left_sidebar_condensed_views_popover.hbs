@@ -1,30 +1,36 @@
 <div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
-    <ul role="menu" class="popover-menu-list condensed-views-popover-menu">
-        <li role="none" class="link-item popover-menu-list-item condensed-views-popover-menu-reactions">
-            <a href="#narrow/has/reaction/sender/me" role="menuitem" class="popover-menu-link tippy-left-sidebar-tooltip" data-tooltip-template-id="my-reactions-tooltip-template" tabindex="0">
-                <i class="popover-menu-icon zulip-icon zulip-icon-smile" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t 'Reactions' }}</span>
-            </a>
-        </li>
-        <li role="none" class="link-item popover-menu-list-item condensed-views-popover-menu-drafts">
-            <a href="#drafts" role="menuitem" class="popover-menu-link tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template" tabindex="0">
-                <i class="popover-menu-icon zulip-icon zulip-icon-drafts" aria-hidden="true"></i>
-                <span class="label-and-unread-wrapper">
-                    <span class="popover-menu-label">{{t 'Drafts' }}</span>
-                    <span class="unread_count quiet-count"></span>
-                </span>
-            </a>
-        </li>
+    <ul role="menu" class="popover-menu-list views-popover-menu">
+        {{#if is_condensed}}
+        {{> views_popover_item
+          fragment="narrow/has/reaction/sender/me"
+          name="Reactions"
+          icon="zulip-icon-smile"
+          has_unread_count=false
+          css_class_suffix="my_reactions"
+          tooltip_template_id="my-reactions-tooltip-template"
+          }}
+        {{> views_popover_item
+          fragment="drafts"
+          name="Drafts"
+          icon="zulip-icon-drafts"
+          has_unread_count=true
+          css_class_suffix="drafts"
+          tooltip_template_id="drafts-tooltip-template"
+          }}
         {{#if has_scheduled_messages }}
-        <li role="none" class="link-item popover-menu-list-item condensed-views-popover-menu-scheduled-messages">
-            <a href="#scheduled" role="menuitem" class="popover-menu-link tippy-left-sidebar-tooltip" tabindex="0" data-tooltip-template-id="scheduled-tooltip-template">
-                <i class="popover-menu-icon zulip-icon zulip-icon-calendar-days" aria-hidden="true"></i>
-                <span class="label-and-unread-wrapper">
-                    <span class="popover-menu-label">{{t 'Scheduled messages' }}</span>
-                    <span class="unread_count quiet-count"></span>
-                </span>
-            </a>
-        </li>
+        {{> views_popover_item
+          fragment="scheduled"
+          name="Scheduled messages"
+          icon="zulip-icon-calendar-days"
+          has_unread_count=true
+          css_class_suffix="scheduled_messages"
+          tooltip_template_id="scheduled-tooltip-template"
+          }}
+        {{/if}}
+        {{else}}
+        {{#each views}}
+            {{> views_popover_item .}}
+        {{/each}}
         {{/if}}
     </ul>
 </div>

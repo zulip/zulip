@@ -781,6 +781,10 @@ li.active-sub-filter {
     }
 }
 
+.hidden-unpinned-view {
+    display: none !important;
+}
+
 .sidebar-menu-icon.hide {
     visibility: hidden;
 }
@@ -1020,8 +1024,7 @@ li.top_left_scheduled_messages {
     &.showing-expanded-navigation {
         /* When the expanded navigation is visible,
            hide the condensed navigation's controls. */
-        #left-sidebar-navigation-list-condensed,
-        .left-sidebar-navigation-menu-icon {
+        #left-sidebar-navigation-list-condensed {
             display: none;
         }
         /* Give the sidebar title through the end of the markers

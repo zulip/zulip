@@ -11,6 +11,7 @@ import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_ar
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
@@ -293,6 +294,13 @@ export function initialize_left_sidebar(): void {
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
+        built_in_views: navigation_views
+            .get_built_in_views()
+            .filter((view) => view.is_pinned)
+            .map((view) => ({
+                ...view,
+                is_selected: view.home_view_code === user_settings.web_home_view,
+            })),
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

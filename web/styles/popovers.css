@@ -1520,7 +1520,7 @@ ul.popover-menu-list {
     }
 }
 
-.condensed-views-popover-menu {
+.views-popover-menu {
     .popover-menu-link:has(.label-and-unread-wrapper) {
         align-items: center;
 

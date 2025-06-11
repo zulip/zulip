@@ -84,6 +84,7 @@ import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as navbar_help_menu from "./navbar_help_menu.ts";
 import * as navigate from "./navigate.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -453,6 +454,7 @@ export async function initialize_everything(state_data) {
     scheduled_messages.initialize(state_data.scheduled_messages);
     scheduled_messages_ui.initialize();
     popover_menus.initialize();
+    navigation_views.initialize(state_data.navigation_views);
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();

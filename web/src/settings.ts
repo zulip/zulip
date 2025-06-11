@@ -11,6 +11,7 @@ import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as modals from "./modals.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -150,6 +151,10 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 user_settings.web_line_height_percent,
             ),
+        navigation_views: navigation_views.get_all_navigation_views().map((view) => ({
+            ...view,
+            setting_name: `navigation_view_${view.fragment}`,
+        })),
     });
 
     $(".settings-box").html(rendered_settings_tab);
