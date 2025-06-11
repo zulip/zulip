@@ -771,10 +771,7 @@ def registration_helper(
                     # user-friendly error message, but it doesn't
                     # particularly matter, because the registration form
                     # is hidden for most users.
-                    view_url = reverse("login")
-                    query = urlencode({"email": email})
-                    redirect_url = append_url_query_string(view_url, query)
-                    return HttpResponseRedirect(redirect_url)
+                    return HttpResponseRedirect(reverse("login", query={"email": email}))
             else:
                 assert isinstance(user, UserProfile)
                 user_profile = user
@@ -1032,11 +1029,7 @@ def send_confirm_registration_email(
 
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
-    login_url = reverse("login")
-    redirect_url = append_url_query_string(
-        login_url, urlencode({"email": email, "already_registered": 1})
-    )
-    return HttpResponseRedirect(redirect_url)
+    return HttpResponseRedirect(reverse("login", query={"email": email, "already_registered": 1}))
 
 
 @typed_endpoint
@@ -1305,17 +1298,16 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
 
             if key_record is not None:
                 key_record.delete()
-            new_realm_send_confirm_url = reverse("new_realm_send_confirm")
-            query = urlencode(
-                {
+            url = reverse(
+                "new_realm_send_confirm",
+                query={
                     "email": email,
                     "realm_name": realm_name,
                     "realm_type": realm_type,
                     "realm_default_language": realm_default_language,
                     "realm_subdomain": realm_subdomain,
-                }
+                },
             )
-            url = append_url_query_string(new_realm_send_confirm_url, query)
             return HttpResponseRedirect(url)
     else:
         default_language_code = get_browser_language_code(request)
@@ -1468,10 +1460,7 @@ def accounts_home(
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
-            signup_send_confirm_url = reverse("signup_send_confirm")
-            query = urlencode({"email": email})
-            url = append_url_query_string(signup_send_confirm_url, query)
-            return HttpResponseRedirect(url)
+            return HttpResponseRedirect(reverse("signup_send_confirm", query={"email": email}))
 
     else:
         form = HomepageForm(realm=realm)
