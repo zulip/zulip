@@ -1483,3 +1483,52 @@ input.invalid-input {
         }
     }
 }
+
+#uppy-editor {
+    .modal__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .loading-placeholder {
+        position: absolute;
+        top: calc(50% - 1.3572em);
+        left: calc(50% - 1.3572em);
+    }
+
+    .modal__content {
+        padding: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    #dialog_error {
+        margin: 0 1.5em 1.5em;
+    }
+
+    .image-cropper-container {
+        height: 550px;
+    }
+
+    .uppy-Root {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .uppy-ImageCropper-controls {
+        /* This is needed to override the top padding set for narrow
+        screens by cropperJS. */
+        padding-top: 0;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
+        }
+    }
+}

@@ -220,18 +220,17 @@ function test_change_save_button_state() {
 }
 
 function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    const file_input = [{files: ["image1.png", "image2.png"]}];
+    const file = "image1.png";
 
     let posted;
     override(channel, "post", (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/icon");
         assert.equal(req.data.get("csrfmiddlewaretoken"), "token-stub");
-        assert.equal(req.data.get("file-0"), "image1.png");
-        assert.equal(req.data.get("file-1"), "image2.png");
+        assert.deepEqual(req.data.get("file"), file);
     });
 
-    upload_realm_logo_or_icon(file_input, null, true);
+    upload_realm_logo_or_icon(file, null, true);
     assert.ok(posted);
 }
 

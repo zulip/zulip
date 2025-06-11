@@ -32,6 +32,7 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         $("#realm-icon-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_icon_file_size_mib,
+        "realm_icon",
     );
 }
 
