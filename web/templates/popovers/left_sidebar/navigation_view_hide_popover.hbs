@@ -1,21 +1,15 @@
 <div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list">
         <li role="none" class="link-item popover-menu-list-item">
-            <a role="menuitem" id="delete_all_drafts_sidebar" class="popover-menu-link" tabindex="0">
-                <i class="popover-menu-icon zulip-icon zulip-icon-trash" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t "Delete all drafts" }}</span>
-            </a>
-        </li>
-        <li role="none" class="link-item popover-menu-list-item">
             {{#if is_currently_active_unpinned_view}}
             <a role="menuitem" class="show-navigation-view popover-menu-link" data-fragment="{{fragment}}" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-eye" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{#tr}}Show <b>drafts</b> in left sidebar{{/tr}}</span>
+                <span class="popover-menu-label"><tr>Show <b>{{view_name}}</b> in left sidebar</tr></span>
             </a>
             {{else}}
             <a role="menuitem" class="hide-navigation-view popover-menu-link" data-fragment="{{fragment}}" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{#tr}}Hide <b>drafts</b> in left sidebar{{/tr}}</span>
+                <span class="popover-menu-label"><tr>Hide <b>{{view_name}}</b> in left sidebar</tr></span>
             </a>
             {{/if}}
         </li>

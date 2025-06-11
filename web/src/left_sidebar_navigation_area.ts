@@ -1,24 +1,42 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_left_sidebar_navigation_condensed_item from "../templates/left_sidebar_navigation_condensed_item.hbs";
+import render_left_sidebar_navigation_expanded_item from "../templates/left_sidebar_navigation_expanded_item.hbs";
+
+import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
+import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import * as starred_messages from "./starred_messages.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
 const ls = localstorage();
 
+let currently_active_unpinned_view: string | null = null;
+let all_built_in_views: navigation_views.BuiltInView[] | null = null;
+
 const STATES = {
     EXPANDED: "expanded",
     CONDENSED: "condensed",
 };
+
+export function is_condensed(): boolean {
+    return ls.get(ls_key) === STATES.CONDENSED;
+}
+
+export function is_currently_active_unpinned_view(fragment: string): boolean {
+    return currently_active_unpinned_view === fragment;
+}
 
 function restore_views_state(): void {
     if (page_params.is_spectator) {
@@ -76,17 +94,172 @@ export function update_dom_with_unread_counts(
     ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
-    const show_sidebar_menu_icon =
-        counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
-    if (!show_sidebar_menu_icon) {
-        $home_view_li.find(".sidebar-menu-icon").addClass("hide");
-    } else {
-        $home_view_li.find(".sidebar-menu-icon").removeClass("hide");
-    }
-
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
     }
+}
+
+function get_all_built_in_views(): navigation_views.BuiltInView[] {
+    all_built_in_views ??= navigation_views.get_built_in_views();
+    return all_built_in_views;
+}
+
+function refresh_built_in_views_cache(): void {
+    all_built_in_views = navigation_views.get_built_in_views();
+}
+
+function has_unpinned_views(): boolean {
+    return get_all_built_in_views().some((view) => !view.is_pinned);
+}
+
+function get_active_view_css_suffix(): string | null {
+    const $active_element = $(".top-left-active-filter");
+    if ($active_element.length === 0) {
+        return null;
+    }
+
+    const css_classes = $active_element.attr("class")?.split(" ") ?? [];
+    const top_left_class = css_classes.find((cls) => cls.startsWith("top_left_"));
+
+    return top_left_class ? top_left_class.slice(9) : null;
+}
+
+export function get_all_views_for_left_sidebar(): navigation_views.BuiltInView[] {
+    const pinned_views = get_all_built_in_views().filter((view) => view.is_pinned);
+    const unpinned_views = get_all_built_in_views().filter((view) => !view.is_pinned);
+    return [...pinned_views, ...unpinned_views];
+}
+
+function should_include_scheduled_view(): boolean {
+    return scheduled_messages.get_count() > 0;
+}
+
+function filter_scheduled_view_if_needed(
+    views: navigation_views.BuiltInView[],
+): navigation_views.BuiltInView[] {
+    const has_scheduled_messages = should_include_scheduled_view();
+    const scheduled_view_fragment =
+        navigation_views.built_in_views_values.scheduled_messages.fragment;
+
+    if (has_scheduled_messages) {
+        return views;
+    }
+
+    return views.filter((view) => view.fragment !== scheduled_view_fragment);
+}
+
+export function get_views_visible_in_condensed_state(): navigation_views.BuiltInView[] {
+    const max_condensed_views = 6;
+    const max_condensed_views_with_scheduled = 5;
+
+    let condensed_views = get_all_views_for_left_sidebar().slice(0, max_condensed_views);
+    const has_scheduled_messages = should_include_scheduled_view();
+    const scheduled_view_fragment =
+        navigation_views.built_in_views_values.scheduled_messages.fragment;
+    const has_scheduled_view = condensed_views.some(
+        (view) => view.fragment === scheduled_view_fragment,
+    );
+
+    if (!has_scheduled_messages && has_scheduled_view) {
+        condensed_views = filter_scheduled_view_if_needed(condensed_views);
+    } else {
+        condensed_views = condensed_views.slice(0, max_condensed_views_with_scheduled);
+    }
+
+    return condensed_views;
+}
+
+function update_currently_active_unpinned_view(active_view_css_suffix: string | null): void {
+    if (active_view_css_suffix === null) {
+        return;
+    }
+
+    const active_view = get_all_built_in_views().find(
+        (view) => view.css_class_suffix === active_view_css_suffix,
+    );
+
+    if (active_view) {
+        currently_active_unpinned_view = active_view.is_pinned ? null : active_view.fragment;
+    }
+}
+
+function create_views_with_rendering_properties(
+    built_in_views: navigation_views.BuiltInView[],
+): navigation_views.BuiltInView[] {
+    return built_in_views.map((view) => ({
+        ...view,
+        is_selected: view.home_view_code === user_settings.web_home_view,
+        is_temporarily_active: !view.is_pinned && view.fragment === currently_active_unpinned_view,
+    }));
+}
+
+function get_views_visible_in_expanded_state(
+    views_with_properties: navigation_views.BuiltInView[],
+): navigation_views.BuiltInView[] {
+    return views_with_properties.filter(
+        (view) => view.is_pinned || view.fragment === currently_active_unpinned_view,
+    );
+}
+
+function render_expanded_views_html(views: navigation_views.BuiltInView[]): string {
+    return views.map((view) => render_left_sidebar_navigation_expanded_item(view)).join("");
+}
+
+function render_condensed_views_html(condensed_views: navigation_views.BuiltInView[]): string {
+    return condensed_views
+        .map((view) =>
+            render_left_sidebar_navigation_condensed_item({
+                ...view,
+                is_home_view: view.fragment === settings_config.web_home_view_values.inbox.code,
+            }),
+        )
+        .join("");
+}
+
+function update_navigation_dom(navigation_html: string, condensed_html: string): void {
+    $("#left-sidebar-navigation-list").html(navigation_html);
+    $("#left-sidebar-navigation-list-condensed").html(condensed_html);
+}
+
+function update_navigation_menu_visibility(): void {
+    const should_hide_menu = !is_condensed() && !has_unpinned_views();
+    $(".left-sidebar-navigation-menu-icon").toggleClass("hide", should_hide_menu);
+}
+
+function update_sidebar_counters(): void {
+    update_dom_with_unread_counts(unread.get_counts(), true);
+    update_starred_count(starred_messages.get_count(), !user_settings.starred_message_counts);
+    update_scheduled_messages_row();
+    drafts.set_count(drafts.draft_model.getDraftCount());
+}
+
+export function update_navigation_views_visibility(is_to_update_activated_narrow = false): void {
+    refresh_built_in_views_cache();
+    let active_view_css_suffix: string | null = null;
+
+    // Handle active view detection when not updating activated narrow
+    if (!is_to_update_activated_narrow) {
+        active_view_css_suffix = get_active_view_css_suffix();
+        update_currently_active_unpinned_view(active_view_css_suffix);
+    }
+
+    const views_with_properties = create_views_with_rendering_properties(get_all_built_in_views());
+    const views_visible_in_expanded_state =
+        get_views_visible_in_expanded_state(views_with_properties);
+    const views_visible_in_condensed_state = get_views_visible_in_condensed_state();
+
+    const expanded_views_html = render_expanded_views_html(views_visible_in_expanded_state);
+    const condensed_views_html = render_condensed_views_html(views_visible_in_condensed_state);
+
+    update_navigation_dom(expanded_views_html, condensed_views_html);
+
+    // Handle active view selection
+    if (!is_to_update_activated_narrow && active_view_css_suffix !== null) {
+        select_top_left_corner_item(`.top_left_${active_view_css_suffix}`);
+    }
+
+    update_navigation_menu_visibility();
+    update_sidebar_counters();
 }
 
 export let select_top_left_corner_item = function (narrow_to_activate: string): void {
@@ -100,6 +273,16 @@ export function rewire_select_top_left_corner_item(
     func: (narrow_to_activate: string) => void,
 ): void {
     select_top_left_corner_item = func;
+}
+
+function handle_unpinned_view_change(selector: string, fragment: string): void {
+    if ($(selector).length === 0) {
+        currently_active_unpinned_view = fragment;
+        update_navigation_views_visibility(true);
+    } else if (currently_active_unpinned_view !== null) {
+        currently_active_unpinned_view = null;
+        update_navigation_views_visibility(true);
+    }
 }
 
 export function handle_narrow_activated(filter: Filter): void {
@@ -119,9 +302,17 @@ export function handle_narrow_activated(filter: Filter): void {
     if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "starred") {
+            handle_unpinned_view_change(
+                ".top_left_starred_messages",
+                navigation_views.built_in_views_values.starred_messages.fragment,
+            );
             select_top_left_corner_item(".top_left_starred_messages");
             return;
         } else if (filter_name === "mentioned") {
+            handle_unpinned_view_change(
+                ".top_left_mentions",
+                navigation_views.built_in_views_values.mentions.fragment,
+            );
             select_top_left_corner_item(".top_left_mentions");
             return;
         }
@@ -131,8 +322,17 @@ export function handle_narrow_activated(filter: Filter): void {
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
         filter.operands("sender")[0] === people.my_current_email()
     ) {
+        handle_unpinned_view_change(
+            ".top_left_my_reactions",
+            navigation_views.built_in_views_values.my_reactions.fragment,
+        );
         select_top_left_corner_item(".top_left_my_reactions");
         return;
+    }
+
+    if (currently_active_unpinned_view !== null) {
+        currently_active_unpinned_view = null;
+        update_navigation_views_visibility(true);
     }
 
     // If we don't have a specific handler for this narrow, we just clear all.
@@ -142,6 +342,7 @@ export function handle_narrow_activated(filter: Filter): void {
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    const $left_sidebar_navigation_menu_icon = $(".left-sidebar-navigation-menu-icon");
 
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -154,6 +355,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_container.removeClass("showing-expanded-navigation");
         $views_label_icon.addClass("rotate-icon-right");
         $views_label_icon.removeClass("rotate-icon-down");
+        $left_sidebar_navigation_menu_icon.removeClass("hide");
         save_state(STATES.CONDENSED);
     } else {
         // Toggle into the expanded state
@@ -161,6 +363,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_container.removeClass("showing-condensed-navigation");
         $views_label_icon.addClass("rotate-icon-down");
         $views_label_icon.removeClass("rotate-icon-right");
+        $left_sidebar_navigation_menu_icon.toggleClass("hide", !has_unpinned_views());
         save_state(STATES.EXPANDED);
     }
     resize.resize_stream_filters_container();
@@ -187,6 +390,13 @@ function do_new_messages_animation($li: JQuery): void {
 }
 
 export function highlight_inbox_view(): void {
+    if ($(".top_left_inbox.top_left_row").length === 0) {
+        currently_active_unpinned_view = navigation_views.built_in_views_values.inbox.fragment;
+        update_navigation_views_visibility(true);
+    } else if (currently_active_unpinned_view !== null) {
+        currently_active_unpinned_view = null;
+        update_navigation_views_visibility(true);
+    }
     select_top_left_corner_item(".top_left_inbox");
 
     setTimeout(() => {
@@ -195,6 +405,14 @@ export function highlight_inbox_view(): void {
 }
 
 export function highlight_recent_view(): void {
+    if ($(".top_left_recent_view.top_left_row").length === 0) {
+        currently_active_unpinned_view =
+            navigation_views.built_in_views_values.recent_view.fragment;
+        update_navigation_views_visibility(true);
+    } else if (currently_active_unpinned_view !== null) {
+        currently_active_unpinned_view = null;
+        update_navigation_views_visibility(true);
+    }
     select_top_left_corner_item(".top_left_recent_view");
 
     setTimeout(() => {
@@ -203,6 +421,14 @@ export function highlight_recent_view(): void {
 }
 
 export function highlight_all_messages_view(): void {
+    if ($(".top_left_all_messages.top_left_row").length === 0) {
+        currently_active_unpinned_view =
+            navigation_views.built_in_views_values.all_messages.fragment;
+        update_navigation_views_visibility(true);
+    } else if (currently_active_unpinned_view !== null) {
+        currently_active_unpinned_view = null;
+        update_navigation_views_visibility(true);
+    }
     select_top_left_corner_item(".top_left_all_messages");
 
     setTimeout(() => {

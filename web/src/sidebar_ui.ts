@@ -7,10 +7,11 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
-import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
@@ -282,6 +283,17 @@ export function initialize(): void {
 }
 
 export function initialize_left_sidebar(): void {
+    const built_in_views = navigation_views.get_built_in_views();
+    const expanded_pinned_views = built_in_views
+        .filter((view) => view.is_pinned)
+        .map((view) => ({
+            ...view,
+            is_selected: view.home_view_code === user_settings.web_home_view,
+        }));
+    const has_unpinned_views = built_in_views.some((view) => !view.is_pinned);
+    const is_condensed = left_sidebar_navigation_area.is_condensed();
+    const should_hide_menu = !is_condensed && !has_unpinned_views;
+
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
@@ -293,11 +305,15 @@ export function initialize_left_sidebar(): void {
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
+        sidebar_navigation_condensed_items:
+            left_sidebar_navigation_area.get_views_visible_in_condensed_state(),
+        sidebar_navigation_expanded_items: expanded_pinned_views,
+        should_hide_menu,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
     // make sure home-view and left_sidebar order persists
-    reorder_left_sidebar_navigation_list(user_settings.web_home_view);
+    left_sidebar_navigation_area.reorder_left_sidebar_navigation_list(user_settings.web_home_view);
 }
 
 export function initialize_right_sidebar(): void {

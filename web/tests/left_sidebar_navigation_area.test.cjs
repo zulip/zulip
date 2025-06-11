@@ -11,11 +11,33 @@ mock_esm("../src/resize", {
 });
 
 const scheduled_messages = mock_esm("../src/scheduled_messages");
+const drafts = mock_esm("../src/drafts");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 scheduled_messages.get_count = () => 555;
+drafts.set_count = () => {};
 
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
+const navigation_views = zrequire("navigation_views");
+
+navigation_views.initialize({
+    navigation_views: [
+        {
+            fragment: "narrow/is/starred",
+            is_pinned: true,
+            name: null,
+        },
+        {
+            fragment: "narrow/is/mentioned",
+            is_pinned: true,
+            name: null,
+        },
+    ],
+});
 
 run_test("narrowing", ({override_rewire}) => {
     override_rewire(
@@ -37,6 +59,24 @@ run_test("narrowing", ({override_rewire}) => {
             }
         },
     );
+
+    const $sidebar_menu_icon = $("<menu-icon>");
+    const $selected_home_view = $(".selected-home-view");
+    $selected_home_view.set_find_results(".sidebar-menu-icon", $sidebar_menu_icon);
+
+    const $mentioned_li = $(".top_left_mentions");
+    const $home_view_li = $(".selected-home-view");
+    const $streams_header = $("#streams_header");
+    const $back_to_streams = $("#topics_header");
+    const $starred_li = $(".top_left_starred_messages");
+    const $scheduled_li = $(".top_left_scheduled_messages");
+
+    $mentioned_li.set_find_results(".unread_count", $("<mentioned-count>"));
+    $home_view_li.set_find_results(".unread_count", $("<home-count>"));
+    $streams_header.set_find_results(".unread_count", $("<stream-count>"));
+    $back_to_streams.set_find_results(".unread_count", $("<topics-count>"));
+    $starred_li.set_find_results(".unread_count", $("<starred-count>"));
+    $scheduled_li.set_find_results(".unread_count", $("<scheduled-count>"));
 
     let filter = new Filter([{operator: "is", operand: "mentioned"}]);
 
