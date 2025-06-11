@@ -1616,42 +1616,15 @@ export function build_page(): void {
         });
     });
 
-    function realm_icon_logo_upload_complete(
-        $spinner: JQuery,
-        $upload_text: JQuery,
-        $delete_button: JQuery,
-    ): void {
-        $spinner.css({visibility: "hidden"});
-        $upload_text.show();
-        $delete_button.show();
-    }
-
-    function realm_icon_logo_upload_start(
-        $spinner: JQuery,
-        $upload_text: JQuery,
-        $delete_button: JQuery,
-    ): void {
-        $spinner.css({visibility: "visible"});
-        $upload_text.hide();
-        $delete_button.hide();
-    }
-
-    function upload_realm_logo_or_icon(
-        $file_input: JQuery<HTMLInputElement>,
-        night: boolean | null,
-        icon: boolean,
-    ): void {
+    function upload_realm_logo_or_icon(file: File, night: boolean | null, icon: boolean): void {
         const form_data = new FormData();
         let widget;
         let url;
 
         assert(csrf_token !== undefined);
         form_data.append("csrfmiddlewaretoken", csrf_token);
-        const files = util.the($file_input).files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            form_data.append("file-" + i, file);
-        }
+        form_data.append("file", file);
+
         if (icon) {
             url = "/json/realm/icon";
             widget = "#realm-icon-upload-widget";
@@ -1664,11 +1637,7 @@ export function build_page(): void {
             url = "/json/realm/logo";
             form_data.append("night", JSON.stringify(night));
         }
-        const $spinner = $(`${widget} .upload-spinner-background`).expectOne();
-        const $upload_text = $(`${widget}  .image-upload-text`).expectOne();
-        const $delete_button = $(`${widget}  .image-delete-button`).expectOne();
         const $error_field = $(`${widget}-error`).expectOne();
-        realm_icon_logo_upload_start($spinner, $upload_text, $delete_button);
         $error_field.hide();
         channel.post({
             url,
@@ -1677,11 +1646,11 @@ export function build_page(): void {
             processData: false,
             contentType: false,
             success() {
-                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
+                dialog_widget.close();
             },
             error(xhr) {
-                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
-                ui_report.error("", xhr, $error_field);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                dialog_widget.hide_dialog_spinner();
             },
         });
     }
