@@ -12,6 +12,7 @@ import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -807,6 +808,28 @@ export function initialize(): void {
                     render_information_density_update_button_tooltip(tooltip_context),
                 ),
             );
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".send_notification_to_new_subscribers_container.control-label-disabled",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t(
+                {
+                    defaultMessage:
+                        "Notification message cannot be sent when subscribing more than {max_users} users.",
+                },
+                {
+                    max_users: realm.max_subs_for_notification,
+                },
+            );
+            instance.setContent(content);
         },
         onHidden(instance) {
             instance.destroy();

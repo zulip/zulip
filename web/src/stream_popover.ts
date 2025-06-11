@@ -618,6 +618,7 @@ export async function build_move_topic_to_stream_popover(
             subscriber_api.add_user_ids_to_stream(
                 unsubscribed_participant_ids,
                 destination_stream,
+                true,
                 success,
                 xhr_failure,
             );
