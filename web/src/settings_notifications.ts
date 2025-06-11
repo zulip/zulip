@@ -42,7 +42,7 @@ const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
     buttons: [
         {
             label: $t({defaultMessage: "Enable notifications"}),
-            custom_classes: "request-desktop-notifications",
+            custom_classes: "desktop-notifications-request",
             attention: "primary",
         },
     ],
@@ -273,6 +273,26 @@ export function set_up(settings_panel: SettingsPanel): void {
         settings_object.automatically_unmute_topics_in_muted_streams_policy,
     );
 
+    update_desktop_notification_banner();
+
+    $container.on("click", ".desktop-notifications-request", (e) => {
+        e.preventDefault();
+        // This is only accessed via the notifications banner, so we
+        // do not need to do a mobile check here--as that banner is
+        // not shown in a mobile context anyway.
+        void Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+                update_desktop_notification_banner();
+            } else if (permission === "denied") {
+                window.open(
+                    "/help/desktop-notifications#check-platform-settings",
+                    "_blank",
+                    "noopener noreferrer",
+                );
+            }
+        });
+    });
+
     set_enable_digest_emails_visibility($container, for_realm_settings);
 
     if (for_realm_settings) {
@@ -380,24 +400,6 @@ export function set_up(settings_panel: SettingsPanel): void {
         message_notifications.send_test_notification(
             $t({defaultMessage: "This is a test notification from Zulip."}),
         );
-    });
-
-    $("#settings_content").on("click", ".request-desktop-notifications", (e) => {
-        e.preventDefault();
-        // This is only accessed via the notifications banner, so we
-        // do not need to do a mobile check here--as that banner is
-        // not shown in a mobile context anyway.
-        void Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
-                update_desktop_notification_banner();
-            } else if (permission === "denied") {
-                window.open(
-                    "/help/desktop-notifications#check-platform-settings",
-                    "_blank",
-                    "noopener noreferrer",
-                );
-            }
-        });
     });
 
     $("#settings_content").on("click", ".banner-close-button", (e) => {
