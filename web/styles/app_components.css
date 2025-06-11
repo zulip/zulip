@@ -542,6 +542,10 @@ input.settings_text_input {
     }
 }
 
+.desktop-setting-notifications {
+    margin-bottom: 10px;
+}
+
 .invite-stream-notice {
     margin-bottom: 20px;
 }
