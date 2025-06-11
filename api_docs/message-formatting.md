@@ -365,7 +365,33 @@ features.
 
 ## Removed features
 
-**Changes**: In Zulip 4.0 (feature level 24), the rarely used `!avatar()`
+### Removed legacy Dropbox link preview markup
+
+In Zulip 11.0 (feature level 395), the Zulip server stopped generating
+legacy Dropbox link previews. Dropbox links are now previewed just
+like standard Zulip image/link previews. However, some legacy Dropbox
+previews may exist in existing messages.
+
+Clients are recommended to prune these previews from message HTML;
+since they always appear after the actual link, there is no loss of
+information/functionality. They can be recognized via the classes
+`message_inline_ref`, `message_inline_image_desc`, and
+`message_inline_image_title`:
+
+``` html
+<div class="message_inline_ref">
+    <a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=" title="Saves">
+        <img src="/path/to/folder_dropbox.png">
+    </a>
+    <div><div class="message_inline_image_title">Saves</div>
+        <desc class="message_inline_image_desc"></desc>
+    </div>
+</div>
+```
+
+### Removed legacy avatar markup
+
+In Zulip 4.0 (feature level 24), the rarely used `!avatar()`
 and `!gravatar()` markup syntax, which was never documented and had an
 inconsistent syntax, were removed.
 

@@ -13,7 +13,7 @@ from email.message import EmailMessage
 from functools import lru_cache
 from re import Match, Pattern
 from typing import Any, Generic, Optional, TypeAlias, TypedDict, TypeVar, cast
-from urllib.parse import parse_qs, quote, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, parse_qsl, quote, urlencode, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -803,11 +803,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # TODO: The returned Dict could possibly be a TypedDict in future.
         parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
-            is_album = parsed_url.path.startswith("/sc/") or parsed_url.path.startswith("/photos/")
-            # Only allow preview Dropbox shared links
-            if not (
-                parsed_url.path.startswith("/s/") or parsed_url.path.startswith("/sh/") or is_album
-            ):
+            # See https://www.dropboxforum.com/discussions/101001012/shared-link--scl-to-s/689070/replies/695266
+            # for more info on the URL structure mentioned here.
+            # It is not possible to generate /sc/ links which is kind of a showcase
+            # for multiple images. We treat it now as a folder instead.
+            is_album = parsed_url.path.startswith(
+                "/scl/fo/"  # codespell:ignore fo
+            ) or parsed_url.path.startswith("/sc/")
+            is_file = parsed_url.path.startswith("/scl/fi/")
+            if not (is_file or is_album):
                 return None
 
             # Try to retrieve open graph protocol info for a preview
@@ -817,7 +821,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # want to use the open graph image.
             image_info = fetch_open_graph_image(url)
 
-            is_image = is_album or self.is_image(url)
+            is_image = self.is_image(url)
 
             # If it is from an album or not an actual image file,
             # just use open graph image.
@@ -827,17 +831,31 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if image_info is None:
                     return None
 
+                if is_album:
+                    image_info["title"] = "Dropbox folder"
+                    image_info["desc"] = "Click to open folder."
+                else:
+                    image_info["title"] = "Dropbox file"
+                    image_info["desc"] = "Click to open file."
+
                 image_info["is_image"] = is_image
                 return image_info
 
-            # Otherwise, try to retrieve the actual image.
+            # Try to retrieve the actual image.
             # This is because open graph image from Dropbox may have padding
             # and gifs do not work.
             # TODO: What if image is huge? Should we get headers first?
             if image_info is None:
                 image_info = {}
             image_info["is_image"] = True
-            image_info["image"] = parsed_url._replace(query="raw=1").geturl()
+
+            # Adding raw=1 as query param will give us the URL of the
+            # actual image instead of the dropbox image preview page.
+            query_params = dict(parse_qsl(parsed_url.query))
+            query_params["raw"] = "1"
+            query = urlencode(query_params)
+
+            image_info["image"] = parsed_url._replace(query=query).geturl()
 
             return image_info
         return None
@@ -1339,20 +1357,22 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
             dropbox_image = self.dropbox_image(url)
             if dropbox_image is not None:
-                class_attr = "message_inline_ref"
                 is_image = dropbox_image["is_image"]
                 if is_image:
-                    class_attr = "message_inline_image"
-                    # Not making use of title and description of images
-                self.add_a(
-                    root,
-                    image_url=dropbox_image["image"],
-                    link=url,
-                    title=dropbox_image.get("title"),
-                    desc=dropbox_image.get("desc", ""),
-                    class_attr=class_attr,
-                    already_thumbnailed=True,
+                    found_url = ResultWithFamily(
+                        family=found_url.family,
+                        result=(dropbox_image["image"], dropbox_image["image"]),
+                    )
+                    self.handle_image_inlining(root, found_url)
+                    continue
+
+                dropbox_embed_data = UrlEmbedData(
+                    type="image",
+                    title=dropbox_image["title"],
+                    description=dropbox_image["desc"],
+                    image=dropbox_image["image"],
                 )
+                self.add_embed(root, url, dropbox_embed_data)
                 continue
 
             if self.is_image(url):
