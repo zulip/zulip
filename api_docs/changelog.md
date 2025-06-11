@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 395**
+
+* [Markdown message
+  formatting](/api/message-formatting#removed-features): Previously,
+  Zulip's Markdown syntax had special support for previewing Dropbox
+  albums. Dropbox albums no longer exist, and links to Dropbox folders
+  now consistently use Zulip's standard open graph preview markup.
+
 **Feature level 394**
 
 * [`POST /register`](/api/register-queue), [`GET
