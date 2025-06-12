@@ -1115,6 +1115,7 @@ export async function build_move_topic_to_stream_popover(
 
 export function initialize(): void {
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", function (this: HTMLElement, e) {
+        e.preventDefault();
         const $stream_li = $(this).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
 
