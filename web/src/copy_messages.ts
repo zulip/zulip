@@ -268,6 +268,19 @@ export function copy_handler(ev: ClipboardEvent): boolean {
         return false;
     }
 
+    // Expand selection to select content from all the messages
+    // belonging to the multi-message selection.
+    const first = $(`[data-message-id='${start_id}']`).find(".messagebox-content")[0];
+    const last = $(`[data-message-id='${end_id}']`).find(".messagebox-content")[0];
+
+    if (first && last) {
+        selection.removeAllRanges();
+        const range = document.createRange();
+        range.setStartBefore(first);
+        range.setEndAfter(last);
+        selection.addRange(range);
+    }
+
     // We've now decided to handle the copy event ourselves.
     //
     // We construct a temporary div for what we want the copy to pick up.
