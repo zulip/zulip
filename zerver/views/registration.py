@@ -1055,7 +1055,7 @@ def realm_import_status(
         # TODO: Either store the path to the temporary conversion directory on
         # preregistration_realm.data_import_metadata, or have the conversion
         # process support writing updates to this for a better progress indicator.
-        return json_success(request, {"status": _("Converting Slack data…")})
+        return json_success(request, {"status": _("Converting Slack data… This may take a while.")})
 
     if realm.deactivated:
         # These "if" cases are in the inverse order than they're done
