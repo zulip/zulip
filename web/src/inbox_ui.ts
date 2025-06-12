@@ -965,6 +965,12 @@ function render_channel_view(channel_id: number): void {
     channel_view_topic_widget.build();
 }
 
+function inbox_view_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
+    return views_util.filters_dropdown_options(current_value, inbox_util.is_channel_view());
+}
+
 export function complete_rerender(): void {
     if (!inbox_util.is_visible()) {
         return;
@@ -1023,6 +1029,7 @@ export function complete_rerender(): void {
         item_click_callback: filter_click_handler,
         $events_container: $("#inbox-main"),
         default_id: first_filter.done ? undefined : first_filter.value,
+        get_options: inbox_view_dropdown_options,
     });
     filters_dropdown_widget.setup();
 }
