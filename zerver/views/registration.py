@@ -1223,7 +1223,7 @@ def realm_import_post_process(
 
     claimable_users = UserProfile.objects.filter(
         realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False
-    )
+    ).order_by("full_name")
     context = {
         "users": claimable_users,
         "verified_email": preregistration_realm.email,
