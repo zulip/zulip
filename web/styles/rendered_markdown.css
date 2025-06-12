@@ -486,6 +486,9 @@
         margin-bottom: var(--markdown-interelement-space-px);
     }
 
+    /* We used to use this for certain dropbox previews, we are keeping
+       this around as to not break any previous instances of these
+       previews. */
     .message_inline_image_title {
         font-weight: bold;
     }
@@ -640,6 +643,9 @@
         margin-right: 0.75em;
     }
 
+    /* We used to use this for certain dropbox previews, we are keeping
+       this around as to not break any previous instances of these
+       previews. */
     .message_inline_ref {
         margin-bottom: var(--markdown-interelement-space-px);
         margin-inline-start: 5px;

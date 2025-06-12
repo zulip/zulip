@@ -678,14 +678,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         else:
             img.set("src", image_url)
 
-        if class_attr == "message_inline_ref":
-            summary_div = SubElement(div, "div")
-            title_div = SubElement(summary_div, "div")
-            title_div.set("class", "message_inline_image_title")
-            title_div.text = title
-            desc_div = SubElement(summary_div, "desc")
-            desc_div.set("class", "message_inline_image_desc")
-
     def add_oembed_data(self, root: Element, link: str, extracted_data: UrlOEmbedData) -> None:
         if extracted_data.image is None:
             # Don't add an embed if an image is not found
@@ -1236,7 +1228,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             uncle = grandparent[insertion_index]
             inline_image_classes = {
                 "message_inline_image",
-                "message_inline_ref",
                 "inline-preview-twitter",
             }
             if (
