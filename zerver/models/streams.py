@@ -139,6 +139,9 @@ class Stream(models.Model):
     can_administer_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_move_messages_out_of_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_move_messages_within_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
@@ -172,6 +175,13 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="stream_creator_or_nobody",
+        ),
+        "can_move_messages_out_of_channel_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
         ),
         "can_move_messages_within_channel_group": GroupPermissionSetting(
             require_system_group=False,
@@ -261,6 +271,7 @@ class Stream(models.Model):
         "rendered_description",
         "can_add_subscribers_group_id",
         "can_administer_channel_group_id",
+        "can_move_messages_out_of_channel_group_id",
         "can_move_messages_within_channel_group_id",
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",

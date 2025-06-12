@@ -388,7 +388,8 @@ export async function build_move_topic_to_stream_popover(
     // input based on can_move_messages_between_topics_group. In other cases, message object is
     // available and thus we check the time-based permissions as well in the
     // below if block to enable or disable the stream and topic input.
-    let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
+    let disable_stream_input =
+        !stream_data.user_can_move_messages_out_of_channel(current_stream_id);
     args.disable_topic_input =
         !stream_data.user_can_move_messages_within_channel(current_stream_id);
 
