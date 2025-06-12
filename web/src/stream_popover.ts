@@ -389,7 +389,8 @@ export async function build_move_topic_to_stream_popover(
     // available and thus we check the time-based permissions as well in the
     // below if block to enable or disable the stream and topic input.
     let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
-    args.disable_topic_input = !settings_data.user_can_move_messages_to_another_topic();
+    args.disable_topic_input =
+        !stream_data.user_can_move_messages_within_channel(current_stream_id);
 
     let modal_heading;
     if (only_topic_edit) {
@@ -741,7 +742,17 @@ export async function build_move_topic_to_stream_popover(
             return false;
         }
         let {new_topic_name} = get_params_from_form();
-        if (!settings_data.user_can_move_messages_to_another_topic()) {
+
+        // Users can edit topic if they either have organization-level
+        // `can_move_messages_between_topics_group` or channel-level
+        // `can_move_messages_within_channel_group` permission. If they only have
+        // channel-level permission then they can't edit the topic while moving
+        // messages between channels.
+        if (
+            !settings_data.user_can_move_messages_to_another_topic() &&
+            (stream_widget_value !== current_stream_id ||
+                !stream_data.user_can_move_messages_within_channel(current_stream_id))
+        ) {
             // new_topic_name is undefined since the new topic input is disabled when
             // user does not have permission to edit topic.
             new_topic_name = args.topic_name;
@@ -804,6 +815,21 @@ export async function build_move_topic_to_stream_popover(
     function move_topic_on_update(event: JQuery.ClickEvent, dropdown: {hide: () => void}): void {
         stream_widget_value = Number.parseInt($(event.currentTarget).attr("data-unique-id")!, 10);
         curr_selected_stream = stream_widget_value;
+        const $topic_input = $("#move_topic_form .move_messages_edit_topic");
+        const params = get_params_from_form();
+
+        // Disable topic input if user only has permission to move messages within
+        // the current channel but the stream dropdown widget is set to some other channel.
+        if (
+            settings_data.user_can_move_messages_to_another_topic() ||
+            (stream_widget_value === current_stream_id &&
+                stream_data.user_can_move_messages_within_channel(current_stream_id))
+        ) {
+            $topic_input.prop("disabled", false);
+        } else {
+            $topic_input.val(params.old_topic_name);
+            $topic_input.prop("disabled", true);
+        }
 
         update_submit_button_disabled_state(stream_widget_value);
         set_stream_topic_typeahead();
@@ -816,7 +842,7 @@ export async function build_move_topic_to_stream_popover(
         event.stopPropagation();
 
         // Move focus to the topic input after a new stream is selected.
-        $("#move_topic_form .move_messages_edit_topic").trigger("focus");
+        $topic_input.trigger("focus");
     }
 
     // The following logic is correct only when
