@@ -421,7 +421,7 @@ export function get_user_type(user_id: number): string | undefined {
 }
 
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
-    const emails = emails_string.split(",");
+    const emails = emails_string.split(",").map((email) => email.trim());
     return email_list_to_user_ids_string(emails);
 }
 
