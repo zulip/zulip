@@ -1171,6 +1171,8 @@ def realm_import_post_process(
     if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
         return HttpResponseRedirect(get_safe_redirect_to(reverse("login"), realm.url))
 
+    # We need to use name since the email differs per org.
+    SLACK_BOT_NAME = "Slackbot"
     if request.method == "POST":
         form = ImportRealmOwnerSelectionForm(request.POST)
         if form.is_valid():
@@ -1195,6 +1197,8 @@ def realm_import_post_process(
 
             # Validate that a normal user account that can login was selected.
             importing_user = get_user_profile_by_id_in_realm(user_id, realm)
+            # Don't allow selecting Slackbot as the realm owner.
+            assert importing_user.full_name != SLACK_BOT_NAME
             assert (
                 importing_user.is_active
                 and not importing_user.is_bot
@@ -1228,9 +1232,11 @@ def realm_import_post_process(
                 generate_password_reset_url(importing_user, default_token_generator)
             )
 
-    claimable_users = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False
-    ).order_by("full_name")
+    claimable_users = (
+        UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False)
+        .exclude(full_name=SLACK_BOT_NAME)
+        .order_by("full_name")
+    )
     context = {
         "users": claimable_users,
         "verified_email": preregistration_realm.email,
