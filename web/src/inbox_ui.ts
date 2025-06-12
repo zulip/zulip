@@ -1085,7 +1085,8 @@ function filter_should_hide_stream_row({
 
     if (
         filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
-        (user_topics.is_topic_muted(stream_id, topic) || stream_data.is_muted(stream_id)) &&
+        (user_topics.is_topic_muted(stream_id, topic) ||
+            (!inbox_util.is_channel_view() && stream_data.is_muted(stream_id))) &&
         !user_topics.is_topic_unmuted_or_followed(stream_id, topic)
     ) {
         return true;
