@@ -121,6 +121,9 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
             if (this instanceof HTMLInputElement && this.type === "file" && this.files?.length) {
                 // If the input is a file input and a file has been selected, set value to file object
                 current_values[property_name] = this.files[0];
+            } else if (this instanceof HTMLInputElement && this.type === "checkbox") {
+                // If the input is a checkbox, check the inputs `checked` attribute.
+                current_values[property_name] = this.checked;
             } else if (property_name === "edit_bot_owner") {
                 current_values[property_name] = $(this).find(".dropdown_widget_value").text();
             } else if ($(this).hasClass("pill-container")) {
