@@ -776,3 +776,14 @@ class DeliveryTimeNotInFutureError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Scheduled delivery time must be in the future.")
+
+
+class SlackImportInvalidFileError(Exception):
+    """
+    An error that is raised during the Slack import process
+    and is intended to be shown to the user.
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
