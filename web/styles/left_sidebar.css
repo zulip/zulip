@@ -1114,6 +1114,21 @@ li.top_left_scheduled_messages {
         minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
     white-space: nowrap;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+        opacity: 1;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &:not(:active):focus {
+        text-decoration: none;
+        border: none;
+        outline: none;
+        color: inherit;
+    }
 
     .stream-privacy {
         grid-area: starting-anchor-element;
