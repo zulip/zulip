@@ -434,7 +434,11 @@ $(() => {
                 },
             },
         });
-        uppy.use(Tus, {endpoint: "/api/v1/tus/"});
+        uppy.use(Tus, {
+            endpoint: "/api/v1/tus/",
+            // Allow user to upload the same file multiple times.
+            removeFingerprintOnSuccess: true,
+        });
         uppy.on("restriction-failed", (_file, error) => {
             $("#slack-import-file-upload-error").text(error.message);
         });
