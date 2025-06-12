@@ -390,6 +390,9 @@ def registration_helper(
                 context["uploaded_import_file_name"] = prereg_realm.data_import_metadata.get(
                     "uploaded_import_file_name"
                 )
+                context["invalid_file_error_message"] = prereg_realm.data_import_metadata.get(
+                    "invalid_file_error_message", ""
+                )
 
             return TemplateResponse(
                 request,
@@ -1055,7 +1058,22 @@ def realm_import_status(
         # TODO: Either store the path to the temporary conversion directory on
         # preregistration_realm.data_import_metadata, or have the conversion
         # process support writing updates to this for a better progress indicator.
-        return json_success(request, {"status": _("Converting Slack data… This may take a while.")})
+        if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
+            return json_success(
+                request, {"status": _("Converting Slack data… This may take a while.")}
+            )
+        elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
+            # Redirect user the file upload page if we have an error message to display.
+            result = {
+                "status": preregistration_realm.data_import_metadata.get(
+                    "invalid_file_error_message"
+                ),
+                "redirect": reverse(
+                    "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
+                ),
+            }
+            return json_success(request, result)
+        # TODO: If there is something we need to fix for the import, we should notify the user.
 
     if realm.deactivated:
         # These "if" cases are in the inverse order than they're done
