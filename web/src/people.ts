@@ -117,14 +117,10 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 }
 
 // Use this function only when you are sure that user_id is valid.
-export let get_by_user_id = (user_id: number): User => {
+export function get_by_user_id(user_id: number): User {
     const person = people_by_user_id_dict.get(user_id);
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
-};
-
-export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
-    get_by_user_id = value;
 }
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
@@ -155,7 +151,7 @@ export function validate_user_ids(user_ids: number[]): number[] {
     return good_ids;
 }
 
-export let get_by_email = (email: string): User | undefined => {
+export function get_by_email(email: string): User | undefined {
     const person = people_dict.get(email);
 
     if (!person) {
@@ -169,10 +165,6 @@ export let get_by_email = (email: string): User | undefined => {
     }
 
     return person;
-};
-
-export function rewire_get_by_email(value: typeof get_by_email): void {
-    get_by_email = value;
 }
 
 export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
@@ -1490,6 +1482,14 @@ export function get_from_unique_full_name(query: string): User | undefined {
         return get_by_user_id(user_id);
     }
     return undefined;
+}
+
+export function get_unique_full_name(full_name: string, user_id: number): string {
+    let unique_full_name = full_name;
+    if (is_duplicate_full_name(full_name)) {
+        unique_full_name += `|${user_id}`;
+    }
+    return unique_full_name;
 }
 
 export function get_mention_syntax(full_name: string, user_id?: number, silent = false): string {

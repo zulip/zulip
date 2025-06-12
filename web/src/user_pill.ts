@@ -35,15 +35,13 @@ export type UserPillWidget = InputPillContainer<UserPill>;
 
 export type UserPillData = {type: "user"; user: User};
 
-export function create_item_from_email(
-    email: string,
+export function create_item_from_user_id(
+    user_id: string,
     current_items: CombinedPill[],
     pill_config?: InputPillConfig,
 ): UserPill | undefined {
-    const user = people.get_by_email(email);
-
+    const user = people.maybe_get_user_by_id(Number(user_id), true);
     if (!user) {
-        // The email is not allowed, so return.
         return undefined;
     }
 
@@ -84,8 +82,8 @@ export function create_item_from_email(
     return item;
 }
 
-export function get_email_from_item(item: UserPill): string {
-    return item.email;
+export function get_unique_full_name_from_item(item: UserPill): string {
+    return people.get_unique_full_name(item.full_name, item.user_id);
 }
 
 export function append_person(
@@ -216,8 +214,8 @@ export function create_pills(
     const pills = input_pill.create({
         $container: $pill_container,
         pill_config,
-        create_item_from_text: create_item_from_email,
-        get_text_from_item: get_email_from_item,
+        create_item_from_text: create_item_from_user_id,
+        get_text_from_item: get_unique_full_name_from_item,
         get_display_value_from_item,
         generate_pill_html,
     });
