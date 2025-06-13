@@ -69,7 +69,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             error_continuation(xhr: JQuery.jqXHR<unknown>) {
                 $change_linkifier_button.prop("disabled", false);
                 const parsed = z
-                    .object({errors: z.record(z.array(z.string()).optional())})
+                    .object({errors: z.record(z.string(), z.array(z.string()).optional())})
                     .safeParse(xhr.responseJSON);
                 if (parsed.success) {
                     handle_linkifier_api_error(
@@ -288,7 +288,7 @@ export function build_page(): void {
                 error(xhr) {
                     $add_linkifier_button.prop("disabled", false);
                     const parsed = z
-                        .object({errors: z.record(z.array(z.string()).optional())})
+                        .object({errors: z.record(z.string(), z.array(z.string()).optional())})
                         .safeParse(xhr.responseJSON);
                     if (parsed.success) {
                         handle_linkifier_api_error(

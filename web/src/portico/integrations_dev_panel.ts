@@ -14,7 +14,7 @@ const fixture_schema = z.record(
     z.string(),
     z.object({
         body: z.unknown(),
-        headers: z.record(z.string()),
+        headers: z.record(z.string(), z.string()),
     }),
 );
 

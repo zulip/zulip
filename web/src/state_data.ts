@@ -130,7 +130,7 @@ export const server_emoji_schema = z.object({
     author: user_schema.nullish(),
 });
 
-export const realm_emoji_map_schema = z.record(server_emoji_schema);
+export const realm_emoji_map_schema = z.record(z.string(), server_emoji_schema);
 
 export type GroupSettingValue = z.infer<typeof group_setting_value_schema>;
 
@@ -284,7 +284,7 @@ export const realm_schema = z.object({
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
     giphy_rating_options: z
-        .record(z.object({id: z.number(), name: z.string()}))
+        .record(z.string(), z.object({id: z.number(), name: z.string()}))
         .and(z.object({disabled: z.object({id: z.number(), name: z.string()})})),
     max_avatar_file_size_mib: z.number(),
     max_file_upload_size_mib: z.number(),
@@ -300,6 +300,7 @@ export const realm_schema = z.object({
     password_max_length: z.number(),
     realm_allow_message_editing: z.boolean(),
     realm_authentication_methods: z.record(
+        z.string(),
         z.object({
             enabled: z.boolean(),
             available: z.boolean(),
@@ -362,7 +363,7 @@ export const realm_schema = z.object({
     realm_embedded_bots: z.array(
         z.object({
             name: z.string(),
-            config: z.record(z.string()),
+            config: z.record(z.string(), z.string()),
         }),
     ),
     realm_empty_topic_display_name: z.string(),
@@ -448,9 +449,9 @@ export const realm_schema = z.object({
     server_presence_offline_threshold_seconds: z.number(),
     server_presence_ping_interval_seconds: z.number(),
     server_supported_permission_settings: z.object({
-        realm: z.record(group_permission_setting_schema),
-        stream: z.record(group_permission_setting_schema),
-        group: z.record(group_permission_setting_schema),
+        realm: z.record(z.string(), group_permission_setting_schema),
+        stream: z.record(z.string(), group_permission_setting_schema),
+        group: z.record(z.string(), group_permission_setting_schema),
     }),
     server_thumbnail_formats: z.array(thumbnail_format_schema),
     server_typing_started_expiry_period_milliseconds: z.number(),
@@ -562,7 +563,7 @@ export const state_data_schema = z
     )
     .and(
         z
-            .object({user_status: z.record(user_status_schema)})
+            .object({user_status: z.record(z.string(), user_status_schema)})
             .transform((user_status) => ({user_status})),
     )
     .and(

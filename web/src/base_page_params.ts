@@ -46,7 +46,7 @@ const home_params_schema = default_params_schema
         show_try_zulip_modal: z.boolean(),
         show_webathena: z.boolean(),
         state_data: state_data_schema.nullable(),
-        translation_data: z.record(z.string()),
+        translation_data: z.record(z.string(), z.string()),
     })
     // TODO/typescript: Remove .passthrough() when all consumers have been
     // converted to TypeScript and the schema is complete.
@@ -58,7 +58,7 @@ const stats_params_schema = default_params_schema.extend({
     data_url_suffix: z.string(),
     upload_space_used: z.nullable(z.number()),
     guest_users: z.nullable(z.number()),
-    translation_data: z.record(z.string()),
+    translation_data: z.record(z.string(), z.string()),
 });
 
 // Sync this with corporate.views.portico.team_view.

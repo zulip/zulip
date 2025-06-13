@@ -392,7 +392,10 @@ function get_message_retention_setting_value(
     return util.check_time_input(custom_input_val);
 }
 
-export const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
+export const select_field_data_schema = z.record(
+    z.string(),
+    z.object({text: z.string(), order: z.string()}),
+);
 export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
