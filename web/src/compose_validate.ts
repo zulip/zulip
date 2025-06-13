@@ -837,7 +837,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         return false;
     }
 
-    if (realm.realm_mandatory_topics) {
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         const topic = compose_state.topic();
         const missing_topic = util.is_topic_name_considered_empty(topic);
         if (missing_topic) {

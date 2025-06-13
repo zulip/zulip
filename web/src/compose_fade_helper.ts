@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import type {Message} from "./message_store.ts";
-import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {Recipient} from "./util.ts";
 import * as util from "./util.ts";
@@ -40,7 +40,8 @@ export function want_normal_display(): boolean {
         //   means user is still configuring topic.
         if (
             focused_recipient.topic === "" &&
-            (realm.realm_mandatory_topics || $("input#stream_message_recipient_topic").is(":focus"))
+            (!stream_data.can_use_empty_topic(focused_recipient.stream_id) ||
+                $("input#stream_message_recipient_topic").is(":focus"))
         ) {
             return true;
         }

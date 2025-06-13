@@ -487,7 +487,7 @@ export async function build_move_topic_to_stream_popover(
 
     function update_submit_button_disabled_state(select_stream_id: number): void {
         const params = get_params_from_form();
-        const current_stream_id = params.current_stream_id;
+        const current_stream_id = Number.parseInt(params.current_stream_id, 10);
         const new_topic_name = params.new_topic_name?.trim();
         const old_topic_name = params.old_topic_name.trim();
 
@@ -500,13 +500,13 @@ export async function build_move_topic_to_stream_popover(
         // not changed.
         let is_disabled = false;
         if (
-            realm.realm_mandatory_topics &&
+            !stream_data.can_use_empty_topic(select_stream_id) &&
             (new_topic_name === "" || new_topic_name === "(no topic)")
         ) {
             is_disabled = true;
         }
         if (
-            Number.parseInt(current_stream_id, 10) === select_stream_id &&
+            current_stream_id === select_stream_id &&
             (new_topic_name === undefined || new_topic_name === old_topic_name)
         ) {
             is_disabled = true;
@@ -886,7 +886,7 @@ export async function build_move_topic_to_stream_popover(
     }
 
     function update_topic_input_placeholder_visibility(topic_input_value: string): void {
-        if (!realm.realm_mandatory_topics) {
+        if (stream_data.can_use_empty_topic(current_stream_id)) {
             const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
             $topic_not_mandatory_placeholder.toggleClass(
                 "move-topic-new-topic-placeholder-visible",
@@ -930,7 +930,7 @@ export async function build_move_topic_to_stream_popover(
             false,
         );
 
-        if (!realm.realm_mandatory_topics) {
+        if (stream_data.can_use_empty_topic(current_stream_id)) {
             const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
 
             if (topic_name === "") {
