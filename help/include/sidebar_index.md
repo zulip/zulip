@@ -170,6 +170,7 @@
 
 ## Apps
 * [Download apps for every platform](https://zulip.com/apps/)
+* [Mobile app installation guides](/help/mobile-app-install-guide)
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Supported browsers](/help/supported-browsers)
 * [Configure how links open](/help/configure-how-links-open)
