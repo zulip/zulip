@@ -91,12 +91,12 @@ export const stream_properties_schema = stream_specific_notification_settings_sc
 });
 
 // This is the raw data we get from the server for a subscription.
-export const api_stream_subscription_schema = api_stream_schema
-    .merge(stream_properties_schema)
-    .extend({
-        subscribers: z.array(z.number()).optional(),
-        partial_subscribers: z.array(z.number()).optional(),
-    });
+export const api_stream_subscription_schema = z.object({
+    ...api_stream_schema.shape,
+    ...stream_properties_schema.shape,
+    subscribers: z.array(z.number()).optional(),
+    partial_subscribers: z.array(z.number()).optional(),
+});
 
 export const updatable_stream_properties_schema = api_stream_subscription_schema.extend({
     in_home_view: z.boolean(),
