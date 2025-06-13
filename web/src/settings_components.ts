@@ -111,14 +111,14 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
 
 type RealmSetting = typeof realm;
 export const realm_setting_property_schema = z.union([
-    realm_schema.keyof(),
+    z.keyof(realm_schema),
     z.literal("realm_org_join_restrictions"),
 ]);
 type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
 export const realm_user_settings_default_properties_schema = z.union([
-    realm_default_settings_schema.keyof(),
+    z.keyof(realm_default_settings_schema),
     z.literal("email_notification_batching_period_edit_minutes"),
 ]);
 type RealmUserSettingDefaultProperties = z.infer<
@@ -126,7 +126,7 @@ type RealmUserSettingDefaultProperties = z.infer<
 >;
 
 export const stream_settings_property_schema = z.union([
-    stream_subscription_schema.keyof(),
+    z.keyof(stream_subscription_schema),
     z.enum(["stream_privacy", "is_default_stream"]),
 ]);
 type StreamSettingProperty = z.infer<typeof stream_settings_property_schema>;
@@ -1768,7 +1768,7 @@ export function create_realm_group_setting_widget({
     set_group_setting_widget_value(
         pill_widget,
         group_setting_value_schema.parse(
-            realm[realm_schema.keyof().parse("realm_" + setting_name)],
+            realm[z.keyof(realm_schema).parse("realm_" + setting_name)],
         ),
     );
 
@@ -1895,7 +1895,7 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
     } of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
-            const setting_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+            const setting_value = realm[z.keyof(realm_schema).parse("realm_" + setting_name)];
             const can_edit = settings_config.owner_editable_realm_group_permission_settings.has(
                 setting_name,
             )
@@ -1936,7 +1936,7 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
         const can_edit_settings_with_content_access =
             stream_data.can_change_permissions_requiring_content_access(sub);
         for (const setting_name of settings_config.stream_group_permission_settings) {
-            const setting_value = sub[stream_subscription_schema.keyof().parse(setting_name)];
+            const setting_value = sub[z.keyof(stream_subscription_schema).parse(setting_name)];
             let can_edit_settings = can_edit_settings_with_metadata_access;
             if (
                 settings_config.stream_group_permission_settings_requiring_content_access.includes(
@@ -1983,7 +1983,7 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
         const assigned_permission_objects = [];
         for (const setting_name of settings_config.group_permission_settings) {
             const setting_value =
-                user_group[user_groups.user_group_schema.keyof().parse(setting_name)];
+                user_group[z.keyof(user_groups.user_group_schema).parse(setting_name)];
             const assigned_permission_object =
                 group_permission_settings.get_assigned_permission_object(
                     group_setting_value_schema.parse(setting_value),
