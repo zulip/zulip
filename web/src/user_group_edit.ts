@@ -1681,7 +1681,7 @@ export function update_empty_left_panel_message(): void {
         get_active_data().$tabs.first().attr("data-tab-key") === "your-groups";
 
     let current_group_filter =
-        z.string().optional().parse(filters_dropdown_widget.value()) ??
+        z.optional(z.string()).parse(filters_dropdown_widget.value()) ??
         FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
 
     // When the dropdown menu is hidden.

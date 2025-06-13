@@ -19,8 +19,8 @@ const MAX_IDX = 1000;
 
 export const todo_widget_extra_data_schema = z
     .object({
-        task_list_title: z.string().optional(),
-        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
+        task_list_title: z.optional(z.string()),
+        tasks: z.optional(z.array(z.object({task: z.string(), desc: z.string()}))),
     })
     .nullable();
 
@@ -36,7 +36,7 @@ const todo_widget_inbound_data = z.intersection(
 // which should be refactored so that the code here is
 // clearer and less confusing.
 const new_task_inbound_data_schema = z.object({
-    type: z.literal("new_task").optional(),
+    type: z.optional(z.literal("new_task")),
     key: z.number().int().nonnegative().max(MAX_IDX),
     task: z.string(),
     desc: z.string(),

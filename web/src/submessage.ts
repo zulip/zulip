@@ -29,8 +29,8 @@ export const zform_widget_extra_data_schema = z
 
 const poll_widget_extra_data_schema = z
     .object({
-        question: z.string().optional(),
-        options: z.array(z.string()).optional(),
+        question: z.optional(z.string()),
+        options: z.optional(z.array(z.string())),
     })
     .nullable();
 

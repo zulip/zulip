@@ -418,7 +418,7 @@ function get_stream_header_row(stream_id: number): JQuery {
 }
 
 function load_data_from_ls(): void {
-    const saved_filters = new Set(z.array(z.string()).optional().parse(ls.get(ls_filter_key)));
+    const saved_filters = new Set(z.optional(z.array(z.string())).parse(ls.get(ls_filter_key)));
     const valid_filters = new Set(Object.values(views_util.FILTERS));
     // If saved filters are not in the list of valid filters, we reset to default.
     const is_subset = [...saved_filters].every((filter) => valid_filters.has(filter));
@@ -428,11 +428,10 @@ function load_data_from_ls(): void {
         filters = saved_filters;
     }
     collapsed_containers = new Set(
-        z.array(z.string()).optional().parse(ls.get(ls_collapsed_containers_key)),
+        z.optional(z.array(z.string())).parse(ls.get(ls_collapsed_containers_key)),
     );
     const saved_per_channel_filters = z
-        .array(z.tuple([z.number(), z.array(z.string())]))
-        .optional()
+        .optional(z.array(z.tuple([z.number(), z.array(z.string())])))
         .parse(ls.get(ls_per_channel_filters_key));
     for (const [channel_id, filter_set] of saved_per_channel_filters ?? []) {
         const valid_filter_set = new Set(filter_set.filter((filter) => valid_filters.has(filter)));

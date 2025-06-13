@@ -161,9 +161,9 @@ export function set_hash(hash: string): void {
 }
 
 export const state_data_schema = z.object({
-    narrow_pointer: z.number().optional(),
-    narrow_offset: z.number().optional(),
-    show_more_topics: z.boolean().optional(),
+    narrow_pointer: z.optional(z.number()),
+    narrow_offset: z.optional(z.number()),
+    show_more_topics: z.optional(z.boolean()),
 });
 
 type StateData = z.infer<typeof state_data_schema>;

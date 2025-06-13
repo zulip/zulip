@@ -50,7 +50,7 @@ const draft_schema = z.intersection(
         z.object({
             type: z.literal("stream"),
             topic: z.string(),
-            stream_id: z.number().optional(),
+            stream_id: z.optional(z.number()),
         }),
         z.object({
             type: z.literal("private"),
@@ -76,15 +76,15 @@ const possibly_buggy_draft_schema = z.intersection(
     z.discriminatedUnion("type", [
         z.object({
             type: z.literal("stream"),
-            topic: z.string().optional(),
-            stream_id: z.number().optional(),
-            stream: z.string().optional(),
+            topic: z.optional(z.string()),
+            stream_id: z.optional(z.number()),
+            stream: z.optional(z.string()),
         }),
         z.object({
             type: z.literal("private"),
             reply_to: z.string(),
-            private_message_recipient: z.string().optional(),
-            private_message_recipient_ids: z.array(z.number()).optional(),
+            private_message_recipient: z.optional(z.string()),
+            private_message_recipient_ids: z.optional(z.array(z.number())),
         }),
     ]),
 );
