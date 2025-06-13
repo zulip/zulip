@@ -5,12 +5,12 @@ const basic_bot_schema = z.object({
     avatar_url: z.string(),
     bot_type: z.number(),
     default_all_public_streams: z.boolean(),
-    default_events_register_stream: z.string().nullable(),
-    default_sending_stream: z.string().nullable(),
+    default_events_register_stream: z.nullable(z.string()),
+    default_sending_stream: z.nullable(z.string()),
     email: z.string(),
     full_name: z.string(),
     is_active: z.boolean(),
-    owner_id: z.number().nullable(),
+    owner_id: z.nullable(z.number()),
     user_id: z.number(),
 });
 

@@ -24,7 +24,7 @@ export const invite_schema = z.intersection(
     z.object({
         invited_by_user_id: z.number(),
         invited: z.number(),
-        expiry_date: z.number().nullable(),
+        expiry_date: z.nullable(z.number()),
         id: z.number(),
         invited_as: z.number(),
     }),

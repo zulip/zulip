@@ -15,7 +15,7 @@ export const message_edit_history_schema = z.array(
         stream: z.optional(z.number()),
         timestamp: z.number(),
         topic: z.optional(z.string()),
-        user_id: z.number().nullable(),
+        user_id: z.nullable(z.number()),
     }),
 );
 

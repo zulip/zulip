@@ -21,16 +21,16 @@ export type StreamPermissionGroupSetting = z.infer<typeof stream_permission_grou
 
 // These types are taken from the `zerver/lib/types.py`.
 export const stream_schema = z.object({
-    creator_id: z.number().nullable(),
+    creator_id: z.nullable(z.number()),
     date_created: z.number(),
     description: z.string(),
-    first_message_id: z.number().nullable(),
+    first_message_id: z.nullable(z.number()),
     history_public_to_subscribers: z.boolean(),
     invite_only: z.boolean(),
     is_announcement_only: z.boolean(),
     is_archived: z.boolean(),
     is_web_public: z.boolean(),
-    message_retention_days: z.number().nullable(),
+    message_retention_days: z.nullable(z.number()),
     name: z.string(),
     rendered_description: z.string(),
     stream_id: z.number(),
@@ -41,19 +41,19 @@ export const stream_schema = z.object({
     can_send_message_group: group_setting_value_schema,
     can_subscribe_group: group_setting_value_schema,
     is_recently_active: z.boolean(),
-    folder_id: z.number().nullable(),
+    folder_id: z.nullable(z.number()),
 });
 
 export const stream_specific_notification_settings_schema = z.object({
-    audible_notifications: z.boolean().nullable(),
-    desktop_notifications: z.boolean().nullable(),
-    email_notifications: z.boolean().nullable(),
-    push_notifications: z.boolean().nullable(),
-    wildcard_mentions_notify: z.boolean().nullable(),
+    audible_notifications: z.nullable(z.boolean()),
+    desktop_notifications: z.nullable(z.boolean()),
+    email_notifications: z.nullable(z.boolean()),
+    push_notifications: z.nullable(z.boolean()),
+    wildcard_mentions_notify: z.nullable(z.boolean()),
 });
 
 export const api_stream_schema = stream_schema.extend({
-    stream_weekly_traffic: z.number().nullable(),
+    stream_weekly_traffic: z.nullable(z.number()),
 });
 
 export const never_subscribed_stream_schema = api_stream_schema.extend({

@@ -45,7 +45,7 @@ const home_params_schema = default_params_schema
         realm_rendered_description: z.optional(z.string()),
         show_try_zulip_modal: z.boolean(),
         show_webathena: z.boolean(),
-        state_data: state_data_schema.nullable(),
+        state_data: z.nullable(state_data_schema),
         translation_data: z.record(z.string(), z.string()),
     })
     // TODO/typescript: Remove .loose() when all consumers have been
@@ -91,11 +91,11 @@ const upgrade_params_schema = default_params_schema.extend({
     tier: z.number(),
     flat_discount: z.number(),
     flat_discounted_months: z.number(),
-    fixed_price: z.number().nullable(),
+    fixed_price: z.nullable(z.number()),
     setup_payment_by_invoice: z.boolean(),
     free_trial_days: z.nullable(z.number()),
-    percent_off_annual_price: z.string().nullable(),
-    percent_off_monthly_price: z.string().nullable(),
+    percent_off_annual_price: z.nullable(z.string()),
+    percent_off_monthly_price: z.nullable(z.string()),
 });
 
 const page_params_schema = z.discriminatedUnion("page_type", [
