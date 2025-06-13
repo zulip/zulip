@@ -655,7 +655,7 @@ function populate_data_for_removing_realm_permissions(
 
     const data: Record<string, string> = {};
     for (const setting_name of changed_setting_names) {
-        const current_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+        const current_value = realm[z.keyof(realm_schema).parse("realm_" + setting_name)];
         data[setting_name] = get_request_data_for_removing_group_permission(
             group_setting_value_schema.parse(current_value),
             group.id,
@@ -677,7 +677,8 @@ function populate_data_for_removing_stream_permissions(
 
     const data: Record<string, string> = {};
     for (const setting_name of changed_setting_names) {
-        const current_value = sub[sub_store.stream_subscription_schema.keyof().parse(setting_name)];
+        const current_value =
+            sub[z.keyof(sub_store.stream_subscription_schema).parse(setting_name)];
         data[setting_name] = get_request_data_for_removing_group_permission(
             group_setting_value_schema.parse(current_value),
             group.id,
@@ -699,7 +700,8 @@ function populate_data_for_removing_user_group_permissions(
 
     const data: Record<string, string> = {};
     for (const setting_name of changed_setting_names) {
-        const current_value = user_group[user_groups.user_group_schema.keyof().parse(setting_name)];
+        const current_value =
+            user_group[z.keyof(user_groups.user_group_schema).parse(setting_name)];
         data[setting_name] = get_request_data_for_removing_group_permission(
             group_setting_value_schema.parse(current_value),
             group.id,
