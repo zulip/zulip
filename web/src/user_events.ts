@@ -4,7 +4,7 @@
 // (We should do bot updates here too.)
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";

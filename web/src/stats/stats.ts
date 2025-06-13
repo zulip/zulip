@@ -4,7 +4,7 @@ import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "../blueslip.ts";
 import {$t, $t_html} from "../i18n.ts";
@@ -52,12 +52,12 @@ type DataByTime<T> = {
 };
 
 // Define zod schemas for plotly
-const datum_schema: z.ZodType<Plotly.Datum> = z.any();
+const datum_schema: z.ZodMiniType<Plotly.Datum> = z.any();
 
 // Define a schema factory function for the utility generic type
-function instantiate_type_DataByEveryoneUser<T extends z.ZodType>(
+function instantiate_type_DataByEveryoneUser<T extends z.ZodMiniType>(
     schema: T,
-): z.ZodObject<{everyone: T; user: T}> {
+): z.ZodMiniObject<{everyone: T; user: T}> {
     return z.object({
         everyone: schema,
         user: schema,

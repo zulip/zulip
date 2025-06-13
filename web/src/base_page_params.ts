@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import {narrow_term_schema, state_data_schema} from "./state_data.ts";
 
@@ -68,17 +68,18 @@ const team_params_schema = z.object({
     page_type: z.literal("team"),
     contributors: z.optional(
         z.array(
-            z
-                .object({
+            z.catchall(
+                z.object({
                     avatar: z.string(),
                     github_username: z.optional(z.string()),
                     email: z.optional(z.string()),
                     name: z.optional(z.string()),
-                })
+                }),
                 // Repository names may change or increase over time,
                 // so we use this to parse the contributions of the user in
                 // the given repository instead of typing every name.
-                .catchall(z.number()),
+                z.number(),
+            ),
         ),
     ),
 });

@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_inbox_folder_row from "../templates/inbox_view/inbox_folder_row.hbs";
 import render_inbox_folder_with_channels from "../templates/inbox_view/inbox_folder_with_channels.hbs";

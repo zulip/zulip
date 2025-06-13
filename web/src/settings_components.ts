@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -245,7 +245,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
     return [...$subsection.find(".prop-element")];
 }
 
-export const simple_dropdown_realm_settings_schema = realm_schema.pick({
+export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,

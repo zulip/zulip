@@ -6,7 +6,7 @@ import "@uppy/drag-drop/dist/style.min.css";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as common from "../common.ts";
 import {$t} from "../i18n.ts";

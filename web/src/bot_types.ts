@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 const basic_bot_schema = z.object({
     api_key: z.string(),
@@ -31,7 +31,7 @@ export const services_schema = z.union([
 ]);
 
 export const server_update_bot_schema = z.object({
-    ...basic_bot_schema.partial().shape,
+    ...z.partial(basic_bot_schema).shape,
     user_id: z.number(),
     services: z.optional(services_schema),
 });

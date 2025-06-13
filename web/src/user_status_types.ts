@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 export const user_status_schema = z.intersection(
     z.object({
