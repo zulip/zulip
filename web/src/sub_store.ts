@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {
@@ -19,7 +19,7 @@ export type ApiStreamSubscription = z.infer<typeof api_stream_subscription_schem
 
 // This is the actual type of subscription objects we use in the app.
 export const stream_subscription_schema = z.object({
-    ...api_stream_subscription_schema.omit({
+    ...z.omit(api_stream_subscription_schema, {
         subscribers: true,
     }).shape,
     // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.

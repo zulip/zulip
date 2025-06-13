@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import {group_setting_value_schema, topic_link_schema} from "./types.ts";
 

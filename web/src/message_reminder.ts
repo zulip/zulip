@@ -1,5 +1,5 @@
 import $ from "jquery";
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import * as feedback_widget from "./feedback_widget.ts";

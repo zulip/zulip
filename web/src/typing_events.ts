@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_editing_notifications from "../templates/editing_notifications.hbs";
 import render_typing_notifications from "../templates/typing_notifications.hbs";

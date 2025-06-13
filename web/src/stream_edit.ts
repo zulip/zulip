@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
@@ -68,7 +68,7 @@ type StreamSetting = {
     is_checked: boolean;
 };
 
-const settings_labels_schema = z.keyof(stream_properties_schema.omit({color: true}));
+const settings_labels_schema = z.keyof(z.omit(stream_properties_schema, {color: true}));
 
 const realm_labels_schema = z.enum([
     "push_notifications",
