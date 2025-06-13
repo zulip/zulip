@@ -212,6 +212,10 @@ export function clear_for_testing(): void {
     asset_map.clear();
 }
 
+export function invalidate_asset_map_of_message(message_id: number): void {
+    asset_map.delete(message_id);
+}
+
 function set_selected_media_element($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
     // Clear out any previously selected element
     $(".media-to-select-in-lightbox-list").removeClass("media-to-select-in-lightbox-list");

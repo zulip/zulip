@@ -17,6 +17,7 @@ import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {Filter} from "./filter.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
@@ -458,6 +459,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
                 // Update raw_content, so that editing a few times in a row is fast.
                 anchor_message.raw_content = event.content;
+
+                // Editing a message may change the titles for linked
+                // media, so we must invalidate the asset map.
+                lightbox.invalidate_asset_map_of_message(event.message_id);
             }
 
             if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
