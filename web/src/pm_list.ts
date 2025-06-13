@@ -218,6 +218,7 @@ function zoom_in(): void {
     zoomed = true;
     update_private_messages();
     $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
+    $("#hide-more-direct-messages").addClass("dm-zoomed-in");
     $("#streams_list").hide();
     $(".left-sidebar .right-sidebar-items").hide();
 
@@ -229,6 +230,7 @@ function zoom_out(): void {
     zoomed = false;
     clear_search();
     $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
+    $("#hide-more-direct-messages").removeClass("dm-zoomed-in");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
 }
@@ -256,7 +258,7 @@ export function initialize(): void {
         zoom_in();
     });
 
-    $(".direct-messages-container").on("click", "#hide-more-direct-messages", (e) => {
+    $("#left-sidebar").on("click", "#hide-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
