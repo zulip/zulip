@@ -992,6 +992,20 @@ export function get_streams_for_admin(): StreamSubscription[] {
     return subs;
 }
 
+// Since whether or not you can use general chat depends on the
+// channel, if we don't know what channel is involved, we do not
+// consider general chat permitted. This generally comes up in
+// situations like drafts without a specified recipient or compose box
+// placeholders when looking at a view that does not indicate a specific
+// channel.
+export function can_use_empty_topic(stream_id: number | undefined): boolean {
+    if (stream_id === undefined) {
+        return false;
+    }
+
+    return !realm.realm_mandatory_topics;
+}
+
 /*
   This module provides a common helper for finding the notification
   stream, but we don't own the data.  The `realm` structure

@@ -282,6 +282,7 @@ run_test("basics", ({override, override_rewire}) => {
     override(compose_state, "get_message_type", () => "stream");
     override(compose_state, "stream_name", () => "Verona");
     override(stream_data, "get_stream_id", () => "2");
+    override(stream_data, "can_use_empty_topic", () => false);
     override(compose_state, "topic", () => "");
     assert.equal(typing.get_recipient(), null);
 

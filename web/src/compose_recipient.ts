@@ -329,8 +329,8 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export function update_topic_inputbox_on_mandatory_topics_change(): void {
-    if (realm.realm_mandatory_topics) {
+export function update_topic_inputbox_on_topics_policy_change(): void {
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         const $input = $("input#stream_message_recipient_topic");
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
         $input.removeClass("empty-topic-display");
@@ -346,7 +346,9 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     compose_state.topic(topic_name);
 
     // When topics are mandatory, no additional adjustments are needed.
-    if (realm.realm_mandatory_topics) {
+    // Also, if the recipient in the compose box is not selected, the
+    // placeholder will always be "Topic" and never "general chat".
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         return;
     }
     // Otherwise, we have some adjustments to make to display:
