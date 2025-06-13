@@ -48,9 +48,9 @@ const home_params_schema = default_params_schema
         state_data: state_data_schema.nullable(),
         translation_data: z.record(z.string(), z.string()),
     })
-    // TODO/typescript: Remove .passthrough() when all consumers have been
+    // TODO/typescript: Remove .loose() when all consumers have been
     // converted to TypeScript and the schema is complete.
-    .passthrough();
+    .loose();
 
 // Sync this with analytics.views.stats.render_stats.
 const stats_params_schema = default_params_schema.extend({

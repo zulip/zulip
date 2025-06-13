@@ -97,7 +97,7 @@ export const user_schema = z
         timezone: z.string().optional(),
         avatar_url: z.string().nullish(),
         avatar_version: z.number(),
-        profile_data: z.record(z.coerce.number(), profile_datum_schema).optional(),
+        profile_data: z.record(z.coerce.number<string>(), profile_datum_schema).optional(),
         // used for fake user objects.
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
@@ -501,7 +501,7 @@ export const state_data_schema = z
     .and(
         z
             .object({
-                presences: z.record(z.coerce.number(), presence_schema),
+                presences: z.record(z.coerce.number<string>(), presence_schema),
                 server_timestamp: z.number(),
                 presence_last_update_id: z.number().optional(),
             })

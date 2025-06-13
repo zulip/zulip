@@ -2,14 +2,10 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 
-const formDataSchema = z
-    .object({
-        data: z.unknown(),
-        __valid: z.literal(true),
-    })
-    // z.unknown by default marks the field as optional.
-    // Use zod transform to make optional data field non-optional.
-    .transform((o) => ({data: o.data, ...o}));
+const formDataSchema = z.object({
+    data: z.unknown(),
+    __valid: z.literal(true),
+});
 
 type FormData = z.infer<typeof formDataSchema>;
 
