@@ -46,7 +46,14 @@ function composing_to_current_private_message_narrow(): boolean {
 }
 
 export let maybe_mute_recipient_row = (): void => {
+    // We're piggy-backing here, in a roundabout way, on
+    // compose_ui.set_focus(). Any time the topic or recipient
+    // row is focused, that puts us outside the muted
+    // recipient-row state--including the `c` hotkey or the
+    // Start new conversation button being clicked.
+    const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
     if (
+        is_compose_textarea_focused &&
         composing_to_current_topic_narrow() &&
         compose_state.has_full_recipient() &&
         !compose_state.is_recipient_edited_manually()
