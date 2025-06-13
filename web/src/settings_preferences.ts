@@ -37,9 +37,9 @@ export type SettingsPanel = {
       }
 );
 
-export const user_settings_property_schema = user_settings_schema
-    .omit({available_notification_sounds: true, emojiset_choices: true})
-    .keyof();
+export const user_settings_property_schema = z.keyof(
+    user_settings_schema.omit({available_notification_sounds: true, emojiset_choices: true}),
+);
 type UserSettingsProperty = z.output<typeof user_settings_property_schema>;
 
 const meta = {

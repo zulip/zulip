@@ -181,7 +181,7 @@ export function get_org_type_dropdown_options(): DefinedOrgTypeValues | AllOrgTy
     return settings_config.all_org_type_values;
 }
 
-const simple_dropdown_properties = simple_dropdown_realm_settings_schema.keyof().options;
+const simple_dropdown_properties = z.keyof(simple_dropdown_realm_settings_schema).def.values;
 
 function set_realm_waiting_period_setting(): void {
     const setting_value = realm.realm_waiting_period_threshold;
@@ -442,8 +442,8 @@ export function populate_auth_methods(auth_method_to_bool_map: Record<string, bo
 }
 
 function update_dependent_subsettings(property_name: string): void {
-    const parsed_property_name = simple_dropdown_realm_settings_schema
-        .keyof()
+    const parsed_property_name = z
+        .keyof(simple_dropdown_realm_settings_schema)
         .safeParse(property_name);
     if (parsed_property_name.success) {
         settings_components.set_property_dropdown_value(parsed_property_name.data);
@@ -648,7 +648,7 @@ export function discard_stream_property_element_changes(
 export function discard_group_property_element_changes($elem: JQuery, group: UserGroup): void {
     const property_name = settings_components.extract_property_name($elem);
     const property_value = settings_components.get_group_property_value(
-        user_groups.user_group_schema.keyof().parse(property_name),
+        z.keyof(user_groups.user_group_schema).parse(property_name),
         group,
     );
 
@@ -1108,7 +1108,7 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
                 "realm",
             );
         set_up_dropdown_widget(
-            realm_schema.keyof().parse("realm_" + setting_name),
+            z.keyof(realm_schema).parse("realm_" + setting_name),
             get_setting_options,
             "group",
         );
