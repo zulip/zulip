@@ -12,8 +12,8 @@ import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
-export const zform_widget_extra_data_schema = z
-    .object({
+export const zform_widget_extra_data_schema = z.nullable(
+    z.object({
         choices: z.array(
             z.object({
                 type: z.string(),
@@ -24,15 +24,15 @@ export const zform_widget_extra_data_schema = z
         ),
         heading: z.string(),
         type: z.literal("choices"),
-    })
-    .nullable();
+    }),
+);
 
-const poll_widget_extra_data_schema = z
-    .object({
+const poll_widget_extra_data_schema = z.nullable(
+    z.object({
         question: z.optional(z.string()),
         options: z.optional(z.array(z.string())),
-    })
-    .nullable();
+    }),
+);
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),

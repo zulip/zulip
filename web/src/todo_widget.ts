@@ -17,12 +17,12 @@ import type {Event} from "./poll_widget.ts";
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
-export const todo_widget_extra_data_schema = z
-    .object({
+export const todo_widget_extra_data_schema = z.nullable(
+    z.object({
         task_list_title: z.optional(z.string()),
         tasks: z.optional(z.array(z.object({task: z.string(), desc: z.string()}))),
-    })
-    .nullable();
+    }),
+);
 
 const todo_widget_inbound_data = z.intersection(
     z.object({

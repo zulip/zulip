@@ -102,8 +102,8 @@ export function confirm_mark_messages_as_read(): void {
 const update_flags_for_narrow_response_schema = z.object({
     processed_count: z.number(),
     updated_count: z.number(),
-    first_processed_id: z.number().nullable(),
-    last_processed_id: z.number().nullable(),
+    first_processed_id: z.nullable(z.number()),
+    last_processed_id: z.nullable(z.number()),
     found_oldest: z.boolean(),
     found_newest: z.boolean(),
     ignored_because_not_subscribed_channels: z.array(z.number()),

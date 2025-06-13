@@ -82,7 +82,7 @@ export const profile_datum_schema = z.object({
 export const user_schema = z
     .object({
         user_id: z.number(),
-        delivery_email: z.string().nullable(),
+        delivery_email: z.nullable(z.string()),
         email: z.string(),
         full_name: z.string(),
         // used for caching result of remove_diacritics.
@@ -113,7 +113,7 @@ export const user_schema = z
             z.object({
                 is_bot: z.literal(true),
                 bot_type: z.number(),
-                bot_owner_id: z.number().nullable(),
+                bot_owner_id: z.nullable(z.number()),
             }),
         ]),
     );
@@ -124,7 +124,7 @@ export const server_emoji_schema = z.object({
     deactivated: z.boolean(),
     name: z.string(),
     source_url: z.string(),
-    still_url: z.string().nullable(),
+    still_url: z.nullable(z.string()),
 
     // Added later in `settings_emoji.ts` when setting up the emoji settings.
     author: user_schema.nullish(),
@@ -137,8 +137,8 @@ export type GroupSettingValue = z.infer<typeof group_setting_value_schema>;
 export const raw_user_group_schema = z.object({
     description: z.string(),
     id: z.number(),
-    creator_id: z.number().nullable(),
-    date_created: z.number().nullable(),
+    creator_id: z.nullable(z.number()),
+    date_created: z.nullable(z.number()),
     name: z.string(),
     members: z.array(z.number()),
     is_system_group: z.boolean(),
@@ -156,7 +156,7 @@ export const channel_folder_schema = z.object({
     id: z.number(),
     name: z.string(),
     rendered_description: z.string(),
-    creator_id: z.number().nullable(),
+    creator_id: z.nullable(z.number()),
     date_created: z.number(),
     is_archived: z.boolean(),
 });
@@ -408,12 +408,12 @@ export const realm_schema = z.object({
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
     realm_message_content_allowed_in_email_notifications: z.boolean(),
-    realm_message_content_edit_limit_seconds: z.number().nullable(),
-    realm_message_content_delete_limit_seconds: z.number().nullable(),
+    realm_message_content_edit_limit_seconds: z.nullable(z.number()),
+    realm_message_content_delete_limit_seconds: z.nullable(z.number()),
     realm_message_edit_history_visibility_policy: z.enum(["all", "moves", "none"]),
     realm_message_retention_days: z.number(),
-    realm_move_messages_between_streams_limit_seconds: z.number().nullable(),
-    realm_move_messages_within_stream_limit_seconds: z.number().nullable(),
+    realm_move_messages_between_streams_limit_seconds: z.nullable(z.number()),
+    realm_move_messages_within_stream_limit_seconds: z.nullable(z.number()),
     realm_name_changes_disabled: z.boolean(),
     realm_name: z.string(),
     realm_new_stream_announcements_stream_id: z.number(),
@@ -425,7 +425,7 @@ export const realm_schema = z.object({
     realm_playgrounds: z.array(realm_playground_schema),
     realm_presence_disabled: z.boolean(),
     realm_push_notifications_enabled: z.boolean(),
-    realm_push_notifications_enabled_end_timestamp: z.number().nullable(),
+    realm_push_notifications_enabled_end_timestamp: z.nullable(z.number()),
     realm_require_unique_names: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
