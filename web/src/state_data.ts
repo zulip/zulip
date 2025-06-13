@@ -65,7 +65,7 @@ export const scheduled_message_schema = z
 
 export const profile_datum_schema = z.object({
     value: z.string(),
-    rendered_value: z.string().nullish(),
+    rendered_value: z.nullish(z.string()),
 });
 
 export const user_schema = z
@@ -84,7 +84,7 @@ export const user_schema = z
         is_moderator: z.optional(z.boolean()),
         role: z.number(),
         timezone: z.optional(z.string()),
-        avatar_url: z.string().nullish(),
+        avatar_url: z.nullish(z.string()),
         avatar_version: z.number(),
         profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
         // used for fake user objects.
@@ -116,7 +116,7 @@ export const server_emoji_schema = z.object({
     still_url: z.nullable(z.string()),
 
     // Added later in `settings_emoji.ts` when setting up the emoji settings.
-    author: user_schema.nullish(),
+    author: z.nullish(user_schema),
 });
 
 export const realm_emoji_map_schema = z.record(z.string(), server_emoji_schema);
@@ -217,8 +217,8 @@ export const onboarding_step_schema = z.union([one_time_notice_schema, one_time_
 // Sync this with zerver.lib.events.do_events_register.
 const current_user_schema = z.object({
     avatar_source: z.string(),
-    avatar_url: z.string().nullish(),
-    avatar_url_medium: z.string().nullish(),
+    avatar_url: z.nullish(z.string()),
+    avatar_url_medium: z.nullish(z.string()),
     can_create_private_streams: z.boolean(),
     can_create_public_streams: z.boolean(),
     can_create_streams: z.boolean(),

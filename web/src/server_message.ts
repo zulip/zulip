@@ -40,7 +40,7 @@ const submessage_schema = z.array(
 
 export const server_message_schema = z
     .object({
-        avatar_url: z.string().nullish(),
+        avatar_url: z.nullish(z.string()),
         client: z.string(),
         content: z.string(),
         content_type: z.enum(["text/html", "text/x-markdown"]),
