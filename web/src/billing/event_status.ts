@@ -12,7 +12,7 @@ const stripe_response_schema = z.object({
         type: z.string(),
         status: z.string(),
         is_manual_license_management_upgrade_session: z.optional(z.boolean()),
-        tier: z.optional(z.number().nullable()),
+        tier: z.optional(z.nullable(z.number())),
         event_handler: z.optional(
             z.object({
                 status: z.string(),

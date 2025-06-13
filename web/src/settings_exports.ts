@@ -37,9 +37,9 @@ export const realm_export_schema = z.object({
     id: z.number(),
     export_time: z.number(),
     acting_user_id: z.number(),
-    export_url: z.string().nullable(),
-    deleted_timestamp: z.number().nullable(),
-    failed_timestamp: z.number().nullable(),
+    export_url: z.nullable(z.string()),
+    deleted_timestamp: z.nullable(z.number()),
+    failed_timestamp: z.nullable(z.number()),
     pending: z.boolean(),
     export_type: z.number(),
 });
