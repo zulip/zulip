@@ -21,7 +21,7 @@ const outgoing_service_schema = z.object({
 });
 
 const embedded_service_schema = z.object({
-    config_data: z.record(z.string()),
+    config_data: z.record(z.string(), z.string()),
     service_name: z.string(),
 });
 
