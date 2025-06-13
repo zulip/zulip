@@ -32,7 +32,7 @@ export const services_schema = z.union([
 
 export const server_update_bot_schema = basic_bot_schema.partial().extend({
     user_id: z.number(),
-    services: services_schema.optional(),
+    services: z.optional(services_schema),
 });
 
 export const server_add_bot_schema = basic_bot_schema.extend({
