@@ -1,5 +1,7 @@
 import {parseAddressList, parseOneAddress} from "email-addresses";
 
+import render_input_pill from "../templates/input_pill.hbs";
+
 import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
 
@@ -63,6 +65,19 @@ export function split_text_to_form_email_pills(raw_emails: string): string[] {
         .map((email) => (email.name ? `"${email.name}" <${email.address}>` : email.address));
 }
 
+export function generate_pill_html(item: EmailPill): string {
+    const parsed_address = parseOneAddress(item.email);
+    const name = parsed_address?.name;
+    // Remove quotes from the name if they exist
+    const invited_user_name = name?.replaceAll(/"([^"]*)"/g, "$1");
+
+    return render_input_pill({
+        is_email_pill: true,
+        invited_user_name,
+        display_value: invited_user_name ? `<${item.parsed_email}>` : item.parsed_email,
+    });
+}
+
 export function create_pills(
     $pill_container: JQuery,
     pill_config?: InputPillConfig,
@@ -75,6 +90,7 @@ export function create_pills(
         get_display_value_from_item: get_email_from_item,
         split_text_on_comma: false,
         split_text_to_form_pills: split_text_to_form_email_pills,
+        generate_pill_html,
     });
     return pill_container;
 }
