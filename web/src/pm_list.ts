@@ -1,6 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";

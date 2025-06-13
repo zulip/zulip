@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import {group_setting_value_schema} from "./types.ts";
 
@@ -34,7 +34,7 @@ export const stream_schema = z.object({
     name: z.string(),
     rendered_description: z.string(),
     stream_id: z.number(),
-    stream_post_policy: z.nativeEnum(StreamPostPolicy),
+    stream_post_policy: z.enum(StreamPostPolicy),
     can_add_subscribers_group: group_setting_value_schema,
     can_administer_channel_group: group_setting_value_schema,
     can_remove_subscribers_group: group_setting_value_schema,

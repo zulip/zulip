@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type {z} from "zod/v4";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import Cookies from "js-cookie";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 

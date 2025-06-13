@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

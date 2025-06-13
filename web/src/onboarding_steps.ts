@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import type {z} from "zod/v4";
 
 import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.hbs";
 

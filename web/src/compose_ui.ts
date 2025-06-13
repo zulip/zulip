@@ -11,7 +11,7 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";

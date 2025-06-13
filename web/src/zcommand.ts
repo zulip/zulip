@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";

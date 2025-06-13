@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import * as channel from "../channel.ts";
 import * as util from "../util.ts";

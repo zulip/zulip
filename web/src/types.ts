@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "zod/v4";
 
 // TODO/typescript: Move this to server_events
 export const topic_link_schema = z.object({

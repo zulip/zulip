@@ -4,7 +4,7 @@ import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import * as blueslip from "../blueslip.ts";
 import {$t, $t_html} from "../i18n.ts";
@@ -55,7 +55,7 @@ type DataByTime<T> = {
 const datum_schema: z.ZodType<Plotly.Datum> = z.any();
 
 // Define a schema factory function for the utility generic type
-function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(
+function instantiate_type_DataByEveryoneUser<T extends z.ZodType>(
     schema: T,
 ): z.ZodObject<{everyone: T; user: T}> {
     return z.object({
@@ -120,8 +120,8 @@ const font_12pt = {
 
 let last_full_update = Number.POSITIVE_INFINITY;
 
-function handle_parse_server_stats_result<_, T>(
-    result: z.SafeParseReturnType<_, T>,
+function handle_parse_server_stats_result<T>(
+    result: z.core.util.SafeParseResult<T>,
 ): T | undefined {
     if (!result.success) {
         blueslip.warn(

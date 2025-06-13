@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 

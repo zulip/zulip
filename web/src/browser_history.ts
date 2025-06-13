@@ -1,5 +1,5 @@
 // TODO: Rewrite this module to use window.history.pushState.
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import * as blueslip from "./blueslip.ts";
 import * as hash_parser from "./hash_parser.ts";

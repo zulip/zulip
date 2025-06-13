@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "zod/v4";
 
 const basic_bot_schema = z.object({
     api_key: z.string(),

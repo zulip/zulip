@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import * as people from "./people.ts";
 import type {User} from "./people.ts";

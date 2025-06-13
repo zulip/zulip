@@ -1,6 +1,6 @@
 import flatpickr from "flatpickr";
 import $ from "jquery";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 

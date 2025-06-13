@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.hbs";
 import render_demo_organization_warning_container from "../templates/settings/demo_organization_warning.hbs";

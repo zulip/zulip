@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 type UserInfo = {
     id?: string;

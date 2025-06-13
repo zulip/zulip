@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import {z} from "zod/v4";
 
 import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
