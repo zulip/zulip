@@ -332,7 +332,7 @@ select.settings_select {
     background-image: var(--icon-chevron-down);
     background-repeat: no-repeat;
     background-position: 98%;
-    background-size: 14px;
+    background-size: 1em;
 }
 
 #admin-active-users-list,
