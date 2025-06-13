@@ -53,7 +53,7 @@ const server_message_history_schema = z.object({
             rendered_content: z.string(),
             timestamp: z.number(),
             topic: z.string(),
-            user_id: z.number().or(z.null()),
+            user_id: z.nullable(z.number()),
             prev_topic: z.optional(z.string()),
             stream: z.optional(z.number()),
             prev_stream: z.optional(z.number()),
