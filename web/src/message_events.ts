@@ -17,6 +17,7 @@ import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {Filter} from "./filter.ts";
+import {invalidate_asset_map_of_message} from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
@@ -812,6 +813,12 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 post_edit_topic,
                 post_edit_stream_id,
             );
+        } else {
+            // Since the message content is edited, it could be possible
+            // that the cached asset props of media elements may also be
+            // updated. Hence, we invalidate the older ones to compute
+            // new properties when assets are opened in lightbox again.
+            invalidate_asset_map_of_message(event.message_id);
         }
 
         // Rerender "Message edit history" if it was open to the edited message.
