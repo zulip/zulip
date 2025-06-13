@@ -28,6 +28,7 @@ type VersionInfo = {
           alt: "Android";
           download_link: string;
           play_store_link: string;
+          legacy_download_link: string;
       }
     | {
           alt: "iOS";
@@ -85,7 +86,8 @@ const apps_events = function (): void {
                 "Zulip's native Android app makes it easy to keep up while on the go, with fully customizable <a class='apps-page-link' href='/help/mobile-notifications'>mobile notifications</a>.",
             show_instructions: false,
             play_store_link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
-            download_link: "https://github.com/zulip/zulip-mobile/releases/latest",
+            download_link: "https://github.com/zulip/zulip-flutter/releases/latest",
+            legacy_download_link: "https://github.com/zulip/zulip-mobile/releases/latest",
             app_type: "mobile",
         },
         ios: {
@@ -129,6 +131,8 @@ const apps_events = function (): void {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
         const $download_android_apk = $("#download-android-apk");
+        const $android_apk_current = $(".android-apk-current");
+        const $android_apk_legacy = $(".android-apk-legacy");
         const $download_from_google_play_store = $(".download-from-google-play-store");
         const $download_from_apple_app_store = $(".download-from-apple-app-store");
         const $download_from_microsoft_store = $("#download-from-microsoft-store");
@@ -141,7 +145,8 @@ const apps_events = function (): void {
 
         if (version_info.alt === "Android") {
             $download_from_google_play_store.attr("href", version_info.play_store_link);
-            $download_android_apk.find("a").attr("href", version_info.download_link);
+            $android_apk_current.attr("href", version_info.download_link);
+            $android_apk_legacy.attr("href", version_info.legacy_download_link);
         } else if (version_info.alt === "iOS") {
             $download_from_apple_app_store.attr("href", version_info.app_store_link);
         } else {
