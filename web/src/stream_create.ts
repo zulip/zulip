@@ -428,7 +428,7 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
+            const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
             if (error_message?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.

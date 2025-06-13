@@ -472,7 +472,7 @@ $(() => {
         function checkImportStatus(): void {
             $.get(`/json/realm/import/status/${key}`, {}, (response) => {
                 const {status, redirect} = z
-                    .object({status: z.string(), redirect: z.string().optional()})
+                    .object({status: z.string(), redirect: z.optional(z.string())})
                     .parse(response);
                 $("#slack-import-poll-status").text(status);
                 if (poll_id && redirect !== undefined) {

@@ -86,18 +86,18 @@ export const user_schema = z
         email: z.string(),
         full_name: z.string(),
         // used for caching result of remove_diacritics.
-        name_with_diacritics_removed: z.string().optional(),
+        name_with_diacritics_removed: z.optional(z.string()),
         date_joined: z.string(),
-        is_active: z.boolean().optional(),
+        is_active: z.optional(z.boolean()),
         is_owner: z.boolean(),
         is_admin: z.boolean(),
         is_guest: z.boolean(),
-        is_moderator: z.boolean().optional(),
+        is_moderator: z.optional(z.boolean()),
         role: z.number(),
-        timezone: z.string().optional(),
+        timezone: z.optional(z.string()),
         avatar_url: z.string().nullish(),
         avatar_version: z.number(),
-        profile_data: z.record(z.coerce.number<string>(), profile_datum_schema).optional(),
+        profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
         // used for fake user objects.
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
@@ -108,7 +108,7 @@ export const user_schema = z
         z.discriminatedUnion("is_bot", [
             z.object({
                 is_bot: z.literal(false),
-                bot_type: z.null().optional(),
+                bot_type: z.optional(z.null()),
             }),
             z.object({
                 is_bot: z.literal(true),
@@ -190,8 +190,8 @@ export const unread_direct_message_group_info_schema = z.object({
 });
 
 export const presence_schema = z.object({
-    active_timestamp: z.number().optional(),
-    idle_timestamp: z.number().optional(),
+    active_timestamp: z.optional(z.number()),
+    idle_timestamp: z.optional(z.number()),
 });
 
 export const realm_billing_schema = z.object({
@@ -379,24 +379,24 @@ export const realm_schema = z.object({
             display_name: z.string(),
             name: z.string(),
             all_event_types: z.nullable(z.array(z.string())),
-            config_options: z
-                .array(
+            config_options: z.optional(
+                z.array(
                     z.object({
                         key: z.string(),
                         label: z.string(),
                         validator: z.string(),
                     }),
-                )
-                .optional(),
-            url_options: z
-                .array(
+                ),
+            ),
+            url_options: z.optional(
+                z.array(
                     z.object({
                         key: z.string(),
                         label: z.string(),
                         validator: z.string(),
                     }),
-                )
-                .optional(),
+                ),
+            ),
         }),
     ),
     realm_inline_image_preview: z.boolean(),
@@ -503,7 +503,7 @@ export const state_data_schema = z
             .object({
                 presences: z.record(z.coerce.number<string>(), presence_schema),
                 server_timestamp: z.number(),
-                presence_last_update_id: z.number().optional(),
+                presence_last_update_id: z.optional(z.number()),
             })
             .transform((presence) => ({presence})),
     )

@@ -1980,7 +1980,7 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
                 let error_message = "Failed to fetch users.";
                 if (xhr) {
                     const error = z
-                        .object({msg: z.string().optional()})
+                        .object({msg: z.optional(z.string())})
                         .safeParse(xhr.responseJSON);
                     if (error.success && error.data.msg) {
                         error_message = error.data.msg;
