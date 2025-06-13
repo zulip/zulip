@@ -87,7 +87,7 @@ const sent_data_schema = instantiate_type_DataByEveryoneUser(
 ).extend({...common_data_schema.shape});
 
 const ordered_sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.record(z.array(z.number())),
+    z.record(z.string(), z.array(z.number())),
 ).extend({
     ...common_data_schema.shape,
     display_order: z.array(z.string()),
