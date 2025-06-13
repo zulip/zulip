@@ -121,7 +121,6 @@
     #organization-settings .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
-        color: inherit;
     }
 
     .popover-filter-input-wrapper .popover-filter-input:focus {

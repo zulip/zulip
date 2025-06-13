@@ -309,7 +309,7 @@ h3,
 .settings_select,
 .list_select {
     padding: 0 25px 0 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
@@ -911,13 +911,13 @@ input[type="checkbox"] {
 
 #organization-permissions {
     .dropdown-widget-button {
-        color: hsl(0deg 0% 33%);
+        color: var(--color-text-default);
     }
 }
 
 #organization-settings {
     .dropdown-widget-button {
-        color: hsl(0deg 0% 33%);
+        color: var(--color-text-default);
     }
 }
 
@@ -1611,7 +1611,7 @@ label.preferences-radio-choice-label {
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border: 1px solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
@@ -1836,7 +1836,7 @@ label.preferences-radio-choice-label {
 }
 
 .settings_textarea {
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 4px;
     vertical-align: middle;
@@ -2259,7 +2259,7 @@ label.preferences-radio-choice-label {
 .settings_url_input,
 .settings_text_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
