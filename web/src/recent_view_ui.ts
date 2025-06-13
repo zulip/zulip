@@ -1820,7 +1820,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     return false;
 }
 
-const filter_schema = z.array(z.string()).default([]);
+const filter_schema = z._default(z.array(z.string()), []);
 
 function load_filters(): void {
     // load filters from local storage.

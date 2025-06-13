@@ -21,7 +21,7 @@ let prior_dom: vdom.Tag<PMNode> | undefined;
 // left corner of the app.  This was split out from stream_list.ts.
 
 const ls_key = "left_sidebar_direct_messages_collapsed_state";
-const ls_schema = z.boolean().default(false);
+const ls_schema = z._default(z.boolean(), false);
 const ls = localstorage();
 let private_messages_collapsed = false;
 
