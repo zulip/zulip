@@ -41,7 +41,11 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import FormattedEditHistoryEvent, UserDisplayRecipient
-from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
+from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
+    get_recursive_membership_groups,
+    user_has_permission_for_group_setting,
+)
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -1717,3 +1721,16 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
     return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. )", " ", content)
+
+
+def can_resolve_topics_in_stream(user: UserProfile, stream: Stream) -> None:
+    if user.can_resolve_topic():
+        return
+
+    if not user_has_permission_for_group_setting(
+        stream.can_resolve_topics_group_id,
+        user,
+        Stream.stream_permission_group_settings["can_resolve_topics_group"],
+        direct_member_only=False,
+    ):
+        raise JsonableError(_("You don't have permission to resolve topics in this channel."))
