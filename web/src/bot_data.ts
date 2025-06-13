@@ -1,4 +1,4 @@
-import type {z} from "zod/v4";
+import type {z} from "zod/v4-mini";
 
 import type {services_schema} from "./bot_types.ts";
 import {server_add_bot_schema, server_update_bot_schema} from "./bot_types.ts";

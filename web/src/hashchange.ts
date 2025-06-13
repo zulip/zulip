@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as admin from "./admin.ts";

@@ -1,6 +1,6 @@
 import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 

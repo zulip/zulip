@@ -1,5 +1,5 @@
 import * as url_template_lib from "url-template";
-import type {z} from "zod/v4";
+import type {z} from "zod/v4-mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {realm_linkifier_schema} from "./state_data.ts";

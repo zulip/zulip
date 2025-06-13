@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 

@@ -1,4 +1,4 @@
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 const display_recipient_users_schema = z.object({
     id: z.number(),

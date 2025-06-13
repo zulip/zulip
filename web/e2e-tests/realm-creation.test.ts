@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import type {Page} from "puppeteer";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as common from "./lib/common.ts";
 

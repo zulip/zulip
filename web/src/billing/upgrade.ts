@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import {localstorage} from "../localstorage.ts";
 import * as portico_modals from "../portico/portico_modals.ts";

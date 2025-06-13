@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";

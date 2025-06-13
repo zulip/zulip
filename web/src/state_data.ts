@@ -1,4 +1,4 @@
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import {server_add_bot_schema} from "./bot_types.ts";
 import {realm_default_settings_schema} from "./realm_user_settings_defaults.ts";

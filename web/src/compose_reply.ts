@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as fenced_code from "../shared/src/fenced_code.ts";
 

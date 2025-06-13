@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import render_message_reaction from "../templates/message_reaction.hbs";
 import render_message_reactions from "../templates/message_reactions.hbs";

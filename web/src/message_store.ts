@@ -1,5 +1,5 @@
 import _ from "lodash";
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as people from "./people.ts";

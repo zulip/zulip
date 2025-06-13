@@ -1,4 +1,4 @@
-import {z} from "zod/v4";
+import {z} from "zod/v4-mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
