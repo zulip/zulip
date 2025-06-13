@@ -165,6 +165,9 @@
         </ul>
     </div>
 
+    <a id="hide-more-direct-messages">
+        <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
+    </a>
     <div id="direct-messages-section-header" class="direct-messages-container hidden-for-spectators zoom-out zoom-in-sticky">
         <i id="toggle-direct-messages-section-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
         <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
@@ -179,12 +182,11 @@
         <div class="heading-markers-and-unreads">
             <span class="unread_count"></span>
         </div>
-        <a class="zoom-out-hide" id="hide-more-direct-messages">
-            <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
-        </a>
-        {{#> input input_type="filter-input" custom_classes="zoom-out-hide direct-messages-search-section" icon="search" input_button_icon="close"}}
-            <input type="text" class="input-element direct-messages-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
-        {{/input}}
+        <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-input-container">
+            {{#> input input_type="filter-input" icon="search" input_button_icon="close"}}
+                <input type="text" class="input-element direct-messages-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
+            {{/input}}
+        </div>
     </div>
     {{~!-- squash whitespace --~}}
     <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1">
@@ -207,10 +209,11 @@
                         <i class="zulip-icon zulip-icon-masked-unread"></i>
                     </span>
                 </div>
-
-                {{#> input input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
-                    <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-                {{/input}}
+                <div class="left-sidebar-filter-input-container">
+                    {{#> input input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
+                        <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
+                    {{/input}}
+                </div>
             </div>
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>

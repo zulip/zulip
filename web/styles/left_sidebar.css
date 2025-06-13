@@ -111,7 +111,7 @@
     font-weight: normal;
 
     .topic_search_section {
-        margin: 3px 0 3px var(--left-sidebar-toggle-width-offset);
+        margin: 3px 0;
     }
 
     & li {
@@ -211,6 +211,7 @@
     }
 }
 
+#hide-more-direct-messages,
 #direct-messages-section-header {
     grid-template-columns:
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
@@ -218,7 +219,33 @@
             --left-sidebar-vdots-width
         )
         0;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
+}
+
+#hide-more-direct-messages {
+    /* Keep the DM zoom-out option hidden until zoomed-in. */
+    display: none;
+    margin-right: var(--left-sidebar-right-margin);
+    line-height: var(--line-height-sidebar-row);
+    text-decoration: none;
+    color: inherit;
+
+    .hide-more-direct-messages-text {
+        color: var(--color-text-sidebar-action-heading);
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        text-transform: var(--text-transform-sidebar-action-heading);
+        grid-area: row-content;
+    }
+
+    &:hover {
+        background-color: var(--color-background-sidebar-action-heading-hover);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        border-radius: 4px;
+    }
+}
+
+#direct-messages-section-header {
     cursor: pointer;
     white-space: nowrap;
     border-radius: 4px;
@@ -378,7 +405,7 @@
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
-    #direct-messages-section-header {
+    &#direct-messages-section-header {
         border-radius: 4px 4px 0 0;
     }
 
@@ -975,7 +1002,7 @@ li.top_left_scheduled_messages {
 
 /* New grid definitions here. */
 #views-label-container,
-.zoom-in #hide-more-direct-messages,
+#hide-more-direct-messages.dm-zoomed-in,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
@@ -1021,16 +1048,32 @@ li.top_left_scheduled_messages {
     display: grid;
     align-items: center;
     /* This extends the general pattern of left sidebar rows, but includes a
-       second grid row for placing filter boxes. This pattern keeps the box
-       aligned with the text content in `row-content` and includes the
-       `ending-anchor-element` space.
-
-       There is currently no filter box on DM rows, but we can prepare for
-       that now by having it share this grid template. Its row and column
-       definitions have the final say about dimensions and placement. */
+       second grid row for placing filter boxes. */
     grid-template-areas:
-        "starting-offset starting-anchor-element icon-content-gap row-content controls   markers-and-unreads ending-anchor-element ending-offset"
-        ".               filter-box              filter-box       filter-box  filter-box filter-box          filter-box            .            ";
+        "starting-offset   starting-anchor-element  icon-content-gap  row-content       controls          markers-and-unreads  ending-anchor-element  ending-offset"
+        "filter-container  filter-container         filter-container  filter-container  filter-container  filter-container     filter-container       filter-container";
+    grid-template-rows: var(--line-height-sidebar-row-prominent) minmax(
+            0,
+            max-content
+        );
+}
+
+.left-sidebar-filter-input-container {
+    grid-area: filter-container;
+    display: grid;
+    align-items: center;
+    grid-template:
+        "starting-offset filter-input ending-offset" minmax(0, max-content)
+        / calc(
+            var(--left-sidebar-toggle-width-offset) -
+                var(--input-icon-starting-offset)
+        )
+        minmax(0, 1fr) var(--left-sidebar-vdots-width);
+
+    .filter-input,
+    .filter-topics {
+        grid-area: filter-input;
+    }
 }
 
 #views-label-container {
@@ -1669,6 +1712,7 @@ li.topic-list-item {
 }
 
 #topics_header {
+    display: grid;
     position: sticky;
     top: 0;
     z-index: 2;
@@ -1679,7 +1723,7 @@ li.topic-list-item {
         [topics-content-area-end] var(--left-sidebar-right-margin);
     grid-template-rows:
         [topics-content-area-start] var(--line-height-sidebar-row-prominent)
-        [topics-content-area-end];
+        [topics-content-area-end] 0;
     padding-top: var(--left-sidebar-sections-vertical-gutter);
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
@@ -1726,8 +1770,6 @@ li.topic-list-item {
         )
         minmax(0, max-content) var(--left-sidebar-vdots-width)
         0;
-    /* Keep the stream-search area rows collapsed. */
-    grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
     margin: var(--left-sidebar-sections-vertical-gutter)
         var(--left-sidebar-right-margin) 3px 0;
@@ -1740,10 +1782,9 @@ li.topic-list-item {
     background-color: var(--color-background);
 
     &.showing-stream-search-section {
-        /* Open up the stream-search rows. The 3px gap + 7px
-           row maintains space with the streams list
-           below. */
-        grid-template-rows: var(--line-height-sidebar-row-prominent) auto 7px;
+        /* Open up the stream-search rows and maintain
+           space with the streams list below. */
+        padding-bottom: var(--left-sidebar-sections-vertical-gutter);
         row-gap: 3px;
 
         /* When the search section is showing, switch
@@ -1820,11 +1861,6 @@ li.topic-list-item {
         #streams_inline_icon {
             display: flex;
         }
-    }
-
-    .stream_search_section {
-        grid-area: filter-box;
-        white-space: nowrap;
     }
 }
 
@@ -1932,34 +1968,9 @@ li.topic-list-item {
         margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
     }
 
-    #hide-more-direct-messages {
-        grid-template-columns: inherit;
-        grid-column: 1 / -1;
-        line-height: var(--line-height-sidebar-row);
-        text-decoration: none;
-        color: inherit;
-
-        .hide-more-direct-messages-text {
-            color: var(--color-text-sidebar-action-heading);
-            font-size: var(--font-size-sidebar-action-heading);
-            font-weight: var(--font-weight-sidebar-action-heading);
-            font-variant: var(--font-variant-sidebar-action-heading);
-            text-transform: var(--text-transform-sidebar-action-heading);
-            grid-area: row-content;
-        }
-
-        &:hover {
-            background-color: var(
-                --color-background-sidebar-action-heading-hover
-            );
-            box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-            border-radius: 4px;
-        }
-    }
-
     .direct-messages-search-section {
-        grid-column: filter-box;
-        margin: 5px 0 5px var(--left-sidebar-toggle-width-offset);
+        grid-column: filter-container;
+        margin: 5px 0;
     }
 
     .zoom-in-hide {
