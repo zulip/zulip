@@ -811,7 +811,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.equal(args.opts.trigger, "narrow_to_compose_target");
     assert.deepEqual(args.terms, [
         {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: "one"},
+        {operator: "exact-topic", operand: "one"},
     ]);
 
     // Test with new topic
@@ -821,7 +821,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
         {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: "four"},
+        {operator: "exact-topic", operand: "four"},
     ]);
 
     // Test with blank topic, with realm_mandatory_topics
@@ -840,7 +840,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
         {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: ""},
+        {operator: "exact-topic", operand: ""},
     ]);
 
     // Test with no topic, with realm mandatory topics
@@ -859,7 +859,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
         {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: ""},
+        {operator: "exact-topic", operand: ""},
     ]);
 });
 

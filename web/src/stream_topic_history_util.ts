@@ -51,7 +51,7 @@ export function update_topic_last_message_id(
         data: {
             narrow: JSON.stringify([
                 {operator: "stream", operand: stream_id},
-                {operator: "topic", operand: topic_name},
+                {operator: "exact-topic", operand: topic_name},
             ]),
             anchor: "newest",
             num_before: 1,

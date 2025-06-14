@@ -14,7 +14,7 @@ channels_operators: list[str] = ["channels", "streams"]
 
 
 def check_narrow_for_events(narrow: Collection[NeverNegatedNarrowTerm]) -> None:
-    supported_operators = [*channel_operators, "topic", "sender", "is"]
+    supported_operators = [*channel_operators, "topic", "exact-topic", "sender", "is"]
     unsupported_is_operands = ["followed"]
     for narrow_term in narrow:
         operator = narrow_term.operator
@@ -47,8 +47,16 @@ def build_narrow_predicate(
             elif operator == "topic":
                 if message["type"] != "stream":
                     return False
+                topic_name = get_topic_from_message_info(message).lower()
+                operand_lower = operand.lower()
+                if operand_lower == topic_name or operand_lower in topic_name.split():
+                    return True
+                return False
+            elif operator == "exact-topic":
+                if message["type"] != "stream":
+                    return False
                 topic_name = get_topic_from_message_info(message)
-                if operand.lower() != topic_name.lower():
+                if operand != topic_name:
                     return False
             elif operator == "sender":
                 if operand.lower() != message["sender_email"].lower():
