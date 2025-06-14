@@ -4,7 +4,6 @@ import * as alert_words_ui from "./alert_words_ui.ts";
 import * as attachments_ui from "./attachments_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as settings_account from "./settings_account.ts";
-import * as settings_bots from "./settings_bots.ts";
 import * as settings_emoji from "./settings_emoji.ts";
 import * as settings_exports from "./settings_exports.ts";
 import * as settings_invites from "./settings_invites.ts";
@@ -33,7 +32,7 @@ export function get_group(section: string): string {
         case "auth-methods":
             return "org_misc";
 
-        case "bot-list-admin":
+        case "bots":
             return "org_bots";
 
         case "users":
@@ -58,7 +57,6 @@ export function initialize(): void {
         assert(settings_notifications.user_settings_panel !== undefined);
         settings_notifications.set_up(settings_notifications.user_settings_panel);
     });
-    load_func_dict.set("your-bots", settings_bots.set_up);
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
     load_func_dict.set("uploaded-files", attachments_ui.set_up_attachments);
     load_func_dict.set("topics", settings_user_topics.set_up);
