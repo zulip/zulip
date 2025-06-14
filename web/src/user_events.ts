@@ -156,7 +156,7 @@ export const update_person = function update(event: UserUpdate): void {
                 `${event.avatar_url_medium}`,
             );
         }
-
+        settings_users.update_user_data(event.user_id, event);
         message_live_update.update_avatar(user.user_id, event.avatar_url);
         user_profile.update_profile_modal_ui(user, event);
     }

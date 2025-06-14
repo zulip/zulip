@@ -1,5 +1,6 @@
 <div id="edit-user-form" data-user-id="{{user_id}}">
     <form class="name-setting">
+      <div class="col-wrap col-left">
         <div class="alert" id="edit-user-form-error"></div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group name_change_container">
@@ -25,6 +26,18 @@
             </select>
         </div>
         <div class="custom-profile-field-form"></div>
+      </div>
+      <div class="col-wrap col-right">
+          <div class="inline-block user-avatar-section">
+                {{> image_upload_widget
+                  widget = "user-avatar"
+                  upload_text = (t "Upload new profile picture")
+                  delete_text = (t "Delete profile picture")
+                  disabled_text = (t "Avatar changes are disabled in this organization")
+                  is_editable_by_current_user = user_can_change_avatar
+                  image = user_avatar}}
+          </div>
+      </div>
     </form>
     <div class="input-group {{#if hide_deactivate_button}}hide{{/if}}">
         {{#if is_active}}

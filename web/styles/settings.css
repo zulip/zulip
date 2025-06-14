@@ -1638,6 +1638,10 @@ label.preferences-radio-choice-label {
 
 #profile-settings,
 #edit-user-form {
+    .name-setting {
+        display: flex;
+        justify-content: space-between;
+    }
     .custom_user_field {
         padding-bottom: 20px;
 
