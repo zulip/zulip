@@ -141,6 +141,15 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
+            $popper.one("click", ".popover_editable_by_others, .popover_view_source", (e) => {
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
+                message_edit.set_editable_by_others(message_lists.current.get(message_id));
+                e.preventDefault();
+                e.stopPropagation();
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
             $popper.one("click", ".popover_move_message", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 assert(message_lists.current !== undefined);
