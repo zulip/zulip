@@ -59,6 +59,8 @@ class ErrorCode(Enum):
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
+    INVALID_BOUNCER_PUBLIC_KEY = auto()
+    PUSH_REGISTRATION_LIVENESS_TIMEDOUT = auto()
 
 
 class JsonableError(Exception):
@@ -776,3 +778,17 @@ class DeliveryTimeNotInFutureError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Scheduled delivery time must be in the future.")
+
+
+class InvalidBouncerPublicKeyError(JsonableError):
+    code = ErrorCode.INVALID_BOUNCER_PUBLIC_KEY
+
+    def __init__(self, msg: str) -> None:
+        self._msg: str = msg
+
+
+class PushRegistrationLivenessTimedOutError(JsonableError):
+    code = ErrorCode.PUSH_REGISTRATION_LIVENESS_TIMEDOUT
+
+    def __init__(self, msg: str) -> None:
+        self._msg: str = msg

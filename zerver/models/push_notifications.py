@@ -40,3 +40,24 @@ class PushDeviceToken(AbstractPushDeviceToken):
 
     class Meta:
         unique_together = ("user", "kind", "token")
+
+
+class PushDevice(models.Model):
+    # The user whose device this is
+    user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
+
+    class TokenKind(models.IntegerChoices):
+        APNS = 1
+        FCM = 2
+
+    token_kind = models.PositiveSmallIntegerField(choices=TokenKind.choices)
+
+    push_account_id = models.BigIntegerField()
+
+    push_public_key = models.TextField()
+
+    bouncer_device_id = models.BigIntegerField(null=True)
+
+    bouncer_public_key = models.TextField(null=True)
+
+    encrypted_push_registration = models.TextField(null=True)
