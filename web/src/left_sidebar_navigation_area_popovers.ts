@@ -11,6 +11,7 @@ import render_left_sidebar_starred_messages_popover from "../templates/popovers/
 
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";
+import {auto_collapse_views} from "./left_sidebar_navigation_area.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -228,6 +229,7 @@ export function initialize(): void {
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
+            popovers.hide_all();
             // Determine at show time whether there are scheduled messages,
             // so that Tippy properly calculates the height of the popover
             const scheduled_message_count = scheduled_messages.get_count();
@@ -235,10 +237,19 @@ export function initialize(): void {
             if (scheduled_message_count > 0) {
                 has_scheduled_messages = true;
             }
-            popovers.hide_all();
+
+            const $views_header = $("#views-label-container");
+            const is_auto_collapse_views = auto_collapse_views;
+            const is_condensed = $views_header.hasClass("showing-condensed-navigation");
+            $views_header.addClass("more-options-active");
+
             instance.setContent(
                 ui_util.parse_html(
-                    render_left_sidebar_condensed_views_popover({has_scheduled_messages}),
+                    render_left_sidebar_condensed_views_popover({
+                        has_scheduled_messages,
+                        is_auto_collapse_views,
+                        is_condensed,
+                    }),
                 ),
             );
         },
@@ -254,6 +265,7 @@ export function initialize(): void {
         },
         onHidden(instance) {
             instance.destroy();
+            $("#views-label-container").removeClass("more-options-active");
             popover_menus.popover_instances.top_left_sidebar = null;
         },
     });
