@@ -361,13 +361,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__mandatory_topics: {
-        type: "realm",
-        op: "update",
-        property: "mandatory_topics",
-        value: false,
-    },
-
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -432,6 +425,7 @@ exports.fixtures = {
             plan_type: 3,
             upload_quota_mib: 50000,
             max_file_upload_size_mib: 1024,
+            topics_policy: "disable_empty_topic",
         },
     },
 

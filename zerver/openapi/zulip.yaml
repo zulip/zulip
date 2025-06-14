@@ -5069,8 +5069,25 @@ paths:
                                         [organization profile](/help/create-your-organization-profile).
                                     mandatory_topics:
                                       type: boolean
+                                      deprecated: true
                                       description: |
                                         Whether [topics are required](/help/require-topics) for messages in this organization.
+
+                                        **Changes**: Deprecated in Zulip 10.0 (feature level ZF-d9265f). This configuration is
+                                        now controlled by `topics_policy` realm setting.
+                                    topics_policy:
+                                      type: string
+                                      enum:
+                                        - allow_empty_topic
+                                        - disable_empty_topic
+                                      description: |
+                                        Configuration defining the default policy for sending messages in empty topics.
+
+                                        - allow_empty_topic - Topics are not required to send messages in the channels.
+                                        - disable_empty_topic - Topics are required to send messages in the channels.
+
+                                        **Changes**: New in Zulip 10.0 (feature level ZF-d9265f). Previously, this configuration was
+                                        controlled by a boolean realm setting, `mandatory_topics`.
                                     max_file_upload_size_mib:
                                       type: integer
                                       description: |
@@ -18197,10 +18214,29 @@ paths:
                           [previews of linked websites](/help/image-video-and-website-previews).
                       realm_mandatory_topics:
                         type: boolean
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether [topics are required](/help/require-topics) for messages in this organization.
+
+                          **Changes**: Deprecated in Zulip 10.0 (feature level ZF-d9265f). This configuration is
+                          now controlled by `topics_policy` realm setting.
+                      realm_topics_policy:
+                        type: string
+                        enum:
+                          - allow_empty_topic
+                          - disable_empty_topic
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Configuration defining the default policy for sending messages in empty topics.
+
+                          - allow_empty_topic - Topics are not required to send messages in the channels.
+                          - disable_empty_topic - Topics are required to send messages in the channels.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-d9265f). Previously, this configuration was
+                          controlled by a boolean realm setting, `mandatory_topics`.
                       realm_message_retention_days:
                         type: integer
                         description: |

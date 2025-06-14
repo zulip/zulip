@@ -155,6 +155,11 @@ class MessageEditHistoryVisibilityPolicyEnum(Enum):
     none = 3
 
 
+class RealmTopicsPolicyEnum(Enum):
+    allow_empty_topic = 2
+    disable_empty_topic = 3
+
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -223,7 +228,10 @@ class Realm(models.Model):
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
 
-    mandatory_topics = models.BooleanField(default=False)
+    topics_policy = models.PositiveSmallIntegerField(
+        default=RealmTopicsPolicyEnum.allow_empty_topic.value
+    )
+    REALM_TOPICS_POLICY_TYPES = list(RealmTopicsPolicyEnum)
 
     require_unique_names = models.BooleanField(default=False)
     name_changes_disabled = models.BooleanField(default=False)
@@ -698,7 +706,6 @@ class Realm(models.Model):
         inline_url_embed_preview=bool,
         invite_required=bool,
         jitsi_server_url=str | None,
-        mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=int | None,
         message_content_delete_limit_seconds=int | None,
@@ -711,6 +718,7 @@ class Realm(models.Model):
         push_notifications_enabled=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
+        topics_policy=RealmTopicsPolicyEnum,
         video_chat_provider=int,
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,
