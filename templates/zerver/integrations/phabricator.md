@@ -4,3 +4,7 @@ of the latest items in your Phabricator feed.
 1.  Follow the instructions
     [here](https://github.com/zulip/phabricator-to-zulip)
     to get it set up.
+
+{!congrats.md!}
+
+![](/static/images/integrations/phabricator/001.png)
