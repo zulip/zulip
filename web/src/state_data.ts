@@ -467,149 +467,84 @@ export const realm_schema = z.object({
     zulip_version: z.string(),
 });
 
-export const state_data_schema = z
-    .object({alert_words: z.array(z.string())})
-    .transform((alert_words) => ({alert_words}))
-    .and(z.object({realm_emoji: realm_emoji_map_schema}).transform((emoji) => ({emoji})))
-    .and(
-        z
-            .object({realm_billing: realm_billing_schema})
-            .transform((realm_billing) => ({realm_billing})),
-    )
-    .and(z.object({realm_bots: z.array(server_add_bot_schema)}).transform((bot) => ({bot})))
-    .and(
-        z
-            .object({
-                realm_users: z.array(user_schema),
-                realm_non_active_users: z.array(user_schema),
-                cross_realm_bots: z.array(user_schema),
-            })
-            .transform((people) => ({people})),
-    )
-    .and(
-        z
-            .object({
-                recent_private_conversations: z.array(
-                    z.object({
-                        max_message_id: z.number(),
-                        user_ids: z.array(z.number()),
-                    }),
-                ),
-            })
-            .transform((pm_conversations) => ({pm_conversations})),
-    )
-    .and(
-        z
-            .object({
-                presences: z.record(z.coerce.number<string>(), presence_schema),
-                server_timestamp: z.number(),
-                presence_last_update_id: z.optional(z.number()),
-            })
-            .transform((presence) => ({presence})),
-    )
-    .and(
-        z
-            .object({saved_snippets: z.array(saved_snippet_schema)})
-            .transform((saved_snippets) => ({saved_snippets})),
-    )
-    .and(
-        z
-            .object({starred_messages: z.array(z.number())})
-            .transform((starred_messages) => ({starred_messages})),
-    )
-    .and(
-        z
-            .object({
-                subscriptions: z.array(api_stream_subscription_schema),
-                unsubscribed: z.array(api_stream_subscription_schema),
-                never_subscribed: z.array(never_subscribed_stream_schema),
-                realm_default_streams: z.array(z.number()),
-            })
-            .transform((stream_data) => ({stream_data})),
-    )
-    .and(
-        z
-            .object({realm_user_groups: z.array(raw_user_group_schema)})
-            .transform((user_groups) => ({user_groups})),
-    )
-    .and(
-        z
-            .object({channel_folders: z.array(channel_folder_schema)})
-            .transform((channel_folders) => ({channel_folders})),
-    )
-    .and(
-        z
-            .object({
-                unread_msgs: z.object({
-                    pms: z.array(unread_direct_message_info_schema),
-                    streams: z.array(unread_stream_info_schema),
-                    huddles: z.array(unread_direct_message_group_info_schema),
-                    mentions: z.array(z.number()),
-                    count: z.number(),
-                    old_unreads_missing: z.boolean(),
-                }),
-            })
-            .transform((unread) => ({unread})),
-    )
-    .and(
-        z
-            .object({muted_users: z.array(muted_user_schema)})
-            .transform((muted_users) => ({muted_users})),
-    )
-    .and(
-        z
-            .object({user_topics: z.array(user_topic_schema)})
-            .transform((user_topics) => ({user_topics})),
-    )
-    .and(
-        z
-            .object({user_status: z.record(z.string(), user_status_schema)})
-            .transform((user_status) => ({user_status})),
-    )
-    .and(
-        z
-            .object({user_settings: user_settings_schema})
-            .transform((user_settings) => ({user_settings})),
-    )
-    .and(
-        z
-            .object({realm_user_settings_defaults: realm_default_settings_schema})
-            .transform((realm_settings_defaults) => ({realm_settings_defaults})),
-    )
-    .and(
-        z
-            .object({scheduled_messages: z.array(scheduled_message_schema)})
-            .transform((scheduled_messages) => ({scheduled_messages})),
-    )
-    .and(z.object({reminders: z.array(reminder_schema)}).transform((reminders) => ({reminders})))
-    .and(
-        z
-            .object({
-                queue_id: z.nullable(z.string()),
-            })
-            .transform((server_events_state) => ({server_events_state})),
-    )
-    .and(
-        z
-            .object({
-                server_generation: NOT_TYPED_YET,
-                event_queue_longpoll_timeout_seconds: NOT_TYPED_YET,
-                last_event_id: NOT_TYPED_YET,
-            })
-            .transform((server_events) => ({server_events})),
-    )
-    .and(z.object({max_message_id: z.number()}).transform((local_message) => ({local_message})))
-    .and(
-        z
-            .object({
-                onboarding_steps: z.array(onboarding_step_schema),
-                navigation_tour_video_url: z.nullable(z.string()),
-            })
-            .transform((onboarding_steps) => ({onboarding_steps})),
-    )
-    .and(current_user_schema.transform((current_user) => ({current_user})))
-    .and(realm_schema.transform((realm) => ({realm})));
+export const split_state_data_schema = z.object({
+    alert_words: z.object({alert_words: z.array(z.string())}),
+    emoji: z.object({realm_emoji: realm_emoji_map_schema}),
+    realm_billing: z.object({realm_billing: realm_billing_schema}),
+    bot: z.object({realm_bots: z.array(server_add_bot_schema)}),
+    people: z.object({
+        realm_users: z.array(user_schema),
+        realm_non_active_users: z.array(user_schema),
+        cross_realm_bots: z.array(user_schema),
+    }),
+    pm_conversations: z.object({
+        recent_private_conversations: z.array(
+            z.object({
+                max_message_id: z.number(),
+                user_ids: z.array(z.number()),
+            }),
+        ),
+    }),
+    presence: z.object({
+        presences: z.record(z.coerce.number<string>(), presence_schema),
+        server_timestamp: z.number(),
+        presence_last_update_id: z.optional(z.number()),
+    }),
+    saved_snippets: z.object({saved_snippets: z.array(saved_snippet_schema)}),
+    starred_messages: z.object({starred_messages: z.array(z.number())}),
+    stream_data: z.object({
+        subscriptions: z.array(api_stream_subscription_schema),
+        unsubscribed: z.array(api_stream_subscription_schema),
+        never_subscribed: z.array(never_subscribed_stream_schema),
+        realm_default_streams: z.array(z.number()),
+    }),
+    user_groups: z.object({realm_user_groups: z.array(raw_user_group_schema)}),
+    channel_folders: z.object({channel_folders: z.array(channel_folder_schema)}),
+    unread: z.object({
+        unread_msgs: z.object({
+            pms: z.array(unread_direct_message_info_schema),
+            streams: z.array(unread_stream_info_schema),
+            huddles: z.array(unread_direct_message_group_info_schema),
+            mentions: z.array(z.number()),
+            count: z.number(),
+            old_unreads_missing: z.boolean(),
+        }),
+    }),
+    muted_users: z.object({muted_users: z.array(muted_user_schema)}),
+    user_topics: z.object({user_topics: z.array(user_topic_schema)}),
+    user_status: z.object({user_status: z.record(z.string(), user_status_schema)}),
+    user_settings: z.object({user_settings: user_settings_schema}),
+    realm_settings_defaults: z.object({
+        realm_user_settings_defaults: realm_default_settings_schema,
+    }),
+    scheduled_messages: z.object({scheduled_messages: z.array(scheduled_message_schema)}),
+    reminders: z.object({reminders: z.array(reminder_schema)}),
+    server_events_state: z.object({
+        queue_id: z.nullable(z.string()),
+    }),
+    server_events: z.object({
+        server_generation: NOT_TYPED_YET,
+        event_queue_longpoll_timeout_seconds: NOT_TYPED_YET,
+        last_event_id: NOT_TYPED_YET,
+    }),
+    local_message: z.object({max_message_id: z.number()}),
+    onboarding_steps: z.object({
+        onboarding_steps: z.array(onboarding_step_schema),
+        navigation_tour_video_url: z.nullable(z.string()),
+    }),
+    current_user: current_user_schema,
+    realm: realm_schema,
+});
+type SplitStateDataInput = z.input<typeof split_state_data_schema>;
 
+export const state_data_schema = z.pipe(
+    z.transform((state_data: SplitStateDataInput[keyof SplitStateDataInput]) =>
+        Object.fromEntries(
+            Object.keys(split_state_data_schema.shape).map((part) => [part, state_data]),
+        ),
+    ),
+    split_state_data_schema,
+);
 export type StateData = z.infer<typeof state_data_schema>;
 
 export type CurrentUser = StateData["current_user"];
