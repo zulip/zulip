@@ -185,6 +185,10 @@
            12.4px at 16px/1em */
         padding: 0;
         padding-inline-start: 0.775em;
+    }
+
+    & blockquote,
+    .message_embed {
         /* We want to keep the border roughly centered
            with bullets and single-digit list markers.
            3.5px at 16px/1em */
@@ -486,6 +490,9 @@
         margin-bottom: var(--markdown-interelement-space-px);
     }
 
+    /* We used to use this for certain dropbox previews, we are keeping
+       this around as to not break any previous instances of these
+       previews. */
     .message_inline_image_title {
         font-weight: bold;
     }
@@ -640,6 +647,9 @@
         margin-right: 0.75em;
     }
 
+    /* We used to use this for certain dropbox previews, we are keeping
+       this around as to not break any previous instances of these
+       previews. */
     .message_inline_ref {
         margin-bottom: var(--markdown-interelement-space-px);
         margin-inline-start: 5px;
@@ -738,7 +748,6 @@
             )
             [fader-start] 10% [data-container-end thumbnail-end border-end fader-end];
         column-gap: 5px;
-        margin: 0 0 var(--markdown-interelement-space-px);
         /* We want to control the height without worrying about
            padding... */
         box-sizing: border-box;
@@ -747,7 +756,6 @@
            text works as expected. */
         height: calc(var(--length-message-preview-embeds) + 10px);
         padding: 5px;
-        border-inline-start: 3px solid hsl(0deg 0% 93%);
 
         .message_embed_title {
             font-size: 1.2em;
