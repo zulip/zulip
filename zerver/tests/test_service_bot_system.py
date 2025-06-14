@@ -624,7 +624,105 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         message_id = self.send_group_direct_message(
             sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
         )
-        # message = Message.objects.get(id=message_id, sender=sender)
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertIn("read", bot_user_message.flags_list())
+
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_flag_messages_service_bots_has_not_process(
+        self, mock_queue_event_on_commit: mock.Mock
+    ) -> None:
+        sender = self.user_profile
+        recipients = [self.user_profile, self.bot_profile, self.second_bot_profile]
+
+        message_id = self.send_group_direct_message(
+            sender, recipients, content=f"@**{self.bot_profile.full_name}** baz"
+        )
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertNotIn("read", bot_user_message.flags_list())
+        self.assertEqual(mock_queue_event_on_commit.call_count, 2)
+
+    @responses.activate
+    @for_all_bot_types
+    def test_read_non_event_message_to_service_bots(self) -> None:
+        """
+        Verifies that all messages where service bots are part of the
+        recipient but their functions aren't triggered are marked as read
+        by them.
+        """
+        sender = self.user_profile
+        recipients = [self.user_profile, self.bot_profile, self.second_bot_profile]
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        non_event_messages_fixtures = [
+            "normal message",
+            f">@**{self.bot_profile.full_name}** quote mention",
+            f"@_**{self.bot_profile.full_name}** silent mention",
+        ]
+        for message in non_event_messages_fixtures:
+            message_id = self.send_group_direct_message(sender, recipients, content=message)
+
+            bot_user_message = UserMessage.objects.get(
+                user_profile=self.bot_profile, message=message_id
+            )
+            self.assertIn("read", bot_user_message.flags_list())
+
+    @responses.activate
+    @for_all_bot_types
+    def test_read_private_channel_event_message(self) -> None:
+        """
+        Verifies that service bots will read all event message once
+        they have processed them, regardless of whether they are
+        subscribed to the private channel.
+        """
+        sender = self.user_profile
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        private_channel = "private_channel"
+        self.subscribe(sender, private_channel, invite_only=True)
+        message_id = self.send_stream_message(
+            sender,
+            private_channel,
+            content=f"@**{self.bot_profile.full_name}** private channel mention",
+        )
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertIn("read", bot_user_message.flags_list())
+
+    def test_read_unsubscribed_channel_event_message(self) -> None:
+        """
+        Verifies that service bots will read all event message once
+        they have processed them, regardless of whether they are
+        subscribed to the public channel.
+        """
+        sender = self.user_profile
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        new_public_channel = "new_public_channel"
+        self.subscribe(sender, new_public_channel)
+        message_id = self.send_stream_message(
+            sender,
+            new_public_channel,
+            content=f"@**{self.bot_profile.full_name}** public channel mention",
+        )
+
         bot_user_message = UserMessage.objects.get(
             user_profile=self.bot_profile, message=message_id
         )
