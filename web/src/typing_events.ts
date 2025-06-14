@@ -99,15 +99,11 @@ function get_users_typing_for_narrow(): number[] {
     const first_term = terms[0];
     if (first_term.operator === "dm") {
         // Get list of users typing in this conversation
-        const narrow_emails_string = first_term.operand;
-        // TODO: Create people.emails_strings_to_user_ids.
-        const narrow_user_ids_string = people.reply_to_to_user_ids_string(narrow_emails_string);
-        if (!narrow_user_ids_string) {
+        const user_id_string = first_term.operand;
+        if (!user_id_string) {
             return [];
         }
-        const narrow_user_ids = narrow_user_ids_string
-            .split(",")
-            .map((user_id_string) => Number.parseInt(user_id_string, 10));
+        const narrow_user_ids = people.user_ids_string_to_ids_array(user_id_string);
         const group = [...narrow_user_ids, current_user.user_id];
         return typing_data.get_group_typists(group);
     }
