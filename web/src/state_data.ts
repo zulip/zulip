@@ -41,27 +41,26 @@ export const custom_profile_field_schema = z.object({
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
 
-export const scheduled_message_schema = z
-    .object({
+export const scheduled_message_schema = z.intersection(
+    z.object({
         scheduled_message_id: z.number(),
         content: z.string(),
         rendered_content: z.string(),
         scheduled_delivery_timestamp: z.number(),
         failed: z.boolean(),
-    })
-    .and(
-        z.discriminatedUnion("type", [
-            z.object({
-                type: z.literal("private"),
-                to: z.array(z.number()),
-            }),
-            z.object({
-                type: z.literal("stream"),
-                to: z.number(),
-                topic: z.string(),
-            }),
-        ]),
-    );
+    }),
+    z.discriminatedUnion("type", [
+        z.object({
+            type: z.literal("private"),
+            to: z.array(z.number()),
+        }),
+        z.object({
+            type: z.literal("stream"),
+            to: z.number(),
+            topic: z.string(),
+        }),
+    ]),
+);
 
 export const reminder_schema = z.object({
     reminder_id: z.number(),
@@ -79,8 +78,8 @@ export const profile_datum_schema = z.object({
     rendered_value: z.nullish(z.string()),
 });
 
-export const user_schema = z
-    .object({
+export const user_schema = z.intersection(
+    z.object({
         user_id: z.number(),
         delivery_email: z.nullable(z.string()),
         email: z.string(),
@@ -103,20 +102,19 @@ export const user_schema = z
         // used for inaccessible user objects.
         is_inaccessible_user: z.optional(z.boolean()),
         is_system_bot: z.optional(z.literal(true)),
-    })
-    .and(
-        z.discriminatedUnion("is_bot", [
-            z.object({
-                is_bot: z.literal(false),
-                bot_type: z.optional(z.null()),
-            }),
-            z.object({
-                is_bot: z.literal(true),
-                bot_type: z.number(),
-                bot_owner_id: z.nullable(z.number()),
-            }),
-        ]),
-    );
+    }),
+    z.discriminatedUnion("is_bot", [
+        z.object({
+            is_bot: z.literal(false),
+            bot_type: z.optional(z.null()),
+        }),
+        z.object({
+            is_bot: z.literal(true),
+            bot_type: z.number(),
+            bot_owner_id: z.nullable(z.number()),
+        }),
+    ]),
+);
 
 export const server_emoji_schema = z.object({
     id: z.string(),
@@ -283,9 +281,10 @@ export const realm_schema = z.object({
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
-    giphy_rating_options: z
-        .record(z.string(), z.object({id: z.number(), name: z.string()}))
-        .and(z.object({disabled: z.object({id: z.number(), name: z.string()})})),
+    giphy_rating_options: z.intersection(
+        z.record(z.string(), z.object({id: z.number(), name: z.string()})),
+        z.object({disabled: z.object({id: z.number(), name: z.string()})}),
+    ),
     max_avatar_file_size_mib: z.number(),
     max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
