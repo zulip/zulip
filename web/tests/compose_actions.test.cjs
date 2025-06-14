@@ -91,7 +91,9 @@ const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 const {set_realm} = zrequire("state_data");
 
-const realm = {realm_mandatory_topics: true};
+const realm = {
+    realm_topics_policy: "disable_empty_topic",
+};
 set_realm(realm);
 
 const start = compose_actions.start;

@@ -1003,7 +1003,10 @@ export function can_use_empty_topic(stream_id: number | undefined): boolean {
         return false;
     }
 
-    return !realm.realm_mandatory_topics;
+    return (
+        realm.realm_topics_policy ===
+        settings_config.get_realm_topics_policy_values().allow_empty_topic.code
+    );
 }
 
 /*

@@ -107,6 +107,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
+from zerver.models.realms import RealmTopicsPolicyEnum
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
@@ -1782,7 +1783,10 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        if realm.mandatory_topics and topic_name == "":
+        if (
+            realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value
+            and topic_name == ""
+        ):
             raise JsonableError(_("Topics are required in this organization"))
 
     elif addressee.is_private():

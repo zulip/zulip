@@ -74,7 +74,7 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_realm
+from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
@@ -3563,13 +3563,17 @@ class CheckMessageTest(ZulipTestCase):
         message_content = "whatever"
         addressee = Addressee.for_stream(stream, topic_name)
 
-        do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.disable_empty_topic, acting_user=None
+        )
         realm.refresh_from_db()
 
         with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
             check_message(sender, client, addressee, message_content, realm)
 
-        do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.allow_empty_topic, acting_user=None
+        )
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
@@ -3583,13 +3587,17 @@ class CheckMessageTest(ZulipTestCase):
         message_content = "whatever"
         addressee = Addressee.for_stream(stream, topic_name)
 
-        do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.disable_empty_topic, acting_user=None
+        )
         realm.refresh_from_db()
 
         with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
             check_message(sender, client, addressee, message_content, realm)
 
-        do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.allow_empty_topic, acting_user=None
+        )
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.topic_name(), topic_name)
