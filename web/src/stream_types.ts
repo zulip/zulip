@@ -75,16 +75,19 @@ export const stream_specific_notification_settings_schema = z.object({
     wildcard_mentions_notify: z.nullable(z.boolean()),
 });
 
-export const api_stream_schema = stream_schema.extend({
+export const api_stream_schema = z.object({
+    ...stream_schema.shape,
     stream_weekly_traffic: z.nullable(z.number()),
 });
 
-export const never_subscribed_stream_schema = api_stream_schema.extend({
+export const never_subscribed_stream_schema = z.object({
+    ...api_stream_schema.shape,
     subscribers: z.optional(z.array(z.number())),
     partial_subscribers: z.optional(z.array(z.number())),
 });
 
-export const stream_properties_schema = stream_specific_notification_settings_schema.extend({
+export const stream_properties_schema = z.object({
+    ...stream_specific_notification_settings_schema.shape,
     color: z.string(),
     is_muted: z.boolean(),
     pin_to_top: z.boolean(),
@@ -98,7 +101,8 @@ export const api_stream_subscription_schema = z.object({
     partial_subscribers: z.optional(z.array(z.number())),
 });
 
-export const updatable_stream_properties_schema = api_stream_subscription_schema.extend({
+export const updatable_stream_properties_schema = z.object({
+    ...api_stream_subscription_schema.shape,
     in_home_view: z.boolean(),
 });
 export type UpdatableStreamProperties = z.infer<typeof updatable_stream_properties_schema>;

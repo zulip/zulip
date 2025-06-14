@@ -75,27 +75,31 @@ const active_user_data = z.object({
     all_time: z.array(datum_schema),
 });
 
-const read_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({read: z.array(z.number())}),
-).extend({...common_data_schema.shape});
+const read_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(z.object({read: z.array(z.number())})).shape,
+    ...common_data_schema.shape,
+});
 
-const sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({
-        human: z.array(z.number()),
-        bot: z.array(z.number()),
-    }),
-).extend({...common_data_schema.shape});
+const sent_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(
+        z.object({
+            human: z.array(z.number()),
+            bot: z.array(z.number()),
+        }),
+    ).shape,
+    ...common_data_schema.shape,
+});
 
-const ordered_sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.record(z.string(), z.array(z.number())),
-).extend({
+const ordered_sent_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(z.record(z.string(), z.array(z.number()))).shape,
     ...common_data_schema.shape,
     display_order: z.array(z.string()),
 });
 
-const user_count_data_schema = z
-    .object({everyone: active_user_data})
-    .extend({...common_data_schema.shape});
+const user_count_data_schema = z.object({
+    ...z.object({everyone: active_user_data}).shape,
+    ...common_data_schema.shape,
+});
 
 // Inferred types used in nested functions
 type SentData = z.infer<typeof sent_data_schema>;
