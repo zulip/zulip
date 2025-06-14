@@ -1,4 +1,3 @@
-import re
 import time
 from datetime import timedelta
 from io import StringIO
@@ -656,13 +655,15 @@ class ScheduledMessageTest(ZulipTestCase):
         attachment_file1 = StringIO("zulip!")
         attachment_file1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file1})
-        path_id1 = re.sub(r"/user_uploads/", "", result.json()["url"])
+        assert result.json()["url"].startswith("/user_uploads/")
+        path_id1 = result.json()["url"].removeprefix("/user_uploads/")
         attachment_object1 = Attachment.objects.get(path_id=path_id1)
 
         attachment_file2 = StringIO("zulip!")
         attachment_file2.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file2})
-        path_id2 = re.sub(r"/user_uploads/", "", result.json()["url"])
+        assert result.json()["url"].startswith("/user_uploads/")
+        path_id2 = result.json()["url"].removeprefix("/user_uploads/")
         attachment_object2 = Attachment.objects.get(path_id=path_id2)
 
         content = f"Test [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id1})"
