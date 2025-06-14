@@ -60,6 +60,7 @@ class PublicURLTest(ZulipTestCase):
         urls = {
             "/devtools/buttons/": "Button styles browser",
             "/devtools/banners/": "Banner styles browser",
+            "/devtools/inputs/": "Input styles browser",
         }
 
         for url, expected_content in urls.items():
