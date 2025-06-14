@@ -1,3 +1,4 @@
+import autosize from "autosize";
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
@@ -67,6 +68,7 @@ import * as util from "./util.ts";
 // textarea element which has the modified content.
 // Storing textarea makes it easy to get the current content.
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
+const resized_edit_box_height = new Map<number, number>();
 let currently_deleting_messages: number[] = [];
 let currently_topic_editing_message_ids: number[] = [];
 const currently_echoing_messages = new Map<number, EchoedMessageData>();
@@ -566,6 +568,14 @@ function create_copy_to_clipboard_handler(
     });
 }
 
+// We store manually resized edit box height in case events rerender
+// the message list and restore it.
+function store_resized_height(message_id: number): (height: number) => void {
+    return (height) => {
+        resized_edit_box_height.set(message_id, height);
+    };
+}
+
 function edit_message($row: JQuery, raw_content: string): void {
     // Open the message-edit UI for a given message.
     //
@@ -615,6 +625,11 @@ function edit_message($row: JQuery, raw_content: string): void {
     currently_editing_messages.set(message.id, $message_edit_content);
     message_lists.current.show_edit_message($row, $form);
 
+    const previous_height = resized_edit_box_height.get(message.id);
+    if (previous_height) {
+        autosize.destroy($(the($message_edit_content))).height(previous_height + "px");
+    }
+
     // Attach event handlers to `form` instead of `textarea` to allow
     // typeahead to call stopPropagation if it can handle the event
     // and prevent the form from submitting.
@@ -656,7 +671,10 @@ function edit_message($row: JQuery, raw_content: string): void {
         create_copy_to_clipboard_handler($row, the($copy_message), $message_edit_content);
     } else {
         $copy_message.remove();
-        resize.watch_manual_resize_for_element(the($message_edit_content));
+        resize.watch_manual_resize_for_element(
+            the($message_edit_content),
+            store_resized_height(message.id),
+        );
         composebox_typeahead.initialize_compose_typeahead($message_edit_content);
         compose_ui.handle_keyup(null, $message_edit_content);
         $message_edit_content.on("keydown", (event) => {
@@ -1060,6 +1078,7 @@ export function end_message_row_edit($row: JQuery): void {
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
+        resized_edit_box_height.delete(message.id);
         message_lists.current.hide_edit_message($row);
         compose_call.abort_video_callbacks(message.id.toString());
     }
