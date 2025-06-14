@@ -7,6 +7,11 @@
     {{/if}}
     {{/if}}
     <span class="pill-label">
+        {{#if is_email}}
+            {{~#if display_name}}
+                <span class="pill-display-name">{{display_name}}</span>
+            {{~/if~}}
+        {{/if}}
         <span class="pill-value">
             {{#if has_stream}}
                 {{~#if stream.invite_only ~}}
@@ -20,7 +25,11 @@
             {{#if is_empty_string_topic}}
             {{sign}}topic: <span class="empty-topic-display">{{topic_display_name}}</span>
             {{else}}
+            {{#if is_email}}
+            &lt;{{ display_value }}&gt;
+            {{else}}
             {{ display_value }}
+            {{/if}}
             {{/if}}
         </span>
         {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
