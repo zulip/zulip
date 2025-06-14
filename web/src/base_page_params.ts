@@ -15,8 +15,9 @@ const default_params_schema = z.object({
 // These parameters are sent in #page-params for both users and spectators.
 //
 // Sync this with zerver.lib.home.build_page_params_for_home_page_load.
-const home_params_schema = default_params_schema
-    .extend({
+const home_params_schema = z
+    .object({
+        ...default_params_schema.shape,
         page_type: z.literal("home"),
         apps_page_url: z.string(),
         corporate_enabled: z.boolean(),
@@ -53,7 +54,8 @@ const home_params_schema = default_params_schema
     .loose();
 
 // Sync this with analytics.views.stats.render_stats.
-const stats_params_schema = default_params_schema.extend({
+const stats_params_schema = z.object({
+    ...default_params_schema.shape,
     page_type: z.literal("stats"),
     data_url_suffix: z.string(),
     upload_space_used: z.nullable(z.number()),
@@ -62,7 +64,8 @@ const stats_params_schema = default_params_schema.extend({
 });
 
 // Sync this with corporate.views.portico.team_view.
-const team_params_schema = default_params_schema.extend({
+const team_params_schema = z.object({
+    ...default_params_schema.shape,
     page_type: z.literal("team"),
     contributors: z.optional(
         z.array(
@@ -82,7 +85,8 @@ const team_params_schema = default_params_schema.extend({
 });
 
 // Sync this with corporate.lib.stripe.UpgradePageParams.
-const upgrade_params_schema = default_params_schema.extend({
+const upgrade_params_schema = z.object({
+    ...default_params_schema.shape,
     page_type: z.literal("upgrade"),
     annual_price: z.number(),
     monthly_price: z.number(),
