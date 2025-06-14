@@ -126,6 +126,7 @@ const social = {
     name: "social",
     subscribed: true,
     can_send_message_group: 2,
+    topics_policy: "inherit",
 };
 stream_data.add_sub(social);
 
