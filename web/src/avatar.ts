@@ -72,26 +72,26 @@ function display_avatar_delete_started(): void {
 
 export function build_user_avatar_widget(
     upload_function: UploadFunction,
-    prefix_selector = "",
+    $container: JQuery,
 ): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $<HTMLInputElement>(
-            `${prefix_selector} #user-avatar-upload-widget input.image_file_input`,
-        ).expectOne();
+        return $container
+            .find<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input")
+            .expectOne();
     };
 
     if (current_user.avatar_source === "G") {
-        $(`${prefix_selector} #user-avatar-upload-widget .image-delete-button`).hide();
-        $(`${prefix_selector} #user-avatar-source`).show();
+        $container.find("#user-avatar-upload-widget .image-delete-button").hide();
+        $container.find("#user-avatar-source").show();
     } else {
-        $(`${prefix_selector} #user-avatar-source`).hide();
+        $container.find("#user-avatar-source").hide();
     }
 
     if (!settings_data.user_can_change_avatar()) {
         return;
     }
 
-    $(`${prefix_selector} #user-avatar-upload-widget .image-delete-button`).on("click", (e) => {
+    $container.find("#user-avatar-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         function delete_user_avatar(): void {
@@ -108,7 +108,7 @@ export function build_user_avatar_widget(
                 },
                 error() {
                     display_avatar_delete_complete();
-                    $(`${prefix_selector} #user-avatar-upload-widget .image-delete-button`).show();
+                    $container.find("#user-avatar-upload-widget .image-delete-button").show();
                 },
             });
         }
@@ -123,8 +123,8 @@ export function build_user_avatar_widget(
 
     upload_widget.build_direct_upload_widget(
         get_file_input,
-        $(`${prefix_selector} #user-avatar-upload-widget .image_file_input_error`).expectOne(),
-        $(`${prefix_selector} #user-avatar-upload-widget .image_upload_button`).expectOne(),
+        $container.find("#user-avatar-upload-widget .image_file_input_error").expectOne(),
+        $container.find("#user-avatar-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_avatar_file_size_mib,
     );

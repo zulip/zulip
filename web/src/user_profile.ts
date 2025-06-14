@@ -1114,12 +1114,9 @@ function toggle_submit_button($edit_form: JQuery): void {
     $submit_button.prop("disabled", false);
 }
 
-function upload_avatar(
-    $file_input: JQuery<HTMLInputElement>,
-    $container: JQuery,
-    target_user_id?: number,
-): void {
+function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
     const form_data = new FormData();
+    const $container = $("#edit-user-form");
 
     assert(csrf_token !== undefined);
     form_data.append("csrfmiddlewaretoken", csrf_token);
@@ -1134,34 +1131,6 @@ function upload_avatar(
         $container.find("#user-avatar-upload-widget .image-block").attr("src", file_url);
         display_avatar_upload_complete($container);
     }
-
-    // channel.post({
-    //     url,
-    //     data: form_data,
-    //     cache: false,
-    //     processData: false,
-    //     contentType: false,
-    //     success() {
-    //         display_avatar_upload_complete($container);
-    //         $container.find("#user-avatar-upload-widget .image_file_input_error").hide();
-    //         $container.find("#user-avatar-source").hide();
-    //         // Rest of the work is done via the user_events -> avatar_url event we will get
-    //     },
-    //     error(xhr) {
-    //         display_avatar_upload_complete($container);
-    //         if (current_user.avatar_source === "G") {
-    //             $container.find("#user-avatar-source").show();
-    //         }
-    //         const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-    //         if (parsed.success) {
-    //             const $error = $container.find(
-    //                 "#user-avatar-upload-widget .image_file_input_error",
-    //             );
-    //             $error.text(parsed.data.msg);
-    //             $error.show();
-    //         }
-    //     },
-    // });
 }
 
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
@@ -1191,16 +1160,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     $container.append($(html_body));
 
     // Update avatar widget to support admin-based updates
-    const upload_function = (data: JQuery<HTMLInputElement>) => {
-        const $form = $("#edit-user-form");
-        if (current_user.is_admin && user_id !== current_user.user_id) {
-            upload_avatar(data, $form, user_id);
-        } else {
-            upload_avatar(data, $form);
-        }
-    };
-
-    avatar.build_user_avatar_widget(upload_function, "#edit-user-form");
+    avatar.build_user_avatar_widget(upload_avatar, $("#edit-user-form"));
 
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
