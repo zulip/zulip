@@ -38,8 +38,8 @@ const submessage_schema = z.array(
     }),
 );
 
-export const server_message_schema = z
-    .object({
+export const server_message_schema = z.intersection(
+    z.object({
         avatar_url: z.nullish(z.string()),
         client: z.string(),
         content: z.string(),
@@ -58,24 +58,23 @@ export const server_message_schema = z
         sender_realm_str: z.string(),
         submessages: submessage_schema,
         timestamp: z.number(),
-    })
-    .and(
-        z.discriminatedUnion("type", [
-            z.object({
-                type: z.literal("stream"),
-                subject: z.string(),
-                stream_id: z.number(),
-                topic_links: z.array(
-                    z.object({
-                        text: z.string(),
-                        url: z.string(),
-                    }),
-                ),
-            }),
-            z.object({
-                type: z.literal("private"),
-                subject: z.literal(""),
-                topic_links: z.array(z.never()),
-            }),
-        ]),
-    );
+    }),
+    z.discriminatedUnion("type", [
+        z.object({
+            type: z.literal("stream"),
+            subject: z.string(),
+            stream_id: z.number(),
+            topic_links: z.array(
+                z.object({
+                    text: z.string(),
+                    url: z.string(),
+                }),
+            ),
+        }),
+        z.object({
+            type: z.literal("private"),
+            subject: z.literal(""),
+            topic_links: z.array(z.never()),
+        }),
+    ]),
+);
