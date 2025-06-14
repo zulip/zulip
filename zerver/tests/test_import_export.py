@@ -71,6 +71,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
+from zerver.lib.url_encoding import encode_stream, get_message_narrow_link
 from zerver.lib.utils import assert_is_not_none, get_fk_field_name
 from zerver.models import (
     AlertWord,
@@ -2880,6 +2881,170 @@ class RealmImportExportTest(ExportFile):
                 exportable_user_ids=get_consented_user_ids(realm),
             )
             do_import_realm(get_output_dir(), "test-zulip")
+
+    def test_import_messages_with_channel_narrow_links(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        # Send a message containing channel link
+        denmark_channel = get_stream("Denmark", original_realm)
+        encoded_channel = encode_stream(denmark_channel.id, denmark_channel.name)
+        channel_link_message = (
+            f"[channel narrow link](http://zulip.testserver/#narrow/channel/{encoded_channel})"
+        )
+        self.send_stream_message(self.example_user("iago"), "Denmark", channel_link_message)
+
+        # Send a message containing topic link
+        topic_link_message = f"[topic narrow link](http://zulip.testserver/#narrow/channel/{encoded_channel}/topic/test)"
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_link_message)
+
+        # Send a message containing message narrow link
+        target_message_content = "message narrow link!"
+        target_message_id = self.send_stream_message(
+            self.example_user("othello"), "Denmark", target_message_content
+        )
+        target_message = Message.objects.get(id=target_message_id)
+        target_message_narrow_link = get_message_narrow_link(target_message)
+        quote_and_reply_content = f"[message narrow link]({target_message_narrow_link})"
+        self.send_stream_message(self.example_user("othello"), "Denmark", quote_and_reply_content)
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        # -- IMPORT channel messages -- #
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        # Verify channel link
+        imported_denmark_channel = Stream.objects.get(name="Denmark", realm=imported_realm)
+        encoded_imported_channel = encode_stream(
+            imported_denmark_channel.id, imported_denmark_channel.name
+        )
+        imported_channel_link_message = Message.objects.get(
+            content=channel_link_message, realm=imported_realm
+        )
+        expected_channel_link = f"#narrow/channel/{encoded_imported_channel}"
+        assert imported_channel_link_message.rendered_content is not None
+        self.assertIn(
+            expected_channel_link,
+            imported_channel_link_message.rendered_content,
+        )
+
+        # Verify topic link
+        imported_topic_link_message = Message.objects.get(
+            content=topic_link_message, realm=imported_realm
+        )
+        expected_topic_link = f"#narrow/channel/{encoded_imported_channel}/topic/test"
+        assert imported_topic_link_message.rendered_content is not None
+        self.assertIn(
+            expected_topic_link,
+            imported_topic_link_message.rendered_content,
+        )
+
+        # Verify channel message link
+        imported_othello = get_user_by_delivery_email(
+            self.example_user_map["othello"], imported_realm
+        )
+        imported_quote_and_reply_message = Message.objects.get(
+            sender=imported_othello,
+            recipient__type_id=imported_denmark_channel.id,
+            content__icontains="[message narrow link](",
+            realm=imported_realm,
+        )
+        imported_target_message = Message.objects.get(
+            content=target_message_content, realm=imported_realm
+        )
+        expected_channel_message_narrow_link = get_message_narrow_link(imported_target_message)
+        assert imported_quote_and_reply_message.rendered_content is not None
+        self.assertIn(
+            expected_channel_message_narrow_link,
+            imported_quote_and_reply_message.rendered_content,
+        )
+
+    def test_import_private_messages_with_near_link(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        # The first scenario happens in a group message between iago
+        # , hamlet and ZOE.
+        # ---
+        #   iago : "test content"
+        #   ZOE : "Iago [said](#narrow/dm/7,10,11-group/near/257): test content"
+        # ---
+        iago_message_id = self.send_group_direct_message(
+            self.example_user("iago"), [self.example_user("hamlet"), self.example_user("ZOE")]
+        )
+        iago_message = Message.objects.get(id=iago_message_id)
+        iago_message_near_link = get_message_narrow_link(iago_message)
+
+        zoe_message_context = f"Iago [said]({iago_message_near_link}): test content"
+        self.send_group_direct_message(
+            self.example_user("ZOE"),
+            [self.example_user("hamlet"), self.example_user("iago")],
+            zoe_message_context,
+        )
+
+        # The second scenario happens in a direct message between
+        # iago and hamlet.
+        # ---
+        #   hamlet : "test content"
+        #   iago : "Hamlet [said](#narrow/dm/10,11-group/near/259): test content"
+        # ---
+        hamlet_dm_id = self.send_personal_message(
+            self.example_user("hamlet"), self.example_user("iago")
+        )
+        hamlet_dm = Message.objects.get(id=hamlet_dm_id)
+        hamlet_dm_near_link = get_message_narrow_link(hamlet_dm)
+
+        iago_dm_context = f"Hamlet [said]({hamlet_dm_near_link}): test content"
+        self.send_personal_message(
+            self.example_user("iago"), self.example_user("hamlet"), iago_dm_context
+        )
+
+        consented_user_ids = ["iago", "hamlet", "ZOE"]
+        for user_id in consented_user_ids:
+            do_change_user_setting(
+                self.example_user(user_id), "allow_private_data_export", True, acting_user=None
+            )
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        # ---IMPORT private chats--- #
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        # Validate the first scenario, ZOE's quote-and-reply should contain the
+        # updated narrow link of iago's GDM.
+        imported_iago_message = Message.objects.get(
+            content="test content",
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            sender__realm=imported_realm,
+        )
+        zoe_quote_and_reply_in_gdm = Message.objects.get(
+            content=zoe_message_context,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            sender__realm=imported_realm,
+        )
+        expected_iago_message_near_link = get_message_narrow_link(imported_iago_message)
+
+        assert zoe_quote_and_reply_in_gdm.rendered_content is not None
+        self.assertIn(expected_iago_message_near_link, zoe_quote_and_reply_in_gdm.rendered_content)
+
+        # Validate the second scenario, iago's quote-and-reply should contain the
+        # updated narrow link of hamlet's DM.
+        imported_hamlet_dm = Message.objects.get(
+            content="test content", recipient__type=Recipient.PERSONAL, sender__realm=imported_realm
+        )
+        iago_quote_and_reply_in_gdm = Message.objects.get(
+            content=iago_dm_context,
+            recipient__type=Recipient.PERSONAL,
+            sender__realm=imported_realm,
+        )
+        expected_hamlet_dm_narrow_link = get_message_narrow_link(imported_hamlet_dm)
+
+        assert iago_quote_and_reply_in_gdm.rendered_content is not None
+        self.assertIn(expected_hamlet_dm_narrow_link, iago_quote_and_reply_in_gdm.rendered_content)
 
 
 class SingleUserExportTest(ExportFile):
