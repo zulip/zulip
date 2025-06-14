@@ -156,15 +156,7 @@ export const update_person = function update(event: UserUpdate): void {
                 `${event.avatar_url_medium}`,
             );
         }
-
-        // Update avatar in the edit user modal if it's open
-        const $edit_user_form = $(`#edit-user-form[data-user-id='${event.user_id}']`);
-        if ($edit_user_form.length) {
-            $edit_user_form
-                .find("#user-avatar-upload-widget .image-block")
-                .attr("src", event.avatar_url_medium);
-        }
-
+        settings_users.update_user_data(event.user_id, event);
         message_live_update.update_avatar(user.user_id, event.avatar_url);
         user_profile.update_profile_modal_ui(user, event);
     }

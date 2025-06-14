@@ -1128,37 +1128,40 @@ function upload_avatar(
     for (const [i, file] of [...files].entries()) {
         form_data.append("file-" + i, file);
     }
-    display_avatar_upload_started($container);
+    if (files[0]) {
+        display_avatar_upload_started($container);
+        const file_url = URL.createObjectURL(files[0]);
+        $container.find("#user-avatar-upload-widget .image-block").attr("src", file_url);
+        display_avatar_upload_complete($container);
+    }
 
-    const url = target_user_id ? `/json/users/${target_user_id}/avatar` : "/json/users/me/avatar";
-
-    channel.post({
-        url,
-        data: form_data,
-        cache: false,
-        processData: false,
-        contentType: false,
-        success() {
-            display_avatar_upload_complete($container);
-            $container.find("#user-avatar-upload-widget .image_file_input_error").hide();
-            $container.find("#user-avatar-source").hide();
-            // Rest of the work is done via the user_events -> avatar_url event we will get
-        },
-        error(xhr) {
-            display_avatar_upload_complete($container);
-            if (current_user.avatar_source === "G") {
-                $container.find("#user-avatar-source").show();
-            }
-            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-            if (parsed.success) {
-                const $error = $container.find(
-                    "#user-avatar-upload-widget .image_file_input_error",
-                );
-                $error.text(parsed.data.msg);
-                $error.show();
-            }
-        },
-    });
+    // channel.post({
+    //     url,
+    //     data: form_data,
+    //     cache: false,
+    //     processData: false,
+    //     contentType: false,
+    //     success() {
+    //         display_avatar_upload_complete($container);
+    //         $container.find("#user-avatar-upload-widget .image_file_input_error").hide();
+    //         $container.find("#user-avatar-source").hide();
+    //         // Rest of the work is done via the user_events -> avatar_url event we will get
+    //     },
+    //     error(xhr) {
+    //         display_avatar_upload_complete($container);
+    //         if (current_user.avatar_source === "G") {
+    //             $container.find("#user-avatar-source").show();
+    //         }
+    //         const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+    //         if (parsed.success) {
+    //             const $error = $container.find(
+    //                 "#user-avatar-upload-widget .image_file_input_error",
+    //             );
+    //             $error.text(parsed.data.msg);
+    //             $error.show();
+    //         }
+    //     },
+    // });
 }
 
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
@@ -1267,11 +1270,24 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         const profile_data = get_human_profile_data(fields_user_pills);
 
         const url = "/json/users/" + encodeURIComponent(user_id);
-        const data = {
-            full_name: $full_name.val(),
-            role: JSON.stringify(role),
-            profile_data: JSON.stringify(profile_data),
-        };
+
+        // Create FormData object
+        const formData = new FormData();
+        formData.append("full_name", $full_name.val() as string);
+        formData.append("role", JSON.stringify(role));
+        formData.append("profile_data", JSON.stringify(profile_data));
+
+        // Add avatar file if it exists
+        const $file_input = $<HTMLInputElement>(
+            "#edit-user-form #user-avatar-upload-widget input.image_file_input",
+        ).expectOne();
+        const files = util.the($file_input).files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file) {
+                formData.append("avatar_file", file);
+            }
+        }
 
         const $submit_button = $("#user-profile-modal .dialog_submit_button");
         const $cancel_button = $("#user-profile-modal .dialog_exit_button");
@@ -1280,7 +1296,9 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
 
         void channel.patch({
             url,
-            data,
+            data: formData,
+            processData: false,
+            contentType: false,
             success() {
                 $("#edit-user-form-error").hide();
                 hide_button_spinner($submit_button);
@@ -1567,20 +1585,4 @@ export function initialize(): void {
             show_check_icon: true,
         });
     });
-}
-
-function handle_avatar_upload(user_id: number): void {
-    const $form = $("#edit-user-form");
-    const $upload_button = $form
-        .find(".edit_user_avatar_upload_button")
-        .first() as JQuery<HTMLInputElement>;
-    upload_avatar($upload_button, $form, user_id);
-}
-
-function handle_delete_avatar(user_id: number): void {
-    const $form = $("#edit-user-form");
-    const $delete_button = $form
-        .find(".edit_user_avatar_delete_button")
-        .first() as JQuery<HTMLInputElement>;
-    upload_avatar($delete_button, $form);
 }
