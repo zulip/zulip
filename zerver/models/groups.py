@@ -120,6 +120,7 @@ class NamedUserGroup(UserGroup):
             allow_everyone_group=False,
             default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_join_group": GroupPermissionSetting(
             require_system_group=False,
@@ -128,6 +129,7 @@ class NamedUserGroup(UserGroup):
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
             default_for_system_groups=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_leave_group": GroupPermissionSetting(
             require_system_group=False,
@@ -136,6 +138,7 @@ class NamedUserGroup(UserGroup):
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_manage_group": GroupPermissionSetting(
             require_system_group=False,
@@ -144,6 +147,7 @@ class NamedUserGroup(UserGroup):
             allow_everyone_group=False,
             default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_mention_group": GroupPermissionSetting(
             require_system_group=False,
@@ -152,6 +156,7 @@ class NamedUserGroup(UserGroup):
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_remove_members_group": GroupPermissionSetting(
             require_system_group=False,
@@ -160,6 +165,7 @@ class NamedUserGroup(UserGroup):
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
             default_for_system_groups=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
     }
 
