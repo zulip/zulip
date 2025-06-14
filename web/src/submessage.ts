@@ -56,9 +56,7 @@ const inbound_data_event_schema = z.object({
     ),
 });
 
-const submessages_event_schema = z
-    .tuple([widget_data_event_schema])
-    .rest(inbound_data_event_schema);
+const submessages_event_schema = z.tuple([widget_data_event_schema], inbound_data_event_schema);
 
 type SubmessageEvents = z.infer<typeof submessages_event_schema>;
 
