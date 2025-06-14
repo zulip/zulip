@@ -128,12 +128,16 @@ export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
 }
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
-export function maybe_get_user_by_id(user_id: number, ignore_missing = false): User | undefined {
+export let maybe_get_user_by_id = (user_id: number, ignore_missing = false): User | undefined => {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error("Unknown user_id in maybe_get_user_by_id", {user_id});
         return undefined;
     }
     return people_by_user_id_dict.get(user_id);
+};
+
+export function rewire_maybe_get_user_by_id(value: typeof maybe_get_user_by_id): void {
+    maybe_get_user_by_id = value;
 }
 
 export function validate_user_ids(user_ids: number[]): number[] {
@@ -155,7 +159,7 @@ export function validate_user_ids(user_ids: number[]): number[] {
     return good_ids;
 }
 
-export let get_by_email = (email: string): User | undefined => {
+export function get_by_email(email: string): User | undefined {
     const person = people_dict.get(email);
 
     if (!person) {
@@ -169,10 +173,6 @@ export let get_by_email = (email: string): User | undefined => {
     }
 
     return person;
-};
-
-export function rewire_get_by_email(value: typeof get_by_email): void {
-    get_by_email = value;
 }
 
 export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
@@ -421,7 +421,7 @@ export function get_user_type(user_id: number): string | undefined {
 }
 
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
-    const emails = emails_string.split(",");
+    const emails = emails_string.split(",").map((email) => email.trim());
     return email_list_to_user_ids_string(emails);
 }
 
