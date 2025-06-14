@@ -40,6 +40,31 @@ function user_can_change_password(): boolean {
     return realm.realm_email_auth_enabled;
 }
 
+function user_can_change_role(): boolean {
+    if (current_user.is_owner && !people.is_current_user_only_owner()) {
+        return true;
+    } else if (current_user.is_admin && !current_user.is_owner) {
+        return true;
+    }
+    return false;
+}
+
+export function update_user_self_role_select_state(): void {
+    if (!user_can_change_role()) {
+        $("#user-self-role-select").attr("disabled", "true");
+    } else {
+        $("#user-self-role-select").attr("disabled", "false");
+    }
+}
+
+export function remove_owner_from_role_select(): void {
+    $("#user-self-role-select")
+        .find(
+            `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+        )
+        .hide();
+}
+
 export function update_lock_icon_in_sidebar(): void {
     if (current_user.is_owner) {
         $(".org-settings-list .locked").hide();
@@ -143,6 +168,8 @@ export function build_page(): void {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         user_can_change_password: user_can_change_password(),
+        user_can_change_role: user_can_change_role(),
+        user_role_values: settings_config.user_role_values,
         user_has_email_set: !settings_data.user_email_not_configured(),
         automatically_follow_topics_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
@@ -155,6 +182,12 @@ export function build_page(): void {
     });
 
     $(".settings-box").html(rendered_settings_tab);
+    // Set the default role of the user.
+    const current_user_role = people.get_by_user_id(current_user.user_id).role;
+    $("#user-self-role-select").val(current_user_role);
+    if (!current_user.is_owner) {
+        remove_owner_from_role_select();
+    }
     settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"));
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
 }

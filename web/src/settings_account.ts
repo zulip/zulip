@@ -909,4 +909,18 @@ export function set_up(): void {
             $("#account-settings .privacy-setting-status").expectOne(),
         );
     });
+
+    $<HTMLSelectElement>("select#user-self-role-select").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {role: this.value};
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/users/" + encodeURIComponent(current_user.user_id),
+            data,
+            $("#account-settings #account-settings-status").expectOne(),
+        );
+    });
 }
