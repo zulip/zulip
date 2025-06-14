@@ -261,6 +261,29 @@ exports.fixtures = {
         ],
     },
 
+    navigation_view__add: {
+        type: "navigation_view",
+        op: "add",
+        navigation_view: {
+            fragment: "narrow/has/reaction/sender/me",
+            is_pinned: true,
+            name: "My Reactions",
+        },
+    },
+
+    navigation_view__remove: {
+        type: "navigation_view",
+        op: "remove",
+        fragment: "narrow/has/reaction/sender/me",
+    },
+
+    navigation_view__update: {
+        type: "navigation_view",
+        op: "update",
+        fragment: "narrow/has/reaction/sender/me",
+        data: {is_pinned: false},
+    },
+
     onboarding_steps: {
         type: "onboarding_steps",
         onboarding_steps: [
