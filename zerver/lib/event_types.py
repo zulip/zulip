@@ -818,6 +818,7 @@ class EventScheduledMessagesUpdate(BaseEvent):
 class BasicStreamFields(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     creator_id: int | None
@@ -880,6 +881,7 @@ class EventSubmessage(BaseEvent):
 class SingleSubscription(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     creator_id: int | None
