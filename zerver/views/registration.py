@@ -390,6 +390,9 @@ def registration_helper(
                 context["uploaded_import_file_name"] = prereg_realm.data_import_metadata.get(
                     "uploaded_import_file_name"
                 )
+                context["invalid_file_error_message"] = prereg_realm.data_import_metadata.get(
+                    "invalid_file_error_message", ""
+                )
 
             return TemplateResponse(
                 request,
@@ -1055,7 +1058,22 @@ def realm_import_status(
         # TODO: Either store the path to the temporary conversion directory on
         # preregistration_realm.data_import_metadata, or have the conversion
         # process support writing updates to this for a better progress indicator.
-        return json_success(request, {"status": _("Converting Slack data…")})
+        if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
+            return json_success(
+                request, {"status": _("Converting Slack data… This may take a while.")}
+            )
+        elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
+            # Redirect user the file upload page if we have an error message to display.
+            result = {
+                "status": preregistration_realm.data_import_metadata.get(
+                    "invalid_file_error_message"
+                ),
+                "redirect": reverse(
+                    "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
+                ),
+            }
+            return json_success(request, result)
+        # TODO: If there is something we need to fix for the import, we should notify the user.
 
     if realm.deactivated:
         # These "if" cases are in the inverse order than they're done
@@ -1146,6 +1164,8 @@ def realm_import_post_process(
     if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
         return HttpResponseRedirect(get_safe_redirect_to(reverse("login"), realm.url))
 
+    # We need to use name since the email differs per org.
+    SLACK_BOT_NAME = "Slackbot"
     if request.method == "POST":
         form = ImportRealmOwnerSelectionForm(request.POST)
         if form.is_valid():
@@ -1170,6 +1190,8 @@ def realm_import_post_process(
 
             # Validate that a normal user account that can login was selected.
             importing_user = get_user_profile_by_id_in_realm(user_id, realm)
+            # Don't allow selecting Slackbot as the realm owner.
+            assert importing_user.full_name != SLACK_BOT_NAME
             assert (
                 importing_user.is_active
                 and not importing_user.is_bot
@@ -1203,8 +1225,10 @@ def realm_import_post_process(
                 generate_password_reset_url(importing_user, default_token_generator)
             )
 
-    claimable_users = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False
+    claimable_users = (
+        UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False)
+        .exclude(full_name=SLACK_BOT_NAME)
+        .order_by("full_name")
     )
     context = {
         "users": claimable_users,
