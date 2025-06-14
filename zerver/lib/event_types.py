@@ -289,13 +289,13 @@ class NavigationViewFields(BaseModel):
     name: str | None
 
 
-class EventNavigationViewsAdd(BaseEvent):
+class EventNavigationViewAdd(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["add"]
     navigation_view: NavigationViewFields
 
 
-class EventNavigationViewsRemove(BaseEvent):
+class EventNavigationViewRemove(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["remove"]
     fragment: str
@@ -306,7 +306,7 @@ class NavigationViewFieldsForUpdate(BaseModel):
     name: str | None = None
 
 
-class EventNavigationViewsUpdate(BaseEvent):
+class EventNavigationViewUpdate(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["update"]
     fragment: str
