@@ -1245,6 +1245,10 @@ def apply_event(
                                     for user_id in sub["subscribers"]
                                     if user_id != person_user_id
                                 ]
+                                sub["subscriber_count"] = len(sub["subscribers"])
+                                update_subscriber_count_for_streams(
+                                    state, sub["stream_id"], sub["subscriber_count"]
+                                )
 
                     for user_group in state["realm_user_groups"]:
                         user_group["members"] = [
@@ -1288,6 +1292,10 @@ def apply_event(
                         sub["subscribers"] = [
                             user_id for user_id in sub["subscribers"] if user_id != person_user_id
                         ]
+                        sub["subscriber_count"] = len(sub["subscribers"])
+                        update_subscriber_count_for_streams(
+                            state, sub["stream_id"], sub["subscriber_count"]
+                        )
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
@@ -1636,6 +1644,10 @@ def apply_event(
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) | user_ids
                             sub["subscribers"] = sorted(subscribers)
+                            sub["subscriber_count"] = len(subscribers)
+                            update_subscriber_count_for_streams(
+                                state, sub["stream_id"], sub["subscriber_count"]
+                            )
         elif event["op"] == "peer_remove":
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
@@ -1650,6 +1662,10 @@ def apply_event(
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) - user_ids
                             sub["subscribers"] = sorted(subscribers)
+                            sub["subscriber_count"] = len(subscribers)
+                            update_subscriber_count_for_streams(
+                                state, sub["stream_id"], sub["subscriber_count"]
+                            )
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
@@ -1926,6 +1942,14 @@ def apply_event(
         pass
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
+
+
+def update_subscriber_count_for_streams(
+    state: dict[str, Any], stream_id: int, subscriber_count: int
+) -> None:
+    for stream in state["streams"]:
+        if stream["stream_id"] == stream_id:
+            stream["subscriber_count"] = subscriber_count
 
 
 class ClientCapabilities(TypedDict):

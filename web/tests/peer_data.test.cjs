@@ -381,10 +381,11 @@ test("get_subscriber_count", () => {
         stream_id: 102,
         name: "India",
         subscribed: true,
+        subscriber_count: 0,
     };
     stream_data.clear_subscriptions();
 
-    blueslip.expect("warn", "We called get_loaded_subscriber_subset for an untracked stream: 102");
+    blueslip.expect("warn", "We called get_subscriber_count for an untracked stream: 102");
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
     stream_data.add_sub(india);
