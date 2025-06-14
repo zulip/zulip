@@ -64,6 +64,13 @@
     </div>
 
     {{> settings_checkbox
+      setting_name="web_left_sidebar_unreads_count_summary"
+      is_checked=settings_object.web_left_sidebar_unreads_count_summary
+      label=settings_label.web_left_sidebar_unreads_count_summary
+      render_only=settings_render_only.web_left_sidebar_unreads_count_summary
+      prefix=prefix}}
+
+    {{> settings_checkbox
       setting_name="starred_message_counts"
       is_checked=settings_object.starred_message_counts
       label=settings_label.starred_message_counts

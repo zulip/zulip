@@ -171,13 +171,13 @@ def create_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    name: Annotated[str, StringConstraints(strip_whitespace=True)] = "",
-    hint: str = "",
+    display_in_profile_summary: Json[bool] = False,
+    editable_by_user: Json[bool] = True,
     field_data: Json[ProfileFieldData] | None = None,
     field_type: Json[int],
-    display_in_profile_summary: Json[bool] = False,
+    hint: str = "",
+    name: Annotated[str, StringConstraints(strip_whitespace=True)] = "",
     required: Json[bool] = False,
-    editable_by_user: Json[bool] = True,
 ) -> HttpResponse:
     if field_data is None:
         field_data = {}
@@ -234,13 +234,13 @@ def update_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    field_id: PathOnly[int],
-    name: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None,
-    hint: str | None = None,
-    field_data: Json[ProfileFieldData] | None = None,
-    required: Json[bool] | None = None,
     display_in_profile_summary: Json[bool] | None = None,
     editable_by_user: Json[bool] | None = None,
+    field_data: Json[ProfileFieldData] | None = None,
+    field_id: PathOnly[int],
+    hint: str | None = None,
+    name: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None,
+    required: Json[bool] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     try:

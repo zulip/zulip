@@ -441,15 +441,15 @@ def patch_bot_backend(
     user_profile: UserProfile,
     *,
     bot_id: PathOnly[int],
-    full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
     bot_owner_id: Json[int] | None = None,
     config_data: Json[dict[str, str]] | None = None,
-    service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
-    service_interface: Json[int] = 1,
-    default_sending_stream: str | None = None,
-    default_events_register_stream: str | None = None,
     default_all_public_streams: Json[bool] | None = None,
+    default_events_register_stream: str | None = None,
+    default_sending_stream: str | None = None,
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    service_interface: Json[int] = 1,
+    service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -555,20 +555,20 @@ def add_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
-    short_name_raw: Annotated[str, ApiParamConfig("short_name")],
     bot_type: Json[int] = UserProfile.DEFAULT_BOT,
-    payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
-    service_name: str | None = None,
     config_data: Json[Mapping[str, str]] | None = None,
-    interface_type: Json[int] = Service.GENERIC,
-    default_sending_stream_name: Annotated[
-        str | None, ApiParamConfig("default_sending_stream")
-    ] = None,
+    default_all_public_streams: Json[bool] | None = None,
     default_events_register_stream_name: Annotated[
         str | None, ApiParamConfig("default_events_register_stream")
     ] = None,
-    default_all_public_streams: Json[bool] | None = None,
+    default_sending_stream_name: Annotated[
+        str | None, ApiParamConfig("default_sending_stream")
+    ] = None,
+    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
+    interface_type: Json[int] = Service.GENERIC,
+    payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
+    service_name: str | None = None,
+    short_name_raw: Annotated[str, ApiParamConfig("short_name")],
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}

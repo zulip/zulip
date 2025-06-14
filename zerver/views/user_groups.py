@@ -57,16 +57,16 @@ def add_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    name: str,
-    members: Json[list[int]],
-    description: str,
-    subgroups: Json[list[int]] | None = None,
     can_add_members_group: Json[int | UserGroupMembersData] | None = None,
     can_join_group: Json[int | UserGroupMembersData] | None = None,
     can_leave_group: Json[int | UserGroupMembersData] | None = None,
     can_manage_group: Json[int | UserGroupMembersData] | None = None,
     can_mention_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_members_group: Json[int | UserGroupMembersData] | None = None,
+    description: str,
+    members: Json[list[int]],
+    name: str,
+    subgroups: Json[list[int]] | None = None,
 ) -> HttpResponse:
     user_profile.realm.ensure_not_on_limited_plan()
     user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
@@ -131,9 +131,6 @@ def edit_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_group_id: PathOnly[int],
-    name: str | None = None,
-    description: str | None = None,
     can_add_members_group: Json[GroupSettingChangeRequest] | None = None,
     can_join_group: Json[GroupSettingChangeRequest] | None = None,
     can_leave_group: Json[GroupSettingChangeRequest] | None = None,
@@ -141,6 +138,9 @@ def edit_user_group(
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_members_group: Json[GroupSettingChangeRequest] | None = None,
     deactivated: Json[bool] | None = None,
+    description: str | None = None,
+    name: str | None = None,
+    user_group_id: PathOnly[int],
 ) -> HttpResponse:
     if (
         name is None
@@ -230,11 +230,11 @@ def update_user_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_group_id: PathOnly[Json[int]],
-    delete: Json[list[int]] | None = None,
     add: Json[list[int]] | None = None,
-    delete_subgroups: Json[list[int]] | None = None,
     add_subgroups: Json[list[int]] | None = None,
+    delete: Json[list[int]] | None = None,
+    delete_subgroups: Json[list[int]] | None = None,
+    user_group_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     if not add and not delete and not add_subgroups and not delete_subgroups:
         raise JsonableError(
