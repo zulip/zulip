@@ -657,7 +657,7 @@ class PreviewTestCase(ZulipTestCase):
     def test_link_preview_non_html_data(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
-        url = "http://test.org/audio.mp3"
+        url = "http://test.org/audio.wav"
         with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
             msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
@@ -673,14 +673,14 @@ class PreviewTestCase(ZulipTestCase):
                 FetchLinksEmbedData().consume(event)
                 cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
-                "INFO:root:Time spent on get_link_embed_data for http://test.org/audio.mp3: "
+                "INFO:root:Time spent on get_link_embed_data for http://test.org/audio.wav: "
                 in info_logs.output[0]
             )
 
         self.assertIsNone(cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            '<p><a href="http://test.org/audio.mp3">http://test.org/audio.mp3</a></p>',
+            '<p><a href="http://test.org/audio.wav">http://test.org/audio.wav</a></p>',
             msg.rendered_content,
         )
 
