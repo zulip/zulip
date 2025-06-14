@@ -54,6 +54,7 @@ mock_esm("../src/hash_util", {
 mock_esm("../src/stream_data", {
     is_subscribed: () => true,
     is_stream_archived: () => false,
+    user_can_move_messages_within_channel: () => true,
 });
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config() {

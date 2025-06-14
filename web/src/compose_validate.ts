@@ -459,7 +459,7 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
             return;
         }
 
-        const button_text = settings_data.user_can_move_messages_to_another_topic()
+        const button_text = stream_data.user_can_move_messages_within_channel(stream_id)
             ? $t({defaultMessage: "Unresolve topic"})
             : null;
 
