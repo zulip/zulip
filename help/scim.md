@@ -88,6 +88,26 @@ Zulip's SCIM integration has the following limitations:
        Zulip account to be updated accordingly.
      * Unassigning a user from the app will deactivate their Zulip account.
 
+1. Additionally, Zulip supports synchronization of [user groups](/help/user-groups)
+   as a new feature, currently in beta.
+   In your Okta Dashboard, open the **Application** you set up above for the
+   Zulip SCIM integration, and go to the **Push groups** tab. This menu allows you
+   to choose the Okta groups which should be synchronized with Zulip's user groups.
+     * When you set up an Okta group in this way, the SCIM integration will create
+       a user group in Zulip with the matching name and user memberships.
+     * When you add or remove users from the group in Okta, these changes will
+       be immediately be reflected in group memberships in Zulip.
+     * You can only enable synchronization of groups which do not yet exist in Zulip.
+       If you push a group whose name matches an existing Zulip group, the request
+       will fail.
+     * In order to ensure consistent state, do not modify
+       the name or memberships of SCIM-managed groups inside of Zulip. Such groups are
+       meant to be managed in Okta. Changes made on the Zulip side will not be reflected
+       in Okta and instead will cause the state of the Zulip group to become inconsistent
+       with the state of the Okta group.
+     * Note that while Zulip supports nested groups, Okta does not.
+       TODO: Elaborate on the consequences of that.
+
 {tab|entraid}
 
 {!upgrade-to-plus-if-needed.md!}
