@@ -12,8 +12,8 @@ import * as util from "./util.ts";
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 
-export const user_group_schema = raw_user_group_schema.extend({
-    // These are delivered via the API as lists, but converted to sets
+export const user_group_schema = z.object({
+    ...raw_user_group_schema.shape, // These are delivered via the API as lists, but converted to sets
     // during initialization for more convenient manipulation.
     members: z.set(z.number()),
     direct_subgroup_ids: z.set(z.number()),
