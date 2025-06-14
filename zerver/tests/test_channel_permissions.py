@@ -1,16 +1,18 @@
 import orjson
 from typing_extensions import override
 
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_group_based_setting
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.types import UserGroupMembersData
+from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.models import NamedUserGroup, Recipient, Stream, Subscription, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
@@ -746,3 +748,241 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.message_retention_days, 2)
+
+    def do_test_channel_administering_permission(
+        self, stream: Stream, property_name: str, new_value: str | int | bool
+    ) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        prospero = self.example_user("prospero")
+        polonius = self.example_user("polonius")
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        api_parameter_name_dict = dict(
+            name="new_name",
+            deactivated="is_archived",
+            invite_only="is_private",
+        )
+        api_parameter_name = property_name
+        if property_name in api_parameter_name_dict:
+            api_parameter_name = api_parameter_name_dict[property_name]
+
+        data = {}
+        if property_name in Stream.stream_permission_group_settings:
+            data[api_parameter_name] = orjson.dumps({"new": new_value}).decode()
+        elif not isinstance(new_value, str):
+            data[api_parameter_name] = orjson.dumps(new_value).decode()
+        else:
+            data[api_parameter_name] = new_value
+
+        default_error_msg = "You do not have permission to administer this channel."
+
+        def check_channel_property_update(
+            user: UserProfile, allow_fail: bool = False, error_msg: str = default_error_msg
+        ) -> None:
+            old_value = getattr(stream, property_name)
+            if property_name in Stream.stream_permission_group_settings:
+                if not hasattr(old_value, "named_user_group"):
+                    old_value = get_group_setting_value_for_api(old_value)
+                else:
+                    old_value = old_value.named_user_group
+
+            if property_name == "deactivated" and new_value is True:
+                # There is a separate endpoint for deactivating streams.
+                result = self.api_delete(user, f"/api/v1/streams/{stream.id}")
+            else:
+                result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
+
+            if allow_fail:
+                self.assert_json_error(result, error_msg)
+                return
+
+            self.assert_json_success(result)
+            stream.refresh_from_db()
+            if property_name in Stream.stream_permission_group_settings:
+                self.assertEqual(getattr(stream, property_name + "_id"), new_value)
+            else:
+                self.assertEqual(getattr(stream, property_name), new_value)
+
+            # Reset to original value
+            if property_name in Stream.stream_permission_group_settings:
+                do_change_stream_group_based_setting(
+                    stream, property_name, old_value, acting_user=iago
+                )
+            else:
+                setattr(stream, property_name, old_value)
+                stream.save(update_fields=[property_name])
+
+            # Reset history_public_to_subscribers field when stream
+            # is changed from private to public.
+            if not stream.invite_only and not stream.history_public_to_subscribers:
+                stream.history_public_to_subscribers = True
+                stream.save(update_fields=["history_public_to_subscribers"])
+
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", nobody_group, acting_user=iago
+        )
+        check_channel_property_update(shiva, allow_fail=True)
+        # Admins can always administer a channel.
+        check_channel_property_update(iago)
+
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", moderators_group, acting_user=iago
+        )
+        check_channel_property_update(hamlet, allow_fail=True)
+        check_channel_property_update(shiva)
+
+        if property_name == "is_web_public" and new_value is True:
+            # Members cannot create web-public channels, so
+            # we do not check permission for further cases.
+            return
+
+        # Check when administering permission is set to a user-defined group.
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", hamletcharacters_group, acting_user=iago
+        )
+
+        check_channel_property_update(shiva, allow_fail=True)
+        check_channel_property_update(hamlet)
+
+        # Check when administering permission is set to an anonymous groups.
+        anonymous_group_dict = UserGroupMembersData(
+            direct_members=[prospero.id, polonius.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", anonymous_group_dict, acting_user=iago
+        )
+        check_channel_property_update(hamlet, allow_fail=True)
+        check_channel_property_update(shiva, allow_fail=True)
+        check_channel_property_update(prospero)
+
+        # Check guests cannot update property even when they belong
+        # to "can_administer_channel_group".
+        check_channel_property_update(polonius, allow_fail=True, error_msg="Invalid channel ID")
+        self.subscribe(polonius, stream.name)
+        check_channel_property_update(polonius, allow_fail=True)
+        self.unsubscribe(polonius, stream.name)
+
+        # If stream is private, test which permissions require having
+        # content access to the channel. We do not test this for
+        # public streams since all non-guest users have content
+        # access to them.
+        if stream.invite_only:
+            # Unsubscribe user from private stream to test gaining
+            # content access from group settings.
+            self.unsubscribe(iago, stream.name)
+            self.unsubscribe(shiva, stream.name)
+            self.unsubscribe(hamlet, stream.name)
+            do_change_stream_group_based_setting(
+                stream, "can_administer_channel_group", members_group, acting_user=iago
+            )
+
+            if (
+                property_name
+                not in Stream.stream_permission_group_settings_requiring_content_access
+                and property_name != "invite_only"
+            ):
+                # Users without content access can modify properties not in
+                # stream_permission_group_settings_requiring_content_access
+                # can change privacy of non-private streams, and can archive
+                # or unarchive them.
+                check_channel_property_update(iago)
+                check_channel_property_update(shiva)
+                check_channel_property_update(hamlet)
+            else:
+                error_msg = "Channel content access is required."
+                # Even realm and channel admins need content access to a private
+                # channel for changing its privacy and to update the permissions
+                # in stream_permission_group_settings_requiring_content_access.
+                check_channel_property_update(iago, allow_fail=True, error_msg=error_msg)
+                check_channel_property_update(shiva, allow_fail=True, error_msg=error_msg)
+                check_channel_property_update(hamlet, allow_fail=True, error_msg=error_msg)
+
+                do_change_stream_group_based_setting(
+                    stream, "can_add_subscribers_group", moderators_group, acting_user=iago
+                )
+                check_channel_property_update(hamlet, allow_fail=True, error_msg=error_msg)
+                check_channel_property_update(iago)
+                check_channel_property_update(shiva)
+
+                do_change_stream_group_based_setting(
+                    stream, "can_subscribe_group", hamletcharacters_group, acting_user=iago
+                )
+                check_channel_property_update(hamlet)
+
+                # Reset the setting values to "Nobody" group.
+                do_change_stream_group_based_setting(
+                    stream, "can_add_subscribers_group", nobody_group, acting_user=iago
+                )
+                do_change_stream_group_based_setting(
+                    stream, "can_subscribe_group", nobody_group, acting_user=iago
+                )
+
+            self.subscribe(iago, stream.name)
+            self.subscribe(shiva, stream.name)
+            self.subscribe(hamlet, stream.name)
+
+    def test_channel_administering_permissions(self) -> None:
+        """
+        This test is only for checking channel administer permissions
+        while updating different channel properties. Other things
+        while updating these properties are tested separately.
+        """
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        public_stream = self.make_stream("test stream")
+
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        self.subscribe(iago, private_stream.name)
+        self.subscribe(self.example_user("shiva"), private_stream.name)
+        self.subscribe(self.example_user("hamlet"), private_stream.name)
+        self.subscribe(self.example_user("prospero"), private_stream.name)
+
+        channel_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+
+        for stream in [public_stream, private_stream]:
+            self.do_test_channel_administering_permission(stream, "name", "Renamed stream")
+            self.do_test_channel_administering_permission(
+                stream, "description", "Edited stream description"
+            )
+            self.do_test_channel_administering_permission(stream, "folder_id", channel_folder.id)
+
+            for setting_name in Stream.stream_permission_group_settings:
+                self.do_test_channel_administering_permission(
+                    stream, setting_name, hamletcharacters_group.id
+                )
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_create_web_public_channel_group", moderators_group, acting_user=None
+        )
+
+        # Test making a public stream private with protected history.
+        self.do_test_channel_administering_permission(public_stream, "invite_only", True)
+
+        # Test making a public stream web-public.
+        self.do_test_channel_administering_permission(public_stream, "is_web_public", True)
+
+        # Test making a private stream with protected history public.
+        self.do_test_channel_administering_permission(private_stream, "invite_only", False)
+
+        for stream in [public_stream, private_stream]:
+            self.do_test_channel_administering_permission(stream, "deactivated", True)
+
+            do_deactivate_stream(stream, acting_user=None)
+            self.do_test_channel_administering_permission(stream, "deactivated", False)
