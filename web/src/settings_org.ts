@@ -1349,6 +1349,16 @@ export function build_page(): void {
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
+    $(".org-permissions-form").on(
+        "input change",
+        ".time-limit-custom-input",
+        function (this: HTMLInputElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            settings_components.update_custom_time_limit_minute_text($(this));
+        },
+    );
+
     $(".settings-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
         if (keydown_util.is_enter_event(e)) {

@@ -122,6 +122,8 @@ IGNORED_PHRASES = [
     r"^cookie$",
     # Used to refer custom time limits
     r"\bN\b",
+    r"minute",
+    r"minutes",
     # Capital c feels obtrusive in clear status option
     r"clear",
     r"group direct messages with \{recipient\}",
@@ -278,6 +280,8 @@ def check_banned_words(text: str) -> list[str]:
                 or "realm_uri" in lower_cased_text
                 or "realm_url" in lower_cased_text
                 or "remote_realm_host" in lower_cased_text
+                or "realm_message" in lower_cased_text
+                or "realm_move" in lower_cased_text
             ):
                 continue
             kwargs = dict(word=word, text=text, reason=reason)
