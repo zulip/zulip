@@ -266,7 +266,6 @@ from zerver.views.video_calls import (
 )
 from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
-from zerver.views.user_avatar import update_user_avatar_backend
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
@@ -701,8 +700,6 @@ i18n_urls = [
     path("integrations/doc-html/<integration_name>", integration_doc),
     path("integrations/", integrations_view),
     path("integrations/<path:path>", integrations_view),
-    # Add this new pattern
-    path("json/users/<int:target_user_id>/avatar", update_user_avatar_backend),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
