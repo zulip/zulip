@@ -31,8 +31,6 @@ Additional tabs showing:
 - Their name.
 - Their email address, if you [have
   permission](/help/configure-email-visibility) to view it.
-- Their current [local time](/help/change-your-timezone).
-- Their [status and availability](/help/status-and-availability).
 - Any [custom profile fields](/help/custom-profile-fields) they've filled out.
 
 {end_tabs}
@@ -54,8 +52,6 @@ Additional tabs showing:
 {tab|mobile}
 
 1. Tap on a user's profile picture or name.
-
-{!mobile-view-user-profile-tip.md!}
 
 {end_tabs}
 

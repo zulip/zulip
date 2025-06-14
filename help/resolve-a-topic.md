@@ -59,7 +59,7 @@ topics](/help/restrict-moving-messages).
 
 {!topic-long-press-menu.md!}
 
-1. Tap **Resolve topic**.
+1. Tap **Mark as resolved**.
 
 {!topic-long-press-menu-tip.md!}
 
@@ -89,7 +89,7 @@ accident.
 
 {!topic-long-press-menu.md!}
 
-1. Tap **Unresolve topic**.
+1. Tap **Mark as unresolved**.
 
 {!topic-long-press-menu-tip.md!}
 

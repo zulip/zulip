@@ -18,8 +18,9 @@
 
 {tab|mobile}
 
-1. Tap the **Starred messages**
-   (<img src="/static/images/help/mobile-star-icon.svg" alt="star" class="help-center-icon"/>)
-   tab at the top of the app.
+1. Tap the **Menu** (<i class="zulip-icon zulip-icon-mobile-menu mobile-help"></i>)
+   tab in the bottom right corner of the app.
+
+1. Tap <i class="zulip-icon zulip-icon-star mobile-help"></i> **Starred messages**.
 
 {end_tabs}

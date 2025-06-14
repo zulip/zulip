@@ -91,13 +91,15 @@ from the **Zulip** menu in the top menu bar.
 
 {tab|mobile}
 
-{!mobile-profile-menu.md!}
+1. Tap the **Menu** (<i class="zulip-icon zulip-icon-mobile-menu mobile-help"></i>)
+   tab in the bottom right corner of the app.
 
-1. Tap **Switch account**.
+1. Tap <i class="zulip-icon zulip-icon-mobile-arrow-left-right mobile-help"></i>
+   **Switch account**.
 
 1. Tap **Add new account**.
 
-1. Enter the Zulip URL of the organization, and tap **Enter**.
+1. Enter the Zulip URL of the organization, and tap **Continue**.
 
 1. Follow the on-screen instructions.
 
