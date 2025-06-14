@@ -71,6 +71,9 @@ export function initialize(): void {
     });
 
     $("#main_div").on("mouseover", ".sender_info_hover", function (this: HTMLElement) {
+        if (this.closest(".muted_message_sender")) {
+            return;
+        }
         const $row = $(this).closest(".message_row");
         $row.addClass("sender_info_hovered");
     });
