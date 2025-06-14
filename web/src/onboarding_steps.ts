@@ -8,8 +8,9 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
+import type * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
-import type {NarrowTerm, StateData, onboarding_step_schema} from "./state_data.ts";
+import type {StateData, onboarding_step_schema} from "./state_data.ts";
 import * as util from "./util.ts";
 
 export type OnboardingStep = z.output<typeof onboarding_step_schema>;
@@ -56,7 +57,7 @@ export function update_onboarding_steps_to_display(onboarding_steps: OnboardingS
 
 function narrow_to_dm_with_welcome_bot_new_user(
     onboarding_steps: OnboardingStep[],
-    show_message_view: (raw_terms: NarrowTerm[], opts: {trigger: string}) => void,
+    show_message_view: typeof message_view.show,
 ): void {
     if (
         onboarding_steps.some(
@@ -168,10 +169,9 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
 
 export function initialize(
     params: StateData["onboarding_steps"],
-    navigation_tour_video_url: StateData["navigation_tour_video_url"],
-    show_message_view: (raw_terms: NarrowTerm[], opts: {trigger: string}) => void,
+    {show_message_view}: {show_message_view: typeof message_view.show},
 ): void {
     update_onboarding_steps_to_display(params.onboarding_steps);
     narrow_to_dm_with_welcome_bot_new_user(params.onboarding_steps, show_message_view);
-    show_navigation_tour_video(navigation_tour_video_url);
+    show_navigation_tour_video(params.navigation_tour_video_url);
 }
