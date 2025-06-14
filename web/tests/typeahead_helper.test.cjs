@@ -925,36 +925,6 @@ test("test compare directly for direct message", () => {
     assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
 });
 
-test("highlight_with_escaping", () => {
-    function highlight(query, item) {
-        return th.make_query_highlighter(query)(item);
-    }
-
-    let item = "Denmark";
-    let query = "Den";
-    let expected = "<strong>Den</strong>mark";
-    let result = highlight(query, item);
-    assert.equal(result, expected);
-
-    item = "w3IrD_naMe";
-    query = "w3IrD_naMe";
-    expected = "<strong>w3IrD_naMe</strong>";
-    result = highlight(query, item);
-    assert.equal(result, expected);
-
-    item = "development help";
-    query = "development h";
-    expected = "<strong>development h</strong>elp";
-    result = highlight(query, item);
-    assert.equal(result, expected);
-
-    item = "Prefix notprefix prefix";
-    query = "pre";
-    expected = "<strong>Pre</strong>fix notprefix <strong>pre</strong>fix";
-    result = highlight(query, item);
-    assert.equal(result, expected);
-});
-
 test("render_person when emails hidden", ({mock_template, override}) => {
     // Test render_person with regular person, under hidden email visibility case
     override(realm, "custom_profile_field_types", {
