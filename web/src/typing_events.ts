@@ -31,27 +31,26 @@ export const typing_user_schema = z.object({
     user_id: z.number(),
 });
 
-export const typing_event_schema = z
-    .object({
+export const typing_event_schema = z.intersection(
+    z.object({
         id: z.number(),
         op: z.enum(["start", "stop"]),
         type: z.literal("typing"),
-    })
-    .and(
-        z.discriminatedUnion("message_type", [
-            z.object({
-                message_type: z.literal("stream"),
-                sender: typing_user_schema,
-                stream_id: z.number(),
-                topic: z.string(),
-            }),
-            z.object({
-                message_type: z.literal("direct"),
-                recipients: z.array(typing_user_schema),
-                sender: typing_user_schema,
-            }),
-        ]),
-    );
+    }),
+    z.discriminatedUnion("message_type", [
+        z.object({
+            message_type: z.literal("stream"),
+            sender: typing_user_schema,
+            stream_id: z.number(),
+            topic: z.string(),
+        }),
+        z.object({
+            message_type: z.literal("direct"),
+            recipients: z.array(typing_user_schema),
+            sender: typing_user_schema,
+        }),
+    ]),
+);
 type TypingEvent = z.output<typeof typing_event_schema>;
 
 export const typing_edit_message_event_schema = z.object({

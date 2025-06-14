@@ -30,7 +30,8 @@ import * as stream_events from "./stream_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 
-export const user_update_schema = z.object({user_id: z.number()}).and(
+export const user_update_schema = z.intersection(
+    z.object({user_id: z.number()}),
     z.union([
         z.object({
             avatar_source: z.string(),

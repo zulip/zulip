@@ -50,7 +50,8 @@ export type UpdateMessageEvent = z.output<typeof update_message_event_schema>;
 
 export const message_details_schema = z.record(
     z.coerce.number<string>(),
-    z.object({mentioned: z.optional(z.boolean())}).and(
+    z.intersection(
+        z.object({mentioned: z.optional(z.boolean())}),
         z.discriminatedUnion("type", [
             z.object({type: z.literal("private"), user_ids: z.array(z.number())}),
             z.object({
