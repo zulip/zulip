@@ -81,6 +81,10 @@ tippy.default.setDefaultProps({
     content: get_tooltip_content,
 });
 
+// We store tippy instance for `.status-emoji-name` so that we can
+// hide it when tippy typeahead instance is destroyed.
+export let status_emoji_tippy_instance: tippy.Instance | undefined;
+
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
     appendTo: () => document.body,
@@ -585,8 +589,16 @@ export function initialize(): void {
             avoid problematic interactions with the main tooltips for
             those regions.
         */
+        onShow(instance) {
+            // Check if instance is inside typeahead so that we don't
+            // close other tooltip instances.
+            if (instance.reference.parentElement?.className === "typeahead-text-container") {
+                status_emoji_tippy_instance = instance;
+            }
+        },
 
         onHidden(instance) {
+            status_emoji_tippy_instance = undefined;
             instance.destroy();
         },
     });
