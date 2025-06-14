@@ -16063,8 +16063,25 @@ paths:
                                 such filtering.
 
                                 **Changes**: New in Zulip 8.0 (feature level 207).
-                            config_options:
-                              $ref: "#/components/schemas/WebhookConfigOption"
+                            url_options:
+                              allOf:
+                                - description: |
+                                    An array of configuration options where each option is an
+                                    object containing a unique identifier, a human-readable name,
+                                    and a validation function name hinting how to verify the
+                                    correct input format.
+
+                                    These options will be displayed in the integrations' "Generate
+                                    integration URL" modal and the users inputs will be included in
+                                    the integrations' webhook URL.
+
+                                    This is an unstable API expected to be used only by the Zulip web
+                                    apps. Please discuss in chat.zulip.org before using it.
+
+                                    **Changes**: In Zulip 11.0 (feature level ZF-f9d19d), renamed
+                                    `config_options` to `url_options`. The field was renamed to avoid
+                                    confusion with other implementations of `config_options`.
+                                - $ref: "#/components/schemas/WebhookConfigOption"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -24233,7 +24250,7 @@ components:
           key:
             type: string
             description: |
-              A key for the configuration option to use in generated URLs.
+              A key for the configuration option.
           label:
             type: string
             description: |
