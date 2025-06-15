@@ -73,6 +73,7 @@ const group_setting_widget_map = new Map<string, GroupSettingPillContainer | nul
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
     ["can_remove_subscribers_group", null],
+    ["can_resolve_topics_group", null],
     ["can_send_message_group", null],
 ]);
 
