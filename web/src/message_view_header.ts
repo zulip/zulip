@@ -6,7 +6,7 @@ import render_message_view_header from "../templates/message_view_header.hbs";
 
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t, $t_html} from "./i18n.ts";
+import {$t} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
@@ -122,12 +122,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             context = {
                 ...context,
                 title: undefined,
-                html_title: $t_html(
-                    {defaultMessage: "All topics in <z-channel></z-channel>"},
-                    {
-                        "z-channel": () => stream_name_with_privacy_symbol_html,
-                    },
-                ),
+                html_title: stream_name_with_privacy_symbol_html,
                 // We don't want to show an initial icon here.
                 icon: undefined,
                 zulip_icon: undefined,

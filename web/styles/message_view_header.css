@@ -64,6 +64,10 @@
         flex: 0 1 auto;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        .channel-privacy-type-icon {
+            width: auto;
+        }
     }
 
     .message-header-archived {
