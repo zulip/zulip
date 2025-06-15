@@ -1,5 +1,9 @@
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.topic_link_util import get_stream_link_syntax, get_stream_topic_link_syntax
+from zerver.lib.topic_link_util import (
+    get_fallback_markdown_link,
+    get_stream_link_syntax,
+    get_stream_topic_link_syntax,
+)
 
 
 class TestTopicLinkUtil(ZulipTestCase):
@@ -67,4 +71,24 @@ class TestTopicLinkUtil(ZulipTestCase):
         self.assertEqual(
             get_stream_topic_link_syntax(sweden_id, "Sweden", "&a[b"),
             f"[#Sweden > &amp;a&#91;b](#narrow/channel/{sweden_id}-Sweden/topic/.26a.5Bb)",
+        )
+        self.assertEqual(get_stream_topic_link_syntax(sweden_id, "Sweden", ""), "#**Sweden>**")
+
+    def test_get_fallback_markdown_link(self) -> None:
+        """
+        Return different links for topic value of `None`, empty string
+        and some string value.
+        """
+        stream_id = self.make_stream("Sweden").id
+        self.assertEqual(
+            get_fallback_markdown_link(stream_id, "Sweden", ""),
+            f"[#Sweden > ](#narrow/channel/{stream_id}-Sweden/topic/)",
+        )
+        self.assertEqual(
+            get_fallback_markdown_link(stream_id, "Sweden", None),
+            f"[#Sweden](#narrow/channel/{stream_id}-Sweden)",
+        )
+        self.assertEqual(
+            get_fallback_markdown_link(stream_id, "Sweden", "test"),
+            f"[#Sweden > test](#narrow/channel/{stream_id}-Sweden/topic/test)",
         )

@@ -44,20 +44,28 @@ def encode_hash_component(s: str) -> str:
 
 def channel_topic_url(stream_id: int, stream_name: str, topic_name: str | None = None) -> str:
     link = f"#narrow/channel/{stream_id}-{encode_hash_component(stream_name.replace(' ', '-'))}"
-    if topic_name:
+    if topic_name is not None:
         link += f"/topic/{encode_hash_component(topic_name)}"
     return link
 
 
 def get_fallback_markdown_link(
-    stream_id: int, stream_name: str, topic_name: str | None = None
+    stream_id: int,
+    stream_name: str,
+    topic_name: str | None = None,
+    message_id: int | None = None,
 ) -> str:
     """
     Generates the markdown link syntax for a stream or topic link.
+    Same as get_topic_link_content in topic_link_util.ts.
     """
     escape = escape_invalid_stream_topic_characters
     url = channel_topic_url(stream_id, stream_name, topic_name)
-    if topic_name:
+
+    if topic_name is not None:
+        if message_id is not None:
+            return f"[#{escape(stream_name)} > {escape(topic_name)} @ 💬]({url}/near/{message_id})"
+
         return f"[#{escape(stream_name)} > {escape(topic_name)}]({url})"
 
     return f"[#{escape(stream_name)}]({url})"
