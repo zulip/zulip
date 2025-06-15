@@ -29,7 +29,13 @@ function get_conversation(instance: tippy.Instance): {
     let topic_name;
     let url;
 
-    if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
+    if (instance.reference.classList.contains("recipient-bar-control")) {
+        const $elt = $(instance.reference);
+        const $recipient_bar_controls = $elt.closest(".recipient_bar_controls").expectOne();
+        stream_id = Number.parseInt($recipient_bar_controls.attr("data-stream-id")!, 10);
+        topic_name = $recipient_bar_controls.attr("data-topic-name")!;
+        url = new URL($recipient_bar_controls.attr("data-topic-url")!, realm.realm_url).href;
+    } else if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
         const $elt = $(instance.reference);
         stream_id = Number.parseInt($elt.attr("data-stream-id")!, 10);
         topic_name = $elt.attr("data-topic-name")!;

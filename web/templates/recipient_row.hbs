@@ -1,5 +1,5 @@
 {{#if is_stream}}
-<div class="message_header message_header_stream right_part" data-stream-id="{{stream_id}}">
+<div class="message_header message_header_stream right_part" data-stream-id="{{stream_id}}" {{#if topic}}data-topic-name="{{topic}}"{{/if}}>
     <div class="message-header-contents" style="background: {{recipient_bar_color}};">
         {{! stream link }}
         <a class="message_label_clickable narrows_by_recipient stream_label tippy-narrow-tooltip"
@@ -35,50 +35,52 @@
                 {{/if}}
             </a>
         </span>
-        <span class="recipient_bar_controls no-select">
+        <span class="recipient_bar_controls no-select" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}">
             <span class="topic_edit hidden-for-spectators"></span>
 
             {{! exterior links (e.g. to a trac ticket) }}
             {{#each topic_links}}
-                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="external-topic-link recipient-bar-control no-underline">
-                    <i class="fa fa-external-link-square recipient_bar_icon" data-tippy-content="Open {{this.text}}" aria-label="{{t 'External link' }}"></i>
-                </a>
+                {{> components/icon_button icon="external-link" intent="neutral" custom_classes="external-topic-link recipient-bar-control recipient-bar-control-icon" data-url=this.url data-tippy-content=this.text aria-label="{{t 'External link' }}" }}
             {{/each}}
 
             {{! edit topic pencil icon }}
             {{#if is_topic_editable}}
-                <i class="fa fa-pencil on_hover_topic_edit recipient-bar-control recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
+                {{> components/icon_button icon="edit" intent="neutral" custom_classes="on_hover_topic_edit recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Edit topic") aria-label=(t "Edit topic") }}
             {{/if}}
 
             {{#if (and user_can_resolve_topic (not is_empty_string_topic))}}
                 {{#if topic_is_resolved}}
-                    <i class="fa fa-check on_hover_topic_unresolve recipient-bar-control recipient_bar_icon hidden-for-spectators" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as unresolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as unresolved' }}"></i>
+                    {{> components/icon_button icon="check-x" intent="neutral" custom_classes="on_hover_topic_unresolve recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Mark as unresolved") aria-label=(t "Mark as unresolved") }}
                 {{else}}
-                    <i class="fa fa-check on_hover_topic_resolve recipient-bar-control recipient_bar_icon hidden-for-spectators" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as resolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as resolved' }}"></i>
+                    {{> components/icon_button icon="check" intent="neutral" custom_classes="on_hover_topic_resolve recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Mark as resolved") aria-label=(t "Mark as resolved") }}
                 {{/if}}
-                <div class="toggle_resolve_topic_spinner recipient_bar_icon" style="display: none"></div>
             {{/if}}
 
+            {{! visibility policy menu }}
             {{#if (and is_subscribed (not is_archived))}}
-                <span class="change_visibility_policy recipient-bar-control hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
-                    {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
-                        <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic.' }}"></i>
-                    {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                        <i class="zulip-icon zulip-icon-unmute recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic.'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic.' }}"></i>
-                    {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                        <i class="zulip-icon zulip-icon-mute recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic.'}}"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have muted this topic.' }}"></i>
-                    {{else}}
-                        <i class="zulip-icon zulip-icon-inherit recipient_bar_icon"
-                          role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'Notifications are based on your configuration for this channel.' }}"></i>
-                    {{/if}}
-                </span>
+            {{!-- We define the change_visibility_policy class in a wrapper span
+            since the icon button component already has a tippy tooltip attached
+            to it and attaching the topic actions menu popover to it causes buggy behavior. --}}
+            <span class="change_visibility_policy recipient-bar-control" aria-haspopup="true">
+                {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
+                    {{> components/icon_button icon="follow" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "You follow this topic.") aria-label=(t "You follow this topic.") }}
+                {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
+                    {{> components/icon_button icon="unmute" intent="neutral" custom_classes="recipient-bar-control recipient-bar-control-icon" data-tippy-content=(t "You have unmuted this topic.") aria-label=(t "You have unmuted this topic.") }}
+                {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
+                    {{> components/icon_button icon="mute" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "You have muted this topic.") aria-label=(t "You have muted this topic.") }}
+                {{else}}
+                    {{> components/icon_button icon="inherit" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "Notifications are based on your configuration for this channel.") aria-label=(t "Notifications are based on your configuration for this channel.") }}
+                {{/if}}
+            </span>
             {{/if}}
 
             {{! Topic menu }}
-            <i class="zulip-icon zulip-icon-more-vertical recipient-row-topic-menu recipient-bar-control recipient_bar_icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}"></i>
+            {{!-- We define the recipient-row-topic-menu class in a wrapper span
+            since the icon button component already has a tippy tooltip attached
+            to it and attaching the topic actions menu popover to it causes buggy behavior. --}}
+            <span class="recipient-row-topic-menu recipient-bar-control" aria-haspopup="true">
+                {{> components/icon_button icon="more-vertical" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "Topic actions") aria-label=(t "Topic actions") }}
+            </span>
         </span>
         <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
