@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
 from zerver.lib.cache import flush_stream
+from zerver.lib.exceptions import StreamExistsError
 from zerver.lib.types import GroupPermissionSetting
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.groups import SystemGroups, UserGroup
@@ -260,6 +261,11 @@ class Stream(models.Model):
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
+
+
+def ensure_stream_does_not_exist_already(stream_name: str, realm: Realm) -> None:
+    if Stream.objects.filter(name__iexact=stream_name.strip(), realm_id=realm.id).exists():
+        raise StreamExistsError(stream_name)
 
 
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
