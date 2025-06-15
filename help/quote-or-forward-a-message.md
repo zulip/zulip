@@ -40,6 +40,9 @@ unnecessarily mentioning someone twice.
 
 {tab|mobile}
 
+1. If you're in not in the topic view of the message you want to
+   quote, tap the topic name.
+
 {!message-long-press-menu.md!}
 
 1. Tap **Quote message**.
@@ -77,6 +80,11 @@ unnecessarily mentioning someone twice.
 
 {tab|mobile}
 
+1. If you're not in the channel view of the message you want to forward,
+   tap the channel name in the message feed or tap the **Channel feed**
+   <i class="zulip-icon zulip-icon-all-messages mobile-help"></i> icon
+   in the bar at the top of the app.
+
 {!message-long-press-menu.md!}
 
 1. Tap **Quote message**.
@@ -84,8 +92,8 @@ unnecessarily mentioning someone twice.
 1. *(optional)* Delete any parts of the quoted message that you don't want to
    forward.
 
-1. If you are in a channel view, choose a destination topic by tapping the
-   compose box and selecting an existing topic or typing a new topic name.
+1. Choose a destination topic by tapping the compose box and selecting an
+   existing topic or typing a new topic name.
 
 1. Send your message.
 
