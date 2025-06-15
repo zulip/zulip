@@ -86,6 +86,7 @@ class StreamDict(TypedDict, total=False):
     message_retention_days: int | None
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
+    can_move_messages_within_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
     can_subscribe_group: UserGroup | None
@@ -264,6 +265,7 @@ def create_stream_if_needed(
     message_retention_days: int | None = None,
     can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
+    can_move_messages_within_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
@@ -384,6 +386,9 @@ def create_streams_if_needed(
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
+            can_move_messages_within_channel_group=stream_dict.get(
+                "can_move_messages_within_channel_group", None
+            ),
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
@@ -1061,6 +1066,18 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
     return can_access_stream_history(user_profile, stream)
 
 
+def can_move_messages_within_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    if user_profile.is_realm_admin or can_administer_accessible_channel(stream, user_profile):
+        return True
+
+    return user_has_permission_for_group_setting(
+        stream.can_move_messages_within_channel_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_move_messages_within_channel_group"],
+        direct_member_only=False,
+    )
+
+
 def bulk_can_remove_subscribers_from_streams(
     streams: list[Stream], user_profile: UserProfile
 ) -> bool:
@@ -1487,6 +1504,9 @@ def stream_to_dict(
     can_administer_channel_group = get_group_setting_value_for_register_api(
         stream.can_administer_channel_group_id, anonymous_group_membership
     )
+    can_move_messages_within_channel_group = get_group_setting_value_for_register_api(
+        stream.can_move_messages_within_channel_group_id, anonymous_group_membership
+    )
     can_send_message_group = get_group_setting_value_for_register_api(
         stream.can_send_message_group_id, anonymous_group_membership
     )
@@ -1505,6 +1525,7 @@ def stream_to_dict(
         is_archived=stream.deactivated,
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
         can_subscribe_group=can_subscribe_group,

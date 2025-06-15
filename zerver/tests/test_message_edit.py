@@ -1440,13 +1440,13 @@ class EditMessageTest(ZulipTestCase):
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
-        # even owners and admins cannot edit the topics of messages
         set_message_editing_params(True, "unlimited", nobody_system_group)
+        # owners and admins are allowed to edit the topics via channel-level
+        # `can_move_messages_within_channel_group` permission
+        do_edit_message_assert_success(id_, "H", "desdemona")
+        do_edit_message_assert_success(id_, "I", "iago")
         do_edit_message_assert_error(
-            id_, "H", "You don't have permission to edit this message", "desdemona"
-        )
-        do_edit_message_assert_error(
-            id_, "H", "You don't have permission to edit this message", "iago"
+            id_, "E", "You don't have permission to edit this message", "shiva"
         )
 
         # users can edit topics even if allow_message_editing is False
@@ -1492,9 +1492,9 @@ class EditMessageTest(ZulipTestCase):
         # Polonius and Cordelia are in the allowed user group, so can move messages.
         do_edit_message_assert_success(id_, "I", "polonius")
         do_edit_message_assert_success(id_, "J", "cordelia")
-        # Iago is not in the allowed user group, so cannot move messages.
+        # Hamlet is not in the allowed user group, so cannot move messages.
         do_edit_message_assert_error(
-            id_, "K", "You don't have permission to edit this message", "iago"
+            id_, "K", "You don't have permission to edit this message", "hamlet"
         )
 
         # Test for checking the setting for anonymous user group.
