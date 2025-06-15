@@ -42,8 +42,8 @@ Zulip Cloud organizations are always updated to the latest version of Zulip.
 
 ## Zulip desktop app version
 
-The [Zulip desktop app](/apps/) has an independent version from the server and
-web app.
+The [Zulip desktop and mobile apps](/apps/) have an independent version from the
+server and web app.
 
 ### View Zulip desktop app version
 
@@ -51,6 +51,17 @@ web app.
 
 1. Click on the **Help** menu in the desktop app. The app version is shown in the
    dropdown: **Zulip Desktop v...**
+
+{end_tabs}
+
+### View Zulip mobile app version
+
+{start_tabs}
+
+1. Tap the **Menu** (<i class="zulip-icon zulip-icon-mobile-menu mobile-help"></i>)
+   tab in the bottom right corner of the app.
+
+1. Tap <i class="zulip-icon zulip-icon-info mobile-help"></i> **About Zulip**.
 
 {end_tabs}
 
