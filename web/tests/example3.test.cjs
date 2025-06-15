@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -84,14 +85,8 @@ run_test("narrow_state", () => {
         {operator: "topic", operand: "copenhagen"},
     ];
 
-    const filter = new Filter(filter_terms);
-
     // And here is where we actually change state.
-    message_lists.set_current({
-        data: {
-            filter,
-        },
-    });
+    message_lists.set_current(make_message_list(filter_terms));
     assert.equal(narrow_state.stream_name(), "Denmark");
     assert.equal(narrow_state.topic(), "copenhagen");
 });
