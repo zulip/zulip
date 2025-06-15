@@ -288,6 +288,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $events_container: $("#generate-integration-url-modal"),
             default_id: default_integration_option.unique_id,
             unique_id_type: "string",
+            keep_focus_on_search: true,
         });
         integration_input_dropdown_widget.setup();
 
@@ -332,6 +333,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $events_container: $("#generate-integration-url-modal"),
             default_id: direct_messages_option.unique_id,
             unique_id_type: "number",
+            keep_focus_on_search: true,
         });
         stream_input_dropdown_widget.setup();
 

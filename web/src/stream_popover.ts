@@ -1004,6 +1004,7 @@ export async function build_move_topic_to_stream_popover(
             get_options: streams_list_options,
             item_click_callback: move_topic_on_update,
             $events_container: $("#move_topic_modal"),
+            keep_focus_on_search: true,
             tippy_props: {
                 // Show dropdown search input below stream selection button.
                 offset: [0, 2],
