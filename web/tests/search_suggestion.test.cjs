@@ -697,8 +697,8 @@ test("topic_suggestions", ({override, mock_template}) => {
         "dm:ted@zulip.com",
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
-        `channel:${office_id} topic:team`,
-        `channel:${office_id} topic:test`,
+        `topic:team`,
+        `topic:test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -706,7 +706,6 @@ test("topic_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for <strong>te</strong>");
-    assert.equal(describe(`channel:${office_id} topic:team`), "Channel office > team");
 
     suggestions = get_suggestions(`topic:staplers channel:${office_id}`);
     expected = [`topic:staplers channel:${office_id}`, "topic:staplers"];
@@ -729,11 +728,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("-topic:te");
-    expected = [
-        "-topic:te",
-        `channel:${office_id} -topic:team`,
-        `channel:${office_id} -topic:test`,
-    ];
+    expected = ["-topic:te", `-topic:team`, `-topic:test`];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions(`is:alerted channel:${devel_id} is:starred topic:`);
@@ -756,6 +751,51 @@ test("topic_suggestions", ({override, mock_template}) => {
         `topic:REXX channel:${devel_id}`,
         "topic:REXX",
     ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions("topic:");
+    expected = ["topic:", "topic:ignore", `topic:team`, `topic:test`];
+    assert.deepEqual(suggestions.strings, expected);
+    override(narrow_state, "stream_id", () => "");
+
+    for (const topic_name of ["a", "b", "c", "trap", "talks", "tower"]) {
+        stream_topic_history.add_message({
+            stream_id: devel_id,
+            topic_name,
+        });
+    }
+
+    stream_data.subscribe_myself(stream_data.get_sub("devel"));
+    stream_data.subscribe_myself(stream_data.get_sub("office"));
+    suggestions = get_suggestions("topic:");
+    expected = [
+        "topic:",
+        "topic:a",
+        "topic:b",
+        "topic:c",
+        "topic:ignore",
+        "topic:REXX",
+        "topic:talks",
+        "topic:team",
+        "topic:test",
+        "topic:tower",
+        "topic:trap",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions("topic:t");
+    expected = ["topic:t", "topic:team", "topic:test", "topic:trap", "topic:talks", "topic:tower"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Prioritize topics from currently narrowed channel
+    override(narrow_state, "stream_id", () => devel_id);
+    suggestions = get_suggestions("topic:t");
+    expected = ["topic:t", "topic:trap", "topic:talks", "topic:tower", "topic:team", "topic:test"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    override(narrow_state, "stream_id", () => office_id);
+    suggestions = get_suggestions("topic:t");
+    expected = ["topic:t", "topic:team", "topic:test", "topic:trap", "topic:talks", "topic:tower"];
     assert.deepEqual(suggestions.strings, expected);
 });
 
