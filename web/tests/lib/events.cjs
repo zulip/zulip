@@ -1178,6 +1178,13 @@ exports.fixtures = {
         value: "recent_topics",
     },
 
+    user_settings__web_left_sidebar_unreads_count_summary: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_unreads_count_summary",
+        value: false,
+    },
+
     user_settings__web_line_height_percent: {
         type: "user_settings",
         op: "update",
