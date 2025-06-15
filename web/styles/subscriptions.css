@@ -68,6 +68,7 @@
 
 #add_new_user_group {
     height: var(--settings-overlay-header-button-height);
+    margin-top: 0.5em; /* 8px at 16px/em */
 }
 
 .two-pane-settings-plus-button {
@@ -356,7 +357,7 @@ h4.user_group_setting_subsection_title {
    differentiating from the main container styles below. */
 .two-pane-settings-container.overlay-container {
     .list-toggler-container {
-        align-items: center;
+        align-items: flex-start;
         padding: 0 8px;
         border-bottom: 1px solid var(--color-border-modal-bar);
         display: flex;
@@ -370,10 +371,11 @@ h4.user_group_setting_subsection_title {
 
     #add_new_subscription {
         height: var(--settings-overlay-header-button-height);
+        margin-top: 0.5em; /* 8px at 16px/em */
     }
 
     .display-type {
-        height: var(--settings-overlay-subheader-height);
+        min-height: var(--settings-overlay-subheader-height);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -408,6 +410,7 @@ h4.user_group_setting_subsection_title {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            margin: 0.4em; /* 7px at 16px/em */
 
             &.showing-info-title {
                 display: -webkit-box;
@@ -452,6 +455,7 @@ h4.user_group_setting_subsection_title {
 
             .tab-switcher {
                 margin-right: 0;
+                margin-top: 0.1875em; /* 3px at 16px/em */
             }
 
             .tab-switcher:first-child {
@@ -459,6 +463,11 @@ h4.user_group_setting_subsection_title {
                 width: 100%;
                 display: flex;
                 justify-content: end;
+            }
+
+            .stream_sorter_toggle,
+            #add_new_subscription {
+                margin-top: 0.125em; /* 2px at 16px/em */
             }
         }
 
@@ -674,7 +683,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .deactivated-user-group-icon-right {
-    margin-left: 3px;
+    margin: 0 3px;
     opacity: 0.6;
 }
 
@@ -930,6 +939,7 @@ h4.user_group_setting_subsection_title {
     .tab-switcher {
         display: flex;
         flex-wrap: nowrap;
+        margin-top: 0.5em; /* 8px at 16px/em */
         height: var(--settings-overlay-header-button-height);
     }
 
