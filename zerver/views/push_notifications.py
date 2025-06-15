@@ -1,30 +1,37 @@
+from typing import Literal
+
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.decorator import human_users_only, zulip_login_required
 from zerver.lib import redis_utils
 from zerver.lib.exceptions import (
     ErrorCode,
+    InvalidBouncerPublicKeyError,
     JsonableError,
     MissingRemoteRealmError,
     OrganizationOwnerRequiredError,
+    PushRegistrationLivenessTimedOutError,
     RemoteRealmServerMismatchError,
     ResourceNotFoundError,
 )
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
     add_push_device_token,
-    b64_to_hex,
     remove_push_device_token,
     send_test_push_notification,
     uses_notification_bouncer,
+    validate_token,
 )
 from zerver.lib.remote_server import (
     SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
+    PushNotificationBouncerRetryLaterError,
+    PushNotificationBouncerServerError,
     UserDataForRemoteBilling,
     get_realms_info_for_push_bouncer,
     send_server_data_to_push_bouncer,
@@ -32,21 +39,17 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint, typed_endpoint_without_parameters
-from zerver.models import PushDeviceToken, UserProfile
+from zerver.models import PushDevice, PushDeviceToken, UserProfile
 from zerver.views.errors import config_error
 
 redis_client = redis_utils.get_redis_client()
 
-
-def validate_token(token_str: str, kind: int) -> None:
-    if token_str == "" or len(token_str) > 4096:
-        raise JsonableError(_("Empty or invalid length token"))
-    if kind == PushDeviceToken.APNS:
-        # Validate that we can actually decode the token.
-        try:
-            b64_to_hex(token_str)
-        except Exception:
-            raise JsonableError(_("Invalid APNS token"))
+if settings.ZILENCER_ENABLED:
+    from zilencer.views import (
+        MissingBouncerPublicKeyError,
+        PushRegistrationLifespanExceededError,
+        action_function,
+    )
 
 
 @human_users_only
@@ -265,3 +268,66 @@ def self_hosting_registration_transfer_challenge_verify(
     verification_secret = data["verification_secret"]
 
     return json_success(request, data={"verification_secret": verification_secret})
+
+
+@human_users_only
+@typed_endpoint
+def register_push_device(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    token_kind: Literal["apns", "fcm"],
+    push_account_id: Json[int],
+    push_public_key: Json[str],
+    bouncer_public_key: Json[str],
+    encrypted_push_registration: Json[str],
+) -> HttpResponse:
+    # If push notification not configured, return
+
+    PushDevice.objects.create(
+        user=user_profile,
+        token_kind=token_kind,
+        push_account_id=push_account_id,
+        push_public_key=push_public_key,
+        bouncer_public_key=bouncer_public_key,
+        encrypted_push_registration=encrypted_push_registration,
+    )
+
+    if settings.ZILENCER_ENABLED:
+        # Async function call to zilencer
+        try:
+            device_id = action_function(
+                bouncer_public_key,
+                encrypted_push_registration,
+                push_account_id,
+                str(user_profile.realm.uuid),
+                remote=False,
+            )
+        except MissingBouncerPublicKeyError:
+            PushDevice.objects.filter(user=user_profile, push_account_id=push_account_id).delete()
+            return
+        except PushRegistrationLifespanExceededError:
+            PushDevice.objects.filter(user=user_profile, push_account_id=push_account_id).delete()
+            # Log error + Send email to admin
+            return
+
+        PushDevice.objects.filter(user=user_profile, push_account_id=push_account_id).update(
+            bouncer_device_id=device_id,
+            encrypted_push_registration=None,
+            bouncer_public_key=None,
+        )
+    else:
+        # Async API call to zilencer
+        try:
+            send_to_push_bouncer("POST", "push/register", {})
+        except (PushNotificationBouncerRetryLaterError, PushNotificationBouncerServerError):
+            # Retry
+            return
+        except InvalidBouncerPublicKeyError:
+            PushDevice.objects.filter(user=user_profile, push_account_id=push_account_id).delete()
+            return
+        except PushRegistrationLivenessTimedOutError:
+            PushDevice.objects.filter(user=user_profile, push_account_id=push_account_id).delete()
+            return
+
+    return json_success(request)
