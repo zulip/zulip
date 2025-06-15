@@ -45,6 +45,8 @@ mock_esm("../src/pm_list", {
 });
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
+    update_user_self_role_select_state() {},
+    remove_owner_from_role_select() {},
 });
 mock_esm("../src/settings_linkifiers", {
     maybe_disable_widgets() {},
