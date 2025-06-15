@@ -1,0 +1,44 @@
+<div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list views-popover-menu">
+        {{#if is_condensed}}
+        {{> views_popover_item
+          fragment="narrow/has/reaction/sender/me"
+          name="Reactions"
+          icon="zulip-icon-smile"
+          has_unread_count=false
+          css_class_suffix="my_reactions"
+          tooltip_template_id="my-reactions-tooltip-template"
+          }}
+        {{> views_popover_item
+          fragment="drafts"
+          name="Drafts"
+          icon="zulip-icon-drafts"
+          has_unread_count=true
+          css_class_suffix="drafts"
+          tooltip_template_id="drafts-tooltip-template"
+          }}
+        {{#if has_scheduled_messages }}
+        {{> views_popover_item
+          fragment="scheduled"
+          name="Scheduled messages"
+          icon="zulip-icon-calendar-days"
+          has_unread_count=true
+          css_class_suffix="scheduled_messages"
+          tooltip_template_id="scheduled-tooltip-template"
+          }}
+        {{/if}}
+        {{else}}
+        {{#if views}}
+        {{#each views}}
+            {{> views_popover_item .}}
+        {{/each}}
+        {{else}}
+        <li role="none" class="popover-menu-list-item">
+            <div class="text-item">
+                <span class="popover-menu-label"><i>{{t "No unpinned views to show." }}</i></span>
+            </div>
+        </li>
+        {{/if}}
+        {{/if}}
+    </ul>
+</div>
