@@ -111,6 +111,12 @@
     }
 }
 
+.giphy-popover .tippy-box[data-theme="popover-menu"] {
+    > .tippy-arrow {
+        color: hsl(0deg 0% 0%) !important;
+    }
+}
+
 .tippy-box[data-theme="popover-menu"]:has(#gear-menu-dropdown) {
     --box-shadow-popover-menu: var(--box-shadow-gear-menu);
 }
@@ -780,7 +786,7 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-scrolling-container {
-        overflow: auto;
+        overflow: hidden auto;
         height: 200px;
         margin: 2px;
         padding: 5px 0;
