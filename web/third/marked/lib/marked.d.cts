@@ -10,6 +10,7 @@ declare class Renderer {
     code: (code: string) => string;
     link: (href: string, title: string, text: string) => string;
     br: () => string;
+    image: (href: string, title: string, text: string) => string;
 }
 
 declare namespace marked {

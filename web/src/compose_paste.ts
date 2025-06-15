@@ -37,7 +37,7 @@ function image_to_zulip_markdown(
     const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
     const title = deduplicate_newlines(node.getAttribute("title") ?? "");
     // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
+    return src ? "![" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
 // Returns 2 or more if there are multiple valid text nodes in the tree.
