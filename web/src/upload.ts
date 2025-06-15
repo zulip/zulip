@@ -279,6 +279,17 @@ export function rewire_upload_files(value: typeof upload_files): void {
     upload_files = value;
 }
 
+export function upload_pasted_file(textarea: HTMLTextAreaElement, pasted_file: File): void {
+    if (textarea.id === "compose-textarea") {
+        upload_files(compose_upload_object, compose_config, [pasted_file]);
+        return;
+    }
+    const row = rows.get_message_id(textarea);
+    const edit_uploader = upload_objects_by_message_edit_row.get(row);
+    assert(edit_uploader !== undefined);
+    upload_files(edit_uploader, edit_config(row), [pasted_file]);
+}
+
 // Borrowed from tus-js-client code at
 // https://github.com/tus/tus-js-client/blob/ca63ba254ea8766438b9d422f6f94284911f1fa5/lib/index.d.ts#L79
 // The library does not export this type, hence requiring a copy here.
