@@ -48,6 +48,8 @@ _Released 2025-05-15_
 - PostgreSQL 13 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
   before upgrading Zulip.
+- The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting has been removed.
+  It was deprecated in favor of `SOCIAL_AUTH_SYNC_ATTRS_DICT` in 10.0.
 
 ## Zulip Server 10.x series
 
