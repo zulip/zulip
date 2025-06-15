@@ -162,6 +162,7 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_administer_channel_group": GroupPermissionSetting(
             require_system_group=False,
@@ -169,6 +170,7 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="stream_creator_or_nobody",
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_remove_subscribers_group": GroupPermissionSetting(
             require_system_group=False,
@@ -176,6 +178,7 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_send_message_group": GroupPermissionSetting(
             require_system_group=False,
@@ -183,6 +186,7 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
         "can_subscribe_group": GroupPermissionSetting(
             require_system_group=False,
@@ -190,6 +194,7 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
+            replacement_group_name=SystemGroups.NOBODY,
         ),
     }
 
