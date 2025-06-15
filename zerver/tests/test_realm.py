@@ -2057,6 +2057,7 @@ class RealmAPITest(ZulipTestCase):
             message_content_edit_limit_seconds=[1000, 1100, 1200],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
+            topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -2440,6 +2441,13 @@ class RealmAPITest(ZulipTestCase):
             {"message_edit_history_visibility_policy": "invalid"},
         )
         self.assert_json_error(result, "Invalid message_edit_history_visibility_policy")
+
+    def test_invalid_topics_policy(self) -> None:
+        result = self.client_patch(
+            "/json/realm",
+            {"topics_policy": "invalid"},
+        )
+        self.assert_json_error(result, "Invalid topics_policy")
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):

@@ -126,6 +126,7 @@ const social = {
     name: "social",
     subscribed: true,
     can_send_message_group: 2,
+    topics_policy: "inherit",
 };
 stream_data.add_sub(social);
 
@@ -450,6 +451,7 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
     });
+    override(realm, "realm_topics_policy", "allow_empty_topic");
 
     compose.handle_enter_key_with_preview_open();
     fake_compose_box.assert_preview_mode_is_off();

@@ -518,7 +518,7 @@ run_test("realm settings", ({override}) => {
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
     override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
-    override(compose_recipient, "update_topic_inputbox_on_mandatory_topics_change", noop);
+    override(compose_recipient, "update_topic_inputbox_on_topics_policy_change", noop);
     override(compose_recipient, "update_compose_area_placeholder_text", noop);
     override(compose_recipient, "check_posting_policy_for_compose_box", noop);
 
@@ -555,9 +555,6 @@ run_test("realm settings", ({override}) => {
         assert_same(val, "new_realm_name");
     });
     assert_same(realm.realm_name, "new_realm_name");
-
-    event = event_fixtures.realm__update__mandatory_topics;
-    test_realm_boolean(event, "realm_mandatory_topics");
 
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
@@ -617,6 +614,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_can_move_messages_between_topics_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 5);
     override(realm, "realm_direct_message_permission_group", 1);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
     override(realm, "max_file_upload_size_mib", 10);
@@ -655,6 +653,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
     assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_direct_message_permission_group, 3);
+    assert_same(realm.realm_topics_policy, "disable_empty_topic");
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
