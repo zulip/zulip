@@ -42,3 +42,32 @@
         <textarea class="email_field_textarea settings_textarea" rows="8" maxlength="2000"></textarea>
     </div>
 </div>
+<br/>
+<label class="checkbox">
+    <input id="is-user-spammer" type="checkbox" class="spammer" />
+    <span class="rendered-checkbox"></span>
+    {{t "Is this user a spammer?" }}
+</label>
+<div class="spammer-actions">
+    <p class="border-top">{{t 'Upon deactivation:'}}</p>
+    <ul class="spammer-actions-body">
+        <li>
+            {{#tr}}
+            They will be renamed to <strong>Deleted user</strong>.
+            {{/tr}}
+        </li>
+        <li>{{t "Their profile picture will be removed."}}</li>
+    </ul>
+    <div class="delete-message-handling">
+        <label for="message-action">
+            {{t "Should messages sent by this user be deleted?" }}
+        </label>
+        <div class="input-group">
+            <select id="message-delete-action" class="spammer-message-action-dropdown modal_select bootstrap-style-font">
+                <option value="0">{{t "Don't delete" }}</option>
+                <option value="1">{{t "Delete messages in public channel" }}</option>
+                <option value="2">{{t "Delete all messages" }}</option>
+            </select>
+        </div>
+    </div>
+</div>
