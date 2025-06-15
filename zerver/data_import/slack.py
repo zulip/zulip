@@ -49,6 +49,7 @@ from zerver.data_import.slack_message_conversion import (
     process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
+from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
@@ -1523,7 +1524,9 @@ def do_convert_zipfile(
                 # top-level directories, or as `canvas_in_the_conversation.json`
                 # files in channel directories.  We do not parse these currently.
                 if not re.match(r"[^/]+(\.json|/([^/]+\.json)?)$", fileinfo.filename):
-                    raise Exception("This zip file does not look like a Slack archive")
+                    raise SlackImportInvalidFileError(
+                        "Uploaded zip file is not a valid Slack export."
+                    )
 
                 # file_size is the uncompressed size of the file
                 total_size += fileinfo.file_size
@@ -1532,7 +1535,7 @@ def do_convert_zipfile(
             # than a 10x size magnification is suspect, particularly
             # if it results in over 1GB.
             if total_size > 1024 * 1024 * 1024 and total_size > 10 * os.path.getsize(original_path):
-                raise Exception("This zip file is possibly malicious")
+                raise SlackImportInvalidFileError("Uploaded zip file is not a valid Slack export.")
 
             zipObj.extractall(slack_data_dir)
 
