@@ -195,17 +195,23 @@ export function potential_subscribers(stream_id: number): User[] {
 }
 
 export let get_subscriber_count = (stream_id: number, include_bots = true): number => {
-    if (include_bots) {
-        return get_loaded_subscriber_subset(stream_id).size;
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined) {
+        blueslip.warn(`We called get_subscriber_count for an untracked stream: ${stream_id}`);
+        return 0;
     }
 
-    let count = 0;
+    if (include_bots) {
+        return sub.subscriber_count;
+    }
+
+    let bot_count = 0;
     for (const user_id of get_loaded_subscriber_subset(stream_id).keys()) {
-        if (!people.is_valid_bot_user(user_id) && people.is_person_active(user_id)) {
-            count += 1;
+        if (people.is_valid_bot_user(user_id)) {
+            bot_count += 1;
         }
     }
-    return count;
+    return sub.subscriber_count - bot_count;
 };
 
 export function rewire_get_subscriber_count(value: typeof get_subscriber_count): void {
@@ -240,6 +246,7 @@ export function set_subscribers(stream_id: number, user_ids: number[], full_data
     stream_subscribers.set(stream_id, subscribers);
     if (full_data) {
         fetched_stream_ids.add(stream_id);
+        sub_store.get(stream_id)!.subscriber_count = subscribers.size;
     }
 }
 
@@ -251,7 +258,14 @@ export function add_subscriber(stream_id: number, user_id: number): void {
     if (person === undefined) {
         blueslip.warn(`We tried to add invalid subscriber: ${user_id}`);
     }
-    subscribers.add(user_id);
+    if (!subscribers.has(user_id)) {
+        subscribers.add(user_id);
+        // If this is undefined, we'll be raisig a warning in
+        // `get_loaded_subscriber_subset`.
+        if (sub_store.get(stream_id)) {
+            sub_store.get(stream_id)!.subscriber_count += 1;
+        }
+    }
 }
 
 export function remove_subscriber(stream_id: number, user_id: number): boolean {
@@ -262,6 +276,11 @@ export function remove_subscriber(stream_id: number, user_id: number): boolean {
     }
 
     subscribers.delete(user_id);
+    // If this is undefined, we'll be raisig a warning in
+    // `get_loaded_subscriber_subset`.
+    if (sub_store.get(stream_id)) {
+        sub_store.get(stream_id)!.subscriber_count -= 1;
+    }
 
     return true;
 }
@@ -277,7 +296,10 @@ export function bulk_add_subscribers({
     for (const stream_id of stream_ids) {
         const subscribers = get_loaded_subscriber_subset(stream_id);
         for (const user_id of user_ids) {
-            subscribers.add(user_id);
+            if (!subscribers.has(user_id)) {
+                subscribers.add(user_id);
+                sub_store.get(stream_id)!.subscriber_count += 1;
+            }
         }
 
         if (pending_subscriber_requests.has(stream_id)) {
@@ -300,7 +322,10 @@ export function bulk_remove_subscribers({
     for (const stream_id of stream_ids) {
         const subscribers = get_loaded_subscriber_subset(stream_id);
         for (const user_id of user_ids) {
-            subscribers.delete(user_id);
+            if (subscribers.has(user_id)) {
+                subscribers.delete(user_id);
+                sub_store.get(stream_id)!.subscriber_count -= 1;
+            }
         }
 
         if (pending_subscriber_requests.has(stream_id)) {
