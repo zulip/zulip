@@ -216,6 +216,21 @@ def update_user_by_id_api(
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
     )
+
+    if request.FILES:
+        if len(request.FILES) != 1:
+            raise JsonableError(_("You must upload exactly one avatar."))
+        
+        [user_file] = request.FILES.values()
+        if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
+            raise JsonableError(
+                _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                    max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
+                )
+            )
+        
+        upload_avatar_image(user_file, target)
+        do_change_avatar_fields(target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     return update_user_backend(
         request,
         user_profile,
