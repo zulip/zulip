@@ -91,7 +91,7 @@
     }
 
     > .tippy-arrow {
-        color: hsl(0deg 0% 0%);
+        color: var(--color-background-popover-menu);
     }
 
     &[data-placement^="top"] > .tippy-arrow::before {
@@ -108,6 +108,12 @@
 
     &[data-placement^="right"] > .tippy-arrow::before {
         left: var(--popover-tippy-arrow-before-offset);
+    }
+}
+
+.giphy-popover .tippy-box[data-theme="popover-menu"] {
+    > .tippy-arrow {
+        color: hsl(0deg 0% 0%) !important;
     }
 }
 
