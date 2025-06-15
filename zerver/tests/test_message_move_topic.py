@@ -19,6 +19,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -26,7 +27,7 @@ from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
-from zerver.lib.types import StreamMessageEditRequest
+from zerver.lib.types import StreamMessageEditRequest, UserGroupMembersData
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
@@ -2021,7 +2022,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         result = self.resolve_topic_containing_message(hamlet, target_message_id=message_id)
         self.assert_json_error(result, "General chat cannot be marked as resolved")
 
-    def test_resolved_topic_permissions(self) -> None:
+    def test_resolved_topic_realm_level_permissions(self) -> None:
         self.login("iago")
         admin_user = self.example_user("iago")
         hamlet = self.example_user("hamlet")
@@ -2052,7 +2053,9 @@ class MessageMoveTopicTest(ZulipTestCase):
             admin_user,
             id1,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         # Test restrict resolving topics to admins only.
         admins_group = NamedUserGroup.objects.get(
@@ -2069,7 +2072,9 @@ class MessageMoveTopicTest(ZulipTestCase):
             hamlet,
             id1,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         result = self.resolve_topic_containing_message(
             admin_user,
@@ -2091,13 +2096,17 @@ class MessageMoveTopicTest(ZulipTestCase):
             othello,
             id2,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         result = self.resolve_topic_containing_message(
             admin_user,
             id2,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         result = self.resolve_topic_containing_message(
             hamlet,
@@ -2122,7 +2131,9 @@ class MessageMoveTopicTest(ZulipTestCase):
             othello,
             id3,
         )
-        self.assert_json_error(result, "You don't have permission to resolve topics.")
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
 
         result = self.resolve_topic_containing_message(
             cordelia,
@@ -2199,5 +2210,122 @@ class MessageMoveTopicTest(ZulipTestCase):
         result = self.resolve_topic_containing_message(
             cordelia,
             id5,
+        )
+        self.assert_json_success(result)
+
+    def test_resolved_topic_channel_level_permissions(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        # Set resolving topics disabled by organization
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=admin_user.realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            admin_user.realm,
+            "can_resolve_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        # Test resolving topics disabled in a particular channel.
+        original_topic_name = "topic 1"
+        id1 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+
+        do_change_stream_group_based_setting(
+            stream, "can_resolve_topics_group", nobody_group, acting_user=admin_user
+        )
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id1,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+
+        # Test restrict resolving topics to admins only in a particular channel.
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=admin_user.realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_resolve_topics_group", admins_group, acting_user=admin_user
+        )
+
+        result = self.resolve_topic_containing_message(
+            hamlet,
+            id1,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id1,
+        )
+        self.assert_json_success(result)
+
+        # Test restrict resolving topics to a user defined group in a particular channel.
+        original_topic_name = "topic 2"
+        id2 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+
+        leadership_group = check_add_user_group(
+            admin_user.realm, "leadership", [hamlet], acting_user=hamlet
+        )
+
+        do_change_stream_group_based_setting(
+            stream, "can_resolve_topics_group", leadership_group, acting_user=admin_user
+        )
+
+        result = self.resolve_topic_containing_message(
+            othello,
+            id2,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id2,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+
+        result = self.resolve_topic_containing_message(
+            hamlet,
+            id2,
+        )
+        self.assert_json_success(result)
+
+        # Test restrict topics to an anonymous group in a particular channel.
+        original_topic_name = "topic 3"
+        id3 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+
+        othello_group_member_dict = UserGroupMembersData(
+            direct_members=[othello.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_resolve_topics_group", othello_group_member_dict, acting_user=othello
+        )
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id3,
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+        result = self.resolve_topic_containing_message(
+            othello,
+            id3,
         )
         self.assert_json_success(result)
