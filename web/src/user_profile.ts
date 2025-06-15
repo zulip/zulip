@@ -1160,7 +1160,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     $container.append($(html_body));
 
     // Update avatar widget to support admin-based updates
-    avatar.build_user_avatar_widget(upload_avatar, $("#edit-user-form"));
+    avatar.build_user_avatar_widget_by_id(upload_avatar, $("#edit-user-form"));
 
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);

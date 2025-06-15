@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.hbs";
 
 import * as channel from "./channel.ts";
+import * as people from "./people.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as settings_data from "./settings_data.ts";
@@ -74,7 +75,9 @@ export function build_user_avatar_widget(
     upload_function: UploadFunction,
     $container: JQuery,
 ): void {
-    const get_file_input = function (): JQuery<HTMLInputElement> {
+    const get_file_input = function (
+        $container: JQuery = $("#user-avatar-upload-widget").parent(),
+    ): JQuery<HTMLInputElement> {
         return $container
             .find<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input")
             .expectOne();
@@ -119,6 +122,45 @@ export function build_user_avatar_widget(
             html_body,
             on_click: delete_user_avatar,
         });
+    });
+
+    upload_widget.build_direct_upload_widget(
+        get_file_input,
+        $container.find("#user-avatar-upload-widget .image_file_input_error").expectOne(),
+        $container.find("#user-avatar-upload-widget .image_upload_button").expectOne(),
+        upload_function,
+        realm.max_avatar_file_size_mib,
+    );
+}
+
+export function build_user_avatar_widget_by_id(
+    upload_function: UploadFunction,
+    $container: JQuery,
+): void {
+    if (!settings_data.user_can_change_avatar()) {
+        return;
+    }
+    const get_file_input = function (): JQuery<HTMLInputElement> {
+        return $container
+            .find<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input")
+            .expectOne();
+    };
+
+    const user_id = Number($container.attr("data-user-id"));
+    // Use get_user_by_id_assert_valid which throws if user doesn't exist
+    const person = people.get_user_by_id_assert_valid(user_id);
+
+    $container.find("#user-avatar-upload-widget .image-delete-button").hide();
+    $container.find("#user-avatar-source").show();
+
+    $container.find("#user-avatar-upload-widget .image-delete-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $container
+            .find<HTMLInputElement>("#user-avatar-upload-widget .image-block")
+            .attr("src", person.avatar_url ?? "");
+        $container.find<HTMLInputElement>("#user-avatar-upload-widget .image-delete-button").hide();
+        $container.find<HTMLInputElement>("#user-avatar-source").show();
     });
 
     upload_widget.build_direct_upload_widget(

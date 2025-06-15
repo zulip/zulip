@@ -854,7 +854,8 @@ export function set_up(): void {
     user_avatar_widget_created = false;
 
     if (settings_data.user_can_change_avatar()) {
-        avatar.build_user_avatar_widget(upload_avatar, $("#profile-settings"));
+        const $container = $("#user-avatar-upload-widget").parent();
+        avatar.build_user_avatar_widget(upload_avatar, $container);
         user_avatar_widget_created = true;
     }
 
