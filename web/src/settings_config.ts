@@ -76,6 +76,17 @@ export const web_channel_default_view_values = {
     },
 };
 
+export const auto_collapse_views_values = {
+    scrolled_down: {
+        code: true,
+        description: $t({defaultMessage: "When scrolled down [default]"}),
+    },
+    never: {
+        code: false,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
 export const user_list_style_values: {
     compact: {
         code: number;
