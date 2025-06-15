@@ -111,7 +111,7 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
         return false;
     }
 
-    if (!settings_data.user_can_move_messages_to_another_topic()) {
+    if (!stream_data.user_can_move_messages_within_channel(message.stream_id)) {
         return false;
     }
 
@@ -264,7 +264,7 @@ export function is_stream_editable(message: Message, edit_limit_seconds_buffer =
         return false;
     }
 
-    if (!settings_data.user_can_move_messages_between_streams()) {
+    if (!stream_data.user_can_move_messages_out_of_channel(message.stream_id)) {
         return false;
     }
 
