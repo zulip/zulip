@@ -79,7 +79,7 @@ export function create_item_from_text(
         return undefined;
     }
 
-    return user_pill.create_item_from_email(text, current_items);
+    return user_pill.create_item_from_user_id(text, current_items);
 }
 
 export function create({
