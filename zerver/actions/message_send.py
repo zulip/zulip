@@ -67,6 +67,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
+    access_stream_to_create_new_topic,
     ensure_stream,
     notify_stream_is_recently_active_update,
     subscribed_to_stream,
@@ -1781,6 +1782,12 @@ def check_message(
             # is security-sensitive code, it's beneficial to ensure nothing
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
+
+        access_stream_to_create_new_topic(
+            sender=sender,
+            stream=stream,
+            topic_name=topic_name,
+        )
 
         if realm.mandatory_topics and topic_name == "":
             raise JsonableError(_("Topics are required in this organization"))
