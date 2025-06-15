@@ -156,6 +156,14 @@ export function build_page(): void {
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
             ),
+        realm_move_messages_between_streams_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_move_messages_between_streams_limit_seconds",
+            ),
+        realm_move_messages_within_stream_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_move_messages_within_stream_limit_seconds",
+            ),
         realm_message_content_delete_limit_minutes:
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_delete_limit_seconds",
