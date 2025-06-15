@@ -505,7 +505,7 @@ export function paste_handler_converter(
     return markdown_text;
 }
 
-function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boolean {
+function can_paste_url_over_range($textarea: JQuery<HTMLTextAreaElement>): boolean {
     const range = $textarea.range();
 
     if (!range.text) {
@@ -515,19 +515,6 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
 
     if (isUrl(range.text.trim())) {
         // Don't engage our URL paste logic over existing URLs
-        return false;
-    }
-
-    if (range.start <= 2) {
-        // The range opens too close to the start of the textarea
-        // to have to worry about Markdown link syntax
-        return true;
-    }
-
-    // Look at the two characters before the start of the original
-    // range in search of the tell-tale `](` from existing Markdown
-    // link syntax
-    if (cursor_at_markdown_link_marker($textarea)) {
         return false;
     }
 
@@ -628,19 +615,21 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
         // Only intervene to generate formatted links when dealing
         // with a URL and a URL-safe range selection.
         if (isUrl(trimmed_paste_text)) {
-            if (is_safe_url_paste_target($textarea)) {
+            if (cursor_at_markdown_link_marker($textarea)) {
+                // When pasting a link after the link marker syntax, we want to
+                // avoid inserting markdown syntax text and instead just paste
+                // the raw text, possibly replacing any selection. In other words,
+                // let the browser handle it.
+                return;
+            }
+            if (can_paste_url_over_range($textarea)) {
                 event.preventDefault();
                 event.stopPropagation();
                 const url = trimmed_paste_text;
                 compose_ui.format_text($textarea, "linked", url);
                 return;
             }
-
-            if (
-                !compose_ui.cursor_inside_code_block($textarea) &&
-                !cursor_at_markdown_link_marker($textarea) &&
-                !compose_ui.shift_pressed
-            ) {
+            if (!compose_ui.cursor_inside_code_block($textarea) && !compose_ui.shift_pressed) {
                 // Try to transform the url to #**stream>topic** syntax
                 // if it is a valid url.
                 const syntax_text = try_stream_topic_syntax_text(trimmed_paste_text);
