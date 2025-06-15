@@ -1319,7 +1319,7 @@ export function narrow_to_next_topic(opts: {trigger: string; only_followed_topic
 
     const filter_expr = [
         {operator: "channel", operand: next_narrow.stream_id.toString()},
-        {operator: "topic", operand: next_narrow.topic},
+        {operator: "exact-topic", operand: next_narrow.topic},
     ];
 
     show(filter_expr, opts);
@@ -1384,7 +1384,7 @@ export function narrow_by_topic(
 
     const search_terms = [
         {operator: "channel", operand: original.stream_id.toString()},
-        {operator: "topic", operand: original.topic},
+        {operator: "exact-topic", operand: original.topic},
     ];
     show(search_terms, {then_select_id: target_id, ...opts});
 }
@@ -1462,7 +1462,7 @@ export function to_compose_target(): void {
         const terms = [{operator: "channel", operand: stream_id.toString()}];
         const topic = compose_state.topic();
         if (topic !== "" || !realm.realm_mandatory_topics) {
-            terms.push({operator: "topic", operand: topic});
+            terms.push({operator: "exact-topic", operand: topic});
         }
         show(terms, opts);
         return;

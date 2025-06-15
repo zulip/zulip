@@ -676,7 +676,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
                 if (new_filter && topic_edited) {
                     new_filter = new_filter.filter_with_new_params({
-                        operator: "topic",
+                        operator: "exact-topic",
                         operand: new_topic,
                     });
                     changed_narrow = true;
