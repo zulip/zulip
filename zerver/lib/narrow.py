@@ -654,13 +654,17 @@ class NarrowBuilder:
             narrow_user_profile
         )
 
+        private_flag = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
+        realm_match = column("realm_id", Integer) == self.realm.id
+        direct_message_group_cond = column("recipient_id", Integer).in_(
+            direct_message_group_recipient_ids
+        )
+
         self_recipient_id = self.user_profile.recipient_id
-        # See note above in `by_dm` about needing bidirectional messages
-        # for direct messages with another person.
-        cond = and_(
-            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-            column("realm_id", Integer) == self.realm.id,
-            or_(
+        if self_recipient_id is not None and narrow_user_profile.recipient_id is not None:
+            # See note above in `by_dm` about needing bidirectional messages
+            # for direct messages with another person.
+            dm_conditions = or_(
                 and_(
                     column("sender_id", Integer) == narrow_user_profile.id,
                     column("recipient_id", Integer) == self_recipient_id,
@@ -669,11 +673,13 @@ class NarrowBuilder:
                     column("sender_id", Integer) == self.user_profile.id,
                     column("recipient_id", Integer) == narrow_user_profile.recipient_id,
                 ),
-                and_(
-                    column("recipient_id", Integer).in_(direct_message_group_recipient_ids),
-                ),
-            ),
-        )
+                direct_message_group_cond,
+            )
+            cond = and_(private_flag, realm_match, dm_conditions)
+        else:
+            # If the user does not have a recipient_id, then they only rely on
+            # direct group message for their conversations.
+            cond = and_(private_flag, realm_match, direct_message_group_cond)
         return query.where(maybe_negate(cond))
 
     def by_group_pm_with(
