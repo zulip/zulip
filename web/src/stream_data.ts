@@ -378,6 +378,10 @@ export function get_archived_subs(): StreamSubscription[] {
     return [...stream_info.values()].filter((sub) => sub.is_archived);
 }
 
+export function realm_has_web_public_streams(): boolean {
+    return realm_web_public_stream_ids.size > 0;
+}
+
 export function muted_stream_ids(): number[] {
     return subscribed_subs()
         .filter((sub) => sub.is_muted)

@@ -588,29 +588,40 @@ function get_special_filter_suggestions(
 }
 
 function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    let search_string = "channels:public";
-    // show "channels:public" option for users who
-    // have "streams" in their muscle memory
-    if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
-        search_string = "streams:public";
+    if (last.operator !== "channels") {
+        return [];
     }
-    let description_html = "all public channels";
-    const suggestions: SuggestionAndIncompatiblePatterns[] = [
-        {
-            search_string,
-            description_html,
-            incompatible_patterns: [
-                {operator: "is", operand: "dm"},
-                {operator: "channel"},
-                {operator: "dm-including"},
-                {operator: "dm"},
-                {operator: "in"},
-                {operator: "channels"},
-            ],
-        },
+    const incompatible_patterns = [
+        {operator: "is", operand: "dm"},
+        {operator: "channel"},
+        {operator: "dm-including"},
+        {operator: "dm"},
+        {operator: "in"},
+        {operator: "channels"},
     ];
+    const public_channels_search_string = "channels:public";
+    const web_public_channels_search_string = "channels:web-public";
+    const suggestions: SuggestionAndIncompatiblePatterns[] = [];
+
+    if (!page_params.is_spectator) {
+        suggestions.push({
+            search_string: public_channels_search_string,
+            description_html: "all public channels",
+            incompatible_patterns,
+        });
+    }
+
+    if (stream_data.realm_has_web_public_streams()) {
+        suggestions.push({
+            search_string: web_public_channels_search_string,
+            description_html: "all web-public channels",
+            incompatible_patterns,
+        });
+    }
+
     return get_special_filter_suggestions(last, terms, suggestions);
 }
+
 function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     let suggestions: SuggestionAndIncompatiblePatterns[];
     if (page_params.is_spectator) {
@@ -804,9 +815,10 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
     let choices;
 
     if (last.operator === "") {
-        choices = ["channel", "stream"];
+        choices = ["channels", "channel", "streams", "stream"];
     } else {
         choices = [
+            "channels",
             "channel",
             "topic",
             "dm",
@@ -815,6 +827,7 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
             "near",
             "from",
             "pm-with",
+            "streams",
             "stream",
         ];
     }
@@ -831,6 +844,11 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         // who have "stream" in their muscle memory.
         if (choice === "stream") {
             choice = "channel";
+        }
+        // Map results for "channels:" operator for users
+        // who have "streams" in their muscle memory.
+        if (choice === "streams") {
+            choice = "channels";
         }
         const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op, true);
@@ -1066,6 +1084,7 @@ export function get_search_result(
 
     if (page_params.is_spectator) {
         filterers = [
+            get_channels_filter_suggestions,
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
