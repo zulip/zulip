@@ -66,9 +66,17 @@ Here are some ways to find the URL for your Zulip organization.
 
 {start_tabs}
 
-{tab|web}
+{tab|mobile}
 
-1. Go to the Zulip URL of the organization.
+1. Tap the **Menu** (<i class="zulip-icon zulip-icon-mobile-menu mobile-help"></i>)
+   tab in the bottom right corner of the app.
+
+1. Tap <i class="zulip-icon zulip-icon-mobile-arrow-left-right mobile-help"></i>
+   **Switch account**.
+
+1. Tap **Add new account**.
+
+1. Enter the Zulip URL of the organization, and tap **Continue**.
 
 1. Follow the on-screen instructions.
 
@@ -89,17 +97,9 @@ from the **Zulip** menu in the top menu bar.
 
 {!desktop-toggle-sidebar-tip.md!}
 
-{tab|mobile}
+{tab|web}
 
-1. Tap the **Menu** (<i class="zulip-icon zulip-icon-mobile-menu mobile-help"></i>)
-   tab in the bottom right corner of the app.
-
-1. Tap <i class="zulip-icon zulip-icon-mobile-arrow-left-right mobile-help"></i>
-   **Switch account**.
-
-1. Tap **Add new account**.
-
-1. Enter the Zulip URL of the organization, and tap **Continue**.
+1. Go to the Zulip URL of the organization.
 
 1. Follow the on-screen instructions.
 
