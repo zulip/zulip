@@ -1015,6 +1015,12 @@ class RealmImportExportTest(ExportFile):
 
         self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
 
+        # Remove the recipient of the welcome bot to test exporting bots without personal recipients.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        welcome_bot.recipient = None
+        welcome_bot.save(update_fields=["recipient"])
+
         self.export_realm_and_create_auditlog(
             realm,
             export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
