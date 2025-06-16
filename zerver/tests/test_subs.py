@@ -1354,7 +1354,6 @@ class StreamAdminTest(ZulipTestCase):
     def test_unarchive_stream(self) -> None:
         iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
-        self.login_user(iago)
 
         stream = self.make_stream("new_stream", is_web_public=True)
         was_invite_only = stream.invite_only
@@ -1368,7 +1367,7 @@ class StreamAdminTest(ZulipTestCase):
         data = {}
         data["is_archived"] = "false"
         with self.capture_send_event_calls(expected_num_events=3) as events:
-            result = self.api_patch(iago, f"/json/streams/{stream.id}", info=data)
+            result = self.api_patch(iago, f"/api/v1/streams/{stream.id}", info=data)
             self.assert_json_success(result)
 
         # Clients will get this event only if they support
