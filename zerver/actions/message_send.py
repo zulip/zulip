@@ -904,7 +904,7 @@ def do_send_messages(
                     lock=True,
                     enqueue=False,
                     path_ids=list(send_request.rendering_result.thumbnail_spinners),
-                )
+                ).image_metadata
                 new_rendered_content = rewrite_thumbnailed_images(
                     send_request.message.rendered_content, previews
                 )[0]

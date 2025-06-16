@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 405**
+
+* [Message formatting](/api/message-formatting): Added new HTML
+  formatting for uploaded audio files generating a player experience.
+
 **Feature level 404**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),

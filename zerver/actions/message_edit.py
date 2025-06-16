@@ -1734,7 +1734,7 @@ def re_thumbnail(
         message.rendered_content,
         enqueue=enqueue,
         lock=True,
-    )
+    ).image_metadata
 
     new_content, _ = rewrite_thumbnailed_images(
         message.rendered_content,
