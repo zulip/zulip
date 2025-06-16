@@ -133,5 +133,6 @@ channel or topic as read**.
 ## Related articles
 
 * [Marking messages as unread](/help/marking-messages-as-unread)
+* [Configure where you land in message feeds](/help/configure-where-you-land)
 * [Reading strategies](/help/reading-strategies)
 * [Read receipts](/help/read-receipts)

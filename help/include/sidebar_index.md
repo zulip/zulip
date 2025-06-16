@@ -108,6 +108,7 @@
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
 * [Configure unread message counters](/help/configure-unread-message-counters)
+* [Configure where you land](/help/configure-where-you-land)
 * [Emoji reactions](/help/emoji-reactions)
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
