@@ -1419,7 +1419,6 @@ class StreamAdminTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
 
-        self.login_user(desdemona)
         stream = self.make_stream("test_stream", invite_only=False)
         self.subscribe(iago, stream.name)
 
@@ -1429,14 +1428,12 @@ class StreamAdminTest(ZulipTestCase):
 
         data = {}
         data["is_archived"] = "false"
-        result = self.api_patch(desdemona, f"/json/streams/{stream.id}", info=data)
+        result = self.api_patch(desdemona, f"/api/v1/streams/{stream.id}", info=data)
         self.assert_json_success(result)
         stream.refresh_from_db()
         self.assertFalse(stream.deactivated)
 
         cordelia = self.example_user("cordelia")
-        self.login_user(cordelia)
-
         stream1 = self.make_stream("test_stream_1", invite_only=False)
         self.subscribe(iago, stream1.name)
 
@@ -1444,7 +1441,7 @@ class StreamAdminTest(ZulipTestCase):
         stream1.refresh_from_db()
         self.assertTrue(stream1.deactivated)
 
-        result = self.api_patch(cordelia, f"/json/streams/{stream1.id}", info=data)
+        result = self.api_patch(cordelia, f"/api/v1/streams/{stream1.id}", info=data)
         self.assert_json_error(result, "You do not have permission to administer this channel.")
 
         do_change_stream_group_based_setting(
@@ -1454,7 +1451,7 @@ class StreamAdminTest(ZulipTestCase):
             acting_user=desdemona,
         )
 
-        result = self.api_patch(cordelia, f"/json/streams/{stream1.id}", info=data)
+        result = self.api_patch(cordelia, f"/api/v1/streams/{stream1.id}", info=data)
         self.assert_json_success(result)
 
         stream1.refresh_from_db()
