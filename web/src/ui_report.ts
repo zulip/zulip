@@ -27,7 +27,7 @@ export function message(
         .fadeTo(0, 1);
     if (remove_after !== undefined) {
         setTimeout(() => {
-            $status_box.fadeOut(400);
+            $status_box.fadeOut(400, () => $status_box.removeClass(cls));
         }, remove_after);
     }
     $status_box.addClass("show");
