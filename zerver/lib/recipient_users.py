@@ -58,19 +58,23 @@ def get_recipient_from_user_profiles(
                     type_id=direct_message_group.id,
                 )
 
-        # If no direct message group recipient exists, or if the setting
-        # is disabled, we fall back to using personal recipients.
-        del recipient_profiles_map[sender.id]
-        if len(recipient_profiles_map) == 1:
-            [recipient_user_profile] = recipient_profiles_map.values()
-        else:
-            recipient_user_profile = sender
-        return Recipient(
-            id=recipient_user_profile.recipient_id,
-            type=Recipient.PERSONAL,
-            type_id=recipient_user_profile.id,
+        # Making sure we have personal recipients for all users,
+        # otherwise, fall back to the direct message group.
+        has_personal_recipient = all(
+            user_profile.recipient_id is not None
+            for user_profile in recipient_profiles_map.values()
         )
-
+        if has_personal_recipient:
+            del recipient_profiles_map[sender.id]
+            if len(recipient_profiles_map) == 1:
+                [recipient_user_profile] = recipient_profiles_map.values()
+            else:
+                recipient_user_profile = sender
+            return Recipient(
+                id=recipient_user_profile.recipient_id,
+                type=Recipient.PERSONAL,
+                type_id=recipient_user_profile.id,
+            )
     if create:
         direct_message_group = get_or_create_direct_message_group(user_ids)
     else:
