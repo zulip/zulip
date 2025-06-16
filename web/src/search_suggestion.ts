@@ -594,8 +594,7 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
         search_string = "streams:public";
     }
-    let description_html = Filter.describe_public_channels(last.negated ?? false);
-    description_html = description_html.charAt(0).toUpperCase() + description_html.slice(1);
+    let description_html = "all public channels";
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string,
