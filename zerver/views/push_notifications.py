@@ -18,10 +18,10 @@ from zerver.lib.exceptions import (
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
     add_push_device_token,
-    b64_to_hex,
     remove_push_device_token,
     send_test_push_notification,
     uses_notification_bouncer,
+    validate_token,
 )
 from zerver.lib.remote_server import (
     SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
@@ -36,17 +36,6 @@ from zerver.models import PushDeviceToken, UserProfile
 from zerver.views.errors import config_error
 
 redis_client = redis_utils.get_redis_client()
-
-
-def validate_token(token_str: str, kind: int) -> None:
-    if token_str == "" or len(token_str) > 4096:
-        raise JsonableError(_("Empty or invalid length token"))
-    if kind == PushDeviceToken.APNS:
-        # Validate that we can actually decode the token.
-        try:
-            b64_to_hex(token_str)
-        except Exception:
-            raise JsonableError(_("Invalid APNS token"))
 
 
 @human_users_only

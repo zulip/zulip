@@ -89,6 +89,17 @@ def hex_to_b64(data: str) -> str:
 PUSH_REGISTRATION_LIVENESS_TIMEOUT = 24 * 60 * 60
 
 
+def validate_token(token_str: str, kind: int) -> None:
+    if token_str == "" or len(token_str) > 4096:
+        raise JsonableError(_("Empty or invalid length token"))
+    if kind == PushDeviceToken.APNS:
+        # Validate that we can actually decode the token.
+        try:
+            b64_to_hex(token_str)
+        except Exception:
+            raise JsonableError(_("Invalid APNS token"))
+
+
 def get_message_stream_name_from_database(message: Message) -> str:
     """
     Never use this function outside of the push-notifications
