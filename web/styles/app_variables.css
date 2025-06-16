@@ -1399,6 +1399,15 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
     );
+    /* TODO: Light mode uses browser-default white
+       backgrounds; we should extend the use of this
+       color variable to 1) explicitly set the
+       background color of inputs, and 2) clean up a
+       lingering stack of selectors in dark_theme.css. */
+    --color-background-input: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
     --color-text-link-decoration: light-dark(
