@@ -103,9 +103,22 @@ test("basic_get_suggestions", ({override}) => {
 
 test("basic_get_suggestions_for_spectator", () => {
     page_params.is_spectator = true;
+    realm.realm_enable_spectator_access = true;
+    let query = "";
+    let suggestions = get_suggestions(query);
+    assert.deepEqual(suggestions.strings, [
+        "channels:web-public",
+        "is:resolved",
+        "-is:resolved",
+        "has:link",
+        "has:image",
+        "has:attachment",
+        "has:reaction",
+    ]);
 
-    const query = "";
-    const suggestions = get_suggestions(query);
+    realm.realm_enable_spectator_access = false;
+    query = "";
+    suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, [
         "is:resolved",
         "-is:resolved",
@@ -114,6 +127,7 @@ test("basic_get_suggestions_for_spectator", () => {
         "has:attachment",
         "has:reaction",
     ]);
+    realm.realm_enable_spectator_access = true;
     page_params.is_spectator = false;
 });
 
@@ -392,6 +406,7 @@ test("empty_query_suggestions", () => {
 
     const expected = [
         "channels:public",
+        "channels:web-public",
         "is:dm",
         "is:starred",
         "is:mentioned",
@@ -579,7 +594,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     // but shows html description used for "channels:public"
     query = "st";
     suggestions = get_suggestions(query);
-    expected = ["st", "streams:public", "is:starred", "channel:"];
+    expected = ["st", "streams:public", "streams:web-public", "is:starred", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "channel:66 has:link is:sta";
@@ -1028,7 +1043,7 @@ test("operator_suggestions", ({override, mock_template}) => {
 
     query = "ch";
     suggestions = get_suggestions(query);
-    expected = ["ch", "channels:public", "channel:"];
+    expected = ["ch", "channels:public", "channels:web-public", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-s";
