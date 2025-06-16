@@ -18,7 +18,10 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
@@ -76,7 +79,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.custom_profile_fields import check_valid_user_ids
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm
@@ -589,6 +592,29 @@ class PermissionTest(ZulipTestCase):
         access_user_by_id_including_cross_realm(
             self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
         )
+
+    def test_access_user_by_id_when_personal_recipient_is_none(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+
+        # Removing the personal recipient to ensure a new direct message group is used for 1:1 dms.
+        polonius.recipient = None
+        polonius.save()
+
+        # Restricting the "Members" system group to not allow access to all users.
+        realm = get_realm("zulip")
+        members_system_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_system_group, acting_user=None
+        )
+
+        aaron = self.example_user("aaron")
+        target_user = access_user_by_id(polonius, aaron.id, for_admin=False)
+        self.assertEqual(target_user, aaron)
+
+        othello = self.example_user("othello")
+        with self.assertRaises(JsonableError):
+            access_user_by_id(polonius, othello.id, for_admin=False)
 
     def check_property_for_role(self, user_profile: UserProfile, role: int) -> bool:
         if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
@@ -3204,6 +3230,26 @@ class GetProfileTest(ZulipTestCase):
         inaccessible_user_ids = get_inaccessible_user_ids(
             [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
         )
+        self.assertEqual(inaccessible_user_ids, {othello.id})
+
+    def test_get_inaccessible_user_ids_when_personal_recipient_is_none(self) -> None:
+        polonius = self.example_user("polonius")
+
+        # Removing the personal recipient to ensure we use direct message group.
+        polonius.recipient = None
+        polonius.save()
+
+        bot = self.example_user("default_bot")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
+        self.assert_length(inaccessible_user_ids, 0)
+
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
         self.assertEqual(inaccessible_user_ids, {othello.id})
 
     def test_get_users_for_spectators(self) -> None:
