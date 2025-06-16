@@ -62,7 +62,7 @@ Here are some ways to find the URL for your Zulip organization.
 
 {end_tabs}
 
-## Log in for the first time
+## Log in to a new organization
 
 {start_tabs}
 
