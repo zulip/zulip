@@ -1964,9 +1964,11 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
             error(xhr) {
                 let error_message = "Failed to fetch users.";
                 if (xhr) {
-                    const error = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
-                    if (error.msg) {
-                        error_message = error.msg;
+                    const error = z
+                        .object({msg: z.string().optional()})
+                        .safeParse(xhr.responseJSON);
+                    if (error.success && error.data.msg) {
+                        error_message = error.data.msg;
                     }
                 }
                 blueslip.error(error_message);
