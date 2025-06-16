@@ -153,9 +153,10 @@ run_test("generate_pill_html", () => {
         stream_pill.generate_pill_html(denmark_pill),
         "<div class='pill 'data-stream-id=\"101\" tabindex=0>\n" +
             '    <span class="pill-label">\n' +
-            '        <span class="pill-value">\n' +
-            '<i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>            Denmark\n' +
-            "        </span></span>\n" +
+            '        <span class="pill-user-with-icon">\n' +
+            '            <span class="pill-value">\n' +
+            '<i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>                Denmark\n' +
+            "            </span></span></span>\n" +
             '    <div class="exit">\n' +
             '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +
             "    </div>\n" +
