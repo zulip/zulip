@@ -13,6 +13,10 @@ import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
+import {
+    type RealmGroupSettingNameSupportingAnonymousGroups,
+    realm_group_setting_name_supporting_anonymous_groups_schema,
+} from "./group_permission_settings.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -23,9 +27,7 @@ import * as realm_logo from "./realm_logo.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import {
     type MessageMoveTimeLimitSetting,
-    type RealmGroupSettingNameSupportingAnonymousGroups,
     type SettingOptionValueWithKey,
-    realm_group_setting_name_supporting_anonymous_groups_schema,
     realm_setting_property_schema,
     realm_user_settings_default_properties_schema,
     simple_dropdown_realm_settings_schema,

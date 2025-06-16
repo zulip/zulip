@@ -41,15 +41,13 @@ export function get_group_permission_settings(): GroupGroupSettingName[] {
         .parse(Object.keys(realm.server_supported_permission_settings.group));
 }
 
-export const realm_group_setting_name_schema = z.enum([
-    "can_access_all_users_group",
+const realm_group_setting_names_supporting_anonymous_groups = [
     "can_add_custom_emoji_group",
     "can_add_subscribers_group",
     "can_create_groups",
     "can_create_bots_group",
     "can_create_public_channel_group",
     "can_create_private_channel_group",
-    "can_create_web_public_channel_group",
     "can_create_write_only_bots_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
@@ -66,8 +64,21 @@ export const realm_group_setting_name_schema = z.enum([
     "create_multiuse_invite_group",
     "direct_message_initiator_group",
     "direct_message_permission_group",
+] as const;
+
+export const realm_group_setting_name_schema = z.enum([
+    ...realm_group_setting_names_supporting_anonymous_groups,
+    "can_access_all_users_group",
+    "can_create_web_public_channel_group",
 ]);
 export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
+
+export const realm_group_setting_name_supporting_anonymous_groups_schema = z.enum(
+    realm_group_setting_names_supporting_anonymous_groups,
+);
+export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
+    typeof realm_group_setting_name_supporting_anonymous_groups_schema
+>;
 
 export const stream_group_setting_name_schema = z.enum([
     "can_add_subscribers_group",

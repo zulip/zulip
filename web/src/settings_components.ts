@@ -13,7 +13,11 @@ import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
-import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
+import type {
+    AssignedGroupPermission,
+    GroupGroupSettingName,
+    RealmGroupSettingNameSupportingAnonymousGroups,
+} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
 import {page_params} from "./page_params.ts";
@@ -1734,15 +1738,6 @@ export function create_group_setting_widget({
 
     return pill_widget;
 }
-
-export const realm_group_setting_name_supporting_anonymous_groups_schema =
-    group_permission_settings.realm_group_setting_name_schema.exclude([
-        "can_access_all_users_group",
-        "can_create_web_public_channel_group",
-    ]);
-export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
-    typeof realm_group_setting_name_supporting_anonymous_groups_schema
->;
 
 export function create_realm_group_setting_widget({
     $pill_container,
