@@ -88,6 +88,10 @@ Zulip offers the following filters based on the location of the message.
   channels](/help/change-the-privacy-of-a-channel) in the organization, including
   channels you are not subscribed to; see details
   [below](#searching-shared-history).
+* `channels:web-public`: Search the history of all [web-public
+  channels](/help/change-the-privacy-of-a-channel) in the organization, including channels you are not subscribed to;
+  see details
+  [below](#searching-shared-history)
 
 ### Search by sender
 
@@ -171,6 +175,10 @@ access to in the selected channel(s).  For example:
   organization.
 * `channels:public sender:Elena García`: Search for all messages sent by
   Elena to any public channel.
+* `channels:web-public logo`: Search for `logo` in all web-public channels in
+  the organizations.
+* `channels:web-public sender:Elena García`: Search for all messages sent by
+  Elena to any web-public channel.
 * `channel:design logo`: Search for the word `logo` in all messages sent to
   **#design**, regardless of whether you were subscribed at the time the message
   was sent.

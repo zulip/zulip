@@ -103,10 +103,14 @@ test("basic_get_suggestions", ({override}) => {
 
 test("basic_get_suggestions_for_spectator", () => {
     page_params.is_spectator = true;
+    const web_public_id = new_stream_id();
+    const sub = {name: "Web public", stream_id: web_public_id, is_web_public: true};
+    stream_data.add_sub(sub);
 
-    const query = "";
-    const suggestions = get_suggestions(query);
+    let query = "";
+    let suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, [
+        "channels:",
         "is:resolved",
         "-is:resolved",
         "has:link",
@@ -114,6 +118,11 @@ test("basic_get_suggestions_for_spectator", () => {
         "has:attachment",
         "has:reaction",
     ]);
+
+    stream_data.delete_sub(sub.stream_id);
+    query = "channels:";
+    suggestions = get_suggestions(query);
+    assert.deepEqual(suggestions.strings, []);
     page_params.is_spectator = false;
 });
 
@@ -383,13 +392,18 @@ test("empty_query_suggestions", () => {
 
     const devel_id = new_stream_id();
     const office_id = new_stream_id();
-    stream_data.add_sub({stream_id: devel_id, name: "devel", subscribed: true});
+    stream_data.add_sub({
+        stream_id: devel_id,
+        name: "devel",
+        subscribed: true,
+        is_web_public: true,
+    });
     stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
 
     const suggestions = get_suggestions(query);
 
     const expected = [
-        "channels:public",
+        "channels:",
         "is:dm",
         "is:starred",
         "is:mentioned",
@@ -576,7 +590,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     // but shows html description used for "channels:public"
     query = "st";
     suggestions = get_suggestions(query);
-    expected = ["st", "streams:public", "is:starred", "channel:"];
+    expected = ["st", "is:starred", "channels:", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "channel:66 has:link is:sta";
@@ -990,12 +1004,12 @@ test("operator_suggestions", ({override, mock_template}) => {
 
     query = "ch";
     suggestions = get_suggestions(query);
-    expected = ["ch", "channels:public", "channel:"];
+    expected = ["ch", "channels:", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-s";
     suggestions = get_suggestions(query);
-    expected = ["-s", "-sender:myself@zulip.com", "-sender:", "-channel:"];
+    expected = ["-s", "-sender:myself@zulip.com", "-sender:", "-channels:", "-channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     // 66 is a misc channel id.
