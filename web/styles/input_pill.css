@@ -65,18 +65,30 @@
             min-width: 0;
             align-items: center;
             margin: 0 var(--input-pill-side-padding);
-
-            .zulip-icon-bot {
-                margin-left: 0.4em;
-            }
         }
 
+        .pill-user-with-icon {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .pill-user-with-icon .pill-value {
+            margin-right: 0.4em;
+        }
+
+        /* Applied to .pill-value when not inside .pill-user-with-icon,
+           or more generally, to any .pill-value. Specificity of
+           .pill-user-with-icon .pill-value will override the margin if needed. */
         .pill-value {
             flex: 0 1 auto;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             line-height: 1.5;
+        }
+
+        .pill-user-with-icon .zulip-icon-bot {
+            transform: translateY(-1px);
         }
 
         .pill-close-button,
