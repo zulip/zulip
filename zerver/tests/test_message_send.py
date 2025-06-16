@@ -2634,6 +2634,26 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=receiver,
         )
 
+    def test_personal_create_direct_message_group(self) -> None:
+        """
+        If you send a personal using direct_message_group, only you and the recipient see it.
+        """
+        sender = self.example_user("hamlet")
+        receiver = self.example_user("othello")
+
+        # Removing the personal recipient to ensure a new direct message group is created.
+        receiver.recipient = None
+        receiver.save()
+
+        self.login("hamlet")
+        self.assert_personal(
+            sender=sender,
+            receiver=receiver,
+        )
+
+        message = most_recent_message(sender)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
     def test_direct_message_initiator_group_setting(self) -> None:
         """
         Tests that direct_message_initiator_group_setting works correctly.
