@@ -17,8 +17,9 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.message import normalize_body_for_import
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
+from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
@@ -713,15 +714,45 @@ def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> Zerv
     )
 
 
-def get_emojis(emoji_dir: str, emoji_url: str, emoji_path: str) -> str | None:
+def get_emojis(
+    emoji_dir: str,
+    emoji_url: str,
+    emoji_name: str,
+    emoji_id: int,
+    realm_id: int,
+) -> str | None:
+    """
+    This downloads the given `emoji_url` into the given directory (`emoji_dir`)
+    and returns the file name of the downloaded emoji.
+
+    Returns `None` when the emoji file has an unspecified content type.
+
+    Raises `BadImageError` when the emoji's content type is not in
+    `THUMBNAIL_ACCEPT_IMAGE_TYPES` or `INLINE_MIME_TYPES`.
+    """
+    response = requests.get(emoji_url, stream=True)
+    content_type = response.headers.get("Content-Type")
+    if content_type is None:
+        logging.warning(
+            "Emoji %s has an unspecified content type. Using the original file extension.",
+            emoji_name,
+        )
+        return None
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
+        raise BadImageError(
+            f"Emoji {emoji_name} is not an image file. Content type: {content_type}"
+        )
+    emoji_file_name = get_emoji_file_name(content_type, emoji_id)
+    emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+        realm_id=realm_id, emoji_file_name=emoji_file_name
+    )
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
-    response = requests.get(emoji_url, stream=True)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
     with open(upload_emoji_path, "wb") as emoji_file:
         shutil.copyfileobj(response.raw, emoji_file)
 
-    return response.headers.get("Content-Type")
+    return emoji_file_name
 
 
 def process_emojis(
@@ -743,45 +774,29 @@ def process_emojis(
     logging.info("DOWNLOADING EMOJIS .......\n")
     for emoji in zerver_realmemoji:
         emoji_url = emoji_url_map[emoji["name"]]
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=emoji["realm"], emoji_file_name=emoji["name"]
-        )
 
+        emoji_file_name = get_emojis(
+            emoji_dir,
+            emoji_url,
+            emoji["name"],
+            emoji["id"],
+            emoji["realm"],
+        )
+        if emoji_file_name is None:
+            continue
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=emoji["realm"], emoji_file_name=emoji_file_name
+        )
         emoji_record = dict(emoji)
         emoji_record["path"] = emoji_path
         emoji_record["s3_path"] = emoji_path
         emoji_record["realm_id"] = emoji_record["realm"]
+        emoji_record["file_name"] = emoji_file_name
         emoji_record.pop("realm")
-
         emoji_records.append(emoji_record)
 
-        # Directly download the emoji and patch the file_name with the correct extension
-        # based on the content-type returned by the server. This is needed because Slack
-        # sometimes returns an emoji url with .png extension despite the file being a gif.
-        content_type = get_emojis(emoji_dir, emoji_url, emoji_path)
-        if content_type is None:
-            logging.warning(
-                "Emoji %s has an unspecified content type. Using the original file extension.",
-                emoji["name"],
-            )
-            continue
-
-        if (
-            content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES
-            or content_type not in INLINE_MIME_TYPES
-        ):
-            raise BadImageError(
-                f"Emoji {emoji['name']} is not an image file. Content type: {content_type}"
-            )
-
-        file_extension = guess_extension(content_type, strict=False)
-        assert file_extension is not None
-
-        old_file_name = emoji_record["file_name"]
-        new_file_name = f"{old_file_name.rsplit('.', 1)[0]}{file_extension}"
-
-        emoji_record["file_name"] = new_file_name
-        emoji["file_name"] = new_file_name
+        emoji["file_name"] = emoji_file_name
 
     logging.info("######### GETTING EMOJIS FINISHED #########\n")
     return emoji_records
