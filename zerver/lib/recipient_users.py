@@ -37,7 +37,6 @@ def get_recipient_from_user_profiles(
 
     # Make sure the sender is included in the group direct messages.
     recipient_profiles_map[sender.id] = sender
-    user_ids = list(recipient_profiles_map)
 
     # Important note: We are transitioning 1:1 DMs and self DMs to use
     # DirectMessageGroup as the Recipient type. If PREFER_DIRECT_MESSAGE_GROUP
@@ -45,17 +44,24 @@ def get_recipient_from_user_profiles(
     # not, we use the legacy personal recipient. Once the migration completes,
     # this code path will be removed.
     if len(recipient_profiles_map) <= 2 and not settings.PREFER_DIRECT_MESSAGE_GROUP:
-        del recipient_profiles_map[sender.id]
-        if len(recipient_profiles_map) == 1:
-            [recipient_user_profile] = recipient_profiles_map.values()
-        else:
-            recipient_user_profile = sender
-        return Recipient(
-            id=recipient_user_profile.recipient_id,
-            type=Recipient.PERSONAL,
-            type_id=recipient_user_profile.id,
+        has_personal_recipient = all(
+            user_profile.recipient_id is not None
+            for user_profile in recipient_profiles_map.values()
         )
 
+        if has_personal_recipient:
+            del recipient_profiles_map[sender.id]
+            if len(recipient_profiles_map) == 1:
+                [recipient_user_profile] = recipient_profiles_map.values()
+            else:
+                recipient_user_profile = sender
+            return Recipient(
+                id=recipient_user_profile.recipient_id,
+                type=Recipient.PERSONAL,
+                type_id=recipient_user_profile.id,
+            )
+
+    user_ids = list(recipient_profiles_map)
     if create:
         direct_message_group = get_or_create_direct_message_group(user_ids)
     else:
