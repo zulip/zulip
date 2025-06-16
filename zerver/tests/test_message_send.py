@@ -2449,6 +2449,28 @@ class StreamMessagesTest(ZulipTestCase):
         )
         self.assertEqual(recent_conversation["max_message_id"], message2_id)
 
+    def test_get_raw_unread_data_for_1_to_1_dms_using_group_direct_message(self) -> None:
+        sender = self.example_user("hamlet")
+        receiver = self.example_user("cordelia")
+        receiver.recipient = None
+        receiver.save()
+
+        message1_id = self.send_personal_message(sender, receiver, "test content 1")
+        message2_id = self.send_personal_message(sender, receiver, "test content 2")
+
+        msg_data = get_raw_unread_data(receiver)
+
+        self.assert_length(msg_data["pm_dict"].keys(), 2)
+        self.assert_length(msg_data["huddle_dict"].keys(), 0)
+
+        self.assertIn(message1_id, msg_data["pm_dict"].keys())
+        self.assertIn(message2_id, msg_data["pm_dict"].keys())
+
+        recent_conversations = get_recent_private_conversations(receiver)
+        [recent_conversation] = recent_conversations.values()
+        self.assertEqual(set(recent_conversation["user_ids"]), {sender.id})
+        self.assertEqual(recent_conversation["max_message_id"], message2_id)
+
     def test_stream_becomes_active_on_message_send(self) -> None:
         # Mark a stream as inactive
         stream = self.make_stream("inactive_stream")
@@ -2544,10 +2566,11 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(message_stream_count(receiver), receiver_messages + 1)
 
         direct_message_group = get_direct_message_group([sender.id, receiver.id])
-        if direct_message_group and settings.PREFER_DIRECT_MESSAGE_GROUP:
-            recipient = Recipient.objects.get(
-                type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
-            )
+        has_none_recipient = receiver.recipient is None or sender.recipient is None
+        if has_none_recipient:
+            recipient = get_or_create_direct_message_group([sender.id, receiver.id]).recipient
+        elif settings.PREFER_DIRECT_MESSAGE_GROUP and direct_message_group:
+            recipient = direct_message_group.recipient
         else:
             recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
 
@@ -2581,6 +2604,26 @@ class PersonalMessageSendTest(ZulipTestCase):
             sender=sender,
             receiver=receiver,
         )
+
+    def test_personal_when_personal_recipient_is_none(self) -> None:
+        """
+        If you send a personal using direct_message_group, only you and the recipient see it.
+        """
+        sender = self.example_user("hamlet")
+        receiver = self.example_user("othello")
+
+        # Removing the personal recipient to ensure a new direct message group is created.
+        receiver.recipient = None
+        receiver.save()
+
+        self.login("hamlet")
+        self.assert_personal(
+            sender=sender,
+            receiver=receiver,
+        )
+
+        message = most_recent_message(sender)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_direct_message_initiator_group_setting(self) -> None:
         """
