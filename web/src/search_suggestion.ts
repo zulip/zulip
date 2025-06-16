@@ -649,26 +649,45 @@ function get_special_filter_suggestions(
 }
 
 function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    let search_string = "channels:public";
+    const incompatible_patterns = [
+        {operator: "is", operand: "dm"},
+        {operator: "channel"},
+        {operator: "dm-including"},
+        {operator: "dm"},
+        {operator: "in"},
+        {operator: "channels"},
+    ];
     // show "channels:public" option for users who
     // have "streams" in their muscle memory
     if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
-        search_string = "streams:public";
+        const suggestions: SuggestionAndIncompatiblePatterns[] = [
+            {
+                search_string: "streams:public",
+                description_html: "all public channels",
+                is_people: false,
+                incompatible_patterns,
+            },
+            {
+                search_string: "streams:web-public",
+                description_html: "all web public channels",
+                is_people: false,
+                incompatible_patterns,
+            },
+        ];
+        return get_special_filter_suggestions(last, terms, suggestions);
     }
-    let description_html = "all public channels";
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
-            search_string,
-            description_html,
+            search_string: "channels:public",
+            description_html: "all public channels",
             is_people: false,
-            incompatible_patterns: [
-                {operator: "is", operand: "dm"},
-                {operator: "channel"},
-                {operator: "dm-including"},
-                {operator: "dm"},
-                {operator: "in"},
-                {operator: "channels"},
-            ],
+            incompatible_patterns,
+        },
+        {
+            search_string: "channels:web-public",
+            description_html: "all web public channels",
+            is_people: false,
+            incompatible_patterns,
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
