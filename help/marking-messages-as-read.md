@@ -15,15 +15,15 @@ web/desktop app.
 
 - **Always**: Messages are marked as read whenever you scroll through them in
   the app. You may be used to this from other chat applications.
-- **Never**: Messages are marked as read only
-  [manually](#mark-all-messages-as-read). For example, if you often need to
-  follow up on messages at your computer after reading them in the mobile app,
-  you can choose this option for the mobile app.
 - **Only in conversation views**: In Zulip, a **conversation** is a [direct
   message](/help/direct-messages) thread (one-on-one or with a group), or a
   [topic in a channel](/help/introduction-to-topics). This option makes it
   convenient to preview new messages in a channel, or skim [Combined
   feed](/help/combined-feed), and later read each topic in detail.
+- **Never**: Messages are marked as read only
+  [manually](#mark-all-messages-as-read). For example, if you often need to
+  follow up on messages at your computer after reading them in the mobile app,
+  you can choose this option for the mobile app.
 
 {start_tabs}
 
