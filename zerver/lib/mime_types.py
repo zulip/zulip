@@ -22,13 +22,17 @@ for mime_type, extension in EXTRA_MIME_TYPES:
     add_type(mime_type, extension)
 
 
-INLINE_MIME_TYPES = [
-    "application/pdf",
+AUDIO_INLINE_MIME_TYPES = [
     "audio/aac",
     "audio/flac",
-    "audio/mp4",
     "audio/mpeg",
     "audio/wav",
+]
+
+INLINE_MIME_TYPES = [
+    *AUDIO_INLINE_MIME_TYPES,
+    "application/pdf",
+    "audio/mp4",
     "audio/webm",
     "image/apng",
     "image/avif",
