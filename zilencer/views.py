@@ -51,6 +51,7 @@ from zerver.lib.push_notifications import (
     send_android_push_notification,
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
+    validate_token,
 )
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.rate_limiter import rate_limit_endpoint_absolute
@@ -75,7 +76,6 @@ from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import DisposableEmailError
-from zerver.views.push_notifications import validate_token
 from zilencer.auth import (
     InvalidZulipServerKeyError,
     generate_registration_transfer_verification_secret,
