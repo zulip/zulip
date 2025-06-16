@@ -218,6 +218,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                     return ["public", "web-public"].includes(stream_privacy_policy);
                 case "web-public":
                     return stream_privacy_policy === "web-public";
+                case "archived":
+                    return stream_data.is_stream_archived(message.stream_id);
                 default:
                     return false;
             }
@@ -586,7 +588,7 @@ export class Filter {
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
-                return ["public", "web-public"].includes(term.operand);
+                return ["public", "web-public", "archived"].includes(term.operand);
             case "topic":
                 return true;
             case "sender":
@@ -659,6 +661,7 @@ export class Filter {
             "in",
             "channels-public",
             "channels-web-public",
+            "channels-archived",
             "channel",
             "topic",
             "dm",
@@ -822,7 +825,7 @@ export class Filter {
             }
             if (
                 canonicalized_operator === "channels" &&
-                ["public", "web-public"].includes(operand)
+                ["public", "web-public", "archived"].includes(operand)
             ) {
                 return {
                     type: "plain_text",
@@ -891,16 +894,20 @@ export class Filter {
 
     static describe_channels_operator(negated: boolean, operand: string): string {
         const possible_prefix = negated ? "exclude " : "";
-        assert(["public", "web-public"].includes(operand));
+        assert(["public", "web-public", "archived"].includes(operand));
         if (page_params.is_spectator || current_user.is_guest) {
             if (operand === "web-public") {
                 return possible_prefix + "all web public channels";
+            } else if (operand === "archived") {
+                return possible_prefix + "all archived channels";
             }
             return possible_prefix + "all public channels that you can view";
         }
         switch (operand) {
             case "web-public":
                 return possible_prefix + "all web public channels";
+            case "archived":
+                return possible_prefix + "all archived channels";
             default:
                 return possible_prefix + "all public channels";
         }
@@ -1169,6 +1176,8 @@ export class Filter {
             "not-channels-public",
             "channels-web-public",
             "not-channels-web-public",
+            "channels-archived",
+            "not-channels-archived",
             "near",
             "with",
         ]);
@@ -1274,6 +1283,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-web-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-archived"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
@@ -1345,6 +1357,8 @@ export class Filter {
                     return "/#narrow/channels/public";
                 case "channels-web-public":
                     return "/#narrow/channels/web-public";
+                case "channels-archived":
+                    return "/#narrow/channels/archived";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1515,6 +1529,8 @@ export class Filter {
                     return $t({defaultMessage: "Messages in all public channels"});
                 case "channels-web-public":
                     return $t({defaultMessage: "Messages in all web public channels"});
+                case "channels-archived":
+                    return $t({defaultMessage: "Messages in all archived channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -1909,6 +1925,8 @@ export class Filter {
             "not-channels-public",
             "channels-web-public",
             "not-channels-web-public",
+            "channels-archived",
+            "not-channels-archived",
             "is-muted",
             "not-is-muted",
             "in-home",

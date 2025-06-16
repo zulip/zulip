@@ -673,6 +673,12 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
                 is_people: false,
                 incompatible_patterns,
             },
+            {
+                search_string: "streams:archived",
+                description_html: "all archived channels",
+                is_people: false,
+                incompatible_patterns,
+            },
         ];
         return get_special_filter_suggestions(last, terms, suggestions);
     }
@@ -686,6 +692,12 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
         {
             search_string: "channels:web-public",
             description_html: "all web public channels",
+            is_people: false,
+            incompatible_patterns,
+        },
+        {
+            search_string: "channels:archived",
+            description_html: "all archived channels",
             is_people: false,
             incompatible_patterns,
         },
