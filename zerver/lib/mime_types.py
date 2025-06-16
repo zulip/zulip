@@ -43,3 +43,12 @@ INLINE_MIME_TYPES = [
     # as application/xhtml+xml, application/x-shockwave-flash,
     # image/svg+xml, text/html, or text/xml.
 ]
+
+AUDIO_MIME_TYPES = [
+    "audio/aac",
+    "audio/flac",
+    "audio/mp4",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/webm",
+]
