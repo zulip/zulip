@@ -631,7 +631,10 @@ function get_special_filter_suggestions(
     return filtered_suggestions;
 }
 
-function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_public_channels_filter_suggestions(
+    last: NarrowTerm,
+    terms: NarrowTerm[],
+): Suggestion[] {
     if (last.operator !== "channels") {
         return [];
     }
@@ -1075,7 +1078,7 @@ export function get_search_result(
         // name, and if there's already has a DM pill then the
         // searching user probably is looking to make a group DM.
         get_group_suggestions,
-        get_channels_filter_suggestions,
+        get_public_channels_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
@@ -1090,7 +1093,7 @@ export function get_search_result(
 
     if (page_params.is_spectator) {
         filterers = [
-            get_channels_filter_suggestions,
+            get_public_channels_filter_suggestions,
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
