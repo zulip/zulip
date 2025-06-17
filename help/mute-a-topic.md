@@ -39,16 +39,7 @@
 
 {tab|mobile}
 
-1. Tap the **Channels** (<i class="zulip-icon zulip-icon-hash mobile-help"></i>)
-   tab at the bottom of the app.
-
-1. Select a channel containing topics you want to configure.
-
-1. Tap **topics** in the upper right corner of the app.
-
-{!topic-long-press-menu.md!}
-
-1. Tap **Mute topic**, **Unmute topic**, or **Follow topic**.
+{!manage-configured-topics-mobile.md!}
 
 !!! tip ""
 

@@ -24,8 +24,7 @@
 
 {tab|mobile}
 
-1. Tap the **Channels** (<i class="zulip-icon zulip-icon-hash mobile-help"></i>)
-   tab at the bottom of the app.
+{!mobile-channels.md!}
 
 1. Tap on the desired channel.
 
