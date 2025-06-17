@@ -95,6 +95,7 @@ def get_message_stream_name_from_database(message: Message) -> str:
     return Stream.objects.get(id=stream_id).name
 
 
+@dataclass
 class UserPushIdentityCompat:
     """Compatibility class for supporting the transition from remote servers
     sending their UserProfile ids to the bouncer to sending UserProfile uuids instead.
@@ -104,10 +105,11 @@ class UserPushIdentityCompat:
     may be represented either by an id or uuid.
     """
 
-    def __init__(self, user_id: int | None = None, user_uuid: str | None = None) -> None:
-        assert user_id is not None or user_uuid is not None
-        self.user_id = user_id
-        self.user_uuid = user_uuid
+    user_id: int | None = None
+    user_uuid: str | None = None
+
+    def __post_init__(self) -> None:
+        assert self.user_id is not None or self.user_uuid is not None
 
     def filter_q(self) -> Q:
         """
@@ -135,12 +137,6 @@ class UserPushIdentityCompat:
             result += f"<uuid:{self.user_uuid}>"
 
         return result
-
-    @override
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, UserPushIdentityCompat):
-            return self.user_id == other.user_id and self.user_uuid == other.user_uuid
-        return False
 
 
 #
