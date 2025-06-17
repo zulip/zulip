@@ -1,31 +1,65 @@
-{{#if message}}
-{{message}}
-<br />
+{{#if error_message}}
+    <div class="banner-wrapper">
+        <div class="banner banner-danger">
+            <span class="banner-label">
+                {{error_message}}
+            </span>
+        </div>
+    </div>
+{{else}}
+    <div class="banner-wrapper">
+        <div class="banner banner-success">
+            <span class="banner-label">
+                {{#if (eq newly_added_member_count 0)}}
+                    {{#if (and already_added_user_count already_added_subgroups_count)}}
+                        {{t "All users and groups were already members."}}
+                    {{else if already_added_user_count}}
+                        {{t "All users were already members."}}
+                    {{else}}
+                        {{t "All groups were already members."}}
+                    {{/if}}
+                {{else}}
+                    {{#if (not total_member_count_exceeds_five)}}
+                        {{#if addition_success_messages.newly_added_members_message}}
+                            {{t "Added:" }} {{{addition_success_messages.newly_added_members_message}}}.&nbsp;
+                        {{/if}}
+                        {{#if addition_success_messages.already_added_members_message}}
+                            {{t "Already a member:"}} {{{addition_success_messages.already_added_members_message}}}.
+                        {{/if}}
+                    {{else}}
+                        {{#if newly_added_member_count}}
+                            {{t "Added:"}}
+                            {{#if (and newly_added_user_count newly_added_subgroups_count)}}
+                                {{t "{newly_added_user_count, plural, one {# user} other {# users}} and {newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                            {{else if newly_added_user_count}}
+                                {{t "{newly_added_user_count, plural, one {# user.} other {# users.}}"}}
+                            {{else if newly_added_subgroups_count}}
+                                {{t "{newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                            {{/if}}
+                        {{/if}}
+                        {{#if already_added_member_count}}
+                            {{t "Already a member:"}}
+                            {{#if (and already_added_user_count already_added_subgroups_count)}}
+                                {{t "{already_added_user_count, plural, one {# user} other {# users}} and {already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                            {{else if already_added_user_count}}
+                                {{t "{already_added_user_count, plural, one {# user.} other {# users.}}"}}
+                            {{else if already_added_subgroups_count}}
+                                {{t "{already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                            {{/if}}
+                        {{/if}}
+                    {{/if}}
+                {{/if}}
+            </span>
+        </div>
+    </div>
 {{/if}}
-{{#if already_added_users}}
-    {{#each already_added_users}}
-        {{#if @first}}
-        {{t "Already members:" }}
-        {{/if}}
-        <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
-    {{/each}}
-    <br />
-{{/if}}
+
 {{#if ignored_deactivated_users}}
     {{#each ignored_deactivated_users}}
         {{#if @first}}
         {{t "Ignored deactivated users:" }}
         {{/if}}
         <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
-    {{/each}}
-    <br />
-{{/if}}
-{{#if already_added_subgroups}}
-    {{#each already_added_subgroups}}
-        {{#if @first}}
-        {{t "Already subgroups:" }}
-        {{/if}}
-        <a data-user-group-id="{{id}}" class="view_user_group">{{name}}</a>{{#unless @last}},{{else}}.{{/unless}}
     {{/each}}
     <br />
 {{/if}}
