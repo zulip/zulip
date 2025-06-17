@@ -32,10 +32,11 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.users import (
+    do_add_update_outgoing_webhook_service,
     do_change_user_role,
     do_deactivate_user,
     do_update_bot_config_data,
-    do_update_outgoing_webhook_service,
+    do_update_bot_type,
 )
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
@@ -442,6 +443,7 @@ def patch_bot_backend(
     *,
     bot_id: PathOnly[int],
     full_name: str | None = None,
+    bot_type: Json[int] | None = None,
     role: Json[RoleParamType] | None = None,
     bot_owner_id: Json[int] | None = None,
     config_data: Json[dict[str, str]] | None = None,
@@ -499,10 +501,17 @@ def patch_bot_backend(
     if service_payload_url is not None:
         check_valid_interface_type(service_interface)
         assert service_interface is not None
-        do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
+        do_add_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
 
     if config_data is not None:
         do_update_bot_config_data(bot, config_data)
+
+    if bot_type is not None and bot.bot_type != bot_type:
+        check_valid_bot_type(user_profile, bot_type)
+        if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT and service_payload_url is None:
+            raise JsonableError(_("Missing service_payload_url."))
+
+        do_update_bot_type(bot, bot_type, acting_user=user_profile)
 
     if len(request.FILES) == 0:
         pass
@@ -523,6 +532,7 @@ def patch_bot_backend(
         service_payload_url=service_payload_url,
         config_data=config_data,
         default_sending_stream=get_stream_name(bot.default_sending_stream),
+        bot_type=bot_type,
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
         default_all_public_streams=bot.default_all_public_streams,
     )
