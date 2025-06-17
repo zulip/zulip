@@ -130,7 +130,7 @@ export function get_posting_policy_error_message(): string {
     return posting_policy_error_message;
 }
 
-export function get_disabled_send_tooltip(): string {
+export function get_disabled_send_tooltip_html(): string {
     return disabled_send_tooltip_message_html;
 }
 

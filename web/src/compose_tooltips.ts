@@ -235,7 +235,7 @@ export function initialize(): void {
             }
 
             if (instance.reference.classList.contains("disabled-message-send-controls")) {
-                const error_message = compose_validate.get_disabled_send_tooltip();
+                const error_message = compose_validate.get_disabled_send_tooltip_html();
                 instance.setContent(parse_html(error_message));
                 // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
                 // is in the error message.
