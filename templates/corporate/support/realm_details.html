@@ -10,7 +10,10 @@
     {% if realm_support_data[realm.id].sponsorship_data.has_discount %}
         <p class="support-section-header">Has a discount 💸</p>
     {% endif %}
-    {% if realm.deactivated_redirect %}
+    {% set realm_is_scrubbed = realm_support_data[realm.id].is_scrubbed %}
+    {% if realm_is_scrubbed %}
+    <b>Realm has been scrubbed</b>
+    {% elif realm.deactivated_redirect %}
     <b>Placeholder realm</b><br />
     <b>Redirects to</b>: {{ realm.deactivated_redirect }}
     <a title="Copy URL" class="copy-button" data-clipboard-text="{{ realm.deactivated_redirect }}">
@@ -69,7 +72,8 @@
     <b>File upload usage</b>: {{ realm_support_data[realm.id].file_upload_usage }}<br />
     {% endif %}
 </div>
-{% if not realm.deactivated_redirect %}
+{% if realm_is_scrubbed %}
+{% elif not realm.deactivated_redirect %}
 <div>
     <div class="realm-management-actions">
         <p class="support-section-header">🛠️ Realm management:</p>
