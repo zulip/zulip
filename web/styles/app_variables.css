@@ -2112,7 +2112,7 @@
         hsl(0deg 0% 100%)
     );
     --outline-width-button-focus: 1.5px;
-    --outline-offset-button-focus: 1px;
+    --outline-offset-button-focus: 0;
     /* Actions buttons */
     --color-inner-shadow-action-button: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 20%, transparent),
