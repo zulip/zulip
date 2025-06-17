@@ -59,7 +59,7 @@ Get a peek at new features before they're released!
 ## Install the legacy app
 
 Zulip replaced the legacy mobile app with a [new mobile
-app](https://blog.zulip.com/flutter-mobile-app-launch) in
+app](https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/) in
 June 2025. Android users can still install the legacy app, which will
 not be updated with bug fixes or new features.
 
