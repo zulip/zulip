@@ -55,7 +55,7 @@ export function update_lock_icon_in_sidebar(): void {
     $(".org-settings-list .locked").show();
 
     if (
-        settings_bots.can_create_incoming_webhooks() ||
+        settings_data.can_create_incoming_webhooks() ||
         bot_data.get_all_bots_ids_for_current_user().length > 0
     ) {
         $(".org-settings-list li[data-section='bots'] .locked").hide();
@@ -112,7 +112,7 @@ export function build_page(): void {
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
         timezones: timezones.timezones,
-        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
+        can_create_new_bots: settings_data.can_create_incoming_webhooks(),
         settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
@@ -215,7 +215,7 @@ export function initialize(): void {
         is_guest: current_user.is_guest,
         show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
-        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
+        can_create_new_bots: settings_data.can_create_incoming_webhooks(),
         can_manage_bot:
             current_user.is_admin || bot_data.get_all_bots_ids_for_current_user().length > 0,
         can_edit_user_panel:
