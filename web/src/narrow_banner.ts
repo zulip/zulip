@@ -82,7 +82,6 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
 const NO_SEARCH_RESULTS_TITLE = $t({defaultMessage: "No search results."});
 
 function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
-    // when search bar contains multiple filters, only retrieve search queries
     const search_query = current_filter.operands("search")[0];
     const query_words = search_query!.split(" ");
 
@@ -90,20 +89,6 @@ function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
         query_words: [],
         has_stop_word: false,
     };
-
-    // Add in stream:foo and topic:bar if present
-    if (current_filter.has_operator("channel") || current_filter.has_operator("topic")) {
-        const stream_id = current_filter.operands("channel")[0];
-        const topic = current_filter.operands("topic")[0];
-        if (stream_id) {
-            const stream_name = stream_data.get_valid_sub_by_id_string(stream_id).name;
-            search_string_result.stream_query = stream_name;
-        }
-        if (topic !== undefined) {
-            search_string_result.topic_query = util.get_final_topic_display_name(topic);
-            search_string_result.is_empty_string_topic = topic === "";
-        }
-    }
 
     // Gather information about each query word
     for (const query_word of query_words) {
@@ -121,10 +106,15 @@ function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
         }
     }
 
-    return {
-        title: NO_SEARCH_RESULTS_TITLE,
-        search_data: search_string_result,
-    };
+    // We only show description of search query
+    // when there are excluded stop words.
+    if (search_string_result.has_stop_word) {
+        return {
+            title: NO_SEARCH_RESULTS_TITLE,
+            search_data: search_string_result,
+        };
+    }
+    return {title: NO_SEARCH_RESULTS_TITLE};
 }
 
 export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerData {
