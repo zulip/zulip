@@ -62,7 +62,7 @@ def get_body(payload: WildValue) -> str:
                 }
             )
 
-        if payload["status"] == "successful":
+        if payload["status"].tame(check_string) == "successful":
             status = "was successful"
         else:
             status = "failed"

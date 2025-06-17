@@ -225,7 +225,7 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
         else:
             verb = "deleted a comment from"
 
-        if payload.get("webhookEvent") == "comment_created":
+        if payload.get("webhookEvent").tame(check_none_or(check_string)) == "comment_created":
             author = payload["comment"]["author"]["displayName"].tame(check_string)
         else:
             author = get_issue_author(payload)

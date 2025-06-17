@@ -7,6 +7,7 @@ from zerver.lib.exceptions import InvalidJSONError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
+    check_anything,
     check_bool,
     check_capped_string,
     check_dict,
@@ -323,19 +324,24 @@ class ValidatorTestCase(ZulipTestCase):
     def test_wild_value(self) -> None:
         x = to_wild_value("x", '{"a": 1, "b": ["c", false, null]}')
 
-        self.assertEqual(x, x)
+        with self.assertRaisesRegex(TypeError, r"^cannot compare WildValue$"):
+            self.assertEqual(x, x)
+
         self.assertTrue(x)
         self.assertEqual(len(x), 2)
         self.assertEqual(list(x.keys()), ["a", "b"])
-        self.assertEqual(list(x.values()), [1, ["c", False, None]])
-        self.assertEqual(list(x.items()), [("a", 1), ("b", ["c", False, None])])
+        self.assertEqual([v.tame(check_anything) for v in x.values()], [1, ["c", False, None]])
+        self.assertEqual(
+            [(k, v.tame(check_anything)) for k, v in x.items()],
+            [("a", 1), ("b", ["c", False, None])],
+        )
         self.assertTrue("a" in x)
-        self.assertEqual(x["a"], 1)
-        self.assertEqual(x.get("a"), 1)
-        self.assertEqual(x.get("z"), None)
+        self.assertEqual(x["a"].tame(check_int), 1)
+        self.assertEqual(x.get("a").tame(check_int), 1)
+        self.assertEqual(x.get("z").tame(check_none_or(check_int)), None)
         self.assertEqual(x.get("z", x["a"]).tame(check_int), 1)
         self.assertEqual(x["a"].tame(check_int), 1)
-        self.assertEqual(x["b"], x["b"])
+        self.assertEqual(x["b"].tame(check_anything), x["b"].tame(check_anything))
         self.assertTrue(x["b"])
         self.assertEqual(len(x["b"]), 3)
         self.assert_length(list(x["b"]), 3)
