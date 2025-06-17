@@ -25,7 +25,7 @@ def api_crashlytics_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    event = payload["event"]
+    event = payload["event"].tame(check_string)
     if event == VERIFICATION_EVENT:
         topic_name = CRASHLYTICS_SETUP_TOPIC_TEMPLATE
         body = CRASHLYTICS_SETUP_MESSAGE_TEMPLATE
