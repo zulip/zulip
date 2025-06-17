@@ -392,7 +392,7 @@ your Zulip app is upgraded. The new app offers a sleek new design and a faster,
 smoother experience. Check out [the announcement post]({flutter_release_blog_post})
 for details and how to share your feedback.
 """.format(
-            flutter_release_blog_post="https://blog.zulip.com/flutter-mobile-app-launch",
+            flutter_release_blog_post="https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/",
         ),
     ),
 ]
