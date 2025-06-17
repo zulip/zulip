@@ -1271,7 +1271,7 @@ def generate_and_send_messages(
             # Use an old recipient
             recipient_type, recipient_id, saved_data = recipients[num_messages - 1]
             if recipient_type == Recipient.PERSONAL:
-                personals_pair = saved_data["personals_pair"]
+                personals_pair = list(saved_data["personals_pair"])
                 random.shuffle(personals_pair)
             elif recipient_type == Recipient.STREAM:
                 message.subject = saved_data["subject"]
@@ -1288,7 +1288,7 @@ def generate_and_send_messages(
             / 100.0
         ):
             recipient_type = Recipient.PERSONAL
-            personals_pair = random.choice(personals_pairs)
+            personals_pair = list(random.choice(personals_pairs))
             random.shuffle(personals_pair)
         elif randkey <= random_max * 1.0:
             recipient_type = Recipient.STREAM
