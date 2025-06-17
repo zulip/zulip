@@ -349,6 +349,7 @@ select.settings_select {
     word-break: normal;
 }
 
+.export_url_spinner,
 .last_active {
     .loading_indicator_spinner {
         width: 1.25em;
