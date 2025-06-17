@@ -9,6 +9,10 @@ import type {StateData} from "./state_data.ts";
 export type UpdateBotData = z.infer<typeof update_bot_schema>;
 export type ServerAddBotData = z.infer<typeof server_add_bot_schema>;
 export type Bot = z.infer<typeof bot_schema>;
+export type BotType = {
+    type_id: number;
+    name: string;
+};
 
 export type Services = z.infer<typeof services_schema>;
 
