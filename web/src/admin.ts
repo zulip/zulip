@@ -25,6 +25,7 @@ import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as user_profile from "./user_profile.ts";
 import {the} from "./util.ts";
 import * as util from "./util.ts";
 
@@ -168,7 +169,7 @@ export function build_page(): void {
         realm_avatar_changes_disabled: realm.realm_avatar_changes_disabled,
         server_avatar_changes_disabled: realm.server_avatar_changes_disabled,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
-        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
+        can_create_new_bots: user_profile.can_create_incoming_webhooks(),
         realm_message_content_edit_limit_minutes:
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
