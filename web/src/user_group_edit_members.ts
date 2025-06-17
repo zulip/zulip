@@ -24,6 +24,7 @@ import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
+import * as util from "./util.ts";
 
 export let pill_widget: CombinedPillContainer;
 let current_group_id: number;
@@ -178,11 +179,50 @@ export function rerender_members_list({
     });
 }
 
+function generate_group_link(group: UserGroup): string {
+    return `<a data-user-group-id="${group.id}" class="view_user_group">${group.name}</a>`;
+}
+
+function generate_user_link(user: User): string {
+    return `<a data-user-id="${user.user_id}" class="view_user_profile">${user.full_name}</a>`;
+}
+
+function generate_members_added_success_messages(
+    newly_added_users?: User[],
+    newly_added_subgroups?: UserGroup[],
+    already_added_users?: User[],
+    already_added_subgroups?: UserGroup[],
+): {
+    newly_added_members_message: string;
+    already_added_members_message: string;
+} {
+    const new_user_links = newly_added_users?.map((user) => generate_user_link(user)) ?? [];
+    const new_group_links = newly_added_subgroups?.map((group) => generate_group_link(group)) ?? [];
+    const old_user_links = already_added_users?.map((user) => generate_user_link(user)) ?? [];
+    const old_group_links =
+        already_added_subgroups?.map((group) => generate_group_link(group)) ?? [];
+
+    const newly_added_members_message = util.format_array_as_list_with_conjunction(
+        [...new_user_links, ...new_group_links],
+        "long",
+    );
+    const already_added_members_message = util.format_array_as_list_with_conjunction(
+        [...old_user_links, ...old_group_links],
+        "long",
+    );
+    return {
+        newly_added_members_message,
+        already_added_members_message,
+    };
+}
+
 function show_user_group_membership_request_result({
     message,
     add_class,
     remove_class,
     already_added_users,
+    newly_added_users,
+    newly_added_subgroups,
     ignored_deactivated_users,
     already_added_subgroups,
     ignored_deactivated_groups,
@@ -190,20 +230,57 @@ function show_user_group_membership_request_result({
     message: string;
     add_class: string;
     remove_class: string;
+    newly_added_users?: User[];
+    newly_added_subgroups?: UserGroup[];
     already_added_users?: User[];
     ignored_deactivated_users?: User[];
     already_added_subgroups?: UserGroup[];
     ignored_deactivated_groups?: UserGroup[];
 }): void {
+    const newly_added_user_count = newly_added_users?.length ?? 0;
+    const newly_added_subgroups_count = newly_added_subgroups?.length ?? 0;
+    const already_added_user_count = already_added_users?.length ?? 0;
+    const already_added_subgroups_count = already_added_subgroups?.length ?? 0;
+
+    const total_member_count_exceeds_five =
+        newly_added_user_count +
+            newly_added_subgroups_count +
+            already_added_user_count +
+            already_added_subgroups_count >
+        5;
+
+    const newly_added_member_count = newly_added_user_count + newly_added_subgroups_count;
+    const already_added_member_count = already_added_user_count + already_added_subgroups_count;
+    let addition_success_messages;
+    if (!total_member_count_exceeds_five) {
+        addition_success_messages = generate_members_added_success_messages(
+            newly_added_users,
+            newly_added_subgroups,
+            already_added_users,
+            already_added_subgroups,
+        );
+    }
+
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
     const html = render_user_group_membership_request_result({
         message,
+        adding_new_users: newly_added_member_count + already_added_member_count > 0,
+        addition_success_messages,
+        add_class,
+        remove_class,
+        newly_added_member_count,
+        already_added_member_count,
+        newly_added_user_count,
+        newly_added_subgroups_count,
+        already_added_user_count,
+        already_added_subgroups_count,
         already_added_users,
         ignored_deactivated_users,
         already_added_subgroups,
         ignored_deactivated_groups,
+        total_member_count_exceeds_five,
     });
     scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
     $user_group_subscription_req_result_elem.addClass(add_class);
@@ -334,20 +411,12 @@ function add_new_members({
 
     const subgroup_id_set = new Set(subgroup_ids_to_add);
 
-    if (user_id_set.size === 0 && subgroup_id_set.size === 0) {
-        show_user_group_membership_request_result({
-            message: $t({defaultMessage: "No users or subgroups to add."}),
-            add_class: "text-error",
-            remove_class: "text-success",
-            already_added_users: ignored_already_added_users,
-            ignored_deactivated_users,
-            already_added_subgroups: ignored_already_added_subgroups,
-            ignored_deactivated_groups,
-        });
-        return;
-    }
     const user_ids = [...user_id_set];
     const subgroup_ids = [...subgroup_id_set];
+    const newly_added_users: User[] = user_ids.map((user_id) => people.get_by_user_id(user_id));
+    const newly_added_subgroups: UserGroup[] = subgroup_ids.map((group_id) =>
+        user_groups.get_user_group_from_id(group_id),
+    );
 
     function invite_success(): void {
         const $pill_widget_button_wrapper = $(".add_member_button_wrapper");
@@ -366,6 +435,8 @@ function add_new_members({
             message: $t({defaultMessage: "Added successfully."}),
             add_class: "text-success",
             remove_class: "text-error",
+            newly_added_users,
+            newly_added_subgroups,
             already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
             already_added_subgroups: ignored_already_added_subgroups,
