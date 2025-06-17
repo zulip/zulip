@@ -443,7 +443,7 @@ def do_change_user_setting(
 
     if isinstance(setting_value, Enum):
         db_setting_value = setting_value.value
-        event_value = setting_value.name
+        event_value: bool | str | int = setting_value.name
     else:
         db_setting_value = setting_value
         event_value = db_setting_value
