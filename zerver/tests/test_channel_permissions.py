@@ -728,6 +728,104 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             skip_changing_group_setting=True,
         )
 
+    def test_user_unsubscribe_themselves(self) -> None:
+        """
+        User trying to unsubscribe themselves from the stream, where
+        principals has the id of the acting_user performing the
+        unsubscribe action.
+        """
+        admin = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+
+        stream_name = "hümbüǵ"
+        stream = self.make_stream(stream_name)
+        stream_name_list = [stream.name]
+
+        def check_unsubscribing_user(
+            user: UserProfile,
+            expect_removed: list[str] = stream_name_list,
+            expect_not_removed: list[str] | None = None,
+            expect_fail: bool = False,
+        ) -> None:
+            self.login_user(user)
+            if expect_not_removed is None:
+                expect_not_removed = []
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps(stream_name_list).decode(),
+                    "principals": orjson.dumps([user.id]).decode(),
+                },
+            )
+            if expect_fail:
+                self.assert_json_error(result, "Insufficient permission")
+                return
+
+            json = self.assert_json_success(result)
+            self.assert_length(json["removed"], len(expect_removed))
+            self.assert_length(json["not_removed"], len(expect_not_removed))
+
+        anonymous_group_member_dict = UserGroupMembersData(
+            direct_members=[aaron.id], direct_subgroups=[]
+        )
+
+        # Test that a user in the can_unsubscribe_group can
+        # unsubscribe themselves
+        self.subscribe(aaron, stream.name)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_unsubscribe_group",
+            anonymous_group_member_dict,
+            acting_user=aaron,
+        )
+        check_unsubscribing_user(aaron)
+
+        # Test that an admin can always unsubscribe themselves.
+        self.subscribe(admin, stream.name)
+        check_unsubscribing_user(admin)
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_unsubscribe_group",
+            UserGroupMembersData(direct_members=[], direct_subgroups=[]),
+            acting_user=admin,
+        )
+
+        # Test that a user in the can_administer_channel_group can
+        # unsubscribe themselves
+        self.subscribe(aaron, stream.name)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            anonymous_group_member_dict,
+            acting_user=aaron,
+        )
+        check_unsubscribing_user(aaron)
+
+        # Test that a user in the can_remove_subscribers_group can
+        # unsubscribe themselves
+        self.subscribe(aaron, stream.name)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_remove_subscribers_group",
+            anonymous_group_member_dict,
+            acting_user=aaron,
+        )
+        check_unsubscribing_user(aaron)
+
+        # Test that a user not in any of the permission groups cannot
+        # unsubscribe themselves
+        self.subscribe(cordelia, stream.name)
+        check_unsubscribing_user(cordelia, expect_fail=True)
+
+        # Test that a user is not subscribed to the accessible stream.
+        check_unsubscribing_user(aaron, expect_removed=[], expect_not_removed=[stream.name])
+        # Test that a user is not subscribed to the inaccessible stream.
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        stream_name_list = [private_stream.name]
+        check_unsubscribing_user(aaron, expect_fail=True)
+
     def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
         user_profile = self.example_user("iago")
         self.login_user(user_profile)

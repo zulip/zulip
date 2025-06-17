@@ -3079,43 +3079,6 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "No such user", status_code=400)
 
-    def test_user_unsubscribe_theirself(self) -> None:
-        """
-        User trying to unsubscribe theirself from the stream, where
-        principals has the id of the acting_user performing the
-        unsubscribe action.
-        """
-        admin = self.example_user("iago")
-        self.login_user(admin)
-        self.assertTrue(admin.is_realm_admin)
-
-        stream_name = "hümbüǵ"
-        self.make_stream(stream_name)
-        self.subscribe(admin, stream_name)
-
-        # unsubscribing when subscribed.
-        result = self.client_delete(
-            "/json/users/me/subscriptions",
-            {
-                "subscriptions": orjson.dumps([stream_name]).decode(),
-                "principals": orjson.dumps([admin.id]).decode(),
-            },
-        )
-        json = self.assert_json_success(result)
-        self.assert_length(json["removed"], 1)
-
-        # unsubscribing after already being unsubscribed.
-        result = self.client_delete(
-            "/json/users/me/subscriptions",
-            {
-                "subscriptions": orjson.dumps([stream_name]).decode(),
-                "principals": orjson.dumps([admin.id]).decode(),
-            },
-        )
-
-        json = self.assert_json_success(result)
-        self.assert_length(json["not_removed"], 1)
-
     def test_removing_last_user_from_private_stream(self) -> None:
         stream_name = "private_stream"
         stream = self.make_stream(stream_name, invite_only=True)
