@@ -64,7 +64,7 @@ def _process_grouped_messages_deletion(
 
     event: DeleteMessagesEvent = {
         "type": "delete_message",
-        "message_ids": message_ids,
+        "message_ids": sorted(message_ids),
     }
     if stream is None:
         assert topic is None

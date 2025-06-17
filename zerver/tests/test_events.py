@@ -3938,7 +3938,10 @@ class NormalActionsTest(BaseAction):
         hamlet = self.example_user("hamlet")
         msg_id = self.send_stream_message(hamlet, "Verona")
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
-        messages = [Message.objects.get(id=msg_id), Message.objects.get(id=msg_id_2)]
+        # Pass messages in reverse sorted order, so we can test that
+        # the backend is sorting the messages_ids sent in the delete
+        # event.
+        messages = [Message.objects.get(id=msg_id_2), Message.objects.get(id=msg_id)]
         with self.verify_action(state_change_expected=True) as events:
             do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
@@ -3948,6 +3951,7 @@ class NormalActionsTest(BaseAction):
             num_message_ids=2,
             is_legacy=False,
         )
+        self.assertEqual(events[0]["message_ids"], sorted(events[0]["message_ids"]))
 
     def test_do_delete_message_stream_legacy(self) -> None:
         """

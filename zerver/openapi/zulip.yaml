@@ -2136,7 +2136,10 @@ paths:
                                     Only present for clients that support the `bulk_message_deletion`
                                     [client capability][client-capabilities].
 
-                                    A list containing the IDs of the newly deleted messages.
+                                    A sorted list containing the IDs of the newly deleted messages.
+
+                                    **Changes**: Before Zulip 11.0 (feature level ZF-215011), this list was
+                                    not guaranteed to be sorted.
 
                                     [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                   items:
