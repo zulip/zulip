@@ -785,8 +785,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
                 "ERROR:zerver.lib.push_notifications:"
-                f"Could not find UserMessage with message_id {message_id} and user_id {self.user_profile.id}"
-                "\nNoneType: None",  # This is an effect of using `exc_info=True` in the actual logger.
+                f"Could not find UserMessage with message_id {message_id} and user_id {self.user_profile.id}",
                 logger.output[0],
             )
             mock_push_notifications.assert_called_once()
