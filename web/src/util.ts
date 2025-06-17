@@ -1,6 +1,6 @@
 import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
-import {z} from "zod";
+import {z} from "zod/v4-mini";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";

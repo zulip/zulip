@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "zod/v4-mini";
 
 export const attachment_schema = z.object({
     id: z.number(),

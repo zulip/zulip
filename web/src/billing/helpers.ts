@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import {z} from "zod/v4-mini";
 
 import * as loading from "../loading.ts";
 import * as util from "../util.ts";

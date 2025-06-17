@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type {z} from "zod/v4-mini";
 
 import * as channel from "./channel.ts";
 import {$t} from "./i18n.ts";

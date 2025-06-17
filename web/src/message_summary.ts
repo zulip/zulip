@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import {z} from "zod/v4-mini";
 
 import render_topic_summary from "../templates/topic_summary.hbs";
 

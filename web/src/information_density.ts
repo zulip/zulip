@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import {z} from "zod/v4-mini";
 
 import {$t} from "./i18n.ts";
 import * as resize from "./resize.ts";

@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type {z} from "zod/v4-mini";
 
 import {FoldDict} from "./fold_dict.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";

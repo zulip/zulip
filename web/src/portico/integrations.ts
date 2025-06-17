@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import {z} from "zod/v4-mini";
 
 import * as blueslip from "../blueslip.ts";
 import * as common from "../common.ts";

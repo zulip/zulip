@@ -1,6 +1,6 @@
 import type {DebouncedFunc} from "lodash";
 import _ from "lodash";
-import {z} from "zod";
+import {z} from "zod/v4-mini";
 
 import * as channel from "./channel.ts";
 import type {Message} from "./message_store.ts";

@@ -300,7 +300,7 @@ importers:
         version: 0.2.2
       zod:
         specifier: ^3.21.4
-        version: 3.25.51
+        version: 3.25.67
     devDependencies:
       '@babel/plugin-transform-modules-commonjs':
         specifier: ^7.19.6
@@ -9610,8 +9610,8 @@ packages:
       typescript: ^4.9.4 || ^5.0.2
       zod: ^3
 
-  zod@3.25.51:
-    resolution: {integrity: sha512-TQSnBldh+XSGL+opiSIq0575wvDPqu09AqWe1F7JhUMKY+M91/aGlK4MhpVNO7MgYfHcVCB1ffwAUTJzllKJqg==}
+  zod@3.25.67:
+    resolution: {integrity: sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==}
 
   zulip-js@2.1.0:
     resolution: {integrity: sha512-kLdxzJZ/FvWHBotUJl7LXCHIkShTjy1FUk5HAWfsal1TM+hw0atCZwgasCpvFDBj01y+39ZEZXgjePaie74Xhg==}
@@ -9764,7 +9764,7 @@ snapshots:
     dependencies:
       sitemap: 8.0.0
       stream-replace-string: 2.0.0
-      zod: 3.25.51
+      zod: 3.25.67
 
   '@astrojs/starlight@0.34.3(astro@5.8.2(@types/node@22.15.29)(encoding@0.1.13)(jiti@1.21.7)(rollup@4.41.1)(sass@1.89.1)(terser@5.40.0)(typescript@5.8.3)(yaml@2.8.0))':
     dependencies:
@@ -12765,9 +12765,9 @@ snapshots:
       xxhash-wasm: 1.1.0
       yargs-parser: 21.1.1
       yocto-spinner: 0.2.3
-      zod: 3.25.51
-      zod-to-json-schema: 3.24.5(zod@3.25.51)
-      zod-to-ts: 1.2.0(typescript@5.8.3)(zod@3.25.51)
+      zod: 3.25.67
+      zod-to-json-schema: 3.24.5(zod@3.25.67)
+      zod-to-ts: 1.2.0(typescript@5.8.3)(zod@3.25.67)
     optionalDependencies:
       sharp: 0.33.5
     transitivePeerDependencies:
@@ -13223,7 +13223,7 @@ snapshots:
     dependencies:
       devtools-protocol: 0.0.1452169
       mitt: 3.0.1
-      zod: 3.25.51
+      zod: 3.25.67
 
   ci-info@3.9.0: {}
 
@@ -20533,16 +20533,16 @@ snapshots:
     optionalDependencies:
       commander: 9.5.0
 
-  zod-to-json-schema@3.24.5(zod@3.25.51):
+  zod-to-json-schema@3.24.5(zod@3.25.67):
     dependencies:
-      zod: 3.25.51
+      zod: 3.25.67
 
-  zod-to-ts@1.2.0(typescript@5.8.3)(zod@3.25.51):
+  zod-to-ts@1.2.0(typescript@5.8.3)(zod@3.25.67):
     dependencies:
       typescript: 5.8.3
-      zod: 3.25.51
+      zod: 3.25.67
 
-  zod@3.25.51: {}
+  zod@3.25.67: {}
 
   zulip-js@2.1.0(encoding@0.1.13):
     dependencies:
