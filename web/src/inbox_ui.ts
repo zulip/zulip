@@ -193,7 +193,8 @@ const ls_filter_key = "inbox-filters";
 const ls_collapsed_containers_key = "inbox_collapsed_containers";
 
 const ls = localstorage();
-let filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
+const DEFAULT_FILTER = views_util.FILTERS.UNMUTED_TOPICS;
+let filters = new Set([DEFAULT_FILTER]);
 let collapsed_containers = new Set<string>();
 
 let search_keyword = "";
@@ -1028,7 +1029,7 @@ export function complete_rerender(): void {
         widget_name: "inbox-filter",
         item_click_callback: filter_click_handler,
         $events_container: $("#inbox-main"),
-        default_id: first_filter.done ? undefined : first_filter.value,
+        default_id: first_filter.done ? DEFAULT_FILTER : first_filter.value,
         get_options: inbox_view_dropdown_options,
     });
     filters_dropdown_widget.setup();
