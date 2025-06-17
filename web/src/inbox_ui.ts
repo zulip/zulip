@@ -27,6 +27,7 @@ import {localstorage} from "./localstorage.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as muted_users from "./muted_users.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
@@ -1051,6 +1052,12 @@ function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
     const text = recipients_string.join(",").toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
+        return true;
+    }
+
+    // Hide group DMs where all other participants are muted
+    const recipient_ids = people.user_ids_string_to_ids_array(dm_key);
+    if (recipient_ids.length > 1 && recipient_ids.every((id) => muted_users.is_user_muted(id))) {
         return true;
     }
 

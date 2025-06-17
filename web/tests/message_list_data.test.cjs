@@ -40,6 +40,10 @@ mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
 
+mock_esm("../src/state_data.ts", {
+    current_user: {user_id: 11},
+});
+
 run_test("basics", () => {
     const mld = new MessageListData({
         excludes_muted_topics: false,
@@ -140,8 +144,8 @@ run_test("muting", () => {
         // mentions override muting
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
 
-        // 10 = muted user, 9 = non-muted user, 11 = you
-        // muted to group direct message
+        // 10 = muted user, 9 = non-muted user, 11 = you, 12 = another muted user
+        // muted to group direct message with non-muted participant
         {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
         // non-muted to group direct message
         {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
@@ -153,6 +157,14 @@ run_test("muting", () => {
         {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
         // 1:1 direct message to non-muted
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        // group direct message where all other participants are muted
+        {id: 10, type: "private", to_user_ids: "10,12", sender_id: 11},
+        // poll from muted user
+        {id: 11, type: "stream", stream_id: 1, topic: "whatever", sender_id: 10, submessages: [{msg_type: "widget", content: '{"widget_type": "poll"}'}]},
+        // todo from muted user
+        {id: 12, type: "stream", stream_id: 1, topic: "whatever", sender_id: 10, submessages: [{msg_type: "widget", content: '{"widget_type": "todo"}'}]},
+        // poll from non-muted user
+        {id: 13, type: "stream", stream_id: 1, topic: "whatever", sender_id: 9, submessages: [{msg_type: "widget", content: '{"widget_type": "poll"}'}]},
     ];
 
     user_topics.update_user_topics(
@@ -162,6 +174,7 @@ run_test("muting", () => {
         user_topics.all_visibility_policies.MUTED,
     );
     muted_users.add_muted_user(10);
+    muted_users.add_muted_user(12);
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
@@ -186,15 +199,19 @@ run_test("muting", () => {
         {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
         {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        {id: 10, type: "private", to_user_ids: "10,12", sender_id: 11},
+        {id: 11, type: "stream", stream_id: 1, topic: "whatever", sender_id: 10, submessages: [{msg_type: "widget", content: '{"widget_type": "poll"}'}]},
+        {id: 12, type: "stream", stream_id: 1, topic: "whatever", sender_id: 10, submessages: [{msg_type: "widget", content: '{"widget_type": "todo"}'}]},
+        {id: 13, type: "stream", stream_id: 1, topic: "whatever", sender_id: 9, submessages: [{msg_type: "widget", content: '{"widget_type": "poll"}'}]},
     ]);
 
     const res_user = mld.messages_filtered_for_user_mutes(msgs);
     assert.deepEqual(res_user, [
-        // `messages_filtered_for_user_mutes` does not affect stream messages
+        // stream messages from non-muted users (no widgets) 
         {id: 1, type: "stream", stream_id: 1, topic: "muted"},
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
-        // muted to group direct message
+        // muted to group direct message with non-muted participant
         {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
         // non-muted to group direct message
         {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
@@ -202,6 +219,8 @@ run_test("muting", () => {
         {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
         // 1:1 direct message to non-muted
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        // poll from non-muted user should be allowed
+        {id: 13, type: "stream", stream_id: 1, topic: "whatever", sender_id: 9, submessages: [{msg_type: "widget", content: '{"widget_type": "poll"}'}]},
     ]);
 
     // Output filtered based on both topic and user muting.
@@ -214,6 +233,7 @@ run_test("muting", () => {
         {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
         {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        {id: 13, type: "stream", stream_id: 1, topic: "whatever", sender_id: 9, submessages: [{msg_type: "widget", content: '{"widget_type": "poll"}'}]},
     ]);
 
     // Also verify that, the correct set of messages is stored in `_items`
