@@ -91,7 +91,7 @@
                 {% set show_realm_details = False %}
                 {% elif confirmation.type == Confirmation.REALM_REACTIVATION %}
                 <h3>Realm reactivation</h3>
-                {% set realm = object %}
+                {% set realm = object.realm %}
                 {% set show_realm_details = False %}
                 {% endif %}
                 {% if email %}
