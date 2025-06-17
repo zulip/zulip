@@ -99,6 +99,13 @@
           prefix=prefix
           help_link="/help/stream-sending-policy" }}
 
+        <div class="input-group">
+            <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>
+            <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                {{> ../settings/dropdown_options_widget option_values=stream_topics_policy_values}}
+            </select>
+        </div>
+
         {{> ../settings/group_setting_value_pill_input
           setting_name="can_administer_channel_group"
           label=group_setting_labels.can_administer_channel_group

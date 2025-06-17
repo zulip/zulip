@@ -894,6 +894,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_delete_own_message(self) -> bool:
         return self.has_permission("can_delete_own_message_group")
 
+    def can_set_topics_policy(self) -> bool:
+        return self.is_realm_admin or self.has_permission("can_set_topics_policy_group")
+
     def can_summarize_topics(self) -> bool:
         return self.has_permission("can_summarize_topics_group")
 

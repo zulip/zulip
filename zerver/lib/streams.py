@@ -51,6 +51,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import (
+    StreamTopicsPolicyEnum,
     bulk_get_streams,
     get_realm_stream,
     get_stream,
@@ -84,6 +85,7 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
+    topics_policy: int | None
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
@@ -110,6 +112,12 @@ def get_stream_permission_policy_key(
 
     assert policy_key is not None
     return policy_key
+
+
+def get_stream_topics_policy(realm: Realm, stream: Stream) -> int:
+    if stream.topics_policy == StreamTopicsPolicyEnum.inherit.value:
+        return realm.topics_policy
+    return stream.topics_policy
 
 
 def get_default_value_for_history_public_to_subscribers(
@@ -262,6 +270,7 @@ def create_stream_if_needed(
     history_public_to_subscribers: bool | None = None,
     stream_description: str = "",
     message_retention_days: int | None = None,
+    topics_policy: int | None = None,
     can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
@@ -295,6 +304,9 @@ def create_stream_if_needed(
 
     stream_name = stream_name.strip()
 
+    if topics_policy is None:
+        topics_policy = StreamTopicsPolicyEnum.inherit.value
+
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
@@ -308,6 +320,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             folder=folder,
+            topics_policy=topics_policy,
             **group_setting_values,
         ),
     )
@@ -382,6 +395,7 @@ def create_streams_if_needed(
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
+            topics_policy=stream_dict.get("topics_policy", None),
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
             can_send_message_group=stream_dict.get("can_send_message_group", None),
@@ -1524,6 +1538,7 @@ def stream_to_dict(
         stream_post_policy=stream_post_policy,
         is_announcement_only=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
+        topics_policy=StreamTopicsPolicyEnum(stream.topics_policy).name,
     )
 
 

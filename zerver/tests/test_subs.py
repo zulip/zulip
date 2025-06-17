@@ -85,7 +85,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_default_stream_groups, get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_default_stream_groups, get_stream
 from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
 from zerver.views.streams import compose_views
 
@@ -2448,6 +2448,164 @@ class StreamAdminTest(ZulipTestCase):
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_change_stream_permission_setting(setting_name)
 
+    def test_change_topics_policy(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        self.subscribe(user_profile, "stream_name1")
+
+        allow_empty_topic = StreamTopicsPolicyEnum.allow_empty_topic.name
+
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            stream_id = get_stream("stream_name1", realm).id
+            result = self.client_patch(
+                f"/json/streams/{stream_id}",
+                {"topics_policy": allow_empty_topic},
+            )
+        self.assert_json_success(result)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                op="update",
+                type="stream",
+                property="topics_policy",
+                value=allow_empty_topic,
+                stream_id=stream_id,
+                name="stream_name1",
+            ),
+        )
+        notified_user_ids = set(events[0]["users"])
+
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
+        self.assertIn(user_profile.id, notified_user_ids)
+        self.assertIn(self.example_user("prospero").id, notified_user_ids)
+        self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+        self.assertEqual(StreamTopicsPolicyEnum.allow_empty_topic.value, stream.topics_policy)
+
+        messages = get_topic_messages(user_profile, stream, "channel events")
+        expected_notification = f'@_**{user_profile.full_name}|{user_profile.id}** changed the "Allow posting to the *general chat* topic?" setting from **Automatic** to ***general chat* topic allowed**.'
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: StreamTopicsPolicyEnum.inherit.value,
+            RealmAuditLog.NEW_VALUE: StreamTopicsPolicyEnum.allow_empty_topic.value,
+            "property": "topics_policy",
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Trying to update topics_policy with old value should be noop.
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            stream_id = get_stream("stream_name1", realm).id
+            result = self.client_patch(
+                f"/json/streams/{stream_id}",
+                {"topics_policy": allow_empty_topic},
+            )
+        self.assert_json_success(result)
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Test to check if providing invalid topics_policy results in error.
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"topics_policy": 2},
+        )
+        self.assert_json_error(result, "Invalid topics_policy")
+
+        # Users can't change the setting if they are not in `can_administer_channel_group`.
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        self.subscribe(hamlet, "stream_name1")
+
+        stream = get_stream("stream_name1", realm)
+        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, hamlet))
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
+        )
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
+
+        # Hamlet can change the setting now as he is in `can_administer_channel_group`.
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", hamletcharacters_group, acting_user=user_profile
+        )
+
+        self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, hamlet))
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"topics_policy": StreamTopicsPolicyEnum.inherit.name}
+        )
+        self.assert_json_success(result)
+
+        # Users cannot change channel's `topics_policy` if they are not in `can_set_topics_policy_group`.
+        owners_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_set_topics_policy_group",
+            owners_system_group,
+            acting_user=None,
+        )
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_can_set_topics_policy_group(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self.login_user(user)
+        owners_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_set_topics_policy_group",
+            owners_system_group,
+            acting_user=None,
+        )
+
+        subscriptions = [{"name": "new_test_stream"}]
+        result = self.subscribe_via_post(
+            user,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "topics_policy": orjson.dumps(
+                    StreamTopicsPolicyEnum.allow_empty_topic.name
+                ).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        subscriptions = [{"name": "new_test_stream"}]
+        result = self.subscribe_via_post(
+            admin,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "topics_policy": orjson.dumps(
+                    StreamTopicsPolicyEnum.allow_empty_topic.name
+                ).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_success(result)
+
     def test_notification_on_changing_stream_posting_permission(self) -> None:
         desdemona = self.example_user("desdemona")
         realm = desdemona.realm
@@ -3660,6 +3818,9 @@ class SubscriptionAPITest(ZulipTestCase):
             invite_streams,
             extra_post_data={
                 "announce": "true",
+                "topics_policy": orjson.dumps(
+                    StreamTopicsPolicyEnum.allow_empty_topic.name
+                ).decode(),
                 "principals": orjson.dumps([self.user_profile.id]).decode(),
             },
         )

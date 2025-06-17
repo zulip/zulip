@@ -347,7 +347,6 @@ test_ui("validate", ({mock_template, override}) => {
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
-        assert.equal(data.banner_text, compose_validate.TOPICS_REQUIRED_ERROR_MESSAGE);
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });
@@ -412,6 +411,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         name: "special",
         subscribed: true,
         can_send_message_group: everyone.id,
+        topics_policy: "inherit",
     };
     stream_data.add_sub(special_sub);
 

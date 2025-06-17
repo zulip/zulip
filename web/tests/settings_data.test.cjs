@@ -206,11 +206,6 @@ test_realm_group_settings(
 );
 
 test_realm_group_settings(
-    "realm_can_set_topics_policy_group",
-    settings_data.user_can_set_topics_policy,
-);
-
-test_realm_group_settings(
     "realm_can_delete_any_message_group",
     settings_data.user_can_delete_any_message,
 );

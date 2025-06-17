@@ -1,4 +1,5 @@
 import secrets
+from enum import Enum
 from typing import Any
 
 from django.db import models
@@ -20,6 +21,12 @@ from zerver.models.users import UserProfile
 
 def generate_email_token_for_stream() -> str:
     return secrets.token_hex(16)
+
+
+class StreamTopicsPolicyEnum(Enum):
+    inherit = 1
+    allow_empty_topic = 2
+    disable_empty_topic = 3
 
 
 class Stream(models.Model):
@@ -155,6 +162,8 @@ class Stream(models.Model):
     # Whether a message has been sent to this stream in the last X days.
     is_recently_active = models.BooleanField(default=True, db_default=True)
 
+    topics_policy = models.PositiveSmallIntegerField(default=StreamTopicsPolicyEnum.inherit.value)
+
     stream_permission_group_settings = {
         "can_add_subscribers_group": GroupPermissionSetting(
             require_system_group=False,
@@ -255,6 +264,7 @@ class Stream(models.Model):
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",
         "is_recently_active",
+        "topics_policy",
     ]
 
 

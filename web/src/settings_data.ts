@@ -92,14 +92,6 @@ export function user_can_create_multiuse_invite(): boolean {
     );
 }
 
-export function user_can_set_topics_policy(): boolean {
-    return user_has_permission_for_group_setting(
-        realm.realm_can_set_topics_policy_group,
-        "can_set_topics_policy_group",
-        "realm",
-    );
-}
-
 export function user_can_summarize_topics(): boolean {
     if (!realm.server_can_summarize_topics) {
         return false;

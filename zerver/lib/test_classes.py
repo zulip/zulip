@@ -110,7 +110,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
-from zerver.models.streams import get_realm_stream, get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_test_request, validate_test_response
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
@@ -1504,6 +1504,7 @@ Output:
         invite_only: bool = False,
         is_web_public: bool = False,
         history_public_to_subscribers: bool | None = None,
+        topics_policy: int = StreamTopicsPolicyEnum.inherit.value,
     ) -> Stream:
         if realm is None:
             realm = get_realm("zulip")
@@ -1519,6 +1520,7 @@ Output:
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
+                topics_policy=topics_policy,
                 **get_default_values_for_stream_permission_group_settings(realm),
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests

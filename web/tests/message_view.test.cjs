@@ -800,7 +800,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
 
     compose_state.set_message_type("stream");
     const rome_id = 99;
-    stream_data.add_sub({name: "ROME", stream_id: rome_id});
+    stream_data.add_sub({name: "ROME", stream_id: rome_id, topics_policy: "inherit"});
     compose_state.set_stream_id(99);
 
     // Test with existing topic

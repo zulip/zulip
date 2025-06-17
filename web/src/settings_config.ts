@@ -303,6 +303,10 @@ type RealmTopicsPolicyValues = {
     disable_empty_topic: PolicyValue;
 };
 
+type StreamTopicsPolicyValues = {
+    inherit: PolicyValue;
+} & RealmTopicsPolicyValues;
+
 export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
     const empty_topic_name = util.get_final_topic_display_name("");
 
@@ -318,6 +322,18 @@ export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
             code: "disable_empty_topic",
             description: $t({defaultMessage: 'No "{empty_topic_name}" topic'}, {empty_topic_name}),
         },
+    };
+};
+
+export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
+    const realm_topics_policy_values = get_realm_topics_policy_values();
+
+    return {
+        inherit: {
+            code: "inherit",
+            description: $t({defaultMessage: "Automatic"}),
+        },
+        ...realm_topics_policy_values,
     };
 };
 

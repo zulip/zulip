@@ -8,7 +8,9 @@
             {{> topic_not_mandatory_placeholder_text empty_string_topic_display_name=empty_string_topic_display_name}}
         </span>
     {{/unless}}
-    {{> components/action_button custom_classes="topic_edit_save tippy-zulip-delayed-tooltip" icon="check" attention="quiet" intent="neutral" data-tooltip-template-id="save-button-tooltip-template" }}
+    <span class="topic-edit-save-wrapper">
+        {{> components/action_button custom_classes="topic_edit_save tippy-zulip-delayed-tooltip" icon="check" attention="quiet" intent="neutral" data-tooltip-template-id="save-button-tooltip-template" }}
+    </span>
     {{> components/action_button custom_classes="topic_edit_cancel tippy-zulip-delayed-tooltip" icon="circle-x" attention="borderless" intent="neutral" data-tooltip-template-id="cancel-button-tooltip-template" }}
     <div class="topic_edit_spinner"></div>
 </form>

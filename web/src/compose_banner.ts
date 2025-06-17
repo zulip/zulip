@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
+import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
 
 import {$t} from "./i18n.ts";
@@ -221,6 +222,19 @@ export function cannot_send_direct_message_error(error_message: string): void {
     hide_compose_spinner();
 
     $("#private_message_recipient").trigger("focus").trigger("select");
+}
+
+export function topic_missing_error(empty_string_topic_display_name: string): void {
+    // Remove any existing banners with this warning.
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.topic_missing)}`).remove();
+
+    const new_row_html = render_topics_required_error_banner({
+        banner_type: ERROR,
+        empty_string_topic_display_name,
+        classname: CLASSNAMES.topic_missing,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+    hide_compose_spinner();
 }
 
 export function show_stream_does_not_exist_error(stream_name: string): void {
