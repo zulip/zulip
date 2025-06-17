@@ -83,6 +83,7 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
+        {% if not realm.deactivated %}
         <form method="POST" class="support-form">
             <b>New subdomain</b>:<br />
             {{ csrf_input }}
@@ -131,6 +132,7 @@
             <input type="number" name="max_invites" value="{{ realm.max_invites }}" min="0" required />
             <button type="submit" class="support-submit-button">Update</button>
         </form>
+        {% endif %}
     </div>
     {% if realm.deactivated %}
     <div class="support-sponsorship-container">
