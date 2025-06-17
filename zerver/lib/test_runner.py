@@ -302,8 +302,7 @@ class Runner(DiscoverRunner):
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, "w") as f:
             if self.parallel > 1:
-                for index in range(self.parallel):
-                    f.write(get_database_id(index + 1) + "\n")
+                f.writelines(get_database_id(index + 1) + "\n" for index in range(self.parallel))
             else:
                 f.write(get_database_id() + "\n")
 
