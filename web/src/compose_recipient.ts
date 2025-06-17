@@ -20,6 +20,7 @@ import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
+import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
@@ -46,6 +47,16 @@ function composing_to_current_private_message_narrow(): boolean {
 }
 
 export let maybe_mute_recipient_row = (): void => {
+    // We need to adjust the privacy-icon colors in the muted state
+    const message_type = compose_state.get_message_type();
+    if (message_type === "stream") {
+        const stream_id = compose_state.stream_id();
+        const channel_picker_icon_selector =
+            "#compose_select_recipient_widget .channel-privacy-type-icon";
+
+        stream_color.adjust_stream_privacy_icon_colors(stream_id, channel_picker_icon_selector);
+    }
+
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or recipient
     // row is focused, that puts us outside the muted
