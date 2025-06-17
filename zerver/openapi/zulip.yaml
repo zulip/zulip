@@ -405,6 +405,19 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
+                                        When the type of a bot changes.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the bot whose type has changed.
+                                        bot_type:
+                                          type: integer
+                                          description: |
+                                            The new type for the bot.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
                                         When the [role](/help/user-roles) of a user changes.
                                       properties:
                                         user_id:
@@ -25703,6 +25716,7 @@ components:
           properties:
             user_id: {}
             full_name: {}
+            bot_type: {}
             api_key: {}
             default_sending_stream:
               nullable: true
@@ -25733,6 +25747,16 @@ components:
           type: string
           description: |
             The full name of the bot.
+        bot_type:
+          type: integer
+          nullable: true
+          description: |
+            An integer describing the type of bot:
+
+            - `1` for a `Generic` bot.
+            - `2` for an `Incoming webhook` bot.
+            - `3` for an `Outgoing webhook` bot.
+            - `4` for an `Embedded` bot.
         api_key:
           type: string
           description: |
@@ -25819,6 +25843,7 @@ components:
           properties:
             user_id: {}
             full_name: {}
+            bot_type: {}
             api_key: {}
             default_sending_stream:
               nullable: true
@@ -25833,16 +25858,6 @@ components:
               type: string
               description: |
                 The email of the bot.
-            bot_type:
-              type: integer
-              nullable: true
-              description: |
-                An integer describing the type of bot:
-
-                - `1` for a `Generic` bot.
-                - `2` for an `Incoming webhook` bot.
-                - `3` for an `Outgoing webhook` bot.
-                - `4` for an `Embedded` bot.
             is_active:
               type: boolean
               description: |

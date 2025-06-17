@@ -54,11 +54,13 @@ from zerver.lib.user_groups import (
     get_system_user_group_for_user,
 )
 from zerver.lib.users import (
+    add_service,
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
+from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Draft,
     GroupGroupMembership,
@@ -788,6 +790,57 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
 
 
 @transaction.atomic(durable=True)
+def do_add_service(
+    service_name: str,
+    bot_profile: UserProfile,
+    bot_type: int,
+    service_payload_url: str,
+    service_interface: int,
+) -> None:
+    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        service_token = generate_api_key()
+
+        new_service: dict[str, str | int] = BotServicesOutgoing(
+            base_url=service_payload_url,
+            interface=service_interface,
+            token=service_token,
+        ).model_dump()
+    else:
+        # Service token is currently unused for Embedded bots.
+        service_token = ""
+        try:
+            config_data = get_bot_config(bot_profile)
+        except ConfigError:
+            config_data = {}
+
+        new_service = BotServicesEmbedded(
+            service_name=service_name,
+            config_data=config_data,
+        ).model_dump()
+
+    add_service(
+        name=service_name,
+        user_profile=bot_profile,
+        base_url=service_payload_url,
+        interface=service_interface,
+        token=service_token,
+    )
+
+    send_event_on_commit(
+        bot_profile.realm,
+        dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=bot_profile.id,
+                services=[new_service],
+            ),
+        ),
+        bot_owner_user_ids(bot_profile),
+    )
+
+
+@transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
     bot_profile: UserProfile,
     *,
@@ -908,6 +961,41 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, s
             ),
         ),
         bot_owner_user_ids(bot_profile),
+    )
+
+
+@transaction.atomic(durable=True)
+def do_update_bot_type(
+    bot_profile: UserProfile, bot_type: int, *, acting_user: UserProfile | None
+) -> None:
+    previous_bot_type = bot_profile.bot_type
+
+    bot_profile.bot_type = bot_type
+    bot_profile.save(update_fields=["bot_type"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=bot_profile.realm,
+        acting_user=acting_user,
+        modified_user=bot_profile,
+        event_type=AuditLogEventType.USER_BOT_TYPE_CHANGED,
+        event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: previous_bot_type,
+            RealmAuditLog.NEW_VALUE: bot_type,
+        },
+    )
+
+    payload = dict(user_id=bot_profile.id, bot_type=bot_type)
+    send_event_on_commit(
+        bot_profile.realm,
+        dict(type="realm_bot", op="update", bot=payload),
+        bot_owner_user_ids(bot_profile),
+    )
+    send_event_on_commit(
+        bot_profile.realm,
+        dict(type="realm_user", op="update", person=payload),
+        get_user_ids_who_can_access_user(bot_profile),
     )
 
 
