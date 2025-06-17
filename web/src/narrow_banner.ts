@@ -89,20 +89,6 @@ function retrieve_search_query_data(current_filter: Filter): SearchData {
         has_stop_word: false,
     };
 
-    // Add in stream:foo and topic:bar if present
-    if (current_filter.has_operator("channel") || current_filter.has_operator("topic")) {
-        const stream_id = current_filter.operands("channel")[0];
-        const topic = current_filter.operands("topic")[0];
-        if (stream_id) {
-            const stream_name = stream_data.get_valid_sub_by_id_string(stream_id).name;
-            search_string_result.stream_query = stream_name;
-        }
-        if (topic !== undefined) {
-            search_string_result.topic_query = util.get_final_topic_display_name(topic);
-            search_string_result.is_empty_string_topic = topic === "";
-        }
-    }
-
     // Gather information about each query word
     for (const query_word of query_words) {
         if (realm.stop_words.includes(query_word)) {

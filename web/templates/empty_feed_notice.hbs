@@ -2,17 +2,7 @@
     <h4 class="empty-feed-notice-title"> {{ title }} </h4>
     <div class="empty-feed-notice-description">
         {{#if search_data}}
-            {{#if search_data.has_stop_word}}{{t "Some common words were excluded from your search." }} <br/>{{/if}}{{t "You searched for:" }}
-            {{#if search_data.stream_query}}
-            <span>channel: {{search_data.stream_query}}</span>
-            {{/if}}
-            {{#if search_data.topic_query}}
-            {{#if search_data.is_empty_string_topic}}
-            <span>topic: <span class="empty-topic-display">{{search_data.topic_query}}</span></span>
-            {{else}}
-            <span>topic: {{search_data.topic_query}}</span>
-            {{/if}}
-            {{/if}}
+            {{#if search_data.has_stop_word}}{{t "Common words were excluded from your search:" }} <br/>
             {{#each search_data.query_words}}
                 {{#if is_stop_word}}
                 <del>{{query_word}}</del>
@@ -20,6 +10,7 @@
                 <span class="search-query-word">{{query_word}}</span>
                 {{/if}}
             {{/each}}
+            {{/if}}
         {{else}}
             {{{ html }}}
         {{/if}}
