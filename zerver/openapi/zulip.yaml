@@ -17133,6 +17133,27 @@ paths:
                           before using this API key.
 
                           **Changes**: Added in Zulip 4.0 (feature level 47).
+                      push_accounts_registration_statuses:
+                        type: array
+                        description: |
+                          Present if `push_account_registration_status` is present in `fetch_event_types`.
+
+                          **Changes**: New in Zulip 11.0 (feature level 393).
+                        items:
+                          type: object
+                          description: |
+                            Object describing the user's currently valid push_account_id and it's
+                            registration status with the bouncer.
+                          properties:
+                            push_account_id:
+                              type: integer
+                              description: |
+                                The push account ID.
+                            status:
+                              type: string
+                              description: |
+                                The push account's registration status with the bouncer.
+                                Either "active" or "pending".
                       enable_desktop_notifications:
                         deprecated: true
                         type: boolean
