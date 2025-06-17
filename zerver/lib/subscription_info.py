@@ -879,7 +879,7 @@ def gather_subscriptions_helper(
             )
             for stream_id, users in subscriber_map.items():
                 partial_subscribers = [user_id for user_id in users if user_id in bot_users]
-                if len(partial_subscribers) != len(subscriber_map[stream_id]):
+                if len(partial_subscribers) != len(users):
                     partial_subscriber_map[stream_id] = partial_subscribers
 
         for lst in [subscribed, unsubscribed]:
