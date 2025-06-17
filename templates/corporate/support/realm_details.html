@@ -132,7 +132,15 @@
             <button type="submit" class="support-submit-button">Update</button>
         </form>
     </div>
-    {% if realm.plan_type != SPONSORED_PLAN_TYPE %}
+    {% if realm.deactivated %}
+    <div class="support-sponsorship-container">
+        {% with %}
+            {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/sponsorship_details.html' %}
+        {% endwith %}
+    </div>
+    {% elif realm.plan_type != SPONSORED_PLAN_TYPE %}
     <div class="support-sponsorship-container">
         {% with %}
             {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
