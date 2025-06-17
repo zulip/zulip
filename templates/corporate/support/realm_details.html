@@ -10,6 +10,13 @@
     {% if realm_support_data[realm.id].sponsorship_data.has_discount %}
         <p class="support-section-header">Has a discount 💸</p>
     {% endif %}
+    {% if realm.deactivated_redirect %}
+    <b>Placeholder realm</b><br />
+    <b>Redirects to</b>: {{ realm.deactivated_redirect }}
+    <a title="Copy URL" class="copy-button" data-clipboard-text="{{ realm.deactivated_redirect }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% else %}
     <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.url }}">{{ realm.url }}</a> |
     <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
     <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
@@ -60,7 +67,9 @@
     {% endwith %}
     <br />
     <b>File upload usage</b>: {{ realm_support_data[realm.id].file_upload_usage }}<br />
+    {% endif %}
 </div>
+{% if not realm.deactivated_redirect %}
 <div>
     <div class="realm-management-actions">
         <p class="support-section-header">🛠️ Realm management:</p>
@@ -180,3 +189,4 @@
         <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
     </form>
 </div>
+{% endif %}
