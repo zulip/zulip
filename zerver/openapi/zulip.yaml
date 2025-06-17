@@ -17339,6 +17339,40 @@ paths:
                           before using this API key.
 
                           **Changes**: Added in Zulip 4.0 (feature level 47).
+                      push_devices:
+                        type: object
+                        description: |
+                          Present if `push_device` is present in `fetch_event_types`.
+
+                          Dictionary where each entry describes the user's push device's
+                          registration status and error code (if registration failed).
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-1653f2).
+                        additionalProperties:
+                          description: |
+                            `{push_account_id}`: Dictionary containing the details of
+                            a push device with the push account ID as the key.
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            status:
+                              type: string
+                              description: |
+                                The push account's registration status.
+                                Either `"active"`, `"pending"`, or `"failed"`.
+                            error_code:
+                              type: string
+                              nullable: true
+                              description: |
+                                The error code returned when registration to bouncer fails, `null` otherwise.
+
+                                Either `"INVALID_BOUNCER_PUBLIC_KEY"`, `"BAD_REQUEST"`, or `"REQUEST_EXPIRED"`.
+
+                                The client should use these error codes to fix the issue which led to registration
+                                failure and retry.
+
+                                - `"INVALID_BOUNCER_PUBLIC_KEY"` - Inform the user to update app.
+                                - `"REQUEST_EXPIRED` - Retry with a fresh payload.
                       enable_desktop_notifications:
                         deprecated: true
                         type: boolean

@@ -9,7 +9,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from email.headerregistry import Address
 from functools import cache
-from typing import TYPE_CHECKING, Any, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypeAlias, Union
 
 import lxml.html
 import orjson
@@ -25,7 +25,7 @@ from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import initialize_app as firebase_initialize_app
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
-from typing_extensions import override
+from typing_extensions import TypedDict, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (
@@ -54,6 +54,7 @@ from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
     Message,
+    PushDevice,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -1586,3 +1587,21 @@ class HostnameAlreadyInUseBouncerError(JsonableError):
         # This message is not read by any of the client apps, just potentially displayed
         # via server administration tools, so it doesn't need translations.
         return "A server with hostname {hostname} already exists"
+
+
+class PushDeviceInfoDict(TypedDict):
+    status: Literal["active", "pending", "failed"]
+    error_code: str | None
+
+
+def get_push_devices(user_profile: UserProfile) -> dict[str, PushDeviceInfoDict]:
+    # We intentionally don't try to save a database query
+    # if `push_notifications_configured()` is False, in order to avoid
+    # risk of clients deleting their Account records if the server
+    # has its mobile notifications configuration temporarily disabled.
+    rows = PushDevice.objects.filter(user=user_profile)
+
+    return {
+        str(row.push_account_id): {"status": row.status, "error_code": row.error_code}
+        for row in rows
+    }
