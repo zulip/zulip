@@ -159,6 +159,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
+    do_update_bot_type,
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
@@ -3419,6 +3420,13 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(num_events=2) as events:
             do_change_full_name(bot, "New Bot Name", self.user_profile)
         check_realm_bot_update("events[1]", events[1], "full_name")
+
+    def test_update_bot_type(self) -> None:
+        bot = self.create_bot("test")
+        with self.verify_action(num_events=2) as events:
+            do_update_bot_type(bot, UserProfile.OUTGOING_WEBHOOK_BOT, acting_user=self.user_profile)
+        check_realm_user_update("events[0]", events[0], "bot_type")
+        check_realm_bot_update("events[1]", events[1], "bot_type")
 
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
