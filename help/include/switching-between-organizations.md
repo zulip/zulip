@@ -2,11 +2,7 @@
 
 {tab|mobile}
 
-1. Tap the **Menu** (<i class="zulip-icon zulip-icon-mobile-menu mobile-help"></i>)
-   tab in the bottom right corner of the app.
-
-1. Tap <i class="zulip-icon zulip-icon-mobile-arrow-left-right mobile-help"></i>
-   **Switch account**.
+{!mobile-switch-account.md!}
 
 1. Tap on the desired Zulip organization.
 
