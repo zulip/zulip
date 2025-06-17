@@ -13,7 +13,10 @@ import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
 import * as scroll_util from "./scroll_util.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 
@@ -226,4 +229,22 @@ export function initialize_bot_click_handlers(): void {
             });
         })();
     });
+}
+
+export function get_allowed_bot_types(): bot_data.BotType[] {
+    const allowed_bot_types: bot_data.BotType[] = [];
+    const bot_types = settings_config.bot_type_values;
+    if (settings_data.can_create_new_bots()) {
+        allowed_bot_types.push(
+            bot_types.default_bot,
+            bot_types.incoming_webhook_bot,
+            bot_types.outgoing_webhook_bot,
+        );
+        if (page_params.embedded_bots_enabled) {
+            allowed_bot_types.push(bot_types.embedded_bot);
+        }
+    } else if (settings_data.can_create_incoming_webhooks()) {
+        allowed_bot_types.push(bot_types.incoming_webhook_bot);
+    }
+    return allowed_bot_types;
 }

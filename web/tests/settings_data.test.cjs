@@ -702,3 +702,53 @@ run_test("can_user_manage_folder", ({override}) => {
     override(current_user, "is_admin", true);
     assert.equal(settings_data.can_user_manage_folder(), true);
 });
+
+run_test("can_create_new_bots", () => {
+    test_realm_group_settings("realm_can_create_bots_group", settings_data.can_create_new_bots);
+});
+
+run_test("can_create_incoming_webhooks", ({override}) => {
+    const admin_user_id = 1;
+    const moderator_user_id = 2;
+    const member_user_id = 3;
+
+    const admins = make_user_group({
+        name: "Admins",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const moderators = make_user_group({
+        name: "Moderators",
+        id: 2,
+        members: new Set([moderator_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    });
+
+    group_permission_settings.get_group_permission_setting_config = () => ({
+        allow_everyone_group: false,
+    });
+
+    user_groups.initialize({realm_user_groups: [admins, moderators]});
+
+    page_params.is_spectator = true;
+    assert.equal(settings_data.can_create_incoming_webhooks(), false);
+
+    page_params.is_spectator = false;
+    override(current_user, "is_guest", false);
+
+    override(realm, "realm_can_create_bots_group", admins.id);
+    override(realm, "realm_can_create_write_only_bots_group", admins.id);
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(settings_data.can_create_incoming_webhooks(), true);
+
+    override(realm, "realm_can_create_bots_group", admins.id);
+    override(realm, "realm_can_create_write_only_bots_group", moderators.id);
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(settings_data.can_create_incoming_webhooks(), true);
+
+    override(current_user, "user_id", member_user_id);
+    assert.equal(settings_data.can_create_incoming_webhooks(), false);
+});

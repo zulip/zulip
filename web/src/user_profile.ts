@@ -41,6 +41,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
+
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
