@@ -1238,6 +1238,14 @@ textarea.new_message_textarea {
             transition-property: background-color, border-color;
         }
 
+        #compose_select_recipient_widget .channel-privacy-type-icon {
+            transition: var(--compose-muted-recipient-row-transition);
+            transition-delay: var(
+                --compose-muted-recipient-row-transition-delay
+            );
+            transition-property: color;
+        }
+
         #recipient_box_clear_topic_button {
             transition: var(--compose-muted-recipient-row-transition);
             transition-delay: var(
@@ -1319,13 +1327,27 @@ textarea.new_message_textarea {
         }
     }
 
-    #compose_select_recipient_widget.widget-open {
-        background-color: var(--color-background-dropdown-widget-button);
-        border-color: var(--color-compose-recipient-box-border-color);
+    #compose_select_recipient_widget {
+        .channel-privacy-type-icon.zulip-icon {
+            color: var(--privacy-icon-color-modified);
+        }
 
-        .decorated-channel-name,
-        .zulip-icon-chevron-down {
-            opacity: 1;
+        &:hover .channel-privacy-type-icon.zulip-icon {
+            color: var(--privacy-icon-color-original);
+        }
+
+        &.widget-open {
+            background-color: var(--color-background-dropdown-widget-button);
+            border-color: var(--color-compose-recipient-box-border-color);
+
+            .channel-privacy-type-icon {
+                color: var(--privacy-icon-color-original);
+            }
+
+            .decorated-channel-name,
+            .zulip-icon-chevron-down {
+                opacity: 1;
+            }
         }
     }
 }
@@ -1688,6 +1710,7 @@ textarea.new_message_textarea {
             place-self: center;
             font-size: 0.95em; /* 19px at 20px/1em */
             margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
+            color: var(--privacy-icon-color-original);
             /* Eliminate inherited component styles. */
             position: static;
             padding: 0;
