@@ -1475,7 +1475,7 @@ def check_update_message(
         topic_name=topic_name,
         content=content,
     )
-
+    default_code_block_language = ""
     if (
         isinstance(message_edit_request, StreamMessageEditRequest)
         and message_edit_request.is_topic_edited
@@ -1501,6 +1501,7 @@ def check_update_message(
                     raise JsonableError(
                         _("The time limit for editing this message's topic has passed.")
                     )
+        default_code_block_language = message_edit_request.target_stream.default_code_block_language
 
     rendering_result = None
     links_for_embed: set[str] = set()
@@ -1524,6 +1525,7 @@ def check_update_message(
             message_edit_request.content,
             user_profile.realm,
             mention_data=mention_data,
+            default_code_block_language=default_code_block_language,
         )
         links_for_embed |= rendering_result.links_for_preview
 
