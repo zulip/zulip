@@ -1,5 +1,8 @@
 <div class="realm-support-information">
     <span class="cloud-label">Cloud realm</span>
+    {% if realm.deactivated %}
+    <span class="deactivated-label">DEACTIVATED</span>
+    {% endif %}
     <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
     {% if realm.plan_type == SPONSORED_PLAN_TYPE %}
         <p class="support-section-header">On 100% sponsored Zulip Standard Free 🎉</p>
