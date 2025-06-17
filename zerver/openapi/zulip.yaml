@@ -17150,6 +17150,27 @@ paths:
                           before using this API key.
 
                           **Changes**: Added in Zulip 4.0 (feature level 47).
+                      push_accounts:
+                        type: object
+                        description: |
+                          Present if `push_account` is present in `fetch_event_types`.
+
+                          Dictionary where each entry describes the user's currently valid
+                          push account ID and it's registration status for push notifications.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-1653f2).
+                        additionalProperties:
+                          description: |
+                            `{push_account_id}`: Dictionary containing the details of
+                            a push account with the push account ID as the key.
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            status:
+                              type: string
+                              description: |
+                                The push account's registration status.
+                                Either `"active"` or `"pending"`.
                       enable_desktop_notifications:
                         deprecated: true
                         type: boolean
