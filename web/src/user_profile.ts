@@ -41,6 +41,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
+import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -121,6 +122,45 @@ export function get_user_id_if_user_profile_modal_open(): number | undefined {
         return user_id;
     }
     return undefined;
+}
+
+export function can_create_new_bots(): boolean {
+    return settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_create_bots_group,
+        "can_create_bots_group",
+        "realm",
+    );
+}
+
+export function can_create_incoming_webhooks(): boolean {
+    // User who have the permission to create any bot can also
+    // create incoming webhooks.
+    return (
+        can_create_new_bots() ||
+        settings_data.user_has_permission_for_group_setting(
+            realm.realm_can_create_write_only_bots_group,
+            "can_create_write_only_bots_group",
+            "realm",
+        )
+    );
+}
+
+export function get_allowed_bot_types(): bot_data.BotType[] {
+    const allowed_bot_types: bot_data.BotType[] = [];
+    const bot_types = settings_config.bot_type_values;
+    if (can_create_new_bots()) {
+        allowed_bot_types.push(
+            bot_types.default_bot,
+            bot_types.incoming_webhook_bot,
+            bot_types.outgoing_webhook_bot,
+        );
+        if (page_params.embedded_bots_enabled) {
+            allowed_bot_types.push(bot_types.embedded_bot);
+        }
+    } else if (can_create_incoming_webhooks()) {
+        allowed_bot_types.push(bot_types.incoming_webhook_bot);
+    }
+    return allowed_bot_types;
 }
 
 export function update_user_profile_streams_list_for_users(user_ids: number[]): void {
