@@ -589,7 +589,7 @@ export function filter_and_sort_mentions(
         topic: string | undefined;
     },
 ): (UserGroupPillData | UserOrMentionPillData)[] {
-    return get_person_suggestions(query, {
+    return get_person_suggestions(query, max_num_items, {
         want_broadcast: !is_silent,
         filter_pills: false,
         filter_groups_for_mention: !is_silent,
@@ -600,7 +600,10 @@ export function filter_and_sort_mentions(
     }));
 }
 
-export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+export function get_pm_people(
+    query: string,
+    max_num_items: number,
+): (UserGroupPillData | UserPillData)[] {
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -608,7 +611,7 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
         topic: compose_state.topic(),
         filter_groups_for_dm: true,
     };
-    const suggestions = get_person_suggestions(query, opts, true);
+    const suggestions = get_person_suggestions(query, max_num_items, opts, true);
     const current_user_ids = compose_pm_pill.get_user_ids();
     const my_user_id = people.my_current_user_id();
     // We know these aren't mentions because `want_broadcast` was `false`.
@@ -642,6 +645,7 @@ type PersonSuggestionOpts = {
 
 export function get_person_suggestions(
     query: string,
+    max_num_items: number,
     opts: PersonSuggestionOpts,
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
@@ -1586,7 +1590,9 @@ export function initialize({
         type: "contenteditable",
     };
     new Typeahead(private_message_typeahead_input, {
-        source: get_pm_people,
+        source(query: string) {
+            return get_pm_people(query, max_num_items);
+        },
         items: max_num_items,
         dropup: true,
         highlighter_html(item: UserGroupPillData | UserPillData) {
