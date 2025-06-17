@@ -1040,9 +1040,15 @@ class NormalActionsTest(BaseAction):
         # Verify move topic to different stream.
         self.subscribe(self.user_profile, "Verona")
         self.subscribe(self.user_profile, "Denmark")
-        self.send_stream_message(iago, "Verona")
+        # Message passed to the message edit request is usually last in
+        # event["message_ids"]. Since we want to test sorting of these
+        # message_ids later on, we need send the message_id to be used
+        # in the message_edit_request first; Otherwise
+        # event["message_ids"] would be sorted even without any sorting
+        # function.
         message_id = self.send_stream_message(self.user_profile, "Verona")
         message = Message.objects.get(id=message_id)
+        self.send_stream_message(iago, "Verona")
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
@@ -1081,6 +1087,8 @@ class NormalActionsTest(BaseAction):
             has_new_stream_id=True,
             is_embedded_update_only=False,
         )
+        # Make sure the message_ids returned are sorted.
+        self.assertEqual(events[0]["message_ids"], sorted(events[0]["message_ids"]))
 
         # Move both stream and topic, with update_message_flags
         # excluded from event types.

@@ -2473,8 +2473,8 @@ paths:
                                   items:
                                     type: integer
                                   description: |
-                                    The list of IDs of messages to which any channel or topic changes
-                                    encoded in this event should be applied.
+                                    A sorted list of IDs of messages to which any channel or topic
+                                    changes encoded in this event should be applied.
 
                                     This list always includes `message_id`, even when there are no
                                     channel or topic changes to apply.
@@ -2492,6 +2492,9 @@ paths:
 
                                     Content changes should be applied only to the single message
                                     indicated by `message_id`.
+
+                                    **Changes**: Before Zulip 11.0 (feature level ZF-908160), this list
+                                    was not guaranteed to be sorted.
                                 flags:
                                   type: array
                                   description: |
@@ -2717,7 +2720,7 @@ paths:
                                   "orig_subject": "test",
                                   "subject": "new_topic",
                                   "topic_links": [],
-                                  "message_ids": [58, 57],
+                                  "message_ids": [57, 58],
                                   "flags": [],
                                   "rendering_only": false,
                                   "id": 0,

@@ -680,7 +680,7 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            event["message_ids"] = update_message_cache([target_message])
+            event["message_ids"] = sorted(update_message_cache([target_message]))
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
@@ -890,7 +890,7 @@ def do_update_message(
     changed_messages = save_changes_for_propagation_mode()
 
     realm_id = target_message.realm_id
-    event["message_ids"] = update_message_cache(changed_messages, realm_id)
+    event["message_ids"] = sorted(update_message_cache(changed_messages, realm_id))
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
