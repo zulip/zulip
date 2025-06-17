@@ -157,9 +157,10 @@ from zerver.actions.user_settings import (
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
+    do_add_update_outgoing_webhook_service,
     do_change_user_role,
     do_deactivate_user,
-    do_update_outgoing_webhook_service,
+    do_update_bot_type,
 )
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
@@ -3405,6 +3406,13 @@ class NormalActionsTest(BaseAction):
             do_change_full_name(bot, "New Bot Name", self.user_profile)
         check_realm_bot_update("events[1]", events[1], "full_name")
 
+    def test_update_bot_type(self) -> None:
+        bot = self.create_bot("test")
+        with self.verify_action(num_events=2) as events:
+            do_update_bot_type(bot, UserProfile.OUTGOING_WEBHOOK_BOT, acting_user=self.user_profile)
+        check_realm_user_update("events[0]", events[0], "bot_type")
+        check_realm_bot_update("events[1]", events[1], "bot_type")
+
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action() as events:
@@ -3492,7 +3500,7 @@ class NormalActionsTest(BaseAction):
         check_realm_bot_add("events[0]", events[0])
         check_realm_user_update("events[1]", events[1], "bot_owner_id")
 
-    def test_do_update_outgoing_webhook_service(self) -> None:
+    def test_do_add_update_outgoing_webhook_service(self) -> None:
         self.user_profile = self.example_user("iago")
         bot = self.create_test_bot(
             "test",
@@ -3503,7 +3511,7 @@ class NormalActionsTest(BaseAction):
             interface_type=Service.GENERIC,
         )
         with self.verify_action() as events:
-            do_update_outgoing_webhook_service(bot, 2, "http://hostname.domain2.com")
+            do_add_update_outgoing_webhook_service(bot, 2, "http://hostname.domain2.com")
         check_realm_bot_update("events[0]", events[0], "services")
 
     def test_do_deactivate_bot(self) -> None:
