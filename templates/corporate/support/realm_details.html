@@ -180,7 +180,7 @@
         {% endwith %}
     </div>
     {% endif %}
-
+    {% if realm.deactivated %}
     <form method="POST" class="scrub-realm-form support-form">
         <h3>❌ Scrub realm</h3>
         {{ csrf_input }}
@@ -188,5 +188,6 @@
         <input type="hidden" name="scrub_realm" value="true" />
         <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
     </form>
+    {% endif %}
 </div>
 {% endif %}
