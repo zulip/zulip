@@ -873,6 +873,7 @@ export function dispatch_normal_event(event) {
                 "web_navigate_to_sent_message",
                 "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
+                "web_left_sidebar_unreads_count_summary",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -956,6 +957,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "starred_message_counts") {
                 starred_messages_ui.rerender_ui();
+            }
+            if (event.property === "web_left_sidebar_unreads_count_summary") {
+                sidebar_ui.update_unread_counts_visibility();
             }
             if (
                 event.property === "receives_typing_notifications" &&
