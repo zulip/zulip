@@ -174,19 +174,18 @@
         }
     }
 
+    .edit-notifications,
     .message_edit_notice {
         grid-area: edited;
         /* We pull the icon out of the grid's baseline group,
            and set a height so that the icon is properly
            aligned with the first or only line of a senderless
            message. */
-        align-self: start;
-        height: var(--message-box-sender-line-height);
-    }
-
-    .edit-notifications {
-        grid-area: edited;
         align-self: center;
+
+        &.hide {
+            display: none;
+        }
     }
 
     .slow-send-spinner {
@@ -513,14 +512,16 @@
             grid-area: message;
         }
 
+        .edit-notifications,
         .message_edit_notice {
-            /* To align the icon correctly, we want the notice area
-               itself stretched to the full height of the sender row. */
-            align-self: stretch;
-            /* A bit of margin here helps these not look associated with the name. */
-            margin-left: 8px;
-            /* Unset the width used in the senderless edit notices. */
-            width: auto;
+            width: fit-content;
+            display: flex;
+
+            &:not(:empty) {
+                /* A bit of margin here helps these not
+                   look associated with the name. */
+                margin-left: 8px;
+            }
 
             &.hide {
                 display: none;
@@ -983,11 +984,6 @@
 
 .message-editing-animation {
     display: inline-flex;
-    align-items: baseline;
-    margin-left: 3px;
-    width: 40px;
-    height: 5px;
-
     /* Avoid this animation element blocking clicks on .edit-notifications
        to display the message's edit history. */
     pointer-events: none;
@@ -1125,6 +1121,7 @@
     }
 }
 
+.edit-notifications,
 .message_edit_notice {
     /* 14px at 16px/1em */
     font-size: 0.875em;
@@ -1150,6 +1147,10 @@
         @media (hover: none) {
             visibility: visible;
         }
+    }
+
+    &.hide {
+        display: none;
     }
 }
 
