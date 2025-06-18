@@ -43,8 +43,12 @@ export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
 
     // We currently only support one service per bot.
     const service = services.get(bot_id)![0];
-    if (service !== undefined && services_update !== undefined && services_update.length > 0) {
-        Object.assign(service, services_update[0]);
+    if (services_update !== undefined && services_update.length > 0) {
+        if (service !== undefined) {
+            Object.assign(service, services_update[0]);
+        } else {
+            services.set(bot_id, services_update);
+        }
     }
 }
 
