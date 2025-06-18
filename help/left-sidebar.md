@@ -142,5 +142,6 @@ you’re currently viewing.
 * [Recent conversations](/help/recent-conversations)
 * [Combined feed](/help/combined-feed)
 * [Channel feed](/help/channel-feed)
+* [List of topics in a channel](/help/list-of-topics)
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
