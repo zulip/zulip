@@ -33,7 +33,7 @@ export function encode_operand(operator: string, operand: string): string {
         operator === "sender" ||
         operator === "pm-with"
     ) {
-        const slug = people.emails_to_slug(operand);
+        const slug = people.user_ids_string_to_slug(operand);
         if (slug) {
             return slug;
         }
@@ -63,9 +63,9 @@ export function decode_operand(operator: string, operand: string): string {
         operator === "sender" ||
         operator === "pm-with"
     ) {
-        const emails = people.slug_to_emails(operand);
-        if (emails) {
-            return emails;
+        const user_ids_string = people.slug_to_user_ids_string(operand);
+        if (user_ids_string) {
+            return user_ids_string;
         }
     }
 
@@ -159,7 +159,7 @@ export function by_sender_url(reply_to: string): string {
 }
 
 export function pm_with_url(reply_to: string): string {
-    const slug = people.emails_to_slug(reply_to);
+    const slug = people.user_ids_string_to_slug(reply_to);
     return "#narrow/dm/" + slug;
 }
 
@@ -357,11 +357,8 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
         ) {
             return null;
         }
-        if (people.is_valid_bulk_emails_for_compose(terms[0].operand.split(","))) {
-            const user_ids = people.emails_strings_to_user_ids_array(terms[0].operand);
-            if (!user_ids) {
-                return null;
-            }
+        const user_ids = people.user_ids_string_to_ids_array(terms[0].operand);
+        if (people.is_valid_bulk_user_ids_for_compose(user_ids)) {
             return user_ids;
         }
         return null;

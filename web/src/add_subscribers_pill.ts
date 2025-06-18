@@ -19,7 +19,7 @@ export function create_item_from_text(
     const funcs = [
         stream_pill.create_item_from_stream_name,
         user_group_pill.create_item_from_group_name,
-        user_pill.create_item_from_email,
+        user_pill.create_item_from_user_id,
     ];
     for (const func of funcs) {
         const item = func(text, current_items);
@@ -40,7 +40,7 @@ export function get_text_from_item(item: CombinedPill): string {
             text = user_group_pill.get_group_name_from_item(item);
             break;
         case "user":
-            text = user_pill.get_email_from_item(item);
+            text = user_pill.get_user_id_string_from_item(item);
             break;
     }
     return text;

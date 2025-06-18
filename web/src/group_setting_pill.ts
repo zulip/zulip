@@ -56,7 +56,7 @@ function check_user_allowed_for_setting(
         return true;
     }
 
-    const user = people.get_by_email(user_item.email);
+    const user = people.maybe_get_user_by_id(user_item.user_id, true);
     return user !== undefined && !user.is_guest;
 }
 
@@ -79,7 +79,7 @@ export function create_item_from_text(
         return undefined;
     }
 
-    const user_item = user_pill.create_item_from_email(text, current_items);
+    const user_item = user_pill.create_item_from_user_id(text, current_items);
     if (user_item) {
         if (check_user_allowed_for_setting(user_item, setting_name, setting_type)) {
             return user_item;
@@ -97,7 +97,7 @@ export function get_text_from_item(item: GroupSettingPill): string {
             text = user_group_pill.get_group_name_from_item(item);
             break;
         case "user":
-            text = user_pill.get_email_from_item(item);
+            text = user_pill.get_user_id_string_from_item(item);
             break;
     }
     return text;

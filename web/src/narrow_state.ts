@@ -54,16 +54,6 @@ export function is_message_feed_visible(): boolean {
     return message_lists.current !== undefined;
 }
 
-export function update_email(
-    user_id: number,
-    new_email: string,
-    current_filter: Filter | undefined = filter(),
-): void {
-    if (current_filter !== undefined) {
-        current_filter.update_email(user_id, new_email);
-    }
-}
-
 /* Search terms we should send to the server. */
 export function public_search_terms(
     current_filter: Filter | undefined = filter(),
@@ -123,14 +113,11 @@ export function set_compose_defaults(): {
         opts.topic = topic;
     }
 
-    const private_message_recipient_emails = single.get("dm");
-    if (
-        private_message_recipient_emails !== undefined &&
-        people.is_valid_bulk_emails_for_compose(private_message_recipient_emails.split(","))
-    ) {
-        opts.private_message_recipient_ids = people.emails_string_to_user_ids(
-            private_message_recipient_emails,
-        );
+    if (single.get("dm") !== undefined) {
+        const narrow_recipient_ids = people.user_ids_string_to_ids_array(single.get("dm")!);
+        if (people.is_valid_bulk_user_ids_for_compose(narrow_recipient_ids)) {
+            opts.private_message_recipient_ids = narrow_recipient_ids;
+        }
     }
     return opts;
 }
@@ -189,29 +176,15 @@ export function topic(current_filter: Filter | undefined = filter()): string | u
     return undefined;
 }
 
-export function pm_ids_string(filter?: Filter): string | undefined {
-    // If you are narrowed to a group direct message with
-    // users 4, 5, and 99, this will return "4,5,99"
-    const emails_string = pm_emails_string(filter);
-
-    if (!emails_string) {
-        return undefined;
-    }
-
-    const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
-
-    return user_ids_string;
-}
-
 export function pm_ids_set(filter?: Filter): Set<number> {
     const ids_string = pm_ids_string(filter);
     const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
     return new Set(pm_ids_list);
 }
 
-export function pm_emails_string(
-    current_filter: Filter | undefined = filter(),
-): string | undefined {
+export function pm_ids_string(current_filter: Filter | undefined = filter()): string | undefined {
+    // If you are narrowed to a group direct message with
+    // users 4, 5, and 99, this will return "4,5,99"
     if (current_filter === undefined) {
         return undefined;
     }

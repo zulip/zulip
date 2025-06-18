@@ -1,5 +1,3 @@
-import assert from "minimalistic-assert";
-
 import {all_messages_data} from "./all_messages_data.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -91,19 +89,16 @@ export function get_direct_message_permission_hints(
 
     // If not, we need to check if the current filter matches the DM view we
     // are composing to.
-    const dm_conversation = message_lists.current?.data?.filter.operands("dm")[0];
-    if (dm_conversation) {
-        const current_user_ids_string = people.emails_strings_to_user_ids_string(dm_conversation);
-        assert(current_user_ids_string !== undefined);
+    const current_user_ids_string = message_lists.current?.data?.filter.operands("dm")[0];
+    if (
+        current_user_ids_string &&
         // If it matches and the messages for the current filter are fetched,
         // then there are certainly no messages in the conversation.
-        if (
-            people.pm_lookup_key(recipient_ids_string) ===
-                people.pm_lookup_key(current_user_ids_string) &&
-            message_lists.current?.data?.fetch_status.has_found_newest()
-        ) {
-            return {is_known_empty_conversation: true, is_local_echo_safe: true};
-        }
+        people.pm_lookup_key(recipient_ids_string) ===
+            people.pm_lookup_key(current_user_ids_string) &&
+        message_lists.current?.data?.fetch_status.has_found_newest()
+    ) {
+        return {is_known_empty_conversation: true, is_local_echo_safe: true};
     }
 
     // If it does not match, then there can be messages in the DM conversation

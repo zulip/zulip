@@ -7,9 +7,7 @@ import * as compose_state from "./compose_state.ts";
 import type {MessageGroup} from "./message_list_view.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
-import * as people from "./people.ts";
 import * as rows from "./rows.ts";
-import * as util from "./util.ts";
 
 let normal_display = false;
 
@@ -34,13 +32,10 @@ export function set_focused_recipient(msg_type?: "private" | "stream"): void {
     } else if (msg_type === "private") {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_helper.process_new_message()).
-        const reply_to = util.normalize_recipients(
-            compose_state.private_message_recipient_emails(),
-        );
-        const to_user_ids = people.reply_to_to_user_ids_string(reply_to);
+        const to_user_ids = compose_state.private_message_recipient_ids().toString();
         focused_recipient = {
             type: msg_type,
-            reply_to,
+            reply_to: to_user_ids,
             to_user_ids,
         };
     }

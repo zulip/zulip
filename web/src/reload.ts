@@ -71,7 +71,7 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
             url += "+msg_type=private";
             url +=
                 "+recipient=" +
-                encodeURIComponent(compose_state.private_message_recipient_emails());
+                encodeURIComponent(compose_state.private_message_recipient_ids().toString());
         }
 
         if (msg_type) {

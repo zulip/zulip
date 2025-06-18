@@ -51,13 +51,12 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("dm")) {
-        const emails = filter.operands("dm")[0]!;
-        const user_ids = people.emails_strings_to_user_ids_string(emails);
+        const user_ids = filter.operands("dm")[0]!;
 
-        if (user_ids !== undefined) {
+        if (people.is_valid_user_ids_string(user_ids)) {
             return people.format_recipients(user_ids, "long");
         }
-        if (emails.includes(",")) {
+        if (user_ids.includes(",")) {
             return $t({defaultMessage: "Invalid users"});
         }
         return $t({defaultMessage: "Invalid user"});
@@ -71,7 +70,7 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("sender")) {
-        const user = people.get_by_email(filter.operands("sender")[0]!);
+        const user = people.maybe_get_user_by_id(Number(filter.operands("sender")[0]!), true);
         if (user) {
             if (people.is_my_user_id(user.user_id)) {
                 return $t({defaultMessage: "Messages sent by you"});
