@@ -90,6 +90,7 @@ class StreamDict(TypedDict, total=False):
     can_administer_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
+    can_resolve_topics_group: UserGroup | None
     can_subscribe_group: UserGroup | None
     folder: ChannelFolder | None
 
@@ -275,6 +276,7 @@ def create_stream_if_needed(
     can_administer_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
+    can_resolve_topics_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
@@ -400,6 +402,7 @@ def create_streams_if_needed(
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            can_resolve_topics_group=stream_dict.get("can_resolve_topics_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
@@ -1507,6 +1510,9 @@ def stream_to_dict(
     can_remove_subscribers_group = get_group_setting_value_for_register_api(
         stream.can_remove_subscribers_group_id, anonymous_group_membership
     )
+    can_resolve_topics_group = get_group_setting_value_for_register_api(
+        stream.can_resolve_topics_group_id, anonymous_group_membership
+    )
     can_subscribe_group = get_group_setting_value_for_register_api(
         stream.can_subscribe_group_id, anonymous_group_membership
     )
@@ -1521,6 +1527,7 @@ def stream_to_dict(
         can_administer_channel_group=can_administer_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_resolve_topics_group=can_resolve_topics_group,
         can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
