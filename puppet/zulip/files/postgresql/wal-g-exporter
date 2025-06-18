@@ -107,7 +107,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
                 text=True,
                 env=modified_env,
             )
-            data = json.loads(backup_list_output)
+            data = json.loads(backup_list_output) if backup_list_output else []
             backup_count(len(data), {"bucket": bucket})
 
             backup_total_compressed_size_bytes(
