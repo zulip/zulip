@@ -2138,7 +2138,7 @@ paths:
 
                                     A sorted list containing the IDs of the newly deleted messages.
 
-                                    **Changes**: Before Zulip 11.0 (feature level ZF-215011), this list was
+                                    **Changes**: Before Zulip 11.0 (feature level 393), this list was
                                     not guaranteed to be sorted.
 
                                     [client-capabilities]: /api/register-queue#parameter-client_capabilities
@@ -2496,7 +2496,7 @@ paths:
                                     Content changes should be applied only to the single message
                                     indicated by `message_id`.
 
-                                    **Changes**: Before Zulip 11.0 (feature level ZF-908160), this list
+                                    **Changes**: Before Zulip 11.0 (feature level 393), this list
                                     was not guaranteed to be sorted.
                                 flags:
                                   type: array

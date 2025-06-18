@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 393**
+
+* [`PATCH /messages/{message_id}`](/api/delete-message),
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  In `delete_message` event, all the `message_ids` will now be sorted in
+  increasing order.
+* [`PATCH /messages/{message_id}`](/api/update-message),
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  In `update_message` event, all the `message_ids` will now be sorted in
+  increasing order.
+
 **Feature level 392**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),
