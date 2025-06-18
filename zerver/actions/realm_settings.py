@@ -791,6 +791,22 @@ def do_change_realm_org_type(
     realm.org_type = org_type
     realm.save(update_fields=["org_type"])
 
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    if org_type == Realm.ORG_TYPES["business"]["id"]:
+        new_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+    elif org_type in (
+        Realm.ORG_TYPES["education"]["id"],
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+    ):
+        new_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+    else:
+        new_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
+
+    if realm_user_default.email_address_visibility != new_email_address_visibility:
+        old_value = realm_user_default.email_address_visibility
+        realm_user_default.email_address_visibility = new_email_address_visibility
+        realm_user_default.save(update_fields=["email_address_visibility"])
+
     RealmAuditLog.objects.create(
         event_type=AuditLogEventType.REALM_ORG_TYPE_CHANGED,
         realm=realm,
