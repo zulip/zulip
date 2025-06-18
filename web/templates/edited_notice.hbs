@@ -2,7 +2,7 @@
 {{#if modified}}
     {{#if msg/local_edit_timestamp}}
         <div class="message_edit_notice">
-            {{t "SAVING"}}
+            {{> editing_notifications}}
         </div>
     {{else if edited}}
         <div class="message_edit_notice">
