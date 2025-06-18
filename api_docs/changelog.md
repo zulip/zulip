@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 398**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_left_sidebar_unreads_count_summary` display setting,
+  controlling whether summary unread counts are displayed in the left sidebar.
+
 **Feature level 397**
 
 * [`POST /users/me/subscriptions`](/api/subscribe): Added parameter
