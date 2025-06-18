@@ -18,6 +18,7 @@ import * as settings_config from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -168,12 +169,16 @@ export function initialize(): void {
         onShow(instance) {
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.inbox.code;
+            const counts = unread.get_counts();
+            const unread_messages_present =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_inbox_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
                         show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                        unread_messages_present,
                     }),
                 ),
             );
@@ -210,12 +215,17 @@ export function initialize(): void {
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.all_messages.code;
+            const counts = unread.get_counts();
+            const unread_messages_present =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_all_messages_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
                         show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                        unread_messages_present,
                     }),
                 ),
             );
@@ -252,12 +262,16 @@ export function initialize(): void {
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.recent_topics.code;
+            const counts = unread.get_counts();
+            const unread_messages_present =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_recent_view_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
                         show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                        unread_messages_present,
                     }),
                 ),
             );
