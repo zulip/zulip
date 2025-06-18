@@ -1479,6 +1479,19 @@ export function is_duplicate_full_name(full_name: string): boolean {
     return ids !== undefined && ids.size > 1;
 }
 
+export function get_from_unique_full_name(query: string): User | undefined {
+    // Check for `full_name|user_id` syntax and return `user_id`.
+    const parts = query.split("|");
+    if (parts.length !== 2) {
+        return undefined;
+    }
+    const user_id = Number(parts[1]?.trim());
+    if (!Number.isNaN(user_id) && is_valid_user_id(user_id)) {
+        return get_by_user_id(user_id);
+    }
+    return undefined;
+}
+
 export function get_mention_syntax(full_name: string, user_id?: number, silent = false): string {
     let mention = "";
     if (silent) {
