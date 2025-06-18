@@ -614,7 +614,12 @@ def registration_helper(
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
-    if not (password_auth_enabled(realm) and password_required):
+    if realm_creation and demo_organization_creation:
+        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+        # to be fully implemented.
+        assert settings.DEVELOPMENT
+        form["password"].field.required = False
+    elif not (password_auth_enabled(realm) and password_required):
         form["password"].field.required = False
 
     if form.is_valid():
@@ -623,7 +628,8 @@ def registration_helper(
         else:
             # If the user wasn't prompted for a password when
             # completing the authentication form (because they're
-            # signing up with SSO and no password is required), set
+            # signing up with SSO and no password is required, or
+            # because they're creating a new demo organization), set
             # the password field to `None` (Which causes Django to
             # create an unusable password).
             password = None
