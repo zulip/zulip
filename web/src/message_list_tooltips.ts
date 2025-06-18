@@ -310,14 +310,27 @@ export function initialize(): void {
         },
     );
 
-    message_list_tooltip("#message_feed_container .change_visibility_policy > i", {
-        ...topic_visibility_policy_tooltip_props,
-    });
+    message_list_tooltip(
+        "#message_feed_container .change_visibility_policy > .recipient-bar-control-icon",
+        {
+            ...topic_visibility_policy_tooltip_props,
+        },
+    );
 
     message_list_tooltip(
-        "#message_feed_container .recipient_bar_icon:not(.recipient-row-topic-menu)",
+        [
+            "#message_feed_container .recipient_bar_icon:not(.recipient-row-topic-menu)",
+            "#message_feed_container .recipient-bar-control-icon",
+        ].join(","),
         {
             delay: LONG_HOVER_DELAY,
+            onShow(instance) {
+                const $reference = $(instance.reference);
+                if ($reference.hasClass("external-topic-link")) {
+                    const url_name = $reference.attr("data-tippy-content")!;
+                    instance.setContent($t({defaultMessage: "Open {url_name}"}, {url_name}));
+                }
+            },
             onHidden(instance) {
                 instance.destroy();
             },

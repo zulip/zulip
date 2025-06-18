@@ -329,6 +329,11 @@ export function initialize(): void {
         message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();
     });
+    $("body").on("click", ".external-topic-link", function (e) {
+        const url = $(this).attr("data-url")!;
+        window.open(url, "_blank", "noopener,noreferrer");
+        e.stopPropagation();
+    });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.try_save_inline_topic_edit($recipient_row);
@@ -400,7 +405,7 @@ export function initialize(): void {
         e.stopPropagation();
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).attr("data-topic-name")!;
+        const topic_name = $(e.target).closest(".message_header").attr("data-topic-name")!;
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
@@ -408,7 +413,7 @@ export function initialize(): void {
         e.stopPropagation();
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).attr("data-topic-name")!;
+        const topic_name = $(e.target).closest(".message_header").attr("data-topic-name")!;
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 

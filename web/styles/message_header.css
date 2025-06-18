@@ -257,21 +257,6 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
-
-    .external-topic-link {
-        /* Vertically center the external link
-           icon inside its containing anchor. */
-        display: flex;
-        align-items: center;
-    }
-
-    .change_visibility_policy {
-        cursor: pointer;
-
-        i {
-            display: block;
-        }
-    }
 }
 
 .on_hover_topic_read {
@@ -280,17 +265,6 @@
     &:hover {
         cursor: pointer;
         opacity: 1;
-    }
-}
-
-.on_hover_topic_edit,
-.on_hover_topic_unresolve,
-.on_hover_topic_resolve {
-    opacity: 0.2;
-
-    &:hover {
-        cursor: pointer;
-        opacity: 0.7;
     }
 }
 
