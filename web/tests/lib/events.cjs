@@ -54,6 +54,7 @@ exports.test_streams = {
         is_web_public: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        topics_policy: "inherit",
         can_administer_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
@@ -74,6 +75,7 @@ exports.test_streams = {
         is_announcement_only: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        topics_policy: "inherit",
         can_administer_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
@@ -361,13 +363,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__mandatory_topics: {
-        type: "realm",
-        op: "update",
-        property: "mandatory_topics",
-        value: false,
-    },
-
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -432,6 +427,7 @@ exports.fixtures = {
             plan_type: 3,
             upload_quota_mib: 50000,
             max_file_upload_size_mib: 1024,
+            topics_policy: "disable_empty_topic",
         },
     },
 
