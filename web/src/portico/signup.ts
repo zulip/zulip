@@ -493,4 +493,19 @@ $(() => {
     $("#slack-access-token").on("input", () => {
         $("#update-slack-access-token").show();
     });
+
+    if ($("a#deactivated-org-auto-redirect").length > 0) {
+        // This is a special case for the deactivated organization page,
+        // where we want to redirect to the login page after 5 seconds.
+        const interval_id = setInterval(() => {
+            const $countdown_elt = $("#deactivated-org-auto-redirect-countdown");
+            const current_countdown = Number($countdown_elt.text());
+            if (current_countdown > 0) {
+                $countdown_elt.text((current_countdown - 1).toString());
+            } else {
+                window.location.href = $("a#deactivated-org-auto-redirect").attr("href")!;
+                clearInterval(interval_id);
+            }
+        }, 1000);
+    }
 });
