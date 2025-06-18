@@ -1160,11 +1160,17 @@ export function process_hotkey(e, hotkey) {
                     user_topics_ui.toggle_topic_visibility_policy(recent_msg);
                     return true;
                 }
-                return false;
             }
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.toggle_topic_visibility_policy();
             }
+            if (message_lists.current.selected_message()) {
+                user_topics_ui.toggle_topic_visibility_policy(
+                    message_lists.current.selected_message(),
+                );
+                return true;
+            }
+            return false;
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
@@ -1337,9 +1343,6 @@ export function process_hotkey(e, hotkey) {
             reactions.toggle_emoji_reaction(msg, canonical_name ?? first_reaction.emoji_name);
             return true;
         }
-        case "toggle_topic_visibility_policy":
-            user_topics_ui.toggle_topic_visibility_policy(msg);
-            return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
             return true;

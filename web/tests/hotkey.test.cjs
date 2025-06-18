@@ -439,7 +439,7 @@ run_test("modal open", ({override}) => {
 
 test_while_not_editing_text("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
-    const message_view_only_keys = "@+>RjJkKsuvVi:GMH";
+    const message_view_only_keys = "@+>RjJkKsuvVi:GH";
 
     // Check that they do nothing without a selected message
     with_overrides(({override}) => {
