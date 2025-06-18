@@ -191,14 +191,19 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated", "deactivated_redirect"])
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["example.zulipchat.com"])
+        self.assert_in_success_response(
+            ['href="http://example.zulipchat.com/" id="deactivated-org-auto-redirect"'], result
+        )
 
     def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "new-subdomain-name", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["new-subdomain-name.testserver"])
+        self.assert_in_success_response(
+            ['href="http://new-subdomain-name.testserver/" id="deactivated-org-auto-redirect"'],
+            result,
+        )
 
     def test_no_deactivation_notice_with_no_redirect(self) -> None:
         realm = get_realm("zulip")
@@ -220,12 +225,16 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-1", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-1.testserver"])
+        self.assert_in_success_response(
+            ['href="http://new-name-1.testserver/" id="deactivated-org-auto-redirect"'], result
+        )
 
         realm = get_realm("new-name-1")
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-2.testserver"])
+        self.assert_in_success_response(
+            ['href="http://new-name-2.testserver/" id="deactivated-org-auto-redirect"'], result
+        )
 
     def test_deactivation_notice_when_deactivated_and_scrubbed(self) -> None:
         # We expect system bot messages when scrubbing a realm.
