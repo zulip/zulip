@@ -113,6 +113,7 @@ from zerver.models.realms import (
 from zerver.models.streams import get_default_stream_groups
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.tornado.django_api import get_user_events, request_event_queue
+from zerver.views import streams
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
@@ -550,6 +551,7 @@ def fetch_initial_state_data(
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
+        state["max_subs_for_notification"] = streams.MAX_SUBS_FOR_NOTIFICATION
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
         state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
         if realm.demo_organization_scheduled_deletion_date is not None:

@@ -11581,6 +11581,20 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
                   example: 1
+                send_notification_to_new_users:
+                  description: |
+                    This parameter determines whether the users newly added to a
+                    channel are sent a Notification Bot DM to let them know that
+                    they have been added to the channel. A DM is not sent if the
+                    number of users added is more than 100 irrespective of this
+                    parameter.
+
+                    **Changes**: Before Zulip 10.0 (feature level ZF-06b4d1), all newly
+                    added users were automatically sent a Notification Bot DM,
+                    which was costly when adding a large number of users.
+                  type: boolean
+                  default: true
+                  example: true
               required:
                 - subscriptions
             encoding:
@@ -11667,6 +11681,15 @@ paths:
                         description: |
                           A list of names of channels that the requesting user/bot was not
                           authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
+                      notification_bot_dms_sent:
+                        type: boolean
+                        description: |
+                          Whether Notification Bot DMs were sent to the users
+                          newly added to the channel. It is only present if
+                          the parameter `send_notification_to_new_users` in the
+                          request is `true`.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-06b4d1).
                     example:
                       {
                         "already_subscribed": {"1": ["testing-help"]},
@@ -11803,6 +11826,15 @@ paths:
                         description: |
                           A list of the names of channels which were unsubscribed
                           from as a result of the query.
+                      notification_bot_dms_sent:
+                        type: boolean
+                        description: |
+                          Whether Notification Bot DMs were sent
+                          to the users newly added to the channel.
+                          Only present if `send_notification_to_new_users` is
+                          `true`.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-06b4d1).
                     example:
                       {
                         "msg": "",
@@ -20062,6 +20094,15 @@ paths:
                               Configuration for group level group permission settings.
                             additionalProperties:
                               $ref: "#/components/schemas/GroupPermissionSetting"
+                      max_subs_for_notification:
+                        description: |
+                          Maximum number of subscribers that can be
+                          added to a channel at once such that they
+                          receive a Notification Bot DM.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-06b4d1).
+                        type: number
+                        example: 100
                     example:
                       {
                         "last_event_id": -1,

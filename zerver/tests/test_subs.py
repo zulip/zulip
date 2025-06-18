@@ -87,7 +87,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import StreamTopicsPolicyEnum, get_default_stream_groups, get_stream
 from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
-from zerver.views.streams import compose_views
+from zerver.views.streams import compose_views, set_max_subs_for_notification
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -5241,6 +5241,33 @@ class SubscriptionAPITest(ZulipTestCase):
             streams_subscriber_counts_after_reunsubscribe,
             expected_difference=0,
         )
+
+    def test_notification_bot_dm_on_subscription(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+
+        user_ids = [
+            desdemona.id,
+            self.example_user("cordelia").id,
+            self.example_user("hamlet").id,
+            self.example_user("othello").id,
+            self.example_user("iago").id,
+            self.example_user("prospero").id,
+        ]
+
+        response = self.subscribe_via_post(
+            desdemona, ["Test stream 1"], dict(principals=orjson.dumps(user_ids).decode())
+        )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["notification_bot_dms_sent"], True)
+
+        set_max_subs_for_notification(5)
+
+        response = self.subscribe_via_post(
+            desdemona, ["Test stream 2"], dict(principals=orjson.dumps(user_ids).decode())
+        )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["notification_bot_dms_sent"], False)
 
 
 class InviteOnlyStreamTest(ZulipTestCase):
