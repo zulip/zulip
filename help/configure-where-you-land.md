@@ -30,7 +30,7 @@ In the mobile app, you can choose where message feeds will open:
 
 1. Tap **Open message feeds at**.
 
-1. Tap the desired configuration to select it.
+1. Select the desired configuration.
 
 {end_tabs}
 
