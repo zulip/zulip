@@ -1094,15 +1094,15 @@ def realm_import_status(
             pass
         return json_success(request, {"status": _("Importing converted Slack data…")})
 
-    if (
-        not preregistration_realm.data_import_metadata["need_select_realm_owner"]
-        and preregistration_realm.created_realm is None
-    ):
+    need_select_realm_owner = preregistration_realm.data_import_metadata.get(
+        "need_select_realm_owner", False
+    )
+    if not need_select_realm_owner and preregistration_realm.created_realm is None:
         return json_success(request, {"status": _("Finalizing import…")})
 
     # We have a non-deactivated realm and it's linked to the prereg key
     result = {"status": _("Done!")}
-    if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
+    if not need_select_realm_owner:
         importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)
         # Sanity check that this is a normal user account that can login.
         assert (
