@@ -23,7 +23,7 @@ export type UserPill = {
     type: "user";
     user_id: number;
     email: string;
-    full_name: string | undefined;
+    full_name: string;
     img_src?: string;
     deactivated?: boolean;
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
