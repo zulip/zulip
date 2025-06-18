@@ -61,6 +61,49 @@
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
+.selected-home-view {
+    &.hide-unread-messages-count {
+        .masked_unread_count {
+            /* Adding margin-right aligns the .masked_unread_count with the rest of the masked unread counts. */
+            margin-right: var(--left-sidebar-unread-offset);
+        }
+    }
+}
+
+.selected-home-view,
+#streams_header {
+    &.hide-unread-messages-count {
+        .masked_unread_count {
+            display: flex;
+            grid-area: markers-and-unreads;
+            visibility: visible;
+        }
+
+        .unread_count {
+            visibility: hidden;
+        }
+        /* When message summary count is 0, we dont want to show unread_count or masked_unread_count. */
+        .unread_count.hide + .masked_unread_count {
+            visibility: hidden;
+        }
+    }
+}
+
+.selected-home-view:hover,
+#streams_header:hover,
+.selected-home-view.top-left-active-filter {
+    &.hide-unread-messages-count {
+        .masked_unread_count {
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .unread_count {
+            visibility: visible;
+        }
+    }
+}
+
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;

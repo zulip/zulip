@@ -59,6 +59,7 @@ export const realm_default_settings_schema = z.object({
     web_escape_navigates_to_home_view: z.boolean(),
     web_font_size_px: z.number(),
     web_home_view: z.string(),
+    web_left_sidebar_unreads_count_summary: z.boolean(),
     web_line_height_percent: z.number(),
     web_mark_read_on_scroll_policy: z.number(),
     web_navigate_to_sent_message: z.boolean(),
