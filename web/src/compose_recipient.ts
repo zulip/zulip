@@ -329,8 +329,8 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export function update_topic_inputbox_on_mandatory_topics_change(): void {
-    if (realm.realm_mandatory_topics) {
+export function update_topic_inputbox_on_topics_policy_change(): void {
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         const $input = $("input#stream_message_recipient_topic");
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
         $input.removeClass("empty-topic-display");
@@ -345,13 +345,6 @@ export function update_topic_inputbox_on_mandatory_topics_change(): void {
 export function update_topic_displayed_text(topic_name = "", has_topic_focus = false): void {
     compose_state.topic(topic_name);
 
-    // When topics are mandatory, no additional adjustments are needed.
-    if (realm.realm_mandatory_topics) {
-        return;
-    }
-    // Otherwise, we have some adjustments to make to display:
-    // * a placeholder with the default topic name stylized
-    // * the empty string topic stylized
     const $input = $("input#stream_message_recipient_topic");
     const is_empty_string_topic = topic_name === "";
     const recipient_widget_hidden =
@@ -364,6 +357,16 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
 
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
+        $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+        // When topics are mandatory, no additional adjustments are needed.
+        // Also, if the recipient in the compose box is not selected, the
+        // placeholder will always be "Topic" and never "general chat".
+        return;
+    }
+    // Otherwise, we have some adjustments to make to display:
+    // * a placeholder with the default topic name stylized
+    // * the empty string topic stylized
     function update_placeholder_visibility(): void {
         $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
     }

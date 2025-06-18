@@ -26,7 +26,7 @@ import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rtl from "./rtl.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
@@ -207,7 +207,7 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         opts.message_type === "stream" &&
         opts.stream_id &&
         !opts.topic &&
-        realm.realm_mandatory_topics
+        !stream_data.can_use_empty_topic(opts.stream_id)
     ) {
         return "input#stream_message_recipient_topic";
     } else if (
@@ -432,11 +432,13 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             }
         }
 
+        // The following block of code will do nothing if the channel is
+        // not selected as the placeholder in that case will be "Compose your message here".
         let topic_display_name: string | undefined;
         if (opts.topic !== "") {
             topic_display_name = opts.topic;
         } else if (
-            !realm.realm_mandatory_topics &&
+            stream_data.can_use_empty_topic(opts.stream_id) &&
             !$("input#stream_message_recipient_topic").is(":focus")
         ) {
             topic_display_name = util.get_final_topic_display_name(opts.topic);
