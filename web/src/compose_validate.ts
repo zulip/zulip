@@ -461,7 +461,7 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
             return;
         }
 
-        const button_text = settings_data.user_can_move_messages_to_another_topic()
+        const button_text = settings_data.user_can_resolve_topic()
             ? $t({defaultMessage: "Unresolve topic"})
             : null;
 
