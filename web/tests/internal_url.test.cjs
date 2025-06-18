@@ -63,3 +63,29 @@ run_test("test by_stream_topic_url", () => {
     result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name, 12);
     assert.equal(result, "#narrow/channel/123-a-test-stream/topic/test.20topic/with/12");
 });
+
+run_test("test encode_slug", () => {
+    const slugs_to_shorten = [
+        "0-精选 - 译文",
+        "1-精选 - 原创",
+        "2-ビデオゲーム",
+        "3-goûta à l'œuf brûlé",
+    ];
+    for (const [i, slug] of slugs_to_shorten.entries()) {
+        assert.equal(internal_url.encode_slug(i, slug), String(i));
+    }
+
+    const slugs_to_remain_same = [
+        "0-(2+3)%5",
+        "1-$um @nd m*d",
+        "2-books.2C-film.2C-tv.2C-and-games",
+        "3-test-stream-autocomplete",
+        "4-ñoño",
+        "5-యశ",
+        "6-l'été",
+        "7-书籍",
+    ];
+    for (const [i, slug] of slugs_to_remain_same.entries()) {
+        assert.equal(internal_url.encode_slug(i, slug), internal_url.encodeHashComponent(slug));
+    }
+});
