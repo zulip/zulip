@@ -4780,7 +4780,7 @@ paths:
                                             Organization administrators can always change the `topics_policy` setting of
                                             every channel.
 
-                                            **Changes**: New in Zulip 10.0 (feature level ZF-ec92b4).
+                                            **Changes**: New in Zulip 11.0 (feature level 392).
                                         - $ref: "#/components/schemas/GroupSettingValue"
                                     can_invite_users_group:
                                       allOf:
@@ -5086,7 +5086,7 @@ paths:
                                       description: |
                                         Whether [topics are required](/help/require-topics) for messages in this organization.
 
-                                        **Changes**: Deprecated in Zulip 10.0 (feature level ZF-d9265f). This configuration is
+                                        **Changes**: Deprecated in Zulip 11.0 (feature level 392). This configuration is
                                         now controlled by `topics_policy` realm setting.
                                     topics_policy:
                                       type: string
@@ -5099,7 +5099,7 @@ paths:
                                         - allow_empty_topic - Topics are not required to send messages in the channels.
                                         - disable_empty_topic - Topics are required to send messages in the channels.
 
-                                        **Changes**: New in Zulip 10.0 (feature level ZF-d9265f). Previously, this configuration was
+                                        **Changes**: New in Zulip 11.0 (feature level 392). Previously, this configuration was
                                         controlled by a boolean realm setting, `mandatory_topics`.
                                     max_file_upload_size_mib:
                                       type: integer
@@ -17852,7 +17852,7 @@ paths:
                               Organization administrators can always change the `topics_policy` setting of
                               every channel.
 
-                              **Changes**: New in Zulip 10.0 (feature level ZF-ec92b4).
+                              **Changes**: New in Zulip 11.0 (feature level 392).
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_invite_users_group:
                         allOf:
@@ -18253,7 +18253,7 @@ paths:
 
                           Whether [topics are required](/help/require-topics) for messages in this organization.
 
-                          **Changes**: Deprecated in Zulip 10.0 (feature level ZF-d9265f). This configuration is
+                          **Changes**: Deprecated in Zulip 11.0 (feature level 392). This configuration is
                           now controlled by `topics_policy` realm setting.
                       realm_topics_policy:
                         type: string
@@ -18268,7 +18268,7 @@ paths:
                           - allow_empty_topic - Topics are not required to send messages in the channels.
                           - disable_empty_topic - Topics are required to send messages in the channels.
 
-                          **Changes**: New in Zulip 10.0 (feature level ZF-d9265f). Previously, this configuration was
+                          **Changes**: New in Zulip 11.0 (feature level 392). Previously, this configuration was
                           controlled by a boolean realm setting, `mandatory_topics`.
                       realm_message_retention_days:
                         type: integer
@@ -26962,7 +26962,7 @@ components:
         - allow_empty_topic - Topics are not required to send messages in the channel.
         - disable_empty_topic - Topics are required to send messages in the channel.
 
-        **Changes**: New in Zulip 10.0 (feature level ZF-263011).
+        **Changes**: New in Zulip 11.0 (feature level 392).
     ChannelCanAddSubscribersGroup:
       allOf:
         - $ref: "#/components/schemas/GroupSettingValue"
