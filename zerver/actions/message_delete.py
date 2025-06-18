@@ -50,7 +50,7 @@ def _process_grouped_messages_deletion(
     realm: Realm,
     grouped_messages: list[Message],
     *,
-    stream_id: int | None,
+    stream: Stream | None,
     topic: str | None,
     acting_user: UserProfile | None,
 ) -> None:
@@ -66,16 +66,15 @@ def _process_grouped_messages_deletion(
         "type": "delete_message",
         "message_ids": message_ids,
     }
-    if stream_id is None:
+    if stream is None:
         assert topic is None
         message_type = "private"
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
     else:
         assert topic is not None
         message_type = "stream"
-        event["stream_id"] = stream_id
+        event["stream_id"] = stream.id
         event["topic"] = topic
-        stream = Stream.objects.get(id=stream_id)
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
     event["message_type"] = message_type
 
@@ -90,7 +89,7 @@ def _process_grouped_messages_deletion(
         users_to_notify.add(acting_user.id)
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
-    if message_type == "stream":
+    if stream is not None:
         check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
     send_event_on_commit(realm, event, users_to_notify)
@@ -99,28 +98,42 @@ def _process_grouped_messages_deletion(
 def do_delete_messages(
     realm: Realm, messages: Iterable[Message], *, acting_user: UserProfile | None
 ) -> None:
+    """1:1 Direct messages must be grouped to a single convesration by
+    the caller, since this logic does not know how to handle multiple
+    senders sharing a single Recipient object.
+
+    When the Recipient.PERSONAL is no longer a case to consider, this
+    restriction can be deleted.
+    """
     private_messages_by_recipient: defaultdict[int, list[Message]] = defaultdict(list)
-    stream_messages_by_stream_and_topic: defaultdict[tuple[int, str], list[Message]] = defaultdict(
-        list
+    stream_messages_by_recipient_and_topic: defaultdict[tuple[int, str], list[Message]] = (
+        defaultdict(list)
     )
+    stream_by_recipient_id = {}
     for message in messages:
         if message.is_stream_message():
-            stream_id = message.recipient.type_id
+            recipient_id = message.recipient_id
             # topics are case-insensitive.
             topic_name = message.topic_name().lower()
-            stream_messages_by_stream_and_topic[(stream_id, topic_name)].append(message)
+            stream_messages_by_recipient_and_topic[(recipient_id, topic_name)].append(message)
         else:
             recipient_id = message.recipient.id
             private_messages_by_recipient[recipient_id].append(message)
 
     for recipient_id, grouped_messages in private_messages_by_recipient.items():
         _process_grouped_messages_deletion(
-            realm, grouped_messages, stream_id=None, topic=None, acting_user=acting_user
+            realm, grouped_messages, stream=None, topic=None, acting_user=acting_user
         )
 
-    for (stream_id, topic_name), grouped_messages in stream_messages_by_stream_and_topic.items():
+    for (
+        recipient_id,
+        topic_name,
+    ), grouped_messages in stream_messages_by_recipient_and_topic.items():
+        if recipient_id not in stream_by_recipient_id:
+            stream_by_recipient_id[recipient_id] = Stream.objects.get(recipient_id=recipient_id)
+        stream = stream_by_recipient_id[recipient_id]
         _process_grouped_messages_deletion(
-            realm, grouped_messages, stream_id=stream_id, topic=topic_name, acting_user=acting_user
+            realm, grouped_messages, stream=stream, topic=topic_name, acting_user=acting_user
         )
 
 
