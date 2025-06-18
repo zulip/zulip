@@ -1524,6 +1524,47 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{user_profile.id}", req)
         self.assert_json_error(result, "Must be an organization administrator")
 
+    def test_patch_bot_type(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        email = "hambot-bot@zulip.testserver"
+        bot_profile = self.get_bot_user(email)
+
+        req = dict(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+
+        req = dict(bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_error(result, "Missing service_payload_url.")
+
+        req_outgoing = dict(
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            service_payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            service_interface=Service.GENERIC,
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_outgoing)
+        self.assert_json_success(result)
+
+        req = dict(bot_type=UserProfile.EMBEDDED_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+
+    @override_settings(EMBEDDED_BOTS_ENABLED=False)
+    def test_patch_bot_type_embedded_bots_not_enabled(self) -> None:
+        self.login("desdemona")
+        email = "default-bot@zulip.com"
+
+        req = dict(bot_type=UserProfile.EMBEDDED_BOT)
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", req)
+        self.assert_json_error(result, "Invalid bot type")
+
     def test_patch_bot_to_stream_private_allowed(self) -> None:
         self.login("hamlet")
         user_profile = self.example_user("hamlet")

@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 393**
+
+* `PATCH /bots/{bot_user_id}`: Added support to change a bot's type
+  via this endpoint.
+
 **Feature level 392**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),
