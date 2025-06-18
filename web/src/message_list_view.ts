@@ -394,14 +394,17 @@ function populate_group_from_message(
 
         const sub = sub_store.get(message.stream_id);
         let stream_id;
+        let user_can_resolve_topic;
         if (sub === undefined) {
             // Hack to handle unusual cases like the tutorial where
             // the streams used don't actually exist in the subs
             // module.  Ideally, we'd clean this up by making the
             // tutorial populate stream_settings_ui.ts "properly".
             stream_id = -1;
+            user_can_resolve_topic = settings_data.user_can_resolve_topic();
         } else {
             stream_id = sub.stream_id;
+            user_can_resolve_topic = stream_data.can_resolve_topics(sub);
         }
 
         const is_subscribed = stream_data.is_subscribed(stream_id);
@@ -418,7 +421,7 @@ function populate_group_from_message(
             message_containers: [],
             is_stream,
             ...get_topic_edit_properties(message),
-            user_can_resolve_topic: settings_data.user_can_resolve_topic(),
+            user_can_resolve_topic,
             ...subscription_markers,
             date,
             display_recipient,
