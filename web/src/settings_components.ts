@@ -1766,7 +1766,24 @@ export function create_stream_group_setting_widget({
     if (sub !== undefined) {
         set_group_setting_widget_value(pill_widget, sub[setting_name]);
         const $edit_container = stream_settings_containers.get_edit_container(sub);
-        const $subsection = $edit_container.find(".advanced-configurations-container");
+
+        // Determine which subsection this setting belongs to
+        const getSubsectionSelector = (): string => {
+            switch (setting_name) {
+                case "can_administer_channel_group":
+                    return ".administrative-permissions-container";
+                case "can_send_message_group":
+                    return ".messaging-permissions-container";
+                case "can_subscribe_group":
+                case "can_add_subscribers_group":
+                case "can_remove_subscribers_group":
+                    return ".subscription-permissions-container";
+                default:
+                    return ".advanced-configurations-container";
+            }
+        };
+
+        const $subsection = $edit_container.find(getSubsectionSelector());
 
         pill_widget.onTextInputHook(() => {
             save_discard_stream_settings_widget_status_handler($subsection, sub);

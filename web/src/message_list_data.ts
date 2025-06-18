@@ -77,12 +77,11 @@ export class MessageListData {
         if (content === null || typeof content !== "object") {
             return false;
         }
-        
         // Use Reflect.has for safe property checking without type assertion
         if (!Reflect.has(content, "widget_type")) {
             return false;
         }
-        
+
         // Use Reflect.get to safely access the property and check its type
         const widget_type: unknown = Reflect.get(content, "widget_type");
         return typeof widget_type === "string";
@@ -261,9 +260,11 @@ export class MessageListData {
         return messages.filter((message) => {
             if (message.type !== "private") {
                 // For stream messages, hide polls and todo lists sent by muted users
-                if (muted_users.is_user_muted(message.sender_id) && 
-                    message.submessages && 
-                    message.submessages.length > 0) {
+                if (
+                    muted_users.is_user_muted(message.sender_id) &&
+                    message.submessages &&
+                    message.submessages.length > 0
+                ) {
                     for (const submessage of message.submessages) {
                         if (submessage.msg_type === "widget") {
                             try {
@@ -286,8 +287,15 @@ export class MessageListData {
             const recipients = util.extract_pm_recipients(message.to_user_ids);
             if (recipients.length > 1) {
                 // Direct message group message - hide if all other participants (excluding current user) are muted
-                const other_recipients = recipients.filter((id) => Number.parseInt(id, 10) !== current_user.user_id);
-                if (other_recipients.length > 0 && other_recipients.every((id) => muted_users.is_user_muted(Number.parseInt(id, 10)))) {
+                const other_recipients = recipients.filter(
+                    (id) => Number.parseInt(id, 10) !== current_user.user_id,
+                );
+                if (
+                    other_recipients.length > 0 &&
+                    other_recipients.every((id) =>
+                        muted_users.is_user_muted(Number.parseInt(id, 10)),
+                    )
+                ) {
                     return false;
                 }
                 return true;

@@ -339,12 +339,34 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find("input, button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
+    // Handle main advanced configurations container
     const $advanced_configurations_container = $stream_settings.find(
         $(".advanced-configurations-container"),
     );
-    $advanced_configurations_container
-        .find("input, select, button")
-        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
+
+    // Handle individual permission subsections
+    const $administrative_permissions_container = $stream_settings.find(
+        $(".administrative-permissions-container"),
+    );
+    const $messaging_permissions_container = $stream_settings.find(
+        $(".messaging-permissions-container"),
+    );
+    const $subscription_permissions_container = $stream_settings.find(
+        $(".subscription-permissions-container"),
+    );
+
+    // Disable inputs in all permission subsections
+    const permission_containers = [
+        $administrative_permissions_container,
+        $messaging_permissions_container,
+        $subscription_permissions_container,
+    ];
+
+    for (const $container of permission_containers) {
+        $container
+            .find("input, select, button")
+            .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
+    }
 
     const $permission_pill_container_elements =
         $advanced_configurations_container.find(".pill-container");
