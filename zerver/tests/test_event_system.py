@@ -1253,6 +1253,7 @@ class FetchQueriesTest(ZulipTestCase):
             default_streams=1,
             default_stream_groups=1,
             drafts=1,
+            giphy=0,
             message=1,
             muted_topics=1,
             muted_users=1,
@@ -1295,7 +1296,6 @@ class FetchQueriesTest(ZulipTestCase):
             user_status=1,
             user_topic=1,
             video_calls=0,
-            giphy=0,
         )
 
         wanted_event_types = {item[0][0] for item in want_mock.call_args_list}
