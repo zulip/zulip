@@ -30,8 +30,7 @@ def send_presence_changed(
     # sends a message, recipients may still see that user as offline!
     # We solve that by sending an immediate presence update clients.
     #
-    # See https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
-    # internals documentation on presence.
+    # The API documentation explains this interaction in more detail.
     if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE:
         user_ids = get_user_ids_who_can_access_user(user_profile)
     else:
