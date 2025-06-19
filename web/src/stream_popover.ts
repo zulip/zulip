@@ -924,13 +924,11 @@ export async function build_move_topic_to_stream_popover(
     }
 
     function update_topic_input_placeholder_visibility(topic_input_value: string): void {
-        if (stream_data.can_use_empty_topic(stream_widget_value)) {
-            const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
-            $topic_not_mandatory_placeholder.toggleClass(
-                "move-topic-new-topic-placeholder-visible",
-                topic_input_value === "",
-            );
-        }
+        const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+        $topic_not_mandatory_placeholder.toggleClass(
+            "move-topic-new-topic-placeholder-visible",
+            topic_input_value === "" && stream_data.can_use_empty_topic(stream_widget_value),
+        );
     }
 
     function setup_resize_observer($topic_input: JQuery<HTMLInputElement>): void {
@@ -1010,6 +1008,7 @@ export async function build_move_topic_to_stream_popover(
             move_topic_to_stream_topic_typeahead?.hide();
         });
 
+        stream_widget_value = current_stream_id;
         if (only_topic_edit) {
             // Set select_stream_id to current_stream_id since user is not allowed
             // to edit stream in topic-edit only UI.
@@ -1025,7 +1024,6 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        stream_widget_value = current_stream_id;
         const streams_list_options = (): dropdown_widget.Option[] =>
             stream_data.get_streams_for_move_messages_widget().filter(({stream}) => {
                 if (stream.stream_id === current_stream_id) {
