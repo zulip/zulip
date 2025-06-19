@@ -68,7 +68,7 @@ from zerver.lib.subscription_info import (
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.user_groups import UserGroupMembershipDetails
+from zerver.lib.user_groups import UserGroupMembershipDetails, is_user_in_group
 from zerver.models import (
     Attachment,
     DefaultStream,
