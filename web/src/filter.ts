@@ -250,6 +250,21 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
             return user_ids.includes(operand_user.user_id);
         }
+
+        case "mentions": {
+            const operand_user = people.get_by_email(operand);
+
+            if (!operand_user) {
+                return false;
+            }
+
+            const user_id_str = `data-user-id="${operand_user.user_id}"`;
+
+            return (
+                message.content.includes(user_id_str) &&
+                !message.content.includes("user-mention silent")
+            );
+        }
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -270,6 +285,7 @@ export function create_user_pill_context(user: User): UserPillItem {
 
 const USER_OPERATORS = new Set([
     "dm-including",
+    "mentions",
     "dm",
     "sender",
     "from",
@@ -353,6 +369,10 @@ export class Filter {
                 }
                 break;
             case "dm-including":
+                operand = operand.toString().toLowerCase();
+                break;
+
+            case "mentions":
                 operand = operand.toString().toLowerCase();
                 break;
             case "search":
@@ -580,6 +600,7 @@ export class Filter {
             case "pm":
             case "pm-with":
             case "dm-including":
+            case "mentions":
             case "pm-including":
                 if (term.operand === "me") {
                     return true;
@@ -647,6 +668,7 @@ export class Filter {
             "topic",
             "dm",
             "dm-including",
+            "mentions",
             "with",
             "sender",
             "near",
@@ -719,6 +741,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "mentions":
+                return verb + "Mentions";
 
             case "in":
                 return verb + "messages in";
@@ -1126,6 +1151,7 @@ export class Filter {
             "not-topic",
             "dm",
             "dm-including",
+            "mentions",
             "not-dm-including",
             "is-dm",
             "not-is-dm",
