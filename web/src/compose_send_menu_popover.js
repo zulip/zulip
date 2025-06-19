@@ -118,13 +118,17 @@ export function open_send_later_menu() {
     });
 }
 
-export function do_schedule_message(send_at_time) {
-    modals.close_if_open("send_later_modal");
-
+function parse_sent_at_time(send_at_time) {
     if (!Number.isInteger(send_at_time)) {
         // Convert to timestamp if this is not a timestamp.
-        send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
+        return Math.floor(Date.parse(send_at_time) / 1000);
     }
+    return send_at_time;
+}
+
+export function do_schedule_message(send_at_time) {
+    modals.close_if_open("send_later_modal");
+    send_at_time = parse_sent_at_time(send_at_time);
     scheduled_messages.set_selected_schedule_timestamp(send_at_time);
     compose.finish(true);
 }
