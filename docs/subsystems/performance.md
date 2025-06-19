@@ -149,12 +149,12 @@ thousands of concurrent users.
 `POST /users/me/presence` requests, which submit the current user's
 presence information and return the information for all other active
 users in the organization, account for about 36% of all HTTP requests
-on production Zulip servers. See
-[presence](presence.md) for details on this system and
-how it's optimized. For this article, it's important to know that
-presence is one of the most important scalability concerns for any
-chat system, because it cannot be cached long, and is structurally a
-quadratic problem.
+on production Zulip servers. See the [presence API
+documentation](https://zulip.com/api/update-presence) for details on
+this system and how it's optimized. For this article, it's important
+to know that presence is one of the most important scalability
+concerns for any chat system, because it cannot be cached long, and is
+structurally a quadratic problem.
 
 Because typical presence requests consume 10-50ms of server-side
 processing time (to fetch and send back live data on all other active
