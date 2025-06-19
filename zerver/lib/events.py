@@ -743,7 +743,7 @@ def fetch_initial_state_data(
                 "config_options": [
                     {
                         "key": c.name,
-                        "label": c.description,
+                        "label": c.label,
                         "validator": c.validator.__name__,
                     }
                     for c in integration.config_options

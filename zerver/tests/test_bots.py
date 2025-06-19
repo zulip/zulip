@@ -46,7 +46,7 @@ stripe_sample_config_options = [
         display_name="Stripe",
         config_options=[
             WebhookConfigOption(
-                name="stripe_api_key", description="Stripe API key", validator=_check_string
+                name="stripe_api_key", label="Stripe API key", validator=_check_string
             )
         ],
     ),
