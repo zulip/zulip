@@ -244,6 +244,7 @@ from zerver.views.users import (
     deactivate_bot_backend,
     deactivate_user_backend,
     deactivate_user_own_backend,
+    delete_avatar_by_id_backend,
     get_bots_backend,
     get_member_backend,
     get_members_backend,
@@ -255,7 +256,6 @@ from zerver.views.users import (
     regenerate_bot_api_key,
     update_user_by_email_api,
     update_user_by_id_api,
-    delete_avatar_by_id_backend,
 )
 from zerver.views.video_calls import (
     complete_zoom_user,

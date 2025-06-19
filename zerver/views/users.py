@@ -29,8 +29,8 @@ from zerver.actions.user_settings import (
     check_change_bot_full_name,
     check_change_full_name,
     do_change_avatar_fields,
-    do_delete_avatar_image,
     do_change_user_delivery_email,
+    do_delete_avatar_image,
     do_regenerate_api_key,
 )
 from zerver.actions.users import (
@@ -94,6 +94,7 @@ from zerver.models.realms import (
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
     Realm,
+    avatar_changes_disabled,
 )
 from zerver.models.users import (
     get_user_by_delivery_email,
@@ -224,16 +225,16 @@ def update_user_by_id_api(
     if request.FILES:
         if len(request.FILES) != 1:
             raise JsonableError(_("You must upload exactly one avatar."))
-        
+
         [user_file] = request.FILES.values()
+        assert isinstance(user_file, UploadedFile)
         if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
             raise JsonableError(
                 _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
                     max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
                 )
             )
-        
-        upload_avatar_image(user_file, target)
+        upload_avatar_image(user_file, target, acting_user=user_profile)
         do_change_avatar_fields(target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     return update_user_backend(
         request,
@@ -260,10 +261,8 @@ def delete_avatar_by_id_backend(
     if avatar_changes_disabled(target.realm) and not user_profile.is_realm_admin:
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    do_delete_avatar_image(
-        target, acting_user=user_profile
-    )
-    gravatar_url = avatar_url(target) 
+    do_delete_avatar_image(target, acting_user=user_profile)
+    gravatar_url = avatar_url(target)
 
     json_result = dict(
         avatar_url=gravatar_url,
