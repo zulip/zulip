@@ -675,7 +675,6 @@ h4.user_group_setting_subsection_title {
 .user-groups-list,
 .streams-list {
     position: relative;
-    overflow: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
 }
