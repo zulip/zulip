@@ -457,7 +457,10 @@ export async function initialize_everything(state_data) {
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
-    message_actions_popover.initialize();
+    const message_reminder_click_handler = (remind_message_id) => {
+        compose_send_menu_popover.open_send_later_menu(remind_message_id);
+    };
+    message_actions_popover.initialize({message_reminder_click_handler});
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
