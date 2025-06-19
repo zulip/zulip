@@ -50,7 +50,7 @@ def get_dev_users(realm: Realm | None = None, extra_users_count: int = 10) -> li
 def add_dev_login_context(realm: Realm | None, context: dict[str, Any]) -> None:
     users = get_dev_users(realm)
     context["current_realm"] = realm
-    context["all_realms"] = Realm.objects.all()
+    context["all_realms"] = Realm.objects.filter(deactivated_redirect__isnull=True)
 
     def sort(lst: list[UserProfile]) -> list[UserProfile]:
         return sorted(lst, key=lambda u: u.delivery_email)
