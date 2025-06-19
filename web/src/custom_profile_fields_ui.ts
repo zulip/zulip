@@ -6,10 +6,12 @@ import render_settings_custom_user_profile_field from "../templates/settings/cus
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
+import * as channel from "./channel.ts";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import type {UserPillWidget} from "./user_pill.ts";
@@ -74,6 +76,37 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             editable_by_user,
         });
         $(element_id).append($(html));
+    }
+}
+
+export type CustomProfileFieldData = {
+    id: number;
+    value?: number[] | string;
+};
+
+function update_custom_profile_field(
+    field: CustomProfileFieldData,
+    method: channel.AjaxRequestHandler,
+): void {
+    let data;
+    if (method === channel.del) {
+        data = JSON.stringify([field.id]);
+    } else {
+        data = JSON.stringify([field]);
+    }
+
+    const $spinner_element = $(
+        `.custom_user_field[data-field-id="${CSS.escape(field.id.toString())}"] .custom-field-status`,
+    ).expectOne();
+    settings_ui.do_settings_change(method, "/json/users/me/profile_data", {data}, $spinner_element);
+}
+
+export function update_user_custom_profile_fields(
+    fields: CustomProfileFieldData[],
+    method: channel.AjaxRequestHandler,
+): void {
+    for (const field of fields) {
+        update_custom_profile_field(field, method);
     }
 }
 
