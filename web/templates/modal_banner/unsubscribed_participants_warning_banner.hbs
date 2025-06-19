@@ -9,7 +9,7 @@
 
         {{else}}
             {{#tr}}
-                {n_unsubscribed_participants} topic participants are not subscribed to &nbsp;<z-stream></z-stream>.
+                {unsubscribed_participants_count} topic participants are not subscribed to &nbsp;<z-stream></z-stream>.
                 {{#*inline "z-stream"}}<strong>{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
             {{/tr}}
         {{/if}}
