@@ -255,6 +255,7 @@ from zerver.views.users import (
     regenerate_bot_api_key,
     update_user_by_email_api,
     update_user_by_id_api,
+    delete_avatar_by_id_backend,
 )
 from zerver.views.video_calls import (
     complete_zoom_user,
@@ -343,6 +344,7 @@ v1_api_and_json_patterns = [
         PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),
+    rest_path("users/<int:user_id>/avatar", DELETE=delete_avatar_by_id_backend),
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
