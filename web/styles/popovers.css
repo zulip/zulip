@@ -763,11 +763,6 @@ ul.popover-group-menu-member-list {
     border: 0;
     padding: 0;
 
-    .giphy-content {
-        position: relative;
-        left: 1px;
-    }
-
     .giphy-gif {
         cursor: pointer;
     }
@@ -780,9 +775,9 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-scrolling-container {
-        overflow: auto;
+        overflow: hidden auto;
         height: 200px;
-        margin: 2px;
+        margin: 2px 3px;
         padding: 5px 0;
     }
 
