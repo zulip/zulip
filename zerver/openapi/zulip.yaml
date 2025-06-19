@@ -1179,13 +1179,23 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to all users in an organization when a user comes
-                                back online after being offline for a while. While most presence
-                                updates are done via polling the [main presence
-                                endpoint](/api/get-presence), this event is important to avoid
-                                confusing users when someone comes online and immediately sends
-                                a message (one wouldn't want them to still appear offline at
-                                that point!).
+                                Event sent to all users in an organization when a user comes back
+                                online after being offline for a while.
+
+                                In addition to handling these events, a client that wants to
+                                maintain presence data must poll the [main presence
+                                endpoint](https://zulip.com/api/get-presence). Most updates to
+                                presence data, refreshing the timestamps of users who are already
+                                online, do not appear in the event queue. This design is an
+                                optimization by allowing those updates to be batched up, because
+                                there is no urgency in the information that an already-online user
+                                is still online.
+
+                                These events are provided because when a user transitions from
+                                offline to online, that is information the client may want to show
+                                promptly in the UI to avoid showing a confusing state (for example,
+                                if the newly-online user sends a message or otherwise demonstrates
+                                they're online).
 
                                 If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
                                 setting is set to `true`, then the event is only sent to users
@@ -10783,14 +10793,17 @@ paths:
           to the server.
 
         - Obtaining the presence data of all other users in the organization via
-          regular polling (in parallel with receiving
-          [`presence` events](/api/get-events#presence)).
+          regular polling.
 
         Accurate user presence is one of the most expensive parts of any
         chat application (in terms of bandwidth and other resources). Therefore,
         it is important that clients implementing Zulip's user presence system
         use the modern [`last_update_id`](#parameter-last_update_id) protocol to
         minimize fetching duplicate user presence data.
+
+        Client apps implementing presence are recommended to also consume [`presence`
+        events](/api/get-events#presence)), in order to learn about newly online users
+        immediately.
 
         The Zulip server is responsible for implementing [invisible mode][invisible],
         which disables sharing a user's presence data. Nonetheless, clients
