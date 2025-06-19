@@ -942,7 +942,7 @@ class InboxTopicListWidget extends TopicListWidget {
             get_min_load_count,
         });
 
-        if (!stream_topic_history.is_complete_for_stream_id(this.my_stream_id)) {
+        if (!stream_topic_history.has_history_for(this.my_stream_id)) {
             show_channel_view_loading_indicator();
             stream_topic_history_util.get_server_history(this.my_stream_id, () => {
                 if (channel_view_topic_widget?.get_stream_id() !== this.my_stream_id) {

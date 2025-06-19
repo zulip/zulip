@@ -354,10 +354,10 @@ class UnreadTopicCounter {
         stream_id: number;
         topic_dict: FoldDict<TopicHistoryEntry>;
     }): {pretty_name: string; message_id: number}[] {
-        /* Clients have essentially complete unread data, but
-         * stream_topic_history.is_complete_for_stream_id() can be
-         * false. In that situation, this function helps ensure that
-         * we include all topics with unread messages in data that.
+        /* Clients have essentially complete unread data. If we don't
+         * yet have full topic history for the channel, we need to
+         * display the union of topics with unread messages and locally
+         * available topic history data.
          *
          * It will return all topics in the provided stream with a
          * nonzero unread count that are not already present in the
