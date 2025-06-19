@@ -38,6 +38,7 @@ type ActionPopoverContext = {
     view_source_menu_item: string | undefined;
     should_display_hide_option: boolean;
     should_display_mark_as_unread: boolean;
+    should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
     should_display_quote_message: boolean;
@@ -214,6 +215,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
 
     const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
+    const should_display_remind_me_option = not_spectator;
 
     function is_add_reaction_icon_visible(): boolean {
         assert(message_lists.current !== undefined);
@@ -237,6 +239,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         editability_menu_item,
         move_message_menu_item,
         should_display_mark_as_unread,
+        should_display_remind_me_option,
         view_source_menu_item,
         should_display_collapse,
         should_display_uncollapse,
