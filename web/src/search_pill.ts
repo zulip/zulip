@@ -166,7 +166,7 @@ function append_user_pill(
     pill_widget.clear_text();
 }
 
-const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
+const user_pill_operators = new Set(["dm", "dm-including", "sender", "mentions"]);
 
 export function set_search_bar_contents(
     search_terms: NarrowTerm[],
