@@ -516,23 +516,55 @@ export async function build_move_topic_to_stream_popover(
     }
 
     let curr_selected_stream: number;
-    // Warn if any of current topic participants are NOT subscribed
-    // to the destination stream.
-    async function warn_unsubscribed_participants(destination_stream_id: number): Promise<void> {
-        $("#move_topic_modal .unsubscribed-participants-warning").remove();
 
-        // Do nothing if it's the same stream.
-        if (destination_stream_id === current_stream_id) {
-            return;
-        }
-
-        const locally_cached_conversation_messages = message_util.get_loaded_messages_in_topic(
+    function get_messages_to_be_moved(
+        propagate_mode: string,
+        selected_message: Message | undefined,
+    ): Message[] {
+        const all_locally_cached_conversation_messages = message_util.get_loaded_messages_in_topic(
             current_stream_id,
             topic_name,
         );
 
+        // It's move-topic modal, so no message is selected.
+        if (selected_message === undefined) {
+            return all_locally_cached_conversation_messages;
+        }
+
+        // Move only selected message.
+        if (propagate_mode === "change_one") {
+            return [selected_message];
+        }
+
+        // Move selected message and all its following messages.
+        if (propagate_mode === "change_later") {
+            return all_locally_cached_conversation_messages.filter(
+                (msg) => msg.id >= selected_message.id,
+            );
+        }
+
+        // Move all messages in topic.
+        return all_locally_cached_conversation_messages;
+    }
+
+    // Warn if any sender of the messages being moved is NOT subscribed
+    // to the destination stream.
+    async function warn_unsubscribed_participants(selected_propagate_mode: string): Promise<void> {
+        $("#move_topic_modal .unsubscribed-participants-warning").remove();
+
+        const destination_stream_id = stream_widget_value;
+
+        // Do nothing if it's the same stream.
+        if (destination_stream_id === undefined || destination_stream_id === current_stream_id) {
+            return;
+        }
+
+        // Only participants who sent the messages being moved should appear in the banner,
+        // so we fetch those messages first.
+        const messages_to_be_moved = get_messages_to_be_moved(selected_propagate_mode, message);
+
         const active_human_participant_ids = new ConversationParticipants(
-            locally_cached_conversation_messages,
+            messages_to_be_moved,
         ).visible();
 
         const unsubscribed_participant_ids: number[] = [];
@@ -587,6 +619,7 @@ export async function build_move_topic_to_stream_popover(
                 : null,
             hide_close_button: true,
             stream: destination_stream,
+            selected_propagate_mode,
             unsubscribed_participant_formatted_names_list,
             unsubscribed_participants_count,
             few_unsubscribed_participants,
@@ -811,7 +844,8 @@ export async function build_move_topic_to_stream_popover(
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
         update_topic_input_placeholder_visibility(topic_input_value);
-        void warn_unsubscribed_participants(stream_widget_value);
+        const selected_propagate_mode = String($("#message_move_select_options").val());
+        void warn_unsubscribed_participants(selected_propagate_mode);
 
         dropdown.hide();
         event.preventDefault();
@@ -1050,6 +1084,7 @@ export async function build_move_topic_to_stream_popover(
             $("#message_move_select_options").on("change", function () {
                 selected_option = String($(this).val());
                 last_propagate_mode_for_conversation.set(conversation_key, selected_option);
+                void warn_unsubscribed_participants(selected_option);
                 maybe_show_topic_already_exists_warning();
                 update_move_messages_count_text(selected_option, message?.id);
             });
