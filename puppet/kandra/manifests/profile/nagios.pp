@@ -16,8 +16,6 @@ class kandra::profile::nagios inherits kandra::profile::base {
   }
 
   $default_host_domain = zulipconf('nagios', 'default_host_domain', undef)
-  $hosts_zmirror = split(zulipconf('nagios', 'hosts_zmirror', undef), ',')
-  $hosts_zmirrorp = split(zulipconf('nagios', 'hosts_zmirrorp', undef), ',')
   $hosts_app_prod = split(zulipconf('nagios', 'hosts_app_prod', undef), ',')
   $hosts_app_staging = split(zulipconf('nagios', 'hosts_app_staging', undef), ',')
   $hosts_postgresql_primary = split(zulipconf('nagios', 'hosts_postgresql_primary', undef), ',')

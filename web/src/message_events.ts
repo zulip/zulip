@@ -529,9 +529,6 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     local_cache_missing_messages = true;
                 }
             }
-            // The event.message_ids received from the server are not in sorted order.
-            // Sorts in ascending order.
-            event_messages.sort((a, b) => a.id - b.id);
 
             if (
                 going_forward_change &&

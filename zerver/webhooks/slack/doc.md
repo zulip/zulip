@@ -70,6 +70,9 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
    section, and click on **Add Bot User Event**. Select the
    `message.channels` event.
 
+1. Add the bot as an app to the Slack channels you'd like to receive
+   notifications from.
+
 {end_tabs}
 
 {!congrats.md!}

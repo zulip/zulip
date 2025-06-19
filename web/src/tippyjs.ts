@@ -8,6 +8,7 @@ import render_information_density_update_button_tooltip from "../templates/infor
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
+import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
@@ -271,7 +272,6 @@ export function initialize(): void {
         target: [
             "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
-            "#stream-specific-notify-table .unmute_stream",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",
@@ -809,6 +809,27 @@ export function initialize(): void {
                 ),
             );
         },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".topic-edit-save-wrapper",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            if ($($elem).find(".topic_edit_save").prop("disabled")) {
+                const error_message = compose_validate.get_topics_required_error_message_html();
+                instance.setContent(ui_util.parse_html(error_message));
+                // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
+                // is in the error message.
+                $(instance.popper).find(".tippy-content").css("display", "block");
+                return undefined;
+            }
+            instance.destroy();
+            return false;
+        },
+        appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
         },

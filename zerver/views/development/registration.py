@@ -118,7 +118,6 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         realm_default_language=realm_default_language,
         email_address_visibility=email_address_visibility,
         full_name=name,
-        password="test",
         realm_subdomain=realm_subdomain,
         terms="true",
         is_demo_organization="true",

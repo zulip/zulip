@@ -309,7 +309,7 @@ h3,
 .settings_select,
 .list_select {
     padding: 0 25px 0 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
@@ -332,7 +332,7 @@ select.settings_select {
     background-image: var(--icon-chevron-down);
     background-repeat: no-repeat;
     background-position: 98%;
-    background-size: 14px;
+    background-size: 1em;
 }
 
 #admin-active-users-list,
@@ -349,6 +349,7 @@ select.settings_select {
     word-break: normal;
 }
 
+.export_url_spinner,
 .last_active {
     .loading_indicator_spinner {
         width: 1.25em;
@@ -498,14 +499,65 @@ input[type="checkbox"] {
     }
 }
 
-#stream-specific-notify-table .unmute_stream {
-    position: relative;
-    left: 3px;
-    top: 2px;
+#stream-specific-notify-table {
+    .reset_stream_notifications {
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.2s ease;
+        transition-property: opacity, visibility;
 
-    &:hover {
-        color: var(--color-unmute-stream-hover);
-        cursor: pointer;
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:active {
+            outline: none;
+        }
+    }
+
+    .unmute_stream {
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .stream-controls {
+        display: flex;
+        align-items: center;
+        /* This gap matches a single space character. */
+        gap: 0.4ch;
+
+        &:hover {
+            .reset_stream_notifications {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+}
+
+#confirm_reset_stream_notifications_modal {
+    .channel-privacy-type-icon {
+        padding-left: 3px;
+        padding-right: 0;
+        width: auto;
+    }
+}
+
+#customizable_stream_notifications_table .dropdown-widget-button {
+    /* 225px at 16px/1em */
+    width: 14.0625em;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
     }
 }
 
@@ -873,13 +925,13 @@ input[type="checkbox"] {
 
 #organization-permissions {
     .dropdown-widget-button {
-        color: hsl(0deg 0% 33%);
+        color: var(--color-text-default);
     }
 }
 
 #organization-settings {
     .dropdown-widget-button {
-        color: hsl(0deg 0% 33%);
+        color: var(--color-text-default);
     }
 }
 
@@ -1573,7 +1625,7 @@ label.preferences-radio-choice-label {
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border: 1px solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
@@ -1810,7 +1862,7 @@ label.preferences-radio-choice-label {
 }
 
 .settings_textarea {
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 4px;
     vertical-align: middle;
@@ -2233,7 +2285,7 @@ label.preferences-radio-choice-label {
 .settings_url_input,
 .settings_text_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);

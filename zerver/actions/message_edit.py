@@ -29,6 +29,7 @@ from zerver.lib import utils
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
+    MessagesNotAllowedInEmptyTopicError,
     PreviousMessageContentMismatchedError,
     StreamWildcardMentionNotAllowedError,
     TopicWildcardMentionNotAllowedError,
@@ -55,6 +56,7 @@ from zerver.lib.streams import (
     access_stream_by_id_for_message,
     can_access_stream_history,
     check_stream_access_based_on_can_send_message_group,
+    get_stream_topics_policy,
     notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
@@ -65,6 +67,7 @@ from zerver.lib.topic import (
     RESOLVED_TOPIC_PREFIX,
     TOPIC_LINKS,
     TOPIC_NAME,
+    get_topic_display_name,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
     participants_for_topic,
@@ -90,7 +93,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
-from zerver.models.streams import get_stream_by_id_in_realm
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -127,9 +130,6 @@ def validate_message_edit_payload(
 
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))
-
-    if message.realm.mandatory_topics and topic_name in ("(no topic)", ""):
-        raise JsonableError(_("Topics are required in this organization."))
 
     if topic_name in {
         RESOLVED_TOPIC_PREFIX.strip(),
@@ -680,7 +680,7 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            event["message_ids"] = update_message_cache([target_message])
+            event["message_ids"] = sorted(update_message_cache([target_message]))
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
@@ -890,7 +890,7 @@ def do_update_message(
     changed_messages = save_changes_for_propagation_mode()
 
     realm_id = target_message.realm_id
-    event["message_ids"] = update_message_cache(changed_messages, realm_id)
+    event["message_ids"] = sorted(update_message_cache(changed_messages, realm_id))
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
@@ -1407,6 +1407,16 @@ def build_message_edit_request(
     if stream_id is not None:
         target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
         is_stream_edited = True
+
+    if (
+        target_topic_name in ("(no topic)", "")
+        and (is_topic_edited or is_stream_edited)
+        and get_stream_topics_policy(message.realm, target_stream)
+        == StreamTopicsPolicyEnum.disable_empty_topic.value
+    ):
+        raise MessagesNotAllowedInEmptyTopicError(
+            get_topic_display_name("", user_profile.default_language)
+        )
 
     return StreamMessageEditRequest(
         is_content_edited=is_content_edited,

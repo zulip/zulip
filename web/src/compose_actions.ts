@@ -27,7 +27,6 @@ import * as reload_state from "./reload_state.ts";
 import * as resize from "./resize.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
-import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
@@ -519,7 +518,7 @@ export let on_topic_narrow = (): void => {
     }
 
     if (
-        ((compose_state.topic() || !realm.realm_mandatory_topics) &&
+        ((compose_state.topic() || stream_data.can_use_empty_topic(compose_state.stream_id())) &&
             compose_state.has_message_content()) ||
         compose_state.is_recipient_edited_manually()
     ) {

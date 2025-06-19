@@ -14,14 +14,6 @@ which is especially handy if you are subscribed to a large number of channels.
 
 1. Click **Pin channel to top**.
 
-{tab|mobile}
-
-{!channel-long-press-menu.md!}
-
-1. Tap **Pin to top**.
-
-{!channel-long-press-menu-tip.md!}
-
 {end_tabs}
 
 ## Unpin a channel
@@ -33,14 +25,6 @@ which is especially handy if you are subscribed to a large number of channels.
 {!channel-actions.md!}
 
 1. Click **Unpin channel from top**.
-
-{tab|mobile}
-
-{!channel-long-press-menu.md!}
-
-1. Tap **Unpin from top**.
-
-{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 
@@ -57,16 +41,6 @@ which is especially handy if you are subscribed to a large number of channels.
 {!select-channel-view-personal.md!}
 
 1. Under **Personal settings**, toggle **Pin channel to top of left sidebar**.
-
-{tab|mobile}
-
-{!channel-long-press-menu.md!}
-
-1. Tap **Channel settings**.
-
-1. Toggle **Pinned**.
-
-{!mobile-channel-settings-menu-tip.md!}
 
 {end_tabs}
 

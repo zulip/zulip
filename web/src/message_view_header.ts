@@ -122,12 +122,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             context = {
                 ...context,
                 title: undefined,
-                html_title: $t_html(
-                    {defaultMessage: "All topics in <z-channel></z-channel>"},
-                    {
-                        "z-channel": () => stream_name_with_privacy_symbol_html,
-                    },
-                ),
+                html_title: stream_name_with_privacy_symbol_html,
                 // We don't want to show an initial icon here.
                 icon: undefined,
                 zulip_icon: undefined,

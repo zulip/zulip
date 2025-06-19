@@ -159,6 +159,7 @@ tr.admin td:first-child {
     }
 
     .cloud-label,
+    .deactivated-label,
     .remote-label {
         padding: 2px 8px;
         font-size: 0.9em;
@@ -170,6 +171,10 @@ tr.admin td:first-child {
 
     .cloud-label {
         background-color: hsl(280deg 100% 40%);
+    }
+
+    .deactivated-label {
+        background-color: hsl(2deg 64% 53%);
     }
 
     .remote-label {

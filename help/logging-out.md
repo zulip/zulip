@@ -10,7 +10,9 @@ right corner of the app.
 
 {tab|mobile}
 
-{!mobile-profile-menu.md!}
+{!mobile-switch-account.md!}
+
+1. Tap on the Zulip organization you want to log out of.
 
 1. Tap **Log out**.
 

@@ -245,7 +245,8 @@ if (action == "start" or args.less_graceful) and not args.only_django:
 if has_application_server() and not args.skip_client_reloads and not args.only_django:
     # All of the servers have been (re)started; now enqueue events in
     # the Tornado servers to tell clients to reload.
-    subprocess.check_call(["./scripts/reload-clients"])
+    logging.info("Sending reload events to clients in the background")
+    subprocess.check_call(["./scripts/reload-clients", "--background"])
 
 logging.info("Done!")
 print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from operator import attrgetter
 from typing import Annotated, Any, Literal
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlsplit
 
 from django import forms
 from django.conf import settings
@@ -550,9 +550,7 @@ def support(
                 request.session["success_message"] = (
                     f"Subdomain changed from {old_subdomain} to {new_subdomain}"
                 )
-                return HttpResponseRedirect(
-                    reverse("support") + "?" + urlencode({"q": new_subdomain})
-                )
+                return HttpResponseRedirect(reverse("support", query={"q": new_subdomain}))
         elif status is not None:
             if status == "active":
                 do_send_realm_reactivation_email(realm, acting_user=acting_user)

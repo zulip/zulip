@@ -1,6 +1,5 @@
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING
-from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -104,7 +103,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     )
     if is_subdomain_root_or_alias(request):
         # If we're on the root domain, we make this link first ask you which organization.
-        context.sponsorship_url = f"/accounts/go/?{urlencode({'next': context.sponsorship_url})}"
+        context.sponsorship_url = reverse("realm_redirect", query={"next": context.sponsorship_url})
 
     if realm is not None:
         if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED and settings.PRODUCTION:

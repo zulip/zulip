@@ -94,7 +94,6 @@ from zerver.models.realms import (
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
     Realm,
-    avatar_changes_disabled,
 )
 from zerver.models.users import (
     get_user_by_delivery_email,

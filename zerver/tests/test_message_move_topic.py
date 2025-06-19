@@ -36,7 +36,8 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
-from zerver.models.streams import Stream
+from zerver.models.realms import RealmTopicsPolicyEnum
+from zerver.models.streams import Stream, StreamTopicsPolicyEnum
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 
 
@@ -123,6 +124,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.login_user(admin_user)
 
         stream = self.make_stream("new_stream")
+        stream_mandatory_topics = self.make_stream(
+            "topics_required", topics_policy=StreamTopicsPolicyEnum.disable_empty_topic.value
+        )
         self.subscribe(admin_user, stream.name)
         self.subscribe(hamlet, stream.name)
 
@@ -133,10 +137,15 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name=original_topic_name,
         )
 
-        # Verify with mandatory_topics=True:
+        # Verify with topics_policy=disable_empty_topic:
         # * A topic can't be moved to an empty topic
         # * A topic can be moved to a non-empty topic
-        do_set_realm_property(realm, "mandatory_topics", True, acting_user=admin_user)
+        do_set_realm_property(
+            realm,
+            "topics_policy",
+            RealmTopicsPolicyEnum.disable_empty_topic,
+            acting_user=admin_user,
+        )
 
         for topic_name in ["(no topic)", ""]:
             result = self.client_patch(
@@ -145,7 +154,9 @@ class MessageMoveTopicTest(ZulipTestCase):
                     "topic": topic_name,
                 },
             )
-            self.assert_json_error(result, "Topics are required in this organization.")
+            self.assert_json_error(
+                result, "Sending messages to the general chat is not allowed in this channel."
+            )
             self.check_topic(message_id, topic_name=original_topic_name)
 
         new_topic_name = "new valid topic"
@@ -158,10 +169,12 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_json_success(result)
         self.check_topic(message_id, new_topic_name)
 
-        # Verify with mandatory_topics=False:
+        # Verify with topics_policy=allow_empty_topic:
         # * A topic can be moved to an empty topic
         # * A topic can be moved to a non-empty topic
-        do_set_realm_property(realm, "mandatory_topics", False, acting_user=admin_user)
+        do_set_realm_property(
+            realm, "topics_policy", RealmTopicsPolicyEnum.allow_empty_topic, acting_user=admin_user
+        )
 
         for topic_name in ["(no topic)", "", "non-empty topic"]:
             result = self.client_patch(
@@ -172,6 +185,35 @@ class MessageMoveTopicTest(ZulipTestCase):
             )
             self.assert_json_success(result)
             self.check_topic(message_id, topic_name)
+
+        # Test that message cannot be moved to empty topic in stream with
+        # `topics_policy=disable_empty_topic`.
+        for topic_name in ["(no topic)", ""]:
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {"topic": topic_name, "stream_id": stream_mandatory_topics.id},
+            )
+            self.assert_json_error(
+                result, "Sending messages to the general chat is not allowed in this channel."
+            )
+            self.check_topic(message_id, topic_name="non-empty topic")
+
+        # Test that message cannot be moved to empty topic in stream with
+        # `topics_policy=disable_empty_topic` when `topic_name` is `None`.
+        for topic_name in ["(no topic)", ""]:
+            message_id = self.send_stream_message(
+                hamlet,
+                stream.name,
+                topic_name=topic_name,
+            )
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {"stream_id": stream_mandatory_topics.id},
+            )
+            self.assert_json_error(
+                result, "Sending messages to the general chat is not allowed in this channel."
+            )
+            self.check_topic(message_id, topic_name="")
 
     def test_edit_message_invalid_topic(self) -> None:
         self.login("hamlet")

@@ -610,8 +610,8 @@ def remote_billing_legacy_server_confirm_login(
             # they can re-auth.
             raise RemoteBillingAuthenticationError
     except (RemoteBillingIdentityExpiredError, RemoteBillingAuthenticationError):
-        return HttpResponse(
-            reverse("remote_billing_legacy_server_login") + f"?next_page={next_page}"
+        return HttpResponseRedirect(
+            reverse("remote_billing_legacy_server_login", query={"next_page": next_page})
         )
 
     rate_limit_error_response = check_rate_limits(request, remote_server)

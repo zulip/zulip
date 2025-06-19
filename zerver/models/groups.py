@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models import CASCADE
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
-from django_cte import CTEManager
 
 from zerver.lib.cache import cache_with_key, get_realm_system_groups_cache_key
 from zerver.lib.types import GroupPermissionSetting
@@ -31,8 +30,7 @@ class SystemGroups:
     }
 
 
-class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
-    objects: CTEManager = CTEManager()
+class UserGroup(models.Model):
     direct_members = models.ManyToManyField(
         UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
@@ -46,7 +44,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
 
 
-class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class NamedUserGroup(UserGroup):
     MAX_NAME_LENGTH = 100
     INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
 

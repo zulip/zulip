@@ -624,7 +624,6 @@ def oauth_redirect_to_root(
     url: str,
     sso_type: str,
     is_signup: bool,
-    extra_url_params: Mapping[str, str],
     # Protect the above parameters from being processed as kwargs
     # provided by @typed_endpoint by marking them as mandatory
     # positional parameters.
@@ -662,8 +661,6 @@ def oauth_redirect_to_root(
     if next:
         params["next"] = next
 
-    params = {**params, **extra_url_params}
-
     return redirect(append_url_query_string(main_site_url, urlencode(params)))
 
 
@@ -691,8 +688,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     /accounts/login/sso may have Apache intercepting requests to it
     to do authentication, so we need this additional endpoint.
     """
-    query = request.META["QUERY_STRING"]
-    return redirect(append_url_query_string(reverse(remote_user_sso), query))
+    return redirect(reverse(remote_user_sso, query=request.GET))
 
 
 @handle_desktop_flow
@@ -701,7 +697,6 @@ def start_social_login(
     backend: str,
     extra_arg: str | None = None,
 ) -> HttpResponse:
-    backend_url = reverse("social:begin", args=[backend])
     extra_url_params: dict[str, str] = {}
     if backend == "saml":
         if not SAMLAuthBackend.check_config():
@@ -730,10 +725,9 @@ def start_social_login(
 
     return oauth_redirect_to_root(
         request,
-        backend_url,
+        reverse("social:begin", args=[backend], query=extra_url_params),
         "social",
         False,
-        extra_url_params,
     )
 
 
@@ -743,7 +737,6 @@ def start_social_signup(
     backend: str,
     extra_arg: str | None = None,
 ) -> HttpResponse:
-    backend_url = reverse("social:begin", args=[backend])
     extra_url_params: dict[str, str] = {}
     if backend == "saml":
         if not SAMLAuthBackend.check_config():
@@ -757,10 +750,9 @@ def start_social_signup(
         extra_url_params = {"idp": extra_arg}
     return oauth_redirect_to_root(
         request,
-        backend_url,
+        reverse("social:begin", args=[backend], query=extra_url_params),
         "social",
         True,
-        extra_url_params,
     )
 
 
@@ -922,10 +914,7 @@ def login_page(
         redirect_to = get_safe_redirect_to(next, request.user.realm.url)
         return HttpResponseRedirect(redirect_to)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = reverse("realm_redirect")
-        if request.GET:
-            redirect_url = append_url_query_string(redirect_url, request.GET.urlencode())
-        return HttpResponseRedirect(redirect_url)
+        return HttpResponseRedirect(reverse("realm_redirect", query=request.GET))
 
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
@@ -1256,9 +1245,7 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 
 def password_reset(request: HttpRequest) -> HttpResponse:
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = append_url_query_string(
-            reverse("realm_redirect"), urlencode({"next": reverse("password_reset")})
-        )
+        redirect_url = reverse("realm_redirect", query={"next": reverse("password_reset")})
         return HttpResponseRedirect(redirect_url)
 
     try:

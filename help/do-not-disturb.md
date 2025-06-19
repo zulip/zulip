@@ -3,7 +3,7 @@
 The Zulip desktop app offers a **Do Not Disturb (DND)** mode. Turning on **Do Not
 Disturb** mode disables [desktop notifications](/help/desktop-notifications)
 across all the organizations you have
-[added](/help/logging-in#log-in-for-the-first-time) to the Zulip desktop app.
+[added](/help/logging-in#log-in-to-a-new-organization) to the Zulip desktop app.
 This can be convenient for avoiding interruptions during a meeting, or when you need
 time to focus on your work.
 

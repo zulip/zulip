@@ -9,7 +9,7 @@ from django.db import connection
 from django.db.models import Exists, F, Max, OuterRef, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from django_cte import With
+from django_cte import CTE, with_cte
 from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
@@ -58,6 +58,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.messages import get_usermessage_by_message_id
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
+from zerver.models.recipients import DirectMessageGroup
 
 
 class MessageDetailsDict(TypedDict, total=False):
@@ -882,11 +883,10 @@ def get_raw_unread_data(
             # inside a CTE, such that the join to Recipients, below, can't be
             # implied to remove rows, and thus allows a Nested Loop join,
             # potentially memoized to reduce the number of Recipient lookups.
-            cte = With(user_msgs[:MAX_UNREAD_MESSAGES])
+            cte = CTE(user_msgs[:MAX_UNREAD_MESSAGES])
 
             user_msgs = (
-                cte.join(Recipient, id=cte.col.recipient_id)
-                .with_cte(cte)
+                with_cte(cte, select=cte.join(Recipient, id=cte.col.recipient_id))
                 .annotate(
                     message_id=cte.col.message_id,
                     sender_id=cte.col.sender_id,
@@ -1734,3 +1734,14 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
     return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. )", " ", content)
+
+
+def is_1_to_1_message(message: Message) -> bool:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        direct_message_group = DirectMessageGroup.objects.get(id=message.recipient.type_id)
+        return direct_message_group.group_size <= 2
+
+    if message.recipient.type == Recipient.PERSONAL:
+        return True
+
+    return False

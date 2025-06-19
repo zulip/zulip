@@ -21,6 +21,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
@@ -1037,8 +1038,15 @@ class Command(ZulipBaseCommand):
                 admins_system_group = NamedUserGroup.objects.get(
                     name=SystemGroups.ADMINISTRATORS, realm=zulip_realm, is_system_group=True
                 )
+
+                channel_folder = check_add_channel_folder(
+                    zulip_realm,
+                    "Engineering",
+                    "For convenient *channel folder* testing! :octopus:",
+                    acting_user=iago,
+                )
                 zulip_stream_dict: dict[str, dict[str, Any]] = {
-                    "devel": {"description": "For developing"},
+                    "devel": {"description": "For developing", "folder_id": channel_folder.id},
                     # ビデオゲーム - VideoGames (japanese)
                     "ビデオゲーム": {
                         "description": f"Share your favorite video games!  {raw_emojis[2]}",
@@ -1051,8 +1059,8 @@ class Command(ZulipBaseCommand):
                     "design": {"description": "For design", "creator": hamlet},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
-                    "test": {"description": "For testing `code`"},
-                    "errors": {"description": "For errors"},
+                    "test": {"description": "For testing `code`", "folder_id": channel_folder.id},
+                    "errors": {"description": "For errors", "folder_id": channel_folder.id},
                     # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
                     "조리법 " + raw_emojis[0]: {
                         "description": "Everything cooking, from pasta to Пельмени"

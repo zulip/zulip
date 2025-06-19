@@ -30,15 +30,6 @@ whereas [archiving a channel](/help/archive-a-channel) does not.
 
 1. Approve by clicking **Confirm**.
 
-{tab|mobile}
-
-{!topic-long-press-menu.md!}
-
-1. Tap **Delete topic**.
-1. Approve by tapping **DELETE TOPIC**.
-
-{!topic-long-press-menu-tip.md!}
-
 {end_tabs}
 
 Note that deleting all of the individual messages within a particular

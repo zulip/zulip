@@ -11,6 +11,7 @@
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
+        background-color: var(--color-background-input);
 
         & input.user-status {
             grid-area: search-input;
@@ -18,6 +19,9 @@
             border: none;
             outline: none;
             box-shadow: none;
+            /* Transparent here is to allow the input
+               background set on the wrapper to show
+               through. */
             background-color: transparent;
             margin: 0;
 

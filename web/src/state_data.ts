@@ -322,6 +322,7 @@ export const realm_schema = z.object({
     realm_can_move_messages_between_channels_group: group_setting_value_schema,
     realm_can_move_messages_between_topics_group: group_setting_value_schema,
     realm_can_resolve_topics_group: group_setting_value_schema,
+    realm_can_set_topics_policy_group: group_setting_value_schema,
     realm_can_summarize_topics_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),
@@ -384,7 +385,6 @@ export const realm_schema = z.object({
     realm_linkifiers: z.array(realm_linkifier_schema),
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
-    realm_mandatory_topics: z.boolean(),
     realm_message_content_allowed_in_email_notifications: z.boolean(),
     realm_message_content_edit_limit_seconds: z.number().nullable(),
     realm_message_content_delete_limit_seconds: z.number().nullable(),
@@ -407,6 +407,7 @@ export const realm_schema = z.object({
     realm_require_unique_names: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
+    realm_topics_policy: z.enum(["allow_empty_topic", "disable_empty_topic"]),
     realm_upload_quota_mib: z.nullable(z.number()),
     realm_url: z.string(),
     realm_video_chat_provider: z.number(),
@@ -581,10 +582,7 @@ export const state_data_schema = z
                 onboarding_steps: z.array(onboarding_step_schema),
                 navigation_tour_video_url: z.nullable(z.string()),
             })
-            .transform(({onboarding_steps, navigation_tour_video_url}) => ({
-                onboarding_steps: {onboarding_steps},
-                navigation_tour_video_url,
-            })),
+            .transform((onboarding_steps) => ({onboarding_steps})),
     )
     .and(current_user_schema.transform((current_user) => ({current_user})))
     .and(realm_schema.transform((realm) => ({realm})));

@@ -155,7 +155,12 @@ class MessageEditHistoryVisibilityPolicyEnum(Enum):
     none = 3
 
 
-class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class RealmTopicsPolicyEnum(Enum):
+    allow_empty_topic = 2
+    disable_empty_topic = 3
+
+
+class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -223,7 +228,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
 
-    mandatory_topics = models.BooleanField(default=False)
+    topics_policy = models.PositiveSmallIntegerField(
+        default=RealmTopicsPolicyEnum.allow_empty_topic.value
+    )
+    REALM_TOPICS_POLICY_TYPES = list(RealmTopicsPolicyEnum)
 
     require_unique_names = models.BooleanField(default=False)
     name_changes_disabled = models.BooleanField(default=False)
@@ -379,6 +387,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # UserGroup which is allowed to use wildcard mentions in large channels.
     can_mention_many_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
+    # UserGroup which is allowed to set per-channel `topics_policy` setting.
+    can_set_topics_policy_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
@@ -698,7 +711,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_url_embed_preview=bool,
         invite_required=bool,
         jitsi_server_url=str | None,
-        mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=int | None,
         message_content_delete_limit_seconds=int | None,
@@ -711,6 +723,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         push_notifications_enabled=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
+        topics_policy=RealmTopicsPolicyEnum,
         video_chat_provider=int,
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,
@@ -858,6 +871,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+        ),
+        can_set_topics_policy_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.MEMBERS,
         ),
         can_summarize_topics_group=GroupPermissionSetting(
             require_system_group=False,

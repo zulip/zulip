@@ -103,11 +103,13 @@
 * [Recent conversations](/help/recent-conversations)
 * [Combined feed](/help/combined-feed)
 * [Channel feed](/help/channel-feed)
+* [List of topics in a channel](/help/list-of-topics)
 * [Left sidebar](/help/left-sidebar)
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
 * [Configure unread message counters](/help/configure-unread-message-counters)
+* [Configure where you land](/help/configure-where-you-land)
 * [Emoji reactions](/help/emoji-reactions)
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
@@ -170,6 +172,7 @@
 
 ## Apps
 * [Download apps for every platform](https://zulip.com/apps/)
+* [Mobile app installation guides](/help/mobile-app-install-guide)
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Supported browsers](/help/supported-browsers)
 * [Configure how links open](/help/configure-how-links-open)

@@ -38,7 +38,8 @@ message.
 
 {!message-long-press-menu.md!}
 
-1. Tap **Add a reaction**.
+1. Select one of the emojis at the top of the menu, or tap **more**
+   (<i class="zulip-icon zulip-icon-chevron-right mobile-help"></i>).
 
 1. Start typing the name of the emoji you want to use, and select an emoji from
    the list of suggestions.
@@ -88,17 +89,6 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 {tab|desktop-web}
 
 1. Hover over an emoji reaction to see who reacted with that emoji.
-
-{tab|mobile}
-
-{!message-long-press-menu.md!}
-
-1. Tap **See who reacted**.
-
-!!! tip ""
-
-    You can also long-press an existing emoji reaction to see who reacted with
-    that emoji.
 
 {end_tabs}
 

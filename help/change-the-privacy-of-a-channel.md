@@ -30,22 +30,6 @@ web-public if they have content access to it:
 
 {!channel-settings-general-tab-tip.md!}
 
-{tab|mobile}
-
-{!mobile-all-channels-view.md!}
-
-{!channel-name-long-press-menu.md!}
-
-1. Tap **Channel settings**.
-
-1. Tap **Edit channel**.
-
-1. Tap **Privacy**, and configure **Who can access the channel**.
-
-1. Tap **Save**.
-
-{!channel-name-long-press-menu-tip.md!}
-
 {end_tabs}
 
 {!automated-notice-channel-event.md!}

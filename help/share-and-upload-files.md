@@ -65,9 +65,9 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 1. Navigate to a channel, topic, or direct message view.
 
 1. Tap the
-   **paperclip** (<img src="/static/images/help/mobile-paperclip-icon.svg" alt="paperclip" class="help-center-icon"/>),
-   **image** (<img src="/static/images/help/mobile-image-icon.svg" alt="image" class="help-center-icon"/>),
-   or **camera** (<img src="/static/images/help/mobile-camera-icon.svg" alt="camera" class="help-center-icon"/>)
+   **paperclip** (<i class="zulip-icon zulip-icon-attachment mobile-help"></i>),
+   **image** (<i class="zulip-icon zulip-icon-mobile-image mobile-help"></i>),
+   or **camera** (<i class="zulip-icon zulip-icon-mobile-camera mobile-help"></i>)
    button at the bottom of the app to select one or more files. Zulip will
    upload the files, and insert named links using
    [Markdown formatting](/help/format-your-message-using-markdown#links):
@@ -80,27 +80,6 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 !!! tip ""
 
     The link text will default to the name of the uploaded file.
-
-## Sharing files
-
-You can share files from other apps on Zulip.
-
-{start_tabs}
-
-{tab|android}
-
-1. Select one or more files and tap the **Zulip**
-   (<img src="/static/images/logo/zulip-icon-circle.svg" alt="logo" class="help-center-icon"/>)
-   logo.
-
-1. Select a channel name and topic name, or tap the
-   **Direct message** tab and **Choose recipients**.
-
-1. _(optional)_ Write a message.
-
-1. Tap the **Send** button.
-
-{end_tabs}
 
 ## Named file example
 

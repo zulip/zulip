@@ -29,12 +29,6 @@ their organization.
     You can also use <kbd>Shift</kbd> + <kbd>V</kbd> to show or hide read receipts
     for the selected message.
 
-{tab|mobile}
-
-{!message-long-press-menu.md!}
-
-1. Tap **View read receipts**.
-
 {end_tabs}
 
 !!! tip ""

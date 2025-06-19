@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 from unittest.mock import patch
-from urllib.parse import quote, urlencode
+from urllib.parse import quote
 
 import orjson
 import time_machine
@@ -2074,7 +2074,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response["Location"],
-            reverse("login") + "?" + urlencode({"email": email, "already_registered": 1}),
+            reverse("login", query={"email": email, "already_registered": 1}),
         )
 
     def test_confirmation_key_cant_be_reused(self) -> None:

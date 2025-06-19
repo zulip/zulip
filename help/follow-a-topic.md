@@ -33,6 +33,12 @@ You can use followed topics for a variety of workflows:
 
 {!configure-topic-notifications-desktop-web.md!}
 
+{tab|mobile}
+
+{!topic-long-press-menu.md!}
+
+1. Tap **Follow topic** or **Unfollow topic**.
+
 {end_tabs}
 
 ## Catch up on followed topics
@@ -111,6 +117,10 @@ messages just in followed topics, without counting other channel messages.
 {tab|desktop-web}
 
 {!manage-configured-topics-desktop-web.md!}
+
+{tab|mobile}
+
+{!manage-configured-topics-mobile.md!}
 
 {end_tabs}
 

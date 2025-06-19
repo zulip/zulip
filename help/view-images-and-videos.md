@@ -49,11 +49,10 @@ attached to messages in your current view.
 
     * Pan the image if you are zoomed in
 
-    * Tap the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical-spread"></i>)
-      in the bottom right corner of the app to download the image, share it to
-      other apps, or share a link to the image
+    * Tap the **copy** (<i class="zulip-icon zulip-icon-copy mobile-help"></i>)
+      icon in the bottom left corner of the app to copy a link to the image
 
-1. Tap the **X** in the upper right corner of the app to close the image viewer
+1. Tap the **X** in the upper left corner of the app to close the image viewer
    once you are done.
 
 {end_tabs}

@@ -55,6 +55,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
+    RealmTopicsPolicyEnum,
     get_default_max_invites_for_realm_plan_type,
     get_realm,
 )
@@ -111,6 +112,16 @@ def do_set_realm_property(
             op="update",
             property=name,
             value=MessageEditHistoryVisibilityPolicyEnum(value).name,
+        )
+    if name == "topics_policy":
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={
+                name: RealmTopicsPolicyEnum(value).name,
+                "mandatory_topics": value == RealmTopicsPolicyEnum.disable_empty_topic.value,
+            },
         )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))

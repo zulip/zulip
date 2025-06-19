@@ -2602,6 +2602,17 @@ test("message people", ({override, override_rewire}) => {
     assert.deepEqual(results, [hamletcharacters, admins]);
 });
 
+test("person suggestion for unique full name syntax", () => {
+    let results = ct.get_person_suggestions(`${ali.full_name}|${ali.user_id}`, {});
+    // Ali is not a valid user, so we should get no results.
+    assert.deepEqual(results, []);
+
+    // Add Ali as a valid user.
+    people.add_valid_user_id(ali.user_id);
+    results = ct.get_person_suggestions(`${ali.full_name}|${ali.user_id}`, {});
+    assert.deepEqual(results, [ali_item]);
+});
+
 test("muted users excluded from results", () => {
     // This logic is common to direct message recipients as
     // well as mentions typeaheads, so we need only test once.

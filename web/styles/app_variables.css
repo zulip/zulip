@@ -1399,6 +1399,15 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
     );
+    /* TODO: Light mode uses browser-default white
+       backgrounds; we should extend the use of this
+       color variable to 1) explicitly set the
+       background color of inputs, and 2) clean up a
+       lingering stack of selectors in dark_theme.css. */
+    --color-background-input: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
     --color-text-link-decoration: light-dark(
@@ -1448,10 +1457,6 @@
     --color-realm-enable-spectator-access-link: light-dark(
         hsl(0deg 0% 20%),
         hsl(236deg 33% 90%)
-    );
-    --color-unmute-stream-hover: light-dark(
-        hsl(0deg 0% 20%),
-        hsl(0deg 0% 100%)
     );
 
     /* Markdown colors */
@@ -2002,7 +2007,7 @@
         hsl(0deg 0% 46.7%),
         hsl(236deg 33% 90%)
     );
-    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23333333'/%3E%3C/svg%3E%0A");
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='%23333333' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z'/%3E%3C/svg%3E");
 
     /* Button colors on modals and message editing. */
     /* Don't define light theme colors for modal here
@@ -2107,7 +2112,7 @@
         hsl(0deg 0% 100%)
     );
     --outline-width-button-focus: 1.5px;
-    --outline-offset-button-focus: 1px;
+    --outline-offset-button-focus: 0;
     /* Actions buttons */
     --color-inner-shadow-action-button: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 20%, transparent),
@@ -2827,7 +2832,7 @@
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
         0 41px 80px 0 hsl(0deg 0% 0% / 20%);
-    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23FFFFFFBF'/%3E%3C/svg%3E%0A");
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='%23DEDEDE' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z'/%3E%3C/svg%3E");
 
     /* Button colors on modals and message editing. */
     --color-exit-button-text: hsl(0deg 0% 100%);

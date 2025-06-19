@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 390
+API_FEATURE_LEVEL = 393
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 390
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (330, 0)  # bumped 2025-06-05 to upgrade Python requirements
+PROVISION_VERSION = (332, 0)  # bumped 2025-06-10 to upgrade Django

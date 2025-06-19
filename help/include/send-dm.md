@@ -25,24 +25,19 @@
 
 {tab|mobile}
 
-1. Tap the **Direct messages**
-   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="help-center-icon"/> )
-   tab at the bottom of the app.
+{!mobile-direct-messages.md!}
 
-1. Tap the **New DM** button at the top of the app to message one person, or
-   **New group DM** to message any number of people.
+1. Tap the **New DM** button.
 
 1. Start typing the name of the person you want to message, and
-   select their name from the list of suggestions.
+   select their name from the list of suggestions. You can continue
+   adding as many message recipients as you like.
 
-1. *(if sending a group DM)* Continue adding as many message recipients as you
-   like. Approve by tapping the **checkmark** (<img
-   src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark"
-   class="help-center-icon"/>) button in the bottom right corner of the app.
+1. Approve by tapping the **Compose** button in the top right corner of the app.
 
-1. Compose your message, and tap the **send**
-   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="help-center-icon"/>)
-   button in the bottom right corner of the app.
+1. Compose your message, and tap the **Send**
+   (<i class="zulip-icon zulip-icon-send mobile-help"></i>) button in the
+   bottom right corner of the app.
 
 !!! tip ""
 

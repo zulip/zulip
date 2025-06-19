@@ -23,7 +23,7 @@ from corporate.models.plans import CustomerPlan, CustomerPlanOffer, get_current_
 from corporate.models.sponsorships import ZulipSponsorshipRequest
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm
-from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import get_org_type_display_name
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
@@ -127,6 +127,7 @@ class CloudSupportData:
     sponsorship_data: SponsorshipData
     user_data: UserData
     file_upload_usage: str
+    is_scrubbed: bool
 
 
 def get_stripe_customer_url(stripe_id: str) -> str:
@@ -498,4 +499,7 @@ def get_data_for_cloud_support_view(billing_session: BillingSession) -> CloudSup
         sponsorship_data=sponsorship_data,
         user_data=user_data,
         file_upload_usage=get_formatted_realm_upload_space_used(billing_session.realm),
+        is_scrubbed=RealmAuditLog.objects.filter(
+            realm=billing_session.realm, event_type=AuditLogEventType.REALM_SCRUBBED
+        ).exists(),
     )

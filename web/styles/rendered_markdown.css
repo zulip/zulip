@@ -39,14 +39,14 @@
             }
         }
 
-        li {
+        & > li {
             /* This aligns bullets to roughly the
                center of a single-digit counter.
                11.2px at 16px/1em */
             padding-inline-start: 0.7em;
         }
 
-        & li::marker {
+        & > li::marker {
             /* This is an eyeballed value, but it makes the
                otherwise diminutive markers specified above
                both larger *and* better vertically centered. */
@@ -71,13 +71,13 @@
            same here to offset the counters. */
         padding-inline-start: 2.1ch;
 
-        & li {
+        & > li {
             counter-increment: count 1;
             /* 3.2px at 16px/1em */
             padding-inline-start: 0.2em;
         }
 
-        & li::marker {
+        & > li::marker {
             content: counter(count, decimal) ". ";
         }
     }

@@ -388,6 +388,8 @@ function create_stream(): void {
         text: $t({defaultMessage: "Creating channel..."}),
     });
 
+    const topics_policy = $("#id_new_topics_policy").val();
+
     const data: Record<string, string> = {
         subscriptions,
         is_web_public: JSON.stringify(is_web_public),
@@ -396,6 +398,7 @@ function create_stream(): void {
         is_default_stream: JSON.stringify(default_stream),
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
+        topics_policy: JSON.stringify(topics_policy),
         principals,
         ...group_setting_values,
     };
@@ -529,6 +532,11 @@ export function show_new_stream_modal(): void {
         true,
         true,
     );
+
+    $("#id_new_topics_policy").val(settings_config.get_stream_topics_policy_values().inherit.code);
+    if (!stream_data.user_can_set_topics_policy()) {
+        $("#id_new_topics_policy").prop("disabled", true);
+    }
 
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);

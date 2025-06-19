@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import connection
@@ -19,7 +18,6 @@ from psycopg2.sql import Composable
 from corporate.models.licenses import LicenseLedger
 from corporate.models.plans import CustomerPlan
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import Realm
 from zilencer.models import (
     RemoteCustomerUserCount,
@@ -139,16 +137,12 @@ def realm_stats_link(realm_str: str) -> Markup:
 
 
 def user_support_link(email: str) -> Markup:
-    support_url = reverse("support")
-    query = urlencode({"q": email})
-    url = append_url_query_string(support_url, query)
+    url = reverse("support", query={"q": email})
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
 def realm_support_link(realm_str: str) -> Markup:
-    support_url = reverse("support")
-    query = urlencode({"q": realm_str})
-    url = append_url_query_string(support_url, query)
+    url = reverse("support", query={"q": realm_str})
     return Markup('<a href="{url}">{realm}</i></a>').format(url=url, realm=realm_str)
 
 
@@ -166,9 +160,7 @@ def remote_installation_stats_link(server_id: int) -> Markup:
 
 
 def remote_installation_support_link(hostname: str) -> Markup:
-    support_url = reverse("remote_servers_support")
-    query = urlencode({"q": hostname})
-    url = append_url_query_string(support_url, query)
+    url = reverse("remote_servers_support", query={"q": hostname})
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 

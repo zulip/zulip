@@ -40,8 +40,17 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     disable_for_spectators: true,
 } satisfies Partial<dropdown_widget.DropdownWidgetOptions>;
 
+const ALL_TOPICS_OPTION_DESCRIPTION = $t({
+    defaultMessage: "Includes muted channels and topics",
+});
+
+const ALL_TOPICS_OPTION_DESCRIPTION_FOR_CHANNEL_VIEW = $t({
+    defaultMessage: "Includes muted topics",
+});
+
 export function filters_dropdown_options(
     current_value: string | number | undefined,
+    channel_view = false,
 ): dropdown_widget.Option[] {
     return [
         {
@@ -59,9 +68,9 @@ export function filters_dropdown_options(
         {
             unique_id: FILTERS.ALL_TOPICS,
             name: $t({defaultMessage: "All topics"}),
-            description: $t({
-                defaultMessage: "Includes muted channels and topics",
-            }),
+            description: channel_view
+                ? ALL_TOPICS_OPTION_DESCRIPTION_FOR_CHANNEL_VIEW
+                : ALL_TOPICS_OPTION_DESCRIPTION,
             bold_current_selection: current_value === FILTERS.ALL_TOPICS,
         },
     ];

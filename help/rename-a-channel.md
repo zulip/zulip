@@ -20,20 +20,6 @@ and Unicode emoji.
 
 {!channel-settings-general-tab-tip.md!}
 
-{tab|mobile}
-
-{!mobile-all-channels-view.md!}
-
-{!channel-name-long-press-menu.md!}
-
-1. Tap **Channel settings**.
-
-1. Tap **Edit channel**, and enter a new channel name.
-
-1. Tap **Save**.
-
-{!channel-name-long-press-menu-tip.md!}
-
 {end_tabs}
 
 {!automated-notice-channel-event.md!}

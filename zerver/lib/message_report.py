@@ -5,7 +5,7 @@ from zerver.actions.message_send import internal_send_stream_message
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import truncate_content
+from zerver.lib.message import is_1_to_1_message, truncate_content
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.recipients import Recipient
 from zerver.models.users import get_system_bot
@@ -34,7 +34,7 @@ def send_message_report(
     reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
 
     # Build reported message header
-    if reported_message.recipient.type == Recipient.PERSONAL:
+    if is_1_to_1_message(reported_message):
         report_header = _(
             "{reporting_user_mention} reported a DM sent by {reported_user_mention}."
         ).format(

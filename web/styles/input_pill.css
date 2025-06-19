@@ -32,9 +32,21 @@
         background-color: var(--color-background-input-pill);
         cursor: pointer;
 
+        /* Not focus-visible, because we want to support mouse+backpace to
+           delete pills */
         &:focus {
-            border-color: var(--color-focus-outline-input-pill);
+            /* Box shadow instead of border, because user pills have avatars
+               that extend all the way to the edge of the pill. */
+            box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
             outline: none;
+
+            /* For user pills with avatars, the avatar covers up the box
+               shadow, so we also have to make a border around the avatar. */
+            .pill-image-border {
+                border-right: none;
+                border-radius: 4px 0 0 4px;
+                border-color: var(--color-focus-outline-input-pill);
+            }
         }
 
         .pill-image {

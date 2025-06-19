@@ -190,10 +190,13 @@ let row_focus = DEFAULT_ROW_FOCUS;
 let hide_other_views_callback: (() => void) | undefined;
 
 const ls_filter_key = "inbox-filters";
+const ls_per_channel_filters_key = "inbox-per-channel-filters";
 const ls_collapsed_containers_key = "inbox_collapsed_containers";
 
 const ls = localstorage();
-let filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
+const DEFAULT_FILTER = views_util.FILTERS.UNMUTED_TOPICS;
+let filters = new Set([DEFAULT_FILTER]);
+const per_channel_filters = new Map<number, Set<string>>();
 let collapsed_containers = new Set<string>();
 
 let search_keyword = "";
@@ -213,6 +216,13 @@ function get_row_from_conversation_key(key: string): JQuery {
 
 function save_data_to_ls(): void {
     ls.set(ls_filter_key, [...filters]);
+    ls.set(
+        ls_per_channel_filters_key,
+        [...per_channel_filters.entries()].map(([channel_id, filter_set]) => [
+            channel_id,
+            [...filter_set],
+        ]),
+    );
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
 
@@ -388,6 +398,16 @@ function load_data_from_ls(): void {
     collapsed_containers = new Set(
         z.array(z.string()).optional().parse(ls.get(ls_collapsed_containers_key)),
     );
+    const saved_per_channel_filters = z
+        .array(z.tuple([z.number(), z.array(z.string())]))
+        .optional()
+        .parse(ls.get(ls_per_channel_filters_key));
+    for (const [channel_id, filter_set] of saved_per_channel_filters ?? []) {
+        const valid_filter_set = new Set(filter_set.filter((filter) => valid_filters.has(filter)));
+        if (valid_filter_set.size > 0) {
+            per_channel_filters.set(channel_id, valid_filter_set);
+        }
+    }
 }
 
 function format_dm(
@@ -823,7 +843,12 @@ function filter_click_handler(
     const filter_id = $(event.currentTarget).attr("data-unique-id");
     assert(filter_id !== undefined);
     // We don't support multiple filters yet, so we clear existing and add the new filter.
-    filters = new Set([filter_id]);
+    if (inbox_util.is_channel_view()) {
+        const channel_id = inbox_util.get_channel_id();
+        per_channel_filters.set(channel_id, new Set([filter_id]));
+    } else {
+        filters = new Set([filter_id]);
+    }
     save_data_to_ls();
     dropdown.hide();
     widget.render();
@@ -965,12 +990,19 @@ function render_channel_view(channel_id: number): void {
     channel_view_topic_widget.build();
 }
 
+function inbox_view_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
+    return views_util.filters_dropdown_options(current_value, inbox_util.is_channel_view());
+}
+
 export function complete_rerender(): void {
     if (!inbox_util.is_visible()) {
         return;
     }
     load_data_from_ls();
 
+    let first_filter: IteratorResult<string>;
     if (inbox_util.is_channel_view()) {
         const channel_id = inbox_util.get_channel_id();
         assert(channel_id !== undefined);
@@ -990,6 +1022,8 @@ export function complete_rerender(): void {
 
             render_channel_view(channel_id);
         }
+        const channel_filter = per_channel_filters.get(channel_id) ?? new Set([DEFAULT_FILTER]);
+        first_filter = channel_filter.values().next();
     } else {
         channel_view_topic_widget = undefined;
         const {has_visible_unreads, ...additional_context} = reset_data();
@@ -1006,6 +1040,7 @@ export function complete_rerender(): void {
         );
         show_empty_inbox_channel_view_text(false);
         show_empty_inbox_text(has_visible_unreads);
+        first_filter = filters.values().next();
     }
 
     // If the focus is not on the inbox rows, the inbox view scrolls
@@ -1016,13 +1051,13 @@ export function complete_rerender(): void {
         revive_current_focus();
     }, 0);
 
-    const first_filter = filters.values().next();
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         widget_name: "inbox-filter",
         item_click_callback: filter_click_handler,
         $events_container: $("#inbox-main"),
-        default_id: first_filter.done ? undefined : first_filter.value,
+        default_id: first_filter.done ? DEFAULT_FILTER : first_filter.value,
+        get_options: inbox_view_dropdown_options,
     });
     filters_dropdown_widget.setup();
 }
@@ -1069,16 +1104,23 @@ function filter_should_hide_stream_row({
         return true;
     }
 
+    let current_filter = filters;
+    if (inbox_util.is_channel_view()) {
+        const channel_id = inbox_util.get_channel_id();
+        current_filter = per_channel_filters.get(channel_id) ?? new Set([DEFAULT_FILTER]);
+    }
+
     if (
-        filters.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
+        current_filter.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
         !user_topics.is_topic_followed(stream_id, topic)
     ) {
         return true;
     }
 
     if (
-        filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
-        (user_topics.is_topic_muted(stream_id, topic) || stream_data.is_muted(stream_id)) &&
+        current_filter.has(views_util.FILTERS.UNMUTED_TOPICS) &&
+        (user_topics.is_topic_muted(stream_id, topic) ||
+            (!inbox_util.is_channel_view() && stream_data.is_muted(stream_id))) &&
         !user_topics.is_topic_unmuted_or_followed(stream_id, topic)
     ) {
         return true;

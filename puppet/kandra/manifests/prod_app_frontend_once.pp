@@ -25,9 +25,4 @@ class kandra::prod_app_frontend_once {
     command   => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time',
     use_proxy => false,
   }
-  zulip::cron { 'check_user_zephyr_mirror_liveness':
-    hour    => '*',
-    minute  => '*',
-    command => '/usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness',
-  }
 }

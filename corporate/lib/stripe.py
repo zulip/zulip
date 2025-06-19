@@ -52,7 +52,6 @@ from zerver.lib.send_email import (
     send_email_to_users_with_billing_access_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -378,10 +377,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 
 def build_support_url(support_view: str, query_text: str) -> str:
     support_realm_url = get_realm(settings.STAFF_SUBDOMAIN).url
-    support_url = urljoin(support_realm_url, reverse(support_view))
-    query = urlencode({"q": query_text})
-    support_url = append_url_query_string(support_url, query)
-    return support_url
+    return urljoin(support_realm_url, reverse(support_view, query={"q": query_text}))
 
 
 def get_configured_fixed_price_plan_offer(

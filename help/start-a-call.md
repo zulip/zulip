@@ -31,28 +31,6 @@ administrators.
     You can replace the "Join video call." label for the link with any text you
     like.
 
-{tab|mobile}
-
-1. Navigate to a channel, topic, or direct message view.
-
-1. Tap the **Add video call**
-   ( <img src="/static/images/help/mobile-video-icon.svg" alt="video"
-   class="help-center-icon"/> )
-   icon at the bottom of the app. This will insert a **Click to join video call**
-   link into your message.
-
-1. If you are in a channel view, choose a destination topic by tapping the
-   compose box and selecting an existing topic or typing a new topic name.
-
-1. Send the message.
-
-1. Tap the link in the message to start or join the call.
-
-!!! tip ""
-
-    You can replace the "Click to join video call" label for the link with any
-    text you like.
-
 {end_tabs}
 
 ## Start a voice call

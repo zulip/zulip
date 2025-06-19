@@ -23,6 +23,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.streams import StreamTopicsPolicyEnum
 
 
 def bulk_create_users(
@@ -221,6 +222,8 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
                 is_web_public=options.get("is_web_public", False),
                 is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 creator=options.get("creator", None),
+                folder_id=options.get("folder_id", None),
+                topics_policy=options.get("topics_policy", StreamTopicsPolicyEnum.inherit.value),
                 **get_default_values_for_stream_permission_group_settings(realm, creator),
             )
             if "can_send_message_group" in options:

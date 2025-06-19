@@ -15,15 +15,15 @@ web/desktop app.
 
 - **Always**: Messages are marked as read whenever you scroll through them in
   the app. You may be used to this from other chat applications.
-- **Never**: Messages are marked as read only
-  [manually](#mark-all-messages-as-read). For example, if you often need to
-  follow up on messages at your computer after reading them in the mobile app,
-  you can choose this option for the mobile app.
 - **Only in conversation views**: In Zulip, a **conversation** is a [direct
   message](/help/direct-messages) thread (one-on-one or with a group), or a
   [topic in a channel](/help/introduction-to-topics). This option makes it
   convenient to preview new messages in a channel, or skim [Combined
   feed](/help/combined-feed), and later read each topic in detail.
+- **Never**: Messages are marked as read only
+  [manually](#mark-all-messages-as-read). For example, if you often need to
+  follow up on messages at your computer after reading them in the mobile app,
+  you can choose this option for the mobile app.
 
 {start_tabs}
 
@@ -37,9 +37,7 @@ web/desktop app.
 
 {tab|mobile}
 
-{!mobile-profile-menu.md!}
-
-1. Tap **Settings**.
+{!mobile-settings.md!}
 
 1. Tap **Mark messages as read on scroll**.
 
@@ -117,21 +115,21 @@ channel or topic as read**.
 {tab|mobile}
 
 1. Tap a channel, topic, or the **Combined feed**
-   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
-   tab.
+   (<i class="zulip-icon zulip-icon-all-messages mobile-help"></i>) tab.
 
-2. Tap **Mark channel as read**, **Mark topic as read**, or **Mark all as read**
-   near the top right corner of the app.
+2. Scroll down to the bottom of the message view, and tap **Mark all messages
+   as read**.
 
 !!! tip ""
 
-    You can also press and hold a topic until the long-press menu appears, and
-    select **Mark topic as read**.
+    You can also press and hold a channel or topic until the long-press menu
+    appears, and select the option to mark as read.
 
 {end_tabs}
 
 ## Related articles
 
 * [Marking messages as unread](/help/marking-messages-as-unread)
+* [Configure where you land in message feeds](/help/configure-where-you-land)
 * [Reading strategies](/help/reading-strategies)
 * [Read receipts](/help/read-receipts)

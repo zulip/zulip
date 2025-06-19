@@ -49,6 +49,7 @@ from zerver.data_import.slack_message_conversion import (
     process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
+from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
@@ -332,6 +333,15 @@ def users_to_zerver_userprofile(
                 zerver_customprofilefield_values,
             )
 
+        if is_slackbot(user):
+            is_bot = True
+        else:
+            is_bot = user.get("is_bot", False)
+        if is_bot:
+            bot_type = 1
+        else:
+            bot_type = None
+
         userprofile = UserProfile(
             full_name=get_user_full_name(user),
             is_active=not user.get("deleted", False) and not user["is_mirror_dummy"],
@@ -340,9 +350,9 @@ def users_to_zerver_userprofile(
             email=email,
             delivery_email=email,
             avatar_source=avatar_source,
-            is_bot=user.get("is_bot", False),
+            is_bot=is_bot,
             role=role,
-            bot_type=1 if user.get("is_bot", False) else None,
+            bot_type=bot_type,
             date_joined=timestamp,
             timezone=timezone,
             last_login=timestamp,
@@ -451,6 +461,10 @@ def process_customprofilefields(
                 break
 
 
+def is_slackbot(user: ZerverFieldsT) -> bool:
+    return get_user_full_name(user).lower() == "slackbot"
+
+
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if "email" in user["profile"]:
         return user["profile"]["email"]
@@ -458,7 +472,7 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
         return Address(username=user["name"], domain=f"{user['team_domain']}.slack.com").addr_spec
     if "bot_id" in user["profile"]:
         return SlackBotEmail.get_email(user["profile"], domain_name)
-    if get_user_full_name(user).lower() == "slackbot":
+    if is_slackbot(user):
         return Address(username="imported-slackbot-bot", domain=domain_name).addr_spec
     raise AssertionError(f"Could not find email address for Slack user {user}")
 
@@ -1523,7 +1537,9 @@ def do_convert_zipfile(
                 # top-level directories, or as `canvas_in_the_conversation.json`
                 # files in channel directories.  We do not parse these currently.
                 if not re.match(r"[^/]+(\.json|/([^/]+\.json)?)$", fileinfo.filename):
-                    raise Exception("This zip file does not look like a Slack archive")
+                    raise SlackImportInvalidFileError(
+                        "Uploaded zip file is not a valid Slack export."
+                    )
 
                 # file_size is the uncompressed size of the file
                 total_size += fileinfo.file_size
@@ -1532,7 +1548,7 @@ def do_convert_zipfile(
             # than a 10x size magnification is suspect, particularly
             # if it results in over 1GB.
             if total_size > 1024 * 1024 * 1024 and total_size > 10 * os.path.getsize(original_path):
-                raise Exception("This zip file is possibly malicious")
+                raise SlackImportInvalidFileError("Uploaded zip file is not a valid Slack export.")
 
             zipObj.extractall(slack_data_dir)
 

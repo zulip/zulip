@@ -149,14 +149,6 @@ formatted for you. You can paste as plain text if you prefer with
     If using Zulip in a browser, you can also click on a topic name,
     and copy the URL from your browser's address bar.
 
-{tab|mobile}
-
-{!topic-long-press-menu.md!}
-
-1. Tap **Copy link to topic**.
-
-{!topic-long-press-menu-tip.md!}
-
 {end_tabs}
 
 ### Get a link to a specific channel
@@ -168,14 +160,6 @@ formatted for you. You can paste as plain text if you prefer with
 {!channel-actions.md!}
 
 1. Click **Copy link to channel**.
-
-{tab|mobile}
-
-{!channel-long-press-menu.md!}
-
-1. Tap **Copy link to channel**.
-
-{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 

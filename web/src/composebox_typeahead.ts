@@ -655,6 +655,17 @@ export function get_person_suggestions(
         } else {
             persons = all_persons;
         }
+
+        const user = people.get_from_unique_full_name(query);
+        if (user !== undefined) {
+            return [
+                {
+                    type: "user",
+                    user,
+                },
+            ];
+        }
+
         // Exclude muted users from typeaheads.
         persons = muted_users.filter_muted_users(persons);
         let person_items: UserOrMentionPillData[] = persons.map((person) => ({
@@ -671,8 +682,12 @@ export function get_person_suggestions(
                 })),
             ];
         }
-
-        return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
+        const should_remove_diacritics = people.should_remove_diacritics_for_query(
+            query.toLowerCase(),
+        );
+        return person_items.filter((item) =>
+            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
+        );
     }
 
     let groups: UserGroup[];

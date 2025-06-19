@@ -52,6 +52,7 @@ from zerver.data_import.slack import (
     slack_workspace_to_realm,
     users_to_zerver_userprofile,
 )
+from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
@@ -2255,7 +2256,7 @@ by Pieter
             email="test@example.com",
             data_import_metadata={"import_from": "slack"},
         )
-        mock_do_import_realm.side_effect = AssertionError("Import failed")
+        mock_do_import_realm.side_effect = SlackImportInvalidFileError("Invalid file")
 
         event = {
             "preregistration_realm_id": prereg_realm.id,
@@ -2264,7 +2265,7 @@ by Pieter
         }
 
         with (
-            self.assertRaises(AssertionError),
+            self.assertRaises(SlackImportInvalidFileError),
             self.assertLogs("zerver.actions.data_import", "ERROR"),
         ):
             import_slack_data(event)
@@ -2272,6 +2273,9 @@ by Pieter
         prereg_realm.refresh_from_db()
         self.assertIsNone(prereg_realm.created_realm)
         self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        self.assertEqual(
+            prereg_realm.data_import_metadata["invalid_file_error_message"], "Invalid file"
+        )
         self.assertFalse(Realm.objects.filter(string_id="test-realm").exists())
 
     @mock.patch("zerver.actions.data_import.do_import_realm")

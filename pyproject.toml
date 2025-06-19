@@ -6,7 +6,7 @@ requires-python = ">=3.10"
 [dependency-groups]
 prod = [
   # Django itself
-  "django[argon2]==5.1.*",
+  "django[argon2]==5.2.*",
   "asgiref", # https://github.com/django/asgiref/pull/494
 
   # needed for NotRequired, ParamSpec
@@ -169,7 +169,7 @@ prod = [
   "google-re2",
 
   # For querying recursive group membership
-  "django-cte",
+  "django-cte>=2.0.0.dev20250610173146", # https://github.com/dimagi/django-cte/pull/116
 
   # SCIM integration
   "django-scim2",

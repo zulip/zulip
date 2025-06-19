@@ -28,26 +28,6 @@ define host{
        }
 <% end -%>
 
-<% @hosts_zmirror.each do |host| -%>
-define host{
-       use              generic-host
-       host_name        <%= host %>
-       alias            <%= host %>
-       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
-       hostgroups       all,non_aws_host,zmirror,flaky_servers
-       }
-<% end -%>
-
-<% @hosts_zmirrorp.each do |host| -%>
-define host{
-       use              generic-host
-       host_name        <%= host %>
-       alias            <%= host %>
-       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
-       hostgroups       all,non_aws_host,zmirrorp,flaky_servers
-       }
-<% end -%>
-
 <% @hosts_postgresql_primary.each do |host| -%>
 define host{
        use              generic-host

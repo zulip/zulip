@@ -367,7 +367,7 @@ else:
     subprocess.check_call(["./scripts/lib/run_hooks.py", "post-deploy", *hooks_args])
 
     if not args.skip_client_reloads and not args.only_django:
-        subprocess.check_call(["./scripts/reload-clients"], preexec_fn=su_to_zulip)
+        subprocess.check_call(["./scripts/reload-clients", "--background"], preexec_fn=su_to_zulip)
 
 if args.audit_fts_indexes:
     logging.info("Correcting full-text search indexes for updated dictionary files")

@@ -1063,16 +1063,40 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
+    should_remove_diacritics: boolean | undefined = undefined,
 ): boolean {
-    if (typeahead.query_matches_string_in_order(query, person.user.full_name, " ")) {
+    if (
+        person.type === "broadcast" &&
+        typeahead.query_matches_string_in_order(query, person.user.full_name, " ")
+    ) {
         return true;
     }
-    if (person.type === "user" && Boolean(person.user.delivery_email)) {
-        return typeahead.query_matches_string_in_order(
-            query,
-            people.get_visible_email(person.user),
-            " ",
+
+    if (person.type === "user") {
+        query = query.toLowerCase();
+        should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
+
+        const full_name = people.maybe_remove_diacritics_from_name(
+            person.user,
+            should_remove_diacritics,
         );
+        if (
+            typeahead.query_matches_string_in_order_assume_canonicalized(
+                query,
+                full_name.toLowerCase(),
+                " ",
+            )
+        ) {
+            return true;
+        }
+
+        if (person.user.delivery_email) {
+            return typeahead.query_matches_string_in_order(
+                query,
+                people.get_visible_email(person.user),
+                " ",
+            );
+        }
     }
     return false;
 }

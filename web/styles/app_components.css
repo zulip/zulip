@@ -542,6 +542,10 @@ input.settings_text_input {
     }
 }
 
+.desktop-setting-notifications {
+    margin-bottom: 10px;
+}
+
 .invite-stream-notice {
     margin-bottom: 20px;
 }
@@ -1126,7 +1130,7 @@ input.settings_text_input {
 
 .filter_text_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border: 1px solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,

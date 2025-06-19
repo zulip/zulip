@@ -96,6 +96,23 @@ Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, mo
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: web/shared/icons/mobile-arrow-left-right.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/arrow-left-right)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/mobile-camera.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/camera)
+License: ISC License
+
+Files: web/shared/icons/mobile-image.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/image)
+License: ISC License
+
+Files: web/shared/icons/mobile-menu.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: web/shared/icons/more-vertical.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -293,6 +310,11 @@ License: ISC License
 
 Files: web/shared/icons/expand-both-diagonals.svg
 Source: https://lucide.dev/icons/expand
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/reset.svg
+Source: https://lucide.dev/icons/undo-2
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
 

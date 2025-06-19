@@ -717,11 +717,9 @@ export async function initialize_everything(state_data) {
     drafts_overlay_ui.initialize();
     // This needs to happen after activity_ui.initialize, so that user_filter
     // is defined. Also, must happen after people.initialize()
-    onboarding_steps.initialize(
-        state_data.onboarding_steps,
-        state_data.navigation_tour_video_url,
-        message_view.show,
-    );
+    onboarding_steps.initialize(state_data.onboarding_steps, {
+        show_message_view: message_view.show,
+    });
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();

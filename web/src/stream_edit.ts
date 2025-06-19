@@ -35,6 +35,7 @@ import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_org from "./settings_org.ts";
 import type {CurrentUser} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -42,7 +43,6 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
-import type {SubData} from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
@@ -265,6 +265,7 @@ export function show_settings_for(node: HTMLElement): void {
         other_settings,
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
+        stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
@@ -276,6 +277,7 @@ export function show_settings_for(node: HTMLElement): void {
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
         is_development_environment: page_params.development_environment,
+        empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -286,6 +288,7 @@ export function show_settings_for(node: HTMLElement): void {
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
+    $("#id_topics_policy").val(sub.topics_policy);
 
     $edit_container.addClass("show");
 
@@ -318,25 +321,6 @@ export function update_muting_rendering(sub: StreamSubscription): void {
 
     $is_muted_checkbox.prop("checked", sub.is_muted);
     $edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
-}
-
-function stream_notification_reset(elem: HTMLElement): void {
-    const sub = get_sub_for_target(elem);
-    const data: SubData = [{stream_id: sub.stream_id, property: "is_muted", value: false}];
-    for (const [per_stream_setting_name, global_setting_name] of Object.entries(
-        settings_config.generalize_stream_notification_setting,
-    )) {
-        data.push({
-            stream_id: sub.stream_id,
-            property: settings_labels_schema.parse(per_stream_setting_name),
-            value: user_settings[global_setting_name],
-        });
-    }
-
-    stream_settings_api.bulk_set_stream_property(
-        data,
-        $(elem).closest(".subsection-parent").find(".alert-notification"),
-    );
 }
 
 function stream_setting_changed(elem: HTMLInputElement): void {
@@ -577,7 +561,7 @@ export function initialize(): void {
         },
     );
 
-    $("#channels_overlay_container").on("keypress", "#change_stream_description", (e) => {
+    $("#channels_overlay_container").on("keydown", "#change_stream_description", (e) => {
         // Stream descriptions cannot be multiline, so disable enter key
         // to prevent new line
         if (keydown_util.is_enter_event(e)) {
@@ -670,7 +654,8 @@ export function initialize(): void {
         "click",
         ".subsection-parent .reset-stream-notifications-button",
         function on_click(this: HTMLElement) {
-            stream_notification_reset(this);
+            const sub = get_sub_for_target(this);
+            settings_notifications.do_reset_stream_notifications(this, sub);
         },
     );
 

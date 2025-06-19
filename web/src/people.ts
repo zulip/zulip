@@ -117,14 +117,10 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 }
 
 // Use this function only when you are sure that user_id is valid.
-export let get_by_user_id = (user_id: number): User => {
+export function get_by_user_id(user_id: number): User {
     const person = people_by_user_id_dict.get(user_id);
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
-};
-
-export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
-    get_by_user_id = value;
 }
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
@@ -155,7 +151,7 @@ export function validate_user_ids(user_ids: number[]): number[] {
     return good_ids;
 }
 
-export let get_by_email = (email: string): User | undefined => {
+export function get_by_email(email: string): User | undefined {
     const person = people_dict.get(email);
 
     if (!person) {
@@ -169,10 +165,6 @@ export let get_by_email = (email: string): User | undefined => {
     }
 
     return person;
-};
-
-export function rewire_get_by_email(value: typeof get_by_email): void {
-    get_by_email = value;
 }
 
 export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
@@ -421,7 +413,7 @@ export function get_user_type(user_id: number): string | undefined {
 }
 
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
-    const emails = emails_string.split(",");
+    const emails = emails_string.split(",").map((email) => email.trim());
     return email_list_to_user_ids_string(emails);
 }
 
@@ -1292,18 +1284,39 @@ export function get_people_for_search_bar(query: string): User[] {
     return filter_all_persons(pred);
 }
 
-export function build_termlet_matcher(termlet: string): (user: User) => boolean {
-    termlet = termlet.trim();
+export function should_remove_diacritics_for_query(query_lower_case: string): boolean {
+    // We only do diacritic-sensitive matching for queries that do not
+    // contain diacritics themselves.
+    //
+    // TODO: This check is too strict; ideally we'd check for presence
+    // of diacritics; punctuation should not be relevant.
+    return /^[a-z]+$/.test(query_lower_case);
+}
 
-    const is_ascii = /^[a-z]+$/.test(termlet);
+export function maybe_remove_diacritics_from_name(
+    user: User,
+    should_remove_diacritics: boolean,
+): string {
+    // Callers should compute should_remove_diacritics using
+    // should_remove_diacritics_for_query. It's fastest if the caller
+    // computes that once outside the loop over all users.
+    if (should_remove_diacritics) {
+        // Reuse removed diacritics version of the `full_name` if
+        // present, since it's expensive to compute.
+        user.name_with_diacritics_removed ??= typeahead.remove_diacritics(user.full_name);
+        return user.name_with_diacritics_removed;
+    }
+    return user.full_name;
+}
+
+export function build_termlet_matcher(termlet: string): (user: User) => boolean {
+    // Note: termlets are required to be lower case.
+    termlet = termlet.trim();
+    const should_remove_diacritics = should_remove_diacritics_for_query(termlet);
 
     return function (user: User): boolean {
-        let full_name = user.full_name;
-        // Only ignore diacritics if the query is plain ascii
-        if (is_ascii) {
-            user.name_with_diacritics_removed ??= typeahead.remove_diacritics(full_name);
-            full_name = user.name_with_diacritics_removed;
-        }
+        const full_name = maybe_remove_diacritics_from_name(user, should_remove_diacritics);
+
         const names = full_name.toLowerCase().split(" ");
 
         return names.some((name) => name.startsWith(termlet));
@@ -1456,6 +1469,27 @@ export function is_duplicate_full_name(full_name: string): boolean {
     const ids = duplicate_full_name_data.get(full_name);
 
     return ids !== undefined && ids.size > 1;
+}
+
+export function get_from_unique_full_name(query: string): User | undefined {
+    // Check for `full_name|user_id` syntax and return `user_id`.
+    const parts = query.split("|");
+    if (parts.length !== 2) {
+        return undefined;
+    }
+    const user_id = Number(parts[1]?.trim());
+    if (!Number.isNaN(user_id) && is_valid_user_id(user_id)) {
+        return get_by_user_id(user_id);
+    }
+    return undefined;
+}
+
+export function get_unique_full_name(full_name: string, user_id: number): string {
+    let unique_full_name = full_name;
+    if (is_duplicate_full_name(full_name)) {
+        unique_full_name += `|${user_id}`;
+    }
+    return unique_full_name;
 }
 
 export function get_mention_syntax(full_name: string, user_id?: number, silent = false): string {
@@ -1943,9 +1977,11 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
             error(xhr) {
                 let error_message = "Failed to fetch users.";
                 if (xhr) {
-                    const error = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
-                    if (error.msg) {
-                        error_message = error.msg;
+                    const error = z
+                        .object({msg: z.string().optional()})
+                        .safeParse(xhr.responseJSON);
+                    if (error.success && error.data.msg) {
+                        error_message = error.data.msg;
                     }
                 }
                 blueslip.error(error_message);

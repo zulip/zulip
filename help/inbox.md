@@ -35,7 +35,7 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 
 {!go-to-inbox.md!}
 
-1. Select **All topics**, **Unmuted topics**, or **Followed topics** from
+1. Select **All topics**, **Standard view**, or **Followed topics** from
    the dropdown in the upper left of the **inbox** view.
 
 {end_tabs}
@@ -58,6 +58,7 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
+* [List of topics in a channel](/help/list-of-topics)
 * [Combined feed](/help/combined-feed)
 * [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)
