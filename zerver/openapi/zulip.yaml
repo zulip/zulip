@@ -10289,11 +10289,6 @@ paths:
         Zulip clients like mobile/desktop apps will want to use the [main
         presence endpoint](/api/get-presence), which returns data for all
         active users in the organization, instead.
-
-        See [Zulip's developer documentation][subsystems-presence]
-        for details on the data model for presence in Zulip.
-
-        [subsystems-presence]: https://zulip.readthedocs.io/en/latest/subsystems/presence.html
       parameters:
         - name: user_id_or_email
           in: path
@@ -10797,9 +10792,6 @@ paths:
         use the modern [`last_update_id`](#parameter-last_update_id) protocol to
         minimize fetching duplicate user presence data.
 
-        See [Zulip's developer documentation][subsystems-presence] for details
-        on the data model for user presence in Zulip.
-
         The Zulip server is responsible for implementing [invisible mode][invisible],
         which disables sharing a user's presence data. Nonetheless, clients
         should check the `presence_enabled` field in user objects in order to
@@ -10811,7 +10803,6 @@ paths:
         `true`, then user presence data in the response is [limited to users
         the current user can see/access][limit-visibility].
 
-        [subsystems-presence]: https://zulip.readthedocs.io/en/latest/subsystems/presence.html
         [limit-visibility]: /help/guest-users#configure-whether-guests-can-see-all-other-users
         [invisible]: /help/status-and-availability#invisible-mode
         [availability]: /help/status-and-availability#availability
@@ -12647,10 +12638,9 @@ paths:
         setting is set to `true`, presence information of only accessible
         users are returned.
 
-        See [Zulip's developer documentation][subsystems-presence]
-        for details on the data model for presence in Zulip.
-
-        [subsystems-presence]: https://zulip.readthedocs.io/en/latest/subsystems/presence.html
+        Complete Zulip apps are recommended to fetch presence
+        information when they post their own state using the [`POST
+        /presence`](/api/update-presence) API endpoint.
       responses:
         "200":
           description: Success.
