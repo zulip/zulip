@@ -493,6 +493,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "dm:alice@zulip.com",
         "sender:alice@zulip.com",
         "dm-including:alice@zulip.com",
+        "mentions:alice@zulip.com",
         "has:image",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -658,7 +659,13 @@ test("topic_suggestions", ({override, mock_template}) => {
     stream_data.add_sub_for_tests({stream_id: office_id, name: "office", subscribed: true});
 
     suggestions = get_suggestions("te");
-    expected = ["te", "dm:ted@zulip.com", "sender:ted@zulip.com", "dm-including:ted@zulip.com"];
+    expected = [
+        "te",
+        "dm:ted@zulip.com",
+        "sender:ted@zulip.com",
+        "dm-including:ted@zulip.com",
+        "mentions:ted@zulip.com",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     stream_topic_history.add_message({
@@ -679,6 +686,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         "dm:ted@zulip.com",
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
+        "mentions:ted@zulip.com",
         `channel:${office_id} topic:team`,
         `channel:${office_id} topic:test`,
     ];
@@ -877,6 +885,8 @@ test("people_suggestions", ({override, mock_template}) => {
         "sender:ted@zulip.com",
         "dm-including:bob@zulip.com",
         "dm-including:ted@zulip.com",
+        "mentions:bob@zulip.com",
+        "mentions:ted@zulip.com",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -900,6 +910,9 @@ test("people_suggestions", ({override, mock_template}) => {
         "dm-including:bob@zulip.com",
         "dm-including:ted@zulip.com",
         "dm-including:user299@zulipdev.com",
+        "mentions:bob@zulip.com",
+        "mentions:ted@zulip.com",
+        "mentions:user299@zulipdev.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -911,6 +924,7 @@ test("people_suggestions", ({override, mock_template}) => {
     test_describe("dm:ted@zulip.com", "Direct messages with");
     test_describe("sender:ted@zulip.com", "Sent by");
     test_describe("dm-including:ted@zulip.com", "Direct messages including");
+    test_describe("mentions:ted@zulip.com", "Mentions");
 
     let expectedString = "Ted Smith";
 
@@ -920,6 +934,7 @@ test("people_suggestions", ({override, mock_template}) => {
     test_full_name("sender:ted@zulip.com", expectedString);
     test_full_name("dm:ted@zulip.com", expectedString);
     test_full_name("dm-including:ted@zulip.com", expectedString);
+    test_full_name("mentions:ted@zulip.com", expectedString);
 
     expectedString = example_avatar_url;
 
@@ -929,10 +944,17 @@ test("people_suggestions", ({override, mock_template}) => {
     test_avatar_url("dm:bob@zulip.com", expectedString);
     test_avatar_url("sender:bob@zulip.com", expectedString);
     test_avatar_url("dm-including:bob@zulip.com", expectedString);
+    test_avatar_url("mentions:bob@zulip.com", expectedString);
 
     suggestions = get_suggestions("Ted "); // note space
 
-    expected = ["Ted", "dm:ted@zulip.com", "sender:ted@zulip.com", "dm-including:ted@zulip.com"];
+    expected = [
+        "Ted",
+        "dm:ted@zulip.com",
+        "sender:ted@zulip.com",
+        "dm-including:ted@zulip.com",
+        "mentions:ted@zulip.com",
+    ];
 
     assert.deepEqual(suggestions.strings, expected);
 
