@@ -64,6 +64,7 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 import * as util from "./util.ts";
+import {display_avatar_upload_complete, display_avatar_upload_started} from "./settings_account.ts";
 
 export type CustomProfileFieldData = {
     id: number;
@@ -1113,6 +1114,25 @@ function toggle_submit_button($edit_form: JQuery): void {
     $submit_button.prop("disabled", false);
 }
 
+function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
+    const form_data = new FormData();
+    const $container = $("#edit-user-form");
+
+    assert(csrf_token !== undefined);
+    form_data.append("csrfmiddlewaretoken", csrf_token);
+    const files = util.the($file_input).files;
+    assert(files !== null);
+    for (const [i, file] of [...files].entries()) {
+        form_data.append("file-" + i, file);
+    }
+    if (files[0]) {
+        display_avatar_upload_started($container);
+        const file_url = URL.createObjectURL(files[0]);
+        $container.find("#user-avatar-upload-widget .image-block").attr("src", file_url);
+        display_avatar_upload_complete($container);
+    }
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1131,9 +1151,17 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
         hide_deactivate_button,
+        user_is_guest: person.is_guest,
+        user_is_bot: person.is_bot,
+        user_avatar: person.avatar_url,
+        user_can_change_avatar: current_user.is_admin,
     });
 
     $container.append($(html_body));
+
+    // Update avatar widget to support admin-based updates
+    avatar.build_user_avatar_widget_by_id(upload_avatar);
+
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
     if (!current_user.is_owner) {
@@ -1202,11 +1230,24 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         const profile_data = get_human_profile_data(fields_user_pills);
 
         const url = "/json/users/" + encodeURIComponent(user_id);
-        const data = {
-            full_name: $full_name.val(),
-            role: JSON.stringify(role),
-            profile_data: JSON.stringify(profile_data),
-        };
+
+        // Create FormData object
+        const formData = new FormData();
+        formData.append("full_name", $full_name.val() as string);
+        formData.append("role", JSON.stringify(role));
+        formData.append("profile_data", JSON.stringify(profile_data));
+
+        // Add avatar file if it exists
+        const $file_input = $<HTMLInputElement>(
+            "#edit-user-form #user-avatar-upload-widget input.image_file_input",
+        ).expectOne();
+        const files = util.the($file_input).files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file) {
+                formData.append("avatar_file", file);
+            }
+        }
 
         const $submit_button = $("#user-profile-modal .dialog_submit_button");
         const $cancel_button = $("#user-profile-modal .dialog_exit_button");
@@ -1215,7 +1256,9 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
 
         void channel.patch({
             url,
-            data,
+            data: formData,
+            processData: false,
+            contentType: false,
             success() {
                 $("#edit-user-form-error").hide();
                 hide_button_spinner($submit_button);

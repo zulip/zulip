@@ -145,6 +145,7 @@ export const update_person = function update(event: UserUpdate): void {
         const url = event.avatar_url;
         user.avatar_url = url;
         user.avatar_version = event.avatar_version;
+        user.avatar_source = event.avatar_source as "G" | "U";
 
         if (people.is_my_user_id(event.user_id)) {
             current_user.avatar_source = event.avatar_source;
@@ -157,6 +158,7 @@ export const update_person = function update(event: UserUpdate): void {
             );
         }
 
+        settings_users.update_user_data(event.user_id, event);
         message_live_update.update_avatar(user.user_id, event.avatar_url);
         user_profile.update_profile_modal_ui(user, event);
     }
