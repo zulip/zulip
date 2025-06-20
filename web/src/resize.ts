@@ -7,6 +7,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
+import {user_settings} from "./user_settings.ts";
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
@@ -85,6 +86,10 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
 
 function height_of($element: JQuery): number {
     return $element.get(0)!.getBoundingClientRect().height;
+}
+
+function width_of($element: JQuery): number {
+    return $element.get(0)!.getBoundingClientRect().width;
 }
 
 export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
@@ -218,10 +223,30 @@ function resize_navbar_alerts(): void {
     }
 }
 
+// On narrow screens, the `right` panel is absolutely positioned, so its
+// height doesn't change the height of `left`. When the `right` panel is
+// the one visible to the user, update the height of the still-in-grid
+// `left` panel so that the lower rows are correctly positioned. This
+// feels a bit hacky and a cleaner solution would be nice to find.
+export function resize_settings_overlay_subheader_for_narrow_screens($container: JQuery): void {
+    const breakpoint_em =
+        (media_breakpoints_num.settings_overlay_sidebar_collapse_breakpoint / 14) *
+        user_settings.web_font_size_px;
+    if (width_of($container.find(".two-pane-settings-overlay")) < breakpoint_em) {
+        $container
+            .find(".two-pane-settings-subheader .left")
+            .css("height", height_of($container.find(".two-pane-settings-subheader .right")));
+    } else {
+        $container.find(".two-pane-settings-subheader .left").css("height", "");
+    }
+}
+
 export function resize_settings_overlay($container: JQuery): void {
     if ($container.find(".two-pane-settings-overlay.show").length === 0) {
         return;
     }
+
+    resize_settings_overlay_subheader_for_narrow_screens($container);
 
     $container
         .find(".two-pane-settings-left-simplebar-container")
@@ -229,7 +254,7 @@ export function resize_settings_overlay($container: JQuery): void {
             "height",
             height_of($container.find(".two-pane-settings-container")) -
                 height_of($container.find(".two-pane-settings-header")) -
-                height_of($container.find(".two-pane-settings-overlay .display-type")) -
+                height_of($container.find(".two-pane-settings-subheader")) -
                 height_of($container.find(".two-pane-settings-search")),
         );
 
@@ -239,7 +264,7 @@ export function resize_settings_overlay($container: JQuery): void {
             "height",
             height_of($container.find(".two-pane-settings-container")) -
                 height_of($container.find(".two-pane-settings-header")) -
-                height_of($container.find(".two-pane-settings-overlay .display-type")),
+                height_of($container.find(".two-pane-settings-subheader")),
         );
 }
 
@@ -254,7 +279,7 @@ export function resize_settings_creation_overlay($container: JQuery): void {
             "height",
             height_of($container.find(".two-pane-settings-container")) -
                 height_of($container.find(".two-pane-settings-header")) -
-                height_of($container.find(".display-type")) -
+                height_of($container.find(".two-pane-settings-subheader")) -
                 height_of($container.find(".settings-sticky-footer")),
         );
 }

@@ -13,6 +13,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
+import * as resize from "./resize.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -76,6 +77,7 @@ export const show_subs_pane = {
         $(`.${CSS.escape(container_name)}`).show();
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
+        resize.resize_settings_creation_overlay($("#channels_overlay_container"));
     },
 };
 
