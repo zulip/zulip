@@ -18,7 +18,6 @@ import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
 import * as avatar from "./avatar.ts";
-import {display_avatar_upload_complete, display_avatar_upload_started} from "./avatar_upload.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -1114,9 +1113,25 @@ function toggle_submit_button($edit_form: JQuery): void {
     $submit_button.prop("disabled", false);
 }
 
+export function display_avatar_upload_complete(): void {
+    $("#edit-user-form #user-avatar-upload-widget .upload-spinner-background").css({
+        visibility: "hidden",
+    });
+    $("#edit-user-form #user-avatar-upload-widget .image-upload-text").show();
+    $("#edit-user-form #user-avatar-upload-widget .image-delete-button").show();
+}
+
+export function display_avatar_upload_started(): void {
+    $("#edit-user-form #user-avatar-source").hide();
+    $("#edit-user-form #user-avatar-upload-widget .upload-spinner-background").css({
+        visibility: "visible",
+    });
+    $("#edit-user-form #user-avatar-upload-widget .image-upload-text").hide();
+    $("#edit-user-form #user-avatar-upload-widget .image-delete-button").hide();
+}
+
 function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
     const form_data = new FormData();
-    const $container = $("#edit-user-form");
 
     assert(csrf_token !== undefined);
     form_data.append("csrfmiddlewaretoken", csrf_token);
@@ -1126,10 +1141,10 @@ function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
         form_data.append("file-" + i, file);
     }
     if (files[0]) {
-        display_avatar_upload_started($container);
+        display_avatar_upload_started();
         const file_url = URL.createObjectURL(files[0]);
-        $container.find("#user-avatar-upload-widget .image-block").attr("src", file_url);
-        display_avatar_upload_complete($container);
+        $("#edit-user-form #user-avatar-upload-widget .image-block").attr("src", file_url);
+        display_avatar_upload_complete();
     }
 }
 

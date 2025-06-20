@@ -9,7 +9,6 @@ import render_settings_api_key_modal from "../templates/settings/api_key_modal.h
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar.ts";
-import {display_avatar_upload_complete, display_avatar_upload_started} from "./avatar_upload.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import {csrf_token} from "./csrf.ts";
@@ -92,6 +91,19 @@ export function update_email_change_display(): void {
         $("#email_field_container").removeClass("disabled_setting_tooltip");
         $("label[for='change_email_button']").removeClass("cursor-text");
     }
+}
+
+export function display_avatar_upload_complete(): void {
+    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
+    $("#user-avatar-upload-widget .image-upload-text").show();
+    $("#user-avatar-upload-widget .image-delete-button").show();
+}
+
+export function display_avatar_upload_started(): void {
+    $("#user-avatar-source").hide();
+    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
+    $("#user-avatar-upload-widget .image-upload-text").hide();
+    $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
 function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
