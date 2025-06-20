@@ -4,7 +4,7 @@ export default {
             "formatjs",
             {
                 additionalFunctionNames: ["$t", "$t_html"],
-                overrideIdFn: (_id, defaultMessage) => defaultMessage,
+                idInterpolationPattern: "[sha512:contenthash:base64:6]",
             },
         ],
     ],
