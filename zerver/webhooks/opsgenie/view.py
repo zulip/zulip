@@ -33,7 +33,13 @@ def api_opsgenie_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    # construct the body of the message
+    # Determine Opsgenie base URL (default to US)
+    opsgenie_base_url = "https://app.opsgenie.com"
+    region = request.GET.get("region", "").lower()
+    if region == "eu":
+        opsgenie_base_url = "https://app.eu.opsgenie.com"
+
+    # Construct the body of the message
     info = {
         "additional_info": "",
         "alert_type": payload["action"].tame(check_string),
@@ -70,11 +76,10 @@ def api_opsgenie_webhook(
             continue
         info["additional_info"] += bullet_template.format(key=display_name, value=value)
 
-    # EU instance compatibility fix: Use EU URL if detected (simplified version assumes EU use)
-    body_template = """
-[Opsgenie alert for {integration_name}](https://app.eu.opsgenie.com/alert/V2#/show/{alert_id}):
-* **Type**: {alert_type}
-{additional_info}
+    body_template = f"""
+[Opsgenie alert for {{integration_name}}]({opsgenie_base_url}/alert/V2#/show/{{alert_id}}):
+* **Type**: {{alert_type}}
+{{additional_info}}
 """.strip()
 
     body = body_template.format(**info)
