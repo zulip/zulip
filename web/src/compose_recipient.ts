@@ -69,9 +69,9 @@ export let update_recipient_row_attention_level = (): void => {
         compose_state.has_full_recipient() &&
         !compose_state.is_recipient_edited_manually()
     ) {
-        $("#compose-recipient").toggleClass("muted-recipient-row", true);
+        $("#compose-recipient").toggleClass("low-attention-recipient-row", true);
     } else {
-        $("#compose-recipient").toggleClass("muted-recipient-row", false);
+        $("#compose-recipient").toggleClass("low-attention-recipient-row", false);
     }
 };
 
@@ -82,7 +82,7 @@ export function rewire_update_recipient_row_attention_level(
 }
 
 export function set_high_attention_recipient_row(): void {
-    $("#compose-recipient").removeClass("muted-recipient-row");
+    $("#compose-recipient").removeClass("low-attention-recipient-row");
 }
 
 export let update_narrow_to_recipient_visibility = (): void => {

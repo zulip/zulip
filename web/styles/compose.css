@@ -1227,38 +1227,30 @@ textarea.new_message_textarea {
    to the topic box) show instant changes, so we don't need to
    accommodate them here. */
 #compose.compose-box-open:hover {
-    .muted-recipient-row {
+    .low-attention-recipient-row {
         #compose_select_recipient_widget,
         #compose_recipient_box,
         #compose-direct-recipient .pill-container {
-            transition: var(--compose-muted-recipient-row-transition);
-            transition-delay: var(
-                --compose-muted-recipient-row-transition-delay
-            );
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: background-color, border-color;
         }
 
         #compose_select_recipient_widget .channel-privacy-type-icon {
-            transition: var(--compose-muted-recipient-row-transition);
-            transition-delay: var(
-                --compose-muted-recipient-row-transition-delay
-            );
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color;
         }
 
         #recipient_box_clear_topic_button {
-            transition: var(--compose-muted-recipient-row-transition);
-            transition-delay: var(
-                --compose-muted-recipient-row-transition-delay
-            );
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color, background-color, opacity;
         }
 
         #compose-direct-recipient .pill {
-            transition: var(--compose-muted-recipient-row-transition);
-            transition-delay: var(
-                --compose-muted-recipient-row-transition-delay
-            );
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: outline-color;
         }
 
@@ -1267,17 +1259,15 @@ textarea.new_message_textarea {
             .zulip-icon-chevron-down,
             .conversation-arrow,
             #stream_message_recipient_topic {
-                transition: var(--compose-muted-recipient-row-transition);
-                transition-delay: var(
-                    --compose-muted-recipient-row-transition-delay
-                );
+                transition: var(--compose-recipient-row-transition);
+                transition-delay: var(--compose-recipient-row-transition-delay);
                 transition-property: opacity;
             }
         }
     }
 }
 
-.muted-recipient-row {
+.low-attention-recipient-row {
     &#compose-recipient {
         .decorated-channel-name,
         .conversation-arrow,
@@ -1298,9 +1288,9 @@ textarea.new_message_textarea {
 
         /* Particularly in light mode, pill colors are almost identical
            to the compose-box background. We place a higher-contrast
-           outline on them in the muted state. */
+           outline on them in the low-attention state. */
         .pill {
-            outline: 1px solid var(--color-outline-muted-input-pill);
+            outline: 1px solid var(--color-outline-low-attention-input-pill);
         }
 
         &:hover {

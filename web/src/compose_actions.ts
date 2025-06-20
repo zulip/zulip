@@ -93,7 +93,7 @@ function hide_box(): void {
     $("#compose_controls").show();
     // Assume a muted recipient row for the next time
     // the compose box is reopened
-    $("#compose-recipient").addClass("muted-recipient-row");
+    $("#compose-recipient").addClass("low-attention-recipient-row");
     $("#compose").removeClass("compose-box-open");
 }
 
