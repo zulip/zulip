@@ -441,8 +441,8 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         "attr_username": "email",
         "attr_email": "email",
         ## List of additional attributes to fetch from the SAMLResponse.
-        ## These attributes will be available for synchronizing custom profile fields.
-        ## in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.
+        ## These attributes will be available for synchronizing user profile fields.
+        ## in SOCIAL_AUTH_SYNC_ATTRS_DICT.
         # "extra_attrs": ["title", "mobilePhone", "zulip_role"],
         ##
         ## The "x509cert" attribute is automatically read from
@@ -521,6 +521,31 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #             "custom__title": "title",
 #         }
 #     }
+# }
+#
+# When a user logs in via SAML, a list of group names reflecting group memberships
+# should be passed by the IdP in the SAMLResponse in the zulip_groups attribute.
+# The user's Zulip group memberships will be synced in the following way:
+# (1) If a Zulip group name occurs below in the configuration, but is not indicated
+#     in zulip_groups in the SAMLResponse, it means that user should not be a member
+#     of the Zulip group.
+# (2) If a Zulip group name occurs below in the configuration, and is indicated in-
+#     zulip_groups in the SAMLResponse, it means the user should be a member of
+#     the Zulip group.
+# The configuration maps group names which should occur in zulip_groups in the SAMLResponse,
+# to corresponding Zulip group names. For example, if the following mapping item is specified:
+#     "some_name": "another_name",
+# the presence of "some_name" in the zulip_groups attribute, indicates the user's membership
+# in the Zulip group named "another_name".
+# This allows for the names passed in the SAMLResponse to not necessarily be the same as the
+# corresponding Zulip group name - thus supporting having different naming convention in your
+# IdP's users/groups directory than in Zulip.
+#
+# SAML_SYNCHRONIZED_GROUPS_BY_REALM = {
+#   "subdomain1" : {
+#       "somegroupname1": "some_zulip_group_one",
+#       "somegroupname2": "some_zulip_group_two",
+#   },
 # }
 
 ########
