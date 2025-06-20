@@ -809,9 +809,7 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
 
         default_error_msg = "You do not have permission to administer this channel."
 
-        def check_channel_property_update(
-            user: UserProfile, allow_fail: bool = False, error_msg: str = default_error_msg
-        ) -> None:
+        def check_channel_property_update(user: UserProfile, error_msg: str | None = None) -> None:
             old_value = getattr(stream, property_name)
 
             if property_name == "deactivated" and new_value is True:
@@ -820,7 +818,7 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             else:
                 result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
 
-            if allow_fail:
+            if error_msg is not None:
                 self.assert_json_error(result, error_msg)
                 return
 
@@ -877,16 +875,16 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
                     # In private streams, users that are not subscribed cannot access
                     # the stream.
                     error_msg = "Invalid channel ID"
-                check_channel_property_update(user, allow_fail=True, error_msg=error_msg)
+                check_channel_property_update(user, error_msg=error_msg)
 
             for user in check_config["users_with_permission"]:
                 check_channel_property_update(user)
 
         # Check guests cannot update property even when they belong
         # to "can_administer_channel_group".
-        check_channel_property_update(self.guest, allow_fail=True, error_msg="Invalid channel ID")
+        check_channel_property_update(self.guest, error_msg="Invalid channel ID")
         self.subscribe(self.guest, stream.name)
-        check_channel_property_update(self.guest, allow_fail=True)
+        check_channel_property_update(self.guest, error_msg=default_error_msg)
         self.unsubscribe(self.guest, stream.name)
 
     def test_administering_permission_for_updating_channel(self) -> None:
