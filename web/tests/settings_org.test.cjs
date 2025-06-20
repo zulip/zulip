@@ -566,6 +566,9 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_can_create_web_public_channel_group").set_parent(
         $.create("<stub-can-create-web-public-channel-group-parent>"),
     );
+    $("#id_realm_default_welcome_bot_custom_message").set_parent(
+        $.create("<stub welcome bot custom message>"),
+    );
 
     // Make our plan not limited so we don't have to stub all the
     // elements involved in disabling the can_create_groups input.
