@@ -481,7 +481,7 @@ def update_stream_backend(
             with transaction.atomic(durable=True):
                 user_group_api_value_for_setting = access_user_group_api_value_for_setting(
                     new_setting_value,
-                    user_profile,
+                    user_profile.realm,
                     setting_name=setting_name,
                     permission_configuration=permission_configuration,
                 )
@@ -692,6 +692,7 @@ def add_subscriptions_backend(
             group_settings_map[setting_name] = access_user_group_for_setting(
                 setting_value,
                 user_profile,
+                user_profile.realm,
                 setting_name=setting_name,
                 permission_configuration=permission_configuration,
             )
