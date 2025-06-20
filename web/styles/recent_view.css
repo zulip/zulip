@@ -159,24 +159,9 @@
         background: var(--color-background);
     }
 
-    .search_group {
-        display: grid;
-        grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    #recent-view-search-wrapper {
         flex-grow: 1;
-        margin: 0 0 10px;
-    }
-
-    #recent_view_search:placeholder-shown + #recent_view_search_clear {
-        visibility: hidden;
-    }
-
-    #recent_view_search {
-        grid-column: search-input-start / clear-search-end;
-        grid-row: search-input;
-        padding-right: 28px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
+        margin-bottom: 10px;
     }
 
     .button-recent-filters {
@@ -186,8 +171,8 @@
         border-radius: 40px;
         /* Legacy 5px 10px at 14px/1em. */
         margin: 0 0.3571em 0.7142em 0;
-        /* Legacy 6px 12px at 14px/1em. */
-        padding: 0.4285em 0.8571em;
+        /* 5px at 16px/1em and legacy 12px at 14px/1em. */
+        padding: 0.3125em 0.8571em;
         line-height: 100%;
         display: inline-flex;
 
@@ -606,6 +591,8 @@
     width: 10.7142em; /* 150px at 14px em */
     /* Legacy 5px 10px at 14px/1em. */
     margin: 0 0.3571em 0.7142em 0;
+    /* 1.5px 6px at 16px/1em */
+    padding: 0.0937em 0.375em;
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);
