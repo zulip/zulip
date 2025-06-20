@@ -24,6 +24,7 @@ ALL_EVENT_TYPES = [
     "AssignOwnership",
 ]
 
+
 @webhook_view("Opsgenie", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_opsgenie_webhook(
