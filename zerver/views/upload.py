@@ -17,7 +17,6 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseNotFound,
 )
-from django.http.request import MediaType
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.cache import patch_cache_control, patch_vary_headers
@@ -194,40 +193,11 @@ def serve_file_url_backend(
     return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
 
 
-def preferred_accept(request: HttpRequest, served_types: list[str]) -> str | None:
-    # Returns the first of the served_types which the browser will
-    # accept, based on the browser's stated quality preferences.
-    # Returns None if none of the served_types are accepted by the
-    # browser.
-    accepted_types = sorted(
-        request.accepted_types,
-        key=lambda e: float(e.params.get("q", "1.0")),
-        reverse=True,
-    )
-    for potential_type in accepted_types:
-        for served_type in served_types:
-            if potential_type.match(served_type):
-                return served_type
-    return None
-
-
 def closest_thumbnail_format(
     requested_format: BaseThumbnailFormat,
-    accepts: list[MediaType],
+    request: HttpRequest,
     rendered_formats: list[StoredThumbnailFormat],
 ) -> StoredThumbnailFormat:
-    accepted_types = sorted(
-        accepts,
-        key=lambda e: float(e.params.get("q", "1.0")),
-        reverse=True,
-    )
-
-    def q_for(content_type: str) -> float:
-        for potential_type in accepted_types:
-            if potential_type.match(content_type):
-                return float(potential_type.params.get("q", "1.0"))
-        return 0.0
-
     # Serve a "close" format -- preferring animated which
     # matches, followed by the format they requested, or one
     # their browser supports, in the size closest to what they
@@ -238,12 +208,14 @@ def closest_thumbnail_format(
         return (
             possible_format.animated != requested_format.animated,
             possible_format.extension != requested_format.extension,
-            1.0 - q_for(possible_format.content_type),
+            0.0
+            if (accepted_type := request.accepted_type(possible_format.content_type)) is None
+            else -accepted_type.quality,
             abs(requested_format.max_width - possible_format.max_width),
             possible_format.byte_size,
         )
 
-    return sorted(rendered_formats, key=grade_format)[0]
+    return min(rendered_formats, key=grade_format)
 
 
 def serve_file(
@@ -266,7 +238,7 @@ def serve_file(
         return FileResponse(open(static_path(image_path), "rb"), status=status)
 
     if attachment is None:
-        if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
+        if request.get_preferred_type(["text/html", "image/png"]) == "image/png":
             response = serve_image_error(404, "images/errors/image-not-exist.png")
         else:
             response = HttpResponseNotFound(
@@ -275,7 +247,7 @@ def serve_file(
         patch_vary_headers(response, ("Accept",))
         return response
     if not is_authorized:
-        if preferred_accept(request, ["text/html", "image/png"]) == "image/png":
+        if request.get_preferred_type(["text/html", "image/png"]) == "image/png":
             response = serve_image_error(403, "images/errors/image-no-auth.png")
         elif isinstance(maybe_user_profile, AnonymousUser):
             response = zulip_redirect_to_login(request)
@@ -331,7 +303,7 @@ def serve_file(
                 # set, or the client is just guessing a format and
                 # hoping.
                 requested_format = closest_thumbnail_format(
-                    requested_format, request.accepted_types, rendered_formats
+                    requested_format, request, rendered_formats
                 )
         elif requested_format not in rendered_formats:
             # They requested a valid format, but one we've not
