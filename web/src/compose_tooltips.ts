@@ -10,7 +10,6 @@ import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
-import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {realm} from "./state_data.ts";
@@ -51,7 +50,11 @@ export function initialize(): void {
                 case "direct_disabled": {
                     const narrow_filter = narrow_state.filter();
                     assert(narrow_filter !== undefined);
-                    instance.setContent(pick_empty_narrow_banner(narrow_filter).title);
+                    const default_banner_for_disabled_compose_for_dms = $t({
+                        defaultMessage:
+                            "This conversation does not include any users who can authorize it.",
+                    });
+                    instance.setContent(default_banner_for_disabled_compose_for_dms);
                     return;
                 }
                 case "stream_disabled": {
