@@ -15,7 +15,6 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role
-from zerver.lib.streams import subscribed_to_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.types import UserGroupMembersData
@@ -871,10 +870,6 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
 
             for user in check_config["users_without_permission"]:
                 error_msg = default_error_msg
-                if stream.invite_only and not subscribed_to_stream(user, stream.id):
-                    # In private streams, users that are not subscribed cannot access
-                    # the stream.
-                    error_msg = "Invalid channel ID"
                 check_channel_property_update(user, error_msg=error_msg)
 
             for user in check_config["users_with_permission"]:
@@ -886,6 +881,24 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         self.subscribe(self.guest, stream.name)
         check_channel_property_update(self.guest, error_msg=default_error_msg)
         self.unsubscribe(self.guest, stream.name)
+
+        # Check for permission in unsubscribed private streams.
+        if stream.invite_only:
+            self.unsubscribe(self.admin, stream.name)
+            self.unsubscribe(prospero, stream.name)
+            self.unsubscribe(hamlet, stream.name)
+
+            # Hamlet does not have metadata access.
+            check_channel_property_update(hamlet, error_msg="Invalid channel ID")
+            # Admins always have metadata access and administering permission.
+            check_channel_property_update(self.admin)
+            # Prospero has metadata access by being in can_administer_channel_group.
+            check_channel_property_update(prospero)
+
+            # Re-subscribe users for next tests.
+            self.subscribe(self.admin, stream.name)
+            self.subscribe(prospero, stream.name)
+            self.subscribe(hamlet, stream.name)
 
     def test_administering_permission_for_updating_channel(self) -> None:
         """
@@ -902,18 +915,11 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), private_stream.name)
         self.subscribe(self.example_user("prospero"), private_stream.name)
 
-        unsubscribed_private_stream = self.make_stream(
-            "unsubscribed_private_stream", invite_only=True
-        )
-        # Subscribing a user that is not used in this test, as we do not allow
-        # unarchiving vacant private streams.
-        self.subscribe(self.example_user("desdemona"), unsubscribed_private_stream.name)
-
         channel_folder = check_add_channel_folder(
             self.realm, "Frontend", "", acting_user=self.admin
         )
 
-        for stream in [public_stream, private_stream, unsubscribed_private_stream]:
+        for stream in [public_stream, private_stream]:
             self.do_test_updating_channel(stream, "name", "Renamed stream")
             self.do_test_updating_channel(stream, "description", "Edited stream description")
             self.do_test_updating_channel(stream, "folder_id", channel_folder.id)
