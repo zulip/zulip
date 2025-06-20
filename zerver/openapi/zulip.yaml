@@ -24281,6 +24281,17 @@ components:
                       The name of the bot.
                   config_data:
                     $ref: "#/components/schemas/BotConfiguration"
+              - type: object
+                additionalProperties: false
+                description: |
+                  When the bot is an incoming webhook bot.
+                properties:
+                  integration_name:
+                    type: string
+                    description: |
+                      The name of the integration the bot is associated with.
+                required:
+                  - integration_name
     Bot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
