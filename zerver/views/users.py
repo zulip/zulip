@@ -228,13 +228,8 @@ def update_user_by_id_api(
 
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
-        if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
-            raise JsonableError(
-                _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
-                    max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
-                )
-            )
-        upload_avatar_image(user_file, target, acting_user=user_profile)
+        assert user_file.size is not None
+        upload_avatar_image(user_file, target)
         do_change_avatar_fields(target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     return update_user_backend(
         request,
@@ -700,7 +695,15 @@ def add_bot_backend(
     if len(request.FILES) == 1:
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
-        assert user_file.size is not None
+        size = user_file.size
+        if size is None:
+            raise JsonableError(_("File size is not available"))
+        if size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
+            raise JsonableError(
+                _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                    max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
+                )
+            )
         upload_avatar_image(user_file, bot_profile, future=False)
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
