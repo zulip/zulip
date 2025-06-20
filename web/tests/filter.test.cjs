@@ -685,7 +685,14 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     if (additional_terms_to_test.length === 0) {
         assert.ok(filter.can_mark_messages_read());
     } else {
-        assert.ok(!filter.can_mark_messages_read());
+        // the is-resolved term type can be combined with other
+        // valid term types
+        const additional_filter = new Filter([...additional_terms_to_test]);
+        if (additional_filter.can_mark_messages_read()) {
+            assert.ok(filter.can_mark_messages_read());
+        } else {
+            assert.ok(!filter.can_mark_messages_read());
+        }
     }
 
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
@@ -741,6 +748,14 @@ test("can_mark_messages_read", () => {
     filter = new Filter(channel_negated_topic_terms);
     assert.ok(!filter.can_mark_messages_read());
 
+    const topic_only_term = [{operator: "topic", operand: "bar"}];
+    filter = new Filter(topic_only_term);
+    assert.ok(!filter.can_mark_messages_read());
+
+    const with_only_term = [{operator: "with", operand: 2}];
+    filter = new Filter(with_only_term);
+    assert.ok(!filter.can_mark_messages_read());
+
     const dm = [{operator: "dm", operand: "joe@example.com,"}];
 
     const dm_negated = [{operator: "dm", operand: "joe@example.com,", negated: true}];
@@ -765,6 +780,13 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(is_dm);
     assert_not_mark_read_with_has_operands(is_dm);
     assert_not_mark_read_when_searching(is_dm);
+
+    const not_is_dm = [{operator: "is", operand: "dm", negate: true}];
+    filter = new Filter(not_is_dm);
+    assert.ok(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(not_is_dm);
+    assert_not_mark_read_with_has_operands(not_is_dm);
+    assert_not_mark_read_when_searching(not_is_dm);
 
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
@@ -800,6 +822,12 @@ test("can_mark_messages_read", () => {
     assert.ok(!filter.can_mark_messages_read());
     filter = new Filter(in_random_negated);
     assert.ok(!filter.can_mark_messages_read());
+
+    // Test combining valid terms that each returns whole conversations
+    const is_resolved = [{operator: "is", operand: "resolved"}];
+    const multiple_terms = [...channel_term, ...is_resolved, ...is_muted_negated];
+    filter = new Filter(multiple_terms);
+    assert.ok(filter.can_mark_messages_read());
 
     // test caching of term types
     // init and stub
@@ -2317,6 +2345,7 @@ test("navbar_helpers", ({override}) => {
     const in_all = [{operator: "in", operand: "all"}];
     const is_starred = [{operator: "is", operand: "starred"}];
     const is_dm = [{operator: "is", operand: "dm"}];
+    const is_dm_negated = [{operator: "is", operand: "dm", negated: true}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
@@ -2430,6 +2459,13 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "user",
             title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
+        },
+        {
+            terms: is_dm_negated,
+            is_common_narrow: true,
+            zulip_icon: undefined,
+            title: "translated: Channel messages",
+            redirect_url_with_search: "#",
         },
         {
             terms: is_mentioned,
