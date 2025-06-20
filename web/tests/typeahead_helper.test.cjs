@@ -556,29 +556,45 @@ test("sort_recipients", () => {
         "b_user_3@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
-        "a_user@zulip.org",
         "zman@test.net",
+        "a_user@zulip.org",
     ]);
 
     // Test match by email (To get coverage for ok_users and ok_bots)
     assert.deepEqual(get_typeahead_result("b_user_1@zulip.net", ""), [
         "b_user_1@zulip.net",
-        "a_user@zulip.org",
+        "zman@test.net",
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
-        "zman@test.net",
-        "a_bot@zulip.com",
+        "a_user@zulip.org",
         "b_bot@example.com",
+        "a_bot@zulip.com",
     ]);
+
+    // For splitting based on whether a direct message was sent
+    pm_conversations.set_partner(5);
+    pm_conversations.set_partner(6);
+    pm_conversations.set_partner(2);
+    pm_conversations.set_partner(7);
+    pm_conversations.set_partner(3);
+
+    // For splitting based on pm counts
+    people.set_recipient_count_for_testing(a_user.user_id, 3);
+    people.set_recipient_count_for_testing(b_bot.user_id, 3);
+    people.set_recipient_count_for_testing(b_user_3.user_id, 2);
+    people.set_recipient_count_for_testing(zman.user_id, 2);
+    people.set_recipient_count_for_testing(b_user_1.user_id, 1);
+    people.set_recipient_count_for_testing(b_user_2.user_id, 0);
+    people.set_recipient_count_for_testing(a_bot.user_id, 0);
 
     // Typeahead for direct message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
         "a_user@zulip.org",
         "a_bot@zulip.com",
+        "zman@test.net",
+        "b_user_3@zulip.net",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
-        "b_user_3@zulip.net",
-        "zman@test.net",
         "b_bot@example.com",
     ]);
 
@@ -588,12 +604,6 @@ test("sort_recipients", () => {
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
-
-    // For splitting based on whether a direct message was sent
-    pm_conversations.set_partner(5);
-    pm_conversations.set_partner(6);
-    pm_conversations.set_partner(2);
-    pm_conversations.set_partner(7);
 
     // For splitting based on recency
     recent_senders.process_stream_message({
@@ -662,6 +672,9 @@ test("sort_recipients all mention", () => {
         ...matches.map((user) => user_item(user)),
         broadcast_item(all_obj),
     ];
+
+    peer_data.add_subscriber(linux_sub.stream_id, people.get_user_id("a_user@zulip.org"));
+
     const results = th.sort_recipients({
         users: user_and_mention_items,
         query: "a",
@@ -670,8 +683,8 @@ test("sort_recipients all mention", () => {
     });
 
     assertSameEmails(results, [
+        a_user_item, // subscriber over wildcard
         broadcast_item(all_obj),
-        a_user_item,
         a_bot_item,
         b_user_1_item,
         b_user_2_item,
@@ -705,26 +718,21 @@ test("sort_recipients pm counts", () => {
 
     assert.deepEqual(get_typeahead_result("b", linux_sub.stream_id, "Linux topic"), [
         "b_user_3@zulip.net",
-        "b_user_2@zulip.net",
         "b_user_1@zulip.net",
+        "b_user_2@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
     ]);
 
-    /* istanbul ignore next */
-    function compare() {
-        throw new Error("We do not expect to need a tiebreaker here.");
-    }
-
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, linux_sub.stream_id, ""),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, linux_sub.stream_id, ""),
         -1,
     );
 });
@@ -746,8 +754,8 @@ test("sort_recipients dup bots", () => {
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_bot@zulip.com",
-        "a_user@zulip.org",
         "zman@test.net",
+        "a_user@zulip.org",
     ];
     assert.deepEqual(recipients_email, expected);
 });
@@ -871,7 +879,7 @@ test("sort broadcast mentions for stream message type", () => {
 
     assert.deepEqual(
         results2.map((r) => r.user.email),
-        ["all", "everyone", "stream", "channel", "topic", a_user.email, zman.email],
+        [zman.email, a_user.email, "all", "everyone", "stream", "channel", "topic"],
     );
 });
 
@@ -898,7 +906,7 @@ test("sort broadcast mentions for direct message type", () => {
 
     assert.deepEqual(
         results2.map((r) => r.user.email),
-        [a_user.email, zman.email, "all", "everyone"],
+        [zman.email, a_user.email, "all", "everyone"],
     );
 });
 
@@ -911,8 +919,8 @@ test("test compare directly for stream message type", () => {
     const all_obj_item = broadcast_item(all_obj);
 
     assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), -1);
-    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), 1);
+    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
 });
 
 test("test compare directly for direct message", () => {
@@ -1160,8 +1168,8 @@ test("compare_language", () => {
 
 // TODO: This is incomplete for testing this function, and
 // should be filled out more. This case was added for codecov.
-test("compare_by_pms", () => {
-    assert.equal(th.compare_by_pms(a_user, a_user), 0);
+test("compare_users_for_pms", () => {
+    assert.equal(th.compare_users_for_pms(a_user, a_user), 0);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {
