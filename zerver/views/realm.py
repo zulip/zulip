@@ -710,6 +710,7 @@ def update_realm_user_settings_defaults(
     | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
     web_suggest_update_timezone: Json[bool] | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     hide_ai_features: Json[bool] | None = None,
     resolved_topic_notice_auto_read_policy: Annotated[
         str | None,

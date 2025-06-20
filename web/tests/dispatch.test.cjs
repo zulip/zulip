@@ -1201,6 +1201,12 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
+    event = event_fixtures.user_settings__web_left_sidebar_unreads_count_summary;
+    override(sidebar_ui, "update_unread_counts_visibility", noop);
+    override(user_settings, "web_left_sidebar_unreads_count_summary", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_unreads_count_summary, false);
+
     event = event_fixtures.user_settings__receives_typing_notifications;
     override(user_settings, "receives_typing_notifications", false);
     dispatch(event);
