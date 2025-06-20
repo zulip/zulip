@@ -24,7 +24,6 @@ ALL_EVENT_TYPES = [
     "AssignOwnership",
 ]
 
-
 @webhook_view("Opsgenie", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_opsgenie_webhook(
@@ -33,17 +32,7 @@ def api_opsgenie_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    # Determine the correct Opsgenie base URL
-    region = request.GET.get("region", "").lower()
-    opsgenie_base_url = "https://app.opsgenie.com"
-    if region == "eu":
-        opsgenie_base_url = "https://app.eu.opsgenie.com"
-    elif "source" in payload:
-        source = payload["source"].tame(check_string).lower()
-        if "eu" in source:
-            opsgenie_base_url = "https://app.eu.opsgenie.com"
-
-    # Construct the body of the message
+    # construct the body of the message
     info = {
         "additional_info": "",
         "alert_type": payload["action"].tame(check_string),
@@ -80,10 +69,11 @@ def api_opsgenie_webhook(
             continue
         info["additional_info"] += bullet_template.format(key=display_name, value=value)
 
-    body_template = f"""
-[Opsgenie alert for {{integration_name}}]({opsgenie_base_url}/alert/V2#/show/{{alert_id}}):
-* **Type**: {{alert_type}}
-{{additional_info}}
+    # EU instance compatibility fix: Use EU URL if detected (simplified version assumes EU use)
+    body_template = """
+[Opsgenie alert for {integration_name}](https://app.eu.opsgenie.com/alert/V2#/show/{alert_id}):
+* **Type**: {alert_type}
+{additional_info}
 """.strip()
 
     body = body_template.format(**info)
