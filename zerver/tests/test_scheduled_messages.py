@@ -86,6 +86,7 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message.scheduled_timestamp,
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
+        self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 
         # Cannot schedule a direct message with user emails.
         result = self.do_schedule_message(
@@ -487,6 +488,9 @@ class ScheduledMessageTest(ZulipTestCase):
 
         scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
         self.assertNotEqual(scheduled_message.recipient.type, Recipient.STREAM)
+        self.assertEqual(scheduled_message.recipient.type, Recipient.PERSONAL)
+        scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
+        self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 
         # Trying to edit `topic` for direct message is ignored
         payload = {
@@ -496,7 +500,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
-        self.assertEqual(scheduled_message.topic_name(), "")
+        self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 
         # Trying to edit `type` to stream message type without a `topic` returns an error
         payload = {

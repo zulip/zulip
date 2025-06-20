@@ -5,6 +5,9 @@ tasks you need to go back to or documents you reference often.
 
 ## Star a message
 
+Starred messages have a filled in star (<i class="zulip-icon zulip-icon-star-filled"></i>)
+to their right.
+
 {start_tabs}
 
 {tab|desktop-web}
@@ -15,8 +18,7 @@ tasks you need to go back to or documents you reference often.
 
 !!! tip ""
 
-    Starred messages have a filled in star (<i class="zulip-icon zulip-icon-star-filled"></i>)
-    to their right. You can unstar a message using the same instructions used to star it.
+    You can unstar a message using the same instructions used to star it.
 
 !!! keyboard_tip ""
 
@@ -31,8 +33,7 @@ tasks you need to go back to or documents you reference often.
 
 !!! tip ""
 
-    Starred messages have a "starred" label in the bottom right corner of the
-    message. You can unstar a message by tapping **Unstar message** in the
+    You can unstar a message by tapping **Unstar message** in the
     long-press menu.
 
 {end_tabs}

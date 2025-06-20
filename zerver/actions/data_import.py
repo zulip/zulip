@@ -10,6 +10,7 @@ from zerver.actions.realm_settings import do_delete_all_realm_attachments
 from zerver.actions.users import do_change_user_role
 from zerver.context_processors import is_realm_import_enabled
 from zerver.data_import.slack import do_convert_zipfile
+from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.upload import save_attachment_contents
 from zerver.models.prereg_users import PreregistrationRealm
@@ -78,6 +79,9 @@ def import_slack_data(event: dict[str, Any]) -> None:
             # Clean up the realm if the import failed
             preregistration_realm.created_realm = None
             preregistration_realm.data_import_metadata["is_import_work_queued"] = False
+            if type(e) is SlackImportInvalidFileError:
+                # Store the error to be displayed to the user.
+                preregistration_realm.data_import_metadata["invalid_file_error_message"] = str(e)
             preregistration_realm.save()
 
             realm = Realm.objects.get(string_id=string_id)

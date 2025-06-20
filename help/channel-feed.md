@@ -44,5 +44,7 @@ quick overview of recent messages in a channel.
 ## Related articles
 
 * [Combined feed](/help/combined-feed)
+* [List of topics in a channel](/help/list-of-topics)
+* [Left sidebar](/help/left-sidebar)
 * [Reading strategies](/help/reading-strategies)
 * [Reading conversations](/help/reading-conversations)

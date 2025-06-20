@@ -45,9 +45,12 @@ def fill_edit_history_entries(
     prev_content = message.content
     prev_rendered_content = message.rendered_content
     is_channel_message = message.is_stream_message()
-    prev_topic_name = maybe_rename_empty_topic_to_general_chat(
-        message.topic_name(), is_channel_message, allow_empty_topic_name
-    )
+    if is_channel_message:
+        prev_topic_name = maybe_rename_empty_topic_to_general_chat(
+            message.topic_name(), is_channel_message, allow_empty_topic_name
+        )
+    else:
+        prev_topic_name = ""
 
     # Make sure that the latest entry in the history corresponds to the
     # message's last edit time

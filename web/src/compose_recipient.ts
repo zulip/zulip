@@ -20,6 +20,7 @@ import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
+import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
@@ -43,6 +44,43 @@ function composing_to_current_private_message_narrow(): boolean {
         return false;
     }
     return _.isEqual(narrow_state_recipient, compose_state_recipient);
+}
+
+export let maybe_mute_recipient_row = (): void => {
+    // We need to adjust the privacy-icon colors in the muted state
+    const message_type = compose_state.get_message_type();
+    if (message_type === "stream") {
+        const stream_id = compose_state.stream_id();
+        const channel_picker_icon_selector =
+            "#compose_select_recipient_widget .channel-privacy-type-icon";
+
+        stream_color.adjust_stream_privacy_icon_colors(stream_id, channel_picker_icon_selector);
+    }
+
+    // We're piggy-backing here, in a roundabout way, on
+    // compose_ui.set_focus(). Any time the topic or recipient
+    // row is focused, that puts us outside the muted
+    // recipient-row state--including the `c` hotkey or the
+    // Start new conversation button being clicked.
+    const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
+    if (
+        is_compose_textarea_focused &&
+        composing_to_current_topic_narrow() &&
+        compose_state.has_full_recipient() &&
+        !compose_state.is_recipient_edited_manually()
+    ) {
+        $("#compose-recipient").toggleClass("muted-recipient-row", true);
+    } else {
+        $("#compose-recipient").toggleClass("muted-recipient-row", false);
+    }
+};
+
+export function rewire_maybe_mute_recipient_row(value: typeof maybe_mute_recipient_row): void {
+    maybe_mute_recipient_row = value;
+}
+
+export function unmute_recipient_row(): void {
+    $("#compose-recipient").removeClass("muted-recipient-row");
 }
 
 export let update_narrow_to_recipient_visibility = (): void => {
@@ -98,6 +136,7 @@ export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
+    maybe_mute_recipient_row();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
@@ -149,8 +188,9 @@ function switch_message_type(message_type: MessageType): void {
 function update_recipient_label(stream_id?: number): void {
     const stream = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
     if (stream === undefined) {
-        $("#compose_select_recipient_widget .dropdown_widget_value").text(
-            $t({defaultMessage: "Select a channel"}),
+        const select_channel_label = $t({defaultMessage: "Select a channel"});
+        $("#compose_select_recipient_widget .dropdown_widget_value").html(
+            `<span class="select-channel-label">${select_channel_label}</span>`,
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
@@ -179,12 +219,14 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
         // it here.
         const direct_message_label = $t({defaultMessage: "DM"});
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
-            `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> ${direct_message_label}`,
+            `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i>
+            <span class="decorated-dm-label">${direct_message_label}</span>`,
         );
     }
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
+    maybe_mute_recipient_row();
 }
 
 export let on_compose_select_recipient_update = (): void => {
@@ -261,8 +303,13 @@ function focus_compose_recipient(): void {
     $("#compose_select_recipient_widget_wrapper").trigger("focus");
 }
 
+function on_show_callback(): void {
+    $("#compose_select_recipient_widget").addClass("widget-open");
+}
+
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
+    $("#compose_select_recipient_widget").removeClass("widget-open");
     if (!compose_select_recipient_dropdown_widget.item_clicked) {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
@@ -286,6 +333,7 @@ function on_hidden_callback(): void {
 export function handle_middle_pane_transition(): void {
     if (compose_state.composing()) {
         update_narrow_to_recipient_visibility();
+        maybe_mute_recipient_row();
     }
 }
 
@@ -298,6 +346,7 @@ export function initialize(): void {
         on_exit_with_escape_callback: focus_compose_recipient,
         // We want to focus on topic box if dropdown was closed via selecting an item.
         focus_target_on_hidden: false,
+        on_show_callback,
         on_hidden_callback,
         dropdown_input_visible_selector: "#compose_select_recipient_widget_wrapper",
         prefer_top_start_placement: true,
@@ -314,23 +363,19 @@ export function initialize(): void {
     });
     compose_select_recipient_dropdown_widget.setup();
 
-    // `input` isn't relevant for streams since it registers as a change only
-    // when an item in the dropdown is selected.
-    $("#stream_message_recipient_topic,#private_message_recipient").on(
-        "input",
-        update_on_recipient_change,
-    );
     // changes for the stream dropdown are handled in on_compose_select_recipient_update
-    $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
-        update_on_recipient_change();
+    $("#stream_message_recipient_topic,#private_message_recipient").on("input change", () => {
+        // To make sure the checks in update_on_recipient_change() are correct,
+        // we update manual editing first.
         compose_state.set_recipient_edited_manually(true);
+        update_on_recipient_change();
     });
 
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export function update_topic_inputbox_on_mandatory_topics_change(): void {
-    if (realm.realm_mandatory_topics) {
+export function update_topic_inputbox_on_topics_policy_change(): void {
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         const $input = $("input#stream_message_recipient_topic");
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
         $input.removeClass("empty-topic-display");
@@ -345,13 +390,6 @@ export function update_topic_inputbox_on_mandatory_topics_change(): void {
 export function update_topic_displayed_text(topic_name = "", has_topic_focus = false): void {
     compose_state.topic(topic_name);
 
-    // When topics are mandatory, no additional adjustments are needed.
-    if (realm.realm_mandatory_topics) {
-        return;
-    }
-    // Otherwise, we have some adjustments to make to display:
-    // * a placeholder with the default topic name stylized
-    // * the empty string topic stylized
     const $input = $("input#stream_message_recipient_topic");
     const is_empty_string_topic = topic_name === "";
     const recipient_widget_hidden =
@@ -364,6 +402,16 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
 
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
+        $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+        // When topics are mandatory, no additional adjustments are needed.
+        // Also, if the recipient in the compose box is not selected, the
+        // placeholder will always be "Topic" and never "general chat".
+        return;
+    }
+    // Otherwise, we have some adjustments to make to display:
+    // * a placeholder with the default topic name stylized
+    // * the empty string topic stylized
     function update_placeholder_visibility(): void {
         $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
     }

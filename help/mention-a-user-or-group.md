@@ -2,6 +2,11 @@
 
 {!mentions-intro.md!}
 
+!!! tip ""
+
+    If you edit a message, adding or removing mentions will update message
+    notifications. [Learn more](/help/edit-a-message#message-notifications).
+
 ## Mention a user or group
 
 ### From the compose box

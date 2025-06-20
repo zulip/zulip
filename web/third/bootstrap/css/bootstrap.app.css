@@ -115,6 +115,11 @@ input:focus:invalid:focus {
   -moz-border-radius: 4px;
   border-radius: 4px;
 }
+.alert.alert-error {
+  background-color: #f2dede;
+  border-color: #eed3d7;
+  color: #b94a48;
+}
 .alert,
 .alert h4 {
   color: #c09853;

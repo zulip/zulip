@@ -178,6 +178,8 @@ class RawStreamDict(TypedDict):
     name: str
     rendered_description: str
     stream_post_policy: int
+    subscriber_count: int
+    topics_policy: str
 
 
 class RawSubscriptionDict(TypedDict):
@@ -234,8 +236,10 @@ class SubscriptionStreamDict(TypedDict):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    subscriber_count: int
     subscribers: NotRequired[list[int]]
     partial_subscribers: NotRequired[list[int]]
+    topics_policy: str
     wildcard_mentions_notify: bool | None
 
 
@@ -262,8 +266,10 @@ class NeverSubscribedStreamDict(TypedDict):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    subscriber_count: int
     subscribers: NotRequired[list[int]]
     partial_subscribers: NotRequired[list[int]]
+    topics_policy: str
 
 
 class DefaultStreamDict(TypedDict):
@@ -292,6 +298,8 @@ class DefaultStreamDict(TypedDict):
     rendered_description: str
     stream_id: int  # `stream_id` represents `id` of the `Stream` object in `API_FIELDS`
     stream_post_policy: int
+    subscriber_count: int
+    topics_policy: str
     # Computed fields not specified in `Stream.API_FIELDS`
     is_announcement_only: bool
     is_default: NotRequired[bool]

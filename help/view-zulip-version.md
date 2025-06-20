@@ -54,8 +54,24 @@ web app.
 
 {end_tabs}
 
+## Zulip mobile app version
+
+The [Zulip mobile apps](/apps/) have an independent version from the server and
+web app.
+
+### View Zulip mobile app version
+
+{start_tabs}
+
+{!mobile-menu.md!}
+
+1. Tap <i class="zulip-icon zulip-icon-info mobile-help"></i> **About Zulip**.
+
+{end_tabs}
+
 ## Related articles
 
-* [Desktop installation guides](/help/desktop-app-install-guide)
+* [Desktop app installation guides](/help/desktop-app-install-guide)
+* [Mobile app installation guides](/help/mobile-app-install-guide)
 * [Upgrading Zulip][upgrade-zulip]
 * [Zulip release lifecycle](https://zulip.readthedocs.io/en/stable/overview/release-lifecycle.html)

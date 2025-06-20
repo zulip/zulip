@@ -343,11 +343,10 @@ test_ui("validate", ({mock_template, override}) => {
     };
     stream_data.add_sub(denmark);
     compose_state.set_stream_id(denmark.stream_id);
-    override(realm, "realm_mandatory_topics", true);
+    override(realm, "realm_topics_policy", "disable_empty_topic");
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
-        assert.equal(data.banner_text, compose_validate.TOPICS_REQUIRED_ERROR_MESSAGE);
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });
@@ -405,13 +404,14 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     // of execution should not be changed.
     mock_banners();
     override(current_user, "user_id", me.user_id);
-    override(realm, "realm_mandatory_topics", false);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
 
     const special_sub = {
         stream_id: 101,
         name: "special",
         subscribed: true,
         can_send_message_group: everyone.id,
+        topics_policy: "inherit",
     };
     stream_data.add_sub(special_sub);
 

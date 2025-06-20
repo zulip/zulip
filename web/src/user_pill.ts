@@ -9,7 +9,6 @@ import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
 import type {
     CombinedPill,
     CombinedPillContainer,
@@ -22,9 +21,9 @@ import * as user_status from "./user_status.ts";
 
 export type UserPill = {
     type: "user";
-    user_id?: number;
+    user_id: number;
     email: string;
-    full_name: string | undefined;
+    full_name: string;
     img_src?: string;
     deactivated?: boolean;
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
@@ -36,31 +35,13 @@ export type UserPillWidget = InputPillContainer<UserPill>;
 
 export type UserPillData = {type: "user"; user: User};
 
-export function create_item_from_email(
-    email: string,
+export function create_item_from_user_id(
+    user_id: string,
     current_items: CombinedPill[],
     pill_config?: InputPillConfig,
 ): UserPill | undefined {
-    // For normal Zulip use, we need to validate the email for our realm.
-    const user = people.get_by_email(email);
-
+    const user = people.maybe_get_user_by_id(Number(user_id), true);
     if (!user) {
-        if (realm.realm_is_zephyr_mirror_realm) {
-            if (current_items.some((item) => item.type === "user" && item.email === email)) {
-                return undefined;
-            }
-
-            // For Zephyr we can't assume any emails are invalid,
-            // so we just create a pill where the display value
-            // is the email itself.
-            return {
-                type: "user",
-                full_name: undefined,
-                email,
-            };
-        }
-
-        // The email is not allowed, so return.
         return undefined;
     }
 
@@ -101,8 +82,8 @@ export function create_item_from_email(
     return item;
 }
 
-export function get_email_from_item(item: UserPill): string {
-    return item.email;
+export function get_unique_full_name_from_item(item: UserPill): string {
+    return people.get_unique_full_name(item.full_name, item.user_id);
 }
 
 export function append_person(
@@ -136,7 +117,7 @@ export function get_user_ids(
     pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
 ): number[] {
     const items = pill_widget.items();
-    return items.flatMap((item) => (item.type === "user" ? (item.user_id ?? []) : [])); // be defensive about undefined users
+    return items.flatMap((item) => (item.type === "user" ? item.user_id : []));
 }
 
 export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
@@ -233,8 +214,8 @@ export function create_pills(
     const pills = input_pill.create({
         $container: $pill_container,
         pill_config,
-        create_item_from_text: create_item_from_email,
-        get_text_from_item: get_email_from_item,
+        create_item_from_text: create_item_from_user_id,
+        get_text_from_item: get_unique_full_name_from_item,
         get_display_value_from_item,
         generate_pill_html,
     });

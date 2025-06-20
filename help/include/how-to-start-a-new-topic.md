@@ -24,9 +24,7 @@
 
 {tab|mobile}
 
-1. Tap the **Channels**
-   (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="help-center-icon"/>)
-   tab at the bottom of the app.
+{!mobile-channels.md!}
 
 1. Tap on the desired channel.
 
@@ -36,7 +34,7 @@
    used topics.
 
 1. Compose your message, and tap the **send**
-   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="help-center-icon"/>)
-   button in the bottom right corner of the app.
+   (<i class="zulip-icon zulip-icon-send mobile-help"></i>) button in the
+   bottom right corner of the app.
 
 {end_tabs}

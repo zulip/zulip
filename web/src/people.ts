@@ -117,14 +117,10 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 }
 
 // Use this function only when you are sure that user_id is valid.
-export let get_by_user_id = (user_id: number): User => {
+export function get_by_user_id(user_id: number): User {
     const person = people_by_user_id_dict.get(user_id);
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
-};
-
-export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
-    get_by_user_id = value;
 }
 
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
@@ -155,7 +151,7 @@ export function validate_user_ids(user_ids: number[]): number[] {
     return good_ids;
 }
 
-export let get_by_email = (email: string): User | undefined => {
+export function get_by_email(email: string): User | undefined {
     const person = people_dict.get(email);
 
     if (!person) {
@@ -169,10 +165,6 @@ export let get_by_email = (email: string): User | undefined => {
     }
 
     return person;
-};
-
-export function rewire_get_by_email(value: typeof get_by_email): void {
-    get_by_email = value;
 }
 
 export function get_bot_owner_user(user: User & {is_bot: true}): User | undefined {
@@ -421,7 +413,7 @@ export function get_user_type(user_id: number): string | undefined {
 }
 
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
-    const emails = emails_string.split(",");
+    const emails = emails_string.split(",").map((email) => email.trim());
     return email_list_to_user_ids_string(emails);
 }
 
@@ -1479,6 +1471,27 @@ export function is_duplicate_full_name(full_name: string): boolean {
     return ids !== undefined && ids.size > 1;
 }
 
+export function get_from_unique_full_name(query: string): User | undefined {
+    // Check for `full_name|user_id` syntax and return `user_id`.
+    const parts = query.split("|");
+    if (parts.length !== 2) {
+        return undefined;
+    }
+    const user_id = Number(parts[1]?.trim());
+    if (!Number.isNaN(user_id) && is_valid_user_id(user_id)) {
+        return get_by_user_id(user_id);
+    }
+    return undefined;
+}
+
+export function get_unique_full_name(full_name: string, user_id: number): string {
+    let unique_full_name = full_name;
+    if (is_duplicate_full_name(full_name)) {
+        unique_full_name += `|${user_id}`;
+    }
+    return unique_full_name;
+}
+
 export function get_mention_syntax(full_name: string, user_id?: number, silent = false): string {
     let mention = "";
     if (silent) {
@@ -1964,9 +1977,11 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
             error(xhr) {
                 let error_message = "Failed to fetch users.";
                 if (xhr) {
-                    const error = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
-                    if (error.msg) {
-                        error_message = error.msg;
+                    const error = z
+                        .object({msg: z.string().optional()})
+                        .safeParse(xhr.responseJSON);
+                    if (error.success && error.data.msg) {
+                        error_message = error.data.msg;
                     }
                 }
                 blueslip.error(error_message);

@@ -390,6 +390,9 @@ def registration_helper(
                 context["uploaded_import_file_name"] = prereg_realm.data_import_metadata.get(
                     "uploaded_import_file_name"
                 )
+                context["invalid_file_error_message"] = prereg_realm.data_import_metadata.get(
+                    "invalid_file_error_message", ""
+                )
 
             return TemplateResponse(
                 request,
@@ -611,7 +614,12 @@ def registration_helper(
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
-    if not (password_auth_enabled(realm) and password_required):
+    if realm_creation and demo_organization_creation:
+        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+        # to be fully implemented.
+        assert settings.DEVELOPMENT
+        form["password"].field.required = False
+    elif not (password_auth_enabled(realm) and password_required):
         form["password"].field.required = False
 
     if form.is_valid():
@@ -620,7 +628,8 @@ def registration_helper(
         else:
             # If the user wasn't prompted for a password when
             # completing the authentication form (because they're
-            # signing up with SSO and no password is required), set
+            # signing up with SSO and no password is required, or
+            # because they're creating a new demo organization), set
             # the password field to `None` (Which causes Django to
             # create an unusable password).
             password = None
@@ -1055,7 +1064,22 @@ def realm_import_status(
         # TODO: Either store the path to the temporary conversion directory on
         # preregistration_realm.data_import_metadata, or have the conversion
         # process support writing updates to this for a better progress indicator.
-        return json_success(request, {"status": _("Converting Slack data…")})
+        if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
+            return json_success(
+                request, {"status": _("Converting Slack data… This may take a while.")}
+            )
+        elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
+            # Redirect user the file upload page if we have an error message to display.
+            result = {
+                "status": preregistration_realm.data_import_metadata.get(
+                    "invalid_file_error_message"
+                ),
+                "redirect": reverse(
+                    "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
+                ),
+            }
+            return json_success(request, result)
+        # TODO: If there is something we need to fix for the import, we should notify the user.
 
     if realm.deactivated:
         # These "if" cases are in the inverse order than they're done
@@ -1070,15 +1094,15 @@ def realm_import_status(
             pass
         return json_success(request, {"status": _("Importing converted Slack data…")})
 
-    if (
-        not preregistration_realm.data_import_metadata["need_select_realm_owner"]
-        and preregistration_realm.created_realm is None
-    ):
+    need_select_realm_owner = preregistration_realm.data_import_metadata.get(
+        "need_select_realm_owner", False
+    )
+    if not need_select_realm_owner and preregistration_realm.created_realm is None:
         return json_success(request, {"status": _("Finalizing import…")})
 
     # We have a non-deactivated realm and it's linked to the prereg key
     result = {"status": _("Done!")}
-    if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
+    if not need_select_realm_owner:
         importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)
         # Sanity check that this is a normal user account that can login.
         assert (
@@ -1205,7 +1229,7 @@ def realm_import_post_process(
 
     claimable_users = UserProfile.objects.filter(
         realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False
-    )
+    ).order_by("full_name")
     context = {
         "users": claimable_users,
         "verified_email": preregistration_realm.email,

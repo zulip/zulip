@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
@@ -21,6 +21,154 @@ if TYPE_CHECKING:
 
 
 class DeleteMessageTest(ZulipTestCase):
+    def test_do_delete_messages_with_empty_list(self) -> None:
+        realm = get_realm("zulip")
+        inital_count = Message.objects.count()
+        do_delete_messages(realm, [], acting_user=None)
+        final_count = Message.objects.count()
+        self.assertEqual(inital_count, final_count)
+
+    def test_do_delete_private_messages_with_acting_user(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        acting_user = self.example_user("iago")
+        msg_id = self.send_personal_message(cordelia, hamlet, "Hello!")
+        message = Message.objects.get(id=msg_id)
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            do_delete_messages(realm, [message], acting_user=acting_user)
+
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertIn("type", event)
+        self.assertEqual(event["type"], "delete_message")
+        self.assertIn(msg_id, event["message_ids"])
+        self.assertIn(acting_user.id, events[0]["users"])
+
+    def test_do_delete_stream_messages_without_acting_user(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+
+        stream_name = "Denmark-Test"
+        self.make_stream(stream_name)
+        self.subscribe(cordelia, stream_name)
+
+        msg_id = self.send_stream_message(cordelia, stream_name, "Hello, Denmark!")
+        message = Message.objects.get(id=msg_id)
+
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, [message], acting_user=None)
+
+        self.assert_length(events, 2)
+        self.assertIn("type", events[0]["event"])
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertIn(msg_id, events[1]["event"]["message_ids"])
+
+    def test_do_delete_messages_grouping_logic(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        self.make_stream("stream1")
+        self.make_stream("stream2")
+        self.subscribe(cordelia, "stream1")
+        self.subscribe(hamlet, "stream1")
+        self.subscribe(cordelia, "stream2")
+        self.subscribe(hamlet, "stream2")
+
+        msg_id_1 = self.send_stream_message(
+            cordelia, "stream1", topic_name="topic1", content="test1"
+        )
+        msg_id_2 = self.send_stream_message(hamlet, "stream1", topic_name="topic1", content="test2")
+        msg_id_3 = self.send_stream_message(
+            cordelia, "stream1", topic_name="topic2", content="test3"
+        )
+        msg_id_4 = self.send_stream_message(hamlet, "stream2", topic_name="topic3", content="test4")
+        dm_id_1 = self.send_personal_message(cordelia, hamlet, "test5")
+        dm_id_2 = self.send_personal_message(hamlet, iago, "test6")
+
+        messages = Message.objects.filter(
+            id__in=[msg_id_1, msg_id_2, msg_id_3, msg_id_4, dm_id_1, dm_id_2]
+        )
+
+        stream1 = get_stream("stream1", realm)
+        stream2 = get_stream("stream2", realm)
+
+        with self.capture_send_event_calls(expected_num_events=8) as events:
+            do_delete_messages(realm, messages, acting_user=None)
+
+        expected_events: list[dict[str, Any]] = [
+            {
+                "type": "delete_message",
+                "message_ids": [dm_id_1],
+                "message_type": "private",
+            },
+            {
+                "type": "delete_message",
+                "message_ids": [dm_id_2],
+                "message_type": "private",
+            },
+            {
+                "type": "stream",
+                "op": "update",
+                "property": "first_message_id",
+                "value": msg_id_3,
+                "stream_id": stream1.id,
+                "name": "stream1",
+            },
+            {
+                "type": "delete_message",
+                "message_ids": [msg_id_1, msg_id_2],
+                "stream_id": stream1.id,
+                "topic": "topic1",
+                "message_type": "stream",
+            },
+            {
+                "type": "stream",
+                "op": "update",
+                "property": "first_message_id",
+                "value": None,
+                "stream_id": stream1.id,
+                "name": "stream1",
+            },
+            {
+                "type": "delete_message",
+                "message_ids": [msg_id_3],
+                "stream_id": stream1.id,
+                "topic": "topic2",
+                "message_type": "stream",
+            },
+            {
+                "type": "stream",
+                "op": "update",
+                "property": "first_message_id",
+                "value": None,
+                "stream_id": stream2.id,
+                "name": "stream2",
+            },
+            {
+                "type": "delete_message",
+                "message_ids": [msg_id_4],
+                "stream_id": stream2.id,
+                "topic": "topic3",
+                "message_type": "stream",
+            },
+        ]
+
+        actual_events = [event["event"] for event in events]
+
+        self.assert_length(actual_events, len(expected_events))
+
+        for actual, expected in zip(actual_events, expected_events, strict=True):
+            for key, value in expected.items():
+                if key == "message_ids":
+                    self.assertEqual(set(actual[key]), set(value))
+                else:
+                    self.assertEqual(actual[key], value)
+
     def test_delete_message_invalid_request_format(self) -> None:
         self.login("iago")
         hamlet = self.example_user("hamlet")
@@ -569,7 +717,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertEqual(stream.first_message_id, message_ids[1])
 
         all_messages = Message.objects.filter(id__in=message_ids)
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(27):
             do_delete_messages(realm, all_messages, acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, None)

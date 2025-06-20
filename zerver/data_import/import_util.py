@@ -524,7 +524,7 @@ def build_message(
         has_link=has_link,
     )
     if is_direct_message_type:
-        topic_name = ""
+        topic_name = Message.DM_TOPIC
     zulip_message.set_topic_name(topic_name)
     zulip_message_dict = model_to_dict(
         zulip_message, exclude=["recipient", "sender", "sending_client"]

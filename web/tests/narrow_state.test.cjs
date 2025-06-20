@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_message_list} = require("./lib/message_list.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -18,14 +19,10 @@ function set_filter(raw_terms) {
         operator: op[0],
         operand: op[1],
     }));
-    const filter = new Filter(terms);
-    message_lists.set_current({
-        data: {
-            filter,
-        },
-    });
+    const msg_list = make_message_list(terms);
+    message_lists.set_current(msg_list);
 
-    return filter;
+    return msg_list.data.filter;
 }
 
 function test(label, f) {

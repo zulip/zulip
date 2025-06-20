@@ -9,9 +9,7 @@ in your device's default browser.
 
 {tab|mobile}
 
-{!mobile-profile-menu.md!}
-
-1. Tap **Settings**.
+{!mobile-settings.md!}
 
 1. Toggle **Open links with in-app browser**.
 

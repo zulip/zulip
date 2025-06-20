@@ -235,8 +235,11 @@ export function initialize(): void {
             }
 
             if (instance.reference.classList.contains("disabled-message-send-controls")) {
-                const error_message = compose_validate.get_disabled_send_tooltip();
-                instance.setContent(error_message);
+                const error_message = compose_validate.get_disabled_send_tooltip_html();
+                instance.setContent(parse_html(error_message));
+                // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
+                // is in the error message.
+                $(instance.popper).find(".tippy-content").css("display", "block");
 
                 if (!error_message) {
                     blueslip.error("Compose send button incorrectly disabled.");

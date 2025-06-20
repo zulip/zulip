@@ -20,6 +20,51 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 394**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id):: Added a new
+  field `subscriber_count` to Stream and Subscription objects with the
+  total number of non-deactivated users who are subscribed to the
+  channel.
+
+**Feature level 393**
+
+* [`PATCH /messages/{message_id}`](/api/delete-message),
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  In `delete_message` event, all the `message_ids` will now be sorted in
+  increasing order.
+* [`PATCH /messages/{message_id}`](/api/update-message),
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  In `update_message` event, all the `message_ids` will now be sorted in
+  increasing order.
+
+**Feature level 392**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `topics_policy`
+  field to Stream and Subscription objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `topics_policy` parameter to support setting and changing the
+  the configuration for sending messages in the empty topic of the
+  channel.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_set_topics_policy_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to change per-channel `topics_policy`
+  setting.
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added a new realm setting, `topics_policy` defining the
+  default configuration for sending messages in empty topics.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Deprecated `mandatory_topics` field in favor of `topics_policy` realm setting.
+* `PATCH /realm`: Removed `mandatory_topics` field as it is now replaced by
+  `topics_policy` field.
+
 **Feature level 391**
 
 * [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members),

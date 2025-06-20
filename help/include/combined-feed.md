@@ -14,7 +14,7 @@ view](/help/configure-home-view#configure-home-view) for the Zulip web app.
 {tab|mobile}
 
 1. Tap the **Combined feed**
-   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
-   tab in the upper left corner of the app.
+   (<i class="zulip-icon zulip-icon-all-messages mobile-help"></i>)
+   tab at the bottom of the app.
 
 {end_tabs}

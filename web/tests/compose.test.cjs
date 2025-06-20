@@ -126,6 +126,7 @@ const social = {
     name: "social",
     subscribed: true,
     can_send_message_group: 2,
+    topics_policy: "inherit",
 };
 stream_data.add_sub(social);
 
@@ -450,6 +451,7 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
     });
+    override(realm, "realm_topics_policy", "allow_empty_topic");
 
     compose.handle_enter_key_with_preview_open();
     fake_compose_box.assert_preview_mode_is_off();
@@ -635,6 +637,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
     override_rewire(compose_recipient, "update_narrow_to_recipient_visibility", () => {
         update_narrow_to_recipient_visibility_called = true;
     });
+    override_rewire(compose_recipient, "maybe_mute_recipient_row", noop);
     override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override_rewire(drafts, "update_compose_draft_count", noop);
     override(compose_pm_pill, "get_user_ids", () => []);

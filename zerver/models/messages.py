@@ -58,6 +58,21 @@ class AbstractMessage(models.Model):
         db_default=MessageType.NORMAL,
     )
 
+    # Direct messages do not have topics in the API. Originally, all
+    # DMs had a topic of "" in the database. When we started using ""
+    # as the topic for "general chat", this caused problems with the
+    # PostgreSQL query planner. Because a large portion of all
+    # messages are DMs, PostgreSQL could do very inefficient table
+    # scans to fetch messages in general chat, ignoring the topic
+    # index, because it assumed most messages were in general chat.
+    #
+    # To avoid that query planner statistics problem, we use an
+    # unprintable character, which isn't permitted in actual topics,
+    # as the topic for DMs in the database. The "BEL" character is an
+    # arbitrary choice, but feels suitable given DMs trigger a
+    # notification sound.
+    DM_TOPIC = "\x07"
+
     # The message's topic.
     #
     # Early versions of Zulip called this concept a "subject", as in an email
@@ -105,6 +120,9 @@ class AbstractMessage(models.Model):
 
     @override
     def __str__(self) -> str:
+        if not self.is_channel_message:
+            return f"{self.recipient.label()} /  / {self.sender!r}"
+
         return f"{self.recipient.label()} / {self.subject} / {self.sender!r}"
 
 

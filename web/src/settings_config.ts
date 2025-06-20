@@ -16,6 +16,7 @@ import type {
     StreamNotificationSettings,
     UserSettings,
 } from "./user_settings.ts";
+import * as util from "./util.ts";
 
 /*
     This file contains translations between the integer values used in
@@ -290,6 +291,50 @@ export const message_edit_history_visibility_policy_values = {
         code: "none",
         description: $t({defaultMessage: "Don't allow"}),
     },
+};
+
+type PolicyValue = {
+    code: string;
+    description: string;
+};
+
+type RealmTopicsPolicyValues = {
+    allow_empty_topic: PolicyValue;
+    disable_empty_topic: PolicyValue;
+};
+
+type StreamTopicsPolicyValues = {
+    inherit: PolicyValue;
+} & RealmTopicsPolicyValues;
+
+export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
+    const empty_topic_name = util.get_final_topic_display_name("");
+
+    return {
+        allow_empty_topic: {
+            code: "allow_empty_topic",
+            description: $t(
+                {defaultMessage: '"{empty_topic_name}" topic allowed'},
+                {empty_topic_name},
+            ),
+        },
+        disable_empty_topic: {
+            code: "disable_empty_topic",
+            description: $t({defaultMessage: 'No "{empty_topic_name}" topic'}, {empty_topic_name}),
+        },
+    };
+};
+
+export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
+    const realm_topics_policy_values = get_realm_topics_policy_values();
+
+    return {
+        inherit: {
+            code: "inherit",
+            description: $t({defaultMessage: "Automatic"}),
+        },
+        ...realm_topics_policy_values,
+    };
 };
 
 export const time_limit_dropdown_values = [
@@ -690,6 +735,12 @@ export const all_group_setting_labels = {
         can_mention_many_users_group: $t({
             defaultMessage: "Who can notify a large number of users with a wildcard mention",
         }),
+        can_set_topics_policy_group: new Handlebars.SafeString(
+            $t_html({
+                defaultMessage:
+                    "Who can configure per-channel topic settings <i>(also requires being a channel administrator)</i>",
+            }),
+        ),
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
@@ -732,6 +783,7 @@ export const realm_group_permission_settings: {
             "can_create_private_channel_group",
             "can_add_subscribers_group",
             "can_mention_many_users_group",
+            "can_set_topics_policy_group",
         ],
     },
     {

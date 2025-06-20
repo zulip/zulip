@@ -186,7 +186,7 @@ export function get_recipient(): Recipient | null {
             return null;
         }
         const topic = compose_state.topic();
-        if (realm.realm_mandatory_topics && topic === "") {
+        if (!stream_data.can_use_empty_topic(stream_id) && topic === "") {
             // compose box with empty topic string.
             return null;
         }

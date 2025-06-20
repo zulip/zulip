@@ -1,5 +1,8 @@
 <div class="realm-support-information">
     <span class="cloud-label">Cloud realm</span>
+    {% if realm.deactivated %}
+    <span class="deactivated-label">DEACTIVATED</span>
+    {% endif %}
     <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
     {% if realm.plan_type == SPONSORED_PLAN_TYPE %}
         <p class="support-section-header">On 100% sponsored Zulip Standard Free 🎉</p>
@@ -7,6 +10,16 @@
     {% if realm_support_data[realm.id].sponsorship_data.has_discount %}
         <p class="support-section-header">Has a discount 💸</p>
     {% endif %}
+    {% set realm_is_scrubbed = realm_support_data[realm.id].is_scrubbed %}
+    {% if realm_is_scrubbed %}
+    <b>Realm has been scrubbed</b>
+    {% elif realm.deactivated_redirect %}
+    <b>Placeholder realm</b><br />
+    <b>Redirects to</b>: {{ realm.deactivated_redirect }}
+    <a title="Copy URL" class="copy-button" data-clipboard-text="{{ realm.deactivated_redirect }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% else %}
     <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.url }}">{{ realm.url }}</a> |
     <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
     <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
@@ -57,7 +70,10 @@
     {% endwith %}
     <br />
     <b>File upload usage</b>: {{ realm_support_data[realm.id].file_upload_usage }}<br />
+    {% endif %}
 </div>
+{% if realm_is_scrubbed %}
+{% elif not realm.deactivated_redirect %}
 <div>
     <div class="realm-management-actions">
         <p class="support-section-header">🛠️ Realm management:</p>
@@ -71,6 +87,7 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
+        {% if not realm.deactivated %}
         <form method="POST" class="support-form">
             <b>New subdomain</b>:<br />
             {{ csrf_input }}
@@ -119,8 +136,17 @@
             <input type="number" name="max_invites" value="{{ realm.max_invites }}" min="0" required />
             <button type="submit" class="support-submit-button">Update</button>
         </form>
+        {% endif %}
     </div>
-    {% if realm.plan_type != SPONSORED_PLAN_TYPE %}
+    {% if realm.deactivated %}
+    <div class="support-sponsorship-container">
+        {% with %}
+            {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/sponsorship_details.html' %}
+        {% endwith %}
+    </div>
+    {% elif realm.plan_type != SPONSORED_PLAN_TYPE %}
     <div class="support-sponsorship-container">
         {% with %}
             {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
@@ -168,7 +194,7 @@
         {% endwith %}
     </div>
     {% endif %}
-
+    {% if realm.deactivated %}
     <form method="POST" class="scrub-realm-form support-form">
         <h3>❌ Scrub realm</h3>
         {{ csrf_input }}
@@ -176,4 +202,6 @@
         <input type="hidden" name="scrub_realm" value="true" />
         <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
     </form>
+    {% endif %}
 </div>
+{% endif %}

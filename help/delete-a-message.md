@@ -36,9 +36,12 @@ your message.
 
 {!message-long-press-menu.md!}
 
-1. Tap **Delete message** to delete the content of the message.  If you do not
-   see the **Delete message** option, you do not have permission to delete the
-   content of this message.
+1. Tap **Edit message**. If you do not see the **Edit message** option,
+   you do not have permission to change the content of this message.
+
+1. Delete the content of the message.
+
+1. Tap **Save**.
 
 {end_tabs}
 

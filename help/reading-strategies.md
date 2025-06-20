@@ -120,6 +120,7 @@ You can [star messages](/help/star-a-message) that you plan to follow up on late
 ## Related articles
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Inbox](/help/inbox)
 * [Recent conversations](/help/recent-conversations)
 * [Searching for messages](/help/search-for-messages)
 * [Marking messages as read](/help/marking-messages-as-read)

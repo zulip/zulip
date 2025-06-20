@@ -751,7 +751,7 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_realm_support_view_queries(self) -> None:
         iago = self.example_user("iago")
         self.login_user(iago)
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             result = self.client_get("/activity/support", {"q": "zulip"}, subdomain="zulip")
             self.assertEqual(result.status_code, 200)
 
@@ -839,11 +839,10 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
                     f'<option value="{zulip_realm.org_type}" selected>',
-                    'scrub-realm-button">',
-                    'data-string-id="zulip"',
                 ],
                 result,
             )
+            self.assert_not_in_success_response(["scrub-realm-button"], result)
 
         def check_lear_realm_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
@@ -856,8 +855,6 @@ class TestSupportEndpoint(ZulipTestCase):
                     'input type="number" name="annual_discounted_price" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
-                    'scrub-realm-button">',
-                    'data-string-id="lear"',
                     "<b>Plan name</b>: Zulip Cloud Standard",
                     "<b>Status</b>: Active",
                     "<b>Billing schedule</b>: Annual",
@@ -870,6 +867,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 ],
                 result,
             )
+            self.assert_not_in_success_response(["scrub-realm-button"], result)
 
         def check_preregistration_user_query_result(
             result: "TestHttpResponse", email: str, invite: bool = False
@@ -1826,6 +1824,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
         iago = self.example_user("iago")
         self.login_user(iago)
+
+        # Confirm scrub realm button is shown for deactivated realms.
+        result = self.client_get("/activity/support", {"q": "limited"})
+        self.assert_in_success_response(["scrub-realm-button"], result)
 
         result = self.client_post(
             "/activity/support",

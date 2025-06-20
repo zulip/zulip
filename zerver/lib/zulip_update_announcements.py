@@ -384,6 +384,17 @@ feature highlights in Zulip Server 10.0, and other Zulip project updates.
             deactivate_a_group_url="/help/deactivate-a-user-group",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=17,
+        message="""
+Starting this week, you’ll get Zulip’s next-generation mobile app the next time
+your Zulip app is upgraded. The new app offers a sleek new design and a faster,
+smoother experience. Check out [the announcement post]({flutter_release_blog_post})
+for details and how to share your feedback.
+""".format(
+            flutter_release_blog_post="https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/",
+        ),
+    ),
 ]
 
 

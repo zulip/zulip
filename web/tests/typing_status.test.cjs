@@ -33,7 +33,7 @@ function returns_time(secs) {
 }
 
 run_test("basics", ({override, override_rewire}) => {
-    override(realm, "realm_mandatory_topics", true);
+    override(realm, "realm_topics_policy", "disable_empty_topic");
     override(realm, "server_typing_started_wait_period_milliseconds", TYPING_STARTED_WAIT_PERIOD);
     override(realm, "server_typing_stopped_wait_period_milliseconds", TYPING_STOPPED_WAIT_PERIOD);
 
@@ -282,6 +282,7 @@ run_test("basics", ({override, override_rewire}) => {
     override(compose_state, "get_message_type", () => "stream");
     override(compose_state, "stream_name", () => "Verona");
     override(stream_data, "get_stream_id", () => "2");
+    override(stream_data, "can_use_empty_topic", () => false);
     override(compose_state, "topic", () => "");
     assert.equal(typing.get_recipient(), null);
 

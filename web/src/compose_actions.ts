@@ -27,7 +27,6 @@ import * as reload_state from "./reload_state.ts";
 import * as resize from "./resize.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
-import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
@@ -92,6 +91,10 @@ function hide_box(): void {
     compose_fade.clear_compose();
     $(".message_comp").hide();
     $("#compose_controls").show();
+    // Assume a muted recipient row for the next time
+    // the compose box is reopened
+    $("#compose-recipient").addClass("muted-recipient-row");
+    $("#compose").removeClass("compose-box-open");
 }
 
 function show_compose_box(opts: ComposeActionsOpts): void {
@@ -111,10 +114,15 @@ function show_compose_box(opts: ComposeActionsOpts): void {
         };
     }
     compose_recipient.update_compose_for_message_type(opts_by_message_type);
-    $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
     compose_ui.set_focus(opts_by_message_type);
+    // Transitions in the recipient row of the compose box are attached
+    // to this class we add a slight delay to avoid transitions firing
+    // immediately.
+    requestAnimationFrame(() => {
+        $("#compose").addClass("compose-box-open");
+    });
 }
 
 export let clear_textarea = (): void => {
@@ -198,6 +206,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
+    compose_recipient.maybe_mute_recipient_row();
     // We explicitly call this function here apart from compose_setup.js
     // as this helps to show banner when responding in an interleaved view.
     // While responding, the compose box opens before fading resulting in
@@ -519,7 +528,7 @@ export let on_topic_narrow = (): void => {
     }
 
     if (
-        ((compose_state.topic() || !realm.realm_mandatory_topics) &&
+        ((compose_state.topic() || stream_data.can_use_empty_topic(compose_state.stream_id())) &&
             compose_state.has_message_content()) ||
         compose_state.is_recipient_edited_manually()
     ) {

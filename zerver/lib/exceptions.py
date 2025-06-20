@@ -535,6 +535,20 @@ class DirectMessageInitiationError(JsonableError):
         return _("You do not have permission to initiate direct message conversations.")
 
 
+class MessagesNotAllowedInEmptyTopicError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "Sending messages to the {empty_topic_display_name} is not allowed in this channel."
+        )
+
+
 class DirectMessagePermissionError(JsonableError):
     def __init__(self, is_nobody_group: bool) -> None:
         if is_nobody_group:
@@ -776,3 +790,14 @@ class DeliveryTimeNotInFutureError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Scheduled delivery time must be in the future.")
+
+
+class SlackImportInvalidFileError(Exception):
+    """
+    An error that is raised during the Slack import process
+    and is intended to be shown to the user.
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message

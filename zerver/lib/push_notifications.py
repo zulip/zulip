@@ -1000,7 +1000,12 @@ def get_message_payload(
         data["topic"] = get_topic_display_name(message.topic_name(), user_profile.default_language)
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         data["recipient_type"] = "private"
-        data["pm_users"] = direct_message_group_users(message.recipient.id)
+        # For group DMs, we need to fetch the users for the pm_users field.
+        # Note that this doesn't do a separate database query, because both
+        # functions use the get_display_recipient_by_id cache.
+        recipients = get_display_recipient(message.recipient)
+        if len(recipients) > 2:
+            data["pm_users"] = direct_message_group_users(message.recipient.id)
     else:  # Recipient.PERSONAL
         data["recipient_type"] = "private"
 
@@ -1014,7 +1019,8 @@ def get_apns_alert_title(message: Message, language: str) -> str:
     if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         recipients = get_display_recipient(message.recipient)
         assert isinstance(recipients, list)
-        return ", ".join(sorted(r["full_name"] for r in recipients))
+        if len(recipients) > 2:
+            return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_stream_message():
         stream_name = get_message_stream_name_from_database(message)
         topic_display_name = get_topic_display_name(message.topic_name(), language)
@@ -1057,6 +1063,10 @@ def get_apns_alert_subtitle(
         return _("{full_name} mentioned everyone:").format(full_name=sender_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
+    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        recipients = get_display_recipient(message.recipient)
+        if len(recipients) <= 2:
+            return ""
     # For group direct messages, or regular messages to a stream,
     # just use a colon to indicate this is the sender.
     return sender_name + ":"

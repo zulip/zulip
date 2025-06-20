@@ -487,9 +487,9 @@
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
     allow elements like DM pills to stack without breaking out of their
-    flex item. 2.1786em is 30.5px at 14px/1em.
+    flex item. 2em is 32px at 16px/1em.
     */
-    --compose-recipient-box-min-height: 2.1786em;
+    --compose-recipient-box-min-height: 2em;
     /* 28px at 14px/1em */
     /* Note that this variable can only be used in contexts where
        the font-size doesn't deviate from the base font-size;
@@ -521,6 +521,10 @@
     @media (width < $sm_min) {
         --compose-send-controls-width: 28px;
     }
+
+    /* Compose-specific transitions and delays. */
+    --compose-muted-recipient-row-transition-delay: 100ms;
+    --compose-muted-recipient-row-transition: 150ms ease;
 
     /*
     User group info popover elements and values.
@@ -1126,6 +1130,10 @@
         color-mix(in srgb, hsl(0deg 0% 0%) 10%, hsl(232deg 20% 92%)),
         hsl(0deg 0% 0% / 80%)
     );
+    --color-compose-recipient-box-hover: light-dark(
+        hsl(0deg 0% 69%),
+        hsl(0deg 0% 100% / 12%)
+    );
     --color-compose-recipient-box-has-focus: light-dark(
         hsl(0deg 0% 57%),
         hsl(0deg 0% 100% / 27%)
@@ -1398,6 +1406,15 @@
     --color-border-settings-plus-button: light-dark(
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
+    );
+    /* TODO: Light mode uses browser-default white
+       backgrounds; we should extend the use of this
+       color variable to 1) explicitly set the
+       background color of inputs, and 2) clean up a
+       lingering stack of selectors in dark_theme.css. */
+    --color-background-input: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
     );
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
@@ -1808,6 +1825,10 @@
         hsl(237deg 68% 94% / 50%),
         hsl(240deg 65% 60% / 60%)
     );
+    --color-outline-muted-input-pill: light-dark(
+        hsl(237deg 68% 88%),
+        hsl(240deg 65% 60% / 22%)
+    );
     --color-focus-outline-input-pill: light-dark(
         hsl(240deg 50% 50%),
         hsl(0deg 0% 100% / 60%)
@@ -2103,7 +2124,7 @@
         hsl(0deg 0% 100%)
     );
     --outline-width-button-focus: 1.5px;
-    --outline-offset-button-focus: 1px;
+    --outline-offset-button-focus: 0;
     /* Actions buttons */
     --color-inner-shadow-action-button: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 20%, transparent),

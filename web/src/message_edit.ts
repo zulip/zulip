@@ -58,7 +58,6 @@ import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
-import * as ui_util from "./ui_util.ts";
 import * as upload from "./upload.ts";
 import {the} from "./util.ts";
 import * as util from "./util.ts";
@@ -490,8 +489,8 @@ function update_inline_topic_edit_input_max_width(
     }
 }
 
-function handle_inline_topic_edit_change(this: HTMLInputElement): void {
-    const $inline_topic_edit_input = $(this);
+function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: number): void {
+    const $inline_topic_edit_input = $(elem);
 
     update_inline_topic_edit_input_max_width($inline_topic_edit_input);
 
@@ -505,23 +504,21 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
     const $topic_edit_save_button = $inline_topic_edit_input
         .closest(".topic_edit_form")
         .find(".topic_edit_save");
-    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(this.value)) {
+    if (
+        !stream_data.can_use_empty_topic(stream_id) &&
+        util.is_topic_name_considered_empty(elem.value)
+    ) {
         // When the topic is mandatory in a realm and the new topic is considered empty,
         // we disable the save button and show a tooltip with an error message.
-        ui_util.disable_element_and_add_tooltip(
-            $topic_edit_save_button,
-            $t({defaultMessage: "Topics are required in this organization."}),
-        );
+        $topic_edit_save_button.prop("disabled", true);
         return;
     }
-    if ($topic_edit_save_button.parent().hasClass("disabled-tooltip")) {
-        // If we reach here, it means the save button was disabled previously
-        // and the user has started typing in the input field, probably to fix
-        // the error. So, we re-enable the save button and remove the tooltip.
-        ui_util.enable_element_and_remove_tooltip($topic_edit_save_button);
-    }
+    // If we reach here, it means the save button was disabled previously
+    // and the user has started typing in the input field, probably to fix
+    // the error. So, we re-enable the save button.
+    $topic_edit_save_button.prop("disabled", false);
 
-    if (!realm.realm_mandatory_topics) {
+    if (stream_data.can_use_empty_topic(stream_id)) {
         const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
         $topic_not_mandatory_placeholder.toggleClass(
             "inline-topic-edit-placeholder-visible",
@@ -983,18 +980,18 @@ function do_toggle_resolve_topic(
 
 export function start_inline_topic_edit($recipient_row: JQuery): void {
     assert(message_lists.current !== undefined);
+    const msg_id = rows.id_for_recipient_row($recipient_row);
+    const message = message_lists.current.get(msg_id);
+    assert(message?.type === "stream");
     const $form = $(
         render_topic_edit_form({
             max_topic_length: realm.max_topic_length,
-            is_mandatory_topics: realm.realm_mandatory_topics,
+            is_mandatory_topics: !stream_data.can_use_empty_topic(message.stream_id),
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
     $(".topic_edit_spinner").hide();
-    const msg_id = rows.id_for_recipient_row($recipient_row);
-    const message = message_lists.current.get(msg_id);
-    assert(message?.type === "stream");
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
@@ -1010,9 +1007,11 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
         handle_inline_topic_edit_keydown($form, typeahead, event);
     });
 
-    $inline_topic_edit_input.on("input", handle_inline_topic_edit_change);
+    $inline_topic_edit_input.on("input", function (this: HTMLInputElement) {
+        handle_inline_topic_edit_change(this, message.stream_id);
+    });
 
-    if (!realm.realm_mandatory_topics) {
+    if (stream_data.can_use_empty_topic(message.stream_id)) {
         const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
 
         if (topic === "") {
@@ -1108,7 +1107,10 @@ export function try_save_inline_topic_edit($row: JQuery): void {
         return;
     }
 
-    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(new_topic)) {
+    if (
+        !stream_data.can_use_empty_topic(message.stream_id) &&
+        util.is_topic_name_considered_empty(new_topic)
+    ) {
         // When the topic is mandatory in a realm and the new topic is considered
         // empty, we don't allow the user to save the topic. Instead, we show the
         // error visually via the invalid-input class and focus on the input field.

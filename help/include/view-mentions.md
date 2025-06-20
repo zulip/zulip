@@ -16,9 +16,9 @@
 
 {tab|mobile}
 
-1. Tap the **Mentions**
-   (<img src="/static/images/help/mobile-at-sign-icon.svg" alt="at-sign" class="help-center-icon"/>)
-   tab at the top of the app.
+{!mobile-menu.md!}
+
+1. Tap <i class="zulip-icon zulip-icon-at-sign mobile-help"></i> **Mentions**.
 
 1. Browse your mentions. You can tap on a message recipient bar to go
    to the conversation where you were mentioned.

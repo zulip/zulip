@@ -246,6 +246,10 @@
         vertical-align: middle;
     }
 
+    & i.zulip-icon.mobile-help {
+        color: hsl(244deg 69% 62%);
+    }
+
     & a {
         color: hsl(176deg 46% 41%);
         font-weight: 600;

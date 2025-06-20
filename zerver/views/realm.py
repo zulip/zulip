@@ -57,6 +57,7 @@ from zerver.models.realms import (
     DigestWeekdayEnum,
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
+    RealmTopicsPolicyEnum,
 )
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.user_settings import check_settings_values
@@ -115,7 +116,16 @@ def update_realm(
         ApiParamConfig("message_content_delete_limit_seconds"),
     ] = None,
     allow_message_editing: Json[bool] | None = None,
-    mandatory_topics: Json[bool] | None = None,
+    topics_policy: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "topics_policy",
+                RealmTopicsPolicyEnum,
+            )
+        ),
+    ] = None,
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
@@ -157,6 +167,7 @@ def update_realm(
     can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,

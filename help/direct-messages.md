@@ -15,8 +15,7 @@ or unsubscribe people as needed.
 
 ## View your DMs
 
-There are a few different ways to view your DM conversations in the web and
-desktop apps.
+There are a few different ways to view your DM conversations.
 
 {start_tabs}
 
@@ -66,6 +65,12 @@ desktop apps.
    zulip-icon-chevron-right"></i>) button at the top of the compose box, or use
    the <kbd>Ctrl</kbd> + <kbd>.</kbd> keyboard shortcut to view that DM
    conversation.
+
+{tab|mobile}
+
+{!mobile-direct-messages.md!}
+
+1. Tap a recent DM conversation to view it.
 
 {end_tabs}
 
