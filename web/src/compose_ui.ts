@@ -214,7 +214,11 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
         (opts.message_type === "private" && opts.private_message_recipient_ids.length > 0)
     ) {
-        if (opts.trigger === "clear topic button" || opts.trigger === "compose_hotkey") {
+        if (
+            opts.trigger === "clear topic button" ||
+            opts.trigger === "compose_hotkey" ||
+            opts.trigger === "inbox_nofocus"
+        ) {
             return "input#stream_message_recipient_topic";
         }
         return "textarea#compose-textarea";
