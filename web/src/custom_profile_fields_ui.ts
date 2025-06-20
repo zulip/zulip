@@ -173,13 +173,34 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         return;
     }
 
-    flatpickr($date_picker_elements, {
-        altInput: true,
-        altFormat: "F j, Y",
-        allowInput: true,
-        static: true,
-    });
+    $date_picker_elements.addClass("date-field");
 
+    $date_picker_elements.each((_, el) => {
+        const $input = $(el);
+        const $field_wrapper = $input.closest(".custom_user_field");
+        const field_id_str = $field_wrapper.attr("data-field-id");
+        const user_id = people.my_current_user_id();
+        const field_id = Number(field_id_str);
+
+        flatpickr(el, {
+            altInput: true,
+            altFormat: "F j, Y",
+            allowInput: true,
+            static: true,
+            parseDate(dateStr: string) {
+                const date = new Date(dateStr);
+                if (Number.isNaN(date.getTime()) && dateStr.trim() !== "") {
+                    const originalValue =
+                        people.get_custom_profile_data(user_id, field_id)?.value ?? "";
+
+                    el.dataset.wasReset = "true";
+                    return new Date(originalValue);
+                }
+                delete el.dataset.wasReset;
+                return date;
+            },
+        });
+    });
     // Enable the label associated to this field to open the datepicker when clicked.
     $(element_id)
         .find(".custom_user_field label.settings-field-label")
