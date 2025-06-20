@@ -736,12 +736,22 @@ def fetch_initial_state_data(
                 "config_options": [
                     {
                         "key": c.name,
-                        "label": c.description,
+                        "label": c.label,
                         "validator": c.validator.__name__,
                     }
                     for c in integration.config_options
                 ]
                 if integration.config_options
+                else [],
+                "url_options": [
+                    {
+                        "key": c.name,
+                        "label": c.label,
+                        "validator": c.validator.__name__,
+                    }
+                    for c in integration.url_options
+                ]
+                if integration.url_options
                 else [],
             }
             for integration in WEBHOOK_INTEGRATIONS
