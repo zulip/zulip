@@ -7,11 +7,18 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
-const search_suggestion = mock_esm("../src/search_suggestion");
 
+const people = zrequire("people");
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
+const search_suggestion = zrequire("search_suggestion");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = {};
+set_realm(realm);
 
 function stub_pills() {
     const $pill_container = $("#searchbox-input-container.pill-container");
@@ -39,18 +46,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $searchbox_form = $("#searchbox_form");
     stub_pills();
 
-    mock_template("search_list_item.hbs", true, (data, html) => {
-        assert.equal(typeof data.description_html, "string");
-        if (data.is_people) {
-            for (const user of data.users) {
-                assert.equal(typeof user.user_pill_context.id, "number");
-                assert.equal(typeof user.user_pill_context.display_value, "string");
-                assert.equal(typeof user.user_pill_context.has_image, "boolean");
-                assert.equal(typeof user.user_pill_context.img_src, "string");
-            }
-        }
-        return html;
-    });
+    mock_template("search_list_item.hbs", true, (_data, html) => html);
 
     let expected_pill_display_value = "";
     let input_pill_displayed = false;
@@ -60,7 +56,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return html;
     });
 
-    search_suggestion.max_num_of_search_results = 999;
+    override_rewire(search_suggestion, "max_num_of_search_results", 999);
     let terms;
 
     function mock_pill_removes(widget) {
@@ -112,16 +108,19 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("ver");
             assert.deepStrictEqual(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n    <span>Search for ver</span>\n</div>\n`;
+            let description_html = "Search for <strong>ver</strong>";
+            let expected_value = `<div class="search_list_item">\n        <span class="pill-container">\n                ${description_html}\n        </span>\n    \n</div>\n`;
             assert.equal(opts.highlighter_html(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>Stream <strong>Ver</strong>ona</span>\n</div>\n`;
+            const search_string = "channel: Verona";
+            description_html = "Stream <strong>Ver</strong>ona";
+            expected_value = `<div class="search_list_item">\n        <span class="pill-container">\n                <div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n                    </span>\n    <div class="description">${description_html}</div>\n</div>\n`;
             assert.equal(opts.highlighter_html(source[1]), expected_value);
 
             /* Test sorter */
@@ -135,57 +134,21 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                         "dm-including:zo",
                         {
                             description_html: "group direct messages including",
-                            is_people: true,
                             search_string: "dm-including:user7@zulipdev.com",
-                            users: [
-                                {
-                                    user_pill_context: {
-                                        display_value: "<strong>Zo</strong>e",
-                                        has_image: true,
-                                        id: 7,
-                                        img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
-                                    },
-                                },
-                            ],
                         },
                     ],
                     [
                         "dm:zo",
                         {
                             description_html: "direct messages with",
-                            is_people: true,
                             search_string: "dm:user7@zulipdev.com",
-                            users: [
-                                {
-                                    user_pill_context: {
-                                        display_value: "<strong>Zo</strong>e",
-                                        has_image: true,
-                                        id: 7,
-                                        img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
-                                    },
-                                },
-                            ],
                         },
                     ],
                     [
                         "sender:zo",
                         {
                             description_html: "sent by",
-                            is_people: true,
                             search_string: "sender:user7@zulipdev.com",
-                            users: [
-                                {
-                                    user_pill_context: {
-                                        display_value: "<strong>Zo</strong>e",
-                                        has_image: true,
-                                        id: 7,
-                                        img_src:
-                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
-                                    },
-                                },
-                            ],
                         },
                     ],
                     [
@@ -200,22 +163,29 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("zo");
             assert.deepStrictEqual(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
+            const description_html = "Search for <strong>zo</strong>";
+            let expected_value = `<div class="search_list_item">\n        <span class="pill-container">\n                ${description_html}\n        </span>\n    \n</div>\n`;
             assert.equal(opts.highlighter_html(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            people.add_active_user({
+                email: "user7@zulipdev.com",
+                user_id: 3,
+                full_name: "Zoe",
+            });
+            override(realm, "realm_enable_guest_user_indicator", true);
+            expected_value = `<div class="search_list_item">\n        <span class="pill-container">\n                <div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n        </span>\n    \n</div>\n`;
             assert.equal(opts.highlighter_html(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n        <span class="pill-container">\n                <div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n        </span>\n    \n</div>\n`;
             assert.equal(opts.highlighter_html(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n        <span class="pill-container">\n                <div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n        </span>\n    \n</div>\n`;
             assert.equal(opts.highlighter_html(source[3]), expected_value);
 
             /* Test sorter */
@@ -407,7 +377,7 @@ run_test("set_search_bar_contents with duplicate pills", () => {
     const pills = search.search_pill_widget._get_pills_for_testing();
     assert.equal(pills.length, 1);
     assert.deepEqual(pills[0].item, {
-        type: "search",
+        type: "search_non_user",
         operator: "has",
         operand: "attachment",
         negated: false,
