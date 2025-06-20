@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as compose_validate from "./compose_validate.ts";
 import type {Filter} from "./filter.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import type {NarrowBannerData, SearchData} from "./narrow_error.ts";
@@ -344,9 +345,11 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         }
         case "search": {
             // You are narrowed to empty search results.
+            const update_hash = hash_util.search_public_streams_notice_url(current_filter.terms());
             return {
                 title: $t({defaultMessage: "No search results."}),
                 search_data: retrieve_search_query_data(current_filter),
+                update_hash,
             };
         }
         case "dm": {
