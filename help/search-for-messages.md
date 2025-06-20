@@ -73,9 +73,15 @@ Zulip offers the following filters based on the location of the message.
   between you, Bo, and Elena.
 * `dm-including:Bo Lin`: Search all direct message conversations
   (1-on-1 and group) that include you and Bo, as well as any other users.
+* `channels:all`: Search the history of all channels in the organization
+  that a user has access to; see details
+  [below](#searching-shared-history).
 * `channels:public`: Search the history of all [public
   channels](/help/change-the-privacy-of-a-channel) in the organization, including
   channels you are not subscribed to; see details
+  [below](#searching-shared-history).
+* `channels:subscribed`: Search the history of all the subscribed channels in the
+  organization; see details
   [below](#searching-shared-history).
 
 ### Search by sender
@@ -156,7 +162,11 @@ If you'd like to instead search the organization's shared history, any query
 using the `channel:` or `channels:` filters will search all messages that you have
 access to in the selected channel(s).  For example:
 
+* `channels:all logo`: Search for `logo` in all accessible channels in the
+  organization.
 * `channels:public logo`: Search for `logo` in all public channels in the
+  organization.
+* `channels:subscribed logo`: Search for `logo` in all the subscribed channels in the
   organization.
 * `channels:public sender:Elena García`: Search for all messages sent by
   Elena to any public channel.

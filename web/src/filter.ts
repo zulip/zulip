@@ -571,7 +571,7 @@ export class Filter {
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
-                return term.operand === "public";
+                return ["public", "all", "subscribed"].includes(term.operand);
             case "topic":
                 return true;
             case "sender":
@@ -642,7 +642,9 @@ export class Filter {
     static sorted_term_types(term_types: string[]): string[] {
         const levels = [
             "in",
+            "channels-all",
             "channels-public",
+            "channels-subscribed",
             "channel",
             "topic",
             "dm",
@@ -810,6 +812,12 @@ export class Filter {
                     content: this.describe_public_channels(term.negated ?? false),
                 };
             }
+            if (canonicalized_operator === "channels" && operand === "all") {
+                return {
+                    type: "plain_text",
+                    content: this.describe_all_channels(term.negated ?? false),
+                };
+            }
             const prefix_for_operator = Filter.operator_to_prefix(
                 canonicalized_operator,
                 term.negated,
@@ -876,6 +884,14 @@ export class Filter {
             return possible_prefix + "all public channels that you can view";
         }
         return possible_prefix + "all public channels";
+    }
+
+    static describe_all_channels(negated: boolean): string {
+        const possible_prefix = negated ? "exclude " : "";
+        if (page_params.is_spectator || current_user.is_guest) {
+            return possible_prefix + "all channels that you can view";
+        }
+        return possible_prefix + "all channels (including unsubscribed)";
     }
 
     static search_description_as_html(
@@ -1137,8 +1153,12 @@ export class Filter {
             "not-is-muted",
             "in-home",
             "in-all",
+            "channels-all",
+            "not-channels-all",
             "channels-public",
             "not-channels-public",
+            "channels-subscribed",
+            "not-channels-subscribed",
             "channels-web-public",
             "not-channels-web-public",
             "near",
@@ -1240,7 +1260,13 @@ export class Filter {
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-all"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["channels-public"])) {
+            return true;
+        }
+        if (_.isEqual(term_types, ["channels-subscribed"])) {
             return true;
         }
         if (_.isEqual(term_types, ["sender"])) {
@@ -1310,8 +1336,12 @@ export class Filter {
                     return "/#narrow/is/starred";
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
+                case "channels-all":
+                    return "/#narrow/channels/all";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "channels-subscribed":
+                    return "/#narrow/channels/subscribed";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1478,8 +1508,12 @@ export class Filter {
                     return $t({defaultMessage: "Combined feed"});
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted channels"});
+                case "channels-all":
+                    return $t({defaultMessage: "Messages in all channels"});
                 case "channels-public":
                     return $t({defaultMessage: "Messages in all public channels"});
+                case "channels-subscribed":
+                    return $t({defaultMessage: "Messages in all subscribed channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -1597,7 +1631,12 @@ export class Filter {
 
         // TODO: It's not clear why `channels:` filters would not be
         // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
+        if (
+            this.has_operator("channels") ||
+            this.has_negated_operand("channels", "public") ||
+            this.has_negated_operand("channels", "all") ||
+            this.has_negated_operand("channels", "subscribed")
+        ) {
             return false;
         }
 
@@ -1876,8 +1915,12 @@ export class Filter {
             "not-is-followed",
             "is-resolved",
             "not-is-resolved",
+            "channels-all",
+            "not-channels-all",
             "channels-public",
             "not-channels-public",
+            "channels-subscribed",
+            "not-channels-subscribed",
             "is-muted",
             "not-is-muted",
             "in-home",
