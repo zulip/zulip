@@ -46,8 +46,8 @@ function composing_to_current_private_message_narrow(): boolean {
     return _.isEqual(narrow_state_recipient, compose_state_recipient);
 }
 
-export let maybe_mute_recipient_row = (): void => {
-    // We need to adjust the privacy-icon colors in the muted state
+export let update_recipient_row_attention_level = (): void => {
+    // We need to adjust the privacy-icon colors in the low-attention state
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_id = compose_state.stream_id();
@@ -58,8 +58,8 @@ export let maybe_mute_recipient_row = (): void => {
     }
 
     // We're piggy-backing here, in a roundabout way, on
-    // compose_ui.set_focus(). Any time the topic or recipient
-    // row is focused, that puts us outside the muted
+    // compose_ui.set_focus(). Any time the topic or DM recipient
+    // row is focused, that puts us outside the low-attention
     // recipient-row state--including the `c` hotkey or the
     // Start new conversation button being clicked.
     const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
@@ -75,11 +75,13 @@ export let maybe_mute_recipient_row = (): void => {
     }
 };
 
-export function rewire_maybe_mute_recipient_row(value: typeof maybe_mute_recipient_row): void {
-    maybe_mute_recipient_row = value;
+export function rewire_update_recipient_row_attention_level(
+    value: typeof update_recipient_row_attention_level,
+): void {
+    update_recipient_row_attention_level = value;
 }
 
-export function unmute_recipient_row(): void {
+export function set_high_attention_recipient_row(): void {
     $("#compose-recipient").removeClass("muted-recipient-row");
 }
 
@@ -136,7 +138,7 @@ export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
-    maybe_mute_recipient_row();
+    update_recipient_row_attention_level();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
@@ -226,7 +228,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
-    maybe_mute_recipient_row();
+    update_recipient_row_attention_level();
 }
 
 export let on_compose_select_recipient_update = (): void => {
@@ -333,7 +335,7 @@ function on_hidden_callback(): void {
 export function handle_middle_pane_transition(): void {
     if (compose_state.composing()) {
         update_narrow_to_recipient_visibility();
-        maybe_mute_recipient_row();
+        update_recipient_row_attention_level();
     }
 }
 

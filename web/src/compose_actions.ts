@@ -206,7 +206,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
-    compose_recipient.maybe_mute_recipient_row();
+    compose_recipient.update_recipient_row_attention_level();
     // We explicitly call this function here apart from compose_setup.js
     // as this helps to show banner when responding in an interleaved view.
     // While responding, the compose box opens before fading resulting in
