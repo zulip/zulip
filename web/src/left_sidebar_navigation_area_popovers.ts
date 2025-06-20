@@ -3,14 +3,17 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
-import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.hbs";
 import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
 import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.hbs";
+import render_left_sidebar_views_popover from "../templates/popovers/left_sidebar/left_sidebar_views_popover.hbs";
+import render_navigation_view_hide_popover from "../templates/popovers/left_sidebar/navigation_view_hide_popover.hbs";
 
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";
+import * as navigation_views from "./navigation_views.ts";
+import {built_in_views_values} from "./navigation_views.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -18,6 +21,7 @@ import * as settings_config from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -34,8 +38,21 @@ function common_click_handlers(): void {
 
         popovers.hide_all();
     });
+
+    $("body").on("click", ".hide-navigation-view", (e) => {
+        e.preventDefault();
+
+        const fragment = $(e.currentTarget).attr("data-fragment");
+        if (!fragment) {
+            return;
+        }
+
+        navigation_views.set_view_pinned_status(fragment, false);
+
+        popovers.hide_all();
+    });
 }
-// This callback is called from the popovers on all home views
+
 function register_mark_all_read_handler(
     event: JQuery.ClickEvent<
         tippy.PopperElement,
@@ -84,6 +101,7 @@ export function initialize(): void {
                     render_left_sidebar_starred_messages_popover({
                         show_unstar_all_button,
                         starred_message_counts: user_settings.starred_message_counts,
+                        fragment: built_in_views_values.starred_messages.fragment,
                     }),
                 ),
             );
@@ -113,7 +131,13 @@ export function initialize(): void {
         onShow(instance) {
             popovers.hide_all();
 
-            instance.setContent(ui_util.parse_html(render_left_sidebar_drafts_popover({})));
+            instance.setContent(
+                ui_util.parse_html(
+                    render_left_sidebar_drafts_popover({
+                        fragment: built_in_views_values.drafts.fragment,
+                    }),
+                ),
+            );
         },
         onHidden(instance) {
             instance.destroy();
@@ -141,11 +165,17 @@ export function initialize(): void {
         onShow(instance) {
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.inbox.code;
+            const counts = unread.get_counts();
+            const has_unread_messages =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_inbox_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
+                        fragment: built_in_views_values.inbox.fragment,
+                        has_unread_messages,
                     }),
                 ),
             );
@@ -175,11 +205,17 @@ export function initialize(): void {
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.all_messages.code;
+            const counts = unread.get_counts();
+            const has_unread_messages =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_all_messages_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
+                        fragment: built_in_views_values.all_messages.fragment,
+                        has_unread_messages,
                     }),
                 ),
             );
@@ -209,11 +245,17 @@ export function initialize(): void {
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.recent_topics.code;
+            const counts = unread.get_counts();
+            const has_unread_messages =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_recent_view_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
+                        fragment: built_in_views_values.recent_view.fragment,
+                        has_unread_messages,
                     }),
                 ),
             );
@@ -225,32 +267,136 @@ export function initialize(): void {
         },
     });
 
+    popover_menus.register_popover_menu(".mentions-sidebar-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onShow(instance) {
+            popover_menus.popover_instances.left_sidebar_mentions_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popovers.hide_all();
+
+            instance.setContent(
+                ui_util.parse_html(
+                    render_navigation_view_hide_popover({
+                        fragment: built_in_views_values.mentions.fragment,
+                        hide_text: "Hide mentions",
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.left_sidebar_mentions_popover = null;
+            ui_util.hide_left_sidebar_menu_icon();
+        },
+    });
+
+    popover_menus.register_popover_menu(".reactions-sidebar-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onShow(instance) {
+            popover_menus.popover_instances.left_sidebar_reactions_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popovers.hide_all();
+
+            instance.setContent(
+                ui_util.parse_html(
+                    render_navigation_view_hide_popover({
+                        fragment: built_in_views_values.my_reactions.fragment,
+                        hide_text: "Hide reactions",
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.left_sidebar_reactions_popover = null;
+            ui_util.hide_left_sidebar_menu_icon();
+        },
+    });
+
+    popover_menus.register_popover_menu(".scheduled_messages-sidebar-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onShow(instance) {
+            popover_menus.popover_instances.left_sidebar_scheduled_messages_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popovers.hide_all();
+
+            instance.setContent(
+                ui_util.parse_html(
+                    render_navigation_view_hide_popover({
+                        fragment: built_in_views_values.scheduled_messages.fragment,
+                        hide_text: "Hide scheduled messages",
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.left_sidebar_scheduled_messages_popover = null;
+            ui_util.hide_left_sidebar_menu_icon();
+        },
+    });
+
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
-            // Determine at show time whether there are scheduled messages,
-            // so that Tippy properly calculates the height of the popover
-            const scheduled_message_count = scheduled_messages.get_count();
-            let has_scheduled_messages = false;
-            if (scheduled_message_count > 0) {
-                has_scheduled_messages = true;
+            const is_condensed = $("#views-label-container").hasClass(
+                "showing-condensed-navigation",
+            );
+            const is_has_scheduled_messages = scheduled_messages.get_count() > 0;
+            let all_built_in_views = navigation_views.get_built_in_views();
+
+            if (!is_has_scheduled_messages && !is_condensed) {
+                all_built_in_views = all_built_in_views.filter(
+                    (view) => view.fragment !== built_in_views_values.scheduled_messages.fragment,
+                );
             }
+
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
-                    render_left_sidebar_condensed_views_popover({has_scheduled_messages}),
+                    render_left_sidebar_views_popover({
+                        is_condensed,
+                        has_scheduled_messages: is_has_scheduled_messages,
+                        views: all_built_in_views.filter((view) => !view.is_pinned),
+                    }),
                 ),
             );
         },
         onMount() {
-            ui_util.update_unread_count_in_dom(
-                $(".condensed-views-popover-menu-drafts"),
-                drafts.draft_model.getDraftCount(),
-            );
-            ui_util.update_unread_count_in_dom(
-                $(".condensed-views-popover-menu-scheduled-messages"),
-                scheduled_messages.get_count(),
-            );
+            const all_built_in_views = navigation_views
+                .get_built_in_views()
+                .filter((view) => !view.is_pinned);
+
+            for (const view of all_built_in_views) {
+                let count = 0;
+                switch (view.fragment) {
+                    case built_in_views_values.drafts.fragment:
+                        count = drafts.draft_model.getDraftCount();
+                        break;
+                    case built_in_views_values.scheduled_messages.fragment:
+                        count = scheduled_messages.get_count();
+                        break;
+                    case built_in_views_values.starred_messages.fragment:
+                        count = starred_messages.get_count();
+                        break;
+                    case built_in_views_values.inbox.fragment:
+                    case built_in_views_values.recent_view.fragment:
+                    case built_in_views_values.all_messages.fragment:
+                        count = unread.get_counts().home_unread_messages;
+                        break;
+                    case built_in_views_values.mentions.fragment:
+                        count = unread.get_counts().mentioned_message_count;
+                        break;
+                }
+
+                ui_util.update_unread_count_in_dom(
+                    $(`.views-popover-menu-${view.css_class_suffix}`),
+                    count,
+                );
+            }
         },
         onHidden(instance) {
             instance.destroy();

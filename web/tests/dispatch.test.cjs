@@ -37,6 +37,7 @@ const message_events = mock_esm("../src/message_events", {
     update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
+const navigation_views = mock_esm("../src/navigation_views");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
@@ -86,7 +87,8 @@ const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
     update_announce_stream_option() {},
 });
 const submessage = mock_esm("../src/submessage");
-mock_esm("../src/left_sidebar_navigation_area", {
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
+    update_navigation_views_visibility() {},
     update_starred_count() {},
     update_scheduled_messages_row() {},
     handle_home_view_changed() {},
@@ -190,6 +192,38 @@ run_test("alert_words", ({override}) => {
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("navigation_views", ({override}) => {
+    const add_event = event_fixtures.navigation_view__add;
+    override(left_sidebar_navigation_area, "update_navigation_views_visibility", noop);
+    {
+        const stub = make_stub();
+        override(navigation_views, "add_navigation_view", stub.f);
+
+        dispatch(add_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, add_event.navigation_view);
+    }
+    const update_event = event_fixtures.navigation_view__update;
+    {
+        const stub = make_stub();
+        override(navigation_views, "update_navigation_view", stub.f);
+
+        dispatch(update_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, update_event.fragment);
+    }
+
+    const remove_event = event_fixtures.navigation_view__remove;
+    {
+        const stub = make_stub();
+        override(navigation_views, "remove_navigation_view", stub.f);
+
+        dispatch(remove_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, remove_event.fragment);
+    }
 });
 
 run_test("saved_snippets", ({override}) => {
