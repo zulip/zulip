@@ -145,6 +145,32 @@ class MarkdownThumbnailTest(ZulipTestCase):
         )
         self.assert_message_content_is(message_id, expected)
 
+    def test_inline_image_thumbnail_after_send(self) -> None:
+        with self.captureOnCommitCallbacks(execute=True):
+            path_id = self.upload_image("img.png")
+            content = f"![image](/user_uploads/{path_id})"
+            expected = (
+                '<p><img alt="image"'
+                ' class="message_inline_image image-loading-placeholder"'
+                ' data-original-content-type="image/png"'
+                ' data-original-dimensions="128x128"'
+                f' data-original-src="/user_uploads/{path_id}"'
+                ' src="/static/images/loading/loader-black.svg"></p>'
+            )
+
+            message_id = self.send_message_content(content)
+            self.assert_message_content_is(message_id, expected)
+
+            # Exit the block and run thumbnailing
+        expected = (
+            '<p><img alt="image" class="true_inline"'
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' data-original-src="/user_uploads/{path_id}"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></p>'
+        )
+        self.assert_message_content_is(message_id, expected)
+
     def test_thumbnail_escaping(self) -> None:
         self.login("othello")
         with self.captureOnCommitCallbacks(execute=True):
@@ -325,6 +351,28 @@ class MarkdownThumbnailTest(ZulipTestCase):
         self.assert_message_content_is(
             message_id, f'<p><a href="/user_uploads/{path_id}">image</a></p>'
         )
+
+    def test_thumbnail_bad_inline_image(self) -> None:
+        """Test what happens if the file looks fine, but resizing later fails"""
+        path_id = self.upload_image("img.png")
+        message_id = self.send_message_content(f"Testing ![image](/user_uploads/{path_id})")
+        self.assert_length(ImageAttachment.objects.get(path_id=path_id).thumbnail_metadata, 0)
+
+        # If the image is found to be bad, we remove all trace of the preview
+        with (
+            patch.object(
+                pyvips.Image, "thumbnail_buffer", side_effect=pyvips.Error("some bad error")
+            ) as thumb_mock,
+            self.assertLogs("zerver.worker.thumbnail", "ERROR") as thumbnail_logs,
+        ):
+            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
+            thumb_mock.assert_called_once()
+        self.assert_length(thumbnail_logs.output, 1)
+        self.assertTrue(
+            thumbnail_logs.output[0].startswith("ERROR:zerver.worker.thumbnail:some bad error")
+        )
+        self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
+        self.assert_message_content_is(message_id, "<p>Testing </p>")
 
     def test_thumbnail_multiple_messages(self) -> None:
         sender_user_profile = self.example_user("othello")
