@@ -934,12 +934,18 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
     ) -> None:
         stream = get_stream("test_stream", user.realm)
         data = {}
+
+        old_values = {
+            "invite_only": stream.invite_only,
+            "is_web_public": stream.is_web_public,
+            "history_public_to_subscribers": stream.history_public_to_subscribers,
+        }
+
         if property_name == "invite_only":
             data["is_private"] = orjson.dumps(new_value).decode()
         else:
             data[property_name] = orjson.dumps(new_value).decode()
 
-        old_value = getattr(stream, property_name)
         result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
 
         if error_msg is not None:
@@ -951,14 +957,11 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         self.assertEqual(getattr(stream, property_name), new_value)
 
         # Reset to original value.
-        setattr(stream, property_name, old_value)
-        stream.save(update_fields=[property_name])
-
-        # Reset history_public_to_subscribers field when stream
-        # is changed from private to public.
-        if not stream.invite_only and not stream.history_public_to_subscribers:
-            stream.history_public_to_subscribers = True
-            stream.save(update_fields=["history_public_to_subscribers"])
+        do_change_stream_permission(
+            stream,
+            **old_values,
+            acting_user=self.admin,
+        )
 
     def do_test_updating_channel_privacy(self, property_name: str, new_value: bool) -> None:
         hamlet = self.example_user("hamlet")
