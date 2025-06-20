@@ -227,6 +227,13 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
 ## (defined in AUTH_LDAP_USER_SEARCH).
 # AUTH_LDAP_USERNAME_ATTR = "uid"
 
+## TODO: <explain the feature here>
+# LDAP_EXTERNAL_AUTH_ID_ENABLED = True
+#
+# TODO: <explain that the default and recommended id is the DN, but you can configure
+# some different attr here, but it has to be unique and stable>
+# LDAP_ATTR_NAME_FOR_EXTERNAL_AUTH_ID: str | None = "unique_id_for_zulip_auth"
+
 ## This map defines how to populate attributes of a Zulip user from LDAP.
 ##
 ## The format is `zulip_name: ldap_name`; each entry maps a Zulip
