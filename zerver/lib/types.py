@@ -404,6 +404,7 @@ class StreamMessageEditRequest:
     orig_topic_name: str
     orig_stream: "Stream"
     propagate_mode: str
+    is_editable_by_others: bool | None
 
 
 @dataclass
@@ -411,3 +412,4 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+    is_editable_by_others: bool
