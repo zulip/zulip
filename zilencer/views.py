@@ -22,6 +22,9 @@ from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 from dns import resolver as dns_resolver
 from dns.exception import DNSException
+from nacl.encoding import Base64Encoder
+from nacl.exceptions import CryptoError
+from nacl.public import PrivateKey, SealedBox
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints
 from pydantic.functional_validators import AfterValidator
 
@@ -38,19 +41,28 @@ from zerver.decorator import require_post
 from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
+    InvalidBouncerPublicKeyError,
+    InvalidEncryptedPushRegistrationError,
     JsonableError,
+    MissingBouncerPublicKeyError,
+    MissingRemoteRealmError,
+    PushRegistrationDecodeError,
+    PushRegistrationLifespanExceededError,
+    PushRegistrationLivenessTimedOutError,
     RateLimitedError,
     RemoteRealmServerMismatchError,
     RemoteServerDeactivatedError,
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.push_notifications import (
+    PUSH_REGISTRATION_LIVENESS_TIMEOUT,
     HostnameAlreadyInUseBouncerError,
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
     send_android_push_notification,
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
+    validate_token,
 )
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.rate_limiter import rate_limit_endpoint_absolute
@@ -63,7 +75,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.typed_endpoint import (
     ApnsAppId,
     JsonBodyPayload,
@@ -74,8 +86,7 @@ from zerver.lib.typed_endpoint import (
 from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import DisposableEmailError
-from zerver.views.push_notifications import validate_token
+from zerver.models.realms import DisposableEmailError, Realm
 from zilencer.auth import (
     InvalidZulipServerKeyError,
     generate_registration_transfer_verification_secret,
@@ -84,6 +95,7 @@ from zilencer.auth import (
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteInstallationCount,
+    RemotePushDevice,
     RemotePushDeviceToken,
     RemoteRealm,
     RemoteRealmAuditLog,
@@ -473,6 +485,102 @@ def register_remote_push_device(
     )
 
     return json_success(request)
+
+
+def do_register_remote_push_device(
+    bouncer_public_key: str,
+    encrypted_push_registration: str,
+    push_account_id: int,
+    *,
+    realm: Realm | None = None,
+    remote_realm: RemoteRealm | None = None,
+) -> int:
+    assert settings.PUSH_REGISTRATION_ENCRYPTION_KEYS
+    if bouncer_public_key not in settings.PUSH_REGISTRATION_ENCRYPTION_KEYS:
+        raise MissingBouncerPublicKeyError
+
+    # Decrypt push_registration
+    bouncer_private_key: str = settings.PUSH_REGISTRATION_ENCRYPTION_KEYS[bouncer_public_key]
+    private_key = PrivateKey(bouncer_private_key.encode("utf-8"), encoder=Base64Encoder)
+    unseal_box = SealedBox(private_key)
+
+    try:
+        push_registration_bytes = unseal_box.decrypt(
+            Base64Encoder.decode(encrypted_push_registration.encode("utf-8"))
+        )
+        push_registration = orjson.loads(push_registration_bytes.decode("utf-8"))
+
+        token = push_registration["token"]
+        token_kind = push_registration["token_kind"]
+        validate_token(token, token_kind)
+        # TODO: Add validation for ios_app_id and timestamp
+        ios_app_id = (
+            push_registration["ios_app_id"]
+            if token_kind == RemotePushDevice.TokenKind.APNS
+            else None
+        )
+        timestamp = push_registration["timestamp"]
+    except (TypeError, CryptoError, orjson.JSONDecodeError, KeyError, JsonableError):
+        # TypeError, CryptoError is raised by `unseal_box.decrypt()`.
+        # TODO: Log the actual error.
+        raise PushRegistrationDecodeError
+
+    if datetime_to_timestamp(timezone_now()) - timestamp > PUSH_REGISTRATION_LIVENESS_TIMEOUT:
+        raise PushRegistrationLifespanExceededError
+
+    # If already registered
+    remote_push_device = RemotePushDevice.objects.filter(
+        token=token, push_account_id=push_account_id
+    ).first()
+    if remote_push_device:
+        return remote_push_device.device_id
+
+    assert (realm is None) ^ (remote_realm is None)
+
+    remote_push_device = RemotePushDevice.objects.create(
+        realm=realm,
+        remote_realm=remote_realm,
+        token=token,
+        token_kind=token_kind,
+        push_account_id=push_account_id,
+        ios_app_id=ios_app_id,
+    )
+    return remote_push_device.device_id
+
+
+@typed_endpoint
+def register_remote_push_device_for_e2ee_push_notification(
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    *,
+    user_uuid: str,
+    realm_uuid: str,
+    push_account_id: Json[int],
+    encrypted_push_registration: str,
+    bouncer_public_key: str,
+) -> HttpResponse:
+    remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+    if remote_realm is None:
+        raise MissingRemoteRealmError
+    else:
+        remote_realm.last_request_datetime = timezone_now()
+        remote_realm.save(update_fields=["last_request_datetime"])
+
+    try:
+        device_id = do_register_remote_push_device(
+            bouncer_public_key,
+            encrypted_push_registration,
+            push_account_id,
+            remote_realm=remote_realm,
+        )
+    except MissingBouncerPublicKeyError:
+        raise InvalidBouncerPublicKeyError
+    except PushRegistrationDecodeError:
+        raise InvalidEncryptedPushRegistrationError
+    except PushRegistrationLifespanExceededError:
+        raise PushRegistrationLivenessTimedOutError
+
+    return json_success(request, {"device_id": device_id})
 
 
 @typed_endpoint

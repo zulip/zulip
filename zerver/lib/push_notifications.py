@@ -9,7 +9,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from email.headerregistry import Address
 from functools import cache
-from typing import TYPE_CHECKING, Any, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypeAlias, Union
 
 import lxml.html
 import orjson
@@ -25,7 +25,7 @@ from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import initialize_app as firebase_initialize_app
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
-from typing_extensions import override
+from typing_extensions import TypedDict, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (
@@ -54,6 +54,7 @@ from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
     Message,
+    PushDevice,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -83,6 +84,20 @@ def b64_to_hex(data: str) -> str:
 
 def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
+
+
+PUSH_REGISTRATION_LIVENESS_TIMEOUT = 24 * 60 * 60
+
+
+def validate_token(token_str: str, kind: int) -> None:
+    if token_str == "" or len(token_str) > 4096:
+        raise JsonableError(_("Empty or invalid length token"))
+    if kind == PushDeviceToken.APNS:
+        # Validate that we can actually decode the token.
+        try:
+            b64_to_hex(token_str)
+        except Exception:
+            raise JsonableError(_("Invalid APNS token"))
 
 
 def get_message_stream_name_from_database(message: Message) -> str:
@@ -1554,3 +1569,24 @@ class HostnameAlreadyInUseBouncerError(JsonableError):
         # This message is not read by any of the client apps, just potentially displayed
         # via server administration tools, so it doesn't need translations.
         return "A server with hostname {hostname} already exists"
+
+
+class PushAccountRegistrationStatusDict(TypedDict):
+    push_account_id: int
+    status: Literal["active", "pending"]
+
+
+def get_push_accounts_registration_statuses(
+    user_profile: UserProfile,
+) -> list[PushAccountRegistrationStatusDict]:
+    rows = PushDevice.objects.filter(user=user_profile).values(
+        "push_account_id", "bouncer_device_id"
+    )
+
+    return [
+        {
+            "push_account_id": row["push_account_id"],
+            "status": "pending" if row["bouncer_device_id"] is None else "active",
+        }
+        for row in rows
+    ]
