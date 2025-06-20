@@ -3,10 +3,10 @@ import $ from "jquery";
 import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.hbs";
 
 import * as channel from "./channel.ts";
-import * as people from "./people.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
+import * as people from "./people.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as upload_widget from "./upload_widget.ts";

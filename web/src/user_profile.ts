@@ -18,6 +18,7 @@ import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
 import * as avatar from "./avatar.ts";
+import {display_avatar_upload_complete, display_avatar_upload_started} from "./avatar_upload.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -64,7 +65,6 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 import * as util from "./util.ts";
-import {display_avatar_upload_complete, display_avatar_upload_started} from "./settings_account.ts";
 
 export type CustomProfileFieldData = {
     id: number;
@@ -1233,7 +1233,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
 
         // Create FormData object
         const formData = new FormData();
-        formData.append("full_name", $full_name.val() as string);
+        formData.append("full_name", $full_name.val()?.toString() ?? "");
         formData.append("role", JSON.stringify(role));
         formData.append("profile_data", JSON.stringify(profile_data));
 

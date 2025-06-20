@@ -9,6 +9,7 @@ import render_settings_api_key_modal from "../templates/settings/api_key_modal.h
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar.ts";
+import {display_avatar_upload_complete, display_avatar_upload_started} from "./avatar_upload.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import {csrf_token} from "./csrf.ts";
@@ -91,27 +92,6 @@ export function update_email_change_display(): void {
         $("#email_field_container").removeClass("disabled_setting_tooltip");
         $("label[for='change_email_button']").removeClass("cursor-text");
     }
-}
-
-export function display_avatar_upload_complete(
-    $container: JQuery = $("#user-avatar-upload-widget").parent(),
-): void {
-    $container
-        .find("#user-avatar-upload-widget .upload-spinner-background")
-        .css({visibility: "hidden"});
-    $container.find("#user-avatar-upload-widget .image-upload-text").show();
-    $container.find("#user-avatar-upload-widget .image-delete-button").show();
-}
-
-export function display_avatar_upload_started(
-    $container: JQuery = $("#user-avatar-upload-widget").parent(),
-): void {
-    $container.find("#user-avatar-source").hide();
-    $container
-        .find("#user-avatar-upload-widget .upload-spinner-background")
-        .css({visibility: "visible"});
-    $container.find("#user-avatar-upload-widget .image-upload-text").hide();
-    $container.find("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
 function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
