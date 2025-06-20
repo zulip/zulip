@@ -408,6 +408,28 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
     return body
 
 
+def get_deployment_event_body(payload: WildValue, include_title: bool) -> str:
+    user_text = (
+        f"[{payload['user']['name'].tame(check_string)}]({payload['user_url'].tame(check_string)})"
+    )
+
+    deployment_status = payload["status"].tame(check_string)
+    deployable_url = payload.get("deployable_url", "").tame(check_string)
+    deployment_text = f"[deployment]({deployable_url})" if deployable_url else "deployment"
+
+    commit_title = payload["commit_title"].tame(check_string)
+    commit_url = payload["commit_url"].tame(check_string)
+
+    deployment_event_body_map = {
+        "running": f"{user_text} created a new {deployment_text} : [{commit_title}]({commit_url}).",
+        "success": f"The {deployment_text} was successful.",
+        "failed": f"The {deployment_text} failed.",
+        "canceled": f"The {deployment_text} was canceled.",
+    }
+
+    return deployment_event_body_map[deployment_status]
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -495,6 +517,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
+    "Deployment Hook": get_deployment_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -602,6 +625,11 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             type="snippet",
             id=payload["snippet"]["id"].tame(check_int),
             title=payload["snippet"]["title"].tame(check_string),
+        )
+    elif event == "Deployment Hook":
+        return "{} / {}".format(
+            get_repo_name(payload),
+            payload["environment"].tame(check_string),
         )
     return get_repo_name(payload)
 
