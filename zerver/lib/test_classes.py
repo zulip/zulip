@@ -2284,7 +2284,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         )
 
 
-def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
+def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
@@ -2292,8 +2292,8 @@ def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
         table_name = model._meta.db_table
         if table_name in ignored_tables:
             continue
-        ids = model._default_manager.all().values_list("id", flat=True)
-        yield table_name, set(ids)
+        pks = model._default_manager.all().values_list("pk", flat=True)
+        yield table_name, set(pks)
 
 
 class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
@@ -2321,7 +2321,7 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.models_ids_set = dict(get_row_ids_in_all_tables())
+        self.models_pks_set = dict(get_row_pks_in_all_tables())
 
     @override
     def tearDown(self) -> None:
@@ -2331,11 +2331,11 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
         test database.
         """
         super().tearDown()
-        for table_name, ids in get_row_ids_in_all_tables():
+        for table_name, pks in get_row_pks_in_all_tables():
             self.assertSetEqual(
-                self.models_ids_set[table_name],
-                ids,
-                f"{table_name} got a different set of ids after this test",
+                self.models_pks_set[table_name],
+                pks,
+                f"{table_name} got a different set of primary key values after this test",
             )
 
     def _fixture_teardown(self) -> None:
