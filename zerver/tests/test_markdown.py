@@ -625,7 +625,7 @@ class MarkdownFixtureTest(ZulipTestCase):
                     # Create a userprofile and send message with it.
                     user_profile = self.example_user("othello")
                     do_change_user_setting(
-                        user_profile, "translate_emoticons", True, acting_user=None
+                        [user_profile], "translate_emoticons", True, acting_user=None
                     )
                     msg = Message(
                         sender=user_profile,
@@ -1296,7 +1296,7 @@ class MarkdownEmojiTest(ZulipTestCase):
 
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user("othello")
-        do_change_user_setting(user_profile, "translate_emoticons", False, acting_user=None)
+        do_change_user_setting([user_profile], "translate_emoticons", False, acting_user=None)
         msg = Message(
             sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
         )

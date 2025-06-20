@@ -908,19 +908,19 @@ class Command(ZulipBaseCommand):
             # does not increase the number of events and db queries while running tests.
             for user in user_profiles:
                 do_change_user_setting(
-                    user,
+                    [user],
                     "automatically_follow_topics_policy",
                     UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
                     acting_user=None,
                 )
                 do_change_user_setting(
-                    user,
+                    [user],
                     "automatically_unmute_topics_in_muted_streams_policy",
                     UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
                     acting_user=None,
                 )
                 do_change_user_setting(
-                    user,
+                    [user],
                     "automatically_follow_topics_where_mentioned",
                     False,
                     acting_user=None,

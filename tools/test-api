@@ -88,7 +88,7 @@ with test_server_running(
     realm = get_realm("zulip")
     user = get_user(email, realm)
 
-    do_change_user_setting(user, "allow_private_data_export", True, acting_user=user)
+    do_change_user_setting([user], "allow_private_data_export", True, acting_user=user)
 
     api_key = user.api_key
     site = "http://zulip.zulipdev.com:9981"
