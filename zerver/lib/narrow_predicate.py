@@ -63,7 +63,8 @@ def build_narrow_predicate(
             elif operator == "is" and operand == "unread":
                 if "read" in flags:
                     return False
-            elif operator == "is" and operand in ["alerted", "mentioned"]:
+            elif operator == "is" and operand in ["alerted", "mentioned", "watched"]:
+                # "is:alerted" is a legacy alias for "is:watched"
                 if "mentioned" not in flags:
                     return False
             elif operator == "is" and operand == "resolved":

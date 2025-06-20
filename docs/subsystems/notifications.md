@@ -29,7 +29,7 @@ as follows:
 - `do_send_messages` is the synchronous message-sending code path,
   and passing the following data in its `send_event_on_commit` call:
   - Data about the message's content (e.g., mentions, wildcard
-    mentions, and alert words) and encodes it into the `UserMessage`
+    mentions, and watched phrases) and encodes it into the `UserMessage`
     table's `flags` structure, which is in turn passed into
     `send_event_on_commit` for each user receiving the message.
   - Data about user configuration relevant to the message, such as
