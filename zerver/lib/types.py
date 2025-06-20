@@ -348,6 +348,21 @@ class GroupPermissionSetting:
     allow_nobody_group: bool
     allow_everyone_group: bool
     default_group_name: str
+
+    # When the group that a permission setting is set to is deactivated,
+    # the setting's value needs to be replaced with a different group.
+    # In this field, we specify what group to use as the new setting value.
+    # Thus this is similar to default_group_name.
+    # The key difference is that default_group_name itself is not the correct
+    # value to use here, as using it might grant the permission to too many users.
+    #
+    # In most cases this will simply be set to SystemGroups.NOBODY, but there are
+    # some permissions for which it's not an acceptable value.
+    # Additionally, this can be set to None for permissions such that it's impossible
+    # for their group be deactivated. This is the case for permissions which can only
+    # be set to system groups.
+    replacement_group_name: str | None
+
     default_for_system_groups: str | None = None
     allowed_system_groups: list[str] = field(default_factory=list)
 
