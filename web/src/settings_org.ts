@@ -493,6 +493,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
                 settings_components.realm_authentication_methods_to_boolean_dict(),
             );
             break;
+        case "realm_moderation_request_channel_id":
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
@@ -1135,6 +1136,11 @@ export let init_dropdown_widgets = (): void => {
         return options;
     };
 
+    set_up_dropdown_widget(
+        "realm_moderation_request_channel_id",
+        notification_stream_options,
+        "channel",
+    );
     set_up_dropdown_widget(
         "realm_new_stream_announcements_stream_id",
         notification_stream_options,
