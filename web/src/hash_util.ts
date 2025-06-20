@@ -61,7 +61,8 @@ export function decode_operand(operator: string, operand: string): string {
         operator === "dm-including" ||
         operator === "dm" ||
         operator === "sender" ||
-        operator === "pm-with"
+        operator === "pm-with" ||
+        operator === "mentions"
     ) {
         const emails = people.slug_to_emails(operand);
         if (emails) {
