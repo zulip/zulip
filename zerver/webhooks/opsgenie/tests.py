@@ -138,6 +138,24 @@ class OpsgenieHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_create_alert_with_eu_region(self) -> None:
+        expected_topic_name = "Webhook"
+        expected_message = """
+[Opsgenie alert for Webhook](https://app.eu.opsgenie.com/alert/V2#/show/ec03dad6-62c8-4c94-b38b-d88f398e900f):
+* **Type**: Create
+* **Message**: another alert
+* **Tags**: `vip`
+""".strip()
+
+        self.check_webhook(
+            "create",
+            expected_topic_name,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+            extra_query="?region=eu",
+        )
+
+
     def test_customaction_alert(self) -> None:
         expected_topic_name = "Integration1"
         expected_message = """
