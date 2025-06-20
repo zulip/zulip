@@ -169,6 +169,31 @@ def send_stream_creation_event(
     send_event_on_commit(realm, event, user_ids)
 
 
+def check_channel_creation_permissions(
+    user_profile: UserProfile, stream_dict: StreamDict, is_default_stream: bool
+) -> None:
+    invite_only = stream_dict.get("invite_only", False)
+    if invite_only and not user_profile.can_create_private_streams():
+        raise JsonableError(_("Insufficient permission"))
+    if not invite_only and not user_profile.can_create_public_streams():
+        raise JsonableError(_("Insufficient permission"))
+    if is_default_stream and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
+    if invite_only and is_default_stream:
+        raise JsonableError(_("A default channel cannot be private."))
+    if stream_dict["is_web_public"]:
+        if not user_profile.realm.web_public_streams_enabled():
+            raise JsonableError(_("Web-public channels are not enabled."))
+        if not user_profile.can_create_web_public_streams():
+            # We set can_create_web_public_channel_group to allow only organization
+            # owners to create web-public streams, because of their sensitive nature.
+            raise JsonableError(_("Insufficient permission"))
+    if stream_dict.get("message_retention_days", None) is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequiredError
+        user_profile.realm.ensure_not_on_limited_plan()
+
+
 def get_stream_permission_default_group(
     setting_name: str,
     system_groups_name_dict: dict[str, NamedUserGroup],
@@ -1355,18 +1380,11 @@ def list_to_streams(
     ):
         raise JsonableError(_("Insufficient permission"))
 
-    message_retention_days_not_none = False
-    web_public_stream_requested = False
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
-            if stream_dict.get("message_retention_days", None) is not None:
-                message_retention_days_not_none = True
             missing_stream_dicts.append(stream_dict)
-
-            if autocreate and stream_dict["is_web_public"]:
-                web_public_stream_requested = True
         else:
             existing_streams.append(stream)
 
@@ -1375,18 +1393,6 @@ def list_to_streams(
         # streams to exist already.
         created_streams: list[Stream] = []
     else:
-        # autocreate=True path starts here
-        for stream_dict in missing_stream_dicts:
-            invite_only = stream_dict.get("invite_only", False)
-            if invite_only and not user_profile.can_create_private_streams():
-                raise JsonableError(_("Insufficient permission"))
-            if not invite_only and not user_profile.can_create_public_streams():
-                raise JsonableError(_("Insufficient permission"))
-            if is_default_stream and not user_profile.is_realm_admin:
-                raise JsonableError(_("Insufficient permission"))
-            if invite_only and is_default_stream:
-                raise JsonableError(_("A default channel cannot be private."))
-
         if not autocreate:
             raise JsonableError(
                 _("Channel(s) ({channel_names}) do not exist").format(
@@ -1395,20 +1401,9 @@ def list_to_streams(
                     ),
                 )
             )
-
-        if web_public_stream_requested:
-            if not user_profile.realm.web_public_streams_enabled():
-                raise JsonableError(_("Web-public channels are not enabled."))
-            if not user_profile.can_create_web_public_streams():
-                # We set can_create_web_public_channel_group to allow only organization
-                # owners to create web-public streams, because of their sensitive nature.
-                raise JsonableError(_("Insufficient permission"))
-
-        if message_retention_days_not_none:
-            if not user_profile.is_realm_owner:
-                raise OrganizationOwnerRequiredError
-
-            user_profile.realm.ensure_not_on_limited_plan()
+        # autocreate=True path starts here
+        for stream_dict in missing_stream_dicts:
+            check_channel_creation_permissions(user_profile, stream_dict, is_default_stream)
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
