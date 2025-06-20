@@ -246,6 +246,7 @@ export class Typeahead<ItemType extends string | object> {
     shown = false;
     // To trigger updater when Esc is pressed only during the stream topic typeahead in composebox.
     select_on_escape_condition: () => boolean;
+    on_hidden_tippy_callback: (() => void) | undefined;
     openInputFieldOnKeyUp: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
@@ -293,6 +294,7 @@ export class Typeahead<ItemType extends string | object> {
         this.dropup = options.dropup ?? false;
         this.automated = options.automated ?? (() => false);
         this.trigger_selection = options.trigger_selection ?? (() => false);
+        this.on_hidden_tippy_callback = options.on_hidden_tippy_callback;
         this.on_escape = options.on_escape;
         // return a string to show in typeahead footer or false.
         this.footer_html = options.footer_html ?? (() => false);
@@ -465,6 +467,11 @@ export class Typeahead<ItemType extends string | object> {
                         // the placement of typeahead.
                         void instance.popperInstance?.update();
                     });
+                },
+                onHidden: () => {
+                    if (this.on_hidden_tippy_callback) {
+                        this.on_hidden_tippy_callback();
+                    }
                 },
             });
         }
@@ -907,6 +914,7 @@ type TypeaheadOptions<ItemType> = {
     hideOnEmptyAfterBackspace?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;
     on_escape?: () => void;
+    on_hidden_tippy_callback?: () => void;
     openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
     non_tippy_parent_element?: string;
