@@ -17,6 +17,7 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import build_message_edit_request, do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
@@ -217,6 +218,55 @@ class NarrowBuilderTest(ZulipTestCase):
         # Number of recipient ids will increase by 1 and not 3
         self._do_add_term_test(
             term,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
+    def test_add_term_using_channels_operator_and_archived_operand(self) -> None:
+        term = NarrowParameter(operator="channels", operand="archived")
+        term_negated = NarrowParameter(operator="channels", operand="archived", negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+        self._do_add_term_test(
+            term_negated,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "public-channel",
+                "description": "Public channel with public history",
+            },
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+        ]
+        realm = get_realm("zulip")
+        created, existing = create_streams_if_needed(realm, channel_dicts)
+        self.assert_length(created, 3)
+        self.assert_length(existing, 0)
+
+        # Archive the streams in the created list
+        for archived_stream in created:
+            do_deactivate_stream(archived_stream, acting_user=None)
+
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+        self._do_add_term_test(
+            term_negated,
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
@@ -1106,6 +1156,9 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="channels", operand="public")])
         )
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="channels", operand="archived")])
+        )
 
         # "is:private" is a legacy alias for "is:dm".
         self.assertFalse(
@@ -1138,6 +1191,9 @@ class NarrowLibraryTest(ZulipTestCase):
         # "streams" is a legacy alias for "channels" operator
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="streams", operand="public")])
+        )
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="streams", operand="archived")])
         )
 
 
@@ -1188,6 +1244,12 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
+
+        # channels:archived should not include history
+        narrow = [
+            NarrowParameter(operator="channels", operand="archived"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # History doesn't apply to direct messages.
         narrow = [
