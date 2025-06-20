@@ -120,6 +120,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to the conversation you are composing to**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 
+* **Go to a list of topics for the current channel**: <kbd>L</kbd>
+
 ## Composing messages
 
 * **New channel message**: <kbd>C</kbd> — For starting a new topic in a

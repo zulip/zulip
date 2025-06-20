@@ -20,6 +20,11 @@ overview if you like reading your messages one channel at a time.
    the list of topics when done (e.g., by using the **back** button in your
    browser or desktop app) to select the next conversation.
 
+!!! keyboard_tip ""
+
+    You can also go to list of topic for a channel from feed or for a selected
+    message using the <kbd>L</kbd> shortcut.
+
 {tab|mobile}
 
 {!mobile-channels.md!}
