@@ -1552,8 +1552,8 @@ def check_update_message(
                 raise TopicWildcardMentionNotAllowedError
 
         if rendering_result.mentions_user_group_ids:
-            mentioned_group_ids = list(rendering_result.mentions_user_group_ids)
-            check_user_group_mention_allowed(user_profile, mentioned_group_ids)
+            mentioned_group_ids = rendering_result.mentions_user_group_ids
+            check_user_group_mention_allowed(mentioned_group_ids, mention_data)
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
         if message_edit_request.is_stream_edited:
