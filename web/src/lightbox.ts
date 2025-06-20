@@ -34,9 +34,10 @@ type Media = {
 let is_open = false;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
-// being looked up multiple times.  It is keyed by the asset's "canonical URL," which is likely the
-// `src` used in the message feed, but for thumbnailed images is the full-resolution original URL.
-const asset_map = new Map<string, Media>();
+// being looked up multiple times.  It is keyed by the message id and asset's "canonical URL,"
+// which is likely the `src` used in the message feed, but for thumbnailed images is the
+// full-resolution original URL.
+const asset_map = new Map<number, Map<string, Media>>();
 
 export class PanZoomControl {
     // Class for both initializing and controlling the
@@ -209,6 +210,10 @@ export class PanZoomControl {
 export function clear_for_testing(): void {
     is_open = false;
     asset_map.clear();
+}
+
+export function invalidate_asset_map_of_message(message_id: number): void {
+    asset_map.delete(message_id);
 }
 
 function set_selected_media_element($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
@@ -479,10 +484,11 @@ function supports_heic(): boolean {
 
 // retrieve the metadata from the DOM and store into the asset_map.
 export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Media {
+    const message_id = rows.get_message_id(media);
     const canonical_url = canonical_url_of_media(media);
-    if (asset_map.has(canonical_url)) {
+    if (asset_map.has(message_id) && asset_map.get(message_id)?.has(canonical_url)) {
         // Use the cached value
-        const payload = asset_map.get(canonical_url);
+        const payload = asset_map.get(message_id)!.get(canonical_url);
         assert(payload !== undefined);
         return payload;
     }
@@ -561,7 +567,6 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     if (is_compose_preview_media) {
         sender_full_name = people.my_full_name();
     } else {
-        const message_id = rows.get_message_id(media);
         const message = message_store.get(message_id);
         if (message === undefined) {
             blueslip.error("Lightbox for unknown message", {message_id});
@@ -582,7 +587,10 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     };
 
     if (!is_loading_placeholder && canonical_url !== "") {
-        asset_map.set(canonical_url, payload);
+        if (!asset_map.has(message_id)) {
+            asset_map.set(message_id, new Map<string, Media>());
+        }
+        asset_map.get(message_id)!.set(canonical_url, payload);
     }
     return payload;
 }
