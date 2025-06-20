@@ -155,7 +155,6 @@ class OpsgenieHookTests(WebhookTestCase):
             extra_query="?region=eu",
         )
 
-
     def test_customaction_alert(self) -> None:
         expected_topic_name = "Integration1"
         expected_message = """
