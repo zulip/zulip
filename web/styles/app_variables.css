@@ -523,8 +523,8 @@
     }
 
     /* Compose-specific transitions and delays. */
-    --compose-muted-recipient-row-transition-delay: 100ms;
-    --compose-muted-recipient-row-transition: 150ms ease;
+    --compose-recipient-row-transition-delay: 100ms;
+    --compose-recipient-row-transition: 150ms ease;
 
     /*
     User group info popover elements and values.
@@ -1825,7 +1825,7 @@
         hsl(237deg 68% 94% / 50%),
         hsl(240deg 65% 60% / 60%)
     );
-    --color-outline-muted-input-pill: light-dark(
+    --color-outline-low-attention-input-pill: light-dark(
         hsl(237deg 68% 88%),
         hsl(240deg 65% 60% / 22%)
     );
