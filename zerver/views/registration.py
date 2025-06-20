@@ -1243,6 +1243,193 @@ def realm_import_post_process(
     )
 
 
+@typed_endpoint
+def realm_import_status(
+    request: HttpRequest,
+    *,
+    confirmation_key: str,
+) -> HttpResponse:  # nocoverage
+    try:
+        preregistration_realm = get_object_from_key(
+            confirmation_key,
+            [Confirmation.REALM_CREATION],
+            mark_object_used=False,
+            allow_used=True,
+        )
+    except ConfirmationKeyError:
+        raise JsonableError(_("Unauthenticated"))
+
+    assert isinstance(preregistration_realm, PreregistrationRealm)
+    try:
+        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+    except Realm.DoesNotExist:
+        # TODO: Either store the path to the temporary conversion directory on
+        # preregistration_realm.data_import_metadata, or have the conversion
+        # process support writing updates to this for a better progress indicator.
+        return json_success(request, {"status": _("Converting Slack data…")})
+
+    if realm.deactivated:
+        # These "if" cases are in the inverse order than they're done
+        # in the import process, so we get the latest step that it's
+        # on.
+        if Message.objects.filter(realm_id=realm.id).exists():
+            return json_success(request, {"status": _("Importing messages…")})
+        try:
+            next(all_message_attachments(prefix=f"{realm.id}/"))
+            return json_success(request, {"status": _("Importing attachment data…")})
+        except StopIteration:
+            pass
+        return json_success(request, {"status": _("Importing converted Slack data…")})
+
+    if (
+        not preregistration_realm.data_import_metadata["need_select_realm_owner"]
+        and preregistration_realm.created_realm is None
+    ):
+        return json_success(request, {"status": _("Finalizing import…")})
+
+    # We have a non-deactivated realm and it's linked to the prereg key
+    result = {"status": _("Done!")}
+    if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
+        importing_user = get_user_by_delivery_email(preregistration_realm.email, realm)
+        # Sanity check that this is a normal user account that can login.
+        assert (
+            importing_user.is_active
+            and not importing_user.is_bot
+            and not importing_user.is_mirror_dummy
+        )
+
+        # Allow setting an initial password for this first account,
+        # being careful to ensure this data import confirmation link
+        # can't be abused to reset the importing user's password in
+        # the future.
+        if (
+            not importing_user.has_usable_password()
+            and not RealmAuditLog.objects.filter(
+                modified_user=importing_user, event_type=AuditLogEventType.USER_PASSWORD_CHANGED
+            ).exists()
+        ):
+            result["redirect"] = generate_password_reset_url(
+                importing_user, default_token_generator
+            )
+        else:
+            result["redirect"] = get_safe_redirect_to(reverse("login"), realm.url)
+    else:
+        # The email address in the import may not match the email
+        # address they provided. Ask user which user they want to become.
+        result["status"] = _("No users matching provided email.")
+        result["redirect"] = reverse(
+            "realm_import_post_process", kwargs={"confirmation_key": confirmation_key}
+        )
+
+    return json_success(request, result)
+
+
+@transaction.atomic(durable=True)
+def realm_import_post_process(
+    request: HttpRequest,
+    confirmation_key: str,
+) -> HttpResponse:
+    try:
+        preregistration_realm = get_object_from_key(
+            confirmation_key,
+            [Confirmation.REALM_CREATION],
+            mark_object_used=False,
+            allow_used=True,
+        )
+    except ConfirmationKeyError as exception:
+        return render_confirmation_key_error(request, exception)
+
+    assert isinstance(preregistration_realm, PreregistrationRealm)
+    try:
+        realm = Realm.objects.get(string_id=preregistration_realm.string_id)
+    except Realm.DoesNotExist:
+        # If we cannot find the realm, likely means there was
+        # something wrong with the import process, or it has been
+        # since deleted. Revoke the confirmation key to force user to
+        # restart the process.
+        preregistration_realm.status = confirmation_settings.STATUS_REVOKED
+        preregistration_realm.save(update_fields=["status"])
+
+        return render_confirmation_key_error(
+            request, ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
+        )
+
+    if not preregistration_realm.data_import_metadata["need_select_realm_owner"]:
+        return HttpResponseRedirect(get_safe_redirect_to(reverse("login"), realm.url))
+
+    if request.method == "POST":
+        form = ImportRealmOwnerSelectionForm(request.POST)
+        if form.is_valid():
+            # This is a highly sensitive code path, since what we're
+            # about to do is take control of another user account AND
+            # promote that account to organization owner.
+            #
+            # We need this code path for Slack import if the importing
+            # user's account doesn't exist in the Slack import, but we
+            # must be VERY careful to make sure we're in that situation.
+
+            # Validate that this PreregistrationRealm object is in the
+            # expected state, with no user matching the email address,
+            # and and having created this realm.
+            assert preregistration_realm.data_import_metadata["need_select_realm_owner"]
+            assert preregistration_realm.created_realm_id == realm.id
+            assert preregistration_realm.status != confirmation_settings.STATUS_USED
+
+            # ID of the imported user account that the importing user has
+            # selected to become their account.
+            user_id = form.cleaned_data["user_id"]
+
+            # Validate that a normal user account that can login was selected.
+            importing_user = get_user_profile_by_id_in_realm(user_id, realm)
+            assert (
+                importing_user.is_active
+                and not importing_user.is_bot
+                and not importing_user.is_mirror_dummy
+            )
+
+            # Promote to realm owner and set email address to what
+            # we've validated. This is safe because we've previously
+            # validated that this specific confirmation link was used
+            # to create this specific realm and cannot have been used
+            # to finish creating an account yet.
+            do_change_user_role(
+                importing_user, UserProfile.ROLE_REALM_OWNER, acting_user=importing_user
+            )
+            do_change_user_delivery_email(
+                importing_user, preregistration_realm.email, acting_user=importing_user
+            )
+
+            preregistration_realm.status = confirmation_settings.STATUS_USED
+            preregistration_realm.data_import_metadata["need_select_realm_owner"] = False
+            preregistration_realm.save()
+
+            # End by letting the importing user set a password for their new account.
+            assert (
+                not importing_user.has_usable_password()
+                and not RealmAuditLog.objects.filter(
+                    modified_user=importing_user, event_type=AuditLogEventType.USER_PASSWORD_CHANGED
+                ).exists()
+            )
+            return HttpResponseRedirect(
+                generate_password_reset_url(importing_user, default_token_generator)
+            )
+
+    claimable_users = UserProfile.objects.filter(
+        realm=realm, is_active=True, is_bot=False, is_mirror_dummy=False
+    )
+    context = {
+        "users": claimable_users,
+        "verified_email": preregistration_realm.email,
+        "key": confirmation_key,
+    }
+
+    return TemplateResponse(
+        request,
+        "zerver/realm_import_post_process.html",
+        context,
+    )
+
+
 @add_google_analytics
 def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpResponse:
     try:

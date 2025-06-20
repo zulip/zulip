@@ -6,7 +6,7 @@ import render_message_view_header from "../templates/message_view_header.hbs";
 
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";

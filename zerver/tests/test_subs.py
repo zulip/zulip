@@ -1295,6 +1295,7 @@ class StreamAdminTest(ZulipTestCase):
     def test_unarchive_stream(self) -> None:
         iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
+        self.login_user(iago)
 
         stream = self.make_stream("new_stream", is_web_public=True)
         was_invite_only = stream.invite_only
