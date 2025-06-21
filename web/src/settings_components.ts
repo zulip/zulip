@@ -29,6 +29,7 @@ import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import {
     type StreamPermissionGroupSetting,
     stream_permission_group_settings_schema,
@@ -1461,6 +1462,21 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const $save_button = $subsection_elem.find(".save-button");
 
+    const topics_policy_value = $("#id_topics_policy").val();
+    const $settings_container = $subsection_elem.closest(".subscription_settings");
+    const stream_id_string = $settings_container.attr("data-stream-id");
+    if (
+        stream_id_string &&
+        topics_policy_value ===
+            settings_config.get_stream_topics_policy_values().disable_topics.code &&
+        stream_topic_history.stream_has_named_topics(Number.parseInt(stream_id_string, 10))
+    ) {
+        $("#topics-policy-error").show();
+        $save_button.prop("disabled", true);
+        return;
+    }
+    $("#topics-policy-error").hide();
+
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
     if (
         time_limit_settings.length > 0 &&
@@ -1562,6 +1578,8 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_leave_group", null],
     ["can_manage_group", null],
     ["can_mention_group", null],
+    ["can_move_messages_out_of_channel_group", null],
+    ["can_move_messages_within_channel_group", null],
     ["can_remove_members_group", null],
     ["can_remove_subscribers_group", null],
     ["can_send_message_group", null],

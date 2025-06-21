@@ -765,7 +765,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
     $("#compose_banners .topic_resolved").length = 0;
-    override(realm, "realm_can_move_messages_between_topics_group", everyone.id);
+    override(realm, "realm_can_resolve_topics_group", everyone.id);
 
     let error_shown = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -784,6 +784,9 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     const sub = {
         stream_id: 111,
         name: "random",
+        can_administer_channel_group: nobody.id,
+        can_move_messages_out_of_channel_group: nobody.id,
+        can_move_messages_within_channel_group: nobody.id,
     };
     stream_data.add_sub(sub);
 

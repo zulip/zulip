@@ -27,6 +27,7 @@ class StreamTopicsPolicyEnum(Enum):
     inherit = 1
     allow_empty_topic = 2
     disable_empty_topic = 3
+    disable_topics = 4
 
 
 class Stream(models.Model):
@@ -146,6 +147,12 @@ class Stream(models.Model):
     can_administer_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_move_messages_out_of_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_move_messages_within_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
     can_send_message_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
@@ -178,6 +185,20 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="stream_creator_or_nobody",
+        ),
+        "can_move_messages_out_of_channel_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_move_messages_within_channel_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
         ),
         "can_remove_subscribers_group": GroupPermissionSetting(
             require_system_group=False,
@@ -261,6 +282,8 @@ class Stream(models.Model):
         "subscriber_count",
         "can_add_subscribers_group_id",
         "can_administer_channel_group_id",
+        "can_move_messages_out_of_channel_group_id",
+        "can_move_messages_within_channel_group_id",
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",

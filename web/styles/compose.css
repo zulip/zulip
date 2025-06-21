@@ -1107,6 +1107,11 @@ textarea.new_message_textarea {
     #recipient_box_clear_topic_button {
         background: none;
         border: none;
+
+        &:disabled {
+            cursor: default;
+            opacity: 1;
+        }
     }
 
     /* Styles for input in the recipient_box */
@@ -1177,6 +1182,11 @@ textarea.new_message_textarea {
     }
 
     #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
+        ~ #recipient_box_clear_topic_button {
+        visibility: hidden;
+    }
+
+    #stream_message_recipient_topic:disabled
         ~ #recipient_box_clear_topic_button {
         visibility: hidden;
     }

@@ -305,6 +305,7 @@ type RealmTopicsPolicyValues = {
 
 type StreamTopicsPolicyValues = {
     inherit: PolicyValue;
+    disable_topics: PolicyValue;
 } & RealmTopicsPolicyValues;
 
 export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
@@ -327,6 +328,7 @@ export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
 
 export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
     const realm_topics_policy_values = get_realm_topics_policy_values();
+    const empty_topic_name = util.get_final_topic_display_name("");
 
     return {
         inherit: {
@@ -334,6 +336,13 @@ export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
             description: $t({defaultMessage: "Automatic"}),
         },
         ...realm_topics_policy_values,
+        disable_topics: {
+            code: "disable_topics",
+            description: $t(
+                {defaultMessage: 'Only "{empty_topic_name}" topic allowed'},
+                {empty_topic_name},
+            ),
+        },
     };
 };
 
@@ -744,6 +753,12 @@ export const all_group_setting_labels = {
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
+        can_move_messages_out_of_channel_group: $t({
+            defaultMessage: "Who can move messages out of this channel",
+        }),
+        can_move_messages_within_channel_group: $t({
+            defaultMessage: "Who can move messages inside this channel",
+        }),
         can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
         can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
         can_subscribe_group: $t({defaultMessage: "Who can subscribe to this channel"}),
@@ -840,6 +855,8 @@ export const owner_editable_realm_group_permission_settings = new Set([
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_send_message_group",
     "can_administer_channel_group",
+    "can_move_messages_out_of_channel_group",
+    "can_move_messages_within_channel_group",
     "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
