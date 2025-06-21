@@ -85,7 +85,7 @@ export const user_schema = z
         role: z.number(),
         timezone: z.string().optional(),
         avatar_url: z.string().nullish(),
-        avatar_source: z.enum(["U", "G", "S"]).optional(), // U=Uploaded, G=Gravatar, S=System
+        avatar_source: z.string(), // U=Uploaded, G=Gravatar, S=System
         avatar_version: z.number(),
         profile_data: z.record(z.coerce.number(), profile_datum_schema).optional(),
         // used for fake user objects.
