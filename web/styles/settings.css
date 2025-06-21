@@ -740,22 +740,23 @@ input[type="checkbox"] {
     }
 }
 
+#edit-user-form .alert-notification.custom-field-status,
+#profile-settings .alert-notification.custom-field-status,
+#profile-settings .alert-notification.full-name-status,
+#profile-settings .alert-notification.timezone-setting-status {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    padding-left: 0;
+    margin-left: 5px;
+    border: none;
+}
+
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
     .timezone-setting-form label {
         min-width: fit-content;
-    }
-
-    .alert-notification.custom-field-status,
-    .alert-notification.full-name-status,
-    .alert-notification.timezone-setting-status {
-        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        padding-left: 0;
-        margin-left: 5px;
-        border: none;
     }
 
     .person_picker {
