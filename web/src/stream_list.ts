@@ -283,14 +283,21 @@ export function build_stream_list(force_rerender: boolean): void {
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
     for (const section of stream_groups.sections) {
+        let plus_icon_url;
+        if (can_create_streams && section.id === "normal-streams") {
+            plus_icon_url = "#channels/new";
+        } else if (
+            can_create_streams &&
+            !["pinned-streams", "dormant-streams"].includes(section.id)
+        ) {
+            plus_icon_url = `#channels/folders/${section.id}/new`;
+        }
         $("#stream_filters").append(
             $(
                 render_stream_list_section_container({
                     id: section.id,
                     section_title: section.section_title,
-                    show_plus_icon:
-                        can_create_streams &&
-                        !["pinned-streams", "dormant-streams"].includes(section.id),
+                    plus_icon_url,
                 }),
             ),
         );
@@ -1066,7 +1073,7 @@ export function initiate_search(): void {
     stream_cursor.reset();
 }
 
-function scroll_stream_into_view($stream_li: JQuery): void {
+export function scroll_stream_into_view($stream_li: JQuery): void {
     const $section_container = $stream_li.closest(".stream-list-section-container");
     const container_selector = $section_container.attr("id")!;
     if (collapsed_sections.has(container_selector)) {

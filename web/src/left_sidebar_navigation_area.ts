@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as channel_folders from "./channel_folders.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import {page_params} from "./page_params.ts";
@@ -78,6 +79,7 @@ export function update_dom_with_unread_counts(
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
     let pinned_unread_count = 0;
+    const folder_unread_counts = new Map<number, number>();
     let normal_unread_count = 0;
     let inactive_unread_count = 0;
 
@@ -86,6 +88,9 @@ export function update_dom_with_unread_counts(
         assert(sub);
         if (sub.pin_to_top) {
             pinned_unread_count += stream_count_info.unmuted_count;
+        } else if (sub.folder_id !== null) {
+            const prev_count = folder_unread_counts.get(sub.folder_id) ?? 0;
+            folder_unread_counts.set(sub.folder_id, prev_count + stream_count_info.unmuted_count);
         } else if (stream_list_sort.has_recent_activity(sub)) {
             normal_unread_count += stream_count_info.unmuted_count;
         } else {
@@ -105,6 +110,14 @@ export function update_dom_with_unread_counts(
         $("#stream-list-dormant-streams-container .heading-markers-and-unreads"),
         inactive_unread_count,
     );
+
+    for (const folder_id of channel_folders.get_channel_folders().map((folder) => folder.id)) {
+        const count = folder_unread_counts.get(folder_id) ?? 0;
+        ui_util.update_unread_count_in_dom(
+            $(`#stream-list-${folder_id}-container .heading-markers-and-unreads`),
+            count,
+        );
+    }
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
