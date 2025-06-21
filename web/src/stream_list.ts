@@ -27,6 +27,7 @@ import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamListSection} from "./stream_list_sort.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
@@ -260,6 +261,15 @@ export function create_initial_sidebar_rows(force_rerender = false): void {
     }
 }
 
+function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
+    if (section.id === "normal-streams") {
+        return "#channels/new";
+    } else if (!["pinned-streams", "dormant-streams"].includes(section.id)) {
+        return `#channels/folders/${section.id}/new`;
+    }
+    return undefined;
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -268,8 +278,7 @@ export function build_stream_list(force_rerender: boolean): void {
     // Within the first two sections, muted streams are sorted to the
     // bottom; we skip that for dormant streams to simplify discovery.
     //
-    // The main logic to build the list is in stream_list_sort.ts, and
-    // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
+    // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
     const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 
@@ -297,9 +306,9 @@ export function build_stream_list(force_rerender: boolean): void {
                 render_stream_list_section_container({
                     id: section.id,
                     section_title: section.section_title,
-                    show_plus_icon:
-                        can_create_streams &&
-                        !["pinned-streams", "dormant-streams"].includes(section.id),
+                    plus_icon_url: can_create_streams
+                        ? get_section_channel_plus_icon_url(section)
+                        : undefined,
                 }),
             ),
         );
@@ -1169,7 +1178,7 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-function scroll_stream_into_view($stream_li: JQuery): void {
+export function scroll_stream_into_view($stream_li: JQuery): void {
     const $section_container = $stream_li.closest(".stream-list-section-container");
     const section_id = $section_container.attr("data-section-id")!;
     if (collapsed_sections.has(section_id)) {
