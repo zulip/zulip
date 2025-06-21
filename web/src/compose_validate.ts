@@ -439,6 +439,17 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     //
     // Pass topic_changed=true if this function was called in response
     // to a topic being edited.
+    const recipient_widget_hidden =
+        $(".compose_select_recipient-dropdown-list-container").length === 0;
+    if (compose_state.get_is_processing_forward_message() && recipient_widget_hidden) {
+        // This is for the case of forwarding a message when the
+        // channel picker is opened. There is a possibility that
+        // this banner might be displayed at the same time the
+        // channel picker is opened. We don't want that situation.
+        // Therefore, we are preventing the display of this
+        // banner when the channel picker is opened.
+        return;
+    }
 
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
