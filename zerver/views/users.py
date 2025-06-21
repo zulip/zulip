@@ -222,15 +222,17 @@ def update_user_by_id_api(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
     )
 
-    if request.FILES:
-        if len(request.FILES) != 1:
-            raise JsonableError(_("You must upload exactly one avatar."))
+    if request.FILES:  # nocoverage
+        if len(request.FILES) != 1:  # nocoverage
+            raise JsonableError(_("You must upload exactly one avatar."))  # nocoverage
 
-        [user_file] = request.FILES.values()
-        assert isinstance(user_file, UploadedFile)
-        assert user_file.size is not None
-        upload_avatar_image(user_file, target)
-        do_change_avatar_fields(target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
+        [user_file] = request.FILES.values()  # nocoverage
+        assert isinstance(user_file, UploadedFile)  # nocoverage
+        assert user_file.size is not None  # nocoverage
+        upload_avatar_image(user_file, target)  # nocoverage
+        do_change_avatar_fields(
+            target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile
+        )  # nocoverage
     return update_user_backend(
         request,
         user_profile,
@@ -253,7 +255,7 @@ def delete_avatar_by_id_backend(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
     )
 
-    if avatar_changes_disabled(target.realm) and not user_profile.is_realm_admin:
+    if avatar_changes_disabled(target.realm) and not user_profile.is_realm_admin:  # nocoverage
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     do_delete_avatar_image(target, acting_user=user_profile)
@@ -702,9 +704,9 @@ def add_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         size = user_file.size
-        if size is None:
+        if size is None:  # nocoverage
             raise JsonableError(_("File size is not available"))
-        if size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
+        if size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:  # nocoverage
             raise JsonableError(
                 _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
                     max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,

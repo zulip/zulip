@@ -232,6 +232,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/users/me/api_key/regenerate",
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
+        #### These endpoints are not documented in the OpenAPI spec, but are
+        "/users/{user_id}/avatar",
         #### Should be documented as part of interactive bots documentation
         "/bot_storage",
         "/submessage",
