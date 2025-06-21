@@ -32,7 +32,6 @@ import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
-import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
@@ -387,7 +386,7 @@ export async function build_move_topic_to_stream_popover(
     // input based on can_move_messages_between_topics_group. In other cases, message object is
     // available and thus we check the time-based permissions as well in the
     // below if block to enable or disable the stream and topic input.
-    let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
+    let disable_stream_input = !stream_data.user_can_move_messages_out_of_channel(stream);
     args.disable_topic_input = !stream_data.user_can_move_messages_within_channel(stream);
 
     let modal_heading;

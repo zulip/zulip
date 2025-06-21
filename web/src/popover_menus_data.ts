@@ -263,8 +263,7 @@ export function get_topic_popover_content_context({
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
-    const can_move_topic =
-        !sub.is_archived && settings_data.user_can_move_messages_between_streams();
+    const can_move_topic = stream_data.user_can_move_messages_out_of_channel(sub);
     const can_rename_topic = stream_data.user_can_move_messages_within_channel(sub);
     const can_resolve_topic = !sub.is_archived && settings_data.user_can_resolve_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);

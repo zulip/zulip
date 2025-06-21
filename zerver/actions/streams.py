@@ -458,6 +458,9 @@ def send_subscription_add_events(
                 is_archived=stream_dict["is_archived"],
                 can_add_subscribers_group=stream_dict["can_add_subscribers_group"],
                 can_administer_channel_group=stream_dict["can_administer_channel_group"],
+                can_move_messages_out_of_channel_group=stream_dict[
+                    "can_move_messages_out_of_channel_group"
+                ],
                 can_move_messages_within_channel_group=stream_dict[
                     "can_move_messages_within_channel_group"
                 ],
