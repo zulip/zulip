@@ -671,6 +671,10 @@ export async function build_move_topic_to_stream_popover(
         const send_notification_to_old_thread = params.send_notification_to_old_thread === "on";
         const current_stream_id = Number.parseInt(params.current_stream_id, 10);
 
+        if (stream_data.can_only_use_empty_topic(select_stream_id ?? current_stream_id)) {
+            new_topic_name = "";
+        }
+
         if (new_topic_name !== undefined) {
             // new_topic_name can be undefined when the new topic input is disabled when
             // user does not have permission to edit topic.
@@ -793,6 +797,11 @@ export async function build_move_topic_to_stream_popover(
             // user does not have permission to edit topic.
             new_topic_name = args.topic_name;
         }
+
+        if (stream_data.can_only_use_empty_topic(selected_stream.stream_id)) {
+            new_topic_name = "";
+        }
+
         assert(new_topic_name !== undefined);
         // Don't show warning for empty topic as the user is probably
         // about to type a new topic name. Note that if topics are
@@ -876,6 +885,14 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.prop("disabled", true);
         }
 
+        if (stream_data.can_only_use_empty_topic(selected_stream.stream_id)) {
+            $topic_input.val("");
+            $topic_input.prop("disabled", true);
+            $topic_input.addClass("topics-disabled-channel");
+        } else {
+            $topic_input.removeClass("topics-disabled-channel");
+        }
+
         const topic_input_value = $topic_input.val();
         assert(topic_input_value !== undefined);
 
@@ -893,6 +910,9 @@ export async function build_move_topic_to_stream_popover(
 
         // Move focus to the topic input after a new stream is selected.
         $topic_input.trigger("focus");
+        if ($topic_input.prop("disabled")) {
+            $topic_input.trigger("blur");
+        }
     }
 
     // The following logic is correct only when
@@ -1071,6 +1091,22 @@ export async function build_move_topic_to_stream_popover(
                 if (stream.stream_id === current_stream_id) {
                     return true;
                 }
+                const current_stream = stream_data.get_sub_by_id(current_stream_id);
+                assert(current_stream !== undefined);
+                if (
+                    !stream_data.user_can_move_messages_within_channel(current_stream) &&
+                    !stream_data.user_can_move_messages_within_channel(stream)
+                ) {
+                    if (
+                        topic_name !== "" &&
+                        stream_data.can_only_use_empty_topic(stream.stream_id)
+                    ) {
+                        return false;
+                    }
+                    if (topic_name === "" && !stream_data.can_use_empty_topic(stream.stream_id)) {
+                        return false;
+                    }
+                }
                 return stream_data.can_post_messages_in_stream(stream);
             });
 
@@ -1128,6 +1164,16 @@ export async function build_move_topic_to_stream_popover(
                 maybe_show_topic_already_exists_warning();
                 update_move_messages_count_text(selected_option, message?.id);
             });
+        }
+        if (stream_data.can_only_use_empty_topic(current_stream_id)) {
+            const $topic_input = $<HTMLInputElement>(
+                "#move_topic_form input.move_messages_edit_topic",
+            );
+            $topic_input.val("");
+            $topic_input.prop("disabled", true);
+            $topic_input.addClass("topics-disabled-channel");
+            $topic_input.trigger("focus");
+            $topic_input.trigger("blur");
         }
     }
 

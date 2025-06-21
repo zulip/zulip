@@ -9,7 +9,11 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_change_stream_permission,
+    do_set_stream_property,
+)
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.message import has_message_access
 from zerver.lib.streams import (
@@ -25,7 +29,7 @@ from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -50,13 +54,16 @@ class MessageMoveStreamTest(ZulipTestCase):
         self,
         user: str,
         orig_stream: Stream,
+        orig_topic_name: str = "test",
         stream_id: int | None = None,
         topic_name: str | None = None,
         expected_error: str | None = None,
     ) -> None:
         user_profile = self.example_user(user)
         self.subscribe(user_profile, orig_stream.name)
-        message_id = self.send_stream_message(user_profile, orig_stream.name)
+        message_id = self.send_stream_message(
+            user_profile, orig_stream.name, topic_name=orig_topic_name
+        )
 
         params_dict: dict[str, str | int] = {}
         if stream_id is not None:
@@ -1276,6 +1283,28 @@ class MessageMoveStreamTest(ZulipTestCase):
         # Channel administrators with content access can always move messages out of
         # the channel even if they are not in `can_move_messages_out_of_channel_group`.
         self.assert_move_message("shiva", stream_1, stream_id=stream_2.id)
+
+        do_set_stream_property(
+            stream_2, "topics_policy", StreamTopicsPolicyEnum.disable_topics.value, iago
+        )
+        do_change_stream_group_based_setting(
+            stream_2, "can_administer_channel_group", members_system_group, acting_user=iago
+        )
+
+        self.assert_move_message(
+            "shiva",
+            stream_1,
+            stream_id=stream_2.id,
+            expected_error="Only the general chat topic is allowed in this channel.",
+        )
+        self.assert_move_message("shiva", stream_1, stream_id=stream_2.id, topic_name="")
+        self.assert_move_message(
+            "shiva",
+            stream_2,
+            orig_topic_name="",
+            topic_name="test",
+            expected_error="Only the general chat topic is allowed in this channel.",
+        )
 
     def test_move_message_to_stream_with_topic_editing_not_allowed(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(

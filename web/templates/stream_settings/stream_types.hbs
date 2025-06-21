@@ -104,6 +104,13 @@
             <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
                 {{> ../settings/dropdown_options_widget option_values=stream_topics_policy_values}}
             </select>
+            <div id="topics-policy-error">
+                {{#tr}}
+                To enable this configuration, all messages in this channel must be in the general chat topic. Consider <z-link-rename>renaming</z-link-rename> or <z-link-delete>deleting</z-link-delete> other topics.
+                {{#*inline "z-link-rename"}}<a target="_blank" rel="noopener noreferrer" href="/help/rename-a-topic">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-link-delete"}}<a target="_blank" rel="noopener noreferrer" href="/help/delete-a-topic">{{> @partial-block}}</a>{{/inline}}
+                {{/tr}}
+            </div>
         </div>
 
         {{> ../settings/group_setting_value_pill_input

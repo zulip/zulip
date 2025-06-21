@@ -57,6 +57,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
+    CannotSetTopicsPolicyError,
     JsonableError,
     OrganizationOwnerRequiredError,
 )
@@ -73,6 +74,8 @@ from zerver.lib.streams import (
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
     access_web_public_stream,
+    channel_events_topic_name,
+    channel_has_named_topics,
     check_stream_name_available,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
@@ -85,6 +88,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
+    get_topic_display_name,
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
     maybe_rename_general_chat_to_empty_topic,
@@ -108,7 +112,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import ChannelFolder, Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import ChannelFolder, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -385,6 +389,19 @@ def update_stream_backend(
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
 
+    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
+        if not user_profile.can_set_topics_policy():
+            raise JsonableError(_("Insufficient permission"))
+
+        if topics_policy == StreamTopicsPolicyEnum.disable_topics and channel_has_named_topics(
+            stream
+        ):
+            raise CannotSetTopicsPolicyError(
+                get_topic_display_name("", user_profile.default_language)
+            )
+
+        do_set_stream_property(stream, "topics_policy", topics_policy.value, user_profile)
+
     if (
         is_private is not None
         or is_web_public is not None
@@ -419,12 +436,6 @@ def update_stream_backend(
 
     if is_archived is not None and not is_archived:
         do_unarchive_stream(stream, stream.name, acting_user=None)
-
-    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-        if not user_profile.can_set_topics_policy():
-            raise JsonableError(_("Insufficient permission"))
-
-        do_set_stream_property(stream, "topics_policy", topics_policy.value, user_profile)
 
     if description is not None:
         if "\n" in description:
@@ -990,7 +1001,7 @@ def send_messages_for_new_subscribers(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
-                        topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+                        topic_name=channel_events_topic_name(stream),
                         content=new_channel_message.format(
                             user_name=silent_mention_syntax_for_user(user_profile),
                         )

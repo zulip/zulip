@@ -27,6 +27,7 @@ class StreamTopicsPolicyEnum(Enum):
     inherit = 1
     allow_empty_topic = 2
     disable_empty_topic = 3
+    disable_topics = 4
 
 
 class Stream(models.Model):

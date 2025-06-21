@@ -18,6 +18,7 @@ from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
@@ -73,6 +74,7 @@ from zerver.models import (
     Attachment,
     DefaultStream,
     DefaultStreamGroup,
+    Message,
     NamedUserGroup,
     Realm,
     RealmAuditLog,
@@ -2294,6 +2296,41 @@ class StreamAdminTest(ZulipTestCase):
             {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
         )
         self.assert_json_error(result, "Insufficient permission")
+
+        desdemona = self.example_user("desdemona")
+        self.login("desdemona")
+
+        stream_with_topics = self.make_stream("hogwarts", hamlet.realm)
+        self.subscribe(desdemona, "hogwarts")
+        self.send_stream_message(desdemona, "hogwarts", "test content", "")
+
+        result = self.client_patch(
+            f"/json/streams/{stream_with_topics.id}",
+            {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
+        )
+        self.assert_json_success(result)
+
+        result = self.client_patch(
+            f"/json/streams/{stream_with_topics.id}",
+            {"topics_policy": StreamTopicsPolicyEnum.disable_topics.name},
+        )
+        self.assert_json_error(
+            result,
+            "To enable this configuration, all messages in this channel must be in the general chat topic. Consider renaming or deleting other topics.",
+        )
+
+        topic_messages = Message.objects.filter(
+            realm=hamlet.realm,
+            recipient=stream_with_topics.recipient,
+        )
+        do_delete_messages(hamlet.realm, list(topic_messages), acting_user=desdemona)
+        self.send_stream_message(desdemona, "hogwarts", "test content", "")
+
+        result = self.client_patch(
+            f"/json/streams/{stream_with_topics.id}",
+            {"topics_policy": StreamTopicsPolicyEnum.disable_topics.name},
+        )
+        self.assert_json_success(result)
 
     def test_can_set_topics_policy_group(self) -> None:
         user = self.example_user("hamlet")

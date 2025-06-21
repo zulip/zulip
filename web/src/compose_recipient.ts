@@ -318,6 +318,7 @@ function on_hidden_callback(): void {
         return;
     }
     if (compose_state.get_message_type() === "stream") {
+        update_topic_displayed_text(compose_state.topic());
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
@@ -393,7 +394,8 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     compose_state.topic(topic_name);
 
     const $input = $("input#stream_message_recipient_topic");
-    const is_empty_string_topic = topic_name === "";
+    $input.prop("disabled", false);
+    let is_empty_string_topic = topic_name === "";
     const recipient_widget_hidden =
         $(".compose_select_recipient-dropdown-list-container").length === 0;
     const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
@@ -410,6 +412,12 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         // Also, if the recipient in the compose box is not selected, the
         // placeholder will always be "Topic" and never "general chat".
         return;
+    }
+    if (stream_data.can_only_use_empty_topic(compose_state.stream_id())) {
+        $input.val("");
+        $input.prop("disabled", true);
+        is_empty_string_topic = true;
+        $("textarea#compose-textarea").trigger("focus");
     }
     // Otherwise, we have some adjustments to make to display:
     // * a placeholder with the default topic name stylized

@@ -250,6 +250,7 @@ python_rules = RuleList(
             "exclude": FILES_WITH_LEGACY_SUBJECT,
             "exclude_line": {
                 ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+                ("zerver/lib/streams.py", '.exclude(subject="")'),
                 ("zerver/views/streams.py", "message__subject__iexact=topic_name,"),
                 ("zerver/lib/message_cache.py", 'and obj["subject"] == ""'),
                 (

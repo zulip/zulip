@@ -35,6 +35,7 @@ from zerver.lib.exceptions import (
     StreamDoesNotExistError,
     StreamWildcardMentionNotAllowedError,
     StreamWithIDDoesNotExistError,
+    TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
@@ -1785,14 +1786,13 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        if (
-            get_stream_topics_policy(realm, stream)
-            == StreamTopicsPolicyEnum.disable_empty_topic.value
-            and topic_name == ""
-        ):
-            raise MessagesNotAllowedInEmptyTopicError(
-                get_topic_display_name("", sender.default_language)
-            )
+        topics_policy = get_stream_topics_policy(realm, stream)
+        empty_topic_display_name = get_topic_display_name("", sender.default_language)
+        if topics_policy == StreamTopicsPolicyEnum.disable_empty_topic.value and topic_name == "":
+            raise MessagesNotAllowedInEmptyTopicError(empty_topic_display_name)
+
+        if topics_policy == StreamTopicsPolicyEnum.disable_topics.value and topic_name != "":
+            raise TopicsNotAllowedError(empty_topic_display_name)
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
