@@ -11,6 +11,9 @@ import * as sub_store from "./sub_store.ts";
 import * as util from "./util.ts";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
+// Make sure that when we have full subscriber data for a stream,
+// the size of its subscribers set stays synced with the relevant
+// stream's `subscriber_count`.
 const stream_subscribers = new Map<number, LazySet>();
 const fetched_stream_ids = new Set<number>();
 export function has_full_subscriber_data(stream_id: number): boolean {
@@ -135,7 +138,7 @@ async function get_full_subscriber_set(
         if (fetched_subscribers === null) {
             return null;
         }
-        stream_subscribers.set(stream_id, fetched_subscribers);
+        set_subscribers(stream_id, [...fetched_subscribers.keys()]);
     }
     return get_loaded_subscriber_subset(stream_id);
 }
@@ -194,18 +197,27 @@ export function potential_subscribers(stream_id: number): User[] {
     return people.filter_all_users(is_potential_subscriber);
 }
 
+// Note: `subscriber_count` can sometimes be wrong due to races on the backend,
+// so we should fetch full subscriber data if we care about this number being
+// accurate.
 export let get_subscriber_count = (stream_id: number, include_bots = true): number => {
-    if (include_bots) {
-        return get_loaded_subscriber_subset(stream_id).size;
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined) {
+        blueslip.warn(`We called get_subscriber_count for an untracked stream: ${stream_id}`);
+        return 0;
     }
 
-    let count = 0;
+    if (include_bots) {
+        return sub.subscriber_count;
+    }
+
+    let bot_count = 0;
     for (const user_id of get_loaded_subscriber_subset(stream_id).keys()) {
-        if (!people.is_valid_bot_user(user_id) && people.is_person_active(user_id)) {
-            count += 1;
+        if (people.is_valid_bot_user(user_id)) {
+            bot_count += 1;
         }
     }
-    return count;
+    return sub.subscriber_count - bot_count;
 };
 
 export function rewire_get_subscriber_count(value: typeof get_subscriber_count): void {
@@ -238,6 +250,11 @@ export async function get_all_subscribers(
 export function set_subscribers(stream_id: number, user_ids: number[], full_data = true): void {
     const subscribers = new LazySet(user_ids);
     stream_subscribers.set(stream_id, subscribers);
+    if (!sub_store.get(stream_id)) {
+        blueslip.warn(`We called set_subscribers for an untracked stream: ${stream_id}`);
+    } else if (full_data) {
+        sub_store.get(stream_id)!.subscriber_count = subscribers.size;
+    }
     if (full_data) {
         fetched_stream_ids.add(stream_id);
     }
@@ -251,7 +268,14 @@ export function add_subscriber(stream_id: number, user_id: number): void {
     if (person === undefined) {
         blueslip.warn(`We tried to add invalid subscriber: ${user_id}`);
     }
-    subscribers.add(user_id);
+    if (!subscribers.has(user_id)) {
+        subscribers.add(user_id);
+        // If the sub is undefined, we'll be raising a warning in
+        // `get_loaded_subscriber_subset`, so we don't need to here.
+        if (sub_store.get(stream_id)) {
+            sub_store.get(stream_id)!.subscriber_count += 1;
+        }
+    }
 }
 
 export function remove_subscriber(stream_id: number, user_id: number): boolean {
@@ -262,6 +286,11 @@ export function remove_subscriber(stream_id: number, user_id: number): boolean {
     }
 
     subscribers.delete(user_id);
+    // If the sub is undefined, we'll be raising a warning in
+    // `get_loaded_subscriber_subset`, so we don't need to here.
+    if (sub_store.get(stream_id)) {
+        sub_store.get(stream_id)!.subscriber_count -= 1;
+    }
 
     return true;
 }
@@ -277,7 +306,10 @@ export function bulk_add_subscribers({
     for (const stream_id of stream_ids) {
         const subscribers = get_loaded_subscriber_subset(stream_id);
         for (const user_id of user_ids) {
-            subscribers.add(user_id);
+            if (!subscribers.has(user_id)) {
+                subscribers.add(user_id);
+                sub_store.get(stream_id)!.subscriber_count += 1;
+            }
         }
 
         if (pending_subscriber_requests.has(stream_id)) {
@@ -300,7 +332,10 @@ export function bulk_remove_subscribers({
     for (const stream_id of stream_ids) {
         const subscribers = get_loaded_subscriber_subset(stream_id);
         for (const user_id of user_ids) {
-            subscribers.delete(user_id);
+            if (subscribers.has(user_id)) {
+                subscribers.delete(user_id);
+                sub_store.get(stream_id)!.subscriber_count -= 1;
+            }
         }
 
         if (pending_subscriber_requests.has(stream_id)) {
