@@ -160,6 +160,7 @@ class RawStreamDict(TypedDict):
 
     can_add_subscribers_group_id: int
     can_administer_channel_group_id: int
+    can_move_messages_within_channel_group_id: int
     can_send_message_group_id: int
     can_remove_subscribers_group_id: int
     can_subscribe_group_id: int
@@ -209,6 +210,7 @@ class SubscriptionStreamDict(TypedDict):
     audible_notifications: bool | None
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
@@ -247,6 +249,7 @@ class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
@@ -281,6 +284,7 @@ class DefaultStreamDict(TypedDict):
     is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict

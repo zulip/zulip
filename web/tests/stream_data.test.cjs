@@ -1518,6 +1518,41 @@ test("can_post_messages_in_stream", ({override}) => {
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
+test("can_move_messages_within_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        name: "social",
+        stream_id: 10,
+        can_administer_channel_group: nobody_group.id,
+        can_move_messages_within_channel_group: nobody_group.id,
+    };
+    const scotland = {
+        subscribed: true,
+        name: "scotland",
+        stream_id: 11,
+        can_administer_channel_group: nobody_group.id,
+        can_move_messages_within_channel_group: everyone_group.id,
+    };
+
+    override(realm, "realm_can_move_messages_between_topics_group", nobody_group.id);
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.user_can_move_messages_within_channel(social), false);
+    social.can_administer_channel_group = admins_group.id;
+    assert.equal(stream_data.user_can_move_messages_within_channel(social), true);
+
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.user_can_move_messages_within_channel(social), false);
+
+    assert.equal(stream_data.user_can_move_messages_within_channel(scotland), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.user_can_move_messages_within_channel(scotland), false);
+
+    page_params.is_spectator = false;
+    scotland.is_archived = true;
+    assert.equal(stream_data.user_can_move_messages_within_channel(scotland), false);
+});
+
 test("can_unsubscribe_others", ({override}) => {
     const sub = {
         name: "Denmark",
