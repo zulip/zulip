@@ -37,6 +37,10 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
     });
 }
 
+export function get_channel_ids(): number[] {
+    return [...channel_folder_by_id_dict.keys()].sort((a, b) => a - b);
+}
+
 export function is_valid_folder_id(folder_id: number): boolean {
     return channel_folder_by_id_dict.has(folder_id);
 }
@@ -45,4 +49,10 @@ export function get_channel_folder_name_from_id(folder_id: number): string {
     const channel_folder = channel_folder_by_id_dict.get(folder_id);
     assert(channel_folder !== undefined);
     return channel_folder.name;
+}
+
+export function get_channel_folder_by_id(folder_id: number): ChannelFolder {
+    const folder = channel_folder_by_id_dict.get(folder_id);
+    assert(folder !== undefined);
+    return folder;
 }
