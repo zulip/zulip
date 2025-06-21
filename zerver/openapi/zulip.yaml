@@ -11577,6 +11577,10 @@ paths:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroup"
                 can_administer_channel_group:
                   $ref: "#/components/schemas/CanAdministerChannelGroup"
+                can_move_messages_out_of_channel_group:
+                  $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
+                can_move_messages_within_channel_group:
+                  $ref: "#/components/schemas/CanMoveMessagesWithinChannelGroup"
                 can_send_message_group:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
@@ -11618,6 +11622,10 @@ paths:
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_move_messages_out_of_channel_group:
+                contentType: application/json
+              can_move_messages_within_channel_group:
                 contentType: application/json
               can_send_message_group:
                 contentType: application/json
@@ -16233,6 +16241,8 @@ paths:
                                 can_add_subscribers_group: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_move_messages_out_of_channel_group: {}
+                                can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
                                 subscriber_count: {}
@@ -21473,6 +21483,8 @@ paths:
                                 can_add_subscribers_group: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_move_messages_out_of_channel_group: {}
+                                can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
                                 subscriber_count: {}
@@ -21896,6 +21908,58 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_move_messages_out_of_channel_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to move messages out of this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Note that a user must [have content access](/help/channel-permissions) to a
+                        channel in order to move messages out of the channel.
+
+                        Channel administrators and users present in the organization-level
+                        `can_move_messages_between_channels_group` setting can always move messages
+                        out of the channel if they [have content access](/help/channel-permissions) to
+                        the channel.
+
+                        **Changes**: New in Zulip 11.0 (feature level ZF-335b70). Prior to this
+                        change, only the users in `can_move_messages_between_channels_group` were able
+                        move messages between channels.
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_move_messages_within_channel_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to move messages within this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Note that a user must [have content access](/help/channel-permissions) to a
+                        channel in order to move messages within the channel.
+
+                        Channel administrators and users present in the organization-level
+                        `can_move_messages_between_topics_group` setting can always move messages
+                        within the channel if they [have content access](/help/channel-permissions) to
+                        the channel.
+
+                        **Changes**: New in Zulip 11.0 (feature level ZF-d69e70). Prior to this
+                        change, only the users in `can_move_messages_between_topics_group` were able
+                        move messages between topics of a channel.
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_send_message_group:
                   allOf:
                     - description: |
@@ -21960,6 +22024,10 @@ paths:
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_move_messages_out_of_channel_group:
+                contentType: application/json
+              can_move_messages_within_channel_group:
                 contentType: application/json
               can_send_message_group:
                 contentType: application/json
@@ -23947,6 +24015,8 @@ components:
             can_add_subscribers_group: {}
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
+            can_move_messages_out_of_channel_group: {}
+            can_move_messages_within_channel_group: {}
             can_send_message_group: {}
             can_subscribe_group: {}
             subscriber_count: {}
@@ -24142,6 +24212,10 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_move_messages_out_of_channel_group:
+          $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
+        can_move_messages_within_channel_group:
+          $ref: "#/components/schemas/CanMoveMessagesWithinChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
@@ -25233,6 +25307,10 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_move_messages_out_of_channel_group:
+          $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
+        can_move_messages_within_channel_group:
+          $ref: "#/components/schemas/CanMoveMessagesWithinChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
@@ -27095,6 +27173,46 @@ components:
             New in Zulip 10.0 (feature level 325). Prior to this
             change, the permission to administer channels was limited to realm
             administrators.
+
+            [setting-values]: /api/group-setting-values
+    CanMoveMessagesOutOfChannelGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to move messages out of this channel.
+
+            Note that a user must [have content access](/help/channel-permissions) to a
+            channel in order to move messages out of the channel.
+
+            Channel administrators and users present in the organization-level
+            `can_move_messages_between_channels_group` setting can always move messages
+            out of the channel if they [have content access](/help/channel-permissions) to
+            the channel.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-335b70). Prior to this
+            change, only the users in `can_move_messages_between_channels_group` were able
+            move messages between channels.
+
+            [setting-values]: /api/group-setting-values
+    CanMoveMessagesWithinChannelGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to move messages within this channel.
+
+            Note that a user must [have content access](/help/channel-permissions) to a
+            channel in order to move messages within the channel.
+
+            Channel administrators and users present in the organization-level
+            `can_move_messages_between_topics_group` setting can always move messages
+            within the channel if they [have content access](/help/channel-permissions) to
+            the channel.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-d69e70). Prior to this
+            change, only the users in `can_move_messages_between_topics_group` were able
+            move messages between topics of a channel.
 
             [setting-values]: /api/group-setting-values
     CanSendMessageGroup:
