@@ -145,7 +145,18 @@ export const update_person = function update(event: UserUpdate): void {
         const url = event.avatar_url;
         user.avatar_url = url;
         user.avatar_version = event.avatar_version;
-        user.avatar_source = event.avatar_source as "G" | "U";
+
+        // Add type guard function
+        function isValidAvatarSource(source: string): source is "G" | "U" {
+            return source === "G" || source === "U";
+        }
+
+        // Replace the type assertion with type guard check
+        if (!isValidAvatarSource(event.avatar_source)) {
+            blueslip.error("Invalid avatar source", {source: event.avatar_source});
+            return;
+        }
+        user.avatar_source = event.avatar_source;
 
         if (people.is_my_user_id(event.user_id)) {
             current_user.avatar_source = event.avatar_source;
