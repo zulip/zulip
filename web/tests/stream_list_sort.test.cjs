@@ -100,11 +100,26 @@ function test(label, f) {
 test("no_subscribed_streams", () => {
     const sorted = sort_groups("");
     assert.deepEqual(sorted, {
-        dormant_streams: [],
-        muted_active_streams: [],
-        muted_pinned_streams: [],
-        normal_streams: [],
-        pinned_streams: [],
+        sections: [
+            {
+                id: "pinned-streams",
+                muted_streams: [],
+                section_title: "translated: PINNED CHANNELS",
+                streams: [],
+            },
+            {
+                id: "normal-streams",
+                muted_streams: [],
+                section_title: "translated: ACTIVE CHANNELS",
+                streams: [],
+            },
+            {
+                id: "dormant-streams",
+                muted_streams: [],
+                section_title: "translated: INACTIVE CHANNELS",
+                streams: [],
+            },
+        ],
         same_as_before: sorted.same_as_before,
     });
     assert.equal(stream_list_sort.first_stream_id(), undefined);
@@ -122,16 +137,22 @@ test("basics", () => {
     stream_data.add_sub(archived);
 
     // Test sorting into categories/alphabetized
-    let sorted = sort_groups("");
-    assert.deepEqual(sorted.pinned_streams, [scalene.stream_id]);
-    assert.deepEqual(sorted.normal_streams, [
+    let sorted_sections = sort_groups("").sections;
+    const pinned = sorted_sections[0];
+    assert.deepEqual(pinned.id, "pinned-streams");
+    assert.deepEqual(pinned.streams, [scalene.stream_id]);
+    assert.deepEqual(pinned.muted_streams, [muted_pinned.stream_id]);
+    const normal = sorted_sections[1];
+    assert.deepEqual(normal.id, "normal-streams");
+    assert.deepEqual(normal.streams, [
         clarinet.stream_id,
         fast_tortoise.stream_id,
         stream_hyphen_underscore_slash_colon.stream_id,
     ]);
-    assert.deepEqual(sorted.muted_pinned_streams, [muted_pinned.stream_id]);
-    assert.deepEqual(sorted.muted_active_streams, [muted_active.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, [pneumonia.stream_id]);
+    assert.deepEqual(normal.muted_streams, [muted_active.stream_id]);
+    const dormant = sorted_sections[2];
+    assert.deepEqual(dormant.id, "dormant-streams");
+    assert.deepEqual(dormant.streams, [pneumonia.stream_id]);
 
     // Test cursor helpers.
     assert.equal(stream_list_sort.first_stream_id(), scalene.stream_id);
@@ -156,53 +177,70 @@ test("basics", () => {
     assert.equal(stream_list_sort.next_stream_id(pneumonia.stream_id), undefined);
 
     // Test filtering
-    sorted = sort_groups("s");
-    assert.deepEqual(sorted.pinned_streams, [scalene.stream_id]);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, []);
+    sorted_sections = sort_groups("s").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].id, "pinned-streams");
+    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[2].streams, []);
 
     assert.equal(stream_list_sort.prev_stream_id(clarinet.stream_id), undefined);
 
     assert.equal(stream_list_sort.next_stream_id(clarinet.stream_id), undefined);
 
     // Test searching entire word, case-insensitive
-    sorted = sort_groups("PnEuMoNiA");
-    assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, []);
-    assert.deepEqual(sorted.dormant_streams, [pneumonia.stream_id]);
+    sorted_sections = sort_groups("PnEuMoNiA").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].streams, []);
+    assert.deepEqual(sorted_sections[2].id, "dormant-streams");
+    assert.deepEqual(sorted_sections[2].streams, [pneumonia.stream_id]);
 
     // Test searching part of word
-    sorted = sort_groups("tortoise");
-    assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [fast_tortoise.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, []);
+    sorted_sections = sort_groups("tortoise").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[2].streams, []);
 
     // Test searching stream with spaces
-    sorted = sort_groups("fast t");
-    assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [fast_tortoise.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, []);
+    sorted_sections = sort_groups("fast t").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[2].streams, []);
 
     // Test searching part of stream name with non space word separators
-    sorted = sort_groups("hyphen");
-    assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, []);
+    sorted_sections = sort_groups("hyphen").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[2].streams, []);
 
-    sorted = sort_groups("hyphen_underscore");
-    assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, []);
+    sorted_sections = sort_groups("hyphen_underscore").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[2].streams, []);
 
-    sorted = sort_groups("colon");
-    assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, []);
+    sorted_sections = sort_groups("colon").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[2].streams, []);
 
-    sorted = sort_groups("underscore");
-    assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted.dormant_streams, []);
+    sorted_sections = sort_groups("underscore").sections;
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[2].streams, []);
 });
 
 test("filter inactives", ({override}) => {
