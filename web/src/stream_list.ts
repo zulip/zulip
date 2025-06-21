@@ -270,8 +270,7 @@ export let stream_list_section_container_html = function (
     return render_stream_list_section_container({
         id: section.id,
         section_title: section.section_title,
-        show_plus_icon:
-            can_create_streams && !["pinned-streams", "dormant-streams"].includes(section.id),
+        plus_icon_url: can_create_streams ? get_section_channel_plus_icon_url(section) : undefined,
     });
 };
 
@@ -279,6 +278,15 @@ export function rewire_stream_list_section_container_html(
     value: typeof stream_list_section_container_html,
 ): void {
     stream_list_section_container_html = value;
+}
+
+function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
+    if (section.id === "normal-streams") {
+        return "#channels/new";
+    } else if (!["pinned-streams", "dormant-streams"].includes(section.id)) {
+        return `#channels/folders/${section.id}/new`;
+    }
+    return undefined;
 }
 
 export function build_stream_list(force_rerender: boolean): void {
@@ -289,8 +297,7 @@ export function build_stream_list(force_rerender: boolean): void {
     // Within the first two sections, muted streams are sorted to the
     // bottom; we skip that for dormant streams to simplify discovery.
     //
-    // The main logic to build the list is in stream_list_sort.ts, and
-    // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
+    // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
     const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 

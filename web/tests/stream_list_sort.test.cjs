@@ -110,7 +110,7 @@ test("no_subscribed_streams", () => {
             {
                 id: "normal-streams",
                 muted_streams: [],
-                section_title: "translated: ACTIVE CHANNELS",
+                section_title: "translated: CHANNELS",
                 streams: [],
             },
             {
