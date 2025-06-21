@@ -1051,19 +1051,6 @@ export function set_event_handlers({
         });
     });
 
-    $("#streams_header")
-        .expectOne()
-        .on("click", (e) => {
-            e.preventDefault();
-            if (
-                e.target.id === "streams_inline_icon" ||
-                $(e.target).parent().hasClass("input-close-filter-button")
-            ) {
-                return;
-            }
-            toggle_filter_displayed(e);
-        });
-
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
             return;
