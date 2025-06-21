@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as channel_folders from "./channel_folders.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
@@ -110,6 +111,7 @@ export function update_dom_with_unread_counts(
         unmuted: 0,
         muted: 0,
     };
+    const folder_unread_counts = new Map<number, SectionUnreadCount>();
     const normal_section_unread_counts: SectionUnreadCount = {
         unmuted: 0,
         muted: 0,
@@ -125,6 +127,16 @@ export function update_dom_with_unread_counts(
         if (sub.pin_to_top) {
             pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
             pinned_unread_counts.muted += stream_count_info.muted_count;
+        } else if (sub.folder_id !== null) {
+            const unread_counts = folder_unread_counts.get(sub.folder_id) ?? {
+                unmuted: 0,
+                muted: 0,
+            };
+            if (!folder_unread_counts.has(sub.folder_id)) {
+                folder_unread_counts.set(sub.folder_id, unread_counts);
+            }
+            unread_counts.unmuted += stream_count_info.unmuted_count;
+            unread_counts.muted += stream_count_info.muted_count;
         } else if (stream_list_sort.has_recent_activity(sub)) {
             normal_section_unread_counts.unmuted += stream_count_info.unmuted_count;
             normal_section_unread_counts.muted += stream_count_info.muted_count;
@@ -166,6 +178,15 @@ export function update_dom_with_unread_counts(
         inactive_section_unread_counts.unmuted,
         inactive_section_unread_counts.muted,
     );
+
+    for (const folder_id of channel_folders.get_all_folder_ids()) {
+        const unread_counts = folder_unread_counts.get(folder_id);
+        update_section_unread_count(
+            $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
+            unread_counts?.unmuted ?? 0,
+            unread_counts?.muted ?? 0,
+        );
+    }
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
