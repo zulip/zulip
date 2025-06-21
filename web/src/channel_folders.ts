@@ -37,6 +37,10 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
     });
 }
 
+export function get_all_folder_ids(): number[] {
+    return [...channel_folder_by_id_dict.keys()];
+}
+
 export function is_valid_folder_id(folder_id: number): boolean {
     return channel_folder_by_id_dict.has(folder_id);
 }

@@ -40,6 +40,7 @@ import * as stream_edit from "./stream_edit.ts";
 import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
 import * as stream_list from "./stream_list.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
@@ -243,6 +244,13 @@ export function update_is_default_stream(): void {
 export function update_channel_folder(sub: StreamSubscription, folder_id: number | null): void {
     stream_data.update_channel_folder(sub, folder_id);
     stream_ui_updates.update_channel_folder_dropdown(sub);
+    stream_list.build_stream_list(false);
+    const $stream_li = stream_list.get_stream_li(sub.stream_id);
+    if ($stream_li) {
+        stream_list.scroll_stream_into_view($stream_li);
+    }
+    const section_id = stream_list_sort.current_section_id_for_stream(sub.stream_id);
+    stream_list.maybe_hide_topic_bracket(section_id);
 }
 
 export function update_subscribers_ui(sub: StreamSubscription): void {
