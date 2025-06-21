@@ -195,7 +195,9 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="showing-stream-search-section zoom-in-hide">
+            {{!-- TODO(evy) remove #streams_header completely, but for smaller reviewable commits I'm just
+            hiding the header for now --}}
+            <div id="streams_header" style="display: none;" class="showing-stream-search-section zoom-in-hide">
                 <h4 class="left-sidebar-title"><span class="streams-tooltip-target">{{t 'CHANNELS' }}</span></h4>
                 <div class="left-sidebar-controls">
                     <span id="add_streams_tooltip" class="hidden-for-spectators">
@@ -208,12 +210,10 @@
                         <i class="zulip-icon zulip-icon-masked-unread"></i>
                     </span>
                 </div>
-                <div class="left-sidebar-filter-input-container">
-                    {{#> input_wrapper input_type="filter-input" custom_classes="stream_search_section" icon="search" input_button_icon="close"}}
-                        <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-                    {{/input_wrapper}}
-                </div>
             </div>
+            {{#> input_wrapper input_type="filter-input" custom_classes="stream_search_section" icon="search" input_button_icon="close"}}
+                <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
+            {{/input_wrapper}}
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
             </div>

@@ -65,8 +65,8 @@
     }
 }
 
-.selected-home-view,
-#streams_header {
+#left-sidebar-navigation-list .selected-home-view,
+.stream-list-subsection-header {
     &.hide-unread-messages-count {
         .masked_unread_count {
             display: flex;
@@ -85,8 +85,8 @@
     }
 }
 
-.selected-home-view:hover,
-#streams_header:hover,
+#left-sidebar-navigation-list .selected-home-view:hover,
+.stream-list-subsection-header:hover,
 .selected-home-view.top-left-active-filter {
     &.hide-unread-messages-count {
         .masked_unread_count {
@@ -310,6 +310,73 @@
         #show-all-direct-messages {
             display: flex;
         }
+    }
+}
+
+.stream_search_section {
+    position: sticky;
+    top: 0;
+    /* Must be more than .stream-list-subsection-header */
+    z-index: 3;
+    /* Must be padding not margin so that the sticky headers don't show behind it */
+    padding: var(--left-sidebar-sections-vertical-gutter)
+        var(--left-sidebar-right-margin) 3px 5px;
+}
+
+.stream-list-subsection-header {
+    display: grid;
+    align-items: center;
+    grid-template:
+        "arrow row-content scroll-buffer" var(
+            --line-height-sidebar-row-prominent
+        )
+        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr);
+    cursor: pointer;
+    background-color: var(--color-background);
+    position: sticky;
+    /* Input is 29px tall at 16px/1em; plus 2px for top/bottom border.
+       Input container has 8px and 3px top/bottom padding = 11px total padding */
+    top: calc(1.8125em + 2px + 11px);
+    /* Must be more than .sidebar-topic-check and less than #stream-search-and-add */
+    z-index: 2;
+    color: var(--color-text-default);
+
+    &:hover {
+        background-color: var(--color-background-opaque-hover-narrow-filter);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        /* We only set the border radius on the hover/popover states,
+           so as to prevent the background on highlighted channels
+           from bleeding through. */
+        border-radius: 4px;
+
+        .left-sidebar-title,
+        .stream-list-section-toggle {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+    }
+
+    .stream-list-section-toggle {
+        color: var(--color-text-sidebar-heading);
+        opacity: var(--opacity-sidebar-heading-icon);
+        justify-self: center;
+    }
+}
+
+.stream-list-section {
+    margin: 0;
+}
+
+.stream-list-section-container {
+    margin-top: 10px;
+
+    &.no-display {
+        display: none;
+    }
+}
+
+.stream-list-section-container.collapsed {
+    .narrow-filter:not(.stream-expanded) {
+        display: none;
     }
 }
 
@@ -1404,7 +1471,7 @@ li.top_left_scheduled_messages {
     /* As a grid item, adjust the checkmark's z-index here so
        that the background color appears above the grouping
        bracket's bottom line. Its value must less than
-       the z-index set on the #streams_header selector. */
+       the z-index set on .stream-list-subsection-header */
     z-index: 1;
 }
 
@@ -1867,49 +1934,6 @@ li.topic-list-item {
     }
 }
 
-.streams_subheader {
-    /* 14px at 16px/1em */
-    font-size: 0.875em;
-    font-weight: normal;
-    /* 16px line-height at 0.8em (11.2px at 14px legacy em) */
-    line-height: 1.4286em;
-    letter-spacing: 0.04em;
-    padding-left: var(--left-sidebar-toggle-width-offset);
-    cursor: pointer;
-    text-align: center;
-    margin-right: var(--left-sidebar-right-margin);
-
-    & .streams-subheader-wrapper {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        left: 0.5em;
-        right: 0.5em;
-        color: var(--color-text-sidebar-base);
-    }
-
-    & .streams-subheader-wrapper::before,
-    .streams-subheader-wrapper::after {
-        content: " ";
-        flex: 1 1;
-        vertical-align: middle;
-        margin: auto;
-        border-top: 1px solid var(--color-border-sidebar-subheader);
-    }
-
-    & .streams-subheader-wrapper::before {
-        margin-right: 0.2em;
-    }
-
-    & .streams-subheader-wrapper::after {
-        margin-left: 0.2em;
-    }
-
-    .streams-subheader-name {
-        opacity: 0.4;
-    }
-}
-
 .zero_count {
     visibility: hidden;
 }
@@ -1923,12 +1947,8 @@ li.topic-list-item {
         position: sticky;
         /* We subtract a quarter pixel of space to correct
            for possible bleedthrough under certain viewing
-           conditions (e.g., external monitors.) This same
-           technique is used on #streams_header. */
-        top: calc(
-            var(--left-sidebar-sections-vertical-gutter) +
-                var(--line-height-sidebar-row-prominent) - 0.25px
-        );
+           conditions (e.g., external monitors.) */
+        top: -0.25px;
         z-index: 2;
         padding-bottom: 1px;
         background-color: var(--color-background);

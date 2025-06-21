@@ -147,22 +147,6 @@ function create_social_sidebar_row({mock_template}) {
     assert.equal($social_unread_mention_info.text(), "@");
 }
 
-function create_stream_subheader({mock_template}) {
-    mock_template("streams_subheader.hbs", false, (data) => {
-        if (data.subheader_name === "translated: Pinned") {
-            pinned_subheader_flag = true;
-            return "<pinned-subheader-stub>";
-        } else if (data.subheader_name === "translated: Active") {
-            active_subheader_flag = true;
-            return "<active-subheader-stub>";
-        }
-
-        assert.ok(data.subheader_name === "translated: Inactive");
-        inactive_subheader_flag = true;
-        return "<inactive-subheader-stub>";
-    });
-}
-
 function test_ui(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
@@ -181,8 +165,6 @@ test_ui("create_sidebar_row", ({override, mock_template}) => {
 
     create_devel_sidebar_row({mock_template});
     create_social_sidebar_row({mock_template});
-    create_stream_subheader({mock_template});
-
     topic_list.get_stream_li = noop;
 
     const $pinned_subheader = $("<pinned-subheader-stub>");
@@ -262,8 +244,6 @@ test_ui("pinned_streams_never_inactive", ({mock_template}) => {
 
     create_devel_sidebar_row({mock_template});
     create_social_sidebar_row({mock_template});
-    create_stream_subheader({mock_template});
-
     // non-pinned streams can be made inactive
     const $social_sidebar = $("<social-sidebar-row-stub>");
     let stream_id = social.stream_id;
@@ -409,10 +389,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     $splitter.show();
     assert.ok($splitter.visible());
 
-    $.create(".streams_subheader", {
-        children: [elem($splitter)],
-    });
-
     const $stream_li1 = $.create("stream1 stub");
     const $stream_li2 = $.create("stream2 stub");
 
@@ -474,8 +450,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok(!filter_topics_appended);
 });
 
-test_ui("narrowing", ({mock_template}) => {
-    create_stream_subheader({mock_template});
+test_ui("narrowing", () => {
     initialize_stream_data();
 
     topic_list.close = noop;
@@ -540,8 +515,7 @@ test_ui("focus_user_filter", () => {
     click_handler(e);
 });
 
-test_ui("sort_streams", ({mock_template}) => {
-    create_stream_subheader({mock_template});
+test_ui("sort_streams", () => {
     // Set subheader flag to false
     pinned_subheader_flag = false;
     active_subheader_flag = false;
@@ -600,10 +574,8 @@ test_ui("sort_streams", ({mock_template}) => {
     assert.ok(!stream_list.stream_sidebar.has_row_for(stream_id));
 });
 
-test_ui("separators_only_pinned_and_dormant", ({mock_template}) => {
+test_ui("separators_only_pinned_and_dormant", () => {
     // Test only pinned and dormant streams
-
-    create_stream_subheader({mock_template});
     pinned_subheader_flag = false;
     inactive_subheader_flag = false;
 
@@ -706,8 +678,6 @@ test_ui("separators_only_pinned", () => {
 test_ui("rename_stream", ({mock_template, override}) => {
     override(user_settings, "web_stream_unreads_count_display_policy", 3);
     override(current_user, "user_id", me.user_id);
-
-    create_stream_subheader({mock_template});
     initialize_stream_data();
 
     const sub = stream_data.get_sub_by_name("devel");

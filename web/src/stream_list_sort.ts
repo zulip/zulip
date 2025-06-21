@@ -1,5 +1,6 @@
 import assert from "minimalistic-assert";
 
+import {$t} from "./i18n.ts";
 import * as settings_config from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -8,11 +9,7 @@ import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let first_render_completed = false;
-let previous_pinned: number[] = [];
-let previous_normal: number[] = [];
-let previous_dormant: number[] = [];
-let previous_muted_active: number[] = [];
-let previous_muted_pinned: number[] = [];
+let previous_sections: StreamListSection[] = [];
 let all_streams: number[] = [];
 
 // Because we need to check whether we are filtering inactive streams
@@ -71,13 +68,16 @@ export function has_recent_activity(sub: StreamSubscription): boolean {
     return sub.is_recently_active || sub.newly_subscribed;
 }
 
+type StreamListSection = {
+    id: string;
+    section_title: string;
+    streams: number[];
+    muted_streams: number[]; // Not used for the inactive section
+};
+
 type StreamListSortResult = {
     same_as_before: boolean;
-    pinned_streams: number[];
-    normal_streams: number[];
-    dormant_streams: number[];
-    muted_pinned_streams: number[];
-    muted_active_streams: number[];
+    sections: StreamListSection[];
 };
 
 export function sort_groups(stream_ids: number[], search_term: string): StreamListSortResult {
@@ -95,74 +95,80 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         return has_recent_activity(sub);
     }
 
-    const pinned_streams = [];
-    const normal_streams = [];
-    const muted_pinned_streams = [];
-    const muted_active_streams = [];
-    const dormant_streams = [];
+    const pinned_section: StreamListSection = {
+        id: "pinned-streams",
+        section_title: $t({defaultMessage: "PINNED CHANNELS"}),
+        streams: [],
+        muted_streams: [],
+    };
+    const normal_section: StreamListSection = {
+        id: "normal-streams",
+        section_title: $t({defaultMessage: "ACTIVE CHANNELS"}),
+        streams: [],
+        muted_streams: [],
+    };
+    const dormant_section: StreamListSection = {
+        id: "dormant-streams",
+        section_title: $t({defaultMessage: "INACTIVE CHANNELS"}),
+        streams: [],
+        muted_streams: [], // Not used for the dormant section
+    };
 
     for (const stream_id of stream_ids) {
         const sub = sub_store.get(stream_id);
         assert(sub);
-        const pinned = sub.pin_to_top;
         if (sub.is_archived) {
             continue;
         }
-        if (pinned) {
-            if (!sub.is_muted) {
-                pinned_streams.push(stream_id);
+        if (sub.pin_to_top) {
+            if (sub.is_muted) {
+                pinned_section.muted_streams.push(stream_id);
             } else {
-                muted_pinned_streams.push(stream_id);
+                pinned_section.streams.push(stream_id);
             }
         } else if (is_normal(sub)) {
-            if (!sub.is_muted) {
-                normal_streams.push(stream_id);
+            if (sub.is_muted) {
+                normal_section.muted_streams.push(stream_id);
             } else {
-                muted_active_streams.push(stream_id);
+                normal_section.streams.push(stream_id);
             }
         } else {
-            dormant_streams.push(stream_id);
+            dormant_section.streams.push(stream_id);
         }
     }
 
-    pinned_streams.sort(compare_function);
-    normal_streams.sort(compare_function);
-    muted_pinned_streams.sort(compare_function);
-    muted_active_streams.sort(compare_function);
-    dormant_streams.sort(compare_function);
+    // This needs to have the same ordering as the order they're displayed in the sidebar.
+    const sections = [pinned_section, normal_section, dormant_section];
+
+    for (const section of sections) {
+        section.streams.sort(compare_function);
+        section.muted_streams.sort(compare_function);
+    }
 
     const same_as_before =
         first_render_completed &&
-        util.array_compare(previous_pinned, pinned_streams) &&
-        util.array_compare(previous_normal, normal_streams) &&
-        util.array_compare(previous_muted_pinned, muted_pinned_streams) &&
-        util.array_compare(previous_muted_active, muted_active_streams) &&
-        util.array_compare(previous_dormant, dormant_streams);
+        sections.entries().every((entry) => {
+            const i = entry[0];
+            const section = entry[1];
+            const previous_section = previous_sections.at(i);
+            return (
+                previous_section !== undefined &&
+                section.id === previous_section.id &&
+                section.section_title === previous_section.section_title &&
+                util.array_compare(section.streams, previous_section.streams) &&
+                util.array_compare(section.muted_streams, previous_section.muted_streams)
+            );
+        });
 
     if (!same_as_before) {
         first_render_completed = true;
-        previous_pinned = pinned_streams;
-        previous_normal = normal_streams;
-        previous_muted_pinned = muted_pinned_streams;
-        previous_muted_active = muted_active_streams;
-        previous_dormant = dormant_streams;
-
-        all_streams = [
-            ...pinned_streams,
-            ...muted_pinned_streams,
-            ...normal_streams,
-            ...muted_active_streams,
-            ...dormant_streams,
-        ];
+        previous_sections = sections;
+        all_streams = sections.flatMap((section) => [...section.streams, ...section.muted_streams]);
     }
 
     return {
         same_as_before,
-        pinned_streams,
-        normal_streams,
-        dormant_streams,
-        muted_pinned_streams,
-        muted_active_streams,
+        sections,
     };
 }
 
