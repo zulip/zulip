@@ -3,6 +3,7 @@ from collections.abc import Callable, Collection, Iterable, Mapping
 from operator import itemgetter
 from typing import Any, Literal
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import QuerySet
@@ -516,6 +517,7 @@ def bulk_get_subscriber_user_ids(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
     subscribed_stream_ids: set[int],
+    streams_to_partially_fetch: list[int],
 ) -> dict[int, list[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
@@ -539,10 +541,19 @@ def bulk_get_subscriber_user_ids(
         target_stream_dicts.append(stream_dict)
 
     recip_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in target_stream_dicts}
-    recipient_ids = sorted(stream["recipient_id"] for stream in target_stream_dicts)
+    full_fetch_recipient_ids = sorted(
+        stream["recipient_id"]
+        for stream in target_stream_dicts
+        if stream["id"] not in streams_to_partially_fetch
+    )
+    partial_fetch_recipient_ids = sorted(
+        stream["recipient_id"]
+        for stream in target_stream_dicts
+        if stream["id"] in streams_to_partially_fetch
+    )
 
     result: dict[int, list[int]] = {stream["id"]: [] for stream in stream_dicts}
-    if not recipient_ids:
+    if not full_fetch_recipient_ids and not partial_fetch_recipient_ids:
         return result
 
     """
@@ -559,10 +570,18 @@ def bulk_get_subscriber_user_ids(
             zerver_subscription.user_profile_id
         FROM
             zerver_subscription
+        JOIN zerver_userprofile on zerver_userprofile.id = zerver_subscription.user_profile_id
         WHERE
-            zerver_subscription.recipient_id in %(recipient_ids)s AND
             zerver_subscription.active AND
-            zerver_subscription.is_user_active
+            zerver_subscription.is_user_active AND
+            (
+                zerver_subscription.recipient_id = ANY (%(full_fetch_recipient_ids)s)
+                OR
+                (
+                    zerver_subscription.recipient_id = ANY (%(partial_fetch_recipient_ids)s) AND
+                    (zerver_userprofile.is_bot OR (NOT zerver_userprofile.long_term_idle))
+                )
+            )
         ORDER BY
             zerver_subscription.recipient_id,
             zerver_subscription.user_profile_id
@@ -570,7 +589,13 @@ def bulk_get_subscriber_user_ids(
     )
 
     cursor = connection.cursor()
-    cursor.execute(query, {"recipient_ids": tuple(recipient_ids)})
+    cursor.execute(
+        query,
+        {
+            "full_fetch_recipient_ids": full_fetch_recipient_ids,
+            "partial_fetch_recipient_ids": partial_fetch_recipient_ids,
+        },
+    )
     rows = cursor.fetchall()
     cursor.close()
 
@@ -858,44 +883,38 @@ def gather_subscriptions_helper(
             get_stream_id(sub_dict) for sub_dict in sub_dicts if sub_dict["active"]
         }
 
+        # If the client only wants partial subscriber data, we send:
+        # - all subscribers (full data) for channels with fewer than 250 subscribers
+        # - only bots and recently active users for channels with >= 250 subscribers
+        streams_to_partially_fetch = []
+        if include_subscribers == "partial":
+            streams_to_partially_fetch = [
+                stream.id
+                for stream in all_streams
+                if stream.subscriber_count >= settings.MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE
+            ]
+
         subscriber_map = bulk_get_subscriber_user_ids(
             all_stream_dicts,
             user_profile,
             subscribed_stream_ids,
+            streams_to_partially_fetch,
         )
-
-        # Eventually "partial subscribers" will return (at minimum):
-        # (1) all subscriptions for recently active users (for the buddy list)
-        # (2) subscriptions for all bots
-        #
-        # For now, we're only doing (2).
-        send_partial_subscribers = include_subscribers == "partial"
-        partial_subscriber_map: dict[int, list[int]] = dict()
-        if send_partial_subscribers:
-            bot_users = set(
-                UserProfile.objects.filter(
-                    is_bot=True, realm=user_profile.realm, is_active=True
-                ).values_list("id", flat=True)
-            )
-            for stream_id, users in subscriber_map.items():
-                partial_subscribers = [user_id for user_id in users if user_id in bot_users]
-                if len(partial_subscribers) != len(users):
-                    partial_subscriber_map[stream_id] = partial_subscribers
 
         for lst in [subscribed, unsubscribed]:
             for stream_dict in lst:
                 assert isinstance(stream_dict["stream_id"], int)
                 stream_id = stream_dict["stream_id"]
-                if send_partial_subscribers and partial_subscriber_map.get(stream_id) is not None:
-                    stream_dict["partial_subscribers"] = partial_subscriber_map[stream_id]
+                if stream_id in streams_to_partially_fetch:
+                    stream_dict["partial_subscribers"] = subscriber_map[stream_id]
                 else:
                     stream_dict["subscribers"] = subscriber_map[stream_id]
 
         for slim_stream_dict in never_subscribed:
             assert isinstance(slim_stream_dict["stream_id"], int)
             stream_id = slim_stream_dict["stream_id"]
-            if send_partial_subscribers and partial_subscriber_map.get(stream_id) is not None:
-                slim_stream_dict["partial_subscribers"] = partial_subscriber_map[stream_id]
+            if stream_id in streams_to_partially_fetch:
+                slim_stream_dict["partial_subscribers"] = subscriber_map[stream_id]
             else:
                 slim_stream_dict["subscribers"] = subscriber_map[stream_id]
 

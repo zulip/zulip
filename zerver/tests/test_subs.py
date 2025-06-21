@@ -195,6 +195,7 @@ class TestMiscStuff(ZulipTestCase):
             stream_dicts=[],
             user_profile=user_profile,
             subscribed_stream_ids=set(),
+            streams_to_partially_fetch=[],
         )
         self.assertEqual(result, {})
 
