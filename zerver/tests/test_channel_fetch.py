@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Any
 
 import orjson
 from django.conf import settings
+from django.test import override_settings
 from typing_extensions import override
 
 from zerver.actions.streams import (
@@ -9,6 +10,7 @@ from zerver.actions.streams import (
     do_change_stream_permission,
     do_deactivate_stream,
 )
+from zerver.lib.create_user import create_user
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.subscription_info import gather_subscriptions, gather_subscriptions_helper
 from zerver.lib.test_classes import ZulipTestCase
@@ -661,15 +663,29 @@ class GetSubscribersTest(ZulipTestCase):
         stream_name = gather_subscriptions(self.user_profile)[0][0]["name"]
         self.make_successful_subscriber_request(stream_name)
 
+    @override_settings(MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE=5)
     def test_gather_partial_subscriptions(self) -> None:
         othello = self.example_user("othello")
+        idle_users = [
+            create_user(
+                email=f"original_user{i}@zulip.com",
+                password=None,
+                realm=othello.realm,
+                full_name=f"Full Name {i}",
+            )
+            for i in range(5)
+        ]
+        for user in idle_users:
+            user.long_term_idle = True
+            user.save()
         bot = self.create_test_bot("bot", othello, "Foo Bot")
 
         stream_names = [
             "never_subscribed_only_bots",
-            "never_subscribed_more_than_bots",
+            "never_subscribed_many_more_than_bots",
             "unsubscribed_only_bots",
-            "subscribed_more_than_bots",
+            "subscribed_more_than_bots_including_idle",
+            "subscribed_many_more_than_bots",
         ]
         for stream_name in stream_names:
             self.make_stream(stream_name)
@@ -681,8 +697,12 @@ class GetSubscribersTest(ZulipTestCase):
         )
         self.subscribe_via_post(
             self.user_profile,
-            ["never_subscribed_more_than_bots"],
-            dict(principals=orjson.dumps([bot.id, othello.id]).decode()),
+            ["never_subscribed_many_more_than_bots"],
+            dict(
+                principals=orjson.dumps(
+                    [bot.id, othello.id] + [user.id for user in idle_users]
+                ).decode()
+            ),
         )
         self.subscribe_via_post(
             self.user_profile,
@@ -695,11 +715,24 @@ class GetSubscribersTest(ZulipTestCase):
         )
         self.subscribe_via_post(
             self.user_profile,
-            ["subscribed_more_than_bots"],
-            dict(principals=orjson.dumps([bot.id, othello.id, self.user_profile.id]).decode()),
+            ["subscribed_more_than_bots_including_idle"],
+            dict(
+                principals=orjson.dumps(
+                    [bot.id, othello.id, self.user_profile.id, idle_users[0].id]
+                ).decode()
+            ),
+        )
+        self.subscribe_via_post(
+            self.user_profile,
+            ["subscribed_many_more_than_bots"],
+            dict(
+                principals=orjson.dumps(
+                    [bot.id, othello.id, self.user_profile.id] + [user.id for user in idle_users]
+                ).decode()
+            ),
         )
 
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(9):
             sub_data = gather_subscriptions_helper(self.user_profile, include_subscribers="partial")
             never_subscribed_streams = sub_data.never_subscribed
             unsubscribed_streams = sub_data.unsubscribed
@@ -719,8 +752,9 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assert_length(sub["subscribers"], 1)
                 self.assertIsNone(sub.get("partial_subscribers"))
                 continue
-            if sub["name"] == "never_subscribed_more_than_bots":
-                self.assert_length(sub["partial_subscribers"], 1)
+            if sub["name"] == "never_subscribed_many_more_than_bots":
+                # the bot and Othello (who is not long_term_idle)
+                self.assert_length(sub["partial_subscribers"], 2)
                 self.assertIsNone(sub.get("subscribers"))
 
         for sub in unsubscribed_streams:
@@ -730,10 +764,16 @@ class GetSubscribersTest(ZulipTestCase):
                 break
 
         for sub in subscribed_streams:
-            if sub["name"] == "subscribed_more_than_bots":
-                self.assert_length(sub["partial_subscribers"], 1)
+            # fewer than MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE subscribers,
+            # so we get all of them
+            if sub["name"] == "subscribed_more_than_bots_including_idle":
+                self.assertIsNone(sub.get("partial_subscribers"))
+                self.assert_length(sub["subscribers"], 4)
+                continue
+            if sub["name"] == "subscribed_many_more_than_bots":
+                # the bot, Othello (who is not long_term_idle), and current user
+                self.assert_length(sub["partial_subscribers"], 3)
                 self.assertIsNone(sub.get("subscribers"))
-                break
 
     def test_gather_subscriptions(self) -> None:
         """
