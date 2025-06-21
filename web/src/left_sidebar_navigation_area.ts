@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as channel_folders from "./channel_folders.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
@@ -106,6 +107,8 @@ export function update_dom_with_unread_counts(
 
     let pinned_unmuted_unread_count = 0;
     let pinned_muted_unread_count = 0;
+    const folder_unmuted_unread_counts = new Map<number, number>();
+    const folder_muted_unread_counts = new Map<number, number>();
     let normal_unmuted_unread_count = 0;
     let normal_muted_unread_count = 0;
     let inactive_unmuted_unread_count = 0;
@@ -117,6 +120,17 @@ export function update_dom_with_unread_counts(
         if (sub.pin_to_top) {
             pinned_unmuted_unread_count += stream_count_info.unmuted_count;
             pinned_muted_unread_count += stream_count_info.muted_count;
+        } else if (sub.folder_id !== null) {
+            const prev_unmuted_count = folder_unmuted_unread_counts.get(sub.folder_id) ?? 0;
+            folder_unmuted_unread_counts.set(
+                sub.folder_id,
+                prev_unmuted_count + stream_count_info.unmuted_count,
+            );
+            const prev_muted_count = folder_muted_unread_counts.get(sub.folder_id) ?? 0;
+            folder_muted_unread_counts.set(
+                sub.folder_id,
+                prev_muted_count + stream_count_info.muted_count,
+            );
         } else if (stream_list_sort.has_recent_activity(sub)) {
             normal_unmuted_unread_count += stream_count_info.unmuted_count;
             normal_muted_unread_count += stream_count_info.muted_count;
@@ -158,6 +172,14 @@ export function update_dom_with_unread_counts(
         inactive_unmuted_unread_count,
         inactive_muted_unread_count,
     );
+
+    for (const folder_id of channel_folders.get_channel_ids()) {
+        update_section_unread_count(
+            $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
+            folder_unmuted_unread_counts.get(folder_id) ?? 0,
+            folder_muted_unread_counts.get(folder_id) ?? 0,
+        );
+    }
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
