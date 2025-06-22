@@ -213,6 +213,10 @@ class UserBaseSettings(models.Model):
     enable_followed_topic_audible_notifications = models.BooleanField(default=True)
     enable_followed_topic_wildcard_mentions_notify = models.BooleanField(default=True)
 
+    # Reaction notifications
+    enable_reaction_audible_notifications = models.BooleanField(default=False, db_default=False)
+    enable_reaction_desktop_notifications = models.BooleanField(default=False, db_default=False)
+
     # Direct message + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)
     pm_content_in_desktop_notifications = models.BooleanField(default=True)
@@ -344,6 +348,8 @@ class UserBaseSettings(models.Model):
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
+        enable_reaction_audible_notifications=bool,
+        enable_reaction_desktop_notifications=bool,
         enable_sounds=bool,
         enable_stream_audible_notifications=bool,
         enable_stream_desktop_notifications=bool,
