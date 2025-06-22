@@ -36,7 +36,7 @@ function small_avatar_url_for_test_notification(message: TestNotificationMessage
     return people.gravatar_url_for_email(message.sender_email);
 }
 
-function get_notification_content(message: Message | TestNotificationMessage): string {
+export function get_notification_content(message: Message | TestNotificationMessage): string {
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
