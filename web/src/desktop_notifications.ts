@@ -75,6 +75,8 @@ if (electron_bridge?.new_notification) {
     NotificationAPI = window.Notification;
 }
 
+export type NotificationType = "message" | "reaction";
+
 // The parts of a message that the notification body is built from. This
 // is structural rather than `Message`, since the test notifications
 // message_notifications sends are not real messages.
@@ -85,7 +87,10 @@ export type NotificationContentMessage = {
     is_me_message?: boolean | undefined;
 };
 
-export function get_notification_content(message: NotificationContentMessage): string {
+export function get_notification_content(
+    message: NotificationContentMessage,
+    notification_type: NotificationType,
+): string {
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
@@ -112,6 +117,10 @@ export function get_notification_content(message: NotificationContentMessage): s
         (message.type === "private" || message.type === "test-notification") &&
         !user_settings.pm_content_in_desktop_notifications
     ) {
+        if (notification_type === "reaction") {
+            return "";
+        }
+
         content = $t(
             {defaultMessage: "New direct message from {sender_full_name}"},
             {sender_full_name: message.sender_full_name},

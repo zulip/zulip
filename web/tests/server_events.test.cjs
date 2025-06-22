@@ -38,6 +38,10 @@ mock_esm("../src/sent_messages", {
     messages: new Map(),
 });
 
+const reaction_notifications = mock_esm("../src/reaction_notifications", {
+    received_reactions() {},
+});
+
 const message_events = mock_esm("../src/message_events", {
     insert_new_messages() {
         throw new Error("insert error");
@@ -45,6 +49,7 @@ const message_events = mock_esm("../src/message_events", {
     update_messages() {
         throw new Error("update error");
     },
+    update_views_filtered_on_message_property() {},
 });
 
 const server_events = zrequire("server_events");
@@ -101,6 +106,32 @@ run_test("message_event", ({override}) => {
 
     server_events._get_events_success([event]);
     assert.ok(inserted);
+});
+
+run_test("reaction_events", ({override}) => {
+    // Reaction notifications are processed as a batch, so that reactions
+    // to messages we don't have cached cost one fetch for the whole set
+    // of events rather than one apiece.
+    const reaction_add = {
+        id: 1,
+        type: "reaction",
+        op: "add",
+        message_id: 5,
+        message_sender_id: 6,
+        user_id: 7,
+        reaction_type: "unicode_emoji",
+        emoji_name: "tada",
+        emoji_code: "1f389",
+    };
+    const reaction_remove = {...reaction_add, id: 2, op: "remove"};
+
+    const batches = [];
+    override(reaction_notifications, "received_reactions", (events) => {
+        batches.push(events);
+    });
+
+    server_events._get_events_success([reaction_add, reaction_remove]);
+    assert.deepEqual(batches, [[reaction_add, reaction_remove]]);
 });
 
 // Start blueslip tests here

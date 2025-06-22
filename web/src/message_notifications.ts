@@ -129,7 +129,7 @@ export function process_notification(notification: {
     desktop_notify: boolean;
 }): void {
     const message = notification.message;
-    const content = desktop_notifications.get_notification_content(message);
+    const content = desktop_notifications.get_notification_content(message, "message");
     const key = get_notification_key(message);
     let msg_count = 1;
 
