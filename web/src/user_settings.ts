@@ -38,6 +38,7 @@ export const user_settings_schema = stream_notification_settings_schema
         automatically_follow_topics_policy: z.number(),
         automatically_follow_topics_where_mentioned: z.boolean(),
         automatically_unmute_topics_in_muted_streams_policy: z.number(),
+        reaction_notifications_policy: z.number(),
         available_notification_sounds: z.array(z.string()),
         color_scheme: z.number(),
         default_language: z.string(),

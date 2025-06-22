@@ -3106,6 +3106,7 @@ class NormalActionsTest(BaseAction):
                 "realm_name_in_email_notifications_policy",
                 "automatically_follow_topics_policy",
                 "automatically_unmute_topics_in_muted_streams_policy",
+                "streams_reaction_notification",
             ]:
                 # These settings are tested in their own tests.
                 continue
@@ -4609,6 +4610,7 @@ class RealmPropertyActionTest(BaseAction):
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
+            reaction_notifications_policy=UserProfile.REACTION_NOTIFICATIONS_POLICY_CHOICES,
         )
 
         vals = test_values.get(name)

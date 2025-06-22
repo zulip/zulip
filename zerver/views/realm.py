@@ -648,6 +648,10 @@ def update_realm_user_settings_defaults(
     enable_followed_topic_push_notifications: Json[bool] | None = None,
     enable_followed_topic_audible_notifications: Json[bool] | None = None,
     enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
+    reaction_notifications_policy: Json[
+        Annotated[int, check_int_in_validator(UserProfile.REACTION_NOTIFICATIONS_POLICY_CHOICES)]
+    ]
+    | None = None,
     notification_sound: str | None = None,
     enable_desktop_notifications: Json[bool] | None = None,
     enable_sounds: Json[bool] | None = None,

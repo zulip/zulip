@@ -375,6 +375,7 @@ class ChangeSettingsTest(ZulipTestCase):
             automatically_follow_topics_policy=1,
             automatically_unmute_topics_in_muted_streams_policy=1,
             resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum.always.name,
+            reaction_notifications_policy=1,
         )
 
         self.login("hamlet")
