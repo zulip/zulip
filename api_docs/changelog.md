@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 428**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new user setting: `enable_reaction_desktop_notifications` and
+  `enable_reaction_audible_notifications`, giving users the option to toggle
+  desktop and audible notification for reactions.
+
 **Feature level 427**
 
 * [`POST /register`](/api/register-queue): `stream_creator_or_nobody`
