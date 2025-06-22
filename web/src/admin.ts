@@ -261,6 +261,7 @@ export function build_page(): void {
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
+        reaction_notifications_policy_values: settings_config.reaction_notifications_policy_values,
         realm_enable_guest_user_indicator: realm.realm_enable_guest_user_indicator,
         realm_enable_guest_user_dm_warning: realm.realm_enable_guest_user_dm_warning,
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,

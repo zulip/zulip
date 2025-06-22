@@ -148,6 +148,7 @@ export function build_page(): void {
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
+        reaction_notifications_policy_values: settings_config.reaction_notifications_policy_values,
         web_line_height_percent_display_value:
             information_density.get_string_display_value_for_line_height(
                 user_settings.web_line_height_percent,

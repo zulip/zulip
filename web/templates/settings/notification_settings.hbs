@@ -122,6 +122,24 @@
         </div>
     </div>
 
+    <div
+      class="reaction_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header inline-block">
+            <h3>{{t "Reaction notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="reaction-notifications-settings" show_only_indicator=(not
+              for_realm_settings) }}
+        </div>
+
+        <div class="input-group">
+            <label for="reaction_notifications_policy" class="settings-field-label">{{ settings_label.reaction_notifications_policy }}</label>
+            <select name="reaction_notifications_policy"
+              class="setting_reaction_notifications_policy prop-element settings_select bootstrap-focus-style"
+              id="{{prefix}}reaction_notifications_policy" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=reaction_notifications_policy_values}}
+            </select>
+        </div>
+    </div>
+
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">

@@ -668,6 +668,9 @@ export const notification_settings_labels = {
     realm_name_in_email_notifications_policy: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
     }),
+    reaction_notifications_policy: $t({
+        defaultMessage: "Notify me about reactions to my messages",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -1017,6 +1020,7 @@ const other_notification_settings = [
     "automatically_follow_topics_policy",
     "automatically_unmute_topics_in_muted_streams_policy",
     "automatically_follow_topics_where_mentioned",
+    "reaction_notifications_policy",
 ];
 
 export const all_notification_settings = [
@@ -1259,6 +1263,25 @@ export const automatically_follow_or_unmute_topics_policy_values = {
     never: {
         code: 4,
         description: $t({defaultMessage: "Never"}),
+    },
+};
+
+export const reaction_notifications_policy_values = {
+    never: {
+        code: 1,
+        description: $t({defaultMessage: "Never"}),
+    },
+    followed_topics: {
+        code: 2,
+        description: $t({defaultMessage: "In DMs and topics I follow"}),
+    },
+    unmuted_messages: {
+        code: 3,
+        description: $t({defaultMessage: "In DMs and unmuted messages"}),
+    },
+    always: {
+        code: 4,
+        description: $t({defaultMessage: "Always"}),
     },
 };
 
