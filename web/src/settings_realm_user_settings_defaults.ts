@@ -205,6 +205,7 @@ export function set_up(): void {
                 ...settings_config.stream_notification_settings,
                 ...settings_config.pm_mention_notification_settings,
                 ...settings_config.followed_topic_notification_settings,
+                ...settings_config.reaction_notification_settings,
             ];
         } else {
             const $elem = $(this).closest(".input-group").find(".prop-element");
