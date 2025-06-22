@@ -1124,6 +1124,7 @@ paths:
                                       "timezone": "",
                                       "is_active": true,
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
+                                      "avatar_source": "G",
                                       "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
                                       "profile_data": {},
                                     },
@@ -10043,6 +10044,7 @@ paths:
                               "is_admin": false,
                               "is_owner": false,
                               "role": 400,
+                              "avatar_source": "G",
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
                               "timezone": "",
@@ -10087,6 +10089,7 @@ paths:
                               "is_admin": false,
                               "is_owner": false,
                               "role": 400,
+                              "avatar_source": "G",
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
                               "email": "hamlet@zulip.com",
@@ -10100,6 +10103,7 @@ paths:
                               "email": "iago-bot@zulipdev.com",
                               "delivery_email": "iago-bot@zulipdev.com",
                               "is_active": true,
+                              "avatar_source": "G",
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
@@ -10384,6 +10388,14 @@ paths:
                       result: {}
                       msg: {}
                       ignored_parameters_unsupported: {}
+                      avatar_source:
+                        type: string
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          The avatar data source type for the current user.
+
+                          Value values are `G` (gravatar) and `U` (uploaded by user).
                       avatar_url:
                         type: string
                         description: |
@@ -10507,6 +10519,7 @@ paths:
                     example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
+                        "avatar_source": "G",
                         "avatar_version": 1,
                         "email": "iago@zulip.com",
                         "delivery_email": iago@zulip.com,
@@ -13922,6 +13935,7 @@ paths:
                             "is_admin": false,
                             "is_owner": false,
                             "role": 400,
+                            "avatar_source": "G",
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
@@ -14056,6 +14070,7 @@ paths:
                             "is_admin": false,
                             "is_owner": false,
                             "role": 400,
+                            "avatar_source": "G",
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
@@ -20006,6 +20021,12 @@ paths:
                                 is_admin: {}
                                 is_guest: {}
                                 is_bot: {}
+                                avatar_source:
+                                  type: string
+                                  description: |
+                                    The avatar data source type for the user.
+
+                                    Value values are `G` (gravatar) and `U` (uploaded by user).
                                 # Referenced schema properties are rendered before any
                                 # non-referenced properties in the API documentation, so
                                 # `is_system_bot` appears last instead of in this order.
@@ -26123,6 +26144,12 @@ components:
               nullable: true
             role: {}
             timezone: {}
+            avatar_source:
+              type: string
+              description: |
+                The new avatar data source type for the user.
+
+                Value values are `G` (gravatar) and `U` (uploaded by user).
             avatar_url:
               nullable: true
             avatar_version: {}
