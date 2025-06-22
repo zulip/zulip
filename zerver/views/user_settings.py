@@ -88,17 +88,18 @@ def validate_email_change_request(user_profile: UserProfile, new_email: str) -> 
 
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
-    try:
-        email_change_object = get_object_from_key(
-            confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
-        )
-    except ConfirmationKeyError as exception:
-        return render_confirmation_key_error(request, exception)
-
-    assert isinstance(email_change_object, EmailChangeStatus)
-    new_email = email_change_object.new_email
-    old_email = email_change_object.old_email
     with transaction.atomic(durable=True):
+        try:
+            email_change_object = get_object_from_key(
+                confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
+            )
+        except ConfirmationKeyError as exception:
+            return render_confirmation_key_error(request, exception)
+
+        assert isinstance(email_change_object, EmailChangeStatus)
+        new_email = email_change_object.new_email
+        old_email = email_change_object.old_email
+
         user_profile = UserProfile.objects.select_for_update().get(
             id=email_change_object.user_profile_id
         )
