@@ -15,9 +15,14 @@ const stream_data = zrequire("stream_data");
 
 const desktop_notifications = zrequire("desktop_notifications");
 const message_notifications = zrequire("message_notifications");
-const {set_current_user} = zrequire("state_data");
+const emoji = zrequire("emoji");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const people = zrequire("people");
+const reaction_notifications = zrequire("reaction_notifications");
 
+const realm = {};
+set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
 const user_settings = {};
@@ -49,6 +54,13 @@ user_topics.update_user_topics(
     general.name,
     "muted topic",
     user_topics.all_visibility_policies.MUTED,
+);
+
+user_topics.update_user_topics(
+    general.stream_id,
+    general.name,
+    "unmuted topic",
+    user_topics.all_visibility_policies.UNMUTED,
 );
 
 user_topics.update_user_topics(
@@ -348,6 +360,77 @@ test("message_is_notifiable", ({override}) => {
     assert.equal(message_notifications.message_is_notifiable(message), true);
 });
 
+test("reaction_is_notifiable", () => {
+    // Message is not sent by user and should not notify current user
+    let message = {
+        id: 1,
+        type: "private",
+        content: "React to DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: false,
+        locally_echoed: true,
+        notification_sent: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    message = {
+        id: 2,
+        content: "Someone else reacted",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+        sent_by_me: false,
+        notification_sent: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+
+    message = {
+        id: 3,
+        type: "private",
+        content: "React to my DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: true,
+        locally_echoed: true,
+        notification_sent: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    message = {
+        id: 4,
+        content: "React to my followed topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+        sent_by_me: true,
+        notification_sent: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    message = {
+        id: 5,
+        content: "React to my unmuted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "whatever",
+        sent_by_me: true,
+        notification_sent: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), true);
+
+    message = {
+        id: 6,
+        content: "React to my muted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "muted topic",
+        sent_by_me: true,
+        notification_sent: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message), false);
+});
+
 test("basic_notifications", () => {
     $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
     $("<div>").set_find_results("span.katex", {each() {}});
@@ -448,6 +531,167 @@ test("basic_notifications", () => {
     desktop_notifications.close_notification(message_2);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
+    assert.equal(n.size, 0);
+    assert.equal(last_closed_message_id, message_2.id.toString());
+
+    // Reaction notifications
+    const alice = {
+        email: "alice@zulip.com",
+        user_id: 1,
+        full_name: "Alice Smith",
+    };
+    const fred = {
+        email: "fred@zulip.com",
+        user_id: 2,
+        full_name: "Fred Flintstone",
+    };
+    const jill = {
+        email: "jill@zulip.com",
+        user_id: 3,
+        full_name: "Jill Hill",
+    };
+
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+    people.add_active_user(jill);
+
+    const emoji_tada = {
+        name: "tada",
+        aliases: ["tada"],
+        emoji_url: "TBD",
+        emoji_code: "1f389",
+    };
+    const emoji_thumbs_up = {
+        name: "thumbs_up",
+        aliases: ["thumbs_up"],
+        emoji_url: "TBD",
+        emoji_code: "1f44d",
+    };
+    const emoji_heart = {
+        name: "heart",
+        aliases: ["heart"],
+        emoji_url: "TBD",
+        emoji_code: "2764",
+    };
+
+    const emojis_by_name = new Map(
+        Object.entries({
+            tada: emoji_tada,
+            thumbs_up: emoji_thumbs_up,
+            heart: emoji_heart,
+        }),
+    );
+
+    const name_to_codepoint = {};
+    for (const [key, val] of emojis_by_name.entries()) {
+        name_to_codepoint[key] = val.emoji_code;
+    }
+
+    const codepoint_to_name = {};
+    for (const [key, val] of emojis_by_name.entries()) {
+        codepoint_to_name[val.emoji_code] = key;
+    }
+
+    const emoji_codes = {
+        name_to_codepoint,
+        names: [...emojis_by_name.keys()],
+        emoji_catalog: {},
+        emoticon_conversions: {},
+        codepoint_to_name,
+    };
+
+    emoji.initialize({
+        realm_emoji: {},
+        emoji_codes,
+    });
+
+    emoji.active_realm_emojis.clear();
+    emoji.emojis_by_name.clear();
+
+    for (const [key, val] of emojis_by_name.entries()) {
+        emoji.emojis_by_name.set(key, val);
+    }
+
+    const reaction_1 = {
+        message_id: 1000,
+        user_id: alice.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_tada.name,
+        emoji_code: emoji_tada.emoji_code,
+    };
+    const reaction_2 = {
+        message_id: 1000,
+        user_id: jill.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_tada.name,
+        emoji_code: emoji_tada.emoji_code,
+    };
+    const reaction_3 = {
+        message_id: 1000,
+        user_id: fred.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_heart.name,
+        emoji_code: emoji_heart.emoji_code,
+    };
+
+    const reaction_4 = {
+        message_id: 1500,
+        user_id: alice.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_tada.name,
+        emoji_code: emoji_tada.emoji_code,
+    };
+
+    // Incoming reaction event should notify user
+    reaction_notifications.process_notification({
+        message: message_1,
+        reaction_event: reaction_1,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(message_1.id.toString()), true);
+    assert.equal(n.size, 1);
+    assert.equal(last_shown_message_id, message_1.id.toString());
+
+    // Reaction to same message shouldn't increase notification obj
+    reaction_notifications.process_notification({
+        message: message_1,
+        reaction_event: reaction_2,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(message_1.id.toString()), true);
+    assert.equal(n.size, 1);
+    assert.equal(last_shown_message_id, message_1.id.toString());
+
+    // Send another reaction to same message
+    reaction_notifications.process_notification({
+        message: message_1,
+        reaction_event: reaction_3,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(message_1.id.toString()), true);
+    assert.equal(n.size, 1);
+    assert.equal(last_shown_message_id, message_1.id.toString());
+
+    // Reaction to another message should increase notification obj
+    reaction_notifications.process_notification({
+        message: message_2,
+        reaction_event: reaction_4,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(message_2.id.toString()), true);
+    assert.equal(n.size, 2);
+    assert.equal(last_shown_message_id, message_2.id.toString());
+
+    // Remove notifications.
+    desktop_notifications.close_notification(message_1);
+    desktop_notifications.close_notification(message_2);
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(message_1.id.toString()), false);
+    assert.equal(n.has(message_2.id.toString()), false);
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_2.id.toString());
 });
