@@ -10,6 +10,10 @@ type NoticeMemory = Map<
         obj: Notification | ElectronBridgeNotification;
         msg_count: number;
         message_id: number;
+        reaction_list?: {
+            emoji_set: Set<string>;
+            user_ids: Set<number>;
+        };
     }
 >;
 
