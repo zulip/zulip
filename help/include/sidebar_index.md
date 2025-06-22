@@ -163,6 +163,7 @@
 * [Topic notifications](/help/topic-notifications)
 * [Follow a topic](/help/follow-a-topic)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [Reactions](/help/reactions)
 * [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Mute a user](/help/mute-a-user)
