@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0760_preregistrationuser_is_realm_importer"),
+        ("zerver", "0761_realm_send_channel_events_messages"),
     ]
 
     operations = [
