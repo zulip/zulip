@@ -11,6 +11,10 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/electron_bridge");
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
+const channel = mock_esm("../src/channel");
+const unread_ops = mock_esm("../src/unread_ops", {
+    is_window_focused: () => false,
+});
 
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
@@ -18,10 +22,15 @@ const people = zrequire("people");
 
 const desktop_notifications = zrequire("desktop_notifications");
 const message_notifications = zrequire("message_notifications");
-const {set_current_user} = zrequire("state_data");
+const muted_users = zrequire("muted_users");
+const emoji = zrequire("emoji");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const reaction_notifications = zrequire("reaction_notifications");
 
-const current_user = {};
+const realm = {};
+set_realm(realm);
+const current_user = {user_id: 1};
 set_current_user(current_user);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -57,8 +66,29 @@ user_topics.update_user_topics(
 user_topics.update_user_topics(
     general.stream_id,
     general.name,
+    "unmuted topic",
+    user_topics.all_visibility_policies.UNMUTED,
+);
+
+user_topics.update_user_topics(
+    general.stream_id,
+    general.name,
     "followed topic",
     user_topics.all_visibility_policies.FOLLOWED,
+);
+
+user_topics.update_user_topics(
+    muted.stream_id,
+    muted.name,
+    "unmuted topic",
+    user_topics.all_visibility_policies.UNMUTED,
+);
+
+user_topics.update_user_topics(
+    muted.stream_id,
+    muted.name,
+    "inherit visibility topic",
+    user_topics.all_visibility_policies.INHERIT,
 );
 
 function test(label, f) {
@@ -391,6 +421,118 @@ test("message_is_notifiable", ({override}) => {
     assert.equal(message_notifications.message_is_notifiable(message), true);
 });
 
+test("reaction_is_notifiable", () => {
+    const my_user_id = 1;
+    const other_user_id = 3;
+    const muted_user_id = 5;
+    muted_users.add_muted_user(muted_user_id);
+    // Case 1: Not notifiable since reaction is from current user
+    let message = {
+        id: 1,
+        type: "private",
+        content: "Reaction to DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, my_user_id), false);
+
+    // Case 2: Reaction to someone else's message should not notify
+    message = {
+        id: 2,
+        content: "Reaction to someone else's message",
+        type: "stream",
+        stream_id: general.stream_id,
+        sender_id: "2",
+        topic: "followed topic",
+        sent_by_me: false,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, other_user_id), false);
+
+    // Case 3: Reaction from muted user should not notify
+    message = {
+        id: 3,
+        content: "Muted user reacts to my message",
+        type: "stream",
+        stream_id: general.stream_id,
+        sender_id: "1",
+        topic: "followed topic",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, muted_user_id), false);
+
+    // Case 4: Reaction to muted stream message should not notify
+    message = {
+        id: 4,
+        content: "Reaction to my muted stream message",
+        type: "stream",
+        stream_id: muted.stream_id,
+        topic: "inherit visibility topic",
+        sender_id: "1",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, other_user_id), false);
+
+    // Case 5: Reaction to muted stream message but topic is unmuted
+    message = {
+        id: 5,
+        content: "Reaction to my muted stream but unmuted topic message",
+        type: "stream",
+        stream_id: muted.stream_id,
+        topic: "unmuted topic",
+        sender_id: "1",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, other_user_id), true);
+
+    // Case 6: Reaction to unmuted stream but muted topic message should not notify
+    message = {
+        id: 6,
+        content: "Reaction to my muted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "muted topic",
+        sender_id: "1",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, other_user_id), false);
+
+    // Reaction to DM messages
+    message = {
+        id: 7,
+        type: "private",
+        content: "Reaction to my DM",
+        sender_id: "1",
+        to_user_ids: "31",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, other_user_id), true);
+
+    // Reaction to followed topic message
+    message = {
+        id: 8,
+        content: "Reaction to my followed topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        sender_id: "1",
+        topic: "followed topic",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, other_user_id), true);
+
+    // Reaction to unmuted topic message
+    message = {
+        id: 9,
+        content: "Reaction to my unmuted topic message",
+        type: "stream",
+        stream_id: general.stream_id,
+        sender_id: "1",
+        topic: "whatever",
+        sent_by_me: true,
+    };
+    assert.equal(reaction_notifications.reaction_is_notifiable(message, other_user_id), true);
+});
+
 test("basic_notifications", () => {
     const $emoji_stub = $.create("emoji-stub");
     $emoji_stub.set_matches("img", false);
@@ -403,10 +545,15 @@ test("basic_notifications", () => {
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;
     let last_shown_message_id = null;
+    let last_shown_title = null;
+    // Counts how many notifications have been shown, so tests can verify
+    // that an operation does (or does not) pop up a new notification.
+    let shown_count = 0;
 
     // Notifications API stub
     class StubNotification {
-        constructor(_title, {icon, body, tag}) {
+        constructor(title, {icon, body, tag}) {
+            this.title = title;
             this.icon = icon;
             this.body = body;
             this.tag = tag;
@@ -415,6 +562,8 @@ test("basic_notifications", () => {
                 shown: false,
             };
             last_shown_message_id = this.tag;
+            last_shown_title = title;
+            shown_count += 1;
         }
 
         addEventListener() {}
@@ -560,4 +709,436 @@ test("basic_notifications", () => {
     assert.equal(n.has("test:Notification Bot"), true);
     assert.equal(n.size, 1);
     desktop_notifications.close_notification(test_notification_message.id);
+
+    // Reaction notifications
+    const alice = {
+        email: "alice@zulip.com",
+        user_id: 1,
+        full_name: "Alice Smith",
+    };
+    const fred = {
+        email: "fred@zulip.com",
+        user_id: 2,
+        full_name: "Fred Flintstone",
+    };
+    const jill = {
+        email: "jill@zulip.com",
+        user_id: 3,
+        full_name: "Jill Hill",
+    };
+
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+    people.add_active_user(jill);
+
+    const emoji_tada = {
+        name: "tada",
+        aliases: ["tada"],
+        emoji_url: "TBD",
+        emoji_code: "1f389",
+    };
+    const emoji_thumbs_up = {
+        name: "thumbs_up",
+        aliases: ["thumbs_up"],
+        emoji_url: "TBD",
+        emoji_code: "1f44d",
+    };
+    const emoji_heart = {
+        name: "heart",
+        aliases: ["heart"],
+        emoji_url: "TBD",
+        emoji_code: "2764",
+    };
+
+    const emojis_by_name = new Map(
+        Object.entries({
+            tada: emoji_tada,
+            thumbs_up: emoji_thumbs_up,
+            heart: emoji_heart,
+        }),
+    );
+
+    const name_to_codepoint = {};
+    for (const [key, val] of emojis_by_name.entries()) {
+        name_to_codepoint[key] = val.emoji_code;
+    }
+
+    const codepoint_to_name = {};
+    for (const [key, val] of emojis_by_name.entries()) {
+        codepoint_to_name[val.emoji_code] = key;
+    }
+
+    const emoji_codes = {
+        name_to_codepoint,
+        names: [...emojis_by_name.keys()],
+        emoji_catalog: {},
+        emoticon_conversions: {},
+        codepoint_to_name,
+    };
+
+    emoji.initialize({
+        realm_emoji: {},
+        emoji_codes,
+    });
+
+    emoji.active_realm_emojis.clear();
+    emoji.emojis_by_name.clear();
+
+    for (const [key, val] of emojis_by_name.entries()) {
+        emoji.emojis_by_name.set(key, val);
+    }
+
+    // A reaction event's message_id always matches the message it is
+    // for, since received_reaction looks the message up by that id.
+    const reaction_1 = {
+        message_id: stream_message_1.id,
+        user_id: alice.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_tada.name,
+        emoji_code: emoji_tada.emoji_code,
+    };
+    const reaction_2 = {
+        message_id: stream_message_1.id,
+        user_id: jill.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_tada.name,
+        emoji_code: emoji_tada.emoji_code,
+    };
+    const reaction_3 = {
+        message_id: stream_message_1.id,
+        user_id: fred.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_heart.name,
+        emoji_code: emoji_heart.emoji_code,
+    };
+
+    const reaction_4 = {
+        message_id: stream_message_2.id,
+        user_id: alice.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_tada.name,
+        emoji_code: emoji_tada.emoji_code,
+    };
+
+    // With desktop_notify false (e.g. browser permission not granted), no
+    // desktop notification is shown.
+    reaction_notifications.process_notification({
+        message: stream_message_1,
+        reaction_event: reaction_1,
+        desktop_notify: false,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_1.id.toString()), false);
+
+    // Incoming reaction event should notify user
+    reaction_notifications.process_notification({
+        message: stream_message_1,
+        reaction_event: reaction_1,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_1.id.toString()), true);
+    assert.equal(n.size, 1);
+    assert.equal(last_shown_message_id, stream_message_1.id.toString());
+    // Unicode emoji are rendered as the glyph itself in the title.
+    assert.equal(last_shown_title, "translated: Alice Smith reacted with 🎉");
+
+    // Reaction to same message shouldn't increase notification obj
+    reaction_notifications.process_notification({
+        message: stream_message_1,
+        reaction_event: reaction_2,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_1.id.toString()), true);
+    assert.equal(n.size, 1);
+    assert.equal(last_shown_message_id, stream_message_1.id.toString());
+
+    // Send another reaction to same message
+    reaction_notifications.process_notification({
+        message: stream_message_1,
+        reaction_event: reaction_3,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_1.id.toString()), true);
+    assert.equal(n.size, 1);
+    assert.equal(last_shown_message_id, stream_message_1.id.toString());
+
+    // Reaction to another message should increase notification obj
+    reaction_notifications.process_notification({
+        message: stream_message_2,
+        reaction_event: reaction_4,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_2.id.toString()), true);
+    assert.equal(n.size, 2);
+    assert.equal(last_shown_message_id, stream_message_2.id.toString());
+
+    // A reaction with a realm emoji that is no longer active (e.g. a
+    // deactivated custom emoji, whose name is absent from
+    // `emoji.emojis_by_name` but can still receive new votes) is rendered
+    // as `:emoji_name:`.
+    const deactivated_realm_emoji_reaction = {
+        message_id: stream_message_1.id,
+        user_id: jill.user_id,
+        reaction_type: "realm_emoji",
+        emoji_name: "deactivated_custom",
+        emoji_code: "1234",
+    };
+    reaction_notifications.process_notification({
+        message: stream_message_1,
+        reaction_event: deactivated_realm_emoji_reaction,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.size, 2);
+    assert.equal(last_shown_message_id, stream_message_1.id.toString());
+    assert.ok(last_shown_title.includes(":deactivated_custom:"));
+
+    // Removing one reaction keeps the notification (reactions from other
+    // users and other emoji survive) but must NOT pop up a new
+    // notification, since a removed reaction is not new activity. Here
+    // jill retracts the deactivated custom emoji, but her 🎉 and the
+    // reactions from alice and fred remain.
+    let shown_count_before = shown_count;
+    reaction_notifications.remove_reaction_notification(deactivated_realm_emoji_reaction);
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_1.id.toString()), true);
+    assert.equal(n.size, 2);
+    assert.equal(shown_count, shown_count_before);
+
+    // Removing a reaction that was never notified (here a different emoji
+    // from a user who did react) leaves the notification untouched.
+    reaction_notifications.remove_reaction_notification({
+        message_id: stream_message_1.id,
+        user_id: fred.user_id,
+        reaction_type: "unicode_emoji",
+        emoji_name: emoji_thumbs_up.name,
+        emoji_code: emoji_thumbs_up.emoji_code,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.size, 2);
+
+    // Removing a reaction for a message with no notification is a no-op.
+    reaction_notifications.remove_reaction_notification({...reaction_1, message_id: 424242});
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.size, 2);
+
+    // Removing the remaining reactions dismisses the notification only
+    // once none are left, and no removal ever pops up a notification.
+    shown_count_before = shown_count;
+    reaction_notifications.remove_reaction_notification(reaction_1);
+    reaction_notifications.remove_reaction_notification(reaction_2);
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_1.id.toString()), true);
+    reaction_notifications.remove_reaction_notification(reaction_3);
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has(stream_message_1.id.toString()), false);
+    assert.equal(n.size, 1);
+    assert.equal(shown_count, shown_count_before);
+
+    // Closing a reaction notification directly
+    // through desktop_notifications (as the message-read and
+    // window-focus handlers do) must also clear our per-message reaction
+    // state. Otherwise a later reaction to the same message would
+    // resurrect the earlier reactor.
+    desktop_notifications.close_notification(stream_message_2.id);
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.size, 0);
+
+    reaction_notifications.process_notification({
+        message: stream_message_2,
+        reaction_event: {
+            message_id: stream_message_2.id,
+            user_id: fred.user_id,
+            reaction_type: "unicode_emoji",
+            emoji_name: emoji_heart.name,
+            emoji_code: emoji_heart.emoji_code,
+        },
+        desktop_notify: true,
+    });
+    assert.equal(
+        last_shown_title,
+        "translated: Fred Flintstone reacted with " + String.fromCodePoint(0x2764),
+    );
+
+    // Remove notifications.
+    desktop_notifications.close_notification(stream_message_2.id);
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.size, 0);
+    assert.equal(last_closed_message_id, stream_message_2.id.toString());
+});
+
+test("received_reaction gating", ({override}) => {
+    // Reaction events are delivered to everyone who can see the message.
+    // received_reaction must therefore run the message-independent checks
+    // before fetching an uncached message from the server, so we don't
+    // make a request for essentially every reaction in a busy channel.
+    let get_called = false;
+    override(channel, "get", () => {
+        get_called = true;
+    });
+    override(user_settings, "enable_reaction_desktop_notifications", true);
+    override(user_settings, "enable_reaction_audible_notifications", true);
+
+    // Not in the message cache, so the notifiable case below fetches it.
+    const uncached_message_id = 987654;
+    const reaction_event = {
+        message_id: uncached_message_id,
+        user_id: 2,
+        reaction_type: "unicode_emoji",
+        emoji_name: "tada",
+        emoji_code: "1f389",
+    };
+
+    // Baseline: an unfocused user with reaction notifications enabled
+    // fetches the uncached message so it can build a notification.
+    reaction_notifications.received_reaction(reaction_event);
+    assert.ok(get_called);
+
+    // A reaction by the current user is dropped without a fetch.
+    get_called = false;
+    reaction_notifications.received_reaction({
+        ...reaction_event,
+        user_id: current_user.user_id,
+    });
+    assert.ok(!get_called);
+
+    // While Zulip is focused the reaction is visible live, so it is
+    // dropped without a fetch.
+    override(unread_ops, "is_window_focused", () => true);
+    get_called = false;
+    reaction_notifications.received_reaction(reaction_event);
+    assert.ok(!get_called);
+
+    // With both reaction notification settings disabled, nothing is fetched.
+    override(unread_ops, "is_window_focused", () => false);
+    override(user_settings, "enable_reaction_desktop_notifications", false);
+    override(user_settings, "enable_reaction_audible_notifications", false);
+    get_called = false;
+    reaction_notifications.received_reaction(reaction_event);
+    assert.ok(!get_called);
+
+    // With only the desktop setting on, a fetch happens only once the
+    // browser notification permission has actually been granted; otherwise
+    // no notification could ever result, so we skip the request. Permission
+    // is read from NotificationAPI.permission.
+    override(user_settings, "enable_reaction_desktop_notifications", true);
+    desktop_notifications.set_notification_api({permission: "denied"});
+    get_called = false;
+    reaction_notifications.received_reaction(reaction_event);
+    assert.ok(!get_called);
+
+    desktop_notifications.set_notification_api({permission: "granted"});
+    get_called = false;
+    reaction_notifications.received_reaction(reaction_event);
+    assert.ok(get_called);
+});
+
+test("received_reaction dispatches notifiable reactions", ({override}) => {
+    // Drive received_reaction end to end against the real message store: it
+    // should show a notification for a reaction on the current user's
+    // message, ignore reactions on other people's messages, and handle the
+    // cached path, the server-fetch success path, and the fetch-error path.
+    let last_title = null;
+    class ReactionNotification {
+        static permission = "granted";
+
+        constructor(title, {tag}) {
+            this.tag = tag;
+            last_title = title;
+        }
+
+        addEventListener() {}
+
+        close() {}
+    }
+    desktop_notifications.set_notification_api(ReactionNotification);
+
+    // get_notification_content parses message HTML through jQuery, which the
+    // node test environment stubs.
+    const $emoji_stub = $.create("reaction-emoji-stub");
+    $emoji_stub.set_matches("img", false);
+    $emoji_stub.set_contents([]);
+    const $katex_stub = $.set_results("reaction-katex-stub", []);
+    $("<div>").set_find_results(".emoji", $emoji_stub);
+    $("<div>").set_find_results("span.katex", $katex_stub);
+    $("<div>").set_children([]);
+
+    people.initialize_current_user(current_user.user_id);
+    const reactor = {email: "reactor@zulip.com", user_id: 99, full_name: "Reactor"};
+    people.add_active_user(reactor);
+
+    override(user_settings, "enable_reaction_desktop_notifications", true);
+    override(user_settings, "enable_reaction_audible_notifications", false);
+
+    function raw_message(id, sender_id) {
+        return {
+            avatar_url: "https://example.com/avatar.png",
+            client: "website",
+            content: "<p>a message</p>",
+            content_type: "text/html",
+            display_recipient: general.name,
+            id,
+            is_me_message: false,
+            reactions: [],
+            sender_email: "sender@zulip.com",
+            sender_full_name: "Sender",
+            sender_id,
+            submessages: [],
+            timestamp: 1000,
+            flags: [],
+            type: "stream",
+            stream_id: general.stream_id,
+            topic: "whatever",
+            topic_links: [],
+        };
+    }
+
+    function reaction_to(message_id) {
+        return {
+            message_id,
+            user_id: reactor.user_id,
+            reaction_type: "unicode_emoji",
+            emoji_name: "tada",
+            emoji_code: "1f389",
+        };
+    }
+
+    let fetch_response;
+    override(channel, "get", (opts) => {
+        if (fetch_response === undefined) {
+            opts.error();
+        } else {
+            opts.success(fetch_response);
+        }
+    });
+
+    // Uncached reaction to my message → fetched, processed, notification shown.
+    fetch_response = {message: raw_message(830, current_user.user_id)};
+    reaction_notifications.received_reaction(reaction_to(830));
+    let n = desktop_notifications.get_notifications();
+    assert.equal(n.has("830"), true);
+    assert.equal(last_title, "translated: Reactor reacted with 🎉");
+
+    // The fetch cached the message, so a second reaction takes the cached
+    // path (no fetch) and still notifies.
+    last_title = null;
+    reaction_notifications.received_reaction(reaction_to(830));
+    assert.equal(last_title, "translated: Reactor reacted with 🎉");
+    desktop_notifications.close_notification(830);
+
+    // Reaction to a message not sent by the current user → not notifiable.
+    fetch_response = {message: raw_message(840, reactor.user_id)};
+    reaction_notifications.received_reaction(reaction_to(840));
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has("840"), false);
+
+    // A failed fetch is handled without showing a notification.
+    fetch_response = undefined;
+    reaction_notifications.received_reaction(reaction_to(850));
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.size, 0);
 });
