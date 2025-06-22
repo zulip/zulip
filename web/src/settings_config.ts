@@ -13,6 +13,7 @@ import type {StreamSpecificNotificationSettings} from "./sub_store.ts";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,
+    ReactionNotificationSettings,
     StreamNotificationSettings,
     UserSettings,
 } from "./user_settings.ts";
@@ -973,6 +974,11 @@ export const followed_topic_notification_settings: (keyof FollowedTopicNotificat
     "enable_followed_topic_wildcard_mentions_notify",
 ];
 
+export const reaction_notifications_settings: (keyof ReactionNotificationSettings)[] = [
+    "enable_reaction_desktop_notifications",
+    "enable_reaction_audible_notifications",
+];
+
 const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
 const mobile_notification_settings = ["enable_online_push_notifications"];
@@ -1047,6 +1053,7 @@ export const all_notification_settings = [
     ...other_notification_settings,
     ...pm_mention_notification_settings,
     ...stream_notification_settings,
+    ...reaction_notifications_settings,
 ];
 
 type Settings = UserSettings | RealmDefaultSettings;
@@ -1152,6 +1159,14 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
                 settings_object,
             ),
             help_link: "/help/follow-a-topic",
+        },
+        {
+            label: $t({defaultMessage: "Reactions"}),
+            notification_settings: get_notifications_table_row_data(
+                reaction_notifications_settings,
+                settings_object,
+            ),
+            help_link: "/help/reactions",
         },
     ],
     settings: {
