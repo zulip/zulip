@@ -39,6 +39,7 @@ formatting:
 {!start-composing.md!}
 
 1. To create an inline code span, use single backticks around the text:
+
 ~~~
 `text`
 ~~~
@@ -125,7 +126,7 @@ on hover that allows you to open the code block in the code playground site.
 {settings_tab|playground-settings}
 
 1. Under **Add a new code playground**, enter a **Language**, **Name**, and
-**URL template**.
+   **URL template**.
 
 1. Click **Add code playground**.
 

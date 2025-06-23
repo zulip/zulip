@@ -84,8 +84,8 @@ Here are some ways to find the URL for your Zulip organization.
     [custom certificate](/help/custom-certificates).
 
 1. Click the **plus** (<i class="fa fa-plus"></i>) icon in the
-**organizations sidebar** on the left. You can also select **Add Organization**
-from the **Zulip** menu in the top menu bar.
+   **organizations sidebar** on the left. You can also select **Add Organization**
+   from the **Zulip** menu in the top menu bar.
 
 1. Enter the Zulip URL of the organization, and click **Connect**.
 

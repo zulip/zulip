@@ -30,7 +30,7 @@ If you want to interact with Zulip primarily (or entirely) via your email client
 {start_tabs}
 
 1. [Subscribe](/help/introduction-to-channels#browse-and-subscribe-to-channels) to any channels you are
-interested in.
+   interested in.
 
 {settings_tab|notifications}
 
