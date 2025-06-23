@@ -381,6 +381,10 @@
             2
     );
 
+    /* Large emoji elements' sizing is a 32px square
+       at a 14px font size, for 2.2857em at 14px/1em. */
+    --length-line-oversize-block-largeemoji: 2.2857em;
+
     /* Legacy values */
     --legacy-body-line-height-unitless: calc(20 / 14);
 

@@ -247,6 +247,13 @@
         vertical-align: var(--line-fitted-vertical-align-offset-em);
     }
 
+    .large-emoji {
+        height: var(--length-line-oversize-block-largeemoji);
+        width: var(--length-line-oversize-block-largeemoji);
+        margin: var(--length-line-oversize-block-margin-adjust) auto;
+        vertical-align: var(--line-fitted-vertical-align-offset-em);
+    }
+
     /* Mentions and alert words */
     .user-group-mention,
     .user-mention,

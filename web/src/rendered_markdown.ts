@@ -91,6 +91,42 @@ function wrap_mention_content_in_dom_element(element: HTMLElement, is_bot = fals
     return element;
 }
 
+// Function that verifies if the content of a message is
+// composed only by emojis.
+export function is_emojis_only_message($content: JQuery): boolean {
+    const $paragraphs = $content.find("p");
+
+    if ($paragraphs.length === 0) {
+        return false;
+    }
+
+    let i = 0;
+    while (i < $paragraphs.length) {
+        // Get each paragraph
+        const $p = $paragraphs.eq(i);
+
+        const $emojis = $p.find(".emoji");
+
+        // Checks if there are any emojis in the message
+        if ($emojis.length === 0) {
+            return false;
+        }
+
+        // If there are emojis, we remove them from the content
+        // And check if there is any text in the message
+        const $pClone = $p.clone();
+        $pClone.find(".emoji").remove();
+
+        const text = $pClone.text().trim();
+
+        if (text.length > 0) {
+            return false;
+        }
+        i += 1;
+    }
+    return true;
+}
+
 // Helper function to update a mentioned user's name.
 export function set_name_in_mention_element(
     element: HTMLElement,
@@ -380,5 +416,14 @@ export const update_elements = ($content: JQuery): void => {
             })
             .contents()
             .unwrap();
+    }
+
+    // Display emojis in a message as a larger version (32x32)
+    // if the message is composed only by emojis.
+    if (is_emojis_only_message($content)) {
+        const $emojis = $content.find(".emoji");
+        if (typeof $emojis.addClass === "function") {
+            $emojis.addClass("large-emoji");
+        }
     }
 };
