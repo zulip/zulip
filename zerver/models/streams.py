@@ -166,36 +166,26 @@ class Stream(models.Model):
 
     stream_permission_group_settings = {
         "can_add_subscribers_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
         ),
         "can_administer_channel_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="stream_creator_or_nobody",
         ),
         "can_remove_subscribers_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
         ),
         "can_send_message_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
         "can_subscribe_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
