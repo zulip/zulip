@@ -21,7 +21,7 @@ support](/help/contact-support) with details on what you're trying to do.
 {settings_tab|linkifier-settings}
 
 1. Under **Add a new linkifier**, enter a **Pattern** and
-**URL template**.
+   **URL template**.
 
 1. Click **Add linkifier**.
 

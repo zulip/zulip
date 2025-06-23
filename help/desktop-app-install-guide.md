@@ -106,7 +106,7 @@ You can run the command `brew upgrade zulip` to immediately upgrade the app.
 #### Flathub
 
 1. Make sure you have [Flatpak](https://flathub.org/setup) installed on your
-system.
+   system.
 
 1. Use the following command from the official
 [Flathub page](https://flathub.org/apps/org.zulip.Zulip) to install Zulip:

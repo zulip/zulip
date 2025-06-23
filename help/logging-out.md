@@ -4,7 +4,7 @@
 {tab|desktop-web}
 
 1. Click the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in the top
-right corner of the app.
+   right corner of the app.
 
 1. Click **Log out**.
 
