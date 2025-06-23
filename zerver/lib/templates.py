@@ -13,6 +13,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
 from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
+from markupsafe import Markup
 
 import zerver.lib.markdown.api_arguments_table_generator
 import zerver.lib.markdown.api_return_values_table_generator
@@ -35,7 +36,7 @@ from zerver.openapi.merge_api_changelogs import (
 register = Library()
 
 
-def and_n_others(values: list[str], limit: int) -> str:
+def and_n_others(values: list[str | Markup], limit: int) -> str | Markup:
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
     return " and {} other{}".format(
@@ -54,7 +55,7 @@ def get_updated_changelog() -> str | None:
 
 
 @register.filter(name="display_list", is_safe=True)
-def display_list(values: list[str], display_limit: int) -> str:
+def display_list(values: list[str | Markup], display_limit: int) -> str | Markup:
     """
     Given a list of values, return a string nicely formatting those values,
     summarizing when you have more than `display_limit`. Eg, for a
@@ -66,16 +67,17 @@ def display_list(values: list[str], display_limit: int) -> str:
     Jessica, Waseem, Tim, and 1 other
     Jessica, Waseem, Tim, and 2 others
     """
+    sep = Markup(", ") if any(isinstance(value, Markup) for value in values) else ", "
     if len(values) == 1:
         # One value, show it.
-        display_string = f"{values[0]}"
+        display_string = values[0]
     elif len(values) <= display_limit:
         # Fewer than `display_limit` values, show all of them.
-        display_string = ", ".join(f"{value}" for value in values[:-1])
-        display_string += f" and {values[-1]}"
+        display_string = sep.join(value for value in values[:-1])
+        display_string += " and " + values[-1]
     else:
         # More than `display_limit` values, only mention a few.
-        display_string = ", ".join(f"{value}" for value in values[:display_limit])
+        display_string = sep.join(value for value in values[:display_limit])
         display_string += and_n_others(values, display_limit)
 
     return display_string

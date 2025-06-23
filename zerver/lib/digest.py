@@ -11,6 +11,7 @@ from django.db import transaction
 from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
@@ -254,7 +255,7 @@ def gather_new_streams(
     realm: Realm,
     recently_created_streams: list[Stream],  # streams only need id and name
     can_access_public: bool,
-) -> tuple[int, dict[str, list[str]]]:
+) -> tuple[int, dict[str, list[Markup] | list[str]]]:
     if can_access_public:
         new_streams = [stream for stream in recently_created_streams if not stream.invite_only]
     else:
@@ -265,7 +266,9 @@ def gather_new_streams(
 
     for stream in new_streams:
         narrow_url = stream_narrow_url(realm, stream)
-        channel_link = f"<a href='{narrow_url}'>{stream.name}</a>"
+        channel_link = Markup("<a href='{narrow_url}'>{stream_name}</a>").format(
+            narrow_url=narrow_url, stream_name=stream.name
+        )
         channels_html.append(channel_link)
         channels_plain.append(stream.name)
 
