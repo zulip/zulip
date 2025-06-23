@@ -54,9 +54,9 @@ notification. Silent mentions start with `@_` instead of `@`.
 
 {!start-composing.md!}
 
-2. Type `@_` followed by a few letters from a name or email address.
+1. Type `@_` followed by a few letters from a name or email address.
 
-3. Pick the appropriate user or user group from the autocomplete.
+1. Pick the appropriate user or user group from the autocomplete.
 
 {end_tabs}
 

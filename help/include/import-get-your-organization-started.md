@@ -8,14 +8,14 @@ Once the import process is completed, you will need to:
     permissions](/help/restrict-message-editing-and-deletion),
     and [how users can join your organization](/help/restrict-account-creation).
 
-2. All users from your previous workspace will have accounts in your new Zulip
+1. All users from your previous workspace will have accounts in your new Zulip
    organization. However, you will need to let users know about their new
    accounts, and [decide how they will log
    in](/help/import-from-slack#decide-how-users-will-log-in) for the first time.
 
-3. Share the URL for your new Zulip organization, and (recommended) the [Getting
+1. Share the URL for your new Zulip organization, and (recommended) the [Getting
    started with Zulip guide](/help/getting-started-with-zulip).
 
-4. Migrate any [integrations](/integrations/).
+1. Migrate any [integrations](/integrations/).
 
 {end_tabs}

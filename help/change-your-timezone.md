@@ -48,7 +48,7 @@ You can choose to permanently hide this banner.
 
 {settings_tab|profile}
 
-2. Under **Profile**, toggle **Offer to update to my computer's
+1. Under **Profile**, toggle **Offer to update to my computer's
    time zone**.
 
 {end_tabs}

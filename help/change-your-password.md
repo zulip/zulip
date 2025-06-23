@@ -14,8 +14,8 @@ account.
 
 {settings_tab|account-and-privacy}
 
-2. Under **Account**, click on the password field (it should look like `********`).
+1. Under **Account**, click on the password field (it should look like `********`).
 
-3. Enter your old password and your new password, and click **Change**.
+1. Enter your old password and your new password, and click **Change**.
 
 {end_tabs}

@@ -11,11 +11,11 @@ following steps, which are described in more detail below:
 
 1. [Export your Slack data](#export-your-slack-data).
 
-2. [Import your Slack data into Zulip](#import-your-data-into-zulip).
+1. [Import your Slack data into Zulip](#import-your-data-into-zulip).
 
-3. [Clean up](#clean-up-after-the-slack-export) after the Slack export.
+1. [Clean up](#clean-up-after-the-slack-export) after the Slack export.
 
-4. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
+1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
 
 {end_tabs}
 
@@ -66,7 +66,7 @@ in order to export direct message data.
 1. [Create a new Slack app](https://api.slack.com/apps). Choose the "From
    scratch" creation option.
 
-4. [Create a
+1. [Create a
    bot user](https://api.slack.com/authentication/basics#scopes),
    following the instructions to add the following OAuth scopes to your bot:
     - `emoji:read`
@@ -74,10 +74,10 @@ in order to export direct message data.
     - `users:read.email`
     - `team:read`
 
-5. [Install your new app](https://api.slack.com/authentication/basics#installing)
+1. [Install your new app](https://api.slack.com/authentication/basics#installing)
    to your Slack workspace.
 
-6. You will immediately see a **Bot User OAuth Token**, which is a long
+1. You will immediately see a **Bot User OAuth Token**, which is a long
    string of numbers and characters starting with `xoxb-`. Copy this token. It
    grants access to download user and emoji data from your Slack workspace.
 

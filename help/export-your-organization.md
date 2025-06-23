@@ -109,7 +109,7 @@ importing the export into a new Zulip organization.
 
       1. The `zulipchat.com` URL for your organization
 
-      2. What limits you would like on the export.  Currently, compliance
+      1. What limits you would like on the export.  Currently, compliance
          exports can apply any combination of the following filters:
 
          - Message sender
@@ -119,9 +119,9 @@ importing the export into a new Zulip organization.
 
          If you need other limits, please ask.
 
-      3. Your preferred format for the export: CSV or JSON.
+      1. Your preferred format for the export: CSV or JSON.
 
-      4. Whether or not you want to receive copies of all attachments referenced in
+      1. Whether or not you want to receive copies of all attachments referenced in
          the exported messages.
 
 1. You will receive the requested information once your authority to request the
