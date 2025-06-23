@@ -104,6 +104,7 @@ class HomeTest(ZulipTestCase):
         "max_message_length",
         "max_stream_description_length",
         "max_stream_name_length",
+        "max_bulk_new_subscription_messages",
         "max_topic_length",
         "muted_topics",
         "muted_users",

@@ -11596,6 +11596,23 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
                   example: 1
+                send_new_subscription_messages:
+                  description: |
+                    Whether any other users newly subscribed via this request should be
+                    sent a Notification Bot DM notifying them about their new
+                    subscription.
+
+                    The server will never send Notification Bot DMs if more than
+                    `max_bulk_new_subscription_messages` (available in the [`POST
+                    /register`](/api/register-queue) response) users were subscribed in
+                    this request.
+
+                    **Changes**: Before Zulip 11.0 (feature level 397), new subscribers
+                    were always sent a Notification Bot DM, which was unduly expensive
+                    when bulk-subscribing thousands of users to a channel.
+                  type: boolean
+                  default: true
+                  example: true
               required:
                 - subscriptions
             encoding:
@@ -11686,6 +11703,18 @@ paths:
                         description: |
                           A list of names of channels that the requesting user/bot was not
                           authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
+                      new_subscription_messages_sent:
+                        type: boolean
+                        description: |
+                          Only present if the parameter `send_new_subscription_messages`
+                          in the request was `true`.
+
+                          Whether Notification Bot DMs in fact sent to the added
+                          subscribers as requested by the `send_new_subscription_messages`
+                          parameter. Clients may find this value useful to communicate
+                          with users about the effect of this request.
+
+                          **Changes**: New in Zulip 11.0 (feature level 397).
                     example:
                       {
                         "already_subscribed": {"1": ["testing-help"]},
@@ -11822,6 +11851,18 @@ paths:
                         description: |
                           A list of the names of channels which were unsubscribed
                           from as a result of the query.
+                      new_subscription_messages_sent:
+                        type: boolean
+                        description: |
+                          Only present if the parameter `send_new_subscription_messages`
+                          in the request was `true`.
+
+                          Whether Notification Bot DMs in fact sent to the added
+                          subscribers as requested by the `send_new_subscription_messages`
+                          parameter. Clients may find this value useful to communicate
+                          with users about the effect of this request.
+
+                          **Changes**: New in Zulip 11.0 (feature level 397).
                     example:
                       {
                         "msg": "",
@@ -20083,6 +20124,15 @@ paths:
                               Configuration for group level group permission settings.
                             additionalProperties:
                               $ref: "#/components/schemas/GroupPermissionSetting"
+                      max_bulk_new_subscription_messages:
+                        description: |
+                          Maximum number of new subscribers for which the server will
+                          respect the `send_new_subscription_messages` parameter when
+                          [adding subscribers to a channel](/api/subscribe#parameter-send_new_subscription_messages).
+
+                          **Changes**: New in Zulip 11.0 (feature level 397).
+                        type: number
+                        example: 100
                     example:
                       {
                         "last_event_id": -1,
