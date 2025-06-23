@@ -22,7 +22,7 @@ from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.models import NamedUserGroup, Recipient, Stream, Subscription, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 
 
 class ChannelSubscriptionPermissionTest(ZulipTestCase):
@@ -801,7 +801,9 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             api_parameter_name = api_parameter_name_dict[property_name]
 
         data = {}
-        if not isinstance(new_value, str):
+        if property_name == "topics_policy":
+            data[api_parameter_name] = StreamTopicsPolicyEnum(new_value).name
+        elif not isinstance(new_value, str):
             data[api_parameter_name] = orjson.dumps(new_value).decode()
         else:
             data[api_parameter_name] = new_value
@@ -923,7 +925,9 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             self.do_test_updating_channel(stream, "name", "Renamed stream")
             self.do_test_updating_channel(stream, "description", "Edited stream description")
             self.do_test_updating_channel(stream, "folder_id", channel_folder.id)
-
+            self.do_test_updating_channel(
+                stream, "topics_policy", StreamTopicsPolicyEnum.allow_empty_topic.value
+            )
             self.do_test_updating_channel(stream, "deactivated", True)
 
             do_deactivate_stream(stream, acting_user=None)
@@ -1271,3 +1275,61 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
 
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_updating_group_settings_for_unsubscribed_private_channels(setting_name)
+
+    def test_realm_permission_to_update_topics_policy(self) -> None:
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("test_stream")
+
+        def check_channel_topics_policy_update(user: UserProfile, allow_fail: bool = False) -> None:
+            data = {}
+            data["topics_policy"] = StreamTopicsPolicyEnum.allow_empty_topic.name
+
+            result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
+
+            if allow_fail:
+                self.assert_json_error(result, "Insufficient permission")
+                return
+
+            self.assert_json_success(result)
+            stream.refresh_from_db()
+            self.assertEqual(stream.topics_policy, StreamTopicsPolicyEnum.allow_empty_topic.value)
+
+            # Reset to original value
+            stream.topics_policy = StreamTopicsPolicyEnum.inherit.value
+            stream.save()
+
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", self.nobody_group, acting_user=self.admin
+        )
+        do_change_realm_permission_group_setting(
+            self.realm, "can_set_topics_policy_group", self.nobody_group, acting_user=None
+        )
+
+        # Admins can always update topics_policy.
+        check_channel_topics_policy_update(self.admin)
+
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", self.members_group, acting_user=self.admin
+        )
+
+        check_channel_topics_policy_update(self.moderator, allow_fail=True)
+        check_channel_topics_policy_update(hamlet, allow_fail=True)
+
+        # Test when can_set_topics_policy_group is set to a user-defined group.
+        do_change_realm_permission_group_setting(
+            self.realm, "can_set_topics_policy_group", self.hamletcharacters_group, acting_user=None
+        )
+        check_channel_topics_policy_update(self.admin)
+        check_channel_topics_policy_update(self.moderator, allow_fail=True)
+        check_channel_topics_policy_update(hamlet)
+
+        # Test when can_set_topics_policy_group is set to an anonymous group.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            direct_members=[hamlet], direct_subgroups=[self.moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            self.realm, "can_set_topics_policy_group", anonymous_group, acting_user=None
+        )
+        check_channel_topics_policy_update(self.admin)
+        check_channel_topics_policy_update(self.moderator)
+        check_channel_topics_policy_update(hamlet)
