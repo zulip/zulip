@@ -25,6 +25,7 @@ django.setup()
 from zerver.lib.markdown.tabbed_sections import generate_content_blocks, parse_tabs
 
 INDENT_SPACES = "    "
+SETTINGS_LINK_PATTERN = re.compile(r"{settings_tab\|(?P<setting_identifier>.*?)}")
 
 # TODO list before cutover.
 #
@@ -67,6 +68,21 @@ def replace_emoticon_translation_table(markdown_string: str, import_statement_se
         )
 
     return result
+
+
+def replace_setting_links(
+    markdown_string: str, import_statement_set: set[str], import_relative_base_path: str
+) -> str:
+    setting_links_pattern = re.compile(r"{settings_tab\|(?P<setting_identifier>.*?)}")
+
+    def replace_setting_links_match(match: re.Match[str]) -> str:
+        import_statement_set.add(
+            f'import NavigationSteps from "{import_relative_base_path}/NavigationSteps.astro"'
+        )
+        setting_identifier = match.group("setting_identifier")
+        return f'<NavigationSteps identifier="settings/{setting_identifier}" />'
+
+    return setting_links_pattern.sub(replace_setting_links_match, markdown_string)
 
 
 def replace_image_path(markdown_string: str, replacement_path: str) -> str:
@@ -321,6 +337,10 @@ def insert_flattened_steps_component(
                 if include_files_info[filename]["is_only_ordered_list"]:
                     index += step
                     continue
+            settings_link_match = SETTINGS_LINK_PATTERN.match(line)
+            if settings_link_match:
+                index += step
+                continue
             break
         return index
 
@@ -330,11 +350,8 @@ def insert_flattened_steps_component(
     # resulting in two opening <FlattenList> one after the other.
     # Using a set avoids this problem.
     insertions = set()
-    for match in file_include_pattern.finditer(markdown_string):
-        filename = match.group(1)
-        if not include_files_info[filename]["is_only_ordered_list"]:
-            continue
 
+    def insert_flatten_list(match: re.Match[str]) -> None:
         match_line_index = markdown_string[: match.start()].count("\n")
 
         upper_bound = traverse_to_boundary(match_line_index - 1, step=-1)
@@ -342,6 +359,15 @@ def insert_flattened_steps_component(
 
         lower_bound = traverse_to_boundary(match_line_index + 1, step=1)
         insertions.add((lower_bound, "</FlattenList>"))
+
+    for match in SETTINGS_LINK_PATTERN.finditer(markdown_string):
+        insert_flatten_list(match)
+
+    for match in file_include_pattern.finditer(markdown_string):
+        filename = match.group(1)
+        if not include_files_info[filename]["is_only_ordered_list"]:
+            continue
+        insert_flatten_list(match)
 
     if insertions:
         import_statement_set.add("import FlattenList from '../../components/FlattenList.astro';")
@@ -491,6 +517,7 @@ def convert_help_center_file_to_mdx(
     result = fix_file_imports(result, import_statement_set, "./include")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
     result = convert_tab_syntax(result, import_statement_set)
+    result = replace_setting_links(result, import_statement_set, "../../components")
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
     result = replace_emoticon_translation_table(result, import_statement_set)
@@ -527,6 +554,7 @@ def convert_include_file_to_mdx(
     result = fix_file_imports(result, import_statement_set, ".")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = convert_tab_syntax(result, import_statement_set)
+    result = replace_setting_links(result, import_statement_set, "../../../components")
     result = escape_curly_braces(result)
     result = fix_relative_path(result)
     result = replace_image_path(result, "../../../../../static/images/help")

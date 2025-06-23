@@ -1,0 +1,191 @@
+---
+import { SHOW_RELATIVE_LINKS } from "astro:env/client";
+import RawZulipIconGear from "~icons/zulip-icon/gear?raw";
+
+// This list has been transformed one-off from `help_settings_links.py`, we
+// have added a comment in that file to update this list in case of any
+// changes.
+const setting_link_mapping: {
+    [key: string]: {
+        setting_type: string,
+        setting_name: string,
+        setting_link: string,
+    }
+} = {
+    // a mapping from the setting identifier that is the same as the final URL
+    // breadcrumb to that setting to the name of its setting type, the setting
+    // name as it appears in the user interface, and a relative link that can
+    // be used to get to that setting
+    "profile": {
+        setting_type: "Personal settings",
+        setting_name: "Profile",
+        setting_link: "/#settings/profile"
+    },
+    "account-and-privacy": {
+        setting_type: "Personal settings",
+        setting_name: "Account & privacy",
+        setting_link: "/#settings/account-and-privacy"
+    },
+    "preferences": {
+        setting_type: "Personal settings",
+        setting_name: "Preferences",
+        setting_link: "/#settings/preferences"
+    },
+    "notifications": {
+        setting_type: "Personal settings",
+        setting_name: "Notifications",
+        setting_link: "/#settings/notifications"
+    },
+    "your-bots": {
+        setting_type: "Personal settings",
+        setting_name: "Bots",
+        setting_link: "/#settings/your-bots"
+    },
+    "alert-words": {
+        setting_type: "Personal settings",
+        setting_name: "Alert words",
+        setting_link: "/#settings/alert-words"
+    },
+    "uploaded-files": {
+        setting_type: "Personal settings",
+        setting_name: "Uploaded files",
+        setting_link: "/#settings/uploaded-files"
+    },
+    "topics": {
+        setting_type: "Personal settings",
+        setting_name: "Topics",
+        setting_link: "/#settings/topics"
+    },
+    "muted-users": {
+        setting_type: "Personal settings",
+        setting_name: "Muted users",
+        setting_link: "/#settings/muted-users"
+    },
+    "organization-profile": {
+        setting_type: "Organization settings",
+        setting_name: "Organization profile",
+        setting_link: "/#organization/organization-profile"
+    },
+    "organization-settings": {
+        setting_type: "Organization settings",
+        setting_name: "Organization settings",
+        setting_link: "/#organization/organization-settings"
+    },
+    "organization-permissions": {
+        setting_type: "Organization settings",
+        setting_name: "Organization permissions",
+        setting_link: "/#organization/organization-permissions"
+    },
+    "default-user-settings": {
+        setting_type: "Organization settings",
+        setting_name: "Default user settings",
+        setting_link: "/#organization/organization-level-user-defaults"
+    },
+    "emoji-settings": {
+        setting_type: "Organization settings",
+        setting_name: "Custom emoji",
+        setting_link: "/#organization/emoji-settings"
+    },
+    "auth-methods": {
+        setting_type: "Organization settings",
+        setting_name: "Authentication methods",
+        setting_link: "/#organization/auth-methods"
+    },
+    "users": {
+        setting_type: "Organization settings",
+        setting_name: "Users",
+        setting_link: "/#organization/users/active"
+    },
+    "deactivated": {
+        setting_type: "Organization settings",
+        setting_name: "Users",
+        setting_link: "/#organization/users/deactivated"
+    },
+    "invitations": {
+        setting_type: "Organization settings",
+        setting_name: "Users",
+        setting_link: "/#organization/users/invitations"
+    },
+    "bot-list-admin": {
+        setting_type: "Organization settings",
+        setting_name: "Bots",
+        setting_link: "/#organization/bot-list-admin"
+    },
+    "default-channels-list": {
+        setting_type: "Organization settings",
+        setting_name: "Default channels",
+        setting_link: "/#organization/default-channels-list"
+    },
+    "linkifier-settings": {
+        setting_type: "Organization settings",
+        setting_name: "Linkifiers",
+        setting_link: "/#organization/linkifier-settings"
+    },
+    "playground-settings": {
+        setting_type: "Organization settings",
+        setting_name: "Code playgrounds",
+        setting_link: "/#organization/playground-settings"
+    },
+    "profile-field-settings": {
+        setting_type: "Organization settings",
+        setting_name: "Custom profile fields",
+        setting_link: "/#organization/profile-field-settings"
+    },
+    "data-exports-admin": {
+        setting_type: "Organization settings",
+        setting_name: "Data exports",
+        setting_link: "/#organization/data-exports-admin"
+    }
+};
+
+const getSettingsMarkdown = (setting_type_name: string, setting_name: string) => `
+<ol>
+    <li>
+        Click on the <b>gear</b> (${RawZulipIconGear}) icon in the upper
+        right corner of the web or desktop app.
+    </li>
+    <li>
+        Select <b>${setting_type_name}</b>.
+    </li>
+    <li>
+        On the left, click <b>${setting_name}</b>.
+    </li>
+</ol>
+`
+
+const getSettingsHTML = (
+  setting_key: string,
+  SHOW_RELATIVE_LINKS: boolean
+): string => {
+    const {
+        setting_type,
+        setting_name,
+        setting_link,
+    } = setting_link_mapping[setting_key]!;
+
+    if (!SHOW_RELATIVE_LINKS) {
+        return getSettingsMarkdown(setting_type, setting_name);
+    }
+    
+    const relativeLink = `<a href="${setting_link}">${setting_name}</a>`;
+
+    // The "Bots" label appears in both Personal and Organization settings
+    // in the user interface so we need special text for this setting.
+    const label = (setting_name === "Bots" || setting_name === "Users")
+        ? `Navigate to the ${relativeLink} tab of the <b>${setting_type}</b> menu.`
+        : `Go to ${relativeLink}.`;
+
+    return `<ol>
+                <li>${label}</li>
+            </ol>`;
+}
+
+const { identifier } = Astro.props;
+const navigation_link_type = identifier.split("/")[0];
+if (navigation_link_type !== "settings") {
+    throw new Error("Invalid navigation link type. Only `settings` is allowed.");
+}
+const resultHTML = getSettingsHTML(identifier.split("/")[1], SHOW_RELATIVE_LINKS);
+
+---
+<Fragment set:html={resultHTML} />

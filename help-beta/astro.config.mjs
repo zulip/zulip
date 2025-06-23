@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 
 import starlight from "@astrojs/starlight";
-import {defineConfig} from "astro/config";
+import {defineConfig, envField} from "astro/config";
 import Icons from "unplugin-icons/vite";
 
 // https://astro.build/config
@@ -16,7 +16,7 @@ export default defineConfig({
                 // It was setting the height to 1024 and 960 for some
                 // icons. It is better to set the height explicitly.
                 defaultStyle:
-                    "display: inline; vertical-align: text-bottom; height: 1em; width: 1em;",
+                    "display: inline; vertical-align: text-bottom; height: 1em; width: 1em; margin-bottom: 0;",
                 customCollections: {
                     // unplugin-icons has a FileSystemIconLoader which is more
                     // versatile. But it only supports one directory path for
@@ -36,6 +36,16 @@ export default defineConfig({
                 },
             }),
         ],
+    },
+    env: {
+        schema: {
+            SHOW_RELATIVE_LINKS: envField.boolean({
+                context: "client",
+                access: "public",
+                optional: true,
+                default: true,
+            }),
+        },
     },
     integrations: [
         starlight({
