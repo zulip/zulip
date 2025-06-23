@@ -95,27 +95,27 @@ You can run the command `brew upgrade zulip` to immediately upgrade the app.
 
 1. Make sure [snapd](https://docs.snapcraft.io/core/install) is installed.
 
-2. Execute following command to install Zulip:
+1. Execute following command to install Zulip:
 
     ```
     sudo snap install zulip
     ```
 
-3. Run Zulip from your app launcher, or with `zulip` from a terminal.
+1. Run Zulip from your app launcher, or with `zulip` from a terminal.
 
 #### Flathub
 
 1. Make sure you have [Flatpak](https://flathub.org/setup) installed on your
 system.
 
-2. Use the following command from the official
+1. Use the following command from the official
 [Flathub page](https://flathub.org/apps/org.zulip.Zulip) to install Zulip:
 
     ```
     flatpak install flathub org.zulip.Zulip
     ```
 
-3. After the installation is complete, you can run Zulip using the following
+1. After the installation is complete, you can run Zulip using the following
 command:
 
     ```

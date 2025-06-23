@@ -17,24 +17,24 @@ a single website.
 
 {!desktop-sidebar-settings-menu.md!}
 
-2. Select the **Network** tab.
+1. Select the **Network** tab.
 
-3. Click **Use system proxy settings**.
+1. Click **Use system proxy settings**.
 
-4. Restart the Zulip desktop app.
+1. Restart the Zulip desktop app.
 
 {tab|custom-proxy-settings}
 
 {!desktop-sidebar-settings-menu.md!}
 
-2. Select the **Network** tab.
+1. Select the **Network** tab.
 
-3. Click **Manual proxy configuration**.
+1. Click **Manual proxy configuration**.
 
-4. Either enter a URL for **PAC script**, or fill out **Proxy rules** and
+1. Either enter a URL for **PAC script**, or fill out **Proxy rules** and
   **Proxy bypass rules**.
 
-5. Click **Save changes**.
+1. Click **Save changes**.
 
 {end_tabs}
 

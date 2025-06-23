@@ -13,7 +13,7 @@
 1. Tap the **Inbox** (<i class="zulip-icon zulip-icon-inbox mobile-help"></i>)
    tab in the bottom left corner of the app.
 
-2. Tap on a conversation you're interested in to view it. You can return to
+1. Tap on a conversation you're interested in to view it. You can return to
    your **inbox**  when done (e.g., by using the **back** button) to select
    the next conversation.
 

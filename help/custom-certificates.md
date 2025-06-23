@@ -32,21 +32,21 @@ certificate store, like your web browser.
 1. Hit `Cmd` + `Space` to bring up Spotlight Search, type **Keychain
    Access**, and press Enter.
 
-2. From the **File** menu, choose **Import Items...**
+1. From the **File** menu, choose **Import Items...**
 
-3. Navigate to the certificate file, then click **Open**.
+1. Navigate to the certificate file, then click **Open**.
 
-4. Right-click the newly-added certificate, and click **Get Info** from
+1. Right-click the newly-added certificate, and click **Get Info** from
    the context menu.
 
-5. Expand the **Trust** section.
+1. Expand the **Trust** section.
 
-6. Select **Always Trust** for the **Secure Sockets Layer (SSL)** option.
+1. Select **Always Trust** for the **Secure Sockets Layer (SSL)** option.
 
-7. Close the window.  You will be prompted for your password to verify
+1. Close the window.  You will be prompted for your password to verify
    the change.
 
-8. Restart the Zulip Desktop application.
+1. Restart the Zulip Desktop application.
 
 {tab|windows}
 On Windows, Zulip Desktop shares the certificate store with
@@ -55,21 +55,21 @@ Chrome.
 
 1. Open Google Chrome.
 
-2. From the Chrome menu (⋮) in the top-right, select **Settings**.
+1. From the Chrome menu (⋮) in the top-right, select **Settings**.
 
-2. In the **Privacy and Security** section, click **Security**.
+1. In the **Privacy and Security** section, click **Security**.
 
-3. Scroll down to and click **Manage Certificates**.
+1. Scroll down to and click **Manage Certificates**.
 
-4. Select the **Trusted Root Certification Authorities** tab.
+1. Select the **Trusted Root Certification Authorities** tab.
 
-5. Select **Import...**
+1. Select **Import...**
 
-6. Navigate to the certificate file, then click **Open**.
+1. Navigate to the certificate file, then click **Open**.
 
-7. Select **Done**.
+1. Select **Done**.
 
-8. Restart the Zulip Desktop application.
+1. Restart the Zulip Desktop application.
 
 {tab|linux}
 The required packages and steps vary by distribution; see the Chromium
@@ -98,9 +98,9 @@ server. You'll need to get a certificate file (should end in `.crt` or
 
 {!desktop-sidebar-settings-menu.md!}
 
-2. Select the **Organizations** tab.
+1. Select the **Organizations** tab.
 
-3. Under **Add Custom Certificates**, enter your organization URL and add
+1. Under **Add Custom Certificates**, enter your organization URL and add
    the custom certificate file (it should end in `.crt` or `.pem`).
 
 {end_tabs}

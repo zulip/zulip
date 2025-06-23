@@ -72,7 +72,7 @@ individual [users](/help/introduction-to-users).
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can add custom emoji**.
+1. Under **Other permissions**, configure **Who can add custom emoji**.
 
 {!save-changes.md!}
 

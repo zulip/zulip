@@ -22,7 +22,7 @@ their organization.
 
 {!message-actions-menu.md!}
 
-3. Click **View read receipts**.
+1. Click **View read receipts**.
 
 !!! keyboard_tip ""
 

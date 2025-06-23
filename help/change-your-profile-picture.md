@@ -13,7 +13,7 @@ You can also upload a custom profile picture to Zulip.
 
 {settings_tab|profile}
 
-2. Under **Profile picture**, click **Upload new profile picture** and choose an image to upload.
+1. Under **Profile picture**, click **Upload new profile picture** and choose an image to upload.
 
 {end_tabs}
 
@@ -23,10 +23,10 @@ You can also upload a custom profile picture to Zulip.
 
 {settings_tab|profile}
 
-2. Under **Profile picture**, click on the **(X)** icon in the top
+1. Under **Profile picture**, click on the **(X)** icon in the top
 right corner of the profile picture.
 
-3. Approve by clicking **Confirm**. This will remove your current
+1. Approve by clicking **Confirm**. This will remove your current
 profile picture, reverting to the Gravatar default.
 
 {end_tabs}

@@ -72,7 +72,7 @@ you also delete the message.
 1. Select **Delete message**. If you do not see the **Delete message** option,
    you do not have permission to delete this message completely.
 
-2. Approve by clicking **Confirm**.
+1. Approve by clicking **Confirm**.
 
 {end_tabs}
 

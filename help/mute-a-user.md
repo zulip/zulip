@@ -71,7 +71,7 @@ have the following effects:
 
 {!message-actions-menu.md!}
 
-3. Click **Hide muted message again**.
+1. Click **Hide muted message again**.
 
 {end_tabs}
 

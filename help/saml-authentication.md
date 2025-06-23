@@ -85,7 +85,7 @@ providers.
 1. {!send-us-info.md!}
 
      1. Your organization's URL
-     2. The **issuer URL** from the **SSO** section. It contains required **Identity Provider** metadata.
+     1. The **issuer URL** from the **SSO** section. It contains required **Identity Provider** metadata.
      {!saml-login-button.md!}
 
 {tab|azuread}
@@ -171,7 +171,7 @@ providers.
 1. {!send-us-info.md!}
 
      1. Your organization's URL
-     2. The URL of your Keycloak realm.
+     1. The URL of your Keycloak realm.
      {!saml-login-button.md!}
 
 !!! tip ""
@@ -204,7 +204,7 @@ providers.
 1. {!send-us-info.md!}
 
      1. Your organization's URL
-     2. The **SAML Metadata URL** value mentioned above. It contains required **Identity Provider** metadata.
+     1. The **SAML Metadata URL** value mentioned above. It contains required **Identity Provider** metadata.
      {!saml-login-button.md!}
 
 {end_tabs}
