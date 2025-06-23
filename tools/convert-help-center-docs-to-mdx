@@ -26,6 +26,20 @@ from zerver.lib.markdown.tabbed_sections import generate_content_blocks, parse_t
 
 INDENT_SPACES = "    "
 
+# TODO list before cutover.
+#
+# 1. We are not inserting FlattenList component for files with !!! tip components,
+#    since we need to do it inside the include file. There are 4 such files at
+#    the time of writing this comment. is_include_only_ordered_list makes sure of
+#    that. We can do the conversion for it manually during cutover or in a
+#    followup PR.
+# 2. Before cutover we should also check for ordered list items that do not start
+#    with `1. ` since our conversion script assumes that every item list starts
+#    with `1. `. The regex we used to check for this was `\b(?!1\.)\d+\. `.
+# 3. Before cutover, we should check for unindented pieces of text in ordered list
+#    items. Our script only works with indented pieces of text. The regex we used
+#    to check for this was `^1\. .*\n(?!\n)(?!1\.)( {0,1}\S.*)`.
+
 
 class IncludeFileInfo(TypedDict):
     is_only_ordered_list: bool
