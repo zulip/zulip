@@ -3,3 +3,9 @@ deb-src http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
 
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
+
+deb https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ jammy main
+deb-src https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ jammy main
+
+deb https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ jammy main
+deb-src https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ jammy main
