@@ -20,6 +20,20 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 397**
+
+* [`POST /users/me/subscriptions`](/api/subscribe): Added parameter
+  `send_new_subscription_messages` which determines whether the user
+  would like Notification Bot to notify other users who the request
+  adds to a channel.
+
+* [`POST /users/me/subscriptions`](/api/subscribe): Added
+  `new_subscription_messages_sent` to the response, which is only
+  present if `send_new_subscription_messages` was `true` in the request.
+
+* [`POST /register`](/api/register-queue): Added `max_bulk_new_subscription_messages`
+  to the response.
+
 **Feature level 396**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),

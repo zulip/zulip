@@ -4926,6 +4926,32 @@ class SubscriptionAPITest(ZulipTestCase):
             expected_difference=0,
         )
 
+    def test_notification_bot_dm_on_subscription(self) -> None:
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+
+        user_ids = [
+            desdemona.id,
+            self.example_user("cordelia").id,
+            self.example_user("hamlet").id,
+            self.example_user("othello").id,
+            self.example_user("iago").id,
+            self.example_user("prospero").id,
+        ]
+
+        response = self.subscribe_via_post(
+            desdemona, ["Test stream 1"], dict(principals=orjson.dumps(user_ids).decode())
+        )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["new_subscription_messages_sent"], True)
+
+        with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
+            response = self.subscribe_via_post(
+                desdemona, ["Test stream 2"], dict(principals=orjson.dumps(user_ids).decode())
+            )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["new_subscription_messages_sent"], False)
+
 
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self) -> None:

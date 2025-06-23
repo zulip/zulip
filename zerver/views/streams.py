@@ -670,6 +670,7 @@ def add_subscriptions_backend(
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
     folder_id: Json[int] | None = None,
+    send_new_subscription_messages: Json[bool] = True,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -843,14 +844,19 @@ def add_subscriptions_backend(
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
 
-    send_messages_for_new_subscribers(
-        user_profile=user_profile,
-        subscribers=subscribers,
-        new_subscriptions=result["subscribed"],
-        id_to_user_profile=id_to_user_profile,
-        created_streams=created_streams,
-        announce=announce,
-    )
+    if send_new_subscription_messages:
+        if len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES:
+            send_messages_for_new_subscribers(
+                user_profile=user_profile,
+                subscribers=subscribers,
+                new_subscriptions=result["subscribed"],
+                id_to_user_profile=id_to_user_profile,
+                created_streams=created_streams,
+                announce=announce,
+            )
+            result["new_subscription_messages_sent"] = True
+        else:
+            result["new_subscription_messages_sent"] = False
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
