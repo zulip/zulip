@@ -1689,10 +1689,11 @@ textarea.new_message_textarea {
            surrounding negative space. */
         /* 7px at 20px/1em; 4px at 20px/1em. */
         grid-template:
-            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em auto 0.2em minmax(
+            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em [select-label-start] auto 0.2em minmax(
                 0,
                 1fr
             )
+            [select-label-end]
             0.35em;
 
         .channel-privacy-type-icon {
@@ -1722,6 +1723,10 @@ textarea.new_message_textarea {
             text-overflow: ellipsis;
             white-space: nowrap;
             color: var(--color-text-default);
+        }
+
+        .select-channel-label {
+            grid-area: select-label;
         }
     }
 
