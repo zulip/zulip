@@ -43,15 +43,6 @@ export function initialize(): void {
                 placement: "bottom",
             });
 
-            const filter_streams_tooltip: (tippy.ReferenceElement & HTMLElement) | undefined =
-                $("#filter_streams_tooltip").get(0);
-            // If `filter_streams_tooltip` is not triggered yet, this will set its initial placement.
-            assert(filter_streams_tooltip !== undefined);
-            filter_streams_tooltip.dataset.tippyPlacement = "bottom";
-            filter_streams_tooltip._tippy?.setProps({
-                placement: "bottom",
-            });
-
             return undefined;
         },
         onHidden(instance) {
@@ -68,14 +59,6 @@ export function initialize(): void {
                 $("#add_streams_tooltip").get(0);
             assert(add_streams_tooltip !== undefined);
             add_streams_tooltip._tippy?.setProps({
-                placement: "top",
-            });
-
-            const filter_streams_tooltip: (tippy.ReferenceElement & HTMLElement) | undefined =
-                $("#filter_streams_tooltip").get(0);
-            assert(filter_streams_tooltip !== undefined);
-            filter_streams_tooltip.dataset.tippyPlacement = "top";
-            filter_streams_tooltip._tippy?.setProps({
                 placement: "top",
             });
         },
