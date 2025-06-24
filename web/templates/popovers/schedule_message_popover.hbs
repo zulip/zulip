@@ -1,0 +1,47 @@
+<div class="popover-menu" id="send-later-options" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        <li role="none" class="text-item popover-menu-list-item">
+            <span class="popover-header-name">
+                {{#if is_reminder}}
+                    {{t "Schedule reminder" }}
+                {{else}}
+                    {{t "Schedule message" }}
+                {{/if}}
+            </span>
+        </li>
+        {{#if possible_send_later_today}}
+            <li role="separator" class="popover-menu-separator"></li>
+            {{#each possible_send_later_today}}
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" id="{{@key}}" class="send_later_today send_later_option popover-menu-link" data-send-stamp="{{this.stamp}}" tabindex="0">
+                        <span class="popover-menu-label">{{this.text}}</span>
+                    </a>
+                </li>
+            {{/each}}
+        {{/if}}
+        <li role="separator" class="popover-menu-separator"></li>
+        {{#each send_later_tomorrow}}
+            <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" id="{{@key}}" class="send_later_tomorrow send_later_option popover-menu-link" data-send-stamp="{{this.stamp}}" tabindex="0">
+                    <span class="popover-menu-label">{{this.text}}</span>
+                </a>
+            </li>
+        {{/each}}
+        {{#if possible_send_later_monday}}
+            <li role="separator" class="popover-menu-separator"></li>
+            {{#each possible_send_later_monday}}
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" id="{{@key}}" class="send_later_monday send_later_option popover-menu-link" data-send-stamp="{{this.stamp}}" tabindex="0">
+                        <span class="popover-menu-label">{{this.text}}</span>
+                    </a>
+                </li>
+            {{/each}}
+        {{/if}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="send_later_custom send_later_option popover-menu-link" tabindex="0">
+                <span class="popover-menu-label">{{t 'Custom time'}}</span>
+            </a>
+        </li>
+    </ul>
+</div>
