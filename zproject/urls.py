@@ -230,6 +230,7 @@ from zerver.views.user_groups import (
 )
 from zerver.views.user_settings import (
     confirm_email_change,
+    confirm_email_change_get,
     delete_avatar_backend,
     json_change_settings,
     regenerate_api_key,
@@ -668,9 +669,14 @@ i18n_urls = [
         name="get_prereg_key_and_redirect",
     ),
     path(
-        "accounts/confirm_new_email/<confirmation_key>",
+        "accounts/confirm_new_email/",
         confirm_email_change,
         name="confirm_email_change",
+    ),
+    path(
+        "accounts/confirm_new_email/<confirmation_key>",
+        confirm_email_change_get,
+        name="confirm_email_change_get",
     ),
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including welcome emails, missed direct messages, etc.
