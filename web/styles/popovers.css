@@ -256,6 +256,13 @@
     }
 }
 
+.popover-header-name {
+    font-weight: 600;
+    color: var(--color-text-popover-menu);
+    line-height: 1.1;
+    margin-top: 4px;
+}
+
 .popover-group-menu-info {
     display: flex;
     flex-direction: column;
@@ -971,12 +978,6 @@ ul.popover-group-menu-member-list {
 #send_later_popover {
     & hr {
         margin: 5px 0;
-    }
-}
-
-#send_later_modal {
-    .modal__content {
-        padding-bottom: 16px;
     }
 }
 

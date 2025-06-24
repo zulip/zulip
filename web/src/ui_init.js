@@ -457,8 +457,8 @@ export async function initialize_everything(state_data) {
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
-    const message_reminder_click_handler = (remind_message_id) => {
-        compose_send_menu_popover.open_send_later_menu(remind_message_id);
+    const message_reminder_click_handler = (remind_message_id, target) => {
+        compose_send_menu_popover.open_schedule_message_menu(remind_message_id, target);
     };
     message_actions_popover.initialize({message_reminder_click_handler});
     compose_send_menu_popover.initialize();
