@@ -46,6 +46,34 @@ class MessageMoveStreamTest(ZulipTestCase):
             False,
         )
 
+    def assert_move_message(
+        self,
+        user: str,
+        orig_stream: Stream,
+        stream_id: int | None = None,
+        topic_name: str | None = None,
+        expected_error: str | None = None,
+    ) -> None:
+        user_profile = self.example_user(user)
+        self.subscribe(user_profile, orig_stream.name)
+        message_id = self.send_stream_message(user_profile, orig_stream.name)
+
+        params_dict: dict[str, str | int] = {}
+        if stream_id is not None:
+            params_dict["stream_id"] = stream_id
+        if topic_name is not None:
+            params_dict["topic"] = topic_name
+
+        result = self.api_patch(
+            user_profile,
+            "/api/v1/messages/" + str(message_id),
+            params_dict,
+        )
+        if expected_error is not None:
+            self.assert_json_error(result, expected_error)
+        else:
+            self.assert_json_success(result)
+
     def prepare_move_topics(
         self,
         user_email: str,
@@ -864,8 +892,10 @@ class MessageMoveStreamTest(ZulipTestCase):
             nobody_system_group,
             acting_user=None,
         )
-        check_move_message_according_to_permission("desdemona", expect_fail=True)
-        check_move_message_according_to_permission("iago", expect_fail=True)
+        check_move_message_according_to_permission("shiva", expect_fail=True)
+        # Iago can move messages between channels via channel-level
+        # `can_move_messages_out_of_channel_group` permission.
+        check_move_message_according_to_permission("iago")
 
         # Check sending messages when only administrators are allowed.
         do_change_realm_permission_group_setting(
@@ -922,8 +952,8 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_according_to_permission("othello")
         check_move_message_according_to_permission("cordelia")
 
-        # Iago is not in the allowed user group, so cannot move messages.
-        check_move_message_according_to_permission("iago", expect_fail=True)
+        # Shiva is not in the allowed user group, so cannot move messages.
+        check_move_message_according_to_permission("shiva", expect_fail=True)
 
         # Test for checking the setting for anonymous user group.
         anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
@@ -1154,6 +1184,99 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         check_move_message_to_stream(hamlet)
 
+    def test_can_move_messages_out_of_channel_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        expected_error = "You don't have permission to move this message"
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        stream_1 = get_stream("Denmark", realm)
+        stream_2 = get_stream("Verona", realm)
+
+        # Nobody is allowed to move messages.
+        self.assert_move_message(
+            "hamlet", stream_1, stream_id=stream_2.id, expected_error=expected_error
+        )
+        # Realm admin can always move messages out of the channel.
+        self.assert_move_message("iago", stream_1, stream_id=stream_2.id)
+
+        do_change_stream_group_based_setting(
+            stream_1,
+            "can_move_messages_out_of_channel_group",
+            members_system_group,
+            acting_user=iago,
+        )
+        # Only members are allowed to move messages out of the channel.
+        self.assert_move_message("hamlet", stream_1, stream_id=stream_2.id)
+        self.assert_move_message("cordelia", stream_1, stream_id=stream_2.id)
+        # Guests are not allowed.
+        self.assert_move_message(
+            "polonius", stream_1, stream_id=stream_2.id, expected_error=expected_error
+        )
+
+        # Nobody is allowed to edit the topics when moving messages between the channels.
+        self.assert_move_message(
+            "hamlet",
+            stream_1,
+            stream_id=stream_2.id,
+            topic_name="new topic",
+            expected_error="You don't have permission to edit this message",
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            members_system_group,
+            acting_user=None,
+        )
+        # Now Hamlet is in `can_move_messages_between_topics_group`, so can edit topics.
+        self.assert_move_message("hamlet", stream_1, stream_id=stream_2.id, topic_name="new topic")
+
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_stream_group_based_setting(
+            stream_1, "can_move_messages_out_of_channel_group", user_group, acting_user=iago
+        )
+
+        # Hamlet and Cordelia are in the `can_move_messages_out_of_channel_group`,
+        # so they can move messages out of the channel.
+        self.assert_move_message("cordelia", stream_1, stream_id=stream_2.id)
+        self.assert_move_message("hamlet", stream_1, stream_id=stream_2.id)
+        # But Shiva is not, so he can't.
+        self.assert_move_message(
+            "shiva", stream_1, stream_id=stream_2.id, expected_error=expected_error
+        )
+
+        do_change_stream_group_based_setting(
+            stream_1, "can_administer_channel_group", members_system_group, acting_user=iago
+        )
+        # Channel administrators with content access can always move messages out of
+        # the channel even if they are not in `can_move_messages_out_of_channel_group`.
+        self.assert_move_message("shiva", stream_1, stream_id=stream_2.id)
+
     def test_move_message_to_stream_with_topic_editing_not_allowed(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_1", "new_stream_1", "test"
@@ -1212,7 +1335,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(61), self.assert_memcached_count(14):
+        with self.assert_database_query_count(59), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -1536,7 +1659,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             second_stream,
             msg_id,
             msg_id_later,
-        ) = self.prepare_move_topics("iago", "first stream", "second stream", "test")
+        ) = self.prepare_move_topics("shiva", "first stream", "second stream", "test")
 
         # 'prepare_move_topics' sends 3 messages in the first_stream
         messages = get_topic_messages(user_profile, first_stream, "test")

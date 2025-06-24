@@ -265,7 +265,9 @@ export function is_stream_editable(message: Message, edit_limit_seconds_buffer =
         return false;
     }
 
-    if (!settings_data.user_can_move_messages_between_streams()) {
+    const stream = stream_data.get_sub_by_id(message.stream_id);
+    assert(stream !== undefined);
+    if (!stream_data.user_can_move_messages_out_of_channel(stream)) {
         return false;
     }
 

@@ -785,6 +785,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
         stream_id: 111,
         name: "random",
         can_administer_channel_group: nobody.id,
+        can_move_messages_out_of_channel_group: nobody.id,
         can_move_messages_within_channel_group: nobody.id,
     };
     stream_data.add_sub(sub);
