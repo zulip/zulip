@@ -710,6 +710,13 @@ export function initialize(): void {
         ].join(", ");
 
         $(sel).on("click", "a", function (this: HTMLElement) {
+            // Don't blur if topic text is selected
+            if (
+                this.closest("#stream_filters") !== null &&
+                document.getSelection()?.type === "Range"
+            ) {
+                return;
+            }
             this.blur();
         });
     }
