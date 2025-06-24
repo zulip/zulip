@@ -31,6 +31,11 @@ mock_esm("../src/unread", {
         stream_is_muted: false,
         muted_count: 0,
     }),
+    get_counts: () => ({
+        mentioned_message_count: 222,
+        home_unread_messages: 333,
+        stream_unread_messages: 666,
+    }),
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
     stream_has_any_unmuted_mentions: () => noop,
 });

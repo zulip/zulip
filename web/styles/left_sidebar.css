@@ -339,14 +339,14 @@
     /* There's no three-dot menu here, but we still want the markers to line-up with
        markers in other rows that do have three-dot menus. */
     grid-template:
-        "arrow row-content add-channel three-dot-placeholder" var(
+        "arrow row-content add-channel markers-and-unreads three-dot-placeholder" var(
             --line-height-sidebar-row-prominent
         )
         / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr) minmax(
             0,
             max-content
         )
-        var(--left-sidebar-vdots-width);
+        minmax(0, max-content) var(--left-sidebar-vdots-width);
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
@@ -360,6 +360,10 @@
        being sticky, it's 0.5px below its actual position and thus overlaps the channel
        below. This extra margin prevents that overlap. */
     margin-bottom: 1px;
+
+    .unread_count {
+        margin-right: var(--left-sidebar-unread-offset);
+    }
 
     .add-stream-icon-container {
         text-decoration: none;
@@ -413,6 +417,17 @@
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::before,
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::after {
         display: none;
+    }
+}
+
+/* Only show section header unread counts when the section is collapsed
+   or when the header is being hovered over. */
+#streams_list .stream-list-section-container:not(.collapsed) {
+    .stream-list-subsection-header:not(:hover) {
+        .unread_count,
+        .masked_unread_count {
+            visibility: hidden;
+        }
     }
 }
 
