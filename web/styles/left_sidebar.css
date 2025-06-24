@@ -348,14 +348,14 @@
     /* There's no three-dot menu here, but we still want the markers to line-up with
        markers in other rows that do have three-dot menus. */
     grid-template:
-        "arrow row-content add-channel three-dot-placeholder" var(
+        "arrow row-content add-channel markers-and-unreads three-dot-placeholder" var(
             --line-height-sidebar-row-prominent
         )
         / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr) minmax(
             0,
             max-content
         )
-        var(--left-sidebar-vdots-width);
+        minmax(0, max-content) var(--left-sidebar-vdots-width);
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
@@ -400,6 +400,20 @@
         color: var(--color-text-sidebar-heading);
         opacity: var(--opacity-sidebar-heading-icon);
         justify-self: center;
+    }
+
+    .markers-and-unreads {
+        grid-area: markers-and-unreads;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        grid-gap: 5px;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
+
+        &:has(.unread_count:empty) {
+            margin-right: 0;
+        }
     }
 }
 

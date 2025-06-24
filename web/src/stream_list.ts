@@ -36,6 +36,7 @@ import * as topic_list from "./topic_list.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import * as unread_ui from "./unread_ui.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
@@ -302,6 +303,11 @@ export function build_stream_list(force_rerender: boolean): void {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
     }
+    // This calls `left_sidebar_navigation_area.update_dom_with_unread_counts`
+    // which determines if we need to show header counts or not (based on what
+    // the various channel counts are) and which are faded muted counts, which
+    // we'll have lost after we rerendered everything.
+    unread_ui.update_unread_counts();
     sidebar_ui.update_unread_counts_visibility();
     collapse_collapsed_sections();
 }
