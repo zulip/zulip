@@ -452,8 +452,10 @@
 
         .inbox-row,
         .inbox-header {
-            &:focus,
-            &:focus-within,
+            /* Don't show the icons unless user is visibly focused
+               on the element or one of the elements within it. */
+            &:focus-within:not(:focus),
+            &:focus-visible,
             &:hover {
                 .inbox-row-visibility-policy-inherit,
                 .inbox-action-button {
