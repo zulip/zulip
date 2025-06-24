@@ -82,6 +82,7 @@ def validate_email_change_request(user_profile: UserProfile, new_email: str) -> 
         validate_email_not_already_in_realm(
             user_profile.realm,
             new_email,
+            allow_inactive_mirror_dummies=False,
             verbose=False,
         )
     except ValidationError as e:

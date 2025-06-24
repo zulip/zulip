@@ -476,7 +476,7 @@ def registration_helper(
             return redirect_to_deactivation_notice()
 
         try:
-            validate_email_not_already_in_realm(realm, email)
+            validate_email_not_already_in_realm(realm, email, allow_inactive_mirror_dummies=True)
         except ValidationError:
             return redirect_to_email_login_url(email)
 
@@ -1463,7 +1463,9 @@ def accounts_home(
             email = form.cleaned_data["email"]
 
             try:
-                validate_email_not_already_in_realm(realm, email)
+                validate_email_not_already_in_realm(
+                    realm, email, allow_inactive_mirror_dummies=True
+                )
             except ValidationError:
                 return redirect_to_email_login_url(email)
 

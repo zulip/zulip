@@ -251,7 +251,7 @@ def do_invite_users(
     but we still need to make sure they're not
     gonna conflict with existing users
     """
-    error_dict = get_existing_user_errors(realm, good_emails)
+    error_dict = get_existing_user_errors(realm, good_emails, allow_inactive_mirror_dummies=True)
 
     skipped: list[tuple[str, str, bool]] = []
     for email in error_dict:
