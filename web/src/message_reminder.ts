@@ -31,6 +31,7 @@ export function set_message_reminder(send_at_time: number, message_id: number): 
             feedback_widget.show({
                 populate,
                 title_text,
+                hide_delay: 6000,
             });
         },
         error(xhr: JQuery.jqXHR): void {
