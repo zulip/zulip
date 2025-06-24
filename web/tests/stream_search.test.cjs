@@ -156,7 +156,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Escape a non-empty search.
     $input.val("foo");
-    stream_list.clear_and_hide_search();
+    stream_list.clear_search();
     verify_collapsed();
 
     // Expand the widget.
@@ -165,7 +165,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Escape an empty search.
     $input.val("");
-    stream_list.clear_and_hide_search();
+    stream_list.clear_search();
     verify_collapsed();
 });
 
