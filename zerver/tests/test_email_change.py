@@ -15,6 +15,7 @@ from confirmation.models import (
     create_confirmation_link,
     generate_key,
 )
+from confirmation.settings import STATUS_USED
 from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import do_deactivate_realm, do_set_realm_property
 from zerver.actions.user_settings import do_change_user_setting, do_start_email_change_process
@@ -141,7 +142,16 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_change_email_revokes(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        old_email = user_profile.delivery_email
+
+        initial_new_email = "hamlet-new@zulip.com"
+        initial_url = self.generate_email_change_link(initial_new_email)
+        initial_email_change_status_obj = EmailChangeStatus.objects.latest("id")
+        self.assertEqual(initial_email_change_status_obj.new_email, initial_new_email)
+        response = self.use_email_change_confirmation_link(initial_url)
+        initial_email_change_status_obj.refresh_from_db()
+        self.assertEqual(initial_email_change_status_obj.status, STATUS_USED)
+        # Clear out the outbox, since the further test code doesn't expect any emails in there.
+        mail.outbox.pop()
 
         first_email = "hamlet-newer@zulip.com"
         first_url = self.generate_email_change_link(first_email)
@@ -150,12 +160,16 @@ class EmailChangeTestCase(ZulipTestCase):
         response = self.client_get(first_url)
         self.assertEqual(response.status_code, 404)
         user_profile.refresh_from_db()
-        self.assertEqual(user_profile.delivery_email, old_email)
+        self.assertEqual(user_profile.delivery_email, initial_new_email)
 
         response = self.use_email_change_confirmation_link(second_url)
         self.assertEqual(response.status_code, 200)
         user_profile.refresh_from_db()
         self.assertEqual(user_profile.delivery_email, second_email)
+
+        # The originally used confirmation still has USED status and didn't get revoked.
+        initial_email_change_status_obj.refresh_from_db()
+        self.assertEqual(initial_email_change_status_obj.status, STATUS_USED)
 
     def test_change_email_deactivated_user_realm(self) -> None:
         new_email = "hamlet-new@zulip.com"
