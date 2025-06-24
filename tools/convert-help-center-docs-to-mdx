@@ -505,6 +505,7 @@ def convert_help_center_file_to_mdx(
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
+    result = fix_relative_path(result)
     # We are not inserting FlattenList components for files
     # with !!! tip components, since we need to do it inside the
     # include file. We can do it during the cutover manually or
@@ -519,7 +520,6 @@ def convert_help_center_file_to_mdx(
     result = convert_tab_syntax(result, import_statement_set)
     result = replace_setting_links(result, import_statement_set, "../../components")
     result = escape_curly_braces(result)
-    result = fix_relative_path(result)
     result = replace_emoticon_translation_table(result, import_statement_set)
     result = replace_image_path(result, "../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
@@ -551,12 +551,12 @@ def convert_include_file_to_mdx(
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
+    result = fix_relative_path(result)
     result = fix_file_imports(result, import_statement_set, ".")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = convert_tab_syntax(result, import_statement_set)
     result = replace_setting_links(result, import_statement_set, "../../../components")
     result = escape_curly_braces(result)
-    result = fix_relative_path(result)
     result = replace_image_path(result, "../../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
     result = convert_comments(result)
