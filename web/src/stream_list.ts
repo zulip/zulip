@@ -906,7 +906,7 @@ export function set_event_handlers({
             return;
         }
 
-        clear_and_hide_search();
+        clear_search();
         e.preventDefault();
         e.stopPropagation();
 
@@ -973,7 +973,10 @@ export function set_event_handlers({
         }
     });
 
-    $("#clear_search_stream_button").on("click", clear_search);
+    $("#clear_search_stream_button").on("click", (e: JQuery.ClickEvent) => {
+        e.stopPropagation();
+        clear_search();
+    });
 
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
@@ -1011,7 +1014,7 @@ export function set_event_handlers({
             return;
         }
 
-        clear_and_hide_search();
+        clear_search();
         on_stream_click(stream_id, "sidebar enter key");
     }
 
@@ -1044,43 +1047,7 @@ export function searching(): boolean {
     return $(".stream-list-filter").expectOne().is(":focus");
 }
 
-export function clear_search(e: JQuery.ClickEvent): void {
-    e.stopPropagation();
-    const $filter = $(".stream-list-filter").expectOne();
-    if ($filter.val() === "") {
-        clear_and_hide_search();
-        return;
-    }
-    $filter.val("");
-    $filter.trigger("blur");
-    update_streams_for_search();
-}
-
-export function show_search_section(): void {
-    $("#streams_header").addClass("showing-stream-search-section");
-    $(".stream_search_section").expectOne().removeClass("notdisplayed");
-    resize.resize_stream_filters_container();
-}
-
-export function hide_search_section(): void {
-    $("#streams_header").removeClass("showing-stream-search-section");
-    $(".stream_search_section").expectOne().addClass("notdisplayed");
-    resize.resize_stream_filters_container();
-}
-
-export function initiate_search(): void {
-    popovers.hide_all();
-    show_search_section();
-
-    const $filter = $(".stream-list-filter").expectOne();
-
-    sidebar_ui.show_left_sidebar();
-    $filter.trigger("focus");
-
-    stream_cursor.reset();
-}
-
-export function clear_and_hide_search(): void {
+export function clear_search(): void {
     const $filter = $(".stream-list-filter").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
@@ -1088,17 +1055,17 @@ export function clear_and_hide_search(): void {
     }
     stream_cursor.clear();
     $filter.trigger("blur");
-
-    hide_search_section();
 }
 
-export function toggle_filter_displayed(e: JQuery.ClickEvent): void {
-    if ($(".stream_search_section.notdisplayed").length === 0) {
-        clear_and_hide_search();
-    } else {
-        initiate_search();
-    }
-    e.preventDefault();
+export function initiate_search(): void {
+    popovers.hide_all();
+
+    const $filter = $(".stream-list-filter").expectOne();
+
+    sidebar_ui.show_left_sidebar();
+    $filter.trigger("focus");
+
+    stream_cursor.reset();
 }
 
 function scroll_stream_into_view($stream_li: JQuery): void {
