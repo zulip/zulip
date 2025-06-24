@@ -1140,13 +1140,7 @@ export class Filter {
     }
 
     calc_can_mark_messages_read(): boolean {
-        // Arguably this should match supports_collapsing_recipients.
-        // We may want to standardize on that in the future.  (At
-        // present, this function does not allow combining valid filters).
-        if (this.single_term_type_returns_all_messages_of_conversation()) {
-            return true;
-        }
-        return false;
+        return this.contains_no_partial_conversations();
     }
 
     can_mark_messages_read(): boolean {
