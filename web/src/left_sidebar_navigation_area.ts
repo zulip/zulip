@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
@@ -9,6 +10,8 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 
@@ -84,8 +87,36 @@ export function update_dom_with_unread_counts(
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
-    // TODO(evy) display counts for each header
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
+
+    let pinned_unread_count = 0;
+    let normal_unread_count = 0;
+    let inactive_unread_count = 0;
+
+    for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
+        const sub = sub_store.get(stream_id);
+        assert(sub);
+        if (sub.pin_to_top) {
+            pinned_unread_count += stream_count_info.unmuted_count;
+        } else if (stream_list_sort.has_recent_activity(sub)) {
+            normal_unread_count += stream_count_info.unmuted_count;
+        } else {
+            inactive_unread_count += stream_count_info.unmuted_count;
+        }
+    }
+
+    ui_util.update_unread_count_in_dom(
+        $("#stream-list-pinned-streams-container .markers-and-unreads"),
+        pinned_unread_count,
+    );
+    ui_util.update_unread_count_in_dom(
+        $("#stream-list-normal-streams-container .markers-and-unreads"),
+        normal_unread_count,
+    );
+    ui_util.update_unread_count_in_dom(
+        $("#stream-list-dormant-streams-container .markers-and-unreads"),
+        inactive_unread_count,
+    );
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
