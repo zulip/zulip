@@ -20,6 +20,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from lxml.html import builder as e
+from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
@@ -270,7 +271,9 @@ def build_message_list(
                 sender=message.sender,
             )
             header = f"You and {message.sender.full_name}"
-            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            header_html = Markup(
+                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            ).format(narrow_link=narrow_link, header=header)
         elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
@@ -280,7 +283,9 @@ def build_message_list(
             )
             other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user.id]
             header = "You and {}".format(", ".join(other_recipients))
-            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            header_html = Markup(
+                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            ).format(narrow_link=narrow_link, header=header)
         else:
             assert message.recipient.type == Recipient.STREAM
             grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
@@ -298,7 +303,14 @@ def build_message_list(
             )
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
-            header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
+            header_html = Markup(
+                "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+            ).format(
+                stream_link=stream_link,
+                stream_name=stream.name,
+                narrow_link=narrow_link,
+                topic_name=message.topic_name(),
+            )
         return {
             "grouping": grouping,
             "plain": header,
