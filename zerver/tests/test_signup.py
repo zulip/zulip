@@ -1643,7 +1643,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
-        # Simulate the initial POST that is made by confirm-preregistration.js
+        # Simulate the initial POST that is made by redirect-to-post.ts
         # by triggering submit on confirm_preregistration.html.
         payload = {
             "full_name": "",
