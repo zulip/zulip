@@ -17,6 +17,7 @@ import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
@@ -321,6 +322,8 @@ export function build_stream_list(force_rerender: boolean): void {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
     }
+    // Rerendreing can moving channels between folders and change heading unread counts.
+    left_sidebar_navigation_area.update_dom_with_unread_counts(unread.get_counts(), false);
     sidebar_ui.update_unread_counts_visibility();
     collapse_collapsed_sections();
 }
