@@ -826,11 +826,6 @@ export function initialize(): void {
 
     $("body").on("click", ".filter-topics .input-button", topic_list.clear_topic_search);
 
-    $(".streams_filter_icon").on("click", (e) => {
-        e.stopPropagation();
-        stream_list.toggle_filter_displayed(e);
-    });
-
     $("body").on("click", "#direct-messages-section-header.zoom-out", (e) => {
         if ($(e.target).closest("#show-all-direct-messages").length === 1) {
             // Let the browser handle the "direct message feed" widget.
