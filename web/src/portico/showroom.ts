@@ -169,11 +169,11 @@ const alert_banners: Record<string, AlertBanner> = {
     "insecure-desktop-app": {
         process: "insecure-desktop-app",
         intent: "danger",
-        label: "You are using an old version of the Zulip desktop app with known security bugs.",
+        label: "Zulip desktop is not updating automatically. Please upgrade for security updates and other improvements.",
         buttons: [
             {
                 attention: "quiet",
-                intent: "danger",
+                intent: "warning",
                 label: "Download the latest version",
             },
         ],
