@@ -7693,20 +7693,39 @@ class EmailValidatorTestCase(ZulipTestCase):
         self.assertIn("containing + are not allowed", error)
 
         cordelia_email = cordelia.delivery_email
-        errors = get_existing_user_errors(realm, {cordelia_email})
+        errors = get_existing_user_errors(
+            realm, {cordelia_email}, allow_inactive_mirror_dummies=True
+        )
         error, is_deactivated = errors[cordelia_email]
         self.assertEqual(False, is_deactivated)
         self.assertEqual(error, "Already has an account.")
 
         change_user_is_active(cordelia, False)
 
-        errors = get_existing_user_errors(realm, {cordelia_email})
+        errors = get_existing_user_errors(
+            realm, {cordelia_email}, allow_inactive_mirror_dummies=True
+        )
         error, is_deactivated = errors[cordelia_email]
         self.assertEqual(True, is_deactivated)
         self.assertEqual(error, "Account has been deactivated.")
 
-        errors = get_existing_user_errors(realm, {"fred-is-fine@zulip.com"})
+        errors = get_existing_user_errors(
+            realm, {"fred-is-fine@zulip.com"}, allow_inactive_mirror_dummies=True
+        )
         self.assertEqual(errors, {})
+
+        cordelia.is_mirror_dummy = True
+        cordelia.save()
+        errors = get_existing_user_errors(
+            realm, {cordelia_email}, allow_inactive_mirror_dummies=True
+        )
+        self.assertEqual(errors, {})
+        errors = get_existing_user_errors(
+            realm, {cordelia_email}, allow_inactive_mirror_dummies=False
+        )
+        error, is_deactivated = errors[cordelia_email]
+        self.assertEqual(True, is_deactivated)
+        self.assertEqual(error, "Account has been deactivated.")
 
 
 class LDAPBackendTest(ZulipTestCase):

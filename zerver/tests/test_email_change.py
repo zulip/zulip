@@ -269,6 +269,22 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Already has an account", result)
 
+    def test_email_change_conflict_with_existing_mirror_dummy(self) -> None:
+        cordelia = self.example_user("cordelia")
+        do_deactivate_user(cordelia, acting_user=None)
+        cordelia.is_mirror_dummy = True
+        cordelia.save()
+
+        data = {"email": "cordelia@zulip.com"}
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+
+        url = "/json/settings"
+        result = self.client_patch(url, data)
+        self.assert_length(mail.outbox, 0)
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Account has been deactivated.", result)
+
     def test_email_change_already_taken_later(self) -> None:
         conflict_email = "conflict@zulip.com"
         hamlet = self.example_user("hamlet")
