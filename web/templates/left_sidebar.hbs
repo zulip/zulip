@@ -195,10 +195,9 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide">
-                <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'CHANNELS' }}</span></h4>
+            <div id="streams_header" class="showing-stream-search-section zoom-in-hide">
+                <h4 class="left-sidebar-title"><span class="streams-tooltip-target">{{t 'CHANNELS' }}</span></h4>
                 <div class="left-sidebar-controls">
-                    <i id="filter_streams_tooltip" class="streams_filter_icon zulip-icon zulip-icon-search" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
                     <span id="add_streams_tooltip" class="hidden-for-spectators">
                         <i id="streams_inline_icon" class="zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
                     </span>
@@ -210,7 +209,7 @@
                     </span>
                 </div>
                 <div class="left-sidebar-filter-input-container">
-                    {{#> input_wrapper input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
+                    {{#> input_wrapper input_type="filter-input" custom_classes="stream_search_section" icon="search" input_button_icon="close"}}
                         <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
                     {{/input_wrapper}}
                 </div>
