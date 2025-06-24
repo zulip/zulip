@@ -1092,7 +1092,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # even though its checks were already done above.
         try:
             email_allowed_for_realm(username, self._realm)
-            validate_email_not_already_in_realm(self._realm, username)
+            validate_email_not_already_in_realm(
+                self._realm, username, allow_inactive_mirror_dummies=True
+            )
         except DomainNotAllowedForRealmError:
             raise ZulipLDAPError("This email domain isn't allowed in this organization.")
         except (DisposableEmailError, EmailContainsPlusError):
