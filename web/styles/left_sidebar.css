@@ -1654,6 +1654,10 @@ li.active-sub-filter {
     }
 }
 
+.topic-box {
+    user-select: text;
+}
+
 .searching-for-more-topics {
     margin-left: var(--left-sidebar-toggle-width-offset);
     height: var(--line-height-sidebar-row-prominent);

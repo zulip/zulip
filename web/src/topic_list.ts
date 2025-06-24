@@ -610,6 +610,11 @@ export function initialize({
                 return;
             }
 
+            if (document.getSelection()?.type === "Range") {
+                // To avoid the click behavior if a topic link is selected.
+                e.preventDefault();
+                return;
+            }
             const $stream_row = $(e.target).parents(".narrow-filter");
             const stream_id_string = $stream_row.attr("data-stream-id");
             assert(stream_id_string !== undefined);
