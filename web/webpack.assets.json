@@ -98,10 +98,10 @@
     ],
     "signup": ["./src/bundles/portico.ts", "jquery-validation", "./src/portico/signup.ts"],
     "register": ["./src/bundles/portico.ts", "jquery-validation", "./src/portico/signup.ts"],
-    "confirm-preregistrationuser": [
+    "redirect-to-post": [
         "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common.ts",
-        "./src/portico/confirm-preregistrationuser.ts"
+        "./src/portico/redirect-to-post.ts"
     ],
     "support": [
         "./third/bootstrap/css/bootstrap.portico.css",
