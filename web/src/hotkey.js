@@ -1432,6 +1432,14 @@ export function process_keydown(e) {
 
 export function initialize() {
     $(document).on("keydown", (e) => {
+        if (e.key === undefined) {
+            /* Some browsers trigger a 'keydown' event with `key === undefined`
+            on selecting autocomplete suggestion. These are not real keypresses
+            and can be safely ignored.
+            See: https://issues.chromium.org/issues/41425904
+            */
+            return;
+        }
         if (process_keydown(e)) {
             e.preventDefault();
         }
