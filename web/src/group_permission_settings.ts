@@ -71,6 +71,7 @@ export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_sche
 export const stream_group_setting_name_schema = z.enum([
     "can_add_subscribers_group",
     "can_administer_channel_group",
+    "can_move_messages_within_channel_group",
     "can_remove_subscribers_group",
     "can_send_message_group",
     "can_subscribe_group",

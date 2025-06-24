@@ -126,6 +126,11 @@
           label=group_setting_labels.can_remove_subscribers_group
           prefix=prefix }}
 
+        {{> ../settings/group_setting_value_pill_input
+          setting_name="can_move_messages_within_channel_group"
+          label=group_setting_labels.can_move_messages_within_channel_group
+          prefix=prefix }}
+
 
         {{#if (or is_owner is_stream_edit)}}
             <div>

@@ -12,6 +12,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const is_content_editable = message_edit.is_content_editable;
 
 const settings_data = mock_esm("../src/settings_data");
+const stream_data = mock_esm("../src/stream_data");
 
 const realm = {};
 set_realm(realm);
@@ -94,7 +95,9 @@ run_test("is_topic_editable", ({override}) => {
         type: "stream",
     };
     override(realm, "realm_allow_message_editing", true);
-    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
+    override(stream_data, "is_stream_archived", () => false);
+    override(stream_data, "user_can_move_messages_within_channel", () => true);
+    override(stream_data, "get_sub_by_id", () => ({}));
     override(current_user, "is_moderator", true);
 
     assert.equal(message_edit.is_topic_editable(message), false);
@@ -109,7 +112,7 @@ run_test("is_topic_editable", ({override}) => {
     message.sent_by_me = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
-    override(settings_data, "user_can_move_messages_to_another_topic", () => false);
+    override(stream_data, "user_can_move_messages_within_channel", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     override(current_user, "is_moderator", false);
@@ -119,13 +122,13 @@ run_test("is_topic_editable", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "test topic";
-    override(settings_data, "user_can_move_messages_to_another_topic", () => false);
+    override(stream_data, "user_can_move_messages_within_channel", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     override(realm, "realm_move_messages_within_stream_limit_seconds", 259200);
     message.timestamp = current_timestamp - 60;
 
-    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
+    override(stream_data, "user_can_move_messages_within_channel", () => true);
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.timestamp = current_timestamp - 600000;
@@ -150,6 +153,7 @@ run_test("is_stream_editable", ({override}) => {
     override(realm, "realm_allow_message_editing", true);
     override(settings_data, "user_can_move_messages_between_streams", () => true);
     override(current_user, "is_moderator", true);
+    override(stream_data, "is_stream_archived", () => false);
 
     assert.equal(message_edit.is_stream_editable(message), false);
 

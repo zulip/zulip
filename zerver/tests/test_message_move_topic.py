@@ -19,6 +19,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -37,7 +38,7 @@ from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum
-from zerver.models.streams import Stream, StreamTopicsPolicyEnum
+from zerver.models.streams import Stream, StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 
 
@@ -45,6 +46,34 @@ class MessageMoveTopicTest(ZulipTestCase):
     def check_topic(self, msg_id: int, topic_name: str) -> None:
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(msg.topic_name(), topic_name)
+
+    def assert_move_message(
+        self,
+        user: str,
+        orig_stream: Stream,
+        stream_id: int | None = None,
+        topic_name: str | None = None,
+        expected_error: str | None = None,
+    ) -> None:
+        user_profile = self.example_user(user)
+        self.subscribe(user_profile, orig_stream.name)
+        message_id = self.send_stream_message(user_profile, orig_stream.name)
+
+        params_dict: dict[str, str | int] = {}
+        if stream_id is not None:
+            params_dict["stream_id"] = stream_id
+        if topic_name is not None:
+            params_dict["topic"] = topic_name
+
+        result = self.api_patch(
+            user_profile,
+            "/api/v1/messages/" + str(message_id),
+            params_dict,
+        )
+        if expected_error is not None:
+            self.assert_json_error(result, expected_error)
+        else:
+            self.assert_json_success(result)
 
     def assert_has_visibility_policy(
         self,
@@ -2199,7 +2228,7 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Do not allow if there is some change other than adding
         # RESOLVED_TOPIC_PREFIX
-        self.login_user(admin_user)
+        self.login_user(cordelia)
         result = self.client_patch(
             "/json/messages/" + str(id4),
             {
@@ -2210,7 +2239,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_json_error(result, "You don't have permission to edit this message")
 
         result = self.resolve_topic_containing_message(
-            admin_user,
+            cordelia,
             id4,
         )
         self.assert_json_success(result)
@@ -2251,3 +2280,119 @@ class MessageMoveTopicTest(ZulipTestCase):
             id5,
         )
         self.assert_json_success(result)
+
+    def test_can_move_messages_within_channel_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        expected_error = "You don't have permission to edit this message"
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            members_system_group,
+            acting_user=None,
+        )
+
+        stream_1 = get_stream("Denmark", realm)
+        stream_2 = get_stream("Verona", realm)
+
+        # Nobody is allowed to move messages.
+        self.assert_move_message(
+            "hamlet", stream_1, topic_name="new topic", expected_error=expected_error
+        )
+        # Realm admin can always move messages within the channel.
+        self.assert_move_message("iago", stream_1, topic_name="new topic")
+
+        do_change_stream_group_based_setting(
+            stream_1,
+            "can_move_messages_within_channel_group",
+            members_system_group,
+            acting_user=iago,
+        )
+        # Only members are allowed to move messages within the channel.
+        self.assert_move_message("hamlet", stream_1, topic_name="new topic")
+        self.assert_move_message("cordelia", stream_1, topic_name="new topic")
+        # Guests are not allowed.
+        self.assert_move_message(
+            "polonius", stream_1, topic_name="new topic", expected_error=expected_error
+        )
+
+        # Users are allowed to move messages to different topics out of the channel
+        # if they are in `can_move_messages_within_channel_group` permission of either
+        # the original channel or the destination channel.
+        self.assert_move_message(
+            "hamlet",
+            stream_1,
+            stream_id=stream_2.id,
+            topic_name="new topic",
+        )
+        self.assert_move_message(
+            "hamlet",
+            stream_2,
+            stream_id=stream_1.id,
+            topic_name="new topic",
+        )
+
+        do_change_stream_group_based_setting(
+            stream_1,
+            "can_move_messages_within_channel_group",
+            moderators_system_group,
+            acting_user=iago,
+        )
+        # Hamlet can't move message to another topic now as he is not in
+        # the `can_move_messages_within_channel_group` of either of the channel.
+        self.assert_move_message(
+            "hamlet",
+            stream_1,
+            stream_id=stream_2.id,
+            topic_name="new topic",
+            expected_error=expected_error,
+        )
+        # But he still can move messages between channel without changing the topic.
+        self.assert_move_message(
+            "hamlet",
+            stream_1,
+            stream_id=stream_2.id,
+        )
+
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_stream_group_based_setting(
+            stream_1, "can_move_messages_within_channel_group", user_group, acting_user=iago
+        )
+
+        # Hamlet and Cordelia are in the `can_move_messages_within_channel_group`,
+        # so they can move messages within the channel.
+        self.assert_move_message("cordelia", stream_1, topic_name="new topic")
+        self.assert_move_message("hamlet", stream_1, topic_name="new topic")
+        # But Shiva is not, so he can't.
+        self.assert_move_message(
+            "shiva", stream_1, topic_name="new topic", expected_error=expected_error
+        )
+
+        do_change_stream_group_based_setting(
+            stream_1, "can_administer_channel_group", members_system_group, acting_user=iago
+        )
+        # Channel administrators with content access can always move messages within
+        # the channel even if they are not in `can_move_messages_within_channel_group`.
+        self.assert_move_message("shiva", stream_1, topic_name="new topic")
