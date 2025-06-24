@@ -269,7 +269,7 @@ async function get_message_placement_in_conversation(
     // in the current message list. This allows us to avoid a server call
     // in most cases.
 
-    if (message_lists.current.data.filter.supports_collapsing_recipients()) {
+    if (message_lists.current.data.filter.contains_no_partial_conversations()) {
         // Next we check if we are in a conversation view. If we are
         // in a conversation view, we check if the message is the
         // first or the last message in the current view. If not, we

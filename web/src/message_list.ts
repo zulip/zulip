@@ -119,7 +119,7 @@ export class MessageList {
         // TODO: This property should likely just be inlined into
         // having the MessageListView code that needs to access it
         // query .data.filter directly.
-        const collapse_messages = this.data.filter.supports_collapsing_recipients();
+        const collapse_messages = this.data.filter.contains_no_partial_conversations();
 
         this.view = new MessageListView(this, collapse_messages, opts.is_node_test);
         this.is_combined_feed_view = this.data.filter.is_in_home();

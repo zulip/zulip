@@ -560,7 +560,7 @@ export function inform_if_topic_is_moved(orig_topic: string, old_stream_id: numb
 
 export function warn_if_in_search_view(): void {
     const filter = narrow_state.filter();
-    if (filter && !filter.supports_collapsing_recipients()) {
+    if (filter && !filter.contains_no_partial_conversations()) {
         const context = {
             banner_type: compose_banner.WARNING,
             banner_text: $t({
