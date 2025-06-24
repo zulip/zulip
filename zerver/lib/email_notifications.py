@@ -221,11 +221,13 @@ def build_message_list(
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def prepend_sender_to_message(
-        message_plain: str, message_html: str, sender: str
-    ) -> tuple[str, str]:
+        message_plain: str, message_html: Markup, sender: str
+    ) -> tuple[str, Markup]:
         message_plain = f"{sender}:\n{message_plain}"
         message_soup = BeautifulSoup(message_html, "html.parser")
-        sender_name_soup = BeautifulSoup(f"<b>{sender}</b>: ", "html.parser")
+        sender_name_soup = BeautifulSoup(
+            Markup("<b>{sender}</b>: ").format(sender=sender), "html.parser"
+        )
         first_tag = message_soup.find()
         if first_tag and first_tag.name == "div":
             first_tag = first_tag.find()
@@ -233,9 +235,11 @@ def build_message_list(
             first_tag.insert(0, sender_name_soup)
         else:
             message_soup.insert(0, sender_name_soup)
-        return message_plain, str(message_soup)
+        return message_plain, Markup(BeautifulSoup.decode(message_soup))
 
-    def build_message_payload(message: Message, sender: str | None = None) -> dict[str, str]:
+    def build_message_payload(
+        message: Message, sender: str | None = None
+    ) -> dict[str, str | Markup]:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -254,7 +258,7 @@ def build_message_list(
         fix_spoilers_in_html(fragment, user.default_language)
         change_katex_to_raw_latex(fragment)
 
-        html = lxml.html.tostring(fragment, encoding="unicode")
+        html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
         return {"plain": plain, "html": html}

@@ -519,7 +519,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.flake8-bandit]
-allowed-markup-calls = ["lxml.html.tostring"]
+allowed-markup-calls = ["bs4.BeautifulSoup.decode", "lxml.html.tostring"]
 
 [tool.ruff.lint.flake8-gettext]
 extend-function-names = ["gettext_lazy"]
