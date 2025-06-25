@@ -20,7 +20,7 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
@@ -100,6 +100,24 @@ function show_stream_subscription_request_result({
     }
 }
 
+function update_notification_choice_checkbox(added_user_count: number): void {
+    const $send_notification_checkbox = $(".send_notification_to_new_subscribers");
+    const $send_notification_container = $(".send_notification_to_new_subscribers_container");
+    if (added_user_count > realm.max_bulk_new_subscription_messages) {
+        $send_notification_checkbox.prop("checked", false);
+        $send_notification_checkbox.prop("disabled", true);
+        $send_notification_container.addClass("control-label-disabled");
+    } else {
+        $send_notification_checkbox.prop("disabled", false);
+        $send_notification_container.removeClass("control-label-disabled");
+    }
+}
+
+async function stream_edit_update_notification_choice(): Promise<void> {
+    const pill_count = (await add_subscribers_pill.get_pill_user_ids(pill_widget)).length;
+    update_notification_choice_checkbox(pill_count);
+}
+
 export function enable_subscriber_management({
     sub,
     $parent_container,
@@ -118,9 +136,15 @@ export function enable_subscriber_management({
         return peer_data.potential_subscribers(stream_id);
     }
 
+    const update_notification_choice = function (): void {
+        void stream_edit_update_notification_choice();
+    };
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
+        onPillCreateAction: update_notification_choice,
+        onPillRemoveAction: update_notification_choice,
+        add_button_pill_update_callback: update_notification_choice,
         get_user_groups: user_groups.get_all_realm_user_groups,
         with_add_button: true,
     });
@@ -292,7 +316,13 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         });
     }
 
-    subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
+    subscriber_api.add_user_ids_to_stream(
+        user_ids,
+        sub,
+        $("#send_notification_to_new_subscribers").is(":checked"),
+        invite_success,
+        invite_failure,
+    );
 }
 
 function remove_subscriber({
