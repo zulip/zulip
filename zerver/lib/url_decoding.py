@@ -2,6 +2,7 @@
 
 import re
 from collections.abc import Iterable, Sequence
+from functools import cmp_to_key
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
@@ -266,6 +267,47 @@ class Filter:
             result += "-" + str(term.operand)
 
         return result
+
+    @staticmethod
+    def sorted_terms(terms: list[NarrowTerm]) -> list[NarrowTerm]:
+        # Keep this algorithm in sync with the the `sorted_term_types` static
+        # method in `filter.Filter` in the frontend.
+        levels: Sequence[str] = [
+            "in",
+            "channels-public",
+            "channel",
+            "topic",
+            "dm",
+            "dm-including",
+            "with",
+            "sender",
+            "near",
+            "id",
+            "is-alerted",
+            "is-mentioned",
+            "is-dm",
+            "is-starred",
+            "is-unread",
+            "is-resolved",
+            "is-followed",
+            "has-link",
+            "has-image",
+            "has-attachment",
+            "search",
+        ]
+
+        def level(term_type: str) -> int:
+            try:
+                return levels.index(term_type)
+            except ValueError:
+                return 999
+
+        def compare(a: NarrowTerm, b: NarrowTerm) -> int:
+            term_type_a = Filter.term_type(a)
+            term_type_b = Filter.term_type(b)
+            return level(term_type_a) - level(term_type_b)
+
+        return sorted(terms, key=cmp_to_key(compare))
 
     def _canonicalize_terms(self, terms_mixed_case: Sequence[NarrowTerm]) -> list[NarrowTerm]:
         return [Filter.canonicalize_term(term) for term in terms_mixed_case]
