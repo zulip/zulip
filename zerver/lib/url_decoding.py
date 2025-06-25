@@ -292,6 +292,48 @@ class Filter:
         return result
 
     @staticmethod
+    def sorted_terms(terms: list[NarrowTerm]) -> list[NarrowTerm]:
+        # Keep this algorithm in sync with the `sorted_term_types` static
+        # method in `filter.Filter` in the frontend.
+        levels: Sequence[str] = [
+            "in",
+            "channels-public",
+            "channels-archived",
+            "not-channels-archived",
+            "channels-web-public",
+            "channel",
+            "topic",
+            "dm",
+            "dm-including",
+            "with",
+            "sender",
+            "mentions",
+            "near",
+            "id",
+            "is-alerted",
+            "is-mentioned",
+            "is-dm",
+            "not-is-dm",
+            "is-starred",
+            "is-unread",
+            "is-resolved",
+            "is-followed",
+            "is-muted",
+            "has-link",
+            "has-image",
+            "has-attachment",
+            "search",
+        ]
+
+        def level(term_type: str) -> int:
+            try:
+                return levels.index(term_type)
+            except ValueError:
+                return 999
+
+        return sorted(terms, key=lambda term: level(Filter.term_type(term)))
+
+    @staticmethod
     def _canonicalize_terms(terms_mixed_case: Sequence[NarrowTerm]) -> list[NarrowTerm]:
         return [Filter.canonicalize_term(term) for term in terms_mixed_case]
 
