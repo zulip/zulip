@@ -268,6 +268,14 @@ export function initialize(): void {
         zoom_out();
     });
 
+    $(".direct-messages-container").on("click", ".dm-box", (e) => {
+        if (document.getSelection()?.type === "Range") {
+            e.preventDefault();
+            // To prevent blur caused by other handlers.
+            e.stopPropagation();
+        }
+    });
+
     $(".direct-messages-container").on("input", ".direct-messages-list-filter", (e) => {
         e.stopPropagation();
         e.preventDefault();
