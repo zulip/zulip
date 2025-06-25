@@ -4,6 +4,11 @@
         <h4 class="left-sidebar-title">
             {{section_title}}
         </h4>
+        {{#if show_plus_icon}}
+        <a href="#channels/new" class="add-stream-tooltip add-stream-icon-container hidden-for-spectators" data-tippy-content="{{t 'Create a channel' }}">
+            <i class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+        </a>
+        {{/if}}
     </div>
     <ul id="stream-list-{{id}}" class="stream-list-section"></ul>
 </div>
