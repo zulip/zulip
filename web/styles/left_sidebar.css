@@ -444,6 +444,7 @@
         0;
     padding-left: var(--left-sidebar-toggle-width-offset);
     border-radius: 4px;
+    text-decoration: none;
 
     &:hover {
         background: var(--color-background-sidebar-action-heading-hover);
@@ -497,11 +498,6 @@
            for better vertical centering. */
         font-size: var(--font-size-sidebar-action-heading);
     }
-}
-
-#subscribe-to-more-streams,
-#login-to-mmore-streams {
-    text-decoration: none;
 }
 
 ul.filters {
