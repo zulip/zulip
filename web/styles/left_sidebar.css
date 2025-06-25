@@ -32,9 +32,16 @@
     margin-right: var(--left-sidebar-right-margin);
 }
 
-#streams_inline_icon {
-    color: var(--color-left-sidebar-heads-up-icon);
+.add-stream-icon-container {
+    grid-area: add-channel;
+    display: grid;
+    place-items: center center;
+    margin: 2px 0;
     border-radius: 3px;
+
+    .add_stream_icon {
+        color: var(--color-left-sidebar-heads-up-icon);
+    }
 
     &:hover {
         color: var(--color-left-sidebar-heads-up-icon-hover);
@@ -313,14 +320,26 @@
     }
 }
 
-.stream_search_section {
+.spectator-view #stream-search-and-add {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+#stream-search-and-add {
+    display: grid;
+    grid-template-areas: "filter-container add-channel";
+    grid-template-columns: minmax(0, 1fr) var(--left-sidebar-header-icon-width);
     position: sticky;
     top: 0;
     /* Must be more than .stream-list-subsection-header */
     z-index: 3;
+    background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
     padding: var(--left-sidebar-sections-vertical-gutter)
         var(--left-sidebar-right-margin) 3px 5px;
+}
+
+.zoom-in #stream-search-and-add.zoom-in-hide {
+    display: none;
 }
 
 .stream-list-subsection-header {
