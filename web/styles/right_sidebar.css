@@ -354,6 +354,7 @@
 }
 
 .user-presence-link {
+    user-select: text;
     grid-area: row-content;
 
     &:hover,
