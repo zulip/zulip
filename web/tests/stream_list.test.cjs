@@ -48,6 +48,16 @@ const stream_list_sort = zrequire("stream_list_sort");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 const settings_config = zrequire("settings_config");
+mock_esm("../src/settings_data", {
+    user_can_create_private_streams: () => true,
+    user_can_create_public_streams: () => true,
+    user_can_create_web_public_streams: () => true,
+    user_has_permission_for_group_setting: () => true,
+    should_mask_unread_count: () => false,
+});
+mock_esm("../src/unread_ui", {
+    update_unread_counts: noop,
+});
 
 // Start with always filtering out inactive streams.
 const user_settings = {

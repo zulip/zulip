@@ -262,10 +262,15 @@ export function create_initial_sidebar_rows(force_rerender = false): void {
     }
 }
 
-export let stream_list_section_container_html = function (section: StreamListSection): string {
+export let stream_list_section_container_html = function (
+    section: StreamListSection,
+    can_create_streams: boolean,
+): string {
     return render_stream_list_section_container({
         id: section.id,
         section_title: section.section_title,
+        show_plus_icon:
+            can_create_streams && !["pinned-streams", "dormant-streams"].includes(section.id),
     });
 };
 
@@ -301,8 +306,14 @@ export function build_stream_list(force_rerender: boolean): void {
 
     clear_topics();
     $("#stream_filters").empty();
+    const can_create_streams =
+        settings_data.user_can_create_private_streams() ||
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams();
     for (const section of stream_groups.sections) {
-        $("#stream_filters").append($(stream_list_section_container_html(section)));
+        $("#stream_filters").append(
+            $(stream_list_section_container_html(section, can_create_streams)),
+        );
         const is_empty = section.streams.length === 0 && section.muted_streams.length === 0;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
@@ -1106,6 +1117,15 @@ export function set_event_handlers({
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.stopPropagation();
             toggle_section_collapse($(this).closest(".stream-list-section-container"));
+        },
+    );
+
+    $("#streams_list").on(
+        "click",
+        ".stream-list-section-container .add-stream-icon-container",
+        (e) => {
+            // To prevent toggling the header
+            e.stopPropagation();
         },
     );
 }
