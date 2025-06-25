@@ -121,8 +121,6 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_reminders"), "<reminders-count>");
 
-    make_elem($("#streams_header"), "<stream-count>");
-
     make_elem($("#topics_header"), "<topics-count>");
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
@@ -135,7 +133,6 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<starred-count>").text(), "444");
     assert.equal($("<scheduled-count>").text(), "555");
     assert.equal($("<reminders-count>").text(), "888");
-    assert.equal($("<stream-count>").text(), "666");
     assert.equal($("<topics-count>").text(), "666");
 
     counts.mentioned_message_count = 0;
