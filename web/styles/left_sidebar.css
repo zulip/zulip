@@ -345,11 +345,17 @@
 .stream-list-subsection-header {
     display: grid;
     align-items: center;
+    /* There's no three-dot menu here, but we still want the markers to line-up with
+       markers in other rows that do have three-dot menus. */
     grid-template:
-        "arrow row-content scroll-buffer" var(
+        "arrow row-content add-channel three-dot-placeholder" var(
             --line-height-sidebar-row-prominent
         )
-        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr);
+        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
+        var(--left-sidebar-vdots-width);
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
@@ -359,6 +365,18 @@
     /* Must be more than .sidebar-topic-check and less than #stream-search-and-add */
     z-index: 2;
     color: var(--color-text-default);
+
+    .add-stream-icon-container {
+        text-decoration: none;
+        grid-auto-columns: var(--left-sidebar-header-icon-width);
+        grid-template-rows: calc(
+            var(--line-height-sidebar-row-prominent) - 4px
+        );
+    }
+
+    .add_stream_icon {
+        display: none;
+    }
 
     &:hover {
         background-color: var(--color-background-opaque-hover-narrow-filter);
@@ -371,6 +389,10 @@
         .left-sidebar-title,
         .stream-list-section-toggle {
             opacity: var(--opacity-sidebar-heading-hover);
+        }
+
+        .add_stream_icon {
+            display: grid;
         }
     }
 

@@ -137,6 +137,11 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".stream-list-section-container .add-stream-tooltip",
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
         target: "#add_streams_tooltip",
         onShow(instance) {
             const can_create_streams =
