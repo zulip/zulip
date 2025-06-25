@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 396
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (333, 2)  # bumped 2025-06-25 to upgrade Node.js
+PROVISION_VERSION = (333, 3)  # bumped 2025-06-25 to upgrade JavaScript dependencies

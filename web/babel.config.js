@@ -12,7 +12,7 @@ export default {
         [
             "@babel/preset-env",
             {
-                corejs: "3.42",
+                corejs: "3.43",
                 shippedProposals: true,
                 useBuiltIns: "usage",
             },
