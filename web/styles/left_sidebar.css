@@ -336,9 +336,17 @@
 .stream-list-subsection-header {
     display: grid;
     align-items: center;
+    /* There's no three-dot menu here, but we still want the markers to line-up with
+       markers in other rows that do have three-dot menus. */
     grid-template:
-        "arrow row-content" var(--line-height-sidebar-row-prominent)
-        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr);
+        "arrow row-content add-channel three-dot-placeholder" var(
+            --line-height-sidebar-row-prominent
+        )
+        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
+        var(--left-sidebar-vdots-width);
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
@@ -353,6 +361,19 @@
        below. This extra margin prevents that overlap. */
     margin-bottom: 1px;
 
+    .add-stream-icon-container {
+        text-decoration: none;
+        grid-auto-columns: var(--left-sidebar-header-icon-width);
+        /* -4px for the 2px top and bottom padding in .add-stream-icon-container */
+        grid-template-rows: calc(
+            var(--line-height-sidebar-row-prominent) - 4px
+        );
+    }
+
+    .add_stream_icon {
+        visibility: hidden;
+    }
+
     &:hover {
         background-color: var(--color-background-opaque-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
@@ -364,6 +385,10 @@
         .left-sidebar-title,
         .stream-list-section-toggle {
             opacity: var(--opacity-sidebar-heading-hover);
+        }
+
+        .add_stream_icon {
+            visibility: visible;
         }
     }
 
