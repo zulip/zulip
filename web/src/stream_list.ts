@@ -278,12 +278,19 @@ export function build_stream_list(force_rerender: boolean): void {
 
     clear_topics();
     $("#stream_filters").empty();
+    const can_create_streams =
+        settings_data.user_can_create_private_streams() ||
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams();
     for (const section of stream_groups.sections) {
         $("#stream_filters").append(
             $(
                 render_stream_list_section_container({
                     id: section.id,
                     section_title: section.section_title,
+                    show_plus_icon:
+                        can_create_streams &&
+                        !["pinned-streams", "dormant-streams"].includes(section.id),
                 }),
             ),
         );
@@ -1021,6 +1028,15 @@ export function set_event_handlers({
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.stopPropagation();
             toggle_section_collapse($(this).closest(".stream-list-section-container"));
+        },
+    );
+
+    $("#streams_list").on(
+        "click",
+        ".stream-list-section-container .add_stream_icon_container",
+        (e) => {
+            // To prevent toggling the header
+            e.stopPropagation();
         },
     );
 }
