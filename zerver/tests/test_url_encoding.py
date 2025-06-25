@@ -116,6 +116,60 @@ class URLEncodeTest(ZulipTestCase):
             narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
         self.assertEqual(str(e.exception), "Invalid narrow operator: unknown channel 9999")
 
+    def test_generate_direct_message_narrow_links_from_terms(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        zoe = self.example_user("ZOE")
+        othello = self.example_user("othello")
+
+        # Test generate direct message to ones self.
+        expected_narrow_link = f"/#narrow/dm/{zoe.id}-Zoe/near/1"
+        terms = [
+            NarrowTerm("dm", [zoe.id], False),
+            NarrowTerm("near", 1, False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        self.assertEqual(narrow_link, expected_narrow_link)
+
+        # Test generate one-on-one direct message.
+        user_ids = [hamlet.id, zoe.id]
+        dm_recipient_slug = encode_user_ids(user_ids, False)
+        expected_narrow_link = f"/#narrow/dm/{dm_recipient_slug}/near/1"
+        terms = [
+            NarrowTerm("dm", user_ids, False),
+            NarrowTerm("near", 1, False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        self.assertEqual(narrow_link, expected_narrow_link)
+
+        # Test generate group direct message.
+        user_ids = [hamlet.id, zoe.id, othello.id]
+        group_recipient_slug = encode_user_ids(user_ids, False)
+        expected_narrow_link = f"/#narrow/dm/{group_recipient_slug}/near/1"
+        terms = [
+            NarrowTerm("dm", user_ids, False),
+            NarrowTerm("near", 1, False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        self.assertEqual(narrow_link, expected_narrow_link)
+
+        # Invalid dm operand.
+        terms = [
+            NarrowTerm("dm", [], False),
+        ]
+        with self.assertRaises(BadNarrowOperatorError) as e:
+            narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        self.assertEqual(str(e.exception), "Invalid narrow operator: invalid user ID")
+
+        # Unknown user id error.
+        terms = [
+            NarrowTerm("dm", [9999], False),
+            NarrowTerm("near", 1, False),
+        ]
+        with self.assertRaises(BadNarrowOperatorError) as e:
+            narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        self.assertEqual(str(e.exception), "Invalid narrow operator: unknown user in [9999]")
+
     def test_decode_encode_narrow_link(self) -> None:
         """
         This tests the `parse_narrow_url` -> `Filter` -> `generate_narrow_link_from_narrow_terms`
