@@ -89,6 +89,11 @@ export function is_filtering_inactives(): boolean {
 }
 
 export function has_recent_activity(sub: StreamSubscription): boolean {
+    // This is here temporarily for testing
+    if (sub.name.includes("inactive") && !sub.pin_to_top) {
+        return false;
+    }
+
     if (!filter_out_inactives || sub.pin_to_top) {
         // If users don't want to filter inactive streams
         // to the bottom, we respect that setting and don't
