@@ -266,6 +266,7 @@ def add_new_user_history(
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
+# * Adds to initial user groups
 # * Fills in some recent historical messages
 # * Notifies other users in realm and Zulip about the signup
 # * Deactivates PreregistrationUser objects
@@ -277,7 +278,7 @@ def process_new_human_user(
     realm_creation: bool = False,
     add_initial_stream_subscriptions: bool = True,
 ) -> None:
-    # subscribe to default/invitation streams and
+    # subscribe to default/invitation streams, add to groups and
     # fill in some recent historical messages
     set_up_streams_and_groups_for_new_human_user(
         user_profile=user_profile,
