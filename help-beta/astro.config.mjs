@@ -45,6 +45,12 @@ export default defineConfig({
                 optional: true,
                 default: true,
             }),
+            SHOW_BILLING_HELP_LINKS: envField.boolean({
+                context: "client",
+                access: "public",
+                optional: true,
+                default: true,
+            }),
         },
     },
     integrations: [

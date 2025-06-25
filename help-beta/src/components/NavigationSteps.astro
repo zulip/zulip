@@ -1,6 +1,19 @@
 ---
-import { SHOW_RELATIVE_LINKS } from "astro:env/client";
+import { SHOW_RELATIVE_LINKS, SHOW_BILLING_HELP_LINKS } from "astro:env/client";
+import assert from "node:assert";
 import RawZulipIconGear from "~icons/zulip-icon/gear?raw";
+import RawZulipIconHash from "~icons/zulip-icon/hash?raw";
+import RawZulipIconTool from "~icons/zulip-icon/tool?raw";
+import RawZulipIconBuilding from "~icons/zulip-icon/building?raw";
+import RawZulipIconUserGroupCog from "~icons/zulip-icon/user-group-cog?raw";
+import RawZulipIconBarChart from "~icons/zulip-icon/bar-chart?raw";
+import RawZulipIconGitPullRequest from "~icons/zulip-icon/git-pull-request?raw";
+import RawZulipIconRocket from "~icons/zulip-icon/rocket?raw";
+import RawZulipIconCreditCard from "~icons/zulip-icon/credit-card?raw";
+import RawZulipIconKeyboard from "~icons/zulip-icon/keyboard?raw";
+import RawZulipIconEdit from "~icons/zulip-icon/edit?raw";
+import RawZulipIconManageSearch from "~icons/zulip-icon/manage-search?raw";
+import RawZulipIconInfo from "~icons/zulip-icon/info?raw";
 
 // This list has been transformed one-off from `help_settings_links.py`, we
 // have added a comment in that file to update this list in case of any
@@ -138,6 +151,135 @@ const setting_link_mapping: {
     }
 };
 
+type RelativeLinkInfo = {
+  label: string;
+  relative_link: string;
+};
+
+const default_template_for_relative_links = `
+<ol>
+  <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Select {item}.</li>
+</ol>
+`
+
+const relative_link_mapping: Record<
+  string,
+  {
+    data: Record<string, RelativeLinkInfo>;
+    template: string;
+    is_link_relative: () => boolean;
+  }
+> = {
+  gear: {
+    data: {
+      "channel-settings": {
+        label: `${RawZulipIconHash} Channel settings`,
+        relative_link: "/#channels/subscribed",
+      },
+      settings: {
+        label: `${RawZulipIconTool} Personal Settings`,
+        relative_link: "/#settings/profile",
+      },
+      "organization-settings": {
+        label: `${RawZulipIconBuilding} Organization settings`,
+        relative_link: "/#organization/organization-profile",
+      },
+      "group-settings": {
+        label: `${RawZulipIconUserGroupCog} Group settings`,
+        relative_link: "/#groups/your",
+      },
+      stats: {
+        label: `${RawZulipIconBarChart} Usage statistics`,
+        relative_link: "/stats",
+      },
+      integrations: {
+        label: `${RawZulipIconGitPullRequest} Integrations`,
+        relative_link: "/integrations/",
+      },
+      "about-zulip": {
+        label: "About Zulip",
+        relative_link: "/#about-zulip",
+      },
+    },
+    template: default_template_for_relative_links,
+    is_link_relative: () => SHOW_RELATIVE_LINKS,
+  },
+  "gear-billing": {
+    data: {
+      plans: {
+        label: `${RawZulipIconRocket} Plans and pricing`,
+        relative_link: "/plans/",
+      },
+      billing: {
+        label: `${RawZulipIconCreditCard} Billing`,
+        relative_link: "/billing/",
+      },
+    },
+    template: default_template_for_relative_links,
+    is_link_relative: () => SHOW_RELATIVE_LINKS && SHOW_BILLING_HELP_LINKS,
+  },
+  help: {
+    data: {
+      "keyboard-shortcuts": {
+        label: `${RawZulipIconKeyboard} Keyboard shortcuts`,
+        relative_link: "/#keyboard-shortcuts",
+      },
+      "message-formatting": {
+        label: `${RawZulipIconEdit} Message formatting`,
+        relative_link: "/#message-formatting",
+      },
+      "search-filters": {
+        label: `${RawZulipIconManageSearch} Search filters`,
+        relative_link: "/#search-operators",
+      },
+      "about-zulip": {
+        label: `${RawZulipIconInfo} About Zulip`,
+        relative_link: "/#about-zulip",
+      },
+    },
+    template: default_template_for_relative_links,
+    is_link_relative: () => SHOW_RELATIVE_LINKS,
+  },
+  channel: {
+    data: {
+      all: {
+        label: "All",
+        relative_link: "/#channels/all",
+      },
+      "not-subscribed": {
+        label: "Not subscribed",
+        relative_link: "/#channels/notsubscribed",
+      },
+    },
+    template: `
+<ol>
+  <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Select ${RawZulipIconHash} <strong>Channel settings</strong>.</li>
+  <li>Click {item} in the upper left.</li>
+</ol>
+`,
+    is_link_relative: () => SHOW_RELATIVE_LINKS,
+  },
+  group: {
+    data: {
+      all: {
+        label: "All groups",
+        relative_link: "/#groups/all",
+      },
+    },
+    template: `
+<ol>
+  <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Select ${RawZulipIconUserGroupCog} <strong>Group settings</strong>.</li>
+  <li>Click {item} in the upper left.</li>
+</ol>
+`,
+    is_link_relative: () => SHOW_RELATIVE_LINKS,
+  },
+};
+
+
 const getSettingsMarkdown = (setting_type_name: string, setting_name: string) => `
 <ol>
     <li>
@@ -180,12 +322,34 @@ const getSettingsHTML = (
             </ol>`;
 }
 
+const LINK_TYPE_HANDLERS: Record<string, (key: string) => string> = {};
+
+for (const type in relative_link_mapping) {
+  const { data, template, is_link_relative } = relative_link_mapping[type]!;
+
+  LINK_TYPE_HANDLERS[type] = (key: string) => {
+    const { label, relative_link } = data[key]!;
+    const formattedItem = is_link_relative() ? `<a href="${relative_link}">${label}</a>` : `<strong>${label}</strong>`;
+    return template.replace("{item}", formattedItem);
+  };
+}
+
 const { identifier } = Astro.props;
 const navigation_link_type = identifier.split("/")[0];
-if (navigation_link_type !== "settings") {
-    throw new Error("Invalid navigation link type. Only `settings` is allowed.");
+
+if (navigation_link_type !== "settings" && navigation_link_type !== "relative" ) {
+    throw new Error("Invalid navigation link type. Only `settings` or `relative` is allowed.");
 }
-const resultHTML = getSettingsHTML(identifier.split("/")[1], SHOW_RELATIVE_LINKS);
+
+let resultHTML: string | undefined;
+if (navigation_link_type === "settings") {
+    resultHTML = getSettingsHTML(identifier.split("/")[1], SHOW_RELATIVE_LINKS);
+} else {
+    const link_type = identifier.split("/")[1];
+    const key = identifier.split("/")[2];
+    resultHTML = LINK_TYPE_HANDLERS[link_type]!(key);
+}
+assert(resultHTML !== undefined);
 
 ---
 <Fragment set:html={resultHTML} />

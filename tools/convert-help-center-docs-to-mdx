@@ -26,6 +26,7 @@ from zerver.lib.markdown.tabbed_sections import generate_content_blocks, parse_t
 
 INDENT_SPACES = "    "
 SETTINGS_LINK_PATTERN = re.compile(r"{settings_tab\|(?P<setting_identifier>.*?)}")
+RELATIVE_LINKS_PATTERN = re.compile(r"\{relative\|(?P<link_type>.*?)\|(?P<key>.*?)\}")
 
 # TODO list before cutover.
 #
@@ -83,6 +84,20 @@ def replace_setting_links(
         return f'<NavigationSteps identifier="settings/{setting_identifier}" />'
 
     return setting_links_pattern.sub(replace_setting_links_match, markdown_string)
+
+
+def replace_relative_links(
+    markdown_string: str, import_statement_set: set[str], import_relative_base_path: str
+) -> str:
+    def replace_relative_links_match(match: re.Match[str]) -> str:
+        import_statement_set.add(
+            f'import NavigationSteps from "{import_relative_base_path}/NavigationSteps.astro"'
+        )
+        link_type = match.group("link_type")
+        key = match.group("key")
+        return f'<NavigationSteps identifier="relative/{link_type}/{key}" />'
+
+    return RELATIVE_LINKS_PATTERN.sub(replace_relative_links_match, markdown_string)
 
 
 def replace_image_path(markdown_string: str, replacement_path: str) -> str:
@@ -338,7 +353,8 @@ def insert_flattened_steps_component(
                     index += step
                     continue
             settings_link_match = SETTINGS_LINK_PATTERN.match(line)
-            if settings_link_match:
+            relative_links_match = RELATIVE_LINKS_PATTERN.match(line)
+            if settings_link_match or relative_links_match:
                 index += step
                 continue
             break
@@ -361,6 +377,9 @@ def insert_flattened_steps_component(
         insertions.add((lower_bound, "</FlattenList>"))
 
     for match in SETTINGS_LINK_PATTERN.finditer(markdown_string):
+        insert_flatten_list(match)
+
+    for match in RELATIVE_LINKS_PATTERN.finditer(markdown_string):
         insert_flatten_list(match)
 
     for match in file_include_pattern.finditer(markdown_string):
@@ -519,6 +538,7 @@ def convert_help_center_file_to_mdx(
     result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
     result = convert_tab_syntax(result, import_statement_set)
     result = replace_setting_links(result, import_statement_set, "../../components")
+    result = replace_relative_links(result, import_statement_set, "../../components")
     result = escape_curly_braces(result)
     result = replace_emoticon_translation_table(result, import_statement_set)
     result = replace_image_path(result, "../../../../static/images/help")
@@ -556,6 +576,7 @@ def convert_include_file_to_mdx(
     result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = convert_tab_syntax(result, import_statement_set)
     result = replace_setting_links(result, import_statement_set, "../../../components")
+    result = replace_relative_links(result, import_statement_set, "../../../components")
     result = escape_curly_braces(result)
     result = replace_image_path(result, "../../../../../static/images/help")
     result = replace_icons(result, import_statement_set)
