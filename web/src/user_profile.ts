@@ -94,8 +94,8 @@ let bot_owner_dropdown_widget: DropdownWidget | undefined;
 let original_values: (Record<string, unknown> & {user_id?: string | undefined}) | undefined;
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const EMBEDDED_BOT_TYPE = "4";
+const OUTGOING_WEBHOOK_BOT_TYPE = 3;
+const EMBEDDED_BOT_TYPE = 4;
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
@@ -921,7 +921,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     assert(bot.bot_type !== undefined && bot.bot_type !== null);
 
-    const bot_type = bot.bot_type.toString();
+    const bot_type = bot.bot_type;
     const services = bot_data.get_services(bot.user_id);
     let service:
         | {
