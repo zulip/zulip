@@ -462,6 +462,10 @@ export function initialize(): void {
         if ($(e.target).parents(".user-profile-picture").length === 1) {
             return;
         }
+        if (document.getSelection()?.type === "Range") {
+            e.preventDefault();
+            return;
+        }
 
         const $li = $(e.target).parents("li");
 
