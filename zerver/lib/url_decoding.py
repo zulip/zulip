@@ -306,6 +306,15 @@ class Filter:
 
         return sorted(term_types, key=cmp_to_key(compare))
 
+    @staticmethod
+    def sorted_terms(terms: list[NarrowTerm]) -> list[NarrowTerm]:
+        def compare(a: NarrowTerm, b: NarrowTerm) -> int:
+            term_type_a = Filter.term_type(a)
+            term_type_b = Filter.term_type(b)
+            return level(term_type_a) - level(term_type_b)
+
+        return sorted(terms, key=cmp_to_key(compare))
+
     def _build_sorted_term_types(self) -> list[str]:
         term_types = [Filter.term_type(term) for term in self._terms]
         self._sorted_term_types = Filter.sorted_term_types(term_types)
