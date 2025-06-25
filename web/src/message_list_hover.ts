@@ -30,7 +30,7 @@ export function message_hover($message_row: JQuery): void {
 
     $current_message_hover = $message_row;
 
-    if (!message.sent_by_me || message.locally_echoed) {
+    if (message.locally_echoed) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }

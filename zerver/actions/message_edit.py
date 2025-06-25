@@ -117,11 +117,12 @@ def validate_message_edit_payload(
     propagate_mode: str | None,
     content: str | None,
     prev_content_sha256: str | None,
+    is_editable_by_others: bool | None = None,
 ) -> None:
     """
     Validates that a message edit request is well-formed. Does not handle permissions.
     """
-    if topic_name is None and content is None and stream_id is None:
+    if topic_name is None and content is None and stream_id is None and is_editable_by_others is None:
         raise JsonableError(_("Nothing to change"))
 
     if not message.is_stream_message():
@@ -168,7 +169,7 @@ def validate_user_can_edit_message(
         raise JsonableError(_("Your organization has turned off message editing"))
 
     # You cannot edit the content of message sent by someone else.
-    if message.sender_id != user_profile.id:
+    if message.sender_id != user_profile.id and not message.is_editable_by_others:
         raise JsonableError(_("You don't have permission to edit this message"))
 
     if user_profile.realm.message_content_edit_limit_seconds is not None:
@@ -610,6 +611,7 @@ def do_update_message(
     * or stream and/or topic, in which case the caller will have set
       target_stream and/or target_topic_name to their new values in
       message_edit_request object.
+    * whether the message can be edited by others.
 
     With topic edits, propagate_mode field in message_edit_request
     determines whether other message also have their topics edited.
@@ -640,6 +642,10 @@ def do_update_message(
             "id": um.user_profile_id,
             "flags": um.flags_list(),
         }
+
+    target_message.is_editable_by_others = message_edit_request.is_editable_by_others
+    event["is_editable_by_others"] = target_message.is_editable_by_others
+    print("$$$$$$$$$")
 
     if message_edit_request.is_content_edited:
         assert rendering_result is not None
@@ -675,6 +681,7 @@ def do_update_message(
             target_message, rendering_result
         )
         target_message.has_attachment = attachment_reference_change.did_attachment_change
+
 
         if isinstance(message_edit_request, DirectMessageEditRequest):
             update_edit_history(target_message, timestamp, edit_history_event)
@@ -1360,6 +1367,7 @@ def build_message_edit_request(
     stream_id: int | None = None,
     topic_name: str | None = None,
     content: str | None = None,
+    is_editable_by_others: bool,
 ) -> StreamMessageEditRequest | DirectMessageEditRequest:
     is_content_edited = False
     new_content = message.content
@@ -1376,6 +1384,7 @@ def build_message_edit_request(
             content=new_content,
             orig_content=message.content,
             is_content_edited=True,
+            is_editable_by_others=is_editable_by_others,
         )
 
     is_topic_edited = False
@@ -1434,6 +1443,7 @@ def build_message_edit_request(
         propagate_mode=propagate_mode,
         target_stream=target_stream,
         is_message_moved=is_stream_edited or is_topic_edited,
+        is_editable_by_others=is_editable_by_others,
     )
 
 
@@ -1448,6 +1458,7 @@ def check_update_message(
     send_notification_to_new_thread: bool = True,
     content: str | None = None,
     prev_content_sha256: str | None = None,
+    is_editable_by_others: bool | None = None,
 ) -> UpdateMessageResult:
     """This will update a message given the message id and user profile.
     It checks whether the user profile has the permission to edit the message
@@ -1476,7 +1487,7 @@ def check_update_message(
             topic_name = None
 
     validate_message_edit_payload(
-        message, stream_id, topic_name, propagate_mode, content, prev_content_sha256
+        message, stream_id, topic_name, propagate_mode, content, prev_content_sha256, is_editable_by_others
     )
 
     message_edit_request = build_message_edit_request(
@@ -1486,6 +1497,9 @@ def check_update_message(
         stream_id=stream_id,
         topic_name=topic_name,
         content=content,
+        is_editable_by_others=is_editable_by_others
+        if is_editable_by_others is not None
+        else message.is_editable_by_others,
     )
 
     if (
@@ -1593,6 +1607,7 @@ def check_update_message(
                 message, user_profile, topic_name, stream_id
             )
 
+    print("do update------")
     updated_message_result = do_update_message(
         user_profile,
         message,

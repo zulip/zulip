@@ -425,6 +425,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 anchor_message.is_me_message = event.is_me_message;
             }
 
+            if (event.is_editable_by_others !== undefined) {
+                anchor_message.is_editable_by_others = event.is_editable_by_others;
+            }
+
             // mark the current message edit attempt as complete.
             message_edit.end_message_edit(event.message_id);
 

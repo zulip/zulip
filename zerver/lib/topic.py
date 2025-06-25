@@ -126,6 +126,7 @@ def save_message_for_edit_use_case(message: Message) -> None:
             "has_image",
             "has_link",
             "recipient_id",
+            "is_editable_by_others",
         ]
     )
 
