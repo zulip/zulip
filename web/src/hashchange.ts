@@ -339,6 +339,17 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
         if (base === "channels") {
+            if (hash_parser.get_current_nth_hash_section(1) === "folders") {
+                const folder_id = hash_parser.get_current_nth_hash_section(2);
+                stream_settings_ui.change_state(
+                    "new",
+                    undefined,
+                    "",
+                    Number.parseInt(folder_id, 10),
+                );
+                return;
+            }
+
             // e.g. #channels/29/social/subscribers
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             stream_settings_ui.change_state(section, undefined, right_side_tab);
@@ -411,6 +422,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     if (base === "channels") {
+        if (hash_parser.get_current_nth_hash_section(1) === "folders") {
+            const folder_id = hash_parser.get_current_nth_hash_section(2);
+            stream_settings_ui.launch("new", undefined, "", Number.parseInt(folder_id, 10));
+            return;
+        }
+
         // e.g. #channels/29/social/subscribers
         const right_side_tab = hash_parser.get_current_nth_hash_section(3);
 

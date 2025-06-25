@@ -456,7 +456,7 @@ function create_stream(): void {
     });
 }
 
-export function new_stream_clicked(stream_name: string): void {
+export function new_stream_clicked(stream_name: string, folder_id: number | undefined): void {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
@@ -466,6 +466,11 @@ export function new_stream_clicked(stream_name: string): void {
         $("#create_stream_name").val(stream_name);
     }
     show_new_stream_modal();
+    if (folder_id) {
+        folder_widget!.render(folder_id);
+    } else {
+        folder_widget!.render(-1);
+    }
     $("#create_stream_name").trigger("focus");
 }
 

@@ -56,4 +56,7 @@ run_test("basics", () => {
         backend_folder,
         devops_folder,
     ]);
+
+    assert.ok(channel_folders.is_valid_folder_id(frontend_folder.id));
+    assert.ok(!channel_folders.is_valid_folder_id(999));
 });
