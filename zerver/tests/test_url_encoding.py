@@ -1,5 +1,12 @@
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.url_encoding import encode_full_name_and_id, encode_stream, encode_user_ids
+from zerver.lib.url_encoding import (
+    encode_full_name_and_id,
+    encode_stream,
+    encode_user_ids,
+    generate_narrow_link_from_narrow_terms,
+)
+from zerver.models.realms import get_realm
 
 
 class URLEncodeTest(ZulipTestCase):
@@ -36,3 +43,54 @@ class URLEncodeTest(ZulipTestCase):
         self.assertEqual(encode_full_name_and_id("User--Name", 205), "205-User--Name")
         self.assertEqual(encode_full_name_and_id("User%%Name", 206), "206-User-Name")
         self.assertEqual(encode_full_name_and_id("User_Name", 5), "5-User_Name")
+
+    def test_generate_narrow_link_from_narrow_terms(self) -> None:
+        realm = get_realm("zulip")
+        channel_id = self.get_stream_id("Verona", realm)
+
+        # Channel narrow terms
+        terms = [
+            NarrowTerm("channel", channel_id, False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        expected_narrow_link = "/#narrow/channel/3-Verona"
+        self.assertEqual(narrow_link, expected_narrow_link)
+
+        # Topic narrow terms
+        terms = [
+            NarrowTerm("channel", channel_id, False),
+            NarrowTerm("topic", "Bug Reports", False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        expected_narrow_link = "/#narrow/channel/3-Verona/topic/Bug.20Reports"
+        self.assertEqual(narrow_link, expected_narrow_link)
+
+        # Message narrow terms
+        terms = [
+            NarrowTerm("channel", channel_id, False),
+            NarrowTerm("topic", "Bug Reports", False),
+            NarrowTerm("near", 98765, False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        expected_narrow_link = "/#narrow/channel/3-Verona/topic/Bug.20Reports/near/98765"
+        self.assertEqual(narrow_link, expected_narrow_link)
+
+        # Unsorted narrow terms
+        terms = [
+            NarrowTerm("topic", "Bug Reports", False),
+            NarrowTerm("channel", channel_id, False),
+            NarrowTerm("near", 98765, False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        expected_narrow_link = "/#narrow/channel/3-Verona/topic/Bug.20Reports/near/98765"
+        self.assertEqual(narrow_link, expected_narrow_link)
+
+        # Unsorted narrow terms
+        terms = [
+            NarrowTerm("topic", "Bug Reports", False),
+            NarrowTerm("channel", channel_id, False),
+            NarrowTerm("near", 98765, False),
+        ]
+        narrow_link = generate_narrow_link_from_narrow_terms(terms, realm)
+        expected_narrow_link = "/#narrow/channel/3-Verona/topic/Bug.20Reports/near/98765"
+        self.assertEqual(narrow_link, expected_narrow_link)
