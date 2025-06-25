@@ -2311,7 +2311,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get("/json/antispam_challenge")
         data = self.assert_json_success(result)
         self.assertEqual(data["algorithm"], "SHA-256")
-        self.assertEqual(data["maxnumber"], 500000)
+        self.assertEqual(data["max_number"], 500000)
         self.assertIn("signature", data)
         self.assertIn("challenge", data)
         self.assertIn("salt", data)

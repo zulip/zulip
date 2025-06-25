@@ -111,7 +111,7 @@ prod = [
 
   # Install Python Social Auth
   "social-auth-app-django",
-  "social-auth-core[azuread]", # https://github.com/python-social-auth/social-core/pull/1025
+  "social-auth-core[azuread,saml]",
   "python3-saml",
 
   # For encrypting a login token to the desktop app
@@ -169,7 +169,7 @@ prod = [
   "google-re2",
 
   # For querying recursive group membership
-  "django-cte>=2.0.0.dev20250610173146", # https://github.com/dimagi/django-cte/pull/116
+  "django-cte",
 
   # SCIM integration
   "django-scim2",
@@ -178,7 +178,7 @@ prod = [
   "circuitbreaker",
 
   # Runtime monkeypatching of django-stubs generics
-  "django-stubs-ext",
+  "django-stubs-ext==5.2.0", # https://github.com/typeddjango/django-stubs/issues/2715
 
   # Structured data representation with parsing.
   "pydantic",
@@ -482,6 +482,7 @@ ignore = [
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "PLC0414", # Import alias does not rename original package
+    "PLC0415", # `import` should be at the top-level of a file
     "PLC1901", # `s == ""` can be simplified to `not s` as an empty string is falsey
     "PLR0911", # Too many return statements
     "PLR0912", # Too many branches
