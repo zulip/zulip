@@ -1,6 +1,9 @@
+import assert from "minimalistic-assert";
+
 import * as internal_url from "../shared/src/internal_url.ts";
 
 import * as blueslip from "./blueslip.ts";
+import * as channel_folders from "./channel_folders.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -257,8 +260,30 @@ export function channels_settings_section_url(section = "subscribed"): string {
     return `#channels/${section}`;
 }
 
+// For folders we only support #channels/folders/{folder_id}/new
+// In the future we'd like to support #channels/folder/{folder_id}
+// for displaying the channels in a folder.
+function channels_settings_folder_url(hash: string): string {
+    const hash_components = hash.slice(1).split(/\//);
+    assert(hash_components[1] === "folders");
+    if (hash_components.length !== 4 || hash_components[3] !== "new") {
+        blueslip.warn("invalid hash for channels settings with folders: " + hash);
+        return "#channels/subscribed";
+    }
+    const folder_id = Number.parseInt(hash_components[2]!, 10);
+    if (!channel_folders.is_valid_folder_id(folder_id)) {
+        blueslip.warn("invalid folder id: " + folder_id);
+        return "#channels/new";
+    }
+    return hash;
+}
+
 export function validate_channels_settings_hash(hash: string): string {
     const hash_components = hash.slice(1).split(/\//);
+    if (hash_components[1] === "folders") {
+        return channels_settings_folder_url(hash);
+    }
+
     const section = hash_components[1];
 
     const can_create_streams =
