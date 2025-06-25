@@ -462,6 +462,12 @@ export function initialize(): void {
         if ($(e.target).parents(".user-profile-picture").length === 1) {
             return;
         }
+        if (document.getSelection()?.type === "Range") {
+            // To avoid the click behavior if a user name or status text is
+            // selected.
+            e.preventDefault();
+            return;
+        }
 
         const $li = $(e.target).parents("li");
 
