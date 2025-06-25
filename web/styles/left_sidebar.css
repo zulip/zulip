@@ -32,9 +32,16 @@
     margin-right: var(--left-sidebar-right-margin);
 }
 
-#streams_inline_icon {
-    color: var(--color-left-sidebar-heads-up-icon);
+.add_stream_icon_container {
+    grid-area: add-channel;
+    display: grid;
+    place-items: center center;
+    margin: 2px 0;
     border-radius: 3px;
+
+    .add_stream_icon {
+        color: var(--color-left-sidebar-heads-up-icon);
+    }
 
     &:hover {
         color: var(--color-left-sidebar-heads-up-icon-hover);
@@ -285,15 +292,26 @@
     }
 }
 
-.stream_search_section {
+.spectator-view #stream_search_and_add {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+#stream_search_and_add {
+    display: grid;
+    grid-template-areas: "filter add-channel";
+    grid-template-columns: minmax(0, 1fr) var(--left-sidebar-header-icon-width);
     position: sticky;
     top: 0;
     /* Must be more than .stream-list-subsection-header */
     z-index: 3;
-    white-space: nowrap;
+    background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
     padding: var(--left-sidebar-sections-vertical-gutter)
         var(--left-sidebar-right-margin) 3px 5px;
+
+    .stream_search_section {
+        white-space: nowrap;
+    }
 
     .stream-list-filter {
         grid-area: filter-box;
@@ -319,7 +337,7 @@
     /* input is 1.4em tall with 4px top/bottom padding and 1px border
        input container has 8px and 3px top/bottom padding = 21px total padding */
     top: calc(1.4em + 21px);
-    /* Must be more than .sidebar-topic-check and less than .stream_search_section */
+    /* Must be more than .sidebar-topic-check and less than #stream_search_and_add */
     z-index: 2;
     color: var(--color-text-default);
 

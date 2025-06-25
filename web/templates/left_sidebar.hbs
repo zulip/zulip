@@ -186,11 +186,16 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div class="stream_search_section left-sidebar-filter-row">
-                <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-                <button type="button" class="clear_search_button" id="clear_search_stream_button">
-                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                </button>
+            <div id="stream_search_and_add" class="zoom-in-hide">
+                <div class="stream_search_section left-sidebar-filter-row">
+                    <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
+                    <button type="button" class="clear_search_button" id="clear_search_stream_button">
+                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <span id="add_streams_tooltip" class="add_stream_icon_container hidden-for-spectators" data-tippy-content="{{t 'Add channels' }}">
+                    <i id="streams_inline_icon" class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+                </span>
             </div>
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
