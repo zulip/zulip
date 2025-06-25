@@ -31,8 +31,6 @@ export function initialize(): void {
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
             popover_menus.on_show_prep(instance);
 
-            $("#streams_header").addClass("showing-streams-popover");
-
             //  When showing the popover menu, we want the
             // "Add channels" and the "Filter channels" tooltip
             //  to appear below the "Add channels" icon.
@@ -48,8 +46,6 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.stream_settings = null;
-
-            $("#streams_header").removeClass("showing-streams-popover");
 
             //  After the popover menu is closed, we want the
             //  "Add channels" and the "Filter channels" tooltip
