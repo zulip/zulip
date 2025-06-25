@@ -1106,7 +1106,6 @@ li.top_left_scheduled_messages {
 }
 
 #direct-messages-section-header,
-#streams_header,
 #topics_header {
     display: grid;
     align-items: center;
@@ -1825,115 +1824,6 @@ li.topic-list-item {
     }
 }
 
-#streams_header {
-    grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) minmax(
-            0,
-            max-content
-        )
-        minmax(0, max-content) var(--left-sidebar-vdots-width)
-        0;
-    cursor: pointer;
-    margin: var(--left-sidebar-sections-vertical-gutter)
-        var(--left-sidebar-right-margin) 3px 0;
-    position: sticky;
-    /* Keep sticky within SimpleBar context. The -0.25px
-    offset ensures that no gap is present between the
-    direct-messages-section-header and the streams-header */
-    top: -0.25px;
-    z-index: 2;
-    background-color: var(--color-background);
-
-    &.showing-stream-search-section {
-        /* Open up the stream-search rows and maintain
-           space with the streams list below. */
-        padding-bottom: var(--left-sidebar-sections-vertical-gutter);
-        row-gap: 3px;
-
-        /* When the search section is showing, switch
-           off the hover effects on the row. */
-        &:hover {
-            background-color: var(--color-background);
-            box-shadow: unset;
-        }
-    }
-
-    .left-sidebar-title {
-        grid-area: row-content;
-    }
-
-    .heading-markers-and-unreads {
-        grid-area: markers-and-unreads;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        grid-gap: 5px;
-        /* Extra margin for unreads. */
-        margin-right: var(--left-sidebar-unread-offset);
-
-        &:has(.unread_count:empty) {
-            margin-right: 0;
-        }
-    }
-
-    #add_streams_tooltip {
-        grid-row: 1 / 1;
-        margin: 2px 0;
-    }
-
-    #streams_inline_icon {
-        display: none;
-        align-items: center;
-        justify-content: center;
-        /* Ensure the clickable area grows to
-           the height of the controls grid. */
-        height: 100%;
-
-        @media (hover: none) {
-            display: flex;
-        }
-    }
-
-    &:hover,
-    &.showing-streams-popover {
-        /* We only set the border radius on the hover/popover states,
-           so as to prevent the background on highlighted channels
-           from bleeding through. */
-        border-radius: 4px;
-        background-color: var(--color-background-opaque-hover-narrow-filter);
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-
-        .left-sidebar-title,
-        .sidebar-heading-icon {
-            opacity: var(--opacity-sidebar-heading-hover);
-        }
-
-        #streams_inline_icon {
-            display: flex;
-        }
-    }
-}
-
-/* Prepare an adjusted grid for the logged-out state,
-   one that reassigns the vdots space to markers and
-   controls. */
-.spectator-view #streams_header {
-    grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) 0
-        minmax(var(--left-sidebar-vdots-width), max-content) 0 0;
-    margin-right: var(--left-sidebar-right-margin);
-
-    /* With markers and controls now sized the same
-       as the ordinary vdots area (but allowed to grow,
-       care of `minmax(30px, max-content)`, should
-       additional logged-out icons be added in the
-       future), let's center the icon in that area,
-       just like vdots would be. */
-    .heading-markers-and-unreads {
-        justify-content: center;
-    }
-}
-
 .zero_count {
     visibility: hidden;
 }
@@ -1960,7 +1850,6 @@ li.topic-list-item {
         }
     }
 
-    #streams_header,
     #subscribe-to-more-streams,
     #login-to-more-streams,
     .show-more-topics {
