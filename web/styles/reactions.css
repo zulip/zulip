@@ -152,7 +152,7 @@
     }
 }
 
-.active-emoji-picker-reference,
+.message_controls:has(.active-emoji-picker-reference),
 .active-playground-links-reference {
     visibility: visible !important;
     pointer-events: all !important;
