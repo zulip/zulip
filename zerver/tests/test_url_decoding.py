@@ -127,3 +127,30 @@ class NarrowTermFilterTest(ZulipTestCase):
             ],
         )
         self.assertEqual(narrow_filter.get_terms("stream"), [])
+
+    def test_sorted_terms(self) -> None:
+        expected_order = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+
+        inverted_order = [
+            NarrowTerm(negated=False, operator="near", operand=1),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="channel", operand=13),
+        ]
+        sorted_terms = Filter.sorted_terms(inverted_order)
+        self.assertEqual(sorted_terms, expected_order)
+
+        sorted_terms = Filter.sorted_terms(expected_order)
+        self.assertEqual(sorted_terms, expected_order)
+
+        unknown_term = NarrowTerm(negated=False, operator="unknownterm", operand=13)
+        terms = [
+            unknown_term,
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        sorted_terms = Filter.sorted_terms(terms)
+        self.assertEqual(sorted_terms[-1], unknown_term)
