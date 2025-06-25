@@ -2697,6 +2697,14 @@ test("navbar_helpers", ({override}) => {
 
     test_get_title(channel_topic_search_term_test_case);
 
+    page_params.is_spectator = true;
+    const channels_public_search_test_case_for_spectator = {
+        terms: channels_public,
+        title: "translated: Messages in all public channels that you can view",
+    };
+    test_get_title(channels_public_search_test_case_for_spectator);
+    page_params.is_spectator = false;
+
     override(realm, "realm_enable_guest_user_indicator", false);
     const guest_user_test_cases_without_indicator = [
         {
