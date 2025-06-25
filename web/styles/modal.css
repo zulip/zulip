@@ -52,8 +52,8 @@
 .modal__title {
     grid-area: heading;
     margin: 0;
-    /* 16 / 14 * 1.375 = 1.5714, from original 1.375rem */
-    font-size: 1.5714em;
+    /* 24px at 16px/1em */
+    font-size: 1.5em;
     font-weight: 600;
     line-height: 1.25;
     overflow: hidden;
@@ -118,10 +118,7 @@
 .modal__content {
     display: flex;
     flex-direction: column;
-    /* 16px at 14px/1em */
-    font-size: 1.1429em;
     padding: 2px 24px;
-    line-height: 1.5;
     /* Prevent the appearance of a horizontal
        native scrollbar at certain
        info-density/zoom levels. */
