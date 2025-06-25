@@ -195,22 +195,6 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            {{!-- TODO(evy) remove #streams_header completely, but for smaller reviewable commits I'm just
-            hiding the header for now --}}
-            <div id="streams_header" style="display: none;" class="showing-stream-search-section zoom-in-hide">
-                <h4 class="left-sidebar-title"><span class="streams-tooltip-target">{{t 'CHANNELS' }}</span></h4>
-                <div class="left-sidebar-controls">
-                    <span id="add_streams_tooltip" class="hidden-for-spectators">
-                        <i id="streams_inline_icon" class="zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
-                    </span>
-                </div>
-                <div class="heading-markers-and-unreads">
-                    <span class="unread_count quiet-count"></span>
-                    <span class="masked_unread_count">
-                        <i class="zulip-icon zulip-icon-masked-unread"></i>
-                    </span>
-                </div>
-            </div>
             {{#> input_wrapper input_type="filter-input" custom_classes="stream_search_section" icon="search" input_button_icon="close"}}
                 <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
             {{/input_wrapper}}
