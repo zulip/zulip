@@ -764,6 +764,7 @@
     a.stream-name:focus,
     a.sidebar-topic-name:focus,
     a.conversation-partners:focus,
+    a.dm-box:focus,
     a.sidebar-topic-action-heading:focus {
         outline: none;
         text-decoration: none;
@@ -2010,6 +2011,7 @@ li.topic-list-item {
 }
 
 .dm-box {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width
