@@ -4,7 +4,10 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import re2
+from django.core.exceptions import ValidationError
 
+from zerver.lib.addressee import get_user_profiles_by_ids
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.streams import get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.topic import get_topic_from_message_info
@@ -239,6 +242,36 @@ def generate_narrow_link_from_narrow_terms(
                 except Stream.DoesNotExist:
                     raise BadNarrowOperatorError("unknown channel " + str(channel_id_or_name))
                 link.append(encode_channel(channel.id, channel.name, with_operator=True))
+            case "dm":
+                user_ids = term.operand
+                # narrow.py technically accept a list of user emails for "dm" operators
+                # operand, but a list of user IDs is preferred, so we'll only accept user
+                # ids here. the Filter class also doesn't tolerate a list of user emails.
+                assert isinstance(user_ids, list)
+                if user_ids == []:
+                    raise BadNarrowOperatorError("invalid user ID")
+                elif len(user_ids) == 1:
+                    try:
+                        # Direct message to ones self.
+                        user_profile = get_user_profiles_by_ids(
+                            user_ids=user_ids,
+                            realm=realm,
+                        )
+                    except (JsonableError, ValidationError):
+                        raise BadNarrowOperatorError("unknown user in " + str(user_ids))
+                    encoded_user_ids = encode_user_full_name_and_id(
+                        user_profile[0].full_name,
+                        user_profile[0].id,
+                        with_operator=True,
+                    )
+                else:
+                    # Either group direct message or one-to-one direct
+                    # message.
+                    encoded_user_ids = encode_user_ids(
+                        user_ids,
+                        with_operator=True,
+                    )
+                link.append(encoded_user_ids)
             case "topic":
                 topic_name = term.operand
                 assert isinstance(topic_name, str)
