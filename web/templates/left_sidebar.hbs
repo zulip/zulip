@@ -195,9 +195,14 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            {{#> input_wrapper input_type="filter-input" custom_classes="stream_search_section" icon="search" input_button_icon="close"}}
-                <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-            {{/input_wrapper}}
+            <div id="stream-search-and-add" class="zoom-in-hide">
+                {{#> input_wrapper input_type="filter-input" custom_classes="stream_search_section" icon="search" input_button_icon="close"}}
+                    <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
+                {{/input_wrapper}}
+                <span id="add_streams_tooltip" class="add-stream-icon-container hidden-for-spectators">
+                    <i id="streams_inline_icon" class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+                </span>
+            </div>
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
             </div>
