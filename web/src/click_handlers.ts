@@ -439,6 +439,9 @@ export function initialize(): void {
             return;
         }
         e.preventDefault();
+        if (document.getSelection()?.type === "Range") {
+            return;
+        }
         const row_id = get_row_id_for_narrowing(this);
         message_view.narrow_by_topic(row_id, {trigger: "message header"});
     });
