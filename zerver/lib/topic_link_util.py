@@ -48,7 +48,11 @@ def get_fallback_markdown_link(
     stream_id: int, stream_name: str, topic_name: str | None = None, message_id: int | None = None
 ) -> str:
     """
-    Generates the markdown link syntax for a stream/topic/message link.
+    Helper that should only be called by other methods in this file.
+
+    Generates the vanilla markdown link syntax for a stream/topic/message link, as
+    a fallback for cases where the nicer Zulip link syntax would not
+    render properly due to special characters in the channel or topic name.
     """
     escape = escape_invalid_stream_topic_characters
     link = f"#narrow/channel/{stream_id}-{encode_hash_component(stream_name.replace(' ', '-'))}"

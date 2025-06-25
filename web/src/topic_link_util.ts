@@ -98,6 +98,11 @@ export function get_fallback_markdown_link(
     topic_name?: string,
     message_id?: string,
 ): string {
+    // Helper that should only be called by other methods in this file.
+
+    // Generates the vanilla markdown link syntax for a stream/topic/message link, as
+    // a fallback for cases where the nicer Zulip link syntax would not
+    // render properly due to special characters in the channel or topic name.
     const {text, url} = get_topic_link_content(stream_name, topic_name, message_id);
     return as_markdown_link_syntax(text, url);
 }
