@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+import django_stubs_ext
 from django.apps import AppConfig
 from django.conf import settings
 from django.core.cache import cache
@@ -23,6 +24,8 @@ class ZerverConfig(AppConfig):
             from zproject.sentry import setup_sentry
 
             setup_sentry(settings.SENTRY_DSN, get_config("machine", "deploy_type", "development"))
+
+        django_stubs_ext.monkeypatch()
 
         # We import zerver.signals here for the side effect of
         # registering the user_logged_in signal receiver.  This import

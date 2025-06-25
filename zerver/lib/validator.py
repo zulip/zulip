@@ -570,7 +570,7 @@ def check_string_or_int(var_name: str, val: object) -> str | int:
 
 
 @dataclass(eq=False)
-class WildValue:
+class WildValue:  # noqa: PLW1641
     var_name: str
     value: object
 

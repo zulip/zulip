@@ -31,7 +31,7 @@ MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
 
 
 @dataclass(frozen=True)
-class BaseThumbnailFormat:
+class BaseThumbnailFormat:  # noqa: PLW1641
     extension: str
     max_width: int
     max_height: int
