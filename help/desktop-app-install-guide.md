@@ -65,6 +65,7 @@ You can run the command `brew upgrade zulip` to immediately upgrade the app.
 1. Enter the following commands into a terminal:
 
     ```
+    sudo apt install curl
     sudo curl -fL -o /etc/apt/trusted.gpg.d/zulip-desktop.asc \
         https://download.zulip.com/desktop/apt/zulip-desktop.asc
     echo "deb https://download.zulip.com/desktop/apt stable main" | \
