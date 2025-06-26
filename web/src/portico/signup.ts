@@ -334,6 +334,13 @@ $(() => {
         $(e.target).hide();
     });
 
+    $("form.select-email-form").on("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            $(this).trigger("submit");
+        }
+    });
+
     $<HTMLSelectElement>("#how-realm-creator-found-zulip select").on("change", function () {
         const elements = new Map([
             ["other", "how-realm-creator-found-zulip-other"],
