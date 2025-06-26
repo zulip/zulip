@@ -291,7 +291,7 @@
    profile cards when clicked. */
 .panel_user_list > .pill-container,
 .creator_details > .display_only_pill {
-    background-color: hsl(0deg 0% 0% / 7%);
+    background-color: hsl(240deg 70% 70% / 20%);
     gap: 2px;
     flex-wrap: nowrap;
 
@@ -302,6 +302,7 @@
 
     &:hover {
         color: inherit;
+        background-color: hsl(240deg 52% 60% / 25%);
     }
 
     > .pill {

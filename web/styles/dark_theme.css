@@ -492,14 +492,36 @@
 
     .panel_user_list > .pill-container,
     .creator_details > .display_only_pill {
+        background-color: hsl(240deg 70% 70% / 20%);
+        gap: 2px;
+        flex-wrap: nowrap;
+
+        &.inline_with_text_pill > .pill-deactivated {
+            font-size: 0.9em;
+            padding-right: 2px;
+        }
+
         &:hover {
             color: inherit;
+            background-color: hsla(240, 40%, 48%, 0.25);
         }
 
         > .pill {
-            &:focus,
-            &:hover {
+            background-color: transparent;
+            border: none;
+            text-decoration: none;
+
+            &:focus {
                 color: inherit;
+            }
+
+            > .pill-label {
+                margin: 0;
+
+                > .pill-value {
+                    padding: 5px;
+                    max-width: 165px;
+                }
             }
         }
     }
