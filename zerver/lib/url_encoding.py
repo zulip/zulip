@@ -1,5 +1,6 @@
+import urllib.parse
 from typing import Any
-from urllib.parse import quote, urlsplit
+from urllib.parse import urlsplit
 
 import re2
 
@@ -7,18 +8,37 @@ from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
 
+hash_replacements = {
+    "%": ".",
+    "(": ".28",
+    ")": ".29",
+    ".": ".2E",
+}
 
-def hash_util_encode(string: str) -> str:
-    # Do the same encoding operation as shared internal_url.encodeHashComponent
-    # on the frontend.
-    # `safe` has a default value of "/", but we want those encoded, too.
-    return quote(string, safe=b"").replace(".", "%2E").replace("%", ".")
+
+def encode_hash_component(s: str) -> str:
+    encoded = urllib.parse.quote(s, safe="*")
+    return "".join(hash_replacements.get(c, c) for c in encoded)
 
 
-def encode_channel(channel_id: int, channel_name: str) -> str:
-    # We encode channel for urls as something like 99-Verona.
+def encode_channel(channel_id: int, channel_name: str, with_operator: bool = False) -> str:
+    """
+    This encodes the given `channel_id` and `channel_name`
+    into a recipient slug string that can be used to
+    construct a narrow URL.
+
+    e.g., 9, "Verona" -> "99-Verona"
+
+    The `with_operator` parameter decides whether to append
+    the "channel" operator to the recipient slug or not.
+
+    e.g., "channel/99-Verona"
+    """
     channel_name = channel_name.replace(" ", "-")
-    return str(channel_id) + "-" + hash_util_encode(channel_name)
+    encoded_channel = str(channel_id) + "-" + encode_hash_component(channel_name)
+    if with_operator:
+        return f"channel/{encoded_channel}"
+    return encoded_channel
 
 
 def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
@@ -45,9 +65,7 @@ def stream_narrow_url(realm: Realm, stream: Stream) -> str:
 
 def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
     base_url = f"{realm.url}/#narrow/channel/"
-    return (
-        f"{base_url}{encode_channel(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
-    )
+    return f"{base_url}{encode_channel(stream.id, stream.name)}/topic/{encode_hash_component(topic_name)}"
 
 
 def message_link_url(
@@ -80,7 +98,7 @@ def stream_message_url(
     stream_id = message["stream_id"]
     stream_name = message["display_recipient"]
     topic_name = get_topic_from_message_info(message)
-    encoded_topic_name = hash_util_encode(topic_name)
+    encoded_topic_name = encode_hash_component(topic_name)
     encoded_stream = encode_channel(stream_id, stream_name)
 
     parts = [

@@ -1,8 +1,8 @@
 # Keep this synchronized with web/src/topic_link_util.ts
 
 import re
-import urllib.parse
 
+from zerver.lib.url_encoding import encode_channel, encode_hash_component
 from zerver.models.messages import Message
 
 invalid_stream_topic_regex = re.compile(r"[`>*&\[\]]|(\$\$)")
@@ -31,19 +31,6 @@ def escape_invalid_stream_topic_characters(text: str) -> str:
     )
 
 
-hash_replacements = {
-    "%": ".",
-    "(": ".28",
-    ")": ".29",
-    ".": ".2E",
-}
-
-
-def encode_hash_component(s: str) -> str:
-    encoded = urllib.parse.quote(s, safe="*")
-    return "".join(hash_replacements.get(c, c) for c in encoded)
-
-
 def get_fallback_markdown_link(
     stream_id: int, stream_name: str, topic_name: str | None = None, message_id: int | None = None
 ) -> str:
@@ -55,7 +42,7 @@ def get_fallback_markdown_link(
     render properly due to special characters in the channel or topic name.
     """
     escape = escape_invalid_stream_topic_characters
-    link = f"#narrow/channel/{stream_id}-{encode_hash_component(stream_name.replace(' ', '-'))}"
+    link = f"#narrow/channel/{encode_channel(stream_id, stream_name)}"
     text = f"#{escape(stream_name)}"
     if topic_name is not None:
         link += f"/topic/{encode_hash_component(topic_name)}"

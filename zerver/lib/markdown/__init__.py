@@ -65,7 +65,7 @@ from zerver.lib.thumbnail import (
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
-from zerver.lib.url_encoding import encode_channel, hash_util_encode
+from zerver.lib.url_encoding import encode_channel, encode_hash_component
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
@@ -2101,7 +2101,7 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         el.set("class", "stream-topic")
         el.set("data-stream-id", str(stream_id))
         stream_url = encode_channel(stream_id, stream_name)
-        topic_url = hash_util_encode(topic_name)
+        topic_url = encode_hash_component(topic_name)
         channel_topic_object = ChannelTopicInfo(stream_name, topic_name)
         with_operand = self.get_with_operand(channel_topic_object)
         if with_operand is not None:
@@ -2138,7 +2138,7 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
         el = Element("a")
         el.set("class", "message-link")
         stream_url = encode_channel(stream_id, stream_name)
-        topic_url = hash_util_encode(topic_name)
+        topic_url = encode_hash_component(topic_name)
         link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/near/{message_id}"
         el.set("href", link)
 
