@@ -611,6 +611,7 @@ IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]
 
 class DropboxMediaInfo(TypedDict):
     is_image: bool
+    is_video: bool
     media_url: str
     title: NotRequired[str]
     desc: NotRequired[str]
@@ -813,9 +814,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return None
 
             is_image = self.is_image(url)
+            # is_video function uses `mimetypes` library to determine
+            # file type. For that we have to get rid of any query params
+            # in the url before passing it to `is_video`.
+            is_video = self.is_video(urlsplit(url).path)
+
             # If it is from an album or not an actual image file,
             # just use open graph image.
-            if is_album or not is_image:
+            if is_album or not (is_image or is_video):
                 open_graph_image_info = fetch_open_graph_image(url)
                 # Failed to follow link to find an image preview so
                 # use placeholder image and guess filename
@@ -833,6 +839,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     title=title,
                     desc=desc,
                     is_image=is_image,
+                    is_video=is_video,
                     media_url=open_graph_image_info["image"],
                 )
 
@@ -843,7 +850,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             query = urlencode(query_params)
 
             return DropboxMediaInfo(
-                is_image=is_image, media_url=parsed_url._replace(query=query).geturl()
+                is_image=is_image,
+                is_video=is_video,
+                media_url=parsed_url._replace(query=query).geturl(),
             )
         return None
 
@@ -1337,10 +1346,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 continue
 
-            if self.is_video(url):
-                self.handle_video_inlining(root, found_url)
-                continue
-
             dropbox_media = self.dropbox_media(url)
             if dropbox_media is not None:
                 is_image = dropbox_media["is_image"]
@@ -1352,6 +1357,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     self.handle_image_inlining(root, found_url)
                     continue
 
+                is_video = dropbox_media["is_video"]
+                if is_video:
+                    found_url = ResultWithFamily(
+                        family=found_url.family,
+                        result=(dropbox_media["media_url"], dropbox_media["media_url"]),
+                    )
+                    self.handle_video_inlining(root, found_url)
+                    continue
+
                 dropbox_embed_data = UrlEmbedData(
                     type="image",
                     title=dropbox_media["title"],
@@ -1359,6 +1373,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     image=dropbox_media["media_url"],
                 )
                 self.add_embed(root, url, dropbox_embed_data)
+                continue
+
+            # This needs to run after all the dropbox code has been run.
+            # `is_video` will return True for dropbox video, and if this is
+            # ran before the dropbox code, it will try to make the video
+            # preview work without making the relevant changes to the dropbox
+            # url.
+            if self.is_video(url):
+                self.handle_video_inlining(root, found_url)
                 continue
 
             if self.is_image(url):

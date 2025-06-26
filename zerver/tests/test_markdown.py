@@ -1086,6 +1086,20 @@ class MarkdownEmbedsTest(ZulipTestCase):
             """<p>Look at my hilarious drawing folder: <a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw">https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw</a></p>\n<div class="message_embed"><a class="message_embed_image" href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" style="background-image: url(&quot;https://external-content.zulipcdn.net/external_content/a301902b9942efb85cfe2a6f4bb07d76ba7b86de/68747470733a2f2f7777772e64726f70626f782e636f6d2f7374617469632f6d6574617365727665722f7374617469632f696d616765732f6f70656e67726170682f6f70656e67726170682d636f6e74656e742d69636f6e2d666f6c6465722d64726f70626f782d6c616e6473636170652e706e67&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" title="Dropbox folder">Dropbox folder</a></div><div class="message_embed_description">Click to open folder.</div></div></div>""",  # codespell:ignore fo
         )
 
+    def test_inline_dropbox_video(self) -> None:
+        msg = "Look at this video: https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&st=kjtkea8h&dl=0"
+        image_info = {
+            "image": "https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&st=kjtkea8h&dl=0&raw=1",
+        }
+        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
+            converted = markdown_convert_wrapper(msg)
+
+        self.assertEqual(
+            converted,
+            """<p>Look at this video: <a href="https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0">https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0</a></p>
+<div class="message_inline_image message_inline_video"><a href="https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0&amp;raw=1"><video preload="metadata" src="https://external-content.zulipcdn.net/external_content/eca04355025c60f40334c9a03d220c3298d4df47/68747470733a2f2f7777772e64726f70626f782e636f6d2f73636c2f66692f78387a3031726f6471316e367067797a6e74316b682f53616d706c65566964656f5f31323830783732305f316d622e6d70343f726c6b65793d6669696273676e753036746d7330343176667a666f706d6f732673743d6b6a746b6561386826646c3d30267261773d31"></video></a></div>""",
+        )
+
     def test_inline_dropbox_preview(self) -> None:
         # Test photo album previews
         msg = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"
