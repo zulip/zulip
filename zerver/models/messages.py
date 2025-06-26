@@ -8,7 +8,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.db.models import CASCADE, F, Q, QuerySet
-from django.db.models.functions import Upper
+from django.db.models.functions import Now, Upper
 from django.db.models.signals import post_delete, post_save
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
@@ -682,6 +682,27 @@ class ArchivedUserMessage(AbstractUserMessage):
     def __str__(self) -> str:
         recipient_string = self.message.recipient.label()
         return f"{recipient_string} / {self.user_profile.email} ({self.flags_list()})"
+
+
+class IdempotentRequest(models.Model):
+    """Ensure idempotency (as needed) for Non-Idempotent (e.g. POST) requests.
+
+    Currently, only used for message sending, but in the future it should be applied to
+    any http request having the possibility of being wrongly replayed.
+    """
+
+    idempotency_key = models.UUIDField(unique=True, db_index=True)
+    completed = models.BooleanField(db_default=False, default=False)
+    timestamp = models.DateTimeField(db_default=Now(), default=timezone_now, db_index=True)
+
+    # This identifies the ID of the work for which we want to ensure idempotency (e.g. message.id).
+    # Null: work initially is not done.
+    # Not Null: work is done.
+    identifier = models.IntegerField(null=True)
+    cached_response = models.JSONField(default=None, null=True)
+
+    # Rows with timestamp later than this should be deleted.
+    EXPIRE_AFTER = 60 * 60  # Time in seconds.
 
 
 class ImageAttachment(models.Model):
