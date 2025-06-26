@@ -715,10 +715,10 @@ export const all_group_setting_labels = {
         can_manage_billing_group: $t({defaultMessage: "Who can manage plans and billing"}),
         can_create_groups: $t({defaultMessage: "Who can create user groups"}),
         can_move_messages_between_topics_group: $t({
-            defaultMessage: "Who can move messages to another topic",
+            defaultMessage: "Who can edit topics in any channel",
         }),
         can_move_messages_between_channels_group: $t({
-            defaultMessage: "Who can move messages to another channel",
+            defaultMessage: "Who can move messages out of any channel",
         }),
         can_resolve_topics_group: $t({defaultMessage: "Who can resolve topics"}),
         can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),

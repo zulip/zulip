@@ -22,7 +22,7 @@ administrators and moderators.
 
 Permissions for moving messages between channels can be configured separately.
 
-## Configure who can edit topics everywhere
+## Configure who can edit topics in any channel
 
 {!admin-only.md!}
 
@@ -30,8 +30,7 @@ Permissions for moving messages between channels can be configured separately.
 
 {settings_tab|organization-permissions}
 
-1. Under **Moving messages**, configure **Who can move messages to another
-   topic**.
+1. Under **Moving messages**, configure **Who can edit topics in any channel**.
 
 {!save-changes.md!}
 
@@ -71,14 +70,13 @@ Permissions for moving messages between channels can be configured separately.
 
 {end_tabs}
 
-## Configure who can move messages to another channel from anywhere
+## Configure who can move messages out of any channel
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-1. Under **Moving messages**, configure **Who can move messages to another
-   channel**.
+1. Under **Moving messages**, configure **Who can move messages out of any channel**.
 
 {!save-changes.md!}
 
