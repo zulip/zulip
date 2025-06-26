@@ -41,6 +41,39 @@ def encode_channel(channel_id: int, channel_name: str, with_operator: bool = Fal
     return encoded_channel
 
 
+def encode_user_ids(
+    user_ids: list[int],
+    with_operator: bool = False,
+) -> str:
+    """
+    This encodes the given `user_ids` into recipient slug
+    string that can be used to construct a narrow URL.
+
+    e.g., [13, 23, 9] -> "13,23,9-group"
+
+    The `with_operator` parameter decides whether to append
+    the "dm" operator to the recipient slug or not.
+
+    e.g., "dm/13,23,9-group"
+
+    """
+    assert len(user_ids) > 0
+
+    # For 3 or more user ids we use the "-group" decoration tag.
+    # If we're only working with 1-2 user ids, it's either a
+    # one-on-one direct message or direct message to ones self.
+    # In this case, we don't include any decoration tag to the
+    # slug.
+    decoration_tag = ""
+    if len(user_ids) >= 3:
+        decoration_tag = "-group"
+
+    direct_message_slug = ",".join([str(user_id) for user_id in sorted(user_ids)]) + decoration_tag
+    if with_operator:
+        return f"dm/{direct_message_slug}"
+    return direct_message_slug
+
+
 def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
     base_url = f"{realm.url}/#narrow/dm/"
     encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", sender.full_name)
@@ -53,9 +86,9 @@ def direct_message_group_narrow_url(
 ) -> str:
     realm = user.realm
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
-    pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"
+    direct_message_slug = encode_user_ids(other_user_ids)
     base_url = f"{realm.url}/#narrow/dm/"
-    return base_url + pm_slug
+    return base_url + direct_message_slug
 
 
 def stream_narrow_url(realm: Realm, stream: Stream) -> str:
@@ -124,17 +157,15 @@ def pm_message_url(
         with_or_near = "near"
 
     message_id = str(message["id"])
-    str_user_ids = [str(recipient["id"]) for recipient in message["display_recipient"]]
+    user_ids = [recipient["id"] for recipient in message["display_recipient"]]
 
-    # Use the "perma-link" format here that includes the sender's
-    # user_id, so they're easier to share between people.
-    pm_str = ",".join(str_user_ids) + "-pm"
+    direct_message_slug = encode_user_ids(user_ids)
 
     parts = [
         realm.url,
         "#narrow",
         "dm",
-        pm_str,
+        direct_message_slug,
         with_or_near,
         message_id,
     ]
