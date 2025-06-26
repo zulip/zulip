@@ -5652,11 +5652,11 @@ class PersonalMessagesTest(ZulipTestCase):
             realm=realm,
             message=message,
         )
-        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80-pm/near/555")
+        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80/near/555")
 
         url = message_link_url(
             realm=realm,
             message=message,
             conversation_link=True,
         )
-        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80-pm/with/555")
+        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80/with/555")

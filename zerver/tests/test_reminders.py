@@ -56,7 +56,7 @@ class RemindersTest(ZulipTestCase):
     def get_dm_reminder_content(self, msg_content: str, msg_id: int) -> str:
         return (
             "You requested a reminder for the following direct message.\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12-pm/near/{msg_id}):\n```quote\n{msg_content}\n```"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{msg_id}):\n```quote\n{msg_content}\n```"
         )
 
     def get_channel_message_reminder_content(self, msg_content: str, msg_id: int) -> str:
@@ -376,7 +376,7 @@ class RemindersTest(ZulipTestCase):
                 delivered_message.content,
                 "You requested a reminder for the following direct message."
                 "\n\n"
-                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12-pm/near/{reminder.reminder_target_message_id}) a poll.",
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a poll.",
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
@@ -411,6 +411,6 @@ class RemindersTest(ZulipTestCase):
                 delivered_message.content,
                 "You requested a reminder for the following direct message."
                 "\n\n"
-                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12-pm/near/{reminder.reminder_target_message_id}) a todo list.",
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a todo list.",
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
