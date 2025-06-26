@@ -213,12 +213,11 @@ export function is_full_topic_history_available(
                 update_widget_for_stream(stream_id);
             }
         });
-        // We return `false` which leads to visible 'show all topics',
-        // even if all the topics are already displayed.
-        // This is helpful if the API call fails, users will have
-        // the option to make another request. Otherwise there's
-        // a possibility of missing 'show all topics' & not all topics displayed.
-        return false;
+        // We return `true` which can possibly lead to missing
+        // 'show all topics', even if all the topics are not displayed.
+        // The `get_server_history` call above takes care of fetching
+        // channel history and rebuilding topic list if needed.
+        return true;
     }
 
     const sub = sub_store.get(stream_id);
