@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
@@ -291,7 +291,6 @@ test("server_history_end_to_end", () => {
     ];
 
     let get_success_callback;
-    let get_error_callback;
     let on_success_called;
 
     channel.get = (opts) => {
@@ -299,7 +298,6 @@ test("server_history_end_to_end", () => {
         assert.deepEqual(opts.data, {allow_empty_topic_name: true});
         assert.ok(stream_topic_history.is_request_pending_for(stream_id));
         get_success_callback = opts.success;
-        get_error_callback = opts.error;
     };
 
     stream_topic_history_util.get_server_history(stream_id, noop);
@@ -308,9 +306,6 @@ test("server_history_end_to_end", () => {
     // for stream_id = 99. This function call adds coverage.
     stream_topic_history_util.get_server_history(stream_id, noop);
     assert.ok(stream_topic_history.is_request_pending_for(stream_id));
-
-    get_error_callback();
-    assert.ok(!stream_topic_history.is_request_pending_for(stream_id));
 
     stream_topic_history_util.get_server_history(stream_id, () => {
         on_success_called = true;
@@ -343,6 +338,29 @@ test("server_history_end_to_end", () => {
         on_success_called = true;
     });
     assert.ok(on_success_called);
+});
+
+test("server_history_error", () => {
+    set_global("setTimeout", (f) => {
+        f();
+    });
+    stream_topic_history.reset();
+
+    const channel_id = 99;
+
+    let total_attempts = 0;
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/json/users/me/99/topics");
+        assert.ok(stream_topic_history.is_request_pending_for(channel_id));
+        // This mocks error on each GET request.
+        opts.error();
+        total_attempts += 1;
+    };
+
+    stream_topic_history_util.get_server_history(channel_id, noop);
+    // Verify that we stop after MAX_RETRIES attempt.
+    assert.deepEqual(total_attempts, stream_topic_history_util.MAX_RETRIES);
+    assert.ok(!stream_topic_history.is_request_pending_for(channel_id));
 });
 
 test("ask_server_for_latest_topic_data", () => {
