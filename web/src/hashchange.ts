@@ -496,11 +496,14 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
     if (base === "about-zulip") {
         about_zulip.launch();
+        return;
     }
 
     if (base === "scheduled") {
         scheduled_messages_overlay_ui.launch();
+        return;
     }
+
     if (base === "user") {
         const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
         if (!people.is_known_user_id(user_id)) {
@@ -509,6 +512,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             const user = people.get_by_user_id(user_id);
             user_profile.show_user_profile(user);
         }
+        return;
     }
 }
 
