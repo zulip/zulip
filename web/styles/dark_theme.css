@@ -503,7 +503,7 @@
 
         &:hover {
             color: inherit;
-            background-color: hsla(240, 40%, 48%, 0.25);
+            background-color: hsl(240deg 40% 48% / 25%);
         }
 
         > .pill {
