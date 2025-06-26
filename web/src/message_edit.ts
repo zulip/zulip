@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import * as tippy from "tippy.js";
 import {z} from "zod";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
@@ -959,6 +960,37 @@ function do_toggle_resolve_topic(
         url: "/json/messages/" + message_id,
         data: request,
         error(xhr) {
+            if ($row) {
+                const $button = $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve");
+                buttons.hide_button_loading_indicator($button);
+                $button.removeClass("loading-resolve-topic-state");
+                // Remove any existing tippy instance on the button.
+                const reference: tippy.ReferenceElement = util.the($button);
+                if (reference._tippy) {
+                    reference._tippy.destroy();
+                }
+                const instance = tippy.default(util.the($button), {
+                    trigger: "manual",
+                    appendTo: () => document.body,
+                    onShow(instance) {
+                        if ($button.hasClass("on_hover_topic_resolve")) {
+                            instance.setContent(
+                                $t({defaultMessage: "Error: Could not resolve topic."}),
+                            );
+                        } else if ($button.hasClass("on_hover_topic_unresolve")) {
+                            instance.setContent(
+                                $t({defaultMessage: "Error: Could not unresolve topic."}),
+                            );
+                        }
+                    },
+                });
+                // Manually trigger the error tooltip, and remove it after 2 seconds.
+                instance.show();
+                setTimeout(() => {
+                    instance.destroy();
+                }, 2000);
+            }
+
             if (xhr.responseJSON) {
                 const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
                 if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
