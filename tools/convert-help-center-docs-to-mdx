@@ -592,9 +592,11 @@ def run() -> None:
     include_output_dir = os.path.join(output_dir, "include")
     print("Starting the conversion from MD to MDX...")
 
-    # We delete the directory first to remove any stale files
-    # that might have been deleted in the `help` folder but
-    # their converted mdx files stay around
+    # We delete the directory first to remove any stale files that
+    # might have been deleted in the `help` folder but their converted
+    # mdx files stay around. We create it first just in case to avoid
+    # rmtree throwing exceptions.
+    os.makedirs(output_dir, exist_ok=True)
     shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
