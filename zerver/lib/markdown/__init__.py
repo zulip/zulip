@@ -36,7 +36,7 @@ from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
-from typing_extensions import Self, override
+from typing_extensions import NotRequired, Self, override
 
 from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
@@ -609,6 +609,13 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
 IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]
 
 
+class DropboxMediaInfo(TypedDict):
+    is_image: bool
+    media_url: str
+    title: NotRequired[str]
+    desc: NotRequired[str]
+
+
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
@@ -776,7 +783,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def corrected_image_source(self, url: str) -> str | None:
         # This function adjusts any URLs from linx.li and
         # wikipedia.org to point to the actual image URL.  It's
-        # structurally very similar to dropbox_image, and possibly
+        # structurally very similar to dropbox_media, and possibly
         # should be rewritten to use open graph, but has some value.
         parsed_url = urlsplit(url)
         if parsed_url.netloc.lower().endswith(".wikipedia.org") and parsed_url.path.startswith(
@@ -791,8 +798,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return "https://linx.li/s" + parsed_url.path
         return None
 
-    def dropbox_image(self, url: str) -> dict[str, Any] | None:
-        # TODO: The returned Dict could possibly be a TypedDict in future.
+    def dropbox_media(self, url: str) -> DropboxMediaInfo | None:
         parsed_url = urlsplit(url)
         if parsed_url.netloc == "dropbox.com" or parsed_url.netloc.endswith(".dropbox.com"):
             # See https://www.dropboxforum.com/discussions/101001012/shared-link--scl-to-s/689070/replies/695266
@@ -806,40 +812,29 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if not (is_file or is_album):
                 return None
 
-            # Try to retrieve open graph protocol info for a preview
-            # This might be redundant right now for shared links for images.
-            # However, we might want to make use of title and description
-            # in the future. If the actual image is too big, we might also
-            # want to use the open graph image.
-            image_info = fetch_open_graph_image(url)
-
             is_image = self.is_image(url)
-
             # If it is from an album or not an actual image file,
             # just use open graph image.
             if is_album or not is_image:
+                open_graph_image_info = fetch_open_graph_image(url)
                 # Failed to follow link to find an image preview so
                 # use placeholder image and guess filename
-                if image_info is None:
+                if open_graph_image_info is None:
                     return None
 
                 if is_album:
-                    image_info["title"] = "Dropbox folder"
-                    image_info["desc"] = "Click to open folder."
+                    title = "Dropbox folder"
+                    desc = "Click to open folder."
                 else:
-                    image_info["title"] = "Dropbox file"
-                    image_info["desc"] = "Click to open file."
+                    title = "Dropbox file"
+                    desc = "Click to open file."
 
-                image_info["is_image"] = is_image
-                return image_info
-
-            # Try to retrieve the actual image.
-            # This is because open graph image from Dropbox may have padding
-            # and gifs do not work.
-            # TODO: What if image is huge? Should we get headers first?
-            if image_info is None:
-                image_info = {}
-            image_info["is_image"] = True
+                return DropboxMediaInfo(
+                    title=title,
+                    desc=desc,
+                    is_image=is_image,
+                    media_url=open_graph_image_info["image"],
+                )
 
             # Adding raw=1 as query param will give us the URL of the
             # actual image instead of the dropbox image preview page.
@@ -847,9 +842,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             query_params["raw"] = "1"
             query = urlencode(query_params)
 
-            image_info["image"] = parsed_url._replace(query=query).geturl()
-
-            return image_info
+            return DropboxMediaInfo(
+                is_image=is_image, media_url=parsed_url._replace(query=query).geturl()
+            )
         return None
 
     def youtube_id(self, url: str) -> str | None:
@@ -1346,22 +1341,22 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 self.handle_video_inlining(root, found_url)
                 continue
 
-            dropbox_image = self.dropbox_image(url)
-            if dropbox_image is not None:
-                is_image = dropbox_image["is_image"]
+            dropbox_media = self.dropbox_media(url)
+            if dropbox_media is not None:
+                is_image = dropbox_media["is_image"]
                 if is_image:
                     found_url = ResultWithFamily(
                         family=found_url.family,
-                        result=(dropbox_image["image"], dropbox_image["image"]),
+                        result=(dropbox_media["media_url"], dropbox_media["media_url"]),
                     )
                     self.handle_image_inlining(root, found_url)
                     continue
 
                 dropbox_embed_data = UrlEmbedData(
                     type="image",
-                    title=dropbox_image["title"],
-                    description=dropbox_image["desc"],
-                    image=dropbox_image["image"],
+                    title=dropbox_media["title"],
+                    description=dropbox_media["desc"],
+                    image=dropbox_media["media_url"],
                 )
                 self.add_embed(root, url, dropbox_embed_data)
                 continue
