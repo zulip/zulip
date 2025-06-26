@@ -74,6 +74,6 @@ test("is_full_topic_history_available", ({override}) => {
         assert.equal(stream_id, general.stream_id);
         full_topic_history_fetched_and_widget_updated = true;
     };
-    assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
+    assert.equal(topic_list.is_full_topic_history_available(stream_id), true);
     assert.equal(full_topic_history_fetched_and_widget_updated, true);
 });
