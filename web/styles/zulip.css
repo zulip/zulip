@@ -862,7 +862,7 @@ strong {
 .copy-paste-text {
     /* Hide the text that we want copy paste to capture */
     position: absolute;
-    right: -99999px;
+    left: -99999px;
 }
 
 @keyframes rotate {
