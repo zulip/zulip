@@ -73,10 +73,29 @@ def encode_user_ids(
     return pm_slug
 
 
+def encode_full_name_and_id(full_name: str, user_id: int, with_operator: bool = False) -> str:
+    """
+    This encodes the given `full_name` and `user_id` into a
+    recipient slug string that can be used to construct a
+    narrow URL.
+
+    e.g., 9, "King Hamlet" -> "9-King-Hamlet"
+
+    The `with_operator` parameter decides whether to append
+    the "dm" operator to the recipient slug or not.
+
+    e.g., "dm/9-King-Hamlet"
+    """
+    encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", full_name.strip())
+    pm_slug = str(user_id) + "-" + encoded_user_name
+    if with_operator:
+        return f"dm/{pm_slug}"
+    return pm_slug
+
+
 def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
     base_url = f"{realm.url}/#narrow/dm/"
-    encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", sender.full_name)
-    pm_slug = str(sender.id) + "-" + encoded_user_name
+    pm_slug = encode_full_name_and_id(sender.full_name, sender.id)
     return base_url + pm_slug
 
 
