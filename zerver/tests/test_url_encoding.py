@@ -1,5 +1,5 @@
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.url_encoding import encode_channel, encode_user_ids
+from zerver.lib.url_encoding import encode_channel, encode_user_full_name_and_id, encode_user_ids
 
 
 class URLEncodeTest(ZulipTestCase):
@@ -24,3 +24,20 @@ class URLEncodeTest(ZulipTestCase):
         self.assertEqual(encode_user_ids([1, 2, 3], with_operator=True), "dm/1,2,3-group")
         with self.assertRaises(AssertionError):
             encode_user_ids([])
+
+    def test_encode_user_full_name_and_id(self) -> None:
+        self.assertEqual(encode_user_full_name_and_id("King Hamlet", 9), "9-King-Hamlet")
+        self.assertEqual(
+            encode_user_full_name_and_id("King Hamlet", 9, with_operator=True), "dm/9-King-Hamlet"
+        )
+        self.assertEqual(encode_user_full_name_and_id("ZOE", 1), "1-ZOE")
+        self.assertEqual(encode_user_full_name_and_id("  User Name  ", 100), "100-User-Name")
+        self.assertEqual(encode_user_full_name_and_id("User  Name", 101), "101-User-Name")
+        self.assertEqual(encode_user_full_name_and_id("User/Name", 200), "200-User-Name")
+        self.assertEqual(encode_user_full_name_and_id("User%Name", 201), "201-User-Name")
+        self.assertEqual(encode_user_full_name_and_id("User<Name>", 202), "202-User-Name-")
+        self.assertEqual(encode_user_full_name_and_id('User"Name`', 203), "203-User-Name-")
+        self.assertEqual(encode_user_full_name_and_id('User/ % < > ` " Name', 204), "204-User-Name")
+        self.assertEqual(encode_user_full_name_and_id("User--Name", 205), "205-User--Name")
+        self.assertEqual(encode_user_full_name_and_id("User%%Name", 206), "206-User-Name")
+        self.assertEqual(encode_user_full_name_and_id("User_Name", 5), "5-User_Name")
