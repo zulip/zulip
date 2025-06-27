@@ -138,6 +138,10 @@ class APIScheduledDirectMessageDict(TypedDict):
     failed: bool
 
 
+class APIReminderDirectMessageDict(APIScheduledDirectMessageDict):
+    reminder_target_message_id: int
+
+
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
@@ -245,6 +249,21 @@ class ScheduledMessage(models.Model):
             topic=self.topic_name(),
             scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
             failed=self.failed,
+        )
+
+    def to_reminder_dict(self) -> APIReminderDirectMessageDict:
+        assert self.reminder_target_message_id is not None
+        recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
+        assert recipient_type_str == "private"
+        return APIReminderDirectMessageDict(
+            scheduled_message_id=self.id,
+            to=recipient,
+            type=recipient_type_str,
+            content=self.content,
+            rendered_content=self.rendered_content,
+            scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+            failed=self.failed,
+            reminder_target_message_id=self.reminder_target_message_id,
         )
 
 

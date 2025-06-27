@@ -642,7 +642,7 @@ class ScheduledMessageTest(ZulipTestCase):
         # Other user cannot delete it.
         othello = self.example_user("othello")
         result = self.api_delete(othello, f"/api/v1/scheduled_messages/{scheduled_message.id}")
-        self.assert_json_error(result, "Scheduled message does not exist", 404)
+        self.assert_json_error(result, "Scheduled message / reminder does not exist", 404)
 
         self.login("hamlet")
         result = self.client_delete(f"/json/scheduled_messages/{scheduled_message.id}")
@@ -650,7 +650,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Already deleted.
         result = self.client_delete(f"/json/scheduled_messages/{scheduled_message.id}")
-        self.assert_json_error(result, "Scheduled message does not exist", 404)
+        self.assert_json_error(result, "Scheduled message / reminder does not exist", 404)
 
     def test_attachment_handling(self) -> None:
         self.login("hamlet")

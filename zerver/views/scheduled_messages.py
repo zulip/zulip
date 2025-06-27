@@ -14,7 +14,10 @@ from zerver.lib.exceptions import DeliveryTimeNotInFutureError, JsonableError
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
+from zerver.lib.scheduled_messages import (
+    get_undelivered_reminders,
+    get_undelivered_scheduled_messages,
+)
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
@@ -34,6 +37,11 @@ def fetch_scheduled_messages(request: HttpRequest, user_profile: UserProfile) ->
     )
 
 
+@typed_endpoint_without_parameters
+def fetch_reminders(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    return json_success(request, data={"reminders": get_undelivered_reminders(user_profile)})
+
+
 @typed_endpoint
 def delete_scheduled_messages(
     request: HttpRequest,
@@ -42,6 +50,17 @@ def delete_scheduled_messages(
     scheduled_message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     delete_scheduled_message(user_profile, scheduled_message_id)
+    return json_success(request)
+
+
+@typed_endpoint
+def delete_reminders(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    reminder_id: PathOnly[NonNegativeInt],
+) -> HttpResponse:
+    delete_scheduled_message(user_profile, reminder_id)
     return json_success(request)
 
 

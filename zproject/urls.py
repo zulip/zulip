@@ -174,7 +174,9 @@ from zerver.views.saved_snippets import (
 )
 from zerver.views.scheduled_messages import (
     create_scheduled_message_backend,
+    delete_reminders,
     delete_scheduled_messages,
+    fetch_reminders,
     fetch_scheduled_messages,
     update_scheduled_message_backend,
 )
@@ -378,7 +380,11 @@ v1_api_and_json_patterns = [
         DELETE=delete_saved_snippet,
         PATCH=edit_saved_snippet,
     ),
-    rest_path("reminders", POST=create_reminders_message_backend),
+    rest_path("reminders", GET=fetch_reminders, POST=create_reminders_message_backend),
+    rest_path(
+        "reminders/<int:reminder_id>",
+        DELETE=delete_reminders,
+    ),
     rest_path(
         "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend
     ),
