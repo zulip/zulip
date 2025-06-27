@@ -1,3 +1,4 @@
+#reminders-overlay-container,
 #scheduled_messages_overlay_container {
     .no-overlay-messages {
         display: none;
@@ -13,4 +14,8 @@
     margin-left: 10px;
     font-style: italic;
     color: hsl(0deg 0% 53%);
+}
+
+#reminders-overlay-container .message_content {
+    cursor: auto;
 }

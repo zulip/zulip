@@ -161,6 +161,12 @@
         <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
 </template>
+<template id="reminders-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="reminders">
+        <div>{{t 'Reminders'}}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
+</template>
 <template id="show-all-direct-messages-template">
     {{t 'Direct message feed' }}
     {{tooltip_hotkey_hints "Shift" "P"}}
@@ -251,6 +257,10 @@
 </template>
 <template id="delete-scheduled-message-tooltip-template">
     {{t 'Delete scheduled message' }}
+    {{tooltip_hotkey_hints "Backspace"}}
+</template>
+<template id="delete-reminder-tooltip-template">
+    {{t 'Delete reminder' }}
     {{tooltip_hotkey_hints "Backspace"}}
 </template>
 <template id="create-new-stream-tooltip-template">

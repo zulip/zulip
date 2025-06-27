@@ -49,6 +49,8 @@ const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
+const message_reminder = mock_esm("../src/message_reminder");
+const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
 const saved_snippets = mock_esm("../src/saved_snippets");
 const saved_snippets_ui = mock_esm("../src/saved_snippets_ui");
 const scheduled_messages = mock_esm("../src/scheduled_messages");
@@ -89,6 +91,7 @@ const submessage = mock_esm("../src/submessage");
 mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
+    update_reminders_row() {},
     handle_home_view_changed() {},
 });
 const typing_events = mock_esm("../src/typing_events");
@@ -450,6 +453,30 @@ run_test("reaction", ({override}) => {
         const args = stub.get_args("event");
         assert_same(args.event.emoji_name, event.emoji_name);
         assert_same(args.event.message_id, event.message_id);
+    }
+});
+
+run_test("reminders", ({override}) => {
+    override(reminders_overlay_ui, "rerender", noop);
+    override(reminders_overlay_ui, "remove_reminder_id", noop);
+
+    let event = event_fixtures.reminders__add;
+    {
+        const stub = make_stub();
+        override(message_reminder, "add_reminders", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("reminders");
+        assert_same(args.reminders, event.reminders);
+    }
+    event = event_fixtures.reminders__remove;
+    {
+        const stub = make_stub();
+        override(message_reminder, "remove_reminder", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("reminder_id");
+        assert_same(args.reminder_id, event.reminder_id);
     }
 });
 

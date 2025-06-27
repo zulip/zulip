@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
+import * as message_reminder from "./message_reminder.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
@@ -57,6 +58,17 @@ export function update_scheduled_messages_row(): void {
         $scheduled_li.removeClass("show-with-scheduled-messages");
     }
     ui_util.update_unread_count_in_dom($scheduled_li, count);
+}
+
+export function update_reminders_row(): void {
+    const $reminders_li = $(".top_left_reminders");
+    const count = message_reminder.get_count();
+    if (count > 0) {
+        $reminders_li.addClass("show-with-reminders");
+    } else {
+        $reminders_li.removeClass("show-with-reminders");
+    }
+    ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
 export function update_dom_with_unread_counts(
@@ -251,6 +263,7 @@ export function handle_home_view_changed(new_home_view: string): void {
 }
 
 export function initialize(): void {
+    update_reminders_row();
     update_scheduled_messages_row();
     restore_views_state();
 

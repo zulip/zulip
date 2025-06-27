@@ -30,6 +30,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_events from "./message_events.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
@@ -47,6 +48,7 @@ import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload from "./reload.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -636,6 +638,24 @@ export function dispatch_normal_event(event) {
                     scheduled_messages.update_scheduled_message(event.scheduled_message);
                     scheduled_messages_overlay_ui.rerender();
                     left_sidebar_navigation_area.update_scheduled_messages_row();
+                    break;
+                }
+                // No default
+            }
+            break;
+
+        case "reminders":
+            switch (event.op) {
+                case "add": {
+                    message_reminder.add_reminders(event.reminders);
+                    reminders_overlay_ui.rerender();
+                    left_sidebar_navigation_area.update_reminders_row();
+                    break;
+                }
+                case "remove": {
+                    message_reminder.remove_reminder(event.reminder_id);
+                    reminders_overlay_ui.remove_reminder_id(event.reminder_id);
+                    left_sidebar_navigation_area.update_reminders_row();
                     break;
                 }
                 // No default

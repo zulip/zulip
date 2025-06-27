@@ -47,6 +47,7 @@ import * as reactions from "./reactions.ts";
 import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
@@ -616,6 +617,11 @@ export function process_enter_key(e) {
         return true;
     }
 
+    if (overlays.reminders_open()) {
+        reminders_overlay_ui.handle_keyboard_events("enter");
+        return true;
+    }
+
     // Transfer the enter keypress from button to the `<i>` tag inside
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
@@ -870,6 +876,10 @@ export function process_hotkey(e, hotkey) {
             }
             if (overlays.scheduled_messages_open()) {
                 scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
+                return true;
+            }
+            if (overlays.reminders_open()) {
+                reminders_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
             if (overlays.message_edit_history_open()) {

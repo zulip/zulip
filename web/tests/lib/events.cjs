@@ -655,6 +655,29 @@ exports.fixtures = {
         value: false,
     },
 
+    reminders__add: {
+        type: "reminders",
+        op: "add",
+        reminders: [
+            {
+                reminder_id: 17,
+                type: "private",
+                to: [6],
+                content: "Hello there!",
+                rendered_content: "<p>Hello there!</p>",
+                scheduled_delivery_timestamp: 1681662420,
+                failed: false,
+                reminder_target_message_id: 213,
+            },
+        ],
+    },
+
+    reminders__remove: {
+        type: "reminders",
+        op: "remove",
+        reminder_id: 17,
+    },
+
     restart: {
         type: "restart",
         zulip_version: "9.0-dev-753-gced3e85da9",

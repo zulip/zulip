@@ -73,6 +73,7 @@ import * as message_fetch from "./message_fetch.ts";
 import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_scroll from "./message_scroll.ts";
 import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
@@ -103,6 +104,7 @@ import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.js";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -452,7 +454,9 @@ export async function initialize_everything(state_data) {
     left_sidebar_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(state_data.scheduled_messages);
+    message_reminder.initialize(state_data.reminders);
     scheduled_messages_ui.initialize();
+    reminders_overlay_ui.initialize();
     popover_menus.initialize();
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
