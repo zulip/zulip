@@ -33,6 +33,16 @@ You will only see the options below if you have the required permissions.
       To subscribe users in bulk, you can copy members from an
       existing channel or [user group](/help/user-groups).
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1222). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 {!automated-dm-channel-subscription.md!}

@@ -32,6 +32,16 @@ You can set a status emoji, status message, or both.
 
 {!set-status.md!}
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/198). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ### Clear a status
@@ -71,6 +81,16 @@ and compose box. Status emoji and status messages are also shown on
     You can also click on a user's profile picture or name on a message they
     sent to view their status in their **user card**, or configure status text
     to always be shown in the right sidebar.
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/197). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 
@@ -167,6 +187,16 @@ Your activity will still be included in your organization's [statistics](/help/a
 
     You can also toggle this setting in the **Account & privacy**
     tab of your **Personal settings** menu.
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1578). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 

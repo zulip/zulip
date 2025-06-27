@@ -14,6 +14,16 @@ which is especially handy if you are subscribed to a large number of channels.
 
 1. Click **Pin channel to top**.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1223). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ## Unpin a channel
@@ -25,6 +35,16 @@ which is especially handy if you are subscribed to a large number of channels.
 {!channel-actions.md!}
 
 1. Click **Unpin channel from top**.
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1223). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 

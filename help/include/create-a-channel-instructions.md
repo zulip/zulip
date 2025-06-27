@@ -21,4 +21,14 @@
     **Note**: You will only see the **Create channel** button if you have
     permission to create channels.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1572). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}

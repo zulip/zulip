@@ -30,6 +30,16 @@ whereas [archiving a channel](/help/archive-a-channel) does not.
 
 1. Approve by clicking **Confirm**.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1549). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 Note that deleting all of the individual messages within a particular
