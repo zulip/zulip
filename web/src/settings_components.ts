@@ -1571,6 +1571,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_add_members_group", null],
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
     ["can_join_group", null],
     ["can_leave_group", null],
     ["can_manage_group", null],
@@ -2053,4 +2054,29 @@ export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): nu
         return null;
     }
     return value;
+}
+
+export function get_private_stream_option_state(
+    stream_id: number,
+    is_default_stream: boolean,
+): string {
+    if (is_default_stream || !settings_data.user_can_create_private_streams()) {
+        return "for_default_stream";
+    }
+
+    const stream = stream_data.get_sub_by_id(stream_id);
+    if (stream === undefined) {
+        return "enable";
+    }
+
+    const can_create_topic_group_id = stream.can_create_topic_group;
+    if (typeof can_create_topic_group_id !== "number") {
+        return "for_can_create_topic_group";
+    }
+    const user_group = user_groups.get_user_group_from_id(can_create_topic_group_id);
+    if (user_group.name !== "role:everyone") {
+        return "for_can_create_topic_group";
+    }
+
+    return "enable";
 }
