@@ -1,0 +1,13 @@
+<li role="none" class="link-item popover-menu-list-item views-popover-menu-{{css_class_suffix}}">
+    <a href="#{{fragment}}" role="menuitem" class="popover-menu-link tippy-left-sidebar-tooltip" data-tooltip-template-id="{{tooltip_template_id}}" tabindex="0">
+        <i class="popover-menu-icon zulip-icon {{icon}}" aria-hidden="true"></i>
+        {{#if has_unread_count}}
+        <span class="label-and-unread-wrapper">
+            <span class="popover-menu-label">{{name}}</span>
+            <span class="unread_count quiet-count"></span>
+        </span>
+        {{else}}
+        <span class="popover-menu-label">{{name}}</span>
+        {{/if}}
+    </a>
+</li>
