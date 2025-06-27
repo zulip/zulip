@@ -13,6 +13,14 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+#### Upgrade notes for 11.0
+
+- PostgreSQL 13 is no longer supported; if you are currently using it, you will
+  need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
+  before upgrading Zulip.
+
+## Zulip Server 10.x series
+
 ### Zulip Server 10.3
 
 _Released 2025-05-15_
@@ -42,14 +50,6 @@ _Released 2025-05-15_
   images, so be careful when enqueuing large numbers of images at
   once.
 - Updated translations.
-
-#### Upgrade notes for 11.0
-
-- PostgreSQL 13 is no longer supported; if you are currently using it, you will
-  need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
-  before upgrading Zulip.
-
-## Zulip Server 10.x series
 
 ### Zulip Server 10.2
 
