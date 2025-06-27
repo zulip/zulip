@@ -191,7 +191,7 @@ h4.user_group_setting_subsection_title {
             & tr {
                 & td,
                 th {
-                    padding: 4px 0 4px 5px;
+                    padding: 4px 10px 4px 5px;
                     vertical-align: middle;
 
                     &:first-of-type {
@@ -218,10 +218,6 @@ h4.user_group_setting_subsection_title {
 
             .hidden-subscriber-email {
                 font-style: italic;
-            }
-
-            th.user-remove-actions {
-                min-width: 80px;
             }
 
             .strikethrough {
