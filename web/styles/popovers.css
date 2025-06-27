@@ -221,6 +221,21 @@
     }
 }
 
+.remove-action-button {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.hidden-remove-button-row:hover .remove-action-button {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
 #stream-actions-menu-popover,
 #stream-card-popover {
     .popover-stream-name {
@@ -611,7 +626,7 @@ ul.popover-group-menu-member-list {
                 border-bottom: 1px solid hsl(0deg 0% 87%);
                 /* Ensure equal height for rows with a remove-subscription-button and
                    those without one. */
-                height: 34px;
+                height: 2.125em;
 
                 &:last-of-type {
                     border-bottom: none;
