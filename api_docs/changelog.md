@@ -873,10 +873,14 @@ deactivated groups.
 
 **Feature level 318**
 
-* [`POST /register`](/api/register-queue): Updated
-  `realm_incoming_webhook_bots` with a new `config_options` key,
-  defining which options should be offered when creating URLs for this
-  integration.
+* [`POST /register`](/api/register-queue): Renamed the `config` object in the
+  `realm_incoming_webhook_bots` object to `config_options`. This object now
+  includes details about optional URL parameters that can be configured when
+  [generating a URL](/help/generate-integration-url) for an incoming webhook
+  integration. Previously, this object was reserved for key-value pairs that
+  indicated that a bot user could be created with additional configuration
+  data (such as an API key) for that incoming webhook integration, but this
+  functionality has not been implemented for any existing integrations.
 
 **Feature level 317**
 
