@@ -26185,7 +26185,7 @@ components:
           description: |
             The UNIX timestamp for when the saved snippet was created, in
             UTC seconds.
-    ScheduledMessage:
+    ScheduledMessageBase:
       type: object
       description: |
         Object containing details of the scheduled message.
@@ -26259,6 +26259,19 @@ components:
         - rendered_content
         - scheduled_delivery_timestamp
         - failed
+    ScheduledMessage:
+      allOf:
+        - $ref: "#/components/schemas/ScheduledMessageBase"
+        - additionalProperties: false
+          properties:
+            scheduled_message_id: {}
+            type: {}
+            to: {}
+            topic: {}
+            content: {}
+            rendered_content: {}
+            scheduled_delivery_timestamp: {}
+            failed: {}
     GroupPermissionSetting:
       description: |
         Configuration for a group permission setting specifying the groups
