@@ -1,0 +1,9 @@
+<div {{#if id}}id="{{id}}"{{/if}} class="input-element-wrapper{{#if input_type}} {{input_type}}{{/if}}{{#if custom_classes}} {{custom_classes}}{{/if}}{{#if icon}} has-input-icon{{/if}}{{#if input_button_icon}} has-input-button{{/if}}">
+    {{#if icon}}
+        <i class="input-icon zulip-icon zulip-icon-{{icon}}" aria-hidden="true"></i>
+    {{/if}}
+    {{> @partial-block .}}
+    {{#if input_button_icon}}
+        {{> icon_button custom_classes="input-button" squared=true icon=input_button_icon intent="neutral" }}
+    {{/if}}
+</div>

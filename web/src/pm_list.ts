@@ -218,6 +218,7 @@ function zoom_in(): void {
     zoomed = true;
     update_private_messages();
     $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
+    $("#hide-more-direct-messages").addClass("dm-zoomed-in");
     $("#streams_list").hide();
     $(".left-sidebar .right-sidebar-items").hide();
 
@@ -227,20 +228,16 @@ function zoom_in(): void {
 
 function zoom_out(): void {
     zoomed = false;
-    clear_search(true); // force rerender if the search is empty.
+    clear_search();
     $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
+    $("#hide-more-direct-messages").removeClass("dm-zoomed-in");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
 }
 
-export function clear_search(force_rerender = false): void {
+export function clear_search(): void {
     const $filter = $(".direct-messages-list-filter").expectOne();
-    if ($filter.val() !== "") {
-        $filter.val("");
-        update_private_messages();
-    } else if (force_rerender) {
-        update_private_messages();
-    }
+    update_private_messages();
     $filter.trigger("blur");
 }
 
@@ -261,7 +258,7 @@ export function initialize(): void {
         zoom_in();
     });
 
-    $(".direct-messages-container").on("click", "#hide-more-direct-messages", (e) => {
+    $("#left-sidebar").on("click", "#hide-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
@@ -269,17 +266,9 @@ export function initialize(): void {
     });
 
     $(".direct-messages-container").on("input", ".direct-messages-list-filter", (e) => {
-        e.stopPropagation();
         e.preventDefault();
 
         throttled_update_private_message();
-    });
-
-    $(".direct-messages-container").on("click", "#clear-direct-messages-search-button", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-
-        clear_search();
     });
 
     $(".direct-messages-container").on("mouseenter", () => {
