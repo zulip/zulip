@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 398**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new user setting: `reaction_notifications_policy`, giving users the option
+  to receive notifications for reactions in direct messages and stream messages.
+
 **Feature level 397**
 
 * [`POST /users/me/subscriptions`](/api/subscribe): Added parameter

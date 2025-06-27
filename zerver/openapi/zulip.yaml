@@ -13535,6 +13535,23 @@ paths:
                     - 3
                     - 4
                   example: 1
+                reaction_notifications_policy:
+                  description: |
+                    Enable Desktop notifications for stream messages reaction.
+
+                    - 1 - Never
+                    - 2 - In DMs and topics I follow
+                    - 3 - In DMs and unmuted messages
+                    - 4 - Always
+
+                    **Changes**: New in Zulip 11.0 (feature level 398).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                  example: 1
                 automatically_follow_topics_where_mentioned:
                   description: |
                     Whether the server will automatically mark the user as following
@@ -13719,6 +13736,8 @@ paths:
               automatically_follow_topics_policy:
                 contentType: application/json
               automatically_unmute_topics_in_muted_streams_policy:
+                contentType: application/json
+              reaction_notifications_policy:
                 contentType: application/json
               automatically_follow_topics_where_mentioned:
                 contentType: application/json
@@ -16962,6 +16981,17 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          reaction_notifications_policy:
+                            type: integer
+                            description: |
+                              Enable Desktop notifications for stream messages reaction.
+
+                              - 1 - Never
+                              - 2 - In DMs and topics I follow
+                              - 3 - In DMs and unmuted messages
+                              - 4 - Always
+
+                              **Changes**: New in Zulip 11.0 (feature level 398).
                           automatically_follow_topics_where_mentioned:
                             type: boolean
                             description: |
@@ -19734,6 +19764,17 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          reaction_notifications_policy:
+                            type: integer
+                            description: |
+                              Enable Desktop notifications for stream messages reaction.
+
+                              - 1 - Never
+                              - 2 - In DMs and topics I follow
+                              - 3 - In DMs and unmuted messages
+                              - 4 - Always
+
+                              **Changes**: New in Zulip 11.0 (feature level 398).
                           automatically_follow_topics_where_mentioned:
                             type: boolean
                             description: |
@@ -21114,6 +21155,23 @@ paths:
                     - 3
                     - 4
                   example: 1
+                reaction_notifications_policy:
+                  description: |
+                    Enable Desktop notifications for stream messages reaction.
+
+                    - 1 - Never
+                    - 2 - In DMs and topics I follow
+                    - 3 - In DMs and unmuted messages
+                    - 4 - Always
+
+                    **Changes**: New in Zulip 11.0 (feature level 398).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                  example: 1
                 automatically_follow_topics_where_mentioned:
                   description: |
                     Whether the server will automatically mark the user as following
@@ -21310,6 +21368,8 @@ paths:
               automatically_follow_topics_policy:
                 contentType: application/json
               automatically_unmute_topics_in_muted_streams_policy:
+                contentType: application/json
+              reaction_notifications_policy:
                 contentType: application/json
               automatically_follow_topics_where_mentioned:
                 contentType: application/json
