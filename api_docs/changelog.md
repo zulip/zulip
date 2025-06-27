@@ -835,10 +835,13 @@ deactivated groups.
 
 **Feature level 318**
 
-* [`POST /register`](/api/register-queue): Updated
-  `realm_incoming_webhook_bots` with a new `config_options` key,
-  defining which options should be offered when creating URLs for this
-  integration.
+* [`POST /register`](/api/register-queue): Rename the `config` field
+  in `realm_incoming_webhook_bots` to `config_options`. The `config_options`
+  field defines which options should be offered when creating URLs for this
+  integration. Previously, the `config` field was a key-value pair describing
+  integration-specific configuration data that needs to be included when creating
+  an  incoming webhook bot. The feature was never operational because there
+  is currently no way to associate an incoming webhook bot with an integration.
 
 **Feature level 317**
 
