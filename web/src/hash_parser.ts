@@ -66,6 +66,7 @@ export function is_overlay_hash(hash: string | undefined): boolean {
         "search-operators",
         "about-zulip",
         "scheduled",
+        "reminders",
         "user",
     ];
     const main_hash = get_hash_category(hash);
