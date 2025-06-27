@@ -24717,7 +24717,13 @@ components:
         This is an unstable API expected to be used only by the Zulip web
         apps. Please discuss in chat.zulip.org before using it.
 
-        **Changes**: New in Zulip 10.0 (feature level 318).
+        **Changes**: In Zulip 10.0 (feature level 318), changed `config`
+        to `config_options`. The `config_options` field defines which options
+        should be offered when creating URLs for this integration. Previously,
+        the `config` field was a key-value pair describing integration-specific
+        configuration data that needs to be included when creating an incoming
+        webhook bot. The feature was never operational because there is currently
+        no way to associate an incoming webhook bot with an integration.
       items:
         type: object
         additionalProperties: false
