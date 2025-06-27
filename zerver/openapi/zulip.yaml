@@ -11585,6 +11585,8 @@ paths:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
                   $ref: "#/components/schemas/CanSubscribeGroup"
+                can_create_topic_group:
+                  $ref: "#/components/schemas/CanCreateTopicGroup"
                 folder_id:
                   description: |
                     This parameter determines the folder to which the newly
@@ -11647,6 +11649,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
               folder_id:
                 contentType: application/json
@@ -16285,6 +16289,7 @@ paths:
                                 can_move_messages_out_of_channel_group: {}
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
+                                can_create_topic_group: {}
                                 can_subscribe_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
@@ -21537,6 +21542,7 @@ paths:
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
+                                can_create_topic_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -22057,6 +22063,25 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_create_topic_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to create new topics in this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Note that for [private channels with protected history](/help/channel-permissions#private-channels),
+                        everyone can start new topics.
+
+                        **Changes**: New in Zulip 11.0 (feature level b7d3e1).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
 
             encoding:
               is_private:
@@ -22082,6 +22107,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
       responses:
         "200":
@@ -24069,6 +24096,7 @@ components:
             can_move_messages_within_channel_group: {}
             can_send_message_group: {}
             can_subscribe_group: {}
+            can_create_topic_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
               type: integer
@@ -24270,6 +24298,8 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        can_create_topic_group:
+          $ref: "#/components/schemas/CanCreateTopicGroup"
         subscriber_count:
           type: number
           description: |
@@ -25365,6 +25395,8 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        can_create_topic_group:
+          $ref: "#/components/schemas/CanCreateTopicGroup"
         is_archived:
           type: boolean
           description: |
@@ -27297,6 +27329,19 @@ components:
             modify this setting.
 
             **Changes**: New in Zulip 10.0 (feature level 357).
+
+            [setting-values]: /api/group-setting-values
+    CanCreateTopicGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to create a new topic in this channel.
+
+            Note that for [private channels with protected history](/help/channel-permissions#private-channels),
+            everyone can start new topics.
+
+            **Changes**: New in Zulip 10.0 (feature level b7d3e1).
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:

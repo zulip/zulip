@@ -54,6 +54,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_id_for_message,
+    access_stream_to_create_new_topic,
     can_access_stream_history,
     can_edit_topic,
     can_move_messages_out_of_channel,
@@ -1515,6 +1516,11 @@ def check_update_message(
                     raise JsonableError(
                         _("The time limit for editing this message's topic has passed.")
                     )
+            access_stream_to_create_new_topic(
+                user_profile,
+                message_edit_request.target_stream,
+                message_edit_request.target_topic_name,
+            )
 
     rendering_result = None
     links_for_embed: set[str] = set()
@@ -1567,6 +1573,12 @@ def check_update_message(
 
             check_stream_access_based_on_can_send_message_group(
                 user_profile, message_edit_request.target_stream
+            )
+
+            access_stream_to_create_new_topic(
+                user_profile,
+                message_edit_request.target_stream,
+                message_edit_request.target_topic_name,
             )
 
             if (
