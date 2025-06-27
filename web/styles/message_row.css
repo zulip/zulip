@@ -429,6 +429,9 @@
             .zulip-icon.zulip-icon-bot {
                 align-self: center;
                 margin-left: 5px;
+                /* Fixes slight vertical misalignment between bot icon and sender name.
+                 Verified across font sizes 12px–30px. */
+                margin-top: -2px;
             }
 
             .sender_name {
