@@ -30,6 +30,16 @@ subscribe to [private](/help/channel-permissions#private-channels) channels.
     **by number of subscribers** (<i class="fa fa-user-o"></i>), or
     **by estimated weekly traffic** (<i class="fa fa-bar-chart"></i>).
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/188). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ## Related articles
