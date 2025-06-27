@@ -68,7 +68,7 @@ channel](/help/unsubscribe-from-a-channel).
 1. Under **Subscribers**, find the user you would like
    to unsubscribe from the channel.
 
-1. In the **Actions** column, click the **Unsubscribe** button in that row.
+1. Click the **Unsubscribe** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
 
 {tab|via-user-profile}
 
@@ -79,7 +79,7 @@ channel](/help/unsubscribe-from-a-channel).
 1. Under **Subscribed channels**, find the channel you would like
    to unsubscribe the user from.
 
-1. Click the **Unsubscribe** button in that row.
+1. Click the **Unsubscribe** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
 
 {end_tabs}
 

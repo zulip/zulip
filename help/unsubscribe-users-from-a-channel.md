@@ -22,7 +22,7 @@ You will only see the options below if you have the required permissions.
 
 1. Under **Subscribers**, find the user you would like to unsubscribe.
 
-1. Click the **Unsubscribe** button in that row.
+1. Click the **Unsubscribe** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
 
 {!channel-menu-subscribers-tab-tip.md!}
 
@@ -35,7 +35,7 @@ You will only see the options below if you have the required permissions.
 1. Under **Subscribed channels**, find the channel you would like
    to unsubscribe the user from.
 
-1. Click the **Unsubscribe** button in that row.
+1. Click the **Unsubscribe** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
 
 !!! tip ""
 

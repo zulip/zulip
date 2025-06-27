@@ -33,7 +33,7 @@ to invite new users can subscribe them to any combination of default channels.
 
 {settings_tab|default-channels-list}
 
-1. Find the channel you would like to remove, and click **Remove from default**.
+1. Find the channel you would like to remove, and click **Remove from default** (<i class="zulip-icon zulip-icon-close"></i>) icon.
 
 {end_tabs}
 
