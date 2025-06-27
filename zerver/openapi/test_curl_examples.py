@@ -28,6 +28,9 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Would need push notification bouncer set up to test the
     # generated curl example for this endpoint.
     "test-notify",
+    # Having a message for a specific user available to test this endpoint
+    # is tricky for testing.
+    "delete-reminder",
 }
 
 

@@ -30,6 +30,8 @@
 #### Message reminders
 
 * [Create a message reminder](/api/create-message-reminder)
+* [Get reminders](/api/get-reminders)
+* [Delete a reminder](/api/delete-reminder)
 
 #### Drafts
 

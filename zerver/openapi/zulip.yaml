@@ -5768,6 +5768,78 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a user's clients when a reminder is scheduled.
+
+                                **Changes**: New in Zulip 11.0 (feature level 399).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - reminders
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                reminders:
+                                  type: array
+                                  description: |
+                                    An array of objects containing details of the newly created
+                                    reminders.
+                                  items:
+                                    $ref: "#/components/schemas/Reminder"
+                              example:
+                                {
+                                  "type": "reminders",
+                                  "op": "add",
+                                  "reminders":
+                                    [
+                                      {
+                                        "reminder_id": 17,
+                                        "type": "private",
+                                        "to": [6],
+                                        "content": "Hello there!",
+                                        "rendered_content": "<p>Hello there!</p>",
+                                        "scheduled_delivery_timestamp": 1681662420,
+                                        "failed": false,
+                                        "reminder_target_message_id": 42,
+                                      },
+                                    ],
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when a reminder
+                                is deleted.
+
+                                **Changes**: New in Zulip 11.0 (feature level 399).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - reminders
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                reminder_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the reminder that was deleted.
+                              example:
+                                {
+                                  "type": "reminders",
+                                  "op": "remove",
+                                  "reminder_id": 17,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user's clients when scheduled messages
                                 are created.
 
@@ -7020,6 +7092,56 @@ paths:
                         "msg": "Saved snippet does not exist.",
                       }
   /reminders:
+    get:
+      operationId: get-reminders
+      tags: ["reminders"]
+      summary: Get reminders
+      description: |
+        Fetch all [reminders](/help/schedule-a-reminder) for the
+        current user.
+
+        Reminders are messages the user has scheduled to be sent in the
+        future to themself.
+
+        **Changes**: New in Zulip 11.0 (feature level 399).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      reminders:
+                        type: array
+                        description: |
+                          Returns all of the current user's undelivered reminders,
+                          ordered by `scheduled_delivery_timestamp` (ascending).
+                        items:
+                          $ref: "#/components/schemas/Reminder"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "reminders":
+                          [
+                            {
+                              "reminder_id": 27,
+                              "to": [6],
+                              "type": "private",
+                              "content": "Hi",
+                              "rendered_content": "<p>Hi</p>",
+                              "scheduled_delivery_timestamp": 1681662420,
+                              "failed": false,
+                              "reminder_target_message_id": 42,
+                            },
+                          ],
+                      }
     post:
       operationId: create-message-reminder
       tags: ["reminders"]
@@ -7064,6 +7186,48 @@ paths:
                         description: |
                           Unique ID of the scheduled message reminder.
                     example: {"msg": "", "reminder_id": 42, "result": "success"}
+
+  /reminders/{reminder_id}:
+    delete:
+      operationId: delete-reminder
+      tags: ["reminders"]
+      summary: Delete a reminder
+      description: |
+        Delete, and therefore cancel sending, a previously [scheduled
+        reminder](/help/schedule-a-reminder).
+
+        **Changes**: New in Zulip 11.0 (feature level 399).
+      parameters:
+        - name: reminder_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the reminder to delete.
+
+            This is different from the unique ID that the message would have
+            after being sent.
+          required: true
+          example: 1
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no reminder exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Reminder does not exist",
+                      }
   /scheduled_messages:
     get:
       operationId: get-scheduled-messages
@@ -15875,6 +16039,17 @@ paths:
                           **Changes**: New in Zulip 7.0 (feature level 179).
                         items:
                           $ref: "#/components/schemas/ScheduledMessage"
+                      reminders:
+                        type: array
+                        description: |
+                          Present if `reminders` is present in `fetch_event_types`.
+
+                          An array of all undelivered reminders scheduled by the user.
+
+                          **Changes**: New in Zulip 11.0 (feature level 399).
+                        items:
+                          $ref: "#/components/schemas/ScheduledMessage"
+
                       muted_topics:
                         type: array
                         deprecated: true
@@ -26272,6 +26447,71 @@ components:
             rendered_content: {}
             scheduled_delivery_timestamp: {}
             failed: {}
+    Reminder:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing details of the scheduled message.
+      properties:
+        reminder_id:
+          type: integer
+          description: |
+            The unique ID of the reminder, which can be used to
+            delete the reminder.
+
+            This is different from the unique ID that the message would have
+            after being sent.
+        type:
+          type: string
+          description: |
+            The type of the reminder. Always set to `"private"`.
+          enum:
+            - private
+        to:
+          type: array
+          items:
+            type: integer
+          description: |
+            Contains the ID of the user who scheduled the reminder,
+            and to which the reminder will be sent.
+        content:
+          type: string
+          description: |
+            The content/body of the reminder, in text/markdown format.
+        rendered_content:
+          type: string
+          description: |
+            The content/body of the reminder rendered in HTML.
+        scheduled_delivery_timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message will be sent
+            by the server, in UTC seconds.
+          example: 1595479019
+        failed:
+          type: boolean
+          description: |
+            Whether the server has tried to send the reminder
+            and it failed to successfully send.
+
+            Clients that support unscheduling reminders
+            should display scheduled messages with `"failed": true` with an
+            indicator that the server failed to send the message at the
+            scheduled time, so that the user is aware of the failure and can
+            get the content of the scheduled message.
+        reminder_target_message_id:
+          type: integer
+          description: |
+            The ID of the message that the reminder is created for.
+      required:
+        - reminder_id
+        - type
+        - to
+        - content
+        - rendered_content
+        - scheduled_delivery_timestamp
+        - failed
+        - reminder_target_message_id
     GroupPermissionSetting:
       description: |
         Configuration for a group permission setting specifying the groups

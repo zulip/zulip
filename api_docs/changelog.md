@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 399**
+
+* [`GET /events`](/api/get-events):
+  Added `reminders` events sent to clients when a user creates
+  or deletes scheduled messages.
+* [`GET /reminders`](/api/get-reminders):
+  Clients can now request `/reminders` endpoint to fetch all
+  scheduled reminders.
+* [`DELETE /reminders/{reminder_id}`](/api/delete-reminder):
+  Clients can now delete a scheduled reminder.
+
 **Feature level 398**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),

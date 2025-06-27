@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.translation import gettext as _
 
+from zerver.lib.exceptions import ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
@@ -8,6 +9,7 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.lib.url_encoding import message_link_url
 from zerver.models import Message, Stream, UserProfile
+from zerver.models.scheduled_jobs import ScheduledMessage
 
 
 def get_reminder_formatted_content(message: Message, current_user: UserProfile) -> str:
@@ -46,3 +48,12 @@ def get_reminder_formatted_content(message: Message, current_user: UserProfile) 
         fence=fence,
         msg_content=msg_content,
     )
+
+
+def access_reminder(user_profile: UserProfile, reminder_id: int) -> ScheduledMessage:
+    try:
+        return ScheduledMessage.objects.get(
+            id=reminder_id, sender=user_profile, delivery_type=ScheduledMessage.REMIND
+        )
+    except ScheduledMessage.DoesNotExist:
+        raise ResourceNotFoundError(_("Reminder does not exist"))

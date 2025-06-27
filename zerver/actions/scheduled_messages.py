@@ -90,6 +90,15 @@ def notify_new_scheduled_message(
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
+def notify_new_reminder(user_profile: UserProfile, reminders: list[ScheduledMessage]) -> None:
+    event = {
+        "type": "reminders",
+        "op": "add",
+        "reminders": [reminder.to_reminder_dict() for reminder in reminders],
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
 def do_schedule_messages(
     send_message_requests: Sequence[SendMessageRequest],
     sender: UserProfile,
@@ -137,7 +146,10 @@ def do_schedule_messages(
                 scheduled_message.save(update_fields=["has_attachment"])
 
         if not skip_events:
-            notify_new_scheduled_message(sender, scheduled_message_objects)
+            if delivery_type == ScheduledMessage.REMIND:
+                notify_new_reminder(sender, scheduled_message_objects)
+            else:
+                notify_new_scheduled_message(sender, scheduled_message_objects)
     return [scheduled_message.id for scheduled_message, ignored in scheduled_messages]
 
 
@@ -286,7 +298,6 @@ def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: in
     scheduled_message_object = access_scheduled_message(user_profile, scheduled_message_id)
     scheduled_message_id = scheduled_message_object.id
     scheduled_message_object.delete()
-
     notify_remove_scheduled_message(user_profile, scheduled_message_id)
 
 

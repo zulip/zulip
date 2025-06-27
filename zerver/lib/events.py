@@ -51,7 +51,10 @@ from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
-from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
+from zerver.lib.scheduled_messages import (
+    get_undelivered_reminders,
+    get_undelivered_scheduled_messages,
+)
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
@@ -327,6 +330,9 @@ def fetch_initial_state_data(
         state["scheduled_messages"] = (
             [] if user_profile is None else get_undelivered_scheduled_messages(user_profile)
         )
+
+    if want("reminders"):
+        state["reminders"] = [] if user_profile is None else get_undelivered_reminders(user_profile)
 
     if want("muted_topics") and (
         # Suppress muted_topics data for clients that explicitly

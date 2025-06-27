@@ -1,11 +1,14 @@
 import datetime
 
+from django.db import transaction
+
 from zerver.actions.message_send import check_message
 from zerver.actions.scheduled_messages import do_schedule_messages
 from zerver.lib.addressee import Addressee
 from zerver.lib.message import access_message
 from zerver.lib.reminders import get_reminder_formatted_content
 from zerver.models import Client, ScheduledMessage, UserProfile
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def schedule_reminder_for_message(
@@ -34,6 +37,22 @@ def schedule_reminder_for_message(
         [send_request],
         current_user,
         read_by_sender=False,
-        skip_events=True,
         delivery_type=ScheduledMessage.REMIND,
     )[0]
+
+
+def notify_remove_reminder(user_profile: UserProfile, reminder_id: int) -> None:
+    event = {
+        "type": "reminders",
+        "op": "remove",
+        "reminder_id": reminder_id,
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
+@transaction.atomic(durable=True)
+def do_delete_reminder(user_profile: UserProfile, reminder: ScheduledMessage) -> None:
+    assert reminder.delivery_type == ScheduledMessage.REMIND
+    reminder_id = reminder.id
+    reminder.delete()
+    notify_remove_reminder(user_profile, reminder_id)
