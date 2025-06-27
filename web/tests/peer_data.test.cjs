@@ -184,8 +184,7 @@ test("subscribers", async () => {
     assert.equal(peer_data.get_subscriber_count(stream_id), 1);
 
     // remove
-    let ok = peer_data.remove_subscriber(stream_id, brutus.user_id);
-    assert.ok(ok);
+    peer_data.remove_subscriber(stream_id, brutus.user_id);
     assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
     assert.equal(peer_data.get_subscriber_count(stream_id), 0);
 
@@ -196,14 +195,12 @@ test("subscribers", async () => {
         "We called get_loaded_subscriber_subset for an untracked stream: " + bad_stream_id,
     );
     blueslip.expect("warn", "We tried to remove invalid subscriber: 104");
-    ok = peer_data.remove_subscriber(bad_stream_id, brutus.user_id);
-    assert.ok(!ok);
+    peer_data.remove_subscriber(bad_stream_id, brutus.user_id);
     blueslip.reset();
 
     // verify that removing an already-removed subscriber is a noop
     blueslip.expect("warn", "We tried to remove invalid subscriber: 104");
-    ok = peer_data.remove_subscriber(stream_id, brutus.user_id);
-    assert.ok(!ok);
+    peer_data.remove_subscriber(stream_id, brutus.user_id);
     assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
     assert.equal(peer_data.get_subscriber_count(stream_id), 0);
     blueslip.reset();

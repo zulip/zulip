@@ -254,16 +254,14 @@ export function add_subscriber(stream_id: number, user_id: number): void {
     subscribers.add(user_id);
 }
 
-export function remove_subscriber(stream_id: number, user_id: number): boolean {
+export function remove_subscriber(stream_id: number, user_id: number): void {
     const subscribers = get_loaded_subscriber_subset(stream_id);
     if (!subscribers.has(user_id)) {
         blueslip.warn(`We tried to remove invalid subscriber: ${user_id}`);
-        return false;
+        return;
     }
 
     subscribers.delete(user_id);
-
-    return true;
 }
 
 export function bulk_add_subscribers({
