@@ -554,6 +554,8 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
             }
 
+            let num_messages_to_remove = event_messages.length;
+
             for (const moved_message of event_messages) {
                 if (
                     realm.realm_message_edit_history_visibility_policy !==
@@ -615,25 +617,33 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     moved_message.display_recipient = new_stream_name;
                 }
 
+                // Remove the stream_topic_entry for the old topics;
+                // must be called after we call set message topic since
+                // it calls `get_loaded_messages_in_topic` which thinks that
+                // `topic` and `stream` of the messages are correctly set.
+                // const num_messages = event_messages.length;
+                //
+                // This must also be called before we add messages since
+                // stream_topic_history uses FoldDict, whose topic names
+                // are converted to lower before keyed. Hence, removing
+                // first allows us to remove old topics from cache before
+                // proceeding to adding new messages in cases when the
+                // topic is renamed to a new one, differing in cases.
+                if (num_messages_to_remove > 0) {
+                    stream_topic_history.remove_messages({
+                        stream_id: old_stream_id,
+                        topic_name: orig_topic,
+                        num_messages: num_messages_to_remove,
+                        max_removed_msg_id: event_messages[num_messages_to_remove - 1]!.id,
+                    });
+                    num_messages_to_remove = 0;
+                }
+
                 // Add the Recent Conversations entry for the new stream/topics.
                 stream_topic_history.add_message({
                     stream_id: moved_message.stream_id,
                     topic_name: moved_message.topic,
                     message_id: moved_message.id,
-                });
-            }
-
-            // Remove the stream_topic_entry for the old topics;
-            // must be called after we call set message topic since
-            // it calls `get_loaded_messages_in_topic` which thinks that
-            // `topic` and `stream` of the messages are correctly set.
-            const num_messages = event_messages.length;
-            if (num_messages > 0) {
-                stream_topic_history.remove_messages({
-                    stream_id: old_stream_id,
-                    topic_name: orig_topic,
-                    num_messages,
-                    max_removed_msg_id: event_messages[num_messages - 1]!.id,
                 });
             }
 
