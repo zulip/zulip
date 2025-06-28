@@ -430,11 +430,11 @@ function add_new_members({
         const $check_icon = $pill_widget_button_wrapper.find(".check");
         const $add_member_button = $pill_widget_button_wrapper.find(".add-member-button");
 
-        $check_icon.removeClass("hide");
-        $add_member_button.hide();
+        $check_icon.removeClass("below");
+        $add_member_button.addClass("below");
         setTimeout(() => {
-            $check_icon.addClass("hide");
-            $add_member_button.show();
+            $check_icon.addClass("below");
+            $add_member_button.removeClass("below");
         }, 1000);
 
         pill_widget.clear();

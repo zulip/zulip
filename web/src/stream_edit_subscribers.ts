@@ -335,11 +335,11 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         const $check_icon = $pill_widget_button_wrapper.find(".check");
         const $add_subscriber_button = $pill_widget_button_wrapper.find(".add-subscriber-button");
 
-        $check_icon.removeClass("hide");
-        $add_subscriber_button.hide();
+        $check_icon.removeClass("below");
+        $add_subscriber_button.addClass("below");
         setTimeout(() => {
-            $check_icon.addClass("hide");
-            $add_subscriber_button.show();
+            $check_icon.addClass("below");
+            $add_subscriber_button.removeClass("below");
         }, 1000);
 
         show_stream_subscription_request_result({
