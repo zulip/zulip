@@ -36,7 +36,7 @@
                     <div class="messagebox-content">
                         <div class="message_top_line">
                             <div class="overlay_message_controls">
-                                {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-tooltip" icon="trash" data-tooltip-template-id="delete-scheduled-message-tooltip-template" aria-label=(t "Delete") }}
+                                {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-scheduled-message-tooltip-template" aria-label=(t "Delete") }}
                             </div>
                         </div>
                         <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown rendered_content}}</div>
