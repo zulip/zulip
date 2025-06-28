@@ -419,9 +419,6 @@ def main(options: argparse.Namespace) -> NoReturn:
     # Install shfmt.
     run_as_root([*proxy_env, "tools/setup/install-shfmt"])
 
-    # Install transifex-cli.
-    run_as_root([*proxy_env, "tools/setup/install-transifex-cli"])
-
     # Install tusd
     run_as_root([*proxy_env, "tools/setup/install-tusd"])
 
