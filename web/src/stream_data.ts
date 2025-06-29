@@ -635,6 +635,24 @@ export function can_administer_channel(sub: StreamSubscription): boolean {
     );
 }
 
+export function user_can_set_delete_message_policy(sub?: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    const user_can_set_delete_message_policy = settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_set_delete_message_policy_group,
+        "can_set_delete_message_policy_group",
+        "realm",
+    );
+
+    // This handles the case when the stream is being created.
+    if (sub === undefined) {
+        return user_can_set_delete_message_policy;
+    }
+    return user_can_set_delete_message_policy && can_administer_channel(sub);
+}
+
 export function user_can_set_topics_policy(sub?: StreamSubscription): boolean {
     if (current_user.is_admin) {
         return true;

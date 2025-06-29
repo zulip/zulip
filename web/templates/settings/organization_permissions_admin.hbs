@@ -289,6 +289,10 @@
                         <span class="time-unit-text">{{t "{realm_message_content_delete_limit_minutes, plural, one {minute} other {minutes}}"}}</span>
                     </div>
                 </div>
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_set_delete_message_policy_group"
+                  label=group_setting_labels.can_set_delete_message_policy_group}}
             </div>
         </div>
 
