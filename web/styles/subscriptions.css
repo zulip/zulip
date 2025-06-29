@@ -108,7 +108,8 @@
 }
 
 .user_group_creation_error,
-.stream_creation_error {
+.stream_creation_error,
+#topics-policy-error {
     display: none;
     margin-left: 2px;
     color: hsl(0deg 100% 50%);

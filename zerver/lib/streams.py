@@ -262,6 +262,20 @@ def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> s
     return users_with_metadata_access_dict[stream.id]
 
 
+def channel_events_topic_name(stream: Stream) -> str:
+    if stream.topics_policy == StreamTopicsPolicyEnum.disable_topics.value:
+        return ""
+    return str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+
+
+def channel_has_named_topics(stream: Stream) -> bool:
+    return (
+        Message.objects.filter(realm_id=stream.realm_id, recipient=stream.recipient)
+        .exclude(subject="")
+        .exists()
+    )
+
+
 @transaction.atomic(savepoint=False)
 def create_stream_if_needed(
     realm: Realm,

@@ -27,6 +27,7 @@ import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_group_edit from "./user_group_edit.ts";
@@ -190,6 +191,21 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 if (channel_id_string) {
                     inbox_ui.show(new Filter(terms));
                     return true;
+                }
+            }
+
+            const filter = new Filter(terms);
+            if (filter.has_operator("channel") && filter.has_operator("topic")) {
+                const narrow_stream_data = stream_data.get_sub_by_id_string(
+                    filter.operands("channel")[0]!,
+                );
+                if (
+                    narrow_stream_data &&
+                    stream_data.can_only_use_empty_topic(narrow_stream_data.stream_id)
+                ) {
+                    window.location.replace(
+                        hash_util.by_channel_topic_permalink(narrow_stream_data.stream_id, ""),
+                    );
                 }
             }
 

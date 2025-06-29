@@ -24,6 +24,7 @@ export type StreamPermissionGroupSetting = z.infer<typeof stream_permission_grou
 export const stream_topics_policy_schema = z.enum([
     "allow_empty_topic",
     "disable_empty_topic",
+    "disable_topics",
     "inherit",
 ]);
 export type StreamTopicsPolicy = z.infer<typeof stream_topics_policy_schema>;
