@@ -8039,7 +8039,7 @@ paths:
             Note that many narrows, including all that lack a `channel`, `channels`,
             `stream`, or `streams` operator, search the user's personal message
             history. See [searching shared
-            history](/help/search-for-messages#searching-shared-history)
+            history](/help/search-for-messages#search-shared-history)
             for details.
 
             For example, if you would like to fetch messages from all public channels instead

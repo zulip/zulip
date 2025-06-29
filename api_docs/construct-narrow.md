@@ -42,7 +42,7 @@ Zulip API.
 
 Note that many narrows, including all that lack a `channel` or `channels`
 operator, search the current user's personal message history. See
-[searching shared history](/help/search-for-messages#searching-shared-history)
+[searching shared history](/help/search-for-messages#search-shared-history)
 for details.
 
 Clients should note that the `is:unread` filter takes advantage of the
