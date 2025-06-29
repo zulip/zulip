@@ -48,22 +48,32 @@ def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
     return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
 
 
-def near_message_url(realm: Realm, message: dict[str, Any]) -> str:
+def message_link_url(
+    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+) -> str:
     if message["type"] == "stream":
-        url = near_stream_message_url(
+        url = stream_message_url(
             realm=realm,
             message=message,
+            conversation_link=conversation_link,
         )
         return url
 
-    url = near_pm_message_url(
+    url = pm_message_url(
         realm=realm,
         message=message,
+        conversation_link=conversation_link,
     )
     return url
 
 
-def near_stream_message_url(realm: Realm, message: dict[str, Any]) -> str:
+def stream_message_url(
+    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+) -> str:
+    if conversation_link:
+        with_or_near = "with"
+    else:
+        with_or_near = "near"
     message_id = str(message["id"])
     stream_id = message["stream_id"]
     stream_name = message["display_recipient"]
@@ -78,14 +88,21 @@ def near_stream_message_url(realm: Realm, message: dict[str, Any]) -> str:
         encoded_stream,
         "topic",
         encoded_topic_name,
-        "near",
+        with_or_near,
         message_id,
     ]
     full_url = "/".join(parts)
     return full_url
 
 
-def near_pm_message_url(realm: Realm, message: dict[str, Any]) -> str:
+def pm_message_url(
+    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+) -> str:
+    if conversation_link:
+        with_or_near = "with"
+    else:
+        with_or_near = "near"
+
     message_id = str(message["id"])
     str_user_ids = [str(recipient["id"]) for recipient in message["display_recipient"]]
 
@@ -98,7 +115,7 @@ def near_pm_message_url(realm: Realm, message: dict[str, Any]) -> str:
         "#narrow",
         "dm",
         pm_str,
-        "near",
+        with_or_near,
         message_id,
     ]
     full_url = "/".join(parts)
