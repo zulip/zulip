@@ -25,6 +25,7 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
@@ -34,6 +35,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
+    message_link_url,
     personal_narrow_url,
     stream_narrow_url,
     topic_narrow_url,
@@ -535,10 +537,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         message = missed_messages[0]["message"]
         assert message.recipient.type == Recipient.STREAM
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
-        narrow_url = topic_narrow_url(
-            realm=user_profile.realm,
-            stream=stream,
-            topic_name=message.topic_name(),
+        narrow_url = message_link_url(
+            user_profile.realm, MessageDict.wide_dict(message), conversation_link=not mention
         )
         context.update(narrow_url=narrow_url)
         topic_resolved, bare_topic_name = get_topic_resolution_and_bare_name(message.topic_name())
