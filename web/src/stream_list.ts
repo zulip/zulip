@@ -1110,7 +1110,7 @@ export function toggle_filter_displayed(e: JQuery.ClickEvent): void {
     e.preventDefault();
 }
 
-export function scroll_stream_into_view($stream_li: JQuery): void {
+function scroll_stream_into_view($stream_li: JQuery): void {
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
