@@ -50,6 +50,7 @@ from zerver.lib.streams import (
     get_content_accessible_streams_without_protected_history_queryset,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
+    get_subscribed_streams_without_protected_history_queryset,
     get_web_public_streams_queryset,
 )
 from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
@@ -169,6 +170,8 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
 
         if operator == "is" and operand == "resolved":
             continue
+        if operator in channels_operators and operand == "subscribed":
+            return False
         if operator not in supported_operators:
             return False
     return True
@@ -556,6 +559,18 @@ class NarrowBuilder:
                 )
                 protected_history_recipient_cond = self.get_protected_history_condition()
                 cond = or_(full_history_recipient_cond, protected_history_recipient_cond)
+        elif operand == "subscribed":
+            assert not self.is_web_public_query
+            assert self.user_profile is not None
+
+            full_history_recipient_queryset = (
+                get_subscribed_streams_without_protected_history_queryset(self.user_profile)
+            )
+            full_history_recipient_cond = self.get_recipient_condition(
+                full_history_recipient_queryset
+            )
+            protected_history_recipient_cond = self.get_protected_history_condition()
+            cond = or_(full_history_recipient_cond, protected_history_recipient_cond)
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
@@ -915,7 +930,7 @@ def ok_to_include_history(
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
                 term.operator in channels_operators
-                and term.operand in ["public", "all"]
+                and term.operand in ["public", "all", "subscribed"]
                 and not term.negated
                 and user_profile.can_access_public_streams()
             ):

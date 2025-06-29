@@ -85,6 +85,8 @@ additional messages.
 * `channels:public`: Search messages in all
   [public](/help/channel-permissions#public-channels) and
   [web-public](/help/channel-permissions#web-public-channels) channels.
+* `channels:subscribed`: Search messages in all the channels you're subscribed
+to, including messages sent before you were a subscriber.
 * `channel:design`: Search all messages in **#design**, including messages sent
   before you were a subscriber.
 
