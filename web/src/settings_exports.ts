@@ -256,6 +256,7 @@ export function populate_export_consents_table(): void {
         },
         $events_container: $("#data-exports"),
         default_id: filter_by_consent_options[0]!.unique_id,
+        hide_search_box: true,
     });
     filter_by_consent_dropdown_widget.setup();
 }
