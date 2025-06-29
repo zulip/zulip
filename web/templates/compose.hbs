@@ -49,7 +49,14 @@
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
                     <div id="compose_top">
-                        <div id="compose-recipient">
+                        {{!-- We start with the low-attention-recipient-row class
+                        on the template to avoid showing the transition
+                        when the compose box first opens. Note that this
+                        class is immediately removed when it's not used,
+                        so, for example, opening the compose box from
+                        Inbox view does not cause any flash of unwanted
+                        styling. --}}
+                        <div id="compose-recipient" class="low-attention-recipient-row">
                             {{> dropdown_widget_wrapper
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
@@ -60,8 +67,8 @@
                                 <span id="topic-not-mandatory-placeholder" class="placeholder">
                                     {{> topic_not_mandatory_placeholder_text empty_string_topic_display_name=empty_string_topic_display_name}}
                                 </span>
-                                <button type="button" id="recipient_box_clear_topic_button" class="tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Clear topic' }}" tabindex="-1">
-                                    <i class="zulip-icon zulip-icon-close"></i>
+                                <button type="button" id="recipient_box_clear_topic_button" class="tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'New topic' }}" tabindex="-1">
+                                    <i class="zulip-icon zulip-icon-square-plus"></i>
                                 </button>
                             </div>
                             <div id="compose-direct-recipient" data-before="{{t 'You and' }}">

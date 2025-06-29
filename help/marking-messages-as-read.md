@@ -117,7 +117,7 @@ channel or topic as read**.
 1. Tap a channel, topic, or the **Combined feed**
    (<i class="zulip-icon zulip-icon-all-messages mobile-help"></i>) tab.
 
-2. Scroll down to the bottom of the message view, and tap **Mark all messages
+1. Scroll down to the bottom of the message view, and tap **Mark all messages
    as read**.
 
 !!! tip ""

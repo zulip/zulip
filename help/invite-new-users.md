@@ -102,9 +102,9 @@ for invitations for the organization owners role.
 
 1. Select the **Invitations** tab.
 
-2. Find the invitation you want to revoke.
+1. Find the invitation you want to revoke.
 
-3. Click the **Revoke** (<i class="zulip-icon zulip-icon-trash"></i>) icon next to the invitation.
+1. Click the **Revoke** (<i class="zulip-icon zulip-icon-trash"></i>) icon next to the invitation.
 
 {end_tabs}
 
@@ -116,9 +116,9 @@ for invitations for the organization owners role.
 
 1. Select the **Invitations** tab.
 
-2. Find the invitation you want to resend.
+1. Find the invitation you want to resend.
 
-3. Click the **Resend** (<i class="zulip-icon zulip-icon-send-dm"></i>) icon next to the invitation.
+1. Click the **Resend** (<i class="zulip-icon zulip-icon-send-dm"></i>) icon next to the invitation.
 
 {end_tabs}
 

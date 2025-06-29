@@ -7,7 +7,7 @@ W3C's Web Content Accessibility Guidelines.
 
 {settings_tab|preferences}
 
-2. Under **Preferences**, select **High contrast mode**.
+1. Under **Preferences**, select **High contrast mode**.
 
 ## Related articles
 

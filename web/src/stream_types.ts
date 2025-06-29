@@ -28,14 +28,21 @@ export type StreamTopicsPolicy = z.infer<typeof stream_topics_policy_schema>;
 
 // These types are taken from the `zerver/lib/types.py`.
 export const stream_schema = z.object({
+    can_add_subscribers_group: group_setting_value_schema,
+    can_administer_channel_group: group_setting_value_schema,
+    can_remove_subscribers_group: group_setting_value_schema,
+    can_send_message_group: group_setting_value_schema,
+    can_subscribe_group: group_setting_value_schema,
     creator_id: z.number().nullable(),
     date_created: z.number(),
     description: z.string(),
     first_message_id: z.number().nullable(),
+    folder_id: z.number().nullable(),
     history_public_to_subscribers: z.boolean(),
     invite_only: z.boolean(),
     is_announcement_only: z.boolean(),
     is_archived: z.boolean(),
+    is_recently_active: z.boolean(),
     is_web_public: z.boolean(),
     message_retention_days: z.number().nullable(),
     name: z.string(),
@@ -43,13 +50,6 @@ export const stream_schema = z.object({
     stream_id: z.number(),
     stream_post_policy: z.nativeEnum(StreamPostPolicy),
     topics_policy: stream_topics_policy_schema,
-    can_add_subscribers_group: group_setting_value_schema,
-    can_administer_channel_group: group_setting_value_schema,
-    can_remove_subscribers_group: group_setting_value_schema,
-    can_send_message_group: group_setting_value_schema,
-    can_subscribe_group: group_setting_value_schema,
-    is_recently_active: z.boolean(),
-    folder_id: z.number().nullable(),
 });
 
 export const stream_specific_notification_settings_schema = z.object({

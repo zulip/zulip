@@ -111,6 +111,12 @@
     }
 }
 
+.giphy-popover .tippy-box .tippy-arrow {
+    /* Since the GIPHY banner at the popover is black,
+       match the arrow color with the banner. */
+    color: hsl(0deg 0% 0%);
+}
+
 .tippy-box[data-theme="popover-menu"]:has(#gear-menu-dropdown) {
     --box-shadow-popover-menu: var(--box-shadow-gear-menu);
 }
@@ -763,11 +769,6 @@ ul.popover-group-menu-member-list {
     border: 0;
     padding: 0;
 
-    .giphy-content {
-        position: relative;
-        left: 1px;
-    }
-
     .giphy-gif {
         cursor: pointer;
     }
@@ -780,9 +781,9 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-scrolling-container {
-        overflow: auto;
+        overflow: hidden auto;
         height: 200px;
-        margin: 2px;
+        margin: 2px 3px;
         padding: 5px 0;
     }
 

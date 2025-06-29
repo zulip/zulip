@@ -25,7 +25,7 @@ individual [users](/help/introduction-to-users).
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can create bots that send messages into Zulip**.
+1. Under **Other permissions**, configure **Who can create bots that send messages into Zulip**.
 
 {!save-changes.md!}
 
@@ -37,7 +37,7 @@ individual [users](/help/introduction-to-users).
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can create any bot**.
+1. Under **Other permissions**, configure **Who can create any bot**.
 
 {!save-changes.md!}
 

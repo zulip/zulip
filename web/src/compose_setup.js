@@ -598,6 +598,11 @@ export function initialize() {
         const $input = $("input#stream_message_recipient_topic");
         compose_recipient.update_topic_displayed_text($input.val(), true);
         compose_recipient.update_compose_area_placeholder_text();
+        // Once the topic input has been focused, we no longer treat
+        // the recipient row as low attention, as we assume the user
+        // has done something that requires keeping attention called
+        // to the recipient row
+        compose_recipient.set_high_attention_recipient_row();
 
         $("input#stream_message_recipient_topic").one("blur", () => {
             compose_recipient.update_topic_displayed_text($input.val());
@@ -607,6 +612,14 @@ export function initialize() {
 
     $("input#stream_message_recipient_topic").on("input", () => {
         compose_recipient.update_compose_area_placeholder_text();
+    });
+
+    $("#private_message_recipient").on("focus", () => {
+        // Once the DM input has been focused, we no longer treat
+        // the recipient row as low attention, as we assume the user
+        // has done something that requires keeping attention called
+        // to the recipient row
+        compose_recipient.set_high_attention_recipient_row();
     });
 
     $("body").on("click", ".formatting_button", function (e) {

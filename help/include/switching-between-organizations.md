@@ -9,7 +9,7 @@
 {tab|desktop}
 
 1. Click on a logo in the **organizations sidebar** on the left, or choose
-an organization from the **Window** menu in the top menu bar.
+   an organization from the **Window** menu in the top menu bar.
 
 {!desktop-toggle-sidebar-tip.md!}
 

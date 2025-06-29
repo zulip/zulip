@@ -521,8 +521,8 @@ class IntegrationTest(ZulipTestCase):
     def test_api_url_view_subdomains_homepage_base(self) -> None:
         context: dict[str, Any] = {}
         add_api_url_context(context, HostRequestMock())
-        self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
-        self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "your-org.testserver/api")
+        self.assertEqual(context["api_url"], "http://your-org.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self) -> None:

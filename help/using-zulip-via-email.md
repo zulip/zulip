@@ -10,14 +10,14 @@ setup is complete.
 
 1. Create a mailing list to use with Zulip, or use an existing one.
 
-2. Create a Zulip channel that will receive mailing list traffic, or
+1. Create a Zulip channel that will receive mailing list traffic, or
    use an existing one.
 
-3. [Generate an email
+1. [Generate an email
    address](/help/message-a-channel-by-email#message-a-channel-by-email_1) for
    the channel you created.
 
-4. Add the email address for the channel to the mailing list.
+1. Add the email address for the channel to the mailing list.
 
 {end_tabs}
 
@@ -30,7 +30,7 @@ If you want to interact with Zulip primarily (or entirely) via your email client
 {start_tabs}
 
 1. [Subscribe](/help/introduction-to-channels#browse-and-subscribe-to-channels) to any channels you are
-interested in.
+   interested in.
 
 {settings_tab|notifications}
 

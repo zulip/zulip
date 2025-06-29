@@ -50,7 +50,7 @@ Zulip's SCIM integration has the following limitations:
 
 1. In the **Provisioning** tab, click **Configure API Integration**, check the
    **Enable API integration** checkbox, and specify the following fields:
-     * **Base URL**: `yourorganization.zulipchat.com/scim/v2`
+     * **Base URL**: `{{ display_host }}/scim/v2`
      * **API token**: `Bearer <token>` (given to you by Zulip support)
 
     When you proceed to the next step, Okta will verify that these details are
@@ -109,7 +109,7 @@ Zulip's SCIM integration has the following limitations:
 1. Continue to the app's management screen and click **Provisioning** in the left panel.
 
 1. In the **Provisioning Mode** menu, select **Automatic**  and specify the following fields:
-    * **Tenant URL**: `http://yourorganization.zulipchat.com/scim/v2/?aadOptscim062020`.
+    * **Tenant URL**: `{{ display_host }}/scim/v2/?aadOptscim062020`.
       The `?aadOptscim062020` part of it is a [feature flag][feature-flag]
       that needs to be added to ensure SCIM compliance by Entra ID.
     * **Secret Token**: `<token>` (given to you by Zulip support)

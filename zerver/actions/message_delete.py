@@ -120,15 +120,15 @@ def do_delete_messages(
             recipient_id = message.recipient.id
             private_messages_by_recipient[recipient_id].append(message)
 
-    for recipient_id, grouped_messages in private_messages_by_recipient.items():
+    for recipient_id, grouped_messages in sorted(private_messages_by_recipient.items()):
         _process_grouped_messages_deletion(
             realm, grouped_messages, stream=None, topic=None, acting_user=acting_user
         )
 
     for (
-        recipient_id,
-        topic_name,
-    ), grouped_messages in stream_messages_by_recipient_and_topic.items():
+        (recipient_id, topic_name),
+        grouped_messages,
+    ) in sorted(stream_messages_by_recipient_and_topic.items()):
         if recipient_id not in stream_by_recipient_id:
             stream_by_recipient_id[recipient_id] = Stream.objects.get(recipient_id=recipient_id)
         stream = stream_by_recipient_id[recipient_id]

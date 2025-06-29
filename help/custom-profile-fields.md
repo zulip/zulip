@@ -65,7 +65,7 @@ checkboxes will be disabled.
 
 1. Toggle **Display on user card**.
 
-4. Click **Save changes**.
+1. Click **Save changes**.
 
 !!! tip ""
 
@@ -89,7 +89,7 @@ it out.
 
 1. Toggle **Required field**.
 
-4. Click **Save changes**.
+1. Click **Save changes**.
 
 !!! tip ""
 
@@ -115,7 +115,7 @@ syncing profile fields from an employee directory.
 
 1. Toggle **Users can edit this field for their own account**.
 
-4. Click **Save changes**.
+1. Click **Save changes**.
 
 {end_tabs}
 

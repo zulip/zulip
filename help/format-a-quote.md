@@ -25,6 +25,7 @@
 {!start-composing.md!}
 
 1. To create a multi-line quote, type `>` followed by a space and some text:
+
 ~~~
 > a multi-line
 quote on two lines

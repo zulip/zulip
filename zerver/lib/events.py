@@ -1630,6 +1630,10 @@ def apply_event(
                 if sub["stream_id"] == event["stream_id"]:
                     sub[event["property"]] = event["value"]
         elif event["op"] == "peer_add":
+            # Note: We don't update subscriber_count here, since we
+            # have no way to know whether the added subscriber is
+            # already in our count or not. The opposite decision would
+            # be defensible, but this is less code.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
                 user_ids = set(event["user_ids"])
@@ -1644,6 +1648,7 @@ def apply_event(
                             subscribers = set(sub["subscribers"]) | user_ids
                             sub["subscribers"] = sorted(subscribers)
         elif event["op"] == "peer_remove":
+            # Note: We don't update subscriber_count here, as with peer_add.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
                 user_ids = set(event["user_ids"])

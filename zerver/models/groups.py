@@ -114,48 +114,36 @@ class NamedUserGroup(UserGroup):
 
     GROUP_PERMISSION_SETTINGS = {
         "can_add_members_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_join_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_leave_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_manage_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_mention_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_remove_members_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,

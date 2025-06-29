@@ -24,7 +24,7 @@ messages) from desktop notifications.
 {start_tabs}
 
 1. Under **Desktop message notifications**, toggle
-**Include content of direct messages in desktop notifications**.
+   **Include content of direct messages in desktop notifications**.
 
 {end_tabs}
 

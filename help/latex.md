@@ -35,6 +35,7 @@ formatting:
 {!start-composing.md!}
 
 1. To use inline LaTeX, use double dollar signs (`$$`) around the text:
+
 ~~~
 $$O(n^2)$$
 ~~~

@@ -46,7 +46,7 @@ additional integrations through [Zapier](https://zapier.com/apps) and
 {start_tabs}
 
 1. Search [Zapier](https://zapier.com/apps) or [IFTTT](https://ifttt.com/search)
-for the product you'd like to connect to Zulip.
+   for the product you'd like to connect to Zulip.
 
 1. Follow the integration instructions for [Zapier](/integrations/doc/zapier) or
    [IFTTT](/integrations/doc/ifttt).

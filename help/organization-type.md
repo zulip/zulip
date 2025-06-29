@@ -11,7 +11,7 @@
 {settings_tab|organization-profile}
 
 1. Under **Organization type**, select the option that best fits
-your organization.
+   your organization.
 
 {!save-changes.md!}
 

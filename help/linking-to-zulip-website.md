@@ -17,7 +17,7 @@ website (e.g., **Sponsors** or **Acknowledgements**).
 
 1. Link to [https://zulip.com/](https://zulip.com/).
 
-2. If appropriate, add a brief description:
+1. If appropriate, add a brief description:
 
    > Zulip is an organized team chat app designed for efficient communication.
 

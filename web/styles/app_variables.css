@@ -487,9 +487,9 @@
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
     allow elements like DM pills to stack without breaking out of their
-    flex item. 2.1786em is 30.5px at 14px/1em.
+    flex item. 2em is 32px at 16px/1em.
     */
-    --compose-recipient-box-min-height: 2.1786em;
+    --compose-recipient-box-min-height: 2em;
     /* 28px at 14px/1em */
     /* Note that this variable can only be used in contexts where
        the font-size doesn't deviate from the base font-size;
@@ -521,6 +521,10 @@
     @media (width < $sm_min) {
         --compose-send-controls-width: 28px;
     }
+
+    /* Compose-specific transitions and delays. */
+    --compose-recipient-row-transition-delay: 100ms;
+    --compose-recipient-row-transition: 150ms ease;
 
     /*
     User group info popover elements and values.
@@ -1125,6 +1129,10 @@
     --color-compose-recipient-box-border-color: light-dark(
         color-mix(in srgb, hsl(0deg 0% 0%) 10%, hsl(232deg 20% 92%)),
         hsl(0deg 0% 0% / 80%)
+    );
+    --color-compose-recipient-box-hover: light-dark(
+        hsl(0deg 0% 69%),
+        hsl(0deg 0% 100% / 12%)
     );
     --color-compose-recipient-box-has-focus: light-dark(
         hsl(0deg 0% 57%),
@@ -1816,6 +1824,10 @@
     --color-border-input-pill-image: light-dark(
         hsl(237deg 68% 94% / 50%),
         hsl(240deg 65% 60% / 60%)
+    );
+    --color-outline-low-attention-input-pill: light-dark(
+        hsl(237deg 68% 88%),
+        hsl(240deg 65% 60% / 22%)
     );
     --color-focus-outline-input-pill: light-dark(
         hsl(240deg 50% 50%),

@@ -51,7 +51,7 @@ def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
         display_subdomain = subdomain
         html_settings_links = True
     else:
-        display_subdomain = "yourZulipDomain"
+        display_subdomain = "your-org"
         html_settings_links = False
 
     display_host = Realm.host_for_subdomain(display_subdomain)
@@ -59,6 +59,8 @@ def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
     api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
     zulip_url = settings.EXTERNAL_URI_SCHEME + display_host
 
+    context["display_subdomain"] = display_subdomain
+    context["display_host"] = display_host
     context["external_url_scheme"] = settings.EXTERNAL_URI_SCHEME
     context["api_url"] = api_url
     context["api_url_scheme_relative"] = api_url_scheme_relative

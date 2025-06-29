@@ -71,7 +71,7 @@ user list.
 {tab|desktop-web}
 
 1. Click the **user list** (<i class="zulip-icon zulip-icon-user-list"></i>
-) icon in the upper right.
+   ) icon in the upper right.
 
 !!! keyboard_tip ""
 

@@ -35,11 +35,11 @@
 
 1. Make sure the compose box is empty.
 
-2. Type `/poll` followed by a space, and the question you want to ask.
+1. Type `/poll` followed by a space, and the question you want to ask.
 
-3. _(optional)_ Type each option on a new line.
+1. _(optional)_ Type each option on a new line.
 
-4. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
+1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
    use a [keyboard shortcut](/help/configure-send-message-keys) to send your
    message.
 

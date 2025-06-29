@@ -373,17 +373,6 @@ html {
         width: 330px;
         margin: 0 auto 10px;
     }
-
-    .terms-of-service .text-error {
-        position: relative;
-        display: block;
-        top: -5px;
-        padding: 0;
-        height: 0;
-
-        font-size: 0.7em;
-        font-weight: 600;
-    }
 }
 
 .account-creation {

@@ -172,7 +172,7 @@
 /* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: var(--color-compose-box-background);
-    padding: 7px 7px 8px;
+    padding: 4px 4px 6px;
     border: 1px solid var(--color-border-compose-content);
     border-radius: 9px 9px 0 0;
     box-shadow: 0 0 0 hsl(236deg 11% 28%);
@@ -196,8 +196,8 @@
         max-height: min(25vh, 240px);
         overflow-y: auto;
         /* Align to compose controls; that's 112px width,
-           plus 6px of grid gap for 118px here. */
-        margin-right: calc(var(--compose-send-controls-width) + 6px);
+           plus 4px of grid gap for 116px here. */
+        margin-right: calc(var(--compose-send-controls-width) + 4px);
     }
 }
 
@@ -216,6 +216,10 @@
 
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
+                /* This height is necessary only for the
+                   DM picker, so that it does not stretch
+                   open taller with multiple rows of user
+                   pills. */
                 height: var(--compose-recipient-box-min-height);
             }
 
@@ -316,7 +320,7 @@
         grid-template-areas:
             "message-content-container message-send-controls-container"
             "message-formatting-controls-container message-send-controls-container";
-        gap: 0 6px;
+        gap: 0 4px;
     }
 
     .message_content {
@@ -640,11 +644,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    /* Matched to 6px grid-gap on .messagebox grid. */
-    padding-bottom: 6px;
+    /* Matched to 4px grid-gap on .messagebox grid. */
+    padding-bottom: 4px;
     /* Align to compose controls; that's 112px width,
-       plus 6px of grid gap for 118px here. */
-    margin-right: calc(var(--compose-send-controls-width) + 6px);
+       plus 4px of grid gap for 116px here. */
+    margin-right: calc(var(--compose-send-controls-width) + 4px);
 }
 
 #compose_close {
@@ -688,7 +692,9 @@
 }
 
 .main-view-banner {
-    margin-bottom: 20px;
+    /* This is same spatial value as the 4px of padding around
+       the edge of the compose box. */
+    margin-bottom: 4px;
     border-radius: 5px;
     border: 1px solid;
     display: flex;
@@ -1086,6 +1092,10 @@ textarea.new_message_textarea {
     transition: border-color 0.2s ease;
     background: var(--color-compose-recipient-box-background-color);
 
+    &:hover {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
+
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
        #stream_message_recipient_topic `<input>` */
@@ -1103,6 +1113,12 @@ textarea.new_message_textarea {
     #stream_message_recipient_topic {
         grid-area: topic;
         color: var(--color-compose-recipient-box-text-color);
+        /* Keep the line-height matched to the font-size
+           for a more predictable box height.
+           This will have to be watched very closely for
+           possible regressions, such as when Unicode emoji
+           appear in the topic box. */
+        line-height: 1;
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1110,7 +1126,7 @@ textarea.new_message_textarea {
         box-shadow: none;
         outline: none;
 
-        padding: 4px 6px;
+        padding: 0 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
 
@@ -1121,6 +1137,7 @@ textarea.new_message_textarea {
 
     #topic-not-mandatory-placeholder {
         grid-area: topic-box;
+        align-self: center;
         white-space: nowrap;
         overflow-x: hidden;
         text-overflow: ellipsis;
@@ -1182,8 +1199,15 @@ textarea.new_message_textarea {
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
 
+    &:hover,
+    &.widget-open {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
+
     &.dropdown-widget-button {
-        padding: 0 6px;
+        /* We control the surrounding space through the
+           grid on `.dropdown_widget_value`. */
+        padding: 0;
         border-radius: 4px;
     }
 
@@ -1195,6 +1219,127 @@ textarea.new_message_textarea {
 
 #private_message_recipient.recipient_box {
     width: 100%;
+}
+
+/* We want transitions to run only on user interactions with
+   the mouse, once the compose box is open. Any keyboard
+   interactions (e.g., Shift-Tabbing from the compose textarea
+   to the topic box) show instant changes, so we don't need to
+   accommodate them here. */
+#compose.compose-box-open:hover {
+    .low-attention-recipient-row {
+        #compose_select_recipient_widget,
+        #compose_recipient_box,
+        #compose-direct-recipient .pill-container {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: background-color, border-color;
+        }
+
+        #compose_select_recipient_widget .channel-privacy-type-icon {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: color;
+        }
+
+        #recipient_box_clear_topic_button {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: color, background-color, opacity;
+        }
+
+        #compose-direct-recipient .pill {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: outline-color;
+        }
+
+        &#compose-recipient {
+            .decorated-channel-name,
+            .zulip-icon-chevron-down,
+            .conversation-arrow,
+            #stream_message_recipient_topic {
+                transition: var(--compose-recipient-row-transition);
+                transition-delay: var(--compose-recipient-row-transition-delay);
+                transition-property: opacity;
+            }
+        }
+    }
+}
+
+.low-attention-recipient-row {
+    &#compose-recipient {
+        .decorated-channel-name,
+        .conversation-arrow,
+        #stream_message_recipient_topic {
+            opacity: 0.9;
+        }
+
+        .zulip-icon-chevron-down {
+            opacity: 0;
+        }
+    }
+
+    #compose_select_recipient_widget,
+    #compose_recipient_box,
+    #compose-direct-recipient .pill-container {
+        background-color: transparent;
+        border-color: transparent;
+
+        /* Particularly in light mode, pill colors are almost identical
+           to the compose-box background. We place a higher-contrast
+           outline on them in the low-attention state. */
+        .pill {
+            outline: 1px solid var(--color-outline-low-attention-input-pill);
+        }
+
+        &:hover {
+            background-color: var(
+                --color-compose-recipient-box-background-color
+            );
+            border-color: var(--color-compose-recipient-box-border-color);
+            opacity: 1;
+
+            .decorated-channel-name,
+            .zulip-icon-chevron-down,
+            .conversation-arrow,
+            #stream_message_recipient_topic {
+                opacity: 1;
+            }
+
+            .pill {
+                outline-color: transparent;
+            }
+        }
+
+        #recipient_box_clear_topic_button:hover {
+            opacity: 1;
+        }
+    }
+
+    #compose_select_recipient_widget {
+        .channel-privacy-type-icon.zulip-icon {
+            color: var(--privacy-icon-color-modified);
+        }
+
+        &:hover .channel-privacy-type-icon.zulip-icon {
+            color: var(--privacy-icon-color-original);
+        }
+
+        &.widget-open {
+            background-color: var(--color-background-dropdown-widget-button);
+            border-color: var(--color-compose-recipient-box-border-color);
+
+            .channel-privacy-type-icon {
+                color: var(--privacy-icon-color-original);
+            }
+
+            .decorated-channel-name,
+            .zulip-icon-chevron-down {
+                opacity: 1;
+            }
+        }
+    }
 }
 
 .compose-send-or-save-button {
@@ -1375,10 +1520,9 @@ textarea.new_message_textarea {
 }
 
 #compose-recipient {
-    /* Enforce a shared, 'normal' line-height on
-       the recipient elements for baseline alignment,
-       and better use of the recipient-row space. */
-    line-height: normal;
+    /* Set a line-height equal to the font-size to
+       make a compact, predictably tall recipient row. */
+    line-height: 1;
     display: flex;
     flex: 1 1 0;
     /* Use this containing flex element to
@@ -1537,34 +1681,58 @@ textarea.new_message_textarea {
 
     .dropdown_widget_value {
         flex-grow: 1;
-        display: flex;
+        display: grid;
         align-items: baseline;
-        /* This gap matches a single space character,
-           as used previously in the icon-stream name
-           layout. */
-        gap: 0.4ch;
+        /* This is a bit of eyeball work, based on balancing
+           out the size and spatial relationships between the
+           privacy icon and the channel name, and the
+           surrounding negative space. */
+        /* 7px at 20px/1em; 4px at 20px/1em. */
+        grid-template:
+            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em [select-label-start] auto 0.2em minmax(
+                0,
+                1fr
+            )
+            [select-label-end]
+            0.35em;
 
         .channel-privacy-type-icon {
-            font-size: 0.9286em; /* 13px at 14px em */
+            grid-area: privacy-icon;
+            place-self: center;
+            font-size: 0.95em; /* 19px at 20px/1em */
+            margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
+            color: var(--privacy-icon-color-original);
+            /* Eliminate inherited component styles. */
+            position: static;
+            padding: 0;
             width: 1em;
             height: 1em;
-            position: relative;
-            top: 0.1538em; /* 2px at 13px/em */
+
+            &.zulip-icon-lock {
+                /* The lock looks better centered without
+                   a negative margin-top adjustment. */
+                margin-top: 0;
+            }
         }
 
+        .select-channel-label,
+        .decorated-dm-label,
         .decorated-channel-name {
-            flex: 1 1 auto;
+            grid-area: channel-name;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             color: var(--color-text-default);
         }
+
+        .select-channel-label {
+            grid-area: select-label;
+        }
     }
 
+    /* We suppress the chevron on the channel picker. */
     .zulip-icon-chevron-down {
-        padding-left: 5px;
-        color: var(--color-compose-chevron-arrow);
-        font-weight: lighter;
+        display: none;
     }
 }
 

@@ -574,9 +574,7 @@ STAGING = False
 #
 # The default for OFFLINE_THRESHOLD_SECS is chosen as
 # `PRESENCE_PING_INTERVAL_SECS * 3 + 20`, which is designed to allow 2
-# round trips, plus an extra in case an update fails. See
-# https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
-# details on the presence architecture.
+# round trips, plus an extra in case an update fails.
 #
 # How long to wait before clients should treat a user as offline.
 OFFLINE_THRESHOLD_SECS = 200
