@@ -124,6 +124,7 @@ let stream_info: BinaryDict<StreamSubscription>;
 const stream_ids_by_name = new FoldDict<number>();
 const stream_ids_by_old_names = new FoldDict<number>();
 const default_stream_ids = new Set<number>();
+const realm_web_public_stream_ids = new Set<number>();
 
 export function clear_subscriptions(): void {
     // This function is only used once at page load, and then
@@ -167,6 +168,9 @@ export function add_sub(sub: StreamSubscription): void {
     // We use create_streams for new streams in live-update events.
     stream_info.set(sub.stream_id, sub);
     stream_ids_by_name.set(sub.name, sub.stream_id);
+    if (sub.is_web_public) {
+        realm_web_public_stream_ids.add(sub.stream_id);
+    }
     sub_store.add_hydrated_sub(sub.stream_id, sub);
 }
 
@@ -326,6 +330,7 @@ export function delete_sub(stream_id: number): void {
     }
 
     sub_store.delete_sub(stream_id);
+    realm_web_public_stream_ids.delete(stream_id);
     stream_info.delete(stream_id);
 }
 
@@ -434,6 +439,11 @@ export function update_stream_privacy(
     sub.invite_only = values.invite_only;
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
     sub.is_web_public = values.is_web_public;
+    if (sub.is_web_public) {
+        realm_web_public_stream_ids.add(sub.stream_id);
+    } else {
+        realm_web_public_stream_ids.delete(sub.stream_id);
+    }
 }
 
 export function update_message_retention_setting(
@@ -1056,6 +1066,9 @@ export function create_sub_from_server_data(
     clean_up_description(sub);
 
     stream_info.set(sub.stream_id, sub);
+    if (sub.is_web_public) {
+        realm_web_public_stream_ids.add(sub.stream_id);
+    }
     stream_ids_by_name.set(sub.name, sub.stream_id);
     sub_store.add_hydrated_sub(sub.stream_id, sub);
 
