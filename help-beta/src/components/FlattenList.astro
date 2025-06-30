@@ -1,5 +1,6 @@
 ---
 import assert from "node:assert/strict";
+
 import {fromHtml} from "hast-util-from-html";
 import {toHtml} from "hast-util-to-html";
 
@@ -15,14 +16,14 @@ const tree_with_removed_newlines = {
     }),
 };
 const first_element = tree_with_removed_newlines.children[0];
-assert(
+assert.ok(
     first_element?.type === "element" &&
         ["ol", "ul"].includes(first_element.tagName),
 );
 const flattened = {
     ...first_element,
     children: tree_with_removed_newlines.children.flatMap((other) => {
-        assert(
+        assert.ok(
             other.type === "element" && other.tagName === first_element.tagName,
         );
         return other.children;

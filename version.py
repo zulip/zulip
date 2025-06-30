@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 398
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (333, 4)  # bumped 2025-06-30 to add prettier-plugin-astro
+PROVISION_VERSION = (333, 5)  # bumped 2025-06-30 to add eslint-plugin-astro

@@ -1,20 +1,24 @@
 ---
-import {SHOW_RELATIVE_LINKS, SHOW_BILLING_HELP_LINKS} from "astro:env/client";
 import assert from "node:assert";
-import RawZulipIconGear from "~icons/zulip-icon/gear?raw";
-import RawZulipIconHash from "~icons/zulip-icon/hash?raw";
-import RawZulipIconTool from "~icons/zulip-icon/tool?raw";
-import RawZulipIconBuilding from "~icons/zulip-icon/building?raw";
-import RawZulipIconUserGroupCog from "~icons/zulip-icon/user-group-cog?raw";
+
+import {SHOW_BILLING_HELP_LINKS, SHOW_RELATIVE_LINKS} from "astro:env/client";
+
+/* eslint-disable import/extensions */
 import RawZulipIconBarChart from "~icons/zulip-icon/bar-chart?raw";
-import RawZulipIconGitPullRequest from "~icons/zulip-icon/git-pull-request?raw";
-import RawZulipIconRocket from "~icons/zulip-icon/rocket?raw";
+import RawZulipIconBuilding from "~icons/zulip-icon/building?raw";
 import RawZulipIconCreditCard from "~icons/zulip-icon/credit-card?raw";
-import RawZulipIconKeyboard from "~icons/zulip-icon/keyboard?raw";
 import RawZulipIconEdit from "~icons/zulip-icon/edit?raw";
-import RawZulipIconManageSearch from "~icons/zulip-icon/manage-search?raw";
-import RawZulipIconInfo from "~icons/zulip-icon/info?raw";
+import RawZulipIconGear from "~icons/zulip-icon/gear?raw";
+import RawZulipIconGitPullRequest from "~icons/zulip-icon/git-pull-request?raw";
+import RawZulipIconHash from "~icons/zulip-icon/hash?raw";
 import RawZulipIconHelp from "~icons/zulip-icon/help?raw";
+import RawZulipIconInfo from "~icons/zulip-icon/info?raw";
+import RawZulipIconKeyboard from "~icons/zulip-icon/keyboard?raw";
+import RawZulipIconManageSearch from "~icons/zulip-icon/manage-search?raw";
+import RawZulipIconRocket from "~icons/zulip-icon/rocket?raw";
+import RawZulipIconTool from "~icons/zulip-icon/tool?raw";
+import RawZulipIconUserGroupCog from "~icons/zulip-icon/user-group-cog?raw";
+/* eslint-enable import/extensions */
 
 const PERSONAL_SETTINGS_TYPE = "Personal settings";
 const ORGANIZATION_SETTINGS_TYPE = "Organization settings";
@@ -22,13 +26,14 @@ const ORGANIZATION_SETTINGS_TYPE = "Organization settings";
 // This list has been transformed one-off from `help_settings_links.py`, we
 // have added a comment in that file to update this list in case of any
 // changes.
-const setting_link_mapping: {
-    [key: string]: {
+const setting_link_mapping: Record<
+    string,
+    {
         setting_type: string;
         setting_name: string;
         setting_link: string;
-    };
-} = {
+    }
+> = {
     // a mapping from the setting identifier that is the same as the final URL
     // breadcrumb to that setting to the name of its setting type, the setting
     // name as it appears in the user interface, and a relative link that can
@@ -337,7 +342,7 @@ const RELATIVE_NAVIGATION_HANDLERS_BY_TYPE: Record<
     (key: string) => string
 > = {};
 
-for (const type in relative_link_mapping) {
+for (const type of Object.keys(relative_link_mapping)) {
     const {data, template, is_link_relative} = relative_link_mapping[type]!;
 
     RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[type] = (key: string) => {
@@ -369,7 +374,7 @@ if (navigation_link_type === "settings") {
     const key = identifier.split("/")[2];
     resultHTML = RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[link_type]!(key);
 }
-assert(resultHTML !== undefined);
+assert.ok(resultHTML !== undefined);
 ---
 
 <Fragment set:html={resultHTML} />
