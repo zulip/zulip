@@ -801,3 +801,16 @@ class SlackImportInvalidFileError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class LockedError(JsonableError):
+    http_status_code: int = 409
+    data_fields = ["reason"]
+
+    def __init__(self, reason: str) -> None:
+        self.reason: str = reason
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Conflict error: {reason}")
