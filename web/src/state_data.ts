@@ -375,6 +375,15 @@ export const realm_schema = z.object({
                     }),
                 )
                 .optional(),
+            url_options: z
+                .array(
+                    z.object({
+                        key: z.string(),
+                        label: z.string(),
+                        validator: z.string(),
+                    }),
+                )
+                .optional(),
         }),
     ),
     realm_inline_image_preview: z.boolean(),

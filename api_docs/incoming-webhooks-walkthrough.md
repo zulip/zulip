@@ -210,26 +210,48 @@ tools which you can use to test your webhook - 2 command line tools and a GUI.
 
 ### Webhooks requiring custom configuration
 
-In rare cases, it's necessary for an incoming webhook to require
-additional user configuration beyond what is specified in the post
-URL.  The typical use case for this is APIs like the Stripe API that
-require clients to do a callback to get details beyond an opaque
-object ID that one would want to include in a Zulip notification.
+In cases where an incoming webhook integration supports additional user inputs
+for optional parameters, one can use the `url_options` feature. It's a field
+in the `WebhookIntegration` class that is used when
+[generating a URL for an integration](/help/generate-integration-url)
+in the web app, which encodes the user input for each configured option in the
+incoming webhook's URL.
 
-These configuration options are declared as follows:
+These URL options are declared as follows:
 
 ```python
-    WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
-                       config_options=[('HelloWorld API key', 'hw_api_key', check_string)])
+    WebhookIntegration(
+        'helloworld',
+        ...
+        url_options=[
+          WebhookUrlOption(
+            name='ignore_private_repositories',
+            label='Exclude notifications from private repositories',
+            validator=check_string
+          ),
+        ],
+    )
 ```
 
-`config_options` is a list describing the parameters the user should
-configure:
-    1. A user-facing string describing the field to display to users.
-    2. The field name you'll use to access this from your `view.py` function.
-    3. A Validator, used to verify the input is valid.
+`url_options` is a list describing the parameters the web app UI should offer when
+generating the incoming webhook URL:
 
-Common validators are available in `zerver/lib/validators.py`.
+  - `name`: This will be the parameter variable name used to encode the user input for
+    the config in the integrations' webhook URL parameter.
+  - `label`: Short description to be used as a label for this URL parameter
+    in the web app UI.
+  - `validator`: A validator function. It is used to determine what the UI input type
+    for this option should be and how to validate the input. Currently we only support
+    these validators:
+      - `check_bool`, checkbox/select input.
+      - `check_string`, text input.
+
+!!! warn ""
+
+    **Note**: To add support for other validators, you can update the
+    `integration_url_modal.ts` module. Common validators are available in
+    `zerver/lib/validator.py`.
+
 
 ## Step 4: Manually testing the webhook
 
