@@ -27,6 +27,10 @@ let selected_send_later_timestamp: number | undefined;
 // regardless of whether the user tried to schedule it for sooner or not.
 export let show_minimum_scheduled_message_delay_minutes_note = false;
 
+export function get_all_scheduled_messages(): ScheduledMessage[] {
+    return [...scheduled_messages_by_id.values()];
+}
+
 function compute_send_times(now = new Date()): Record<TimeKey, number> {
     const send_times: Record<string, number> = {};
 
