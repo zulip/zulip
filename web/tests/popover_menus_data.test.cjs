@@ -56,6 +56,7 @@ mock_esm("../src/stream_data", {
     is_stream_archived: () => false,
     get_sub_by_id: () => noop,
     user_can_move_messages_within_channel: () => true,
+    can_only_use_empty_topic: () => false,
 });
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config() {

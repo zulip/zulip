@@ -881,6 +881,14 @@ ul.popover-group-menu-member-list {
             &.empty-topic-display::placeholder {
                 color: inherit;
             }
+
+            &.topics-disabled {
+                cursor: default;
+
+                ~ .clear_search_button {
+                    visibility: hidden !important;
+                }
+            }
         }
     }
 
