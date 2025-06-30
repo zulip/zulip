@@ -55,8 +55,8 @@ def add_apns_device_token(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    token: str,
     appid: ApnsAppId,
+    token: str,
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)

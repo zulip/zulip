@@ -262,15 +262,15 @@ def import_realm_from_slack(*args: Any, **kwargs: Any) -> HttpResponse:
 def registration_helper(
     request: HttpRequest,
     *,
-    key: str = "",
-    timezone: Annotated[str, timezone_or_empty_validator()] = "",
-    from_confirmation: str | None = None,
-    form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
-    source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
-    form_is_demo_organization: Annotated[str | None, ApiParamConfig("is_demo_organization")] = None,
-    slack_access_token: str | None = None,
-    start_slack_import: Json[bool] = False,
     cancel_import: Json[bool] = False,
+    form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
+    form_is_demo_organization: Annotated[str | None, ApiParamConfig("is_demo_organization")] = None,
+    from_confirmation: str | None = None,
+    key: str = "",
+    slack_access_token: str | None = None,
+    source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
+    start_slack_import: Json[bool] = False,
+    timezone: Annotated[str, timezone_or_empty_validator()] = "",
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -944,12 +944,12 @@ def prepare_activation_url(
     email: str,
     session: SessionBase,
     *,
+    include_realm_default_subscriptions: bool | None = None,
+    invited_as: int | None = None,
+    multiuse_invite: MultiuseInvite | None = None,
     realm: Realm | None,
     streams: Iterable[Stream] | None = None,
     user_groups: Iterable[NamedUserGroup] | None = None,
-    invited_as: int | None = None,
-    include_realm_default_subscriptions: bool | None = None,
-    multiuse_invite: MultiuseInvite | None = None,
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
@@ -1388,9 +1388,9 @@ def new_realm_send_confirm(
     request: HttpRequest,
     *,
     email: str,
+    realm_default_language: Annotated[str, StringConstraints(max_length=MAX_LANGUAGE_ID_LENGTH)],
     realm_name: Annotated[str, StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)],
     realm_type: Annotated[Json[int], check_int_in_validator(Realm.ORG_TYPE_IDS)],
-    realm_default_language: Annotated[str, StringConstraints(max_length=MAX_LANGUAGE_ID_LENGTH)],
     realm_subdomain: Annotated[str, StringConstraints(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)],
 ) -> HttpResponse:
     return TemplateResponse(

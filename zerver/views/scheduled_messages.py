@@ -50,15 +50,15 @@ def update_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    scheduled_message_id: PathOnly[NonNegativeInt],
+    message_content: Annotated[str | None, ApiParamConfig("content")] = None,
     req_type: Annotated[
         Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)] | None,
         ApiParamConfig("type"),
     ] = None,
+    scheduled_delivery_timestamp: Json[int] | None = None,
+    scheduled_message_id: PathOnly[NonNegativeInt],
     to: Json[int | list[int]] | None = None,
     topic_name: OptionalTopic = None,
-    message_content: Annotated[str | None, ApiParamConfig("content")] = None,
-    scheduled_delivery_timestamp: Json[int] | None = None,
 ) -> HttpResponse:
     if (
         req_type is None
@@ -127,15 +127,15 @@ def create_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    message_content: Annotated[str, ApiParamConfig("content")],
+    read_by_sender: Json[bool] | None = None,
+    req_to: Annotated[Json[int | list[int]], ApiParamConfig("to")],
     req_type: Annotated[
         Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)],
         ApiParamConfig("type"),
     ],
-    req_to: Annotated[Json[int | list[int]], ApiParamConfig("to")],
-    message_content: Annotated[str, ApiParamConfig("content")],
     scheduled_delivery_timestamp: Json[int],
     topic_name: OptionalTopic = None,
-    read_by_sender: Json[bool] | None = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":

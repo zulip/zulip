@@ -132,25 +132,25 @@ def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    req_type: Annotated[Literal["direct", "private", "stream", "channel"], ApiParamConfig("type")],
-    req_to: Annotated[str | None, ApiParamConfig("to")] = None,
-    req_sender: Annotated[
-        str | None, ApiParamConfig("sender", documentation_status=DOCUMENTATION_PENDING)
-    ] = None,
     forged_str: Annotated[
         str | None, ApiParamConfig("forged", documentation_status=DOCUMENTATION_PENDING)
     ] = None,
-    topic_name: OptionalTopic = None,
-    message_content: Annotated[str, ApiParamConfig("content")],
-    widget_content: Annotated[
-        str | None, ApiParamConfig("widget_content", documentation_status=DOCUMENTATION_PENDING)
-    ] = None,
     local_id: str | None = None,
+    message_content: Annotated[str, ApiParamConfig("content")],
     queue_id: str | None = None,
+    read_by_sender: Json[bool] | None = None,
+    req_sender: Annotated[
+        str | None, ApiParamConfig("sender", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
+    req_to: Annotated[str | None, ApiParamConfig("to")] = None,
+    req_type: Annotated[Literal["direct", "private", "stream", "channel"], ApiParamConfig("type")],
     time: Annotated[
         Json[float] | None, ApiParamConfig("time", documentation_status=DOCUMENTATION_PENDING)
     ] = None,
-    read_by_sender: Json[bool] | None = None,
+    topic_name: OptionalTopic = None,
+    widget_content: Annotated[
+        str | None, ApiParamConfig("widget_content", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":

@@ -79,8 +79,8 @@ def update_navigation_view(
     user_profile: UserProfile,
     fragment: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
     *,
-    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)] | None = None,
     is_pinned: Json[bool] | None = None,
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)] | None = None,
 ) -> HttpResponse:
     """
     Update an existing navigation view for the user.

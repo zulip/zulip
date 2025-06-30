@@ -127,16 +127,16 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
-    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    group_ids: Json[list[int]] | None = None,
+    include_realm_default_subscriptions: Json[bool] = False,
     invite_as: Annotated[
         Json[int],
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
+    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
     notify_referrer_on_join: Json[bool] = True,
     stream_ids: Json[list[int]],
-    group_ids: Json[list[int]] | None = None,
-    include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -238,14 +238,14 @@ def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    group_ids: Json[list[int]] | None = None,
+    include_realm_default_subscriptions: Json[bool] = False,
     invite_as: Annotated[
         Json[int],
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
+    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
     stream_ids: Json[list[int]] | None = None,
-    group_ids: Json[list[int]] | None = None,
-    include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
     if stream_ids is None:
         stream_ids = []
