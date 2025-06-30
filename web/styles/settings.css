@@ -1395,6 +1395,11 @@ label.preferences-radio-choice-label {
     overflow: hidden;
     border-radius: 4px;
 
+    .overlay-container {
+        height: 100%;
+        width: 100%;
+    }
+
     .time-limit-custom-input {
         width: 5ch;
         text-align: right;
