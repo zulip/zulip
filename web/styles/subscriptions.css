@@ -219,10 +219,6 @@ h4.user_group_setting_subsection_title {
                 font-style: italic;
             }
 
-            th.user-remove-actions {
-                min-width: 80px;
-            }
-
             .strikethrough {
                 text-decoration: line-through;
             }
