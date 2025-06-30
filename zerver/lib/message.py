@@ -30,6 +30,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.streams import (
     can_access_stream_history,
+    get_subscribed_streams_with_protected_history_queryset,
     get_web_public_streams_queryset,
     is_user_in_groups_granting_content_access,
 )
@@ -1745,3 +1746,16 @@ def is_1_to_1_message(message: Message) -> bool:
         return True
 
     return False
+
+
+def get_messages_with_protected_history_queryset(
+    user_profile: UserProfile,
+) -> QuerySet[UserMessage]:
+    streams = get_subscribed_streams_with_protected_history_queryset(user_profile)
+    recipient_ids = Recipient.objects.filter(
+        type=Recipient.STREAM, type_id__in=streams.values_list("id", flat=True)
+    ).values_list("id", flat=True)
+
+    return UserMessage.objects.filter(
+        user_profile=user_profile, message__recipient_id__in=recipient_ids
+    )
