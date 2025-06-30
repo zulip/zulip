@@ -333,3 +333,25 @@
         cursor: pointer;
     }
 }
+
+@container message-lists (width <  $cq_message_actions_hide_width_min) {
+    .recipient_bar_controls {
+        /* We don't want the controls container to occupy the space freed
+        up by hiding the message action icons so it can be
+        utilized to show more of the topic */
+        flex-grow: 0;
+        margin-left: auto;
+    }
+
+    .recipient_bar_controls > *:not(.zulip-icon-more-vertical) {
+        display: none;
+    }
+}
+
+@media (width < $message_actions_hide_width_min) {
+    .without-container-query-support {
+        .recipient_bar_controls > *:not(.zulip-icon-more-vertical) {
+            display: none;
+        }
+    }
+}
