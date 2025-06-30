@@ -433,7 +433,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
 export let update_compose_area_placeholder_text = (): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
-    if ($(".message_comp").css("display") === "none") {
+    if ($("#compose-content").hasClass("compose-box-open")) {
         return;
     }
     const message_type = compose_state.get_message_type();
