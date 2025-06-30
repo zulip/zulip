@@ -277,9 +277,14 @@ function bulk_update_read_flags_for_narrow(
                             term.negated === false
                         ),
                 );
-                // Current narrow may have "with" operator around a message target which
-                // we would want to ignore for bulk reading a message list.
-                if (message_lists.current?.data.filter.equals(new Filter(filter_terms), ["with"])) {
+                // Current narrow may have "with" or "near" operator around a message
+                // target which we would want to ignore for bulk reading a message list.
+                if (
+                    message_lists.current?.data.filter.equals(new Filter(filter_terms), [
+                        "with",
+                        "near",
+                    ])
+                ) {
                     message_lists.current?.resume_reading();
                     unread_ui.hide_unread_banner();
                 }
