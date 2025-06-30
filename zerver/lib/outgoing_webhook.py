@@ -18,7 +18,7 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
-from zerver.lib.url_encoding import near_message_url
+from zerver.lib.url_encoding import message_link_url
 from zerver.lib.users import check_can_access_user, check_user_can_access_all_users
 from zerver.models import Realm, Service, UserProfile
 from zerver.models.bots import GENERIC_INTERFACE, SLACK_INTERFACE
@@ -245,7 +245,7 @@ def get_message_url(event: dict[str, Any]) -> str:
     message = event["message"]
     realm = bot_user.realm
 
-    return near_message_url(
+    return message_link_url(
         realm=realm,
         message=message,
     )

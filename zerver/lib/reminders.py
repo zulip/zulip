@@ -6,7 +6,7 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import get_message_link_syntax
-from zerver.lib.url_encoding import near_message_url
+from zerver.lib.url_encoding import message_link_url
 from zerver.models import Message, Stream, UserProfile
 
 
@@ -33,7 +33,7 @@ def get_reminder_formatted_content(message: Message, current_user: UserProfile) 
     content += "\n\n"
     content += _("{user_silent_mention} [said]({conversation_url}):").format(
         user_silent_mention=silent_mention_syntax_for_user(message.sender),
-        conversation_url=near_message_url(current_user.realm, MessageDict.wide_dict(message)),
+        conversation_url=message_link_url(current_user.realm, MessageDict.wide_dict(message)),
     )
     content += "\n"
     fence = get_unused_fence(content)
