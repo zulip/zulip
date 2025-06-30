@@ -259,69 +259,69 @@
         &.focused .user-pill-container {
             flex-flow: row wrap;
         }
+    }
 
-        .user-pill-container {
-            gap: 2px 5px;
-            /* Don't enforce a height, as user-pill containers
-               can contain multiple user pills that wrap onto
-               new lines. */
-            height: unset;
-            border: 1px solid transparent;
+    .user-pill-container {
+        gap: 2px 5px;
+        /* Don't enforce a height, as user-pill containers
+            can contain multiple user pills that wrap onto
+            new lines. */
+        height: unset;
+        border: 1px solid transparent;
 
-            /* Not focus-visible, because we want to support mouse+backpace
-               to delete pills */
-            &:focus {
-                /* Unlike regular `.pill` this multi-user pill has a border,
-                   so we use border instead of box-shadow on focus. */
-                box-shadow: none;
-                border-color: var(--color-focus-outline-input-pill);
+        /* Not focus-visible, because we want to support mouse+backpace
+            to delete pills */
+        &:focus {
+            /* Unlike regular `.pill` this multi-user pill has a border,
+                so we use border instead of box-shadow on focus. */
+            box-shadow: none;
+            border-color: var(--color-focus-outline-input-pill);
+        }
+
+        > .pill-label {
+            min-width: fit-content;
+            white-space: nowrap;
+            width: fit-content;
+            /* Replaced by the 5px gap. */
+            margin-right: 0;
+            /* Don't inherit large line-height for user pill labels. */
+            line-height: 1.1;
+        }
+
+        .pill {
+            /* Reduce user pill height by 2px to
+                preserve an apparent border around
+                them even under `box-sizing: border-box`
+                in the area. */
+            height: calc(var(--height-input-pill) - 2px);
+            border: none;
+            /* Match border radius to image */
+            border-radius: 4px;
+            max-width: none;
+            /* Set the minimum width on the pill container;
+                this accommodates the avatar, a minimum
+                two-character username, and the closing X.
+                90px at 20px/1em */
+            min-width: 4.5em;
+            display: grid;
+            grid-template-columns:
+                var(--length-search-input-pill-image) minmax(0, 1fr)
+                var(--length-input-pill-exit);
+            align-content: center;
+            /* Don't inherit large line-height for user pills themselves, either. */
+            line-height: 1.1;
+
+            .pill-image {
+                height: var(--length-search-input-pill-image);
+                width: var(--length-search-input-pill-image);
             }
 
-            > .pill-label {
-                min-width: fit-content;
-                white-space: nowrap;
-                width: fit-content;
-                /* Replaced by the 5px gap. */
-                margin-right: 0;
-                /* Don't inherit large line-height for user pill labels. */
-                line-height: 1.1;
-            }
-
-            .pill {
-                /* Reduce user pill height by 2px to
-                   preserve an apparent border around
-                   them even under `box-sizing: border-box`
-                   in the area. */
-                height: calc(var(--height-input-pill) - 2px);
+            .pill-image-border {
                 border: none;
-                /* Match border radius to image */
-                border-radius: 4px;
-                max-width: none;
-                /* Set the minimum width on the pill container;
-                   this accommodates the avatar, a minimum
-                   two-character username, and the closing X.
-                   90px at 20px/1em */
-                min-width: 4.5em;
-                display: grid;
-                grid-template-columns:
-                    var(--length-search-input-pill-image) minmax(0, 1fr)
-                    var(--length-input-pill-exit);
-                align-content: center;
-                /* Don't inherit large line-height for user pills themselves, either. */
-                line-height: 1.1;
+            }
 
-                .pill-image {
-                    height: var(--length-search-input-pill-image);
-                    width: var(--length-search-input-pill-image);
-                }
-
-                .pill-image-border {
-                    border: none;
-                }
-
-                &:not(.deactivated-pill) {
-                    background-color: var(--color-background-user-pill);
-                }
+            &:not(.deactivated-pill) {
+                background-color: var(--color-background-user-pill);
             }
         }
     }
@@ -382,10 +382,13 @@
 
         .search_list_item {
             max-width: 100%;
+            display: flex;
+            gap: 5px;
+            align-items: center;
         }
 
         .search_list_item .pill-container {
-            margin: 1px 5px;
+            margin: 2px 0;
             /* This contains only one pill, which handles its own border */
             border: none;
             cursor: pointer;
