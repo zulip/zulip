@@ -320,8 +320,12 @@ const getSettingsHTML = (
     
     const relativeLink = `<a href="${setting_link}">${setting_name}</a>`;
 
-    // The "Bots" label appears in both Personal and Organization settings
-    // in the user interface so we need special text for this setting.
+    // The "Bots" label appears in both Personal and
+    // Organization settings in the user interface, so we need special
+    // text for this setting.
+    // As for the the case of "Users", it refers to the Users tab in
+    // organization settings. Since the users tab has multiple sub tabs
+    // like active, deactivated etc., we need a way to point to them.
     const label = (setting_name === "Bots" || setting_name === "Users")
         ? `Navigate to the ${relativeLink} tab of the <b>${setting_type}</b> menu.`
         : `Go to ${relativeLink}.`;
@@ -331,12 +335,12 @@ const getSettingsHTML = (
             </ol>`;
 }
 
-const LINK_TYPE_HANDLERS: Record<string, (key: string) => string> = {};
+const RELATIVE_NAVIGATION_HANDLERS_BY_TYPE: Record<string, (key: string) => string> = {};
 
 for (const type in relative_link_mapping) {
   const { data, template, is_link_relative } = relative_link_mapping[type]!;
 
-  LINK_TYPE_HANDLERS[type] = (key: string) => {
+  RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[type] = (key: string) => {
     const { label, relative_link } = data[key]!;
     const formattedItem = is_link_relative() ? `<a href="${relative_link}">${label}</a>` : `<strong>${label}</strong>`;
     return template.replace("{item}", formattedItem);
@@ -356,7 +360,7 @@ if (navigation_link_type === "settings") {
 } else {
     const link_type = identifier.split("/")[1];
     const key = identifier.split("/")[2];
-    resultHTML = LINK_TYPE_HANDLERS[link_type]!(key);
+    resultHTML = RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[link_type]!(key);
 }
 assert(resultHTML !== undefined);
 
