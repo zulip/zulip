@@ -24,7 +24,9 @@ from zerver.lib.user_groups import (
     create_system_user_groups_for_realm,
     get_role_based_system_groups_dict,
 )
-from zerver.lib.zulip_update_announcements import get_latest_zulip_update_announcements_level
+from zerver.lib.zulip_update_announcements import (
+    get_latest_zulip_update_announcements_level,
+)
 from zerver.models import (
     DefaultStream,
     PreregistrationRealm,
@@ -62,7 +64,9 @@ def do_change_realm_subdomain(
     realm.demo_organization_scheduled_deletion_date = None
     realm.string_id = new_subdomain
     with transaction.atomic(durable=True):
-        realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
+        realm.save(
+            update_fields=["string_id", "demo_organization_scheduled_deletion_date"]
+        )
         RealmAuditLog.objects.create(
             realm=realm,
             event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED,
@@ -73,7 +77,9 @@ def do_change_realm_subdomain(
 
         # If a realm if being renamed multiple times, we should find all the placeholder
         # realms and reset their deactivated_redirect field to point to the new realm url
-        placeholder_realms = Realm.objects.filter(deactivated_redirect=old_url, deactivated=True)
+        placeholder_realms = Realm.objects.filter(
+            deactivated_redirect=old_url, deactivated=True
+        )
         for placeholder_realm in placeholder_realms:
             do_add_deactivated_redirect(placeholder_realm, realm.url)
 
@@ -100,11 +106,15 @@ def do_change_realm_subdomain(
 
 @transaction.atomic(savepoint=False)
 def set_default_for_realm_permission_group_settings(
-    realm: Realm, group_settings_defaults_for_org_types: dict[str, dict[int, str]] | None = None
+    realm: Realm,
+    group_settings_defaults_for_org_types: dict[str, dict[int, str]] | None = None,
 ) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
-    for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+    for (
+        setting_name,
+        permission_configuration,
+    ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         group_name = permission_configuration.default_group_name
 
         # Below code updates the group_name if the setting default depends on org_type.
@@ -112,7 +122,9 @@ def set_default_for_realm_permission_group_settings(
             group_settings_defaults_for_org_types is not None
             and setting_name in group_settings_defaults_for_org_types
         ):
-            setting_org_type_defaults = group_settings_defaults_for_org_types[setting_name]
+            setting_org_type_defaults = group_settings_defaults_for_org_types[
+                setting_name
+            ]
             if realm.org_type in setting_org_type_defaults:
                 group_name = setting_org_type_defaults[realm.org_type]
 
@@ -160,7 +172,10 @@ def do_create_realm(
     how_realm_creator_found_zulip: str | None = None,
     how_realm_creator_found_zulip_extra_context: str | None = None,
 ) -> Realm:
-    if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
+    if string_id in [
+        settings.SOCIAL_AUTH_SUBDOMAIN,
+        settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN,
+    ]:
         raise AssertionError(
             "Creating a realm on SOCIAL_AUTH_SUBDOMAIN or SELF_HOSTING_MANAGEMENT_SUBDOMAIN is not allowed!"
         )
@@ -206,7 +221,9 @@ def do_create_realm(
         # Hacky: The default of invited_required is True, so we need
         # to check for None too.
         kwargs["enable_read_receipts"] = (
-            invite_required is None or invite_required is True or emails_restricted_to_domains
+            invite_required is None
+            or invite_required is True
+            or emails_restricted_to_domains
         )
     # Initialize this property correctly in the case that no network activity
     # is required to do so correctly.
@@ -215,8 +232,8 @@ def do_create_realm(
     with transaction.atomic(durable=True):
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
-            realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
-                days=settings.DEMO_ORG_DEADLINE_DAYS
+            realm.demo_organization_scheduled_deletion_date = (
+                realm.date_created + timedelta(days=settings.DEMO_ORG_DEADLINE_DAYS)
             )
 
         # For now a dummy value of -1 is given to groups fields which
@@ -239,12 +256,21 @@ def do_create_realm(
             },
         )
 
-        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        if realm.org_type in (
+        if realm.org_type == Realm.ORG_TYPES["business"]["id"]:
+            # Business organizations default to email visibility for everyone.
+            realm_default_email_address_visibility = (
+                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            )
+        elif realm.org_type in (
             Realm.ORG_TYPES["education_nonprofit"]["id"],
             Realm.ORG_TYPES["education"]["id"],
         ):
-            # Email address of users should be initially visible to admins only.
+            # Education organizations default to moderators and above.
+            realm_default_email_address_visibility = (
+                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+            )
+        else:
+            # All other organization types default to admins only for privacy.
             realm_default_email_address_visibility = (
                 RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
             )
@@ -261,7 +287,9 @@ def do_create_realm(
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
             },
             "can_create_public_channel_group": {
-                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                Realm.ORG_TYPES["education_nonprofit"][
+                    "id"
+                ]: SystemGroups.ADMINISTRATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
             },
             "can_create_groups": {
@@ -269,7 +297,9 @@ def do_create_realm(
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
             },
             "can_invite_users_group": {
-                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                Realm.ORG_TYPES["education_nonprofit"][
+                    "id"
+                ]: SystemGroups.ADMINISTRATORS,
                 Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
             },
             "can_move_messages_between_channels_group": {
@@ -328,7 +358,9 @@ def do_create_realm(
 
     # New realm is initialized with the latest zulip update announcements
     # level as it shouldn't receive a bunch of old updates.
-    realm.zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
+    realm.zulip_update_announcements_level = (
+        get_latest_zulip_update_announcements_level()
+    )
 
     realm.save(
         update_fields=[
