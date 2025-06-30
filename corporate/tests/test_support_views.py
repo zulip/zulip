@@ -948,7 +948,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.login("iago")
 
         do_change_user_setting(
-            self.example_user("hamlet"),
+            [self.example_user("hamlet")],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
