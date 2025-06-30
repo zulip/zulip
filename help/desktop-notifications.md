@@ -10,7 +10,7 @@ trigger desktop notifications.
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
+1. Toggle the checkboxes for **Channels** and **DMs and mentions**
    in the **Desktop** column of the **Notification triggers** table.
 
 {end_tabs}
@@ -172,7 +172,7 @@ Alternate instructions:
 ## Related articles
 
 * [Channel notifications](/help/channel-notifications)
-* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [DMs and mentions](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)
 * [Do not disturb](/help/do-not-disturb)

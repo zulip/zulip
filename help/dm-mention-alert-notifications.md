@@ -1,20 +1,20 @@
-# DMs, mentions, and alerts
+# DMs and mentions
 
 You can configure desktop, mobile, and email notifications for
 [direct messages (DMs)](/help/direct-messages),
-[mentions](/help/mention-a-user-or-group), and [alert
-words](#alert-words).
+[mentions](/help/mention-a-user-or-group), and [watched
+phrases](#watched-phrases).
 
 ## Configure notifications
 
 These settings will affect notifications for direct messages, group
-direct messages, mentions, and alert words.
+direct messages, mentions, and watched phrases.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. In the **Notification triggers** table, toggle the settings for **DMs, mentions, and alerts**.
+1. In the **Notification triggers** table, toggle the settings for **DMs and mentions**.
 
 {end_tabs}
 
@@ -53,25 +53,25 @@ channels in your [Channel settings](/help/channel-notifications), and
 administrators can [restrict use of wildcard
 mentions](/help/restrict-wildcard-mentions) in large channels.
 
-## Alert words
+## Watched phrases
 
-Zulip lets you to specify **alert words or phrases** that send you a desktop
-notification whenever the alert word is included in a message. Alert words are
+Zulip lets you to specify **watched phrases** that send you a desktop
+notification whenever the watched phrase is included in a message. Watched phrases are
 case-insensitive.
 
 !!! tip ""
 
-    Alert words in messages you receive while the alert is enabled will be highlighted.
+    Watched phrases in messages you receive while the alert is enabled will be highlighted.
 
-### Add an alert word or phrase
+### Add a watched phrase
 
 {start_tabs}
 
-{settings_tab|alert-words}
+{settings_tab|watched-phrases}
 
 1. Add a word or phrase.
 
-1. Click **Add alert word**.
+1. Click **Add watched phrase**.
 
 {end_tabs}
 
