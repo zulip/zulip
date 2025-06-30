@@ -610,6 +610,7 @@ other IdPs (identity providers). You can configure it as follows:
 
 [saml-help-center]: https://zulip.com/help/saml-authentication
 [user-role-help-center]: https://zulip.com/help/user-roles
+[user-groups-help-center]: https://zulip.com/help/user-groups
 
 ### IdP-initiated SSO
 
@@ -656,7 +657,7 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
-### Synchronizing user role or custom profile fields during login
+### Synchronizing user groups, role or custom profile fields during login
 
 In contrast with SCIM or LDAP, the SAML protocol only allows Zulip to
 access data about a user when that user authenticates to Zulip using
@@ -670,15 +671,17 @@ offer SCIM or the fields one is interested in syncing change rarely
 enough that asking users to logout and then login again to resync
 their metadata might feel reasonable.
 
-Specifically, Zulip supports synchronizing the [user
+Specifically, Zulip supports synchronizing
+[group memberships][user-groups-help-center], the [user
 role][user-role-help-center] and [custom profile
 fields][custom-profile-fields] from the SAML provider.
 
-In order to use this functionality, configure
-`SOCIAL_AUTH_SYNC_ATTRS_DICT` in `/etc/zulip/settings.py` according to
-the instructions in the inline documentation in the file. Servers
-installed before Zulip 10.0 may want to [update inline comment
-documentation][update-inline-comments] first in order to access it.
+In order to use this functionality, configure `SOCIAL_AUTH_SYNC_ATTRS_DICT` in
+`/etc/zulip/settings.py` according to the instructions in the inline
+documentation in the file. Servers installed before Zulip 10.0 may want to
+[update inline comment documentation][update-inline-comments] first in order to
+access it. For configuring syncing of groups see
+[below][configure-saml-group-sync].
 
 Custom profile fields are only synchronized during login, not during
 account creation; we consider this [a
@@ -690,6 +693,61 @@ When user role is provided by the SAML IdP during signup of a
 user who's coming from an invitation link, the IdP-provided role will
 take precedence over the role set in the invitation.
 :::
+
+[configure-saml-group-sync]: #configuring-synchronizing-of-user-groups
+
+#### Configuring synchronizing of user groups
+
+Zulip 11.0+ supports syncing of group memberships upon user login. To activate
+this feature, uncomment the `groups` field in the config in
+`SOCIAL_AUTH_SYNC_ATTRS_DICT` and configure the list as explained below.
+An example configuration might look like this:
+
+```python
+SOCIAL_AUTH_SYNC_ATTRS_DICT = {
+    "your_subdomain": {
+        "saml": {
+            "role": "zulip_role",
+            "custom__title": "title",
+            "groups": ["group1", ("samlgroup2", "zulipgroup2"), "group3"],
+        }
+    }
+}
+```
+
+When a user logs in via SAML, the list of group names reflecting group memberships
+should be passed by the IdP in the SAMLResponse in the `zulip_groups` attribute.
+The user's Zulip group memberships will be synced in the following way:
+
+1. If a Zulip group name occurs in the configured list, but is not indicated
+   in `zulip_groups` in the `SAMLResponse,` it means that user should not be a member
+   of the Zulip group.
+1. If a Zulip group name occurs in the configured list, and is indicated in
+   `zulip_groups` in the `SAMLResponse,` it means the user should be a member of
+   the Zulip group.
+1. Any other case is ignored and won't affect the user's group memberships.
+
+The `SOCIAL_AUTH_SYNC_ATTRS_DICT` configuration lists group names which should
+be synced based on the `zulip_groups` attribute.
+If for a particular group, the name that will be present in the `zulip_groups`
+SAML attribute is different than the name of the intended Zulip group, you can
+indicate it via a Python tuple instead of a simple name, in the following way:
+`("<name in the SAML attribute>", "<name of the Zulip group>")`.
+
+More concretely, the line in the example configuration above:
+
+```python
+"groups": ["group1", ("samlgroup2", "zulipgroup2"), "group3"],
+```
+
+declares that a user is supposed to be in the Zulip group `group1` if `group1`
+occurs in the `zulip_groups` attribute (and the same for `group3`), and in the
+Zulip group `zulipgroup2` if `samlgroup2` occurs in the `zulip_groups`
+attribute.
+
+This allows for the names passed in the `SAMLResponse` to not necessarily be the
+same as the corresponding Zulip group name - thus supporting having different
+naming convention in your IdP's users/groups directory than in Zulip.
 
 ### SCIM
 
