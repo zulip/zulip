@@ -855,6 +855,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
         case "realm_can_resolve_topics_group":
+        case "realm_can_set_delete_message_policy_group":
         case "realm_can_set_topics_policy_group":
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
@@ -1118,6 +1119,7 @@ export function populate_data_for_realm_settings_request(
                     "can_move_messages_between_channels_group",
                     "can_move_messages_between_topics_group",
                     "can_resolve_topics_group",
+                    "can_set_delete_message_policy_group",
                     "can_set_topics_policy_group",
                     "can_summarize_topics_group",
                     "create_multiuse_invite_group",
@@ -1575,6 +1577,8 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_leave_group", null],
     ["can_manage_group", null],
     ["can_mention_group", null],
+    ["can_delete_any_message_group", null],
+    ["can_delete_own_message_group", null],
     ["can_move_messages_out_of_channel_group", null],
     ["can_move_messages_within_channel_group", null],
     ["can_remove_members_group", null],
@@ -1596,6 +1600,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_can_move_messages_between_channels_group", null],
     ["realm_can_move_messages_between_topics_group", null],
     ["realm_can_resolve_topics_group", null],
+    ["realm_can_set_delete_message_policy_group", null],
     ["realm_can_set_topics_policy_group", null],
     ["realm_can_summarize_topics_group", null],
     ["realm_create_multiuse_invite_group", null],
