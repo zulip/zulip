@@ -982,14 +982,14 @@ export class Filter {
         this.cached_sorted_terms_for_comparison = undefined;
     }
 
-    equals(filter: Filter, excluded_operators?: string[]): boolean {
+    equals(filter: Filter, excluded_operators?: string[], ignore_case = true): boolean {
         return _.isEqual(
-            filter.sorted_terms_for_comparison(excluded_operators),
-            this.sorted_terms_for_comparison(excluded_operators),
+            filter.sorted_terms_for_comparison(excluded_operators, ignore_case),
+            this.sorted_terms_for_comparison(excluded_operators, ignore_case),
         );
     }
 
-    sorted_terms_for_comparison(excluded_operators?: string[]): string[] {
+    sorted_terms_for_comparison(excluded_operators?: string[], ignore_case?: boolean): string[] {
         if (!excluded_operators && this.cached_sorted_terms_for_comparison !== undefined) {
             return this.cached_sorted_terms_for_comparison;
         }
@@ -1004,7 +1004,7 @@ export class Filter {
         const sorted_simplified_terms = filter_terms
             .map((term) => {
                 let operand = term.operand;
-                if (term.operator === "channel" || term.operator === "topic") {
+                if (ignore_case && (term.operator === "channel" || term.operator === "topic")) {
                     operand = operand.toLowerCase();
                 }
 
