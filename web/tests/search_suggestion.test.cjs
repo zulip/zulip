@@ -705,7 +705,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
     }
-    assert.equal(describe("te"), "Search for <strong>te</strong>");
+    assert.equal(describe("te"), "Search for te");
     assert.equal(describe(`channel:${office_id} topic:team`), "Channel office > team");
 
     suggestions = get_suggestions(`topic:staplers channel:${office_id}`);
@@ -816,6 +816,18 @@ test("whitespace_glitch", ({override, mock_template}) => {
     const expected = [`channel:${office_stream_id}`];
 
     assert.deepEqual(suggestions.strings, expected);
+});
+
+test("xss_channel_name", () => {
+    const stream_id = new_stream_id();
+    stream_data.add_sub({stream_id, name: "<em> Italics </em>", subscribed: true});
+
+    const query = "channel:ita";
+    const suggestions = get_suggestions(query);
+    assert.deepEqual(
+        suggestions.lookup_table.get(`channel:${stream_id}`).description_html,
+        "Channel &lt;em&gt; Italics &lt;/em&gt;",
+    );
 });
 
 test("channel_completion", ({override}) => {
@@ -944,7 +956,7 @@ test("people_suggestions", ({override, mock_template}) => {
     test_describe("sender:ted@zulip.com", "Sent by");
     test_describe("dm-including:ted@zulip.com", "Direct messages including");
 
-    let expectedString = "<strong>Te</strong>d Smith";
+    let expectedString = "Ted Smith";
 
     function test_full_name(q, full_name_html) {
         return suggestions.lookup_table.get(q).description_html.includes(full_name_html);
