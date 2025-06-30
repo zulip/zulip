@@ -155,13 +155,13 @@ export function do_schedule_reminder(send_at_time, remind_message_id) {
 }
 
 function get_send_later_menu_items() {
-    const $send_later_options = $("#send_later_options");
+    const $send_later_options = $("#send_later_popover");
     if ($send_later_options.length === 0) {
         blueslip.error("Trying to get menu items when schedule popover is closed.");
         return undefined;
     }
 
-    return $send_later_options.find(".send_later_option");
+    return $send_later_options.find("[tabindex='0']");
 }
 
 function focus_first_send_later_popover_item() {
