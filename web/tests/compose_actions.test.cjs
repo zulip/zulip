@@ -179,6 +179,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "blur_compose_inputs", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    const $compose_content = $("#compose-content");
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
@@ -321,10 +322,11 @@ test("start", ({override, override_rewire, mock_template}) => {
     });
     $("textarea#compose-textarea").set_height(50);
 
+    assert.ok($compose_content.hasClass("compose-box-open"));
     cancel();
     assert.ok(abort_xhr_called);
     assert.ok(pill_cleared);
-    assert.ok(!$("#compose").hasClass("compose-box-open"));
+    assert.ok($compose_content.hasClass("compose-box-closed"));
     assert.ok(!compose_state.composing());
 });
 

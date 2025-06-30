@@ -195,8 +195,24 @@
     }
 }
 
+/* We do not want these to occupy space,
+   so `display: none` is the correct property
+   here. However, we do not specify the inverse,
+   allowing these swappable compose elements to
+   display as specified elsewhere in the CSS. */
+.compose-box-open {
+    #compose_controls {
+        display: none;
+    }
+}
+
+.compose-box-closed {
+    .message_comp {
+        display: none;
+    }
+}
+
 .message_comp {
-    display: none;
     padding: 0 7px 0 0;
 
     #compose_banners {
@@ -1286,7 +1302,7 @@ textarea.new_message_textarea {
    accommodate them here, which we prevent by applying the
    transitions only when focus isn't within the recipient row,
    or hasn't recently been within the topic box. */
-#compose.compose-box-open {
+#compose:hover .compose-box-open {
     .low-attention-recipient-row:not(.recently-focused, :focus-within) {
         #compose_select_recipient_widget,
         #compose-channel-recipient,

@@ -96,7 +96,8 @@ function hide_box(): void {
     // Assume a muted recipient row for the next time
     // the compose box is reopened
     $("#compose-recipient").addClass("low-attention-recipient-row");
-    $("#compose").removeClass("compose-box-open");
+    $("#compose-content").removeClass("compose-box-open");
+    $("#compose-content").addClass("compose-box-closed");
 }
 
 function show_compose_box(opts: ComposeActionsOpts): void {
@@ -132,7 +133,8 @@ function show_compose_box(opts: ComposeActionsOpts): void {
     // to this class; we add a slight delay to avoid transitions firing
     // immediately.
     requestAnimationFrame(() => {
-        $("#compose").addClass("compose-box-open");
+        $("#compose-content").removeClass("compose-box-closed");
+        $("#compose-content").addClass("compose-box-open");
     });
 }
 
@@ -199,7 +201,9 @@ export function rewire_autosize_message_content(value: typeof autosize_message_c
 
 export let expand_compose_box = (): void => {
     $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
-    $("#compose").addClass("compose-box-open");
+    // TODO: Check this; HEAD had it on `#compose`
+    $("#compose-content").addClass("compose-box-open");
+    $("#compose-content").removeClass("compose-box-closed");
 };
 
 export function rewire_expand_compose_box(value: typeof expand_compose_box): void {
