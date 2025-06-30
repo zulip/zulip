@@ -39,7 +39,9 @@ type ScheduledMessageRenderContext = ScheduledMessage &
 export const keyboard_handling_context = {
     get_items_ids() {
         const scheduled_messages_ids = [];
-        const sorted_messages = sort_scheduled_messages(scheduled_messages.scheduled_messages_by_id);
+        const sorted_messages = sort_scheduled_messages(
+            scheduled_messages.get_all_scheduled_messages(),
+        );
         for (const message of sorted_messages) {
             scheduled_messages_ids.push(message.scheduled_message_id.toString());
         }
@@ -71,10 +73,8 @@ export const keyboard_handling_context = {
     id_attribute_name: "data-scheduled-message-id",
 };
 
-function sort_scheduled_messages(
-    scheduled_messages: Map<number, ScheduledMessage>,
-): ScheduledMessage[] {
-    const sorted_messages = [...scheduled_messages.values()].sort(
+function sort_scheduled_messages(scheduled_messages: ScheduledMessage[]): ScheduledMessage[] {
+    const sorted_messages = scheduled_messages.sort(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
     return sorted_messages;
@@ -84,9 +84,7 @@ export function handle_keyboard_events(event_key: string): void {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
-function format(
-    scheduled_messages: Map<number, ScheduledMessage>,
-): ScheduledMessageRenderContext[] {
+function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderContext[] {
     const formatted_msgs = [];
     const sorted_messages = sort_scheduled_messages(scheduled_messages);
 
@@ -139,7 +137,7 @@ export function launch(): void {
     });
 
     const rendered_list = render_scheduled_message({
-        scheduled_messages_data: format(scheduled_messages.scheduled_messages_by_id),
+        scheduled_messages_data: format(scheduled_messages.get_all_scheduled_messages()),
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.append($(rendered_list));
@@ -153,7 +151,7 @@ export function rerender(): void {
         return;
     }
     const rendered_list = render_scheduled_message({
-        scheduled_messages_data: format(scheduled_messages.scheduled_messages_by_id),
+        scheduled_messages_data: format(scheduled_messages.get_all_scheduled_messages()),
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.find(".scheduled-message-row").remove();
