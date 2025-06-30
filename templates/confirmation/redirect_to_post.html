@@ -1,0 +1,28 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "redirect-to-post" %}
+
+{% block title %}
+<title>{{ _("Confirming your email address") }} | Zulip</title>
+{% endblock %}
+
+{% block content %}
+
+{#
+The purpose of this is to be an intermediate page, served upon GET requests
+to confirmation links. We simply serve a form which combined with some automatically
+executed JavaScript code will immediately POST the confirmation key to the intended
+endpoint.
+
+This allows us to avoid triggering the action which is being confirmed via a mere
+GET request.
+
+This largely duplicates functionality and code with confirm_preregistrationuser.html.
+We should find a way to to unify these.
+#}
+
+<form id="redirect-to-post-form" class="redirect-to-post-form"  action="{{ target_url }}" method="post">
+    {{ csrf_input }}
+    <input type="hidden" value="{{ key }}" name="key"/>
+</form>
+
+{% endblock %}

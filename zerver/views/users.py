@@ -328,6 +328,7 @@ def update_user_backend(
                 user_profile.realm,
                 new_email,
                 verbose=False,
+                allow_inactive_mirror_dummies=False,
             )
         except ValidationError as e:
             raise JsonableError(_("New email value error: {message}").format(message=e.message))
