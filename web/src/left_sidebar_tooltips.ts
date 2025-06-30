@@ -4,6 +4,7 @@ import * as tippy from "tippy.js";
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import * as settings_data from "./settings_data.ts";
 import * as starred_messages from "./starred_messages.ts";
 import {
     EXTRA_LONG_HOVER_DELAY,
@@ -136,11 +137,22 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "#streams_header .streams-tooltip-target",
-            "#add_streams_tooltip",
-            "#filter_streams_tooltip",
-        ].join(","),
+        target: ["#streams_header .streams-tooltip-target", "#filter_streams_tooltip"].join(","),
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: "#add_streams_tooltip",
+        onShow(instance) {
+            const can_create_streams =
+                settings_data.user_can_create_private_streams() ||
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams();
+            const tooltip_text = can_create_streams
+                ? $t({defaultMessage: "Add channels"})
+                : $t({defaultMessage: "Browse channels"});
+            instance.setContent(tooltip_text);
+        },
         appendTo: () => document.body,
     });
 
