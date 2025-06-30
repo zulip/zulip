@@ -74,6 +74,8 @@ not_yet_fully_covered = [
     "zerver/lib/markdown/fenced_code.py",
     "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
+    # Helper for tooling; doesn't need coverage
+    "zerver/lib/markdown/merge_api_changelogs.py",
     # Workers should get full coverage; many have it already
     "zerver/worker/deferred_work.py",
     "zerver/worker/missedmessage_emails.py",
