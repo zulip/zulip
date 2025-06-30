@@ -116,6 +116,12 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             const settings_sub = stream_settings_data.get_sub_for_settings(sub);
             stream_ui_updates.update_add_subscriptions_elements(settings_sub);
         }
+        if (property === "can_create_topic_group") {
+            stream_ui_updates.update_private_stream_privacy_option_state(
+                $("#stream_settings"),
+                stream_data.is_default_stream_id(sub.stream_id),
+            );
+        }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
             group_setting_value_schema.parse(value),

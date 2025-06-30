@@ -57,6 +57,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
+    IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
 )
@@ -109,7 +110,7 @@ from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import ChannelFolder, Realm, Stream, UserMessage, UserProfile, UserTopic
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
 
@@ -292,6 +293,7 @@ def update_stream_backend(
     can_move_messages_out_of_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_within_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_topic_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
     folder_id: Json[int | None] | MissingType = Missing,
@@ -384,6 +386,35 @@ def update_stream_backend(
             raise JsonableError(_("Web-public channels are not enabled."))
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
+
+    system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
+    if not proposed_history_public_to_subscribers:
+        if can_create_topic_group is None:
+            if stream.can_create_topic_group_id in system_groups_name_dict:
+                is_everyone_group = (
+                    system_groups_name_dict[stream.can_create_topic_group_id]
+                    == SystemGroups.EVERYONE
+                )
+                if not is_everyone_group:
+                    raise IncompatibleParametersError(
+                        ["history_public_to_subscribers", "can_create_topic_group"]
+                    )
+            else:
+                raise IncompatibleParametersError(
+                    ["history_public_to_subscribers", "can_create_topic_group"]
+                )
+        else:
+            everyone_group = get_system_user_group_by_name(SystemGroups.EVERYONE, stream.realm_id)
+            new_can_create_topic_group = can_create_topic_group.new
+            if isinstance(new_can_create_topic_group, int):
+                if new_can_create_topic_group != everyone_group.id:
+                    raise IncompatibleParametersError(
+                        ["history_public_to_subscribers", "can_create_topic_group"]
+                    )
+            else:
+                raise IncompatibleParametersError(
+                    ["history_public_to_subscribers", "can_create_topic_group"]
+                )
 
     if (
         is_private is not None
@@ -664,6 +695,7 @@ def add_subscriptions_backend(
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
+    can_create_topic_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     announce: Json[bool] = False,
@@ -758,6 +790,7 @@ def add_subscriptions_backend(
             "can_move_messages_within_channel_group"
         ]
         stream_dict_copy["can_send_message_group"] = group_settings_map["can_send_message_group"]
+        stream_dict_copy["can_create_topic_group"] = group_settings_map["can_create_topic_group"]
         stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
             "can_remove_subscribers_group"
         ]

@@ -28,6 +28,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 let created_stream: string | undefined;
@@ -77,6 +78,7 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
     ["can_move_messages_out_of_channel_group", null],
     ["can_move_messages_within_channel_group", null],
     ["can_remove_subscribers_group", null],
@@ -196,6 +198,7 @@ function toggle_advanced_configurations(): void {
 $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscribers", (e) => {
     e.preventDefault();
     e.stopPropagation();
+    $(".stream_create_info").hide();
 
     const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
     const is_stream_name_valid = stream_name_error.validate_for_submit(stream_name);
@@ -204,6 +207,7 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
     let is_web_public = false;
 
     let is_any_stream_group_widget_pending = false;
+    let is_can_create_topic_group_setting_valid = true;
     const permission_settings = Object.keys(realm.server_supported_permission_settings.stream);
     for (const setting_name of permission_settings) {
         const widget = group_setting_widget_map.get(setting_name);
@@ -217,6 +221,24 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
             widget.appendValue(widget.getCurrentText()!);
             break;
         }
+        if (setting_name === "can_create_topic_group") {
+            const setting_value = settings_components.get_group_setting_widget_value(widget);
+            const everyone_group = user_groups.get_user_group_from_name("role:everyone")!;
+            if (setting_value !== everyone_group.id && privacy_type === "invite-only") {
+                is_can_create_topic_group_setting_valid = false;
+            }
+        }
+    }
+
+    if (!is_can_create_topic_group_setting_valid) {
+        ui_report.client_error(
+            $t_html({
+                defaultMessage:
+                    "You must allow everyone to start new topics in this channel in order to turn on protected history.",
+            }),
+            $(".stream_create_info"),
+        );
+        return;
     }
 
     if (is_stream_name_valid && !is_any_stream_group_widget_pending) {
@@ -550,6 +572,7 @@ export function show_new_stream_modal(): void {
     update_announce_stream_state();
     stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_and_stream_privacy_state($("#stream-creation"));
+    stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -580,6 +603,7 @@ export function set_up_handlers(): void {
         update_announce_stream_state();
         stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
         stream_ui_updates.update_can_subscribe_group_label($container);
+        stream_ui_updates.update_can_create_topic_group_setting_state($container);
     });
 
     $container.on("change", ".default-stream input", () => {

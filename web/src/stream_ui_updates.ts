@@ -123,18 +123,37 @@ export function update_private_stream_privacy_option_state(
         )}']`,
     );
 
-    const disable_private_stream_options =
-        is_default_stream || !settings_data.user_can_create_private_streams();
+    const stream_id = Number.parseInt(
+        $container.find(".subscription_settings.show").attr("data-stream-id")!,
+        10,
+    );
+    const private_stream_option_state = settings_components.get_private_stream_option_state(
+        stream_id,
+        is_default_stream,
+    );
 
-    $private_stream_elem.prop("disabled", disable_private_stream_options);
-    $private_with_public_history_elem.prop("disabled", disable_private_stream_options);
+    $private_stream_elem.prop("disabled", private_stream_option_state !== "enable");
+    $private_with_public_history_elem.prop(
+        "disabled",
+        private_stream_option_state === "for_default_stream",
+    );
 
     $private_stream_elem
         .closest("div")
-        .toggleClass("default_stream_private_tooltip", is_default_stream);
+        .toggleClass(
+            "default_stream_private_tooltip",
+            private_stream_option_state === "for_default_stream",
+        )
+        .toggleClass(
+            "can_create_topic_group_tooltip",
+            private_stream_option_state === "for_can_create_topic_group",
+        );
     $private_with_public_history_elem
         .closest("div")
-        .toggleClass("default_stream_private_tooltip", is_default_stream);
+        .toggleClass(
+            "default_stream_private_tooltip",
+            private_stream_option_state === "for_default_stream",
+        );
 }
 
 export function initialize_cant_subscribe_popover(): void {
@@ -405,6 +424,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     if (!stream_data.user_can_set_topics_policy(sub)) {
         $stream_settings.find("#id_topics_policy").prop("disabled", true);
     }
+    update_can_create_topic_group_setting_state($("#stream_settings"));
 }
 
 export function update_announce_stream_option(): void {
@@ -622,4 +642,27 @@ export function update_channel_folder_dropdown(sub: StreamSubscription): void {
     }
 
     settings_components.set_channel_folder_dropdown_value(sub);
+}
+
+export function update_can_create_topic_group_setting_state($container: JQuery): void {
+    const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
+    const is_history_protected = privacy_type === "invite-only";
+
+    let $setting_element = $container.find("#id_can_create_topic_group");
+    if (hash_parser.is_create_new_stream_narrow()) {
+        $setting_element = $container.find("#id_new_can_create_topic_group");
+    }
+    $setting_element.find(".input").prop("contenteditable", !is_history_protected);
+    $setting_element
+        .closest(".input-group")
+        .toggleClass("group_setting_disabled", is_history_protected);
+    $setting_element
+        .closest("div")
+        .toggleClass("can_create_topic_group_tooltip", is_history_protected);
+
+    if (!is_history_protected) {
+        settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
+    } else {
+        settings_components.enable_opening_typeahead_on_clicking_label($setting_element);
+    }
 }
