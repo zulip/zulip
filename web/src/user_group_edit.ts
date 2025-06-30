@@ -1422,6 +1422,7 @@ export function switch_to_group_row(group: UserGroup): void {
 function show_right_section(): void {
     $(".right").addClass("show");
     $("#groups_overlay .two-pane-settings-header").addClass("slide-left");
+    resize.resize_settings_overlay_subheader_for_narrow_screens($("#groups_overlay_container"));
 }
 
 export function add_group_to_table(group: UserGroup): void {
@@ -2156,6 +2157,7 @@ export function initialize(): void {
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#groups_overlay_container .two-pane-settings-header").removeClass("slide-left");
+        resize.resize_settings_overlay_subheader_for_narrow_screens($("#groups_overlay_container"));
     });
 
     $("#groups_overlay_container").on(
