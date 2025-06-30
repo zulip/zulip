@@ -38,28 +38,26 @@ formatting:
 
 {!start-composing.md!}
 
-1. To create an inline code span, use single backticks around the text:
+1.  To create an inline code span, use single backticks around the text:
 
-~~~
-`text`
-~~~
-   To create a code block, use triple backticks around the text:
-~~~
-```
-def f(x):
-    return x+1
-```
-~~~
-   To enable syntax highlighting, use triple backticks followed by one or more
-   letters, and select the desired programming language from the auto-complete
-   suggestions.
-~~~
-```python
-def fib(n):
-    # TODO: base case
-    return fib(n-1) + fib(n-2)
-```
-~~~
+        `text`
+
+    To create a code block, use triple backticks around the text:
+
+        ```
+        def f(x):
+            return x+1
+        ```
+
+    To enable syntax highlighting, use triple backticks followed by one or more
+    letters, and select the desired programming language from the auto-complete
+    suggestions.
+
+        ```python
+        def fib(n):
+            # TODO: base case
+            return fib(n-1) + fib(n-2)
+        ```
 
 !!! tip ""
 
