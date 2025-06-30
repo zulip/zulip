@@ -39,7 +39,7 @@ type ScheduledMessageRenderContext = ScheduledMessage &
 export const keyboard_handling_context = {
     get_items_ids() {
         const scheduled_messages_ids = [];
-        const sorted_messages = sort_scheduled_messages(scheduled_messages.scheduled_messages_data);
+        const sorted_messages = sort_scheduled_messages(scheduled_messages.scheduled_messages_by_id);
         for (const message of sorted_messages) {
             scheduled_messages_ids.push(message.scheduled_message_id.toString());
         }
@@ -139,7 +139,7 @@ export function launch(): void {
     });
 
     const rendered_list = render_scheduled_message({
-        scheduled_messages_data: format(scheduled_messages.scheduled_messages_data),
+        scheduled_messages_data: format(scheduled_messages.scheduled_messages_by_id),
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.append($(rendered_list));
@@ -153,7 +153,7 @@ export function rerender(): void {
         return;
     }
     const rendered_list = render_scheduled_message({
-        scheduled_messages_data: format(scheduled_messages.scheduled_messages_data),
+        scheduled_messages_data: format(scheduled_messages.scheduled_messages_by_id),
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.find(".scheduled-message-row").remove();
