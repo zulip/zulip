@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 
 from scripts.lib.zulip_tools import deport
-from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
+from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEVELOPMENT, PRODUCTION, get_config, get_secret
 
@@ -734,3 +734,6 @@ NAVIGATION_TOUR_VIDEO_URL: str | None = (
 
 # Webhook signature verification.
 VERIFY_WEBHOOK_SIGNATURES = True
+
+# SCIM API configuration.
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
