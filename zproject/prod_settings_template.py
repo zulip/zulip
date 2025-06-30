@@ -240,6 +240,25 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "full_name": "cn",
     # "first_name": "fn",
     # "last_name": "ln",
+    #
+    ## For purposes of authentication and Zulip user account data sync with LDAP at login time,
+    ## you can choose to use an LDAP attribute as the unique identifier of users instead of
+    ## Zulip's default of using the email.
+    ## In order to do this, uncomment the unique_account_id row below.
+    ## Upon enabling of this feature, users logging in with their LDAP credentials will have the value
+    ## of this attribute associated with their accounts for the future.
+    ## If the email value of the user changes in LDAP after that, upon the next log in the Zulip account
+    ## will be found based on this attribute value - and the email of the Zulip account will be updated
+    ## to match the email in LDAP.
+    ##
+    ## The recommended attribute to use for this feature is the DN. That's because DNs tend to be stable
+    ## and are unique in the LDAP directory.
+    ## You can use a different attribute if desired, but it is crucial for it to be both stable across time
+    ## and unique. Violations of these properties will lead to buggy and potentially insecure behavior.
+    ##
+    ## TODO: This documentation should likely be moved to RTD and we should have a very brief description
+    ## and a to the RTD section here.
+    # "unique_account_id": "dn",
     ##
     ## Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
     # "avatar": "thumbnailPhoto",
