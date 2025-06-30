@@ -53,6 +53,14 @@ export const LONG_HOVER_DELAY: [number, number] = [750, 20];
 // keyboard shortcut. For these tooltips, it's very important to avoid
 // distracting users unnecessarily.
 export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
+// These delays are specifically for singleton tooltips. Unlike default tooltips,
+// singleton tooltips can feel disconnected or abrupt when using the default hide delays
+// from INSTANT_HOVER_DELAY or LONG_HOVER_DELAY, due to the very low hide timings we use.
+
+// To address this, we increase the hide delay to 250ms. This ensures smoother transitions
+// and prevents tooltips from disappearing too quickly, improving the overall UX.
+export const SINGLETON_INSTANT_HOVER_DELAY: [number, number] = [100, 250];
+export const SINGLETON_LONG_HOVER_DELAY: [number, number] = [750, 250];
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
