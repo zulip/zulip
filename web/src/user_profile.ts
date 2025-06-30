@@ -1054,16 +1054,10 @@ function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPil
     */
     const new_profile_data = [];
     $("#edit-user-form .custom_user_field_value").each(function () {
-        // Remove duplicate datepicker input element generated flatpickr library
-        if (!$(this).hasClass("form-control")) {
-            new_profile_data.push({
-                id: Number.parseInt(
-                    $(this).closest(".custom_user_field").attr("data-field-id")!,
-                    10,
-                ),
-                value: $(this).val(),
-            });
-        }
+        new_profile_data.push({
+            id: Number.parseInt($(this).closest(".custom_user_field").attr("data-field-id")!, 10),
+            value: $(this).val(),
+        });
     });
     // Append user type field values also
     for (const [field_id, field_pills] of fields_user_pills) {
@@ -1083,7 +1077,7 @@ function get_current_values(
     $edit_form: JQuery,
 ): Record<string, unknown> & {user_id?: string | undefined} {
     const raw_current_values = dialog_widget.get_current_values(
-        $edit_form.find("input, select, textarea, button, .pill-container"),
+        $edit_form.find("input:not(.datepicker), select, textarea, button, .pill-container"),
     );
     const schema = z.intersection(
         z.object({
@@ -1150,7 +1144,10 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         custom_profile_field_form_selector,
         user_id,
     );
-    custom_profile_fields_ui.initialize_custom_date_type_fields(custom_profile_field_form_selector);
+    custom_profile_fields_ui.initialize_custom_date_type_fields(
+        custom_profile_field_form_selector,
+        user_id,
+    );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(
         custom_profile_field_form_selector,
     );
