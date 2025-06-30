@@ -3,6 +3,13 @@
     <h4 class="stream_setting_subsection_title">
         {{t "Add subscribers" }}
     </h4>
+    <div class="subscriber_list_settings">
+        <div class="subscriber_list_add float-left">
+            <div class="stream_subscription_request_result"></div>
+            {{> add_subscribers_form .}}
+        </div>
+        <div class="clear-float"></div>
+    </div>
     <div>
         <div class="subsection-parent send_notification_to_new_subscribers_container inline-block">
             {{> ./../settings/settings_checkbox
@@ -11,13 +18,6 @@
               label=(t "Send notification message to newly subscribed users")
               }}
         </div>
-    </div>
-    <div class="subscriber_list_settings">
-        <div class="subscriber_list_add float-left">
-            {{> add_subscribers_form .}}
-            <div class="stream_subscription_request_result"></div>
-        </div>
-        <div class="clear-float"></div>
     </div>
     <div>
         <h4 class="inline-block stream_setting_subsection_title">{{t "Subscribers"}}</h4>
