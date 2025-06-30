@@ -257,8 +257,8 @@ def exclude_stream_and_topic_mutes(
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
         stream_cond = column("recipient_id", Integer) == recipient_id
-        topic_cond = topic_match_sa(topic_name)
-        return and_(stream_cond, topic_cond)
+        exact_topic_cond = topic_match_sa(topic_name, exact=True)
+        return and_(stream_cond, exact_topic_cond)
 
     # Add this query later to reduce the number of messages it has to run on.
     if excluded_topic_rows:

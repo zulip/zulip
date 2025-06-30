@@ -1,18 +1,35 @@
-from sqlalchemy.sql import ColumnElement, and_, column, func, literal, literal_column, select, table
+from sqlalchemy.sql import (
+    ColumnElement,
+    and_,
+    cast,
+    column,
+    func,
+    literal,
+    literal_column,
+    select,
+    table,
+)
 from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.models import UserTopic
 
 
-def topic_match_sa(topic_name: str) -> ColumnElement[Boolean]:
+def topic_match_sa(topic_name: str, exact: bool = True) -> ColumnElement[Boolean]:
     # _sa is short for SQLAlchemy, which we use mostly for
     # queries that search messages
-    topic_cond = and_(
-        func.upper(column("subject", Text)) == func.upper(literal(topic_name)),
-        column("is_channel_message", Boolean),
-    )
-    return topic_cond
+    if exact:
+        topic_cond = and_(
+            func.upper(column("subject", Text)) == func.upper(literal(topic_name)),
+            column("is_channel_message", Boolean),
+        )
+        return topic_cond
+    else:
+        # Use word boundaries to match whole words only
+        pattern = f"\\y{topic_name}\\y"
+        return cast(
+            column("subject", Text).op("~*")(pattern), Boolean
+        )  # Case-insensitive regex match
 
 
 def get_resolved_topic_condition_sa() -> ColumnElement[Boolean]:
