@@ -9,6 +9,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.streams import (
     StreamDict,
+    check_channel_creation_permissions,
     create_stream_if_needed,
     create_streams_if_needed,
     ensure_stream,
@@ -265,6 +266,117 @@ class TestCreateStreams(ZulipTestCase):
             subdomain="zulip",
         )
         self.assert_json_error(result, "A default channel cannot be private.")
+
+    def test_create_stream_using_add_channel(self) -> None:
+        user_profile = self.example_user("iago")
+
+        params = dict(
+            channel=orjson.dumps(
+                {"name": "basketball", "description": "Channel for chatting about basketball."}
+            ).decode(),
+            subscribers=orjson.dumps([11]).decode(),
+            announce=orjson.dumps(False).decode(),
+            is_default_stream=orjson.dumps(True).decode(),
+            invite_only=orjson.dumps(False).decode(),
+            is_web_public=orjson.dumps(False).decode(),
+        )
+
+        result = self.api_post(user_profile, "/api/v1/channels/create", params)
+        self.assert_json_success(result)
+        cordelia = self.example_user("cordelia")
+        params = {
+            "channel": orjson.dumps(
+                {"name": "testchannel", "description": "Testing can_* fields", "color": "#11f1f1"}
+            ).decode(),
+            "subscribers": orjson.dumps([11, cordelia.id]).decode(),
+            "announce": orjson.dumps(False).decode(),
+            "invite_only": orjson.dumps(False).decode(),
+            "is_web_public": orjson.dumps(False).decode(),
+            "is_default_stream": orjson.dumps(False).decode(),
+            "can_add_subscribers_group": orjson.dumps(
+                {"direct_members": [cordelia.id], "direct_subgroups": []}
+            ).decode(),
+        }
+
+        result = self.api_post(user_profile, "/api/v1/channels/create", params)
+        self.assert_json_success(result)
+
+        # Creating an existing channel should return an error.
+        params = {
+            "channel": orjson.dumps(
+                {"name": "basketball", "description": "Channel for chatting about basketball."}
+            ).decode(),
+            "subscribers": orjson.dumps([11]).decode(),
+        }
+        result = self.api_post(user_profile, "/api/v1/channels/create", params)
+        self.assert_json_error(result, "Channel 'basketball' already exists", status_code=409)
+        self.assert_json_error_contains(
+            result, "Channel 'basketball' already exists", status_code=409
+        )
+
+    def test_channel_creation_permissions(self) -> None:
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+        curr_stream_dict = StreamDict(
+            name="new_stream", invite_only=False, message_retention_days=10, is_web_public=False
+        )
+        with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
+            check_channel_creation_permissions(iago, curr_stream_dict, False)
+
+        curr_stream_dict = StreamDict(
+            name="new_stream", message_retention_days=10, invite_only=False, is_web_public=False
+        )
+        check_channel_creation_permissions(desdemona, curr_stream_dict, False)
+
+        curr_stream_dict = {
+            "name": "new_stream",
+            "message_retention_days": 10,
+            "is_web_public": False,
+            "invite_only": True,
+        }
+        with self.assertRaisesRegex(JsonableError, "A default channel cannot be private."):
+            check_channel_creation_permissions(iago, curr_stream_dict, True)
+
+        hamlet = self.example_user("hamlet")
+        curr_stream_dict = StreamDict(
+            name="new_stream", message_retention_days=None, is_web_public=True, invite_only=False
+        )
+
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
+            check_channel_creation_permissions(hamlet, curr_stream_dict, False)
+
+        curr_stream_dict = StreamDict(
+            name="new_stream", message_retention_days=None, invite_only=False
+        )
+        # Default stream can only be created by admin
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
+            check_channel_creation_permissions(hamlet, curr_stream_dict, True)
+
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertFalse(hamlet.realm.has_web_public_streams())
+            curr_stream_dict = StreamDict(
+                name="new_stream",
+                message_retention_days=None,
+                is_web_public=True,
+                invite_only=False,
+            )
+            with self.assertRaisesRegex(JsonableError, "Web-public channels are not enabled."):
+                check_channel_creation_permissions(hamlet, curr_stream_dict, False)
+
+        curr_stream_dict = StreamDict(
+            name="new_stream", message_retention_days=None, invite_only=True
+        )
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.can_create_private_streams())
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
+            check_channel_creation_permissions(polonius, curr_stream_dict, False)
+
+        curr_stream_dict = StreamDict(
+            name="new_stream", message_retention_days=None, invite_only=False
+        )
+        self.assertFalse(polonius.can_create_public_streams())
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
+            check_channel_creation_permissions(polonius, curr_stream_dict, False)
 
     def test_history_public_to_subscribers_zephyr_realm(self) -> None:
         realm = get_realm("zephyr")
