@@ -258,6 +258,20 @@ export function initialize(): void {
         appendTo: () => document.body,
     });
 
+    tippy.delegate("body", {
+        target: ".add-task-wrapper",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const content = $elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
+        },
+        appendTo: () => document.body,
+    });
+
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",
