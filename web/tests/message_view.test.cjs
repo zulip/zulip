@@ -129,8 +129,6 @@ run_test("empty_narrow_html", ({mock_template}) => {
     );
 
     const search_data_with_all_search_types = {
-        topic_query: "test",
-        stream_query: "new",
         has_stop_word: true,
         query_words: [
             {query_word: "search", is_stop_word: false},
@@ -147,9 +145,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
     <div class="empty-feed-notice-description">
-            Some common words were excluded from your search. <br/>You searched for:
-            <span>channel: new</span>
-            <span>topic: test</span>
+            Common words were excluded from your search: <br/>
                 <span class="search-query-word">search</span>
                 <del>a</del>
     </div>
@@ -159,7 +155,6 @@ run_test("empty_narrow_html", ({mock_template}) => {
 
     const search_data_with_stream_without_stop_words = {
         has_stop_word: false,
-        stream_query: "hello world",
         query_words: [{query_word: "searchA", is_stop_word: false}],
     };
     actual_html = empty_narrow_html(
@@ -172,17 +167,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
     <div class="empty-feed-notice-description">
-            You searched for:
-            <span>channel: hello world</span>
-                <span class="search-query-word">searchA</span>
-    </div>
+                </div>
 </div>
 `,
     );
 
     const search_data_with_topic_without_stop_words = {
         has_stop_word: false,
-        topic_query: "hello",
         query_words: [{query_word: "searchB", is_stop_word: false}],
     };
     actual_html = empty_narrow_html(
@@ -195,10 +186,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
     <div class="empty-feed-notice-description">
-            You searched for:
-            <span>topic: hello</span>
-                <span class="search-query-word">searchB</span>
-    </div>
+                </div>
 </div>
 `,
     );
@@ -650,7 +638,7 @@ run_test("show_empty_narrow_message_with_search", ({mock_template, override}) =>
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.match(
         $(".empty_feed_notice_main").html(),
-        /<span class="search-query-word">grail<\/span>/,
+        /<div class="empty_feed_notice">\s*<h4 class="empty-feed-notice-title"> translated: No search results. <\/h4>\s*<div class="empty-feed-notice-description">\s*<\/div>\s*<\/div>/,
     );
 });
 
