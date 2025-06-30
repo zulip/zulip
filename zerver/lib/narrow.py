@@ -59,6 +59,7 @@ from zerver.lib.topic_sqlalchemy import (
 from zerver.lib.types import Validator
 from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.lib.user_topics import exclude_stream_and_topic_mutes
+from zerver.lib.users import access_user_by_email
 from zerver.lib.validator import (
     check_bool,
     check_required_string,
@@ -120,6 +121,7 @@ class NarrowParameter(BaseModel):
             "sender",
             "group-pm-with",
             "dm-including",
+            "mentions",
             "with",
         ]
         operators_supporting_ids = ["pm-with", "dm"]
@@ -293,6 +295,7 @@ class NarrowBuilder:
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
             "dm-including": self.by_dm_including,
+            "mentions": self.by_mention,
             # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
@@ -761,6 +764,25 @@ class NarrowBuilder:
                 ),
             ),
         )
+        return query.where(maybe_negate(cond))
+
+    def by_mention(
+        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
+    ) -> Select:
+        assert self.user_profile is not None
+
+        try:
+            if isinstance(operand, int):
+                user = get_user_by_id_in_realm_including_cross_realm(int(operand), self.realm)
+            else:
+                user = access_user_by_email(self.user_profile, operand, for_admin=False)
+        except JsonableError:
+            raise BadNarrowOperatorError("unknown user " + str(operand))
+
+        cond = (column("user_profile_id", Integer) == user.id) & (
+            column("flags", Integer).op("&")(literal(UserMessage.flags.mentioned.mask)) != 0
+        )
+
         return query.where(maybe_negate(cond))
 
     def by_group_pm_with(
