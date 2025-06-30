@@ -311,7 +311,7 @@ no-binary-package = ["lxml", "xmlsec"]
 
 [tool.uv.sources]
 # https://github.com/django/asgiref/pull/494
-asgiref = { url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" }
+asgiref = { url = "https://github.com/andersk/asgiref/archive/dd3d52cd9df741aaa44eaf4e8e5f63d74113f731.zip" }
 
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239

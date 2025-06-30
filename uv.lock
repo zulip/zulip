@@ -244,11 +244,11 @@ wheels = [
 [[package]]
 name = "asgiref"
 version = "3.8.1"
-source = { url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" }
+source = { url = "https://github.com/andersk/asgiref/archive/dd3d52cd9df741aaa44eaf4e8e5f63d74113f731.zip" }
 dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
-sdist = { hash = "sha256:cf6ca7018a0f71c116ddde28c1c68bbfefeb4abdef4e56458811348ae9c10c9b" }
+sdist = { hash = "sha256:ebbef31b4b6bf488e44b16cfe64ca166d57b8cde68b7216f4c933cd5039cddd1" }
 
 [package.metadata]
 requires-dist = [
@@ -5479,7 +5479,7 @@ dev = [
     { name = "aiosmtpd", specifier = ">=1.4.6" },
     { name = "altcha" },
     { name = "annotated-types" },
-    { name = "asgiref", url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" },
+    { name = "asgiref", url = "https://github.com/andersk/asgiref/archive/dd3d52cd9df741aaa44eaf4e8e5f63d74113f731.zip" },
     { name = "backoff" },
     { name = "beautifulsoup4" },
     { name = "black" },
@@ -5615,7 +5615,7 @@ prod = [
     { name = "aiosmtpd", specifier = ">=1.4.6" },
     { name = "altcha" },
     { name = "annotated-types" },
-    { name = "asgiref", url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" },
+    { name = "asgiref", url = "https://github.com/andersk/asgiref/archive/dd3d52cd9df741aaa44eaf4e8e5f63d74113f731.zip" },
     { name = "backoff" },
     { name = "beautifulsoup4" },
     { name = "boto3" },
