@@ -389,6 +389,8 @@ function elem($obj) {
 }
 
 test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
+    topic_list.setup_topic_search_typeahead = noop;
+
     const $label1 = $.create("label1 stub");
     const $label2 = $.create("label2 stub");
 
