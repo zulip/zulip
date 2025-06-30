@@ -93,38 +93,59 @@ def update_realm(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    name: Annotated[str | None, StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)] = None,
+    allow_message_editing: Json[bool] | None = None,
+    authentication_methods: Json[dict[str, Any]] | None = None,
+    avatar_changes_disabled: Json[bool] | None = None,
+    can_access_all_users_group: Json[GroupSettingChangeRequest] | None = None,
+    can_add_custom_emoji_group: Json[GroupSettingChangeRequest] | None = None,
+    can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_bots_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_groups: Json[GroupSettingChangeRequest] | None = None,
+    can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_write_only_bots_group: Json[GroupSettingChangeRequest] | None = None,
+    can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
+    can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
+    can_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
+    can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
+    can_manage_billing_group: Json[GroupSettingChangeRequest] | None = None,
+    can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
+    can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
+    can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
+    can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
+    default_code_block_language: str | None = None,
+    default_language: str | None = None,
     description: Annotated[
         str | None, StringConstraints(max_length=Realm.MAX_REALM_DESCRIPTION_LENGTH)
     ] = None,
-    emails_restricted_to_domains: Json[bool] | None = None,
+    digest_emails_enabled: Json[bool] | None = None,
+    digest_weekday: Json[DigestWeekdayEnum] | None = None,
+    direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
+    direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
     disallow_disposable_email_addresses: Json[bool] | None = None,
-    invite_required: Json[bool] | None = None,
-    create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
-    require_unique_names: Json[bool] | None = None,
-    name_changes_disabled: Json[bool] | None = None,
     email_changes_disabled: Json[bool] | None = None,
-    avatar_changes_disabled: Json[bool] | None = None,
+    emails_restricted_to_domains: Json[bool] | None = None,
+    enable_guest_user_dm_warning: Json[bool] | None = None,
+    enable_guest_user_indicator: Json[bool] | None = None,
+    enable_read_receipts: Json[bool] | None = None,
+    enable_spectator_access: Json[bool] | None = None,
+    giphy_rating: Json[int] | None = None,
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
-    can_add_custom_emoji_group: Json[GroupSettingChangeRequest] | None = None,
-    can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
-    can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
-    can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
+    invite_required: Json[bool] | None = None,
+    jitsi_server_url_raw: Annotated[
+        Json[str] | None,
+        AfterValidator(lambda val: check_jitsi_url(val)),
+        ApiParamConfig("jitsi_server_url"),
+    ] = None,
+    message_content_allowed_in_email_notifications: Json[bool] | None = None,
     message_content_delete_limit_seconds_raw: Annotated[
         Json[int | str] | None,
         ApiParamConfig("message_content_delete_limit_seconds"),
-    ] = None,
-    allow_message_editing: Json[bool] | None = None,
-    topics_policy: Annotated[
-        str | None,
-        AfterValidator(
-            lambda val: parse_enum_from_string_value(
-                val,
-                "topics_policy",
-                RealmTopicsPolicyEnum,
-            )
-        ),
     ] = None,
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
@@ -139,65 +160,44 @@ def update_realm(
             )
         ),
     ] = None,
-    default_language: str | None = None,
-    waiting_period_threshold: Json[NonNegativeInt] | None = None,
-    authentication_methods: Json[dict[str, Any]] | None = None,
-    # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
-    # are not offered here as it is maintained by the server, not via the API.
-    moderation_request_channel_id: Json[int] | None = None,
-    new_stream_announcements_stream_id: Json[int] | None = None,
-    signup_announcements_stream_id: Json[int] | None = None,
-    zulip_update_announcements_stream_id: Json[int] | None = None,
     message_retention_days_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_retention_days")
     ] = None,
-    send_welcome_emails: Json[bool] | None = None,
-    digest_emails_enabled: Json[bool] | None = None,
-    message_content_allowed_in_email_notifications: Json[bool] | None = None,
-    can_create_bots_group: Json[GroupSettingChangeRequest] | None = None,
-    can_create_groups: Json[GroupSettingChangeRequest] | None = None,
-    can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
-    can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
-    can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
-    can_create_write_only_bots_group: Json[GroupSettingChangeRequest] | None = None,
-    can_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
-    can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
-    can_manage_billing_group: Json[GroupSettingChangeRequest] | None = None,
-    can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
-    can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
-    can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
-    can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
-    can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
-    can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
-    direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
-    direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
-    video_chat_provider: Json[int] | None = None,
-    jitsi_server_url_raw: Annotated[
-        Json[str] | None,
-        AfterValidator(lambda val: check_jitsi_url(val)),
-        ApiParamConfig("jitsi_server_url"),
-    ] = None,
-    giphy_rating: Json[int] | None = None,
-    default_code_block_language: str | None = None,
-    digest_weekday: Json[DigestWeekdayEnum] | None = None,
-    string_id: Annotated[
-        str | None, StringConstraints(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
-    ] = None,
-    org_type: Json[OrgTypeEnum] | None = None,
-    enable_spectator_access: Json[bool] | None = None,
-    want_advertise_in_communities_directory: Json[bool] | None = None,
-    enable_read_receipts: Json[bool] | None = None,
-    move_messages_within_stream_limit_seconds_raw: Annotated[
-        Json[int | str] | None,
-        ApiParamConfig("move_messages_within_stream_limit_seconds"),
-    ] = None,
+    moderation_request_channel_id: Json[int] | None = None,
     move_messages_between_streams_limit_seconds_raw: Annotated[
         Json[int | str] | None,
         ApiParamConfig("move_messages_between_streams_limit_seconds"),
     ] = None,
-    enable_guest_user_dm_warning: Json[bool] | None = None,
-    enable_guest_user_indicator: Json[bool] | None = None,
-    can_access_all_users_group: Json[GroupSettingChangeRequest] | None = None,
+    move_messages_within_stream_limit_seconds_raw: Annotated[
+        Json[int | str] | None,
+        ApiParamConfig("move_messages_within_stream_limit_seconds"),
+    ] = None,
+    name: Annotated[str | None, StringConstraints(max_length=Realm.MAX_REALM_NAME_LENGTH)] = None,
+    name_changes_disabled: Json[bool] | None = None,
+    new_stream_announcements_stream_id: Json[int] | None = None,
+    org_type: Json[OrgTypeEnum] | None = None,
+    require_unique_names: Json[bool] | None = None,
+    send_welcome_emails: Json[bool] | None = None,
+    signup_announcements_stream_id: Json[int] | None = None,
+    string_id: Annotated[
+        str | None, StringConstraints(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+    ] = None,
+    topics_policy: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "topics_policy",
+                RealmTopicsPolicyEnum,
+            )
+        ),
+    ] = None,
+    video_chat_provider: Json[int] | None = None,
+    waiting_period_threshold: Json[NonNegativeInt] | None = None,
+    want_advertise_in_communities_directory: Json[bool] | None = None,
+    zulip_update_announcements_stream_id: Json[int] | None = None,
+    # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
+    # are not offered here as it is maintained by the server, not via the API.
 ) -> HttpResponse:
     # Realm object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a
@@ -602,59 +602,54 @@ def update_realm_user_settings_defaults(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    web_mark_read_on_scroll_policy: Json[
+    automatically_follow_topics_policy: Json[
         Annotated[
             int,
-            check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
+            check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         ]
     ]
     | None = None,
-    web_channel_default_view: Json[
-        Annotated[int, check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)]
-    ]
-    | None = None,
-    starred_message_counts: Json[bool] | None = None,
-    receives_typing_notifications: Json[bool] | None = None,
-    web_stream_unreads_count_display_policy: Json[
+    automatically_follow_topics_where_mentioned: Json[bool] | None = None,
+    automatically_unmute_topics_in_muted_streams_policy: Json[
         Annotated[
             int,
-            check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+            check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
         ]
     ]
     | None = None,
-    fluid_layout_width: Json[bool] | None = None,
-    high_contrast_mode: Json[bool] | None = None,
     color_scheme: Json[Annotated[int, check_int_in_validator(UserProfile.COLOR_SCHEME_CHOICES)]]
     | None = None,
-    web_font_size_px: Json[int] | None = None,
-    web_line_height_percent: Json[int] | None = None,
-    translate_emoticons: Json[bool] | None = None,
-    display_emoji_reaction_users: Json[bool] | None = None,
-    web_home_view: Literal["recent_topics", "inbox", "all_messages"] | None = None,
-    web_escape_navigates_to_home_view: Json[bool] | None = None,
-    left_side_userlist: Json[bool] | None = None,
-    emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,
     demote_inactive_streams: Json[
         Annotated[int, check_int_in_validator(UserProfile.DEMOTE_STREAMS_CHOICES)]
     ]
     | None = None,
-    enable_stream_desktop_notifications: Json[bool] | None = None,
-    enable_stream_email_notifications: Json[bool] | None = None,
-    enable_stream_push_notifications: Json[bool] | None = None,
-    enable_stream_audible_notifications: Json[bool] | None = None,
-    wildcard_mentions_notify: Json[bool] | None = None,
+    desktop_icon_count_display: Json[
+        Annotated[int, check_int_in_validator(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES)]
+    ]
+    | None = None,
+    display_emoji_reaction_users: Json[bool] | None = None,
+    email_address_visibility: Json[
+        Annotated[int, check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)]
+    ]
+    | None = None,
+    email_notifications_batching_period_seconds: Json[int] | None = None,
+    emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,
+    enable_desktop_notifications: Json[bool] | None = None,
+    enable_digest_emails: Json[bool] | None = None,
+    enable_drafts_synchronization: Json[bool] | None = None,
+    enable_followed_topic_audible_notifications: Json[bool] | None = None,
     enable_followed_topic_desktop_notifications: Json[bool] | None = None,
     enable_followed_topic_email_notifications: Json[bool] | None = None,
     enable_followed_topic_push_notifications: Json[bool] | None = None,
-    enable_followed_topic_audible_notifications: Json[bool] | None = None,
     enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
-    notification_sound: str | None = None,
-    enable_desktop_notifications: Json[bool] | None = None,
-    enable_sounds: Json[bool] | None = None,
     enable_offline_email_notifications: Json[bool] | None = None,
     enable_offline_push_notifications: Json[bool] | None = None,
     enable_online_push_notifications: Json[bool] | None = None,
-    enable_digest_emails: Json[bool] | None = None,
+    enable_sounds: Json[bool] | None = None,
+    enable_stream_audible_notifications: Json[bool] | None = None,
+    enable_stream_desktop_notifications: Json[bool] | None = None,
+    enable_stream_email_notifications: Json[bool] | None = None,
+    enable_stream_push_notifications: Json[bool] | None = None,
     # enable_login_emails is not included here, because we don't want
     # security-related settings to be controlled by organization administrators.
     # enable_marketing_emails is not included here, since we don't at
@@ -663,12 +658,15 @@ def update_realm_user_settings_defaults(
     #
     # We may want to change this model in the future, since some SSO signups
     # do not offer an opportunity to prompt the user at all during signup.
+    enter_sends: Json[bool] | None = None,
+    fluid_layout_width: Json[bool] | None = None,
+    hide_ai_features: Json[bool] | None = None,
+    high_contrast_mode: Json[bool] | None = None,
+    left_side_userlist: Json[bool] | None = None,
     message_content_in_email_notifications: Json[bool] | None = None,
+    notification_sound: str | None = None,
     pm_content_in_desktop_notifications: Json[bool] | None = None,
-    desktop_icon_count_display: Json[
-        Annotated[int, check_int_in_validator(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES)]
-    ]
-    | None = None,
+    presence_enabled: Json[bool] | None = None,
     realm_name_in_email_notifications_policy: Json[
         Annotated[
             int,
@@ -676,42 +674,7 @@ def update_realm_user_settings_defaults(
         ]
     ]
     | None = None,
-    automatically_follow_topics_policy: Json[
-        Annotated[
-            int,
-            check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
-        ]
-    ]
-    | None = None,
-    automatically_unmute_topics_in_muted_streams_policy: Json[
-        Annotated[
-            int,
-            check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
-        ]
-    ]
-    | None = None,
-    automatically_follow_topics_where_mentioned: Json[bool] | None = None,
-    presence_enabled: Json[bool] | None = None,
-    enter_sends: Json[bool] | None = None,
-    enable_drafts_synchronization: Json[bool] | None = None,
-    email_notifications_batching_period_seconds: Json[int] | None = None,
-    twenty_four_hour_time: Json[bool] | None = None,
-    send_stream_typing_notifications: Json[bool] | None = None,
-    send_private_typing_notifications: Json[bool] | None = None,
-    send_read_receipts: Json[bool] | None = None,
-    user_list_style: Json[
-        Annotated[int, check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)]
-    ]
-    | None = None,
-    web_animate_image_previews: Literal["always", "on_hover", "never"] | None = None,
-    email_address_visibility: Json[
-        Annotated[int, check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)]
-    ]
-    | None = None,
-    web_navigate_to_sent_message: Json[bool] | None = None,
-    web_suggest_update_timezone: Json[bool] | None = None,
-    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
-    hide_ai_features: Json[bool] | None = None,
+    receives_typing_notifications: Json[bool] | None = None,
     resolved_topic_notice_auto_read_policy: Annotated[
         str | None,
         AfterValidator(
@@ -722,6 +685,43 @@ def update_realm_user_settings_defaults(
             )
         ),
     ] = None,
+    send_private_typing_notifications: Json[bool] | None = None,
+    send_read_receipts: Json[bool] | None = None,
+    send_stream_typing_notifications: Json[bool] | None = None,
+    starred_message_counts: Json[bool] | None = None,
+    translate_emoticons: Json[bool] | None = None,
+    twenty_four_hour_time: Json[bool] | None = None,
+    user_list_style: Json[
+        Annotated[int, check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)]
+    ]
+    | None = None,
+    web_animate_image_previews: Literal["always", "on_hover", "never"] | None = None,
+    web_channel_default_view: Json[
+        Annotated[int, check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)]
+    ]
+    | None = None,
+    web_escape_navigates_to_home_view: Json[bool] | None = None,
+    web_font_size_px: Json[int] | None = None,
+    web_home_view: Literal["recent_topics", "inbox", "all_messages"] | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
+    web_line_height_percent: Json[int] | None = None,
+    web_mark_read_on_scroll_policy: Json[
+        Annotated[
+            int,
+            check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
+        ]
+    ]
+    | None = None,
+    web_navigate_to_sent_message: Json[bool] | None = None,
+    web_stream_unreads_count_display_policy: Json[
+        Annotated[
+            int,
+            check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+        ]
+    ]
+    | None = None,
+    web_suggest_update_timezone: Json[bool] | None = None,
+    wildcard_mentions_notify: Json[bool] | None = None,
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

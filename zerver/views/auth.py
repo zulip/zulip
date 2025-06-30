@@ -162,14 +162,14 @@ def maybe_send_to_registration(
     request: HttpRequest,
     email: str,
     *,
-    full_name: str = "",
-    role: int | None = None,
-    mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
-    is_signup: bool = False,
-    multiuse_object_key: str = "",
+    full_name: str = "",
     full_name_validated: bool = False,
+    is_signup: bool = False,
+    mobile_flow_otp: str | None = None,
+    multiuse_object_key: str = "",
     params_to_store_in_authenticated_session: dict[str, str] | None = None,
+    role: int | None = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -522,8 +522,8 @@ def create_response_for_otp_flow(
 def remote_user_sso(
     request: HttpRequest,
     *,
-    mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
+    mobile_flow_otp: str | None = None,
     next: str = "/",
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
@@ -634,10 +634,10 @@ def oauth_redirect_to_root(
     # positional parameters.
     /,
     *,
-    next: str | None = None,
-    multiuse_object_key: str = "",
-    mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
+    mobile_flow_otp: str | None = None,
+    multiuse_object_key: str = "",
+    next: str | None = None,
 ) -> HttpResponse:
     main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":

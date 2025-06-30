@@ -119,9 +119,9 @@ def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_id: PathOnly[int],
     deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
     | None = None,
+    user_id: PathOnly[int],
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -207,11 +207,11 @@ def update_user_by_id_api(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_id: PathOnly[int],
     full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
-    profile_data: Json[list[ProfileDataElement]] | None = None,
     new_email: str | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    role: Json[RoleParamType] | None = None,
+    user_id: PathOnly[int],
 ) -> HttpResponse:
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
@@ -235,9 +235,9 @@ def update_user_by_email_api(
     *,
     email: PathOnly[str],
     full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
-    profile_data: Json[list[ProfileDataElement]] | None = None,
     new_email: str | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    role: Json[RoleParamType] | None = None,
 ) -> HttpResponse:
     target = access_user_by_email(
         user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=True
@@ -259,9 +259,9 @@ def update_user_backend(
     target: UserProfile,
     *,
     full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
-    profile_data: Json[list[ProfileDataElement]] | None = None,
     new_email: str | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    role: Json[RoleParamType] | None = None,
 ) -> HttpResponse:
     if new_email is not None and (
         not user_profile.can_change_user_emails or not user_profile.is_realm_admin
@@ -441,15 +441,15 @@ def patch_bot_backend(
     user_profile: UserProfile,
     *,
     bot_id: PathOnly[int],
-    full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
     bot_owner_id: Json[int] | None = None,
     config_data: Json[dict[str, str]] | None = None,
-    service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
-    service_interface: Json[int] = 1,
-    default_sending_stream: str | None = None,
-    default_events_register_stream: str | None = None,
     default_all_public_streams: Json[bool] | None = None,
+    default_events_register_stream: str | None = None,
+    default_sending_stream: str | None = None,
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    service_interface: Json[int] = 1,
+    service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -555,20 +555,20 @@ def add_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
-    short_name_raw: Annotated[str, ApiParamConfig("short_name")],
     bot_type: Json[int] = UserProfile.DEFAULT_BOT,
-    payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
-    service_name: str | None = None,
     config_data: Json[Mapping[str, str]] | None = None,
-    interface_type: Json[int] = Service.GENERIC,
-    default_sending_stream_name: Annotated[
-        str | None, ApiParamConfig("default_sending_stream")
-    ] = None,
+    default_all_public_streams: Json[bool] | None = None,
     default_events_register_stream_name: Annotated[
         str | None, ApiParamConfig("default_events_register_stream")
     ] = None,
-    default_all_public_streams: Json[bool] | None = None,
+    default_sending_stream_name: Annotated[
+        str | None, ApiParamConfig("default_sending_stream")
+    ] = None,
+    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
+    interface_type: Json[int] = Service.GENERIC,
+    payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
+    service_name: str | None = None,
+    short_name_raw: Annotated[str, ApiParamConfig("short_name")],
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
@@ -727,9 +727,9 @@ def get_user_data(
     include_custom_profile_fields: bool,
     client_gravatar: bool,
     *,
+    realm: Realm | None = None,
     target_user: UserProfile | None = None,
     user_ids: list[int] | None = None,
-    realm: Realm | None = None,
 ) -> dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
@@ -766,8 +766,8 @@ def get_member_backend(
     user_profile: UserProfile,
     user_id: int,
     *,
-    include_custom_profile_fields: Json[bool] = False,
     client_gravatar: Json[bool] = True,
+    include_custom_profile_fields: Json[bool] = False,
 ) -> HttpResponse:
     target_user = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
@@ -786,9 +786,9 @@ def get_members_backend(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    user_ids: Json[list[int]] | None = None,
-    include_custom_profile_fields: Json[bool] = False,
     client_gravatar: Json[bool] = True,
+    include_custom_profile_fields: Json[bool] = False,
+    user_ids: Json[list[int]] | None = None,
 ) -> HttpResponse:
     if isinstance(maybe_user_profile, UserProfile):
         user_profile = maybe_user_profile
@@ -893,8 +893,8 @@ def get_subscription_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_id: PathOnly[Json[int]],
     stream_id: PathOnly[Json[int]],
+    user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
     (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
@@ -909,9 +909,9 @@ def get_user_by_email(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    client_gravatar: Json[bool] = True,
     email: PathOnly[str],
     include_custom_profile_fields: Json[bool] = False,
-    client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
     target_user = access_user_by_email(
         user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=False
