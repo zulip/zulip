@@ -1582,6 +1582,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         compose_finish_called = true;
     }
 
+    override_rewire(composebox_typeahead, "track_repeated_keyboard_event", () => {});
+
     ct.initialize({
         on_enter_send: finish,
     });
