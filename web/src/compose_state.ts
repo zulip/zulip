@@ -10,6 +10,7 @@ let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 let preview_render_count = 0;
+let is_processing_forward_message = false;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -83,6 +84,14 @@ export function get_preview_render_count(): number {
 
 export function set_preview_render_count(count: number): void {
     preview_render_count = count;
+}
+
+export function set_is_processing_forward_message(val: boolean): void {
+    is_processing_forward_message = val;
+}
+
+export function get_is_processing_forward_message(): boolean {
+    return is_processing_forward_message;
 }
 
 export function composing(): boolean {
