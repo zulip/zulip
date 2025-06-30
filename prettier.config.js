@@ -1,6 +1,7 @@
 export default {
     bracketSpacing: false,
     trailingComma: "all",
+    plugins: ["prettier-plugin-astro"],
     overrides: [
         {
             files: ["tsconfig.json"],
@@ -13,6 +14,12 @@ export default {
             files: ["*.md"],
             options: {
                 embeddedLanguageFormatting: "off",
+            },
+        },
+        {
+            files: "*.astro",
+            options: {
+                parser: "astro",
             },
         },
     ],

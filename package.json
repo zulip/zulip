@@ -148,6 +148,7 @@
     "openapi-examples-validator": "^6.0.1",
     "preact": "^10.24.3",
     "prettier": "~3.5.3",
+    "prettier-plugin-astro": "^0.14.1",
     "puppeteer": "^24.1.1",
     "source-map": "npm:source-map-js@^1.2.1",
     "stylelint": "^16.2.0",
