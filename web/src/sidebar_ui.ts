@@ -7,6 +7,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {$t} from "./i18n.ts";
 import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
@@ -293,6 +294,10 @@ export function initialize(): void {
 }
 
 export function initialize_left_sidebar(): void {
+    const can_create_streams =
+        settings_data.user_can_create_private_streams() ||
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams();
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
@@ -304,6 +309,9 @@ export function initialize_left_sidebar(): void {
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
+        add_channel_tooltip_text: can_create_streams
+            ? $t({defaultMessage: "Add channels"})
+            : $t({defaultMessage: "Browse channels"}),
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
