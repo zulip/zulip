@@ -1109,7 +1109,7 @@ export class Filter {
         return this.has_operator("dm") && this.operands("dm")[0]!.split(",").length === 1;
     }
 
-    supports_collapsing_recipients(): boolean {
+    contains_no_partial_conversations(): boolean {
         // Determines whether a view is guaranteed, by construction,
         // to contain consecutive messages in a given topic, and thus
         // it is appropriate to collapse recipient/sender headings.
@@ -1154,13 +1154,7 @@ export class Filter {
     }
 
     calc_can_mark_messages_read(): boolean {
-        // Arguably this should match supports_collapsing_recipients.
-        // We may want to standardize on that in the future.  (At
-        // present, this function does not allow combining valid filters).
-        if (this.single_term_type_returns_all_messages_of_conversation()) {
-            return true;
-        }
-        return false;
+        return this.contains_no_partial_conversations();
     }
 
     can_mark_messages_read(): boolean {

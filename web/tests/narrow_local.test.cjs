@@ -102,8 +102,8 @@ test_fixture("near after unreads", {
     ],
     expected_id_info: {
         target_id: 42,
-        final_select_id: 42,
-        local_select_id: 42,
+        final_select_id: 37,
+        local_select_id: 37,
     },
     expected_msg_ids: [37, 42, 44],
 });
