@@ -13,6 +13,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
+import * as resize from "./resize.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -42,11 +43,13 @@ export const show_subs_pane = {
         $("#subscription_overlay .stream-info-title").text(
             $t({defaultMessage: "Channel settings"}),
         );
+        resize.resize_settings_overlay_list_toggler_container($("#channels_overlay_container"));
     },
     settings(sub: StreamSubscription): void {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
         set_right_panel_title(sub);
+        resize.resize_settings_overlay_list_toggler_container($("#channels_overlay_container"));
     },
     create_stream(
         container_name = "configure_channel_settings",
@@ -72,6 +75,7 @@ export const show_subs_pane = {
                 }),
             );
         }
+        resize.resize_settings_overlay_list_toggler_container($("#channels_overlay_container"));
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();
         $(".nothing-selected, .settings, #stream-creation").hide();
