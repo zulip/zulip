@@ -15,6 +15,9 @@ import RawZulipIconEdit from "~icons/zulip-icon/edit?raw";
 import RawZulipIconManageSearch from "~icons/zulip-icon/manage-search?raw";
 import RawZulipIconInfo from "~icons/zulip-icon/info?raw";
 
+const PERSONAL_SETTINGS_TYPE = "Personal settings";
+const ORGANIZATION_SETTINGS_TYPE = "Organization settings"
+
 // This list has been transformed one-off from `help_settings_links.py`, we
 // have added a comment in that file to update this list in case of any
 // changes.
@@ -30,122 +33,122 @@ const setting_link_mapping: {
     // name as it appears in the user interface, and a relative link that can
     // be used to get to that setting
     "profile": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Profile",
         setting_link: "/#settings/profile"
     },
     "account-and-privacy": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Account & privacy",
         setting_link: "/#settings/account-and-privacy"
     },
     "preferences": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Preferences",
         setting_link: "/#settings/preferences"
     },
     "notifications": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Notifications",
         setting_link: "/#settings/notifications"
     },
     "your-bots": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Bots",
         setting_link: "/#settings/your-bots"
     },
     "alert-words": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Alert words",
         setting_link: "/#settings/alert-words"
     },
     "uploaded-files": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Uploaded files",
         setting_link: "/#settings/uploaded-files"
     },
     "topics": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Topics",
         setting_link: "/#settings/topics"
     },
     "muted-users": {
-        setting_type: "Personal settings",
+        setting_type: PERSONAL_SETTINGS_TYPE,
         setting_name: "Muted users",
         setting_link: "/#settings/muted-users"
     },
     "organization-profile": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Organization profile",
         setting_link: "/#organization/organization-profile"
     },
     "organization-settings": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Organization settings",
         setting_link: "/#organization/organization-settings"
     },
     "organization-permissions": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Organization permissions",
         setting_link: "/#organization/organization-permissions"
     },
     "default-user-settings": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Default user settings",
         setting_link: "/#organization/organization-level-user-defaults"
     },
     "emoji-settings": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Custom emoji",
         setting_link: "/#organization/emoji-settings"
     },
     "auth-methods": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Authentication methods",
         setting_link: "/#organization/auth-methods"
     },
     "users": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Users",
         setting_link: "/#organization/users/active"
     },
     "deactivated": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Users",
         setting_link: "/#organization/users/deactivated"
     },
     "invitations": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Users",
         setting_link: "/#organization/users/invitations"
     },
     "bot-list-admin": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Bots",
         setting_link: "/#organization/bot-list-admin"
     },
     "default-channels-list": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Default channels",
         setting_link: "/#organization/default-channels-list"
     },
     "linkifier-settings": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Linkifiers",
         setting_link: "/#organization/linkifier-settings"
     },
     "playground-settings": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Code playgrounds",
         setting_link: "/#organization/playground-settings"
     },
     "profile-field-settings": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Custom profile fields",
         setting_link: "/#organization/profile-field-settings"
     },
     "data-exports-admin": {
-        setting_type: "Organization settings",
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Data exports",
         setting_link: "/#organization/data-exports-admin"
     }
