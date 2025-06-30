@@ -14,6 +14,7 @@
 * [iDrift AS company](/case-studies/idrift/)
 * [GUT contact support agency](/case-studies/gut-contact/)
 * [End Point Dev software consultancy](/case-studies/end-point/)
+* [WindBorne startup](/case-studies/windborne/)
 * [Semsee InsurTech startup](/case-studies/semsee/)
 * [Atolio startup](/case-studies/atolio/)
 

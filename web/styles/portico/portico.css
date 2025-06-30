@@ -1494,6 +1494,10 @@ label.label-title {
         max-width: 300px;
     }
 
+    .windborne-alaska-image {
+        width: 255px;
+    }
+
     @media (width <= 700px) {
         flex-wrap: wrap;
 
@@ -1506,4 +1510,15 @@ label.label-title {
             max-width: 100%;
         }
     }
+}
+
+.markdown-image-caption {
+    opacity: 0.8;
+    margin-top: 5px;
+    text-align: center;
+    font-style: italic;
+}
+
+.markdown-image-with-caption {
+    margin: 0;
 }
