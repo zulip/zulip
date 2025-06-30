@@ -223,10 +223,6 @@ export function initialize() {
                 selected_behaviour = selected_behaviour === "true"; // Convert to bool
                 user_settings.enter_sends = selected_behaviour;
 
-                // Refocus in the content box so you can continue typing or
-                // press Enter to send.
-                $("textarea#compose-textarea").trigger("focus");
-
                 channel.patch({
                     url: "/json/settings",
                     data: {enter_sends: selected_behaviour},
@@ -234,6 +230,9 @@ export function initialize() {
                 e.stopPropagation();
                 setTimeout(() => {
                     popover_menus.hide_current_popover_if_visible(instance);
+                    // Refocus in the content box so you can continue typing or
+                    // press Enter to send.
+                    $("textarea#compose-textarea").trigger("focus");
                 }, ENTER_SENDS_SELECTION_DELAY);
             });
             // Handle Send later clicks
