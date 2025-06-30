@@ -1,6 +1,6 @@
 html {
     overflow: hidden scroll;
-    overscroll-behavior: none;
+    overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
 }
 
