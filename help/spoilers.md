@@ -27,14 +27,13 @@
 
 {!start-composing.md!}
 
-1. To create a spoiler section, use triple backticks and the word spoiler
-   (````spoiler`) followed by an optional spoiler heading, some text, and triple
-   backticks at the end:
-~~~
-```spoiler The spoiler heading
-This content is initially hidden.
-```
-~~~
+1.  To create a spoiler section, use triple backticks and the word spoiler
+    (````spoiler`) followed by an optional spoiler heading, some text, and triple
+    backticks at the end:
+
+        ```spoiler The spoiler heading
+        This content is initially hidden.
+        ```
 
 !!! tip ""
 
