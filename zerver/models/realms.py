@@ -165,6 +165,7 @@ class Realm(models.Model):
     MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
+    MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH = 1000
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
@@ -237,6 +238,11 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)
     email_changes_disabled = models.BooleanField(default=False)
     avatar_changes_disabled = models.BooleanField(default=False)
+
+    send_invite_welcome_bot_custom_message = models.BooleanField(default=False)
+    default_welcome_bot_custom_message = models.TextField(
+        default="", max_length=MAX_REALM_WELCOME_BOT_CUSTOM_MESSAGE_LENGTH
+    )
 
     POLICY_MEMBERS_ONLY = 1
     POLICY_ADMINS_ONLY = 2
@@ -696,6 +702,7 @@ class Realm(models.Model):
         avatar_changes_disabled=bool,
         default_code_block_language=str,
         default_language=str,
+        default_welcome_bot_custom_message=str,
         description=str,
         digest_emails_enabled=bool,
         digest_weekday=int,
@@ -722,6 +729,7 @@ class Realm(models.Model):
         name_changes_disabled=bool,
         push_notifications_enabled=bool,
         require_unique_names=bool,
+        send_invite_welcome_bot_custom_message=bool,
         send_welcome_emails=bool,
         topics_policy=RealmTopicsPolicyEnum,
         video_chat_provider=int,
