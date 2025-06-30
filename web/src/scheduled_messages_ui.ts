@@ -120,7 +120,7 @@ export function edit_scheduled_message(
     scheduled_message_id: number,
     should_narrow_to_recipient = true,
 ): void {
-    const scheduled_msg = scheduled_messages.scheduled_messages_data.get(scheduled_message_id);
+    const scheduled_msg = scheduled_messages.scheduled_messages_by_id.get(scheduled_message_id);
     assert(scheduled_msg !== undefined);
 
     scheduled_messages.delete_scheduled_message(scheduled_message_id, () => {
