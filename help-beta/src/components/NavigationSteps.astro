@@ -14,6 +14,7 @@ import RawZulipIconKeyboard from "~icons/zulip-icon/keyboard?raw";
 import RawZulipIconEdit from "~icons/zulip-icon/edit?raw";
 import RawZulipIconManageSearch from "~icons/zulip-icon/manage-search?raw";
 import RawZulipIconInfo from "~icons/zulip-icon/info?raw";
+import RawZulipIconHelp from "~icons/zulip-icon/help?raw";
 
 const PERSONAL_SETTINGS_TYPE = "Personal settings";
 const ORGANIZATION_SETTINGS_TYPE = "Organization settings"
@@ -241,7 +242,12 @@ const relative_link_mapping: Record<
         relative_link: "/#about-zulip",
       },
     },
-    template: default_template_for_relative_links,
+    template: `
+<ol>
+  <li>Click on the <strong>Help menu</strong> (${RawZulipIconHelp}) icon in the upper right corner of the app.</li>
+  <li>Select {item}.</li>
+</ol>
+`,
     is_link_relative: () => SHOW_RELATIVE_LINKS,
   },
   channel: {
