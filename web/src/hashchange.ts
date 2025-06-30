@@ -20,6 +20,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as settings from "./settings.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -260,6 +261,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
         case "#settings":
         case "#about-zulip":
         case "#scheduled":
+        case "#reminders":
             blueslip.error("overlay logic skipped for: " + hash[0]);
             break;
         default:
@@ -496,11 +498,19 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
     if (base === "about-zulip") {
         about_zulip.launch();
+        return;
     }
 
     if (base === "scheduled") {
         scheduled_messages_overlay_ui.launch();
+        return;
     }
+
+    if (base === "reminders") {
+        reminders_overlay_ui.launch();
+        return;
+    }
+
     if (base === "user") {
         const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
         if (!people.is_known_user_id(user_id)) {
@@ -509,6 +519,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             const user = people.get_by_user_id(user_id);
             user_profile.show_user_profile(user);
         }
+        return;
     }
 }
 

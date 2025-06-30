@@ -77,6 +77,28 @@ def check_schedule_message(
     )[0]
 
 
+def notify_new_scheduled_message(
+    user_profile: UserProfile, scheduled_messages: list[ScheduledMessage]
+) -> None:
+    event = {
+        "type": "scheduled_messages",
+        "op": "add",
+        "scheduled_messages": [
+            scheduled_message.to_dict() for scheduled_message in scheduled_messages
+        ],
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
+def notify_new_reminder(user_profile: UserProfile, reminders: list[ScheduledMessage]) -> None:
+    event = {
+        "type": "reminders",
+        "op": "add",
+        "reminders": [reminder.to_dict() for reminder in reminders],
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
 def do_schedule_messages(
     send_message_requests: Sequence[SendMessageRequest],
     sender: UserProfile,
@@ -112,9 +134,10 @@ def do_schedule_messages(
         scheduled_messages.append((scheduled_message, send_request))
 
     with transaction.atomic(durable=True):
-        ScheduledMessage.objects.bulk_create(
-            [scheduled_message for scheduled_message, ignored in scheduled_messages]
-        )
+        scheduled_message_objects = [
+            scheduled_message for scheduled_message, ignored in scheduled_messages
+        ]
+        ScheduledMessage.objects.bulk_create(scheduled_message_objects)
         for scheduled_message, send_request in scheduled_messages:
             if do_claim_attachments(
                 scheduled_message, send_request.rendering_result.potential_attachment_path_ids
@@ -123,16 +146,10 @@ def do_schedule_messages(
                 scheduled_message.save(update_fields=["has_attachment"])
 
         if not skip_events:
-            assert delivery_type == ScheduledMessage.SEND_LATER
-            event = {
-                "type": "scheduled_messages",
-                "op": "add",
-                "scheduled_messages": [
-                    scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
-                ],
-            }
-            send_event_on_commit(sender.realm, event, [sender.id])
-
+            if delivery_type == ScheduledMessage.REMIND:
+                notify_new_reminder(sender, scheduled_message_objects)
+            else:
+                notify_new_scheduled_message(sender, scheduled_message_objects)
     return [scheduled_message.id for scheduled_message, ignored in scheduled_messages]
 
 
@@ -276,13 +293,25 @@ def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
+def notify_remove_reminder(user_profile: UserProfile, reminder_id: int) -> None:
+    event = {
+        "type": "reminders",
+        "op": "remove",
+        "reminder_id": reminder_id,
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
 @transaction.atomic(durable=True)
 def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
     scheduled_message_object = access_scheduled_message(user_profile, scheduled_message_id)
     scheduled_message_id = scheduled_message_object.id
     scheduled_message_object.delete()
 
-    notify_remove_scheduled_message(user_profile, scheduled_message_id)
+    if scheduled_message_object.delivery_type == ScheduledMessage.REMIND:
+        notify_remove_reminder(user_profile, scheduled_message_id)
+    else:
+        notify_remove_scheduled_message(user_profile, scheduled_message_id)
 
 
 def send_reminder(scheduled_message: ScheduledMessage) -> None:

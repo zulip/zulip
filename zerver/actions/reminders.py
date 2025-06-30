@@ -34,6 +34,5 @@ def schedule_reminder_for_message(
         [send_request],
         current_user,
         read_by_sender=False,
-        skip_events=True,
         delivery_type=ScheduledMessage.REMIND,
     )[0]

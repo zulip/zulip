@@ -63,6 +63,12 @@ export const scheduled_message_schema = z
         ]),
     );
 
+export const reminder_schema = scheduled_message_schema.and(
+    z.object({
+        reminder_target_message_id: z.number(),
+    }),
+);
+
 export const profile_datum_schema = z.object({
     value: z.string(),
     rendered_value: z.string().nullish(),
@@ -559,6 +565,7 @@ export const state_data_schema = z
             .object({scheduled_messages: z.array(scheduled_message_schema)})
             .transform((scheduled_messages) => ({scheduled_messages})),
     )
+    .and(z.object({reminders: z.array(reminder_schema)}).transform((reminders) => ({reminders})))
     .and(
         z
             .object({

@@ -289,3 +289,49 @@ class RemindersTest(ZulipTestCase):
                 self.get_dm_reminder_content(content, reminder.reminder_target_message_id),
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+    def test_delete_reminder(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        response = self.client_get("/json/reminders")
+        self.assert_json_success(response)
+        response_data = response.json()
+        self.assertEqual(response_data["reminders"], [])
+
+        # Create a test message to schedule a reminder for.
+        message_id = self.send_stream_message(
+            hamlet,
+            "Denmark",
+        )
+
+        # Schedule a reminder for the created message.
+        deliver_at = int(time.time() + 86400)
+
+        response = self.do_schedule_reminder(
+            message_id=message_id,
+            scheduled_delivery_timestamp=deliver_at,
+        )
+        self.assert_json_success(response)
+        response_data = response.json()
+        self.assertIn("reminder_id", response_data)
+        reminder_id = response_data["reminder_id"]
+
+        # Verify that the reminder was scheduled correctly.
+        reminders_response = self.client_get("/json/reminders")
+        self.assert_json_success(reminders_response)
+        reminders_data = reminders_response.json()
+        self.assert_length(reminders_data["reminders"], 1)
+        reminder = reminders_data["reminders"][0]
+        self.assertEqual(reminder["scheduled_message_id"], reminder_id)
+        self.assertEqual(reminder["reminder_target_message_id"], message_id)
+
+        # Test deleting the reminder.
+        result = self.client_delete(f"/json/reminders/{reminder_id}")
+        self.assert_json_success(result)
+
+        # Verify that the reminder was deleted.
+        self.assertEqual(response.status_code, 200)
+        reminders_response = self.client_get("/json/reminders")
+        self.assert_json_success(reminders_response)
+        reminders_data = reminders_response.json()
+        self.assert_length(reminders_data["reminders"], 0)

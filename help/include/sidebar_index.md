@@ -95,6 +95,7 @@
 * [Delete a message](/help/delete-a-message)
 * [Draft messages](/help/view-and-edit-your-message-drafts)
 * [Schedule a message](/help/schedule-a-message)
+* [Schedule a reminder](/help/schedule-a-reminder)
 * [Message a channel by email](/help/message-a-channel-by-email)
 
 ## Reading messages
