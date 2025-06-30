@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import * as tippy from "tippy.js";
 import {z} from "zod";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
@@ -20,6 +21,7 @@ import {detached_uploads_api_response_schema} from "./attachments.ts";
 import * as attachments_ui from "./attachments_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -785,11 +787,9 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
 }
 
 function show_toggle_resolve_topic_spinner($row: JQuery): void {
-    const $spinner = $row.find(".toggle_resolve_topic_spinner");
-    loading.make_indicator($spinner);
-    $spinner.css({width: "1em"});
-    $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").hide();
-    $row.find(".toggle_resolve_topic_spinner").show();
+    const $button = $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").expectOne();
+    $button.addClass("loading-resolve-topic-state");
+    buttons.show_button_loading_indicator($button);
 }
 
 function get_resolve_topic_time_limit_error_string(
@@ -954,16 +954,36 @@ function do_toggle_resolve_topic(
     void channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
-        success() {
-            if ($row) {
-                const $spinner = $row.find(".toggle_resolve_topic_spinner");
-                loading.destroy_indicator($spinner);
-            }
-        },
         error(xhr) {
             if ($row) {
-                const $spinner = $row.find(".toggle_resolve_topic_spinner");
-                loading.destroy_indicator($spinner);
+                const $button = $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve");
+                buttons.hide_button_loading_indicator($button);
+                $button.removeClass("loading-resolve-topic-state");
+                // Remove any existing tippy instance on the button.
+                const reference: tippy.ReferenceElement = util.the($button);
+                if (reference._tippy) {
+                    reference._tippy.destroy();
+                }
+                const instance = tippy.default(util.the($button), {
+                    trigger: "manual",
+                    appendTo: () => document.body,
+                    onShow(instance) {
+                        if ($button.hasClass("on_hover_topic_resolve")) {
+                            instance.setContent(
+                                $t({defaultMessage: "Error: Could not resolve topic."}),
+                            );
+                        } else if ($button.hasClass("on_hover_topic_unresolve")) {
+                            instance.setContent(
+                                $t({defaultMessage: "Error: Could not unresolve topic."}),
+                            );
+                        }
+                    },
+                });
+                // Manually trigger the error tooltip, and remove it after 2 seconds.
+                instance.show();
+                setTimeout(() => {
+                    instance.destroy();
+                }, 2000);
             }
 
             if (xhr.responseJSON) {
