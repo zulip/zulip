@@ -1,5 +1,10 @@
 {{#each all_tasks}}
-    <li>
+    <li class="todo-item {{#if ../showDrag}}todo-item-draggable{{/if}}">
+        {{#if ../showDrag }}
+        <div class="todo-draggable">
+            <i class="zulip-icon zulip-icon-grip-vertical drag-icon"></i>
+        </div>
+        {{/if}}
         <label class="checkbox">
             <div class="todo-checkbox">
                 <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
