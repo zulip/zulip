@@ -54,6 +54,7 @@ from zerver.lib.mention import (
     MentionData,
     get_user_group_mention_display_name,
 )
+from zerver.lib.mime_types import AUDIO_MIME_TYPES
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -2269,6 +2270,68 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
+class AudioInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
+    def __init__(self, pattern: str, zmd: "ZulipMarkdown") -> None:
+        super().__init__(pattern, zmd)
+        self.zmd = zmd
+
+    def is_supported_audio_url(self, url: str) -> bool:
+        url_type = mimetypes.guess_type(url)[0]
+        return url_type in AUDIO_MIME_TYPES
+
+    def zulip_specific_src_changes(self, el: Element) -> None | Element:
+        src = el.get("src")
+        assert src is not None
+
+        # Sanitize URL or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
+        src = sanitize_url(self.unescape(src.strip()))
+        if src is None or not self.is_supported_audio_url(src):
+            return None  # no-op; the link is not processed.
+
+        # Rewrite local links to be relative
+        db_data: DbData | None = self.zmd.zulip_db_data
+        src = rewrite_local_links_to_relative(db_data, src)
+
+        # Make changes to <audio> tag attributes
+        if is_static_or_current_realm_url(src, self.zmd.zulip_realm):
+            # Don't rewrite audios on our own site (e.g. user uploads).
+            el.set("src", src)
+        else:
+            el.set("src", get_camo_url(src))
+
+        el.set("controls", "controls")
+        el.set("preload", "metadata")
+
+        if src != el.get("src"):
+            el.set("data-original-url", src)
+
+        return el
+
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> tuple[Element | str | None, int | None, int | None]:
+        title, index, handled = self.getText(data, m.end(0))
+        if not handled:
+            return None, None, None
+
+        src, non_src, index, handled = self.getLink(data, index)
+        if not handled or non_src is not None:
+            return None, None, None
+
+        el = Element("audio")
+        el.set("src", src)
+        title = title.strip()
+        if title:
+            el.set("title", title)
+
+        updated_elm = self.zulip_specific_src_changes(el)
+        if updated_elm is not None:
+            return updated_elm, m.start(0), index
+
+        return None, None, None
+
+
 def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -2409,6 +2472,8 @@ class ZulipMarkdown(markdown.Markdown):
         STRONG_EM_RE = r"(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*"
         TEX_RE = r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B"
         TIMESTAMP_RE = r"<time:(?P<time>[^>]*?)>"
+        # Custom Audio links syntax: ![]()
+        AUDIO_LINK_RE = r"\!\["
 
         # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
@@ -2432,6 +2497,7 @@ class ZulipMarkdown(markdown.Markdown):
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        reg.register(AudioInlineProcessor(AUDIO_LINK_RE, self), "audio", 57)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)
