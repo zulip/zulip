@@ -1,5 +1,5 @@
 import re
-from collections.abc import Callable, Collection, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, TypedDict
@@ -1745,3 +1745,25 @@ def is_1_to_1_message(message: Message) -> bool:
         return True
 
     return False
+
+
+def classify_stream_messages(
+    realm: Realm, messages: Iterable[Message]
+) -> tuple[list[Message], list[Message]]:
+    public_stream_messages = []
+    private_stream_messages = []
+    public_stream_ids = set(
+        Stream.objects.filter(
+            realm=realm,
+            invite_only=False,
+            history_public_to_subscribers=True,
+            deactivated=False,
+        ).values_list("id", flat=True)
+    )
+    for message in messages:
+        if message.recipient.type == Recipient.STREAM:
+            if message.recipient.type_id in public_stream_ids:
+                public_stream_messages.append(message)
+            else:
+                private_stream_messages.append(message)
+    return private_stream_messages, public_stream_messages
