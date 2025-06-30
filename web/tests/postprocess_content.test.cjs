@@ -62,7 +62,7 @@ run_test("postprocess_content", () => {
             "</div>" +
             '<div class="youtube-video message_inline_image">' +
             '<a class="media-anchor-element" href="https://www.youtube.com/watch?v=tyKJueEk0XM" target="_blank" rel="noopener noreferrer">' +
-            '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" class="media-image-element" loading="lazy">' +
+            '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" loading="lazy" class="media-image-element">' +
             "</a>" +
             "</div>" +
             "</div>" +
@@ -120,12 +120,12 @@ run_test("inline_image_galleries", ({override}) => {
             '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element portrait-thumbnail" width="1000" height="2000" style="width: 5em;" loading="lazy">' +
+            '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" class="media-image-element portrait-thumbnail" width="1000" height="2000" style="width: 5em;">' +
             "</a>" +
             "</div>" +
             '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element landscape-thumbnail" width="2000" height="1000" style="width: 20em;" loading="lazy">' +
+            '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" class="media-image-element landscape-thumbnail" width="2000" height="1000" style="width: 20em;">' +
             "</a>" +
             "</div>" +
             "</div>" +
@@ -133,7 +133,7 @@ run_test("inline_image_galleries", ({override}) => {
             '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element portrait-thumbnail" width="1000" height="1000" style="width: 10em;" loading="lazy">' +
+            '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" class="media-image-element portrait-thumbnail" width="1000" height="1000" style="width: 10em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -194,7 +194,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" loading="lazy" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -212,7 +212,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element portrait-thumbnail" width="100" height="200" style="width: 5em;" loading="lazy">' +
+            '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" loading="lazy" class="media-image-element portrait-thumbnail" width="100" height="200" style="width: 5em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -230,7 +230,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" width="1" height="10" style="width: 1px;" loading="lazy">' +
+            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" loading="lazy" class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" width="1" height="10" style="width: 1px;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -249,7 +249,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -268,7 +268,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -286,7 +286,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;" loading="lazy">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" class="media-image-element landscape-thumbnail" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -302,6 +302,41 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 '<img src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png">' +
                 "</a>" +
                 "</div>",
+        ),
+        "",
+    );
+});
+
+run_test("message_true_inline_image", ({override}) => {
+    const thumbnail_formats = [
+        {
+            name: "840x560.webp",
+            max_width: 840,
+            max_height: 560,
+            format: "webp",
+            animated: false,
+        },
+    ];
+
+    override(thumbnail, "preferred_format", thumbnail_formats[0]);
+
+    assert.equal(
+        postprocess_content(
+            '<img alt="image" class="true_inline" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/image.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">',
+        ),
+        '<span class="message_inline_image true_inline">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="true_inline media-image-element dinky-thumbnail portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/image.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="128" height="128" style="width: 128px;">' +
+            "</a>" +
+            "</span>",
+    );
+
+    // Broken/invalid source URLs in image previews should be
+    // dropped. Inspired by a real message found in chat.zulip.org
+    // history.
+    assert.equal(
+        postprocess_content(
+            '<img class="true_inline" src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png">',
         ),
         "",
     );
