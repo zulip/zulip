@@ -605,7 +605,7 @@ def run() -> None:
 
     include_files_info: dict[str, IncludeFileInfo] = {}
     for name in os.listdir(include_input_dir):
-        if os.path.isfile(os.path.join(include_input_dir, name)):
+        if name.endswith(".md") and os.path.isfile(os.path.join(include_input_dir, name)):
             converted_count += 1
             include_file_info, mdx = convert_include_file_to_mdx(
                 os.path.join(include_input_dir, name)
@@ -625,7 +625,7 @@ def run() -> None:
 
     converted_count = 0
     for name in os.listdir(input_dir):
-        if os.path.isfile(os.path.join(input_dir, name)):
+        if name.endswith(".md") and os.path.isfile(os.path.join(input_dir, name)):
             converted_count += 1
             mdx = convert_help_center_file_to_mdx(os.path.join(input_dir, name), include_files_info)
             with open(
