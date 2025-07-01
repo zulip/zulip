@@ -6,6 +6,7 @@ import * as tippy from "tippy.js";
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
 import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.hbs";
+import render_show_inactive_channels from "../templates/show_inactive_channels.hbs";
 import render_stream_list_section_container from "../templates/stream_list_section_container.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
@@ -286,11 +287,18 @@ export function build_stream_list(force_rerender: boolean): void {
         return;
     }
 
-    function add_sidebar_li(stream_id: number, $list: JQuery): void {
+    function add_sidebar_li(
+        stream_id: number,
+        $list: JQuery,
+        inactive_in_channel_folder = false,
+    ): void {
         const sidebar_row = stream_sidebar.get_row(stream_id);
         assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
         const $li = sidebar_row.get_li();
+        if (inactive_in_channel_folder) {
+            $li.addClass("inactive-in-channel-folder");
+        }
         $list.append($li);
     }
 
@@ -312,11 +320,27 @@ export function build_stream_list(force_rerender: boolean): void {
                 }),
             ),
         );
-        const is_empty = section.streams.length === 0 && section.muted_streams.length === 0;
+        const is_empty =
+            section.streams.length === 0 &&
+            section.muted_streams.length === 0 &&
+            section.inactive_streams.length === 0;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
         for (const stream_id of [...section.streams, ...section.muted_streams]) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
+        }
+        // This should only be relevant for folders
+        for (const stream_id of section.inactive_streams) {
+            add_sidebar_li(stream_id, $(`#stream-list-${section.id}`), true);
+        }
+        if (section.inactive_streams.length > 0) {
+            $(`#stream-list-${section.id}`).append(
+                $(
+                    render_show_inactive_channels({
+                        inactive_count: section.inactive_streams.length,
+                    }),
+                ),
+            );
         }
     }
     // This calls `left_sidebar_navigation_area.update_dom_with_unread_counts`
@@ -325,10 +349,12 @@ export function build_stream_list(force_rerender: boolean): void {
     // we'll have lost after we rerendered everything.
     unread_ui.update_unread_counts();
     sidebar_ui.update_unread_counts_visibility();
-    collapse_collapsed_sections();
+    set_sections_states();
+    $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
 }
 
 const collapsed_sections = new Set<string>();
+const sections_showing_inactive = new Set<string>();
 
 function toggle_section_collapse($container: JQuery): void {
     $container.toggleClass("collapsed");
@@ -361,7 +387,7 @@ function toggle_section_collapse($container: JQuery): void {
     }
 }
 
-function collapse_collapsed_sections(): void {
+function set_sections_states(): void {
     for (const section_id of collapsed_sections) {
         $(`#stream-list-${section_id}-container`).toggleClass("collapsed", true);
         $(`#stream-list-${section_id}-container .stream-list-section-toggle`).toggleClass(
@@ -372,6 +398,9 @@ function collapse_collapsed_sections(): void {
             "rotate-icon-right",
             true,
         );
+    }
+    for (const section_id of sections_showing_inactive) {
+        $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive", true);
     }
 }
 
@@ -1143,6 +1172,23 @@ export function set_event_handlers({
         (e) => {
             // To prevent toggling the header
             e.stopPropagation();
+        },
+    );
+
+    $("#streams_list").on(
+        "click",
+        ".stream-list-toggle-inactive-channels",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.stopPropagation();
+            const $section_container = $(this).closest(".stream-list-section-container");
+            $section_container.toggleClass("showing-inactive");
+            const showing_inactive = $section_container.hasClass("showing-inactive");
+            const section_id = $section_container.attr("data-section-id")!;
+            if (showing_inactive) {
+                sections_showing_inactive.add(section_id);
+            } else {
+                sections_showing_inactive.delete(section_id);
+            }
         },
     );
 }
