@@ -81,7 +81,7 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
 
 const NO_SEARCH_RESULTS_TITLE = $t({defaultMessage: "No search results."});
 
-function retrieve_search_query_data(current_filter: Filter): SearchData {
+function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
     // when search bar contains multiple filters, only retrieve search queries
     const search_query = current_filter.operands("search")[0];
     const query_words = search_query!.split(" ");
@@ -121,7 +121,10 @@ function retrieve_search_query_data(current_filter: Filter): SearchData {
         }
     }
 
-    return search_string_result;
+    return {
+        title: NO_SEARCH_RESULTS_TITLE,
+        search_data: search_string_result,
+    };
 }
 
 export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerData {
@@ -204,12 +207,9 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
 
-        // For empty stream searches within other narrows, we display the stop words
+        // For empty search queries, we display excluded stop words
         if (current_filter.operands("search").length > 0) {
-            return {
-                title: NO_SEARCH_RESULTS_TITLE,
-                search_data: retrieve_search_query_data(current_filter),
-            };
+            return empty_search_query_banner(current_filter);
         }
 
         if (
@@ -345,10 +345,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         }
         case "search": {
             // You are narrowed to empty search results.
-            return {
-                title: NO_SEARCH_RESULTS_TITLE,
-                search_data: retrieve_search_query_data(current_filter),
-            };
+            return empty_search_query_banner(current_filter);
         }
         case "dm": {
             if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
