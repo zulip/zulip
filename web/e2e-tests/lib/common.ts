@@ -37,7 +37,9 @@ export const pm_recipient = {
     async set(page: Page, recipient: string): Promise<void> {
         // Without using the delay option here there seems to be
         // a flake where the typeahead doesn't show up.
-        await page.type("#private_message_recipient", recipient, {delay: 100});
+        // The flake seems to be due to some method that triggers focus on
+        // compose textarea, which causes the typeahead to not show up.
+        await page.type("#private_message_recipient", recipient, {delay: 200});
 
         // PM typeaheads always have an image. This ensures we are waiting for the right typeahead to appear.
         const entry = await page.waitForSelector(".typeahead .active a .typeahead-image", {
