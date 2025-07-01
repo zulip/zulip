@@ -249,16 +249,12 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
         compose_select_recipient_dropdown_widget.current_value = opts.stream_id;
         $("#compose-direct-recipient").hide();
         $("#compose-channel-recipient").show();
-        $("#stream_toggle").addClass("active");
-        $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
         compose_select_recipient_dropdown_widget.current_value = compose_state.DIRECT_MESSAGE_ID;
         $("#compose-direct-recipient").show();
         $("#compose-channel-recipient").hide();
-        $("#stream_toggle").removeClass("active");
-        $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
         // TODO: When "Direct message" is selected, we show "DM" on the dropdown
         // button. It would be nice if the dropdown supported a way to attach
