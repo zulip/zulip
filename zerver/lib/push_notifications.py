@@ -230,6 +230,20 @@ def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
 APNS_MAX_RETRIES = 3
 
 
+def dedupe_device_tokens(
+    devices: Sequence[DeviceToken],
+) -> Sequence[DeviceToken]:
+    device_tokens: set[str] = set()
+    result: list[DeviceToken] = []
+    for device in devices:
+        lower_token = device.token.lower()
+        if lower_token in device_tokens:
+            continue
+        device_tokens.add(lower_token)
+        result.append(device)
+    return result
+
+
 def send_apple_push_notification(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
@@ -259,18 +273,24 @@ def send_apple_push_notification(
     else:
         DeviceTokenClass = PushDeviceToken
 
+    orig_devices = devices
+    devices = dedupe_device_tokens(devices)
+    num_duplicate_tokens = len(orig_devices) - len(devices)
+
     if remote:
         logger.info(
-            "APNs: Sending notification for remote user %s:%s to %d devices",
+            "APNs: Sending notification for remote user %s:%s to %d devices (skipped %d duplicates)",
             remote.uuid,
             user_identity,
             len(devices),
+            num_duplicate_tokens,
         )
     else:
         logger.info(
-            "APNs: Sending notification for local user %s to %d devices",
+            "APNs: Sending notification for local user %s to %d devices (skipped %d duplicates)",
             user_identity,
             len(devices),
+            num_duplicate_tokens,
         )
     payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
