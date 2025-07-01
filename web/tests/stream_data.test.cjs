@@ -1546,6 +1546,35 @@ test("can_delete_any_message_in_channel", ({override}) => {
     assert.equal(stream_data.user_can_delete_any_message_in_channel(social), false);
 });
 
+test("can_delete_own_message_in_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        name: "social",
+        stream_id: 10,
+        can_administer_channel_group: nobody_group.id,
+        can_delete_own_message_group: nobody_group.id,
+    };
+
+    override(realm, "realm_can_delete_own_message_group", nobody_group.id);
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+    social.can_administer_channel_group = admins_group.id;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+
+    social.can_delete_own_message_group = moderators_group.id;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+
+    page_params.is_spectator = false;
+    social.is_archived = true;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+});
+
 test("can_move_messages_out_of_channel", ({override}) => {
     const social = {
         subscribed: true,
