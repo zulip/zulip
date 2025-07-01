@@ -88,7 +88,8 @@
     }
 }
 
-#left-sidebar-navigation-list .selected-home-view {
+#left-sidebar-navigation-list .selected-home-view,
+.show-inactive-channels {
     &.hide-unread-messages-count {
         .masked_unread_count {
             display: flex;
@@ -108,6 +109,7 @@
 }
 
 #left-sidebar-navigation-list .selected-home-view:hover,
+.stream-list-toggle-inactive-channels:hover .show-inactive-channels,
 .selected-home-view.top-left-active-filter {
     &.hide-unread-messages-count {
         .masked_unread_count {
@@ -403,6 +405,67 @@
     }
 }
 
+.stream-list-toggle-inactive-channels {
+    padding-left: var(--left-sidebar-toggle-width-offset);
+
+    .show-inactive-channels,
+    .hide-inactive-channels {
+        /* Override the action heading font size, so that em measurements
+        on child elements are sized properly */
+        font-size: var(--base-font-size-px);
+        /* We also want the count text to be the normal font style. */
+        font-variant: inherit;
+        padding: 0;
+
+        .stream-list-toggle-inactive-channels-text {
+            font-size: var(--font-size-sidebar-action-heading);
+            font-variant: var(--font-variant-sidebar-action-heading);
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+.stream-list-section-container:not(.showing-inactive) {
+    .inactive-in-channel-folder {
+        display: none;
+    }
+
+    .stream-list-toggle-inactive-channels {
+        .hide-inactive-channels {
+            display: none;
+        }
+    }
+}
+
+#streams_list.is_searching {
+    .show-inactive-channels,
+    .hide-inactive-channels {
+        display: none;
+    }
+
+    .inactive-in-channel-folder {
+        display: block;
+    }
+}
+
+.stream-list-section-container.showing-inactive {
+    .stream-list-toggle-inactive-channels {
+        .show-inactive-channels {
+            display: none;
+        }
+    }
+}
+
+.show-inactive-channels,
+.hide-inactive-channels {
+    display: grid;
+    grid-template:
+        "content markers-and-unreads three-dot-placeholder" auto
+        / minmax(0, 1fr) minmax(0, max-content) var(--left-sidebar-vdots-width);
+    align-items: center;
+}
+
 .stream-list-section {
     margin: 0;
 }
@@ -413,6 +476,7 @@
 
 .stream-list-section-container.collapsed {
     .narrow-filter:not(.stream-expanded),
+    .stream-list-toggle-inactive-channels,
     .topic-list-item:not(.active-sub-filter),
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::before,
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::after {
@@ -1545,7 +1609,8 @@ li.top_left_scheduled_messages {
 
 .dm-markers-and-unreads,
 .stream-markers-and-unreads,
-.topic-markers-and-unreads {
+.topic-markers-and-unreads,
+.show-inactive-channels .markers-and-unreads {
     grid-area: markers-and-unreads;
     display: flex;
     /* Present a uniform space between icons */
