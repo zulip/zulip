@@ -257,6 +257,7 @@ function restore_inbox_view_state(): void {
 export function show(filter?: Filter): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
+    const was_inbox_already_visible = inbox_util.is_visible();
     // Avoid setting col_focus to recipient when moving to inbox from other narrows.
     // We prefer to focus entire row instead of stream name for inbox-header.
     // Since inbox-row doesn't has a collapse button, focus on COLUMNS.COLLAPSE_BUTTON
@@ -279,11 +280,11 @@ export function show(filter?: Filter): void {
             // do anything here if view for the same channel is visible.
             return;
         }
-    } else if (!was_inbox_channel_view && is_new_filter_channel_view) {
+    } else if (was_inbox_already_visible && !was_inbox_channel_view && is_new_filter_channel_view) {
         save_inbox_view_state();
     }
 
-    if (was_inbox_channel_view) {
+    if (was_inbox_already_visible && was_inbox_channel_view) {
         save_channel_view_state();
     }
 
@@ -357,6 +358,12 @@ export function hide(): void {
         $view: $("#inbox-view"),
         set_visible: inbox_util.set_visible,
     });
+
+    if (inbox_util.is_channel_view()) {
+        save_channel_view_state();
+    } else {
+        save_inbox_view_state();
+    }
 
     inbox_util.set_filter(undefined);
 }
