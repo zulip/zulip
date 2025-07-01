@@ -10,6 +10,7 @@ import render_user_group_subgroup_entry from "../templates/user_group_settings/u
 
 import * as add_group_members_pill from "./add_group_members_pill.ts";
 import * as blueslip from "./blueslip.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -395,10 +396,12 @@ function remove_member({
     group_id,
     target_user_id,
     $list_entry,
+    $remove_button,
 }: {
     group_id: number;
     target_user_id: number;
     $list_entry: JQuery;
+    $remove_button: JQuery;
 }): void {
     const group = user_groups.get_user_group_from_id(current_group_id);
     if (!group) {
@@ -412,15 +415,10 @@ function remove_member({
         }
 
         $list_entry.remove();
-        const message = $t({defaultMessage: "Removed successfully."});
-        show_user_group_membership_request_result({
-            message,
-            add_class: "text-success",
-            remove_class: "text-remove",
-        });
     }
 
     function removal_failure(): void {
+        buttons.hide_button_loading_indicator($remove_button);
         show_user_group_membership_request_result({
             message: $t({defaultMessage: "Error removing user from this group."}),
             add_class: "text-error",
@@ -462,10 +460,12 @@ function remove_subgroup({
     group_id,
     target_subgroup_id,
     $list_entry,
+    $remove_button,
 }: {
     group_id: number;
     target_subgroup_id: number;
     $list_entry: JQuery;
+    $remove_button: JQuery;
 }): void {
     const group = user_groups.get_user_group_from_id(current_group_id);
 
@@ -476,15 +476,10 @@ function remove_subgroup({
         }
 
         $list_entry.remove();
-        const message = $t({defaultMessage: "Removed successfully."});
-        show_user_group_membership_request_result({
-            message,
-            add_class: "text-success",
-            remove_class: "text-remove",
-        });
     }
 
     function removal_failure(): void {
+        buttons.hide_button_loading_indicator($remove_button);
         show_user_group_membership_request_result({
             message: $t({defaultMessage: "Error removing subgroup from this group."}),
             add_class: "text-error",
@@ -518,8 +513,9 @@ export function initialize(): void {
             const $list_entry = $(this).closest("tr");
             const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id")!, 10);
             const group_id = current_group_id;
-
-            remove_member({group_id, target_user_id, $list_entry});
+            const $remove_button = $(this).closest(".remove-subscriber-button");
+            buttons.show_button_loading_indicator($remove_button);
+            remove_member({group_id, target_user_id, $list_entry, $remove_button});
         },
     );
 
@@ -532,8 +528,9 @@ export function initialize(): void {
             const $list_entry = $(this).closest("tr");
             const target_subgroup_id = Number.parseInt($list_entry.attr("data-subgroup-id")!, 10);
             const group_id = current_group_id;
-
-            remove_subgroup({group_id, target_subgroup_id, $list_entry});
+            const $remove_button = $(this).closest(".remove-subgroup-button");
+            buttons.show_button_loading_indicator($remove_button);
+            remove_subgroup({group_id, target_subgroup_id, $list_entry, $remove_button});
         },
     );
 }
