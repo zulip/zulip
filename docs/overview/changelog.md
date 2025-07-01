@@ -13,11 +13,135 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+#### Highlights
+
+- (Unfinished) Added support for per-channel configuration of whether
+  _general chat_ is available. In particular, channels without topics
+  are now possible in Zulip.
+- (Unfinished) Added channel folders, which organize the channels
+  within an organization visually. Permission settings for channel
+  folders will be introduced in a future release.
+- Redesigned the compose recipient area to be more compact and not
+  draw as much attention when not being actively edited.
+- Added a new list-of-topics view, which is an option for the default
+  behavior when clicking a channel in the left sidebar.
+- Added new personal setting for when resolved-topic notifications are
+  automatically marked as read. This replaces previous logic that
+  marked them unread exactly for users who had participated in the
+  topic via sending a message or reacting.
+- Added several new channel-level permissions settings.
+- Improved display of images and videos in the web application. Images
+  both use space better, and are bigger, while still not dominating
+  text in a message feed.
+- Redesigned most action buttons across the settings UI.
+- Reworked Keyboard shortcuts to better support non-Latin keyboard
+  locales. Now, keyboard shortcuts are entirely based on the key
+  pressed, not what character it is mapped to.
+- (Unfinished) Added support for scheduling message reminders.
+- (Unfinished) Migrated translation platform from Transifex to Weblate.
+
+#### Full feature changelog
+
+- Email notifications and Notification Bot now use topic permalinks.
+- Added new web app setting for controlling whether grand total unread
+  counts are displayed in the left sidebar.
+- Added support for unarchiving previously archived channels.
+- Added support for reactivating previously deactivated groups, and
+  editing most settings on deactivated groups.
+- Added "New" hint to compose topic typeahead when creating a new topic.
+- Added live update of the compose preview area when the compose
+  textarea is updated in the background, such as by file upload
+  completing.
+- Added button to alphabetize options for a custom profile field.
+- Added UTC offsets in setting UI for selecting your time zone.
+- Added a new compose banner notifying the user when the compose box
+  recipient is changed as a result of a topic move.
+- Added a new warning banner when moving a topic to a channel where
+  some participants are not subscribers.
+- Added a warning banner to desktop notification settings when the
+  user has not granted Zulip permission to send them.
+- Added support for moving messages to a channel the acting user is
+  not currently subscribed to, but has access to post in.
+- Added new webhook integration for OpenProject and
+  OpenSearch. Improved the GitHub, GitLab, and Jotform integrations.
+- Redesigned most filter/search inputs across the UI.
+- Reworked channel settings UI for adding groups. It's now convenient
+  to copy membership of a group (previously, it was only easy to add
+  subgroups). Direct message notices about new channel subscriptions
+  are now optional, and only when at most 100 users are being
+  subscribed at once.
+- Improved how the web app displays bulleted and numbered lists.
+- Improved how direct messages with yourself are described.
+- Improved code block language typeahead.
+- Improved "notification triggers" settings table with new icons, a
+  reset-to-default button, and support for configuring channels that
+  previously had default settings.
+- Improved settings table sorting UI design.
+- Improved drafts and scheduled messages overlays, including a new
+  undo banner in case of accidental draft deletion.
+- Improved web application initial loading performance for
+  organizations with several thousand users. Bigger improvements in
+  this area are expected in the next release.
+- Improved performance of user mention typeahead in huge organizations.
+- Improved performance of listing all conversations in the left
+  sidebar in channels with thousands of topics.
+- Improved performance tuning of default Postgres configuration, and
+  added support for overriding those defaults. Improved postgres
+  upgrade tool.
+- Improved performance of maintaining full-text search greatly.
+- Improved keyboard/mouse focus interactions in filterable dropdown
+  widgets like the channel picker.
+- Improved empty feed banner for channels with all topics muted.
+- Improved error banners for very old browser and desktop versions.
+- Improved error pages for deactivated users and realms.
+- Improved confirmation banner when unsubscribing from a channel the
+  user has permission to rejoin later.
+- Improved message feed UI to only use a pointer cursor for UI
+  elements.
+- Improved handling of various message/toic link corner cases.
+- Improved handling of a slow-to-load avatar in the navbar.
+- Improved borders for avatars in user pills.
+- Improved help center documentation considerably. Added mobile tabs
+  with web app workarounds for some features that are not available in
+  the mobile apps.
+- Rewrote documentation for many non-webhook integrations.
+- Fixed live update of channel views when losing access to a private
+  channel.
+- Fixed the `:smile:` emoji name mapping to an emoji more typically
+  labeled `:slight_smile:`.
+- Fixed several issues with markup translation in both Slack import
+  and handling Slack-compatible webhook events.
+- Fixed several issues with URL previews with variant font sizes.
+- Fixed several bugs in handling of Dropbox links.
+- Fixed EDITED notices for messages sent by muted users.
+- Fixed the main search area converting queries to lower-case.
+- Fixed recipient bars not decorating bot names with the bot icon.
+- Fixed the user card popover click area being slightly too small.
+- Fixed a rare race that could cause the web app to be missing
+  metadata for a recently created user.
+- Fixed slow loading performance for the starred messages view.
+- Fixed slow performance for _general chat_ topics in servers
+  containing large numbers of direct messages.
+- Fixed subtle performance issues involving prefetching permissions.
+- Fixed a subtle bug where "show all topics" would incorrectly not be
+  offered.
+- Fixed RealmAuditLog not storing email addresses properly.
+- Fixed message content visibility not applying to digest emails.
+- Fixed buggy new-channel notification internationalization.
+- Fixed several minor bugs with keyboard shortcuts.
+- Fixed some message feed bugs affecting right-to-left languages.
+- Fixed display of imported messages in analytics.
+- Fixed several issues with 500 error pages.
+- Updated dependencies, including Django 5.2.
+
 #### Upgrade notes for 11.0
 
 - PostgreSQL 13 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
   before upgrading Zulip.
+- Zulip's incoming email integration was simplified to no longer use
+  `postfix`. Installations using the integration will automatically
+  uninstall `postfix` when upgraded.
 
 ## Zulip Server 10.x series
 
