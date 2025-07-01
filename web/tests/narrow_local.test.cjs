@@ -17,6 +17,11 @@ const narrow_state = zrequire("narrow_state");
 const message_view = zrequire("message_view");
 const message_lists = zrequire("message_lists");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
+const {set_current_user} = zrequire("state_data");
+
+// Set up current_user for tests
+const current_user = {user_id: 1};
+set_current_user(current_user);
 
 function verify_fixture(fixture, override_rewire) {
     const filter = new Filter(fixture.filter_terms);

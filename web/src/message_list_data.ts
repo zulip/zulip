@@ -72,6 +72,21 @@ export class MessageListData {
         this._selected_id = -1;
     }
 
+    // Type guard to check if content has a widget_type property of expected type
+    private static isWidgetContent(content: unknown): content is {widget_type: string} {
+        if (content === null || typeof content !== "object") {
+            return false;
+        }
+        // Use Reflect.has for safe property checking without type assertion
+        if (!Reflect.has(content, "widget_type")) {
+            return false;
+        }
+
+        // Use Reflect.get to safely access the property and check its type
+        const widget_type: unknown = Reflect.get(content, "widget_type");
+        return typeof widget_type === "string";
+    }
+
     set_rendered_message_list_id(rendered_message_list_id: number | undefined): void {
         this.rendered_message_list_id = rendered_message_list_id;
     }
@@ -244,11 +259,48 @@ export class MessageListData {
 
         return messages.filter((message) => {
             if (message.type !== "private") {
+                // For stream messages, hide polls and todo lists sent by muted users
+                if (
+                    muted_users.is_user_muted(message.sender_id) &&
+                    message.submessages &&
+                    message.submessages.length > 0
+                ) {
+                    for (const submessage of message.submessages) {
+                        if (submessage.msg_type === "widget") {
+                            try {
+                                const content: unknown = JSON.parse(submessage.content);
+                                // Check if content is an object with widget_type property
+                                if (MessageListData.isWidgetContent(content)) {
+                                    const widget_type = content.widget_type;
+                                    if (widget_type === "poll" || widget_type === "todo") {
+                                        return false; // Hide poll/todo messages from muted users
+                                    }
+                                }
+                            } catch {
+                                // Continue if JSON parsing fails
+                            }
+                        }
+                    }
+                }
                 return true;
             }
             const recipients = util.extract_pm_recipients(message.to_user_ids);
             if (recipients.length > 1) {
-                // Direct message group message
+                // Direct message group message - hide if all other participants (excluding current user) are muted
+                if (!current_user?.user_id) {
+                    return true; // If current_user not initialized, don't filter
+                }
+                const other_recipients = recipients.filter(
+                    (id) => Number.parseInt(id, 10) !== current_user.user_id,
+                );
+                if (
+                    other_recipients.length > 0 &&
+                    other_recipients.every((id) =>
+                        muted_users.is_user_muted(Number.parseInt(id, 10)),
+                    )
+                ) {
+                    return false;
+                }
                 return true;
             }
 
