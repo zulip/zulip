@@ -320,6 +320,7 @@ def insert_flattened_steps_component(
     markdown_string: str,
     include_files_info: dict[str, IncludeFileInfo],
     import_statement_set: set[str],
+    components_dir_path: str,
 ) -> str:
     """
     We insert FlattenList components where include files
@@ -389,7 +390,9 @@ def insert_flattened_steps_component(
         insert_flatten_list(match)
 
     if insertions:
-        import_statement_set.add("import FlattenList from '../../components/FlattenList.astro';")
+        import_statement_set.add(
+            f"import FlattenList from '{components_dir_path}/FlattenList.astro';"
+        )
         # Insert tags in reverse order to avoid index shifting
         for index, tag in sorted(insertions, reverse=True):
             lines.insert(index, tag)
@@ -532,7 +535,9 @@ def convert_help_center_file_to_mdx(
     # All unordered lists at the time of writing this comment are
     # standalone components and we do not need to do any transformation
     # for them.
-    result = insert_flattened_steps_component(result, include_files_info, import_statement_set)
+    result = insert_flattened_steps_component(
+        result, include_files_info, import_statement_set, "../../components"
+    )
 
     result = fix_file_imports(result, import_statement_set, "./include")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
@@ -551,7 +556,8 @@ def convert_help_center_file_to_mdx(
 
 def convert_include_file_to_mdx(
     markdown_file_path: str,
-) -> tuple[IncludeFileInfo, str]:
+    include_files_info: dict[str, IncludeFileInfo],
+) -> str:
     """
     Given a path to a Markdown file, return the equivalent MDX file.
     We do not do certain operations that we do on a normal help file
@@ -564,14 +570,22 @@ def convert_include_file_to_mdx(
     in files that are not served standalone.
     """
     result = get_markdown_string_from_file(markdown_file_path)
-    include_file_info: IncludeFileInfo = {
-        "is_only_ordered_list": is_include_only_ordered_list(result)
-    }
 
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
     result = fix_relative_path(result)
+    # We are not inserting FlattenList components for files
+    # with !!! tip components, since we need to do it inside the
+    # include file. We can do it during the cutover manually or
+    # in a followup PR.
+    # All unordered lists at the time of writing this comment are
+    # standalone components and we do not need to do any transformation
+    # for them.
+    result = insert_flattened_steps_component(
+        result, include_files_info, import_statement_set, "../../../components"
+    )
+
     result = fix_file_imports(result, import_statement_set, ".")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = convert_tab_syntax(result, import_statement_set)
@@ -582,7 +596,20 @@ def convert_include_file_to_mdx(
     result = replace_icons(result, import_statement_set)
     result = convert_comments(result)
     result = insert_imports(result, import_statement_set, 1)
-    return include_file_info, result
+    return result
+
+
+def get_include_files_info(include_input_dir: str) -> dict[str, IncludeFileInfo]:
+    include_files_info: dict[str, IncludeFileInfo] = {}
+    for name in os.listdir(include_input_dir):
+        markdown_file_path = os.path.join(include_input_dir, name)
+        if name.endswith(".md") and os.path.isfile(markdown_file_path):
+            markdown_string = get_markdown_string_from_file(markdown_file_path)
+            include_files_info[name] = {
+                "is_only_ordered_list": is_include_only_ordered_list(markdown_string)
+            }
+
+    return include_files_info
 
 
 def run() -> None:
@@ -603,14 +630,13 @@ def run() -> None:
     converted_count = 0
     os.makedirs(include_output_dir, exist_ok=True)
 
-    include_files_info: dict[str, IncludeFileInfo] = {}
+    include_files_info: dict[str, IncludeFileInfo] = get_include_files_info(include_input_dir)
     for name in os.listdir(include_input_dir):
         if name.endswith(".md") and os.path.isfile(os.path.join(include_input_dir, name)):
             converted_count += 1
-            include_file_info, mdx = convert_include_file_to_mdx(
-                os.path.join(include_input_dir, name)
+            mdx = convert_include_file_to_mdx(
+                os.path.join(include_input_dir, name), include_files_info
             )
-            include_files_info[name] = include_file_info
             with open(
                 os.path.join(
                     include_output_dir,
