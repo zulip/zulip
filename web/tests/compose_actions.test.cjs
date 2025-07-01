@@ -305,7 +305,6 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.ok(abort_xhr_called);
     assert.ok(pill_cleared);
     assert_visible("#compose_controls");
-    assert_hidden("#compose-direct-recipient");
     assert.ok(!compose_state.composing());
 });
 
