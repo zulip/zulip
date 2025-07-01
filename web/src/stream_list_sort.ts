@@ -74,6 +74,7 @@ type StreamListSection = {
     section_title: string;
     streams: number[];
     muted_streams: number[]; // Not used for the inactive section
+    inactive_streams: number[]; // Only used for folder sections
 };
 
 type StreamListSortResult = {
@@ -101,18 +102,21 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         section_title: $t({defaultMessage: "PINNED CHANNELS"}),
         streams: [],
         muted_streams: [],
+        inactive_streams: [],
     };
     const normal_section: StreamListSection = {
         id: "normal-streams",
         section_title: $t({defaultMessage: "OTHER CHANNELS"}),
         streams: [],
         muted_streams: [],
+        inactive_streams: [],
     };
     const dormant_section: StreamListSection = {
         id: "dormant-streams",
         section_title: $t({defaultMessage: "INACTIVE CHANNELS"}),
         streams: [],
         muted_streams: [], // Not used for the dormant section
+        inactive_streams: [],
     };
 
     const folder_sections = new Map<number, StreamListSection>();
@@ -138,10 +142,13 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
                     section_title: folder.name.toUpperCase(),
                     streams: [],
                     muted_streams: [],
+                    inactive_streams: [],
                 };
                 folder_sections.set(sub.folder_id, section);
             }
-            if (sub.is_muted) {
+            if (!has_recent_activity(sub)) {
+                section.inactive_streams.push(stream_id);
+            } else if (sub.is_muted) {
                 section.muted_streams.push(stream_id);
             } else {
                 section.streams.push(stream_id);
