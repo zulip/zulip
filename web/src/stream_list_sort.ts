@@ -74,6 +74,7 @@ export type StreamListSection = {
     section_title: string;
     streams: number[];
     muted_streams: number[]; // Not used for the inactive section
+    inactive_streams: number[]; // Only used for folder sections
 };
 
 type StreamListSortResult = {
@@ -101,18 +102,21 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         section_title: $t({defaultMessage: "PINNED CHANNELS"}),
         streams: [],
         muted_streams: [],
+        inactive_streams: [],
     };
     const normal_section: StreamListSection = {
         id: "normal-streams",
         section_title: $t({defaultMessage: "OTHER CHANNELS"}),
         streams: [],
         muted_streams: [],
+        inactive_streams: [],
     };
     const dormant_section: StreamListSection = {
         id: "dormant-streams",
         section_title: $t({defaultMessage: "INACTIVE CHANNELS"}),
         streams: [],
         muted_streams: [], // Not used for the dormant section
+        inactive_streams: [],
     };
 
     const folder_sections = new Map<number, StreamListSection>();
@@ -138,10 +142,13 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
                     section_title: folder.name.toUpperCase(),
                     streams: [],
                     muted_streams: [],
+                    inactive_streams: [],
                 };
                 folder_sections.set(sub.folder_id, section);
             }
-            if (sub.is_muted) {
+            if (!has_recent_activity(sub)) {
+                section.inactive_streams.push(stream_id);
+            } else if (sub.is_muted) {
                 section.muted_streams.push(stream_id);
             } else {
                 section.streams.push(stream_id);
@@ -176,6 +183,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     for (const section of sections) {
         section.streams.sort(compare_function);
         section.muted_streams.sort(compare_function);
+        section.inactive_streams.sort(compare_function);
     }
 
     const same_as_before =
@@ -189,14 +197,19 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
                 section.id === previous_section.id &&
                 section.section_title === previous_section.section_title &&
                 util.array_compare(section.streams, previous_section.streams) &&
-                util.array_compare(section.muted_streams, previous_section.muted_streams)
+                util.array_compare(section.muted_streams, previous_section.muted_streams) &&
+                util.array_compare(section.inactive_streams, previous_section.inactive_streams)
             );
         });
 
     if (!same_as_before) {
         first_render_completed = true;
         previous_sections = sections;
-        all_streams = sections.flatMap((section) => [...section.streams, ...section.muted_streams]);
+        all_streams = sections.flatMap((section) => [
+            ...section.streams,
+            ...section.muted_streams,
+            ...section.inactive_streams,
+        ]);
     }
 
     return {
@@ -224,6 +237,7 @@ export function prev_stream_id(stream_id: number): number | undefined {
         return undefined;
     }
 
+    // TODO(evy) figure out how to handle invalid streams here
     return maybe_get_stream_id(i - 1);
 }
 
@@ -234,6 +248,7 @@ export function next_stream_id(stream_id: number): number | undefined {
         return undefined;
     }
 
+    // TODO(evy) figure out how to handle invalid streams here
     return maybe_get_stream_id(i + 1);
 }
 

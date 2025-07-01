@@ -423,6 +423,41 @@
     }
 }
 
+.stream-list-toggle-inactive-channels {
+    padding-left: var(--left-sidebar-toggle-width-offset);
+}
+
+.stream-list-section-container:not(.showing-inactive) {
+    .inactive-in-channel-folder {
+        display: none;
+    }
+
+    .stream-list-toggle-inactive-channels {
+        .hide-inactive-channels {
+            display: none;
+        }
+    }
+}
+
+#streams_list.is_searching {
+    .show-inactive-channels,
+    .hide-inactive-channels {
+        display: none;
+    }
+
+    .inactive-in-channel-folder {
+        display: block;
+    }
+}
+
+.stream-list-section-container.showing-inactive {
+    .stream-list-toggle-inactive-channels {
+        .show-inactive-channels {
+            display: none;
+        }
+    }
+}
+
 .stream-list-section {
     margin: 0;
 }
