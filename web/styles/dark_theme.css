@@ -15,7 +15,6 @@
             border: 1px solid var(--color-hotkey-hint);
             border-radius: 3px;
             color: var(--color-hotkey-hint);
-            text-align: center;
             opacity: 0.8;
         }
     }
