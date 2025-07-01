@@ -13326,9 +13326,12 @@ paths:
                     - 1 - Top topic in the channel
                     - 2 - Channel feed
                     - 3 - List of topics
+                    - 4 - Top unread topic in channel
 
-                    **Changes**: The "List of topics" option is new in
-                    Zulip 11.0 (feature level 383).
+                    **Changes**: The "Top unread topic in channel" is new in Zulip 11.0
+                    (feature level 401).
+
+                    The "List of topics" option is new in Zulip 11.0 (feature level 383).
 
                     New in Zulip 9.0 (feature level 269). Previously, this
                     was not configurable, and every user had the "Channel feed" behavior.
@@ -13338,6 +13341,7 @@ paths:
                     - 1
                     - 2
                     - 3
+                    - 4
                   example: 1
                 web_font_size_px:
                   description: |
@@ -16795,9 +16799,12 @@ paths:
                               - 1 - Top topic in the channel
                               - 2 - Channel feed
                               - 3 - List of topics
+                              - 4 - Top unread topic in channel
 
-                              **Changes**: The "List of topics" option is new in
-                              Zulip 11.0 (feature level 383).
+                              **Changes**: The "Top unread topic in channel" is new in Zulip 11.0
+                              (feature level 401).
+
+                              The "List of topics" option is new in Zulip 11.0 (feature level 383).
 
                               New in Zulip 9.0 (feature level 269). Previously, this
                               was not configurable, and every user had the "Channel feed" behavior.
@@ -19598,9 +19605,13 @@ paths:
                               - 1 - Top topic in the channel
                               - 2 - Channel feed
                               - 3 - List of topics
+                              - 4 - Top unread topic in channel
 
-                              **Changes**: In Zulip 11.0 (feature level 383), we added a new option
-                              "List of topics" to this setting.
+                              **Changes**: The "Top unread topic in channel" is new in Zulip 11.0
+                              (feature level 401).
+
+                              In Zulip 11.0 (feature level 383), we added a new option "List of topics"
+                              to this setting.
 
                               New in Zulip 9.0 (feature level 269). Previously, this
                               was not configurable, and every user had the "Channel feed" behavior.
@@ -20775,9 +20786,12 @@ paths:
                     - 1 - Top topic in the channel
                     - 2 - Channel feed
                     - 3 - List of topics
+                    - 4 - Top unread topic in channel
 
-                    **Changes**: The "List of topics" option is new in
-                    Zulip 11.0 (feature level 383).
+                    **Changes**: The "Top unread topic in channel" is new in Zulip 11.0
+                    (feature level 401).
+
+                    The "List of topics" option is new in Zulip 11.0 (feature level 383).
 
                     New in Zulip 9.0 (feature level 269). Previously, this
                     was not configurable, and every user had the "Channel feed" behavior.
@@ -20785,6 +20799,7 @@ paths:
                   enum:
                     - 1
                     - 2
+                    - 4
                   example: 1
                 starred_message_counts:
                   description: |

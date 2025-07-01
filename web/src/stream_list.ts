@@ -38,6 +38,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -944,7 +945,27 @@ export function set_event_handlers({
                 false,
                 (topic_names: string[]) => topic_names,
             );
-            const topic_item = topic_list_info.items[0];
+            // This initial value handles both the
+            // top_topic_in_channel mode as well as the
+            // top_unread_topic_in_channel fallback when there are no
+            // (unmuted) unreads in the channel.
+            let topic_item = topic_list_info.items[0];
+
+            if (
+                user_settings.web_channel_default_view ===
+                web_channel_default_view_values.top_unread_topic_in_channel.code
+            ) {
+                for (const topic_list_item of topic_list_info.items) {
+                    if (
+                        unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
+                        !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
+                    ) {
+                        topic_item = topic_list_item;
+                        break;
+                    }
+                }
+            }
+
             if (topic_item !== undefined) {
                 const destination_url = hash_util.by_channel_topic_permalink(
                     stream_id,
