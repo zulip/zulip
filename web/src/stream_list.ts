@@ -37,6 +37,7 @@ import * as topic_list_data from "./topic_list_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
+import * as unread_ui from "./unread_ui.ts";
 import {user_settings} from "./user_settings.ts";
 
 let pending_stream_list_rerender = false;
@@ -350,6 +351,8 @@ export function build_stream_list(force_rerender: boolean): void {
     }
 
     $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
+    unread_ui.update_unread_counts();
+    sidebar_ui.update_unread_counts_visibility();
 }
 
 export function get_stream_li(stream_id: number): JQuery | undefined {

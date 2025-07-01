@@ -4,7 +4,6 @@ import * as settings_notifications from "./settings_notifications.ts";
 import * as stream_edit from "./stream_edit.ts";
 import * as stream_list from "./stream_list.ts";
 import type {StreamSubscription} from "./sub_store.ts";
-import * as unread_ui from "./unread_ui.ts";
 
 export function update_is_muted(
     sub: StreamSubscription,
@@ -25,10 +24,6 @@ export function update_is_muted(
             }
         }
     }
-
-    // Since muted streams aren't counted in visible unread
-    // counts, we need to update the rendering of them.
-    unread_ui.update_unread_counts();
 
     settings_notifications.update_muted_stream_state(sub);
     stream_edit.update_muting_rendering(sub);
