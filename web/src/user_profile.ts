@@ -21,6 +21,7 @@ import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as components from "./components.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -1299,6 +1300,8 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
         e.preventDefault();
+        const $remove_button = $(e.currentTarget).closest(".remove-subscription-button");
+        buttons.show_button_loading_indicator($remove_button);
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id")!, 10);
         const sub = sub_store.get(stream_id);
@@ -1362,6 +1365,8 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
         e.preventDefault();
+        const $remove_button = $(e.currentTarget).closest(".remove-member-button");
+        buttons.show_button_loading_indicator($remove_button);
         const $group_row = $(e.currentTarget).closest("[data-group-id]");
         const group_id = Number.parseInt($group_row.attr("data-group-id")!, 10);
         const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);

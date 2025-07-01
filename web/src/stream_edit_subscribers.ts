@@ -10,6 +10,7 @@ import render_stream_subscription_request_result from "../templates/stream_setti
 
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as blueslip from "./blueslip.ts";
+import * as buttons from "./buttons.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -329,10 +330,12 @@ function remove_subscriber({
     stream_id,
     target_user_id,
     $list_entry,
+    $remove_button,
 }: {
     stream_id: number;
     target_user_id: number;
     $list_entry: JQuery;
+    $remove_button: JQuery;
 }): void {
     const sub = get_sub(stream_id);
     if (!sub) {
@@ -341,7 +344,6 @@ function remove_subscriber({
 
     function removal_success(raw_data: unknown): void {
         const data = remove_user_id_api_response_schema.parse(raw_data);
-        let message;
 
         if (stream_id !== current_stream_id) {
             blueslip.info("Response for subscription removal came too late.");
@@ -351,28 +353,12 @@ function remove_subscriber({
         if (data.removed.length > 0) {
             // Remove the user from the subscriber list.
             $list_entry.remove();
-
-            const user_name = people.get_full_name(target_user_id);
-            if (target_user_id === current_user.user_id) {
-                message = $t({defaultMessage: "Unsubscribed yourself successfully!"});
-            } else {
-                message = $t(
-                    {defaultMessage: "Unsubscribed {user_name} successfully!"},
-                    {user_name},
-                );
-            }
             // The rest of the work is done via the subscription -> remove event we will get
-        } else {
-            message = $t({defaultMessage: "User is already not subscribed."});
         }
-        show_stream_subscription_request_result({
-            message,
-            add_class: "text-success",
-            remove_class: "text-remove",
-        });
     }
 
     function removal_failure(): void {
+        buttons.hide_button_loading_indicator($remove_button);
         show_stream_subscription_request_result({
             message: $t({defaultMessage: "Error removing user from this channel."}),
             add_class: "text-error",
@@ -545,8 +531,9 @@ export function initialize(): void {
             const $list_entry = $(this).closest("tr");
             const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id")!, 10);
             const stream_id = current_stream_id;
-
-            remove_subscriber({stream_id, target_user_id, $list_entry});
+            const $remove_button = $(this).closest(".remove-subscriber-button");
+            buttons.show_button_loading_indicator($remove_button);
+            remove_subscriber({stream_id, target_user_id, $list_entry, $remove_button});
         },
     );
 }
