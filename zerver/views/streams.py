@@ -697,15 +697,11 @@ def add_subscriptions_backend(
     anonymous_group_membership = {}
     group_settings_map = {}
     request_settings_dict = locals()
-    # We don't want to calculate this value if no default values are
-    # needed.
-    system_groups_name_dict = None
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         assert setting_name in request_settings_dict
         if request_settings_dict[setting_name] is not None:
             setting_request_value = request_settings_dict[setting_name]
-            if system_groups_name_dict is None:
-                system_groups_name_dict = get_role_based_system_groups_dict(realm)
             setting_value = parse_group_setting_value(
                 setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
             )
@@ -718,8 +714,6 @@ def add_subscriptions_backend(
             if not isinstance(setting_value, int):
                 anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
         else:
-            if system_groups_name_dict is None:
-                system_groups_name_dict = get_role_based_system_groups_dict(realm)
             group_settings_map[setting_name] = get_stream_permission_default_group(
                 setting_name, system_groups_name_dict, creator=user_profile
             )
