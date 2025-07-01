@@ -263,7 +263,7 @@ export function quote_message(opts: {
             keep_composebox_empty: opts.keep_composebox_empty,
             content: quoting_placeholder,
             stream_id,
-            private_message_recipient_ids: people.pm_with_user_ids(message) ?? [],
+            private_message_recipient_ids: [],
         });
         compose_recipient.toggle_compose_recipient_dropdown();
     } else {
