@@ -33,6 +33,8 @@ class ZulipEmailForwardUserError(ZulipEmailForwardError):
 
 
 def get_email_gateway_message_string_from_address(address: str) -> str:
+    if settings.EMAIL_GATEWAY_PATTERN == "":
+        raise ZulipEmailForwardError("This server is not configured for incoming email.")
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split("%s")]
     if settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
         # Accept mails delivered to any Zulip server
