@@ -103,18 +103,21 @@ test("no_subscribed_streams", () => {
         sections: [
             {
                 id: "pinned-streams",
+                inactive_streams: [],
                 muted_streams: [],
                 section_title: "translated: PINNED CHANNELS",
                 streams: [],
             },
             {
                 id: "normal-streams",
+                inactive_streams: [],
                 muted_streams: [],
                 section_title: "translated: CHANNELS",
                 streams: [],
             },
             {
                 id: "dormant-streams",
+                inactive_streams: [],
                 muted_streams: [],
                 section_title: "translated: INACTIVE CHANNELS",
                 streams: [],
