@@ -3519,7 +3519,10 @@ class NormalActionsTest(BaseAction):
         )
         with self.verify_action() as events:
             do_update_outgoing_webhook_service(
-                bot, interface=2, base_url="http://hostname.domain2.com"
+                bot,
+                interface=2,
+                base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
             )
 
         check_realm_bot_update("events[0]", events[0], "services")
@@ -3537,12 +3540,15 @@ class NormalActionsTest(BaseAction):
         )
 
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_update_outgoing_webhook_service(bot)
+            do_update_outgoing_webhook_service(bot, acting_user=self.user_profile)
 
         # Trying to update with the same value as existing value results in no op.
         with self.verify_action(num_events=0, state_change_expected=False) as events:
             do_update_outgoing_webhook_service(
-                bot, interface=2, base_url="http://hostname.domain2.com"
+                bot,
+                interface=2,
+                base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
             )
 
     def test_do_deactivate_bot(self) -> None:

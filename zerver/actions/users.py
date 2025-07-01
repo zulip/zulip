@@ -786,6 +786,7 @@ def do_update_outgoing_webhook_service(
     *,
     interface: int | None = None,
     base_url: str | None = None,
+    acting_user: UserProfile | None,
 ) -> None:
     update_fields: dict[str, str | int] = {}
     if interface is not None:

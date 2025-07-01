@@ -503,6 +503,7 @@ def patch_bot_backend(
             bot,
             interface=service_interface,
             base_url=service_payload_url,
+            acting_user=user_profile,
         )
 
     if config_data is not None:
