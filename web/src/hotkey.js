@@ -55,6 +55,7 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
@@ -177,6 +178,7 @@ const KEYDOWN_MAPPINGS = {
     V: {name: "show_lightbox", message_view_only: true},
     W: {name: "query_users", message_view_only: true},
     X: {name: "compose_private_message", message_view_only: true},
+    Y: {name: "list_of_channel_topics", message_view_only: true},
     Z: {name: "zoom_to_message_near", message_view_only: true},
     Tab: {name: "tab", message_view_only: false},
     Escape: {name: "escape", message_view_only: false},
@@ -1168,6 +1170,29 @@ export function process_hotkey(e, hotkey) {
                 user_topics_ui.toggle_topic_visibility_policy(
                     message_lists.current.selected_message(),
                 );
+                return true;
+            }
+            return false;
+        case "list_of_channel_topics":
+            if (message_lists.current !== undefined) {
+                let channel_id;
+                const selected_message = message_lists.current.selected_message();
+                if (selected_message === undefined) {
+                    const current_filter = narrow_state.filter();
+                    const current_channel = current_filter.get_operand("channel");
+                    if (current_channel) {
+                        channel_id = stream_data.get_stream_id(current_channel);
+                    }
+                } else if (selected_message.type === "stream") {
+                    channel_id = stream_data.get_stream_id(selected_message.stream);
+                }
+
+                if (channel_id === undefined) {
+                    return false;
+                }
+
+                const channel_topic_list_url = hash_util.by_channel_topic_list_url(channel_id);
+                browser_history.go_to_location(channel_topic_list_url);
                 return true;
             }
             return false;
