@@ -200,6 +200,8 @@ const per_channel_filters = new Map<number, Set<string>>();
 let collapsed_containers = new Set<string>();
 
 let search_keyword = "";
+let inbox_last_search_keyword = "";
+const per_channel_last_search_keyword = new Map<number, string>();
 const INBOX_SEARCH_ID = "inbox-search";
 const INBOX_FILTERS_DROPDOWN_ID = "inbox-filter_widget";
 export let current_focus_id: string | undefined;
@@ -230,15 +232,20 @@ function save_channel_view_state(): void {
     channel_view_navigation_state.col_focus = col_focus;
     channel_view_navigation_state.row_focus = row_focus;
     channel_view_navigation_state.channel_id = inbox_util.get_channel_id();
+    per_channel_last_search_keyword.set(channel_view_navigation_state.channel_id, search_keyword);
 }
 
 function save_inbox_view_state(): void {
     inbox_view_navigation_state.col_focus = col_focus;
     inbox_view_navigation_state.row_focus = row_focus;
+    inbox_last_search_keyword = search_keyword;
 }
 
 function restore_channel_view_state(): void {
-    if (channel_view_navigation_state.channel_id === inbox_util.get_channel_id()) {
+    const current_channel_id = inbox_util.get_channel_id();
+    search_keyword = per_channel_last_search_keyword.get(current_channel_id) ?? "";
+
+    if (channel_view_navigation_state.channel_id === current_channel_id) {
         col_focus = channel_view_navigation_state.col_focus;
         row_focus = channel_view_navigation_state.row_focus;
         return;
@@ -252,6 +259,7 @@ function restore_channel_view_state(): void {
 function restore_inbox_view_state(): void {
     col_focus = inbox_view_navigation_state.col_focus;
     row_focus = inbox_view_navigation_state.row_focus;
+    search_keyword = inbox_last_search_keyword;
 }
 
 export function show(filter?: Filter): void {
