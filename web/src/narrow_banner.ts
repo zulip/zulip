@@ -79,6 +79,8 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
     ),
 };
 
+const NO_SEARCH_RESULTS_TITLE = $t({defaultMessage: "No search results."});
+
 function retrieve_search_query_data(current_filter: Filter): SearchData {
     // when search bar contains multiple filters, only retrieve search queries
     const search_query = current_filter.operands("search")[0];
@@ -140,7 +142,6 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                   },
               ),
     };
-    const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     if (current_filter.is_in_home()) {
         // We're in the combined feed view.
@@ -175,7 +176,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         // No message can have multiple streams
         if (streams.length > 1) {
             return {
-                title: default_banner_for_multiple_filters,
+                title: NO_SEARCH_RESULTS_TITLE,
                 html: $t_html({
                     defaultMessage:
                         "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
@@ -185,7 +186,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         // No message can have multiple topics
         if (topics.length > 1) {
             return {
-                title: default_banner_for_multiple_filters,
+                title: NO_SEARCH_RESULTS_TITLE,
                 html: $t_html({
                     defaultMessage:
                         "<p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
@@ -195,7 +196,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         // No message can have multiple senders
         if (current_filter.operands("sender").length > 1) {
             return {
-                title: default_banner_for_multiple_filters,
+                title: NO_SEARCH_RESULTS_TITLE,
                 html: $t_html({
                     defaultMessage:
                         "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
@@ -206,7 +207,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         // For empty stream searches within other narrows, we display the stop words
         if (current_filter.operands("search").length > 0) {
             return {
-                title: default_banner_for_multiple_filters,
+                title: NO_SEARCH_RESULTS_TITLE,
                 search_data: retrieve_search_query_data(current_filter),
             };
         }
@@ -262,7 +263,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
         // For other multi-operator narrows, we just use the default banner
         return {
-            title: default_banner_for_multiple_filters,
+            title: NO_SEARCH_RESULTS_TITLE,
         };
     }
 
@@ -345,7 +346,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         case "search": {
             // You are narrowed to empty search results.
             return {
-                title: $t({defaultMessage: "No search results."}),
+                title: NO_SEARCH_RESULTS_TITLE,
                 search_data: retrieve_search_query_data(current_filter),
             };
         }
