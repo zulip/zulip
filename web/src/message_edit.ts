@@ -228,6 +228,14 @@ export function get_deletability(message: Message): boolean {
         return true;
     }
 
+    if (message.type === "stream") {
+        const stream = stream_data.get_sub_by_id(message.stream_id);
+        assert(stream !== undefined);
+        if (stream_data.user_can_delete_any_message_in_channel(stream)) {
+            return true;
+        }
+    }
+
     if (!message.sent_by_me && !is_message_sent_by_my_bot(message)) {
         return false;
     }
