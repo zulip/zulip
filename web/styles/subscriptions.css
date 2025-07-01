@@ -250,6 +250,18 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.remove-subscriber-button.hidden-remove-button.icon-button.icon-button-danger:has(
+        .button-loading-indicator
+    ),
+.remove-subgroup-button.hidden-remove-button.icon-button.icon-button-danger:has(
+        .button-loading-indicator
+    ) {
+    pointer-events: none;
+    visibility: visible;
+    cursor: default;
+    opacity: 1;
+}
+
 .member-search,
 .subscriber-search {
     margin: 10px 0 0;
