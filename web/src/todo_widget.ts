@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
+import render_todo_widget_task_item from "../templates/widgets/todo_widget_task_item.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -25,7 +26,7 @@ export const todo_widget_extra_data_schema = z
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "edit_task"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -42,11 +43,25 @@ const new_task_inbound_data_schema = z.object({
     completed: z.boolean(),
 });
 
+const edit_task_inbound_data_schema = z.object({
+    type: z.literal("edit_task"),
+    key: z.string(),
+    task: z.string(),
+    desc: z.string(),
+});
+
 type NewTaskOutboundData = z.output<typeof new_task_inbound_data_schema>;
 
 type NewTaskTitleOutboundData = {
     type: "new_task_list_title";
     title: string;
+};
+
+type EditTaskItemOutboundData = {
+    type: "edit_task";
+    task: string;
+    desc: string;
+    key: string;
 };
 
 type TaskStrikeOutboundData = {
@@ -67,20 +82,28 @@ type Task = {
     completed: boolean;
 };
 
+type LastEvent = {
+    type: string;
+    key: string | undefined;
+};
+
 export type TodoWidgetOutboundData =
     | NewTaskTitleOutboundData
     | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    | TaskStrikeOutboundData
+    | EditTaskItemOutboundData;
 
 export class TaskData {
     message_sender_id: number;
     me: number;
     is_my_task_list: boolean;
     input_mode: boolean;
+    item_input_mode: Set<string>;
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
     task_list_title: string;
     task_map = new Map<string, Task>();
     my_idx = 1;
+    last_event: LastEvent | undefined;
 
     handle = {
         new_task_list_title: {
@@ -119,6 +142,10 @@ export class TaskData {
                 }
 
                 this.set_task_list_title(data.title);
+                this.last_event = {
+                    type: "new_task_list_title",
+                    key: undefined,
+                };
             },
         },
 
@@ -175,6 +202,64 @@ export class TaskData {
                 if (sender_id === this.me && this.my_idx <= idx) {
                     this.my_idx = idx + 1;
                 }
+                this.last_event = {
+                    type: "new_task",
+                    key,
+                };
+            },
+        },
+
+        edit_task: {
+            outbound: (
+                task: string,
+                desc: string,
+                key: string,
+            ): EditTaskItemOutboundData | undefined => {
+                const event = {
+                    type: "edit_task" as const,
+                    key,
+                    task,
+                    desc,
+                };
+                const item = this.task_map.get(key);
+                if (item === undefined) {
+                    blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
+                    return undefined;
+                }
+
+                if (!(this.name_in_use(task) && desc === item.desc)) {
+                    return event;
+                }
+                return undefined;
+            },
+
+            inbound: (_sender_id: number, raw_data: unknown): void => {
+                const parsed = edit_task_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for inbound task data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+                const data = parsed.data;
+                const task = data.task;
+                const desc = data.desc;
+
+                const key = data.key;
+                const item = this.task_map.get(key);
+                if (item === undefined) {
+                    blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
+                    return;
+                }
+
+                if (!(this.name_in_use(task) && item.desc === desc)) {
+                    item.task = task;
+                    item.desc = desc;
+                }
+                this.last_event = {
+                    type: "edit_task",
+                    key,
+                };
             },
         },
 
@@ -211,6 +296,10 @@ export class TaskData {
                 }
 
                 item.completed = !item.completed;
+                this.last_event = {
+                    type: "strike",
+                    key,
+                };
             },
         },
     };
@@ -235,6 +324,7 @@ export class TaskData {
         this.is_my_task_list = is_my_task_list;
         // input_mode indicates if the task list title is being input currently
         this.input_mode = is_my_task_list; // for now
+        this.item_input_mode = new Set();
         this.report_error_function = report_error_function;
         this.task_list_title = "";
         if (task_list_title) {
@@ -266,6 +356,18 @@ export class TaskData {
         this.input_mode = true;
     }
 
+    set_item_input_mode(key: string): void {
+        this.item_input_mode.add(key);
+    }
+
+    remove_item_input_mode(key: string): void {
+        this.item_input_mode.delete(key);
+    }
+
+    get_item_input_mode(key: string): boolean {
+        return this.item_input_mode.has(key);
+    }
+
     clear_input_mode(): void {
         this.input_mode = false;
     }
@@ -284,6 +386,11 @@ export class TaskData {
         };
 
         return widget_data;
+    }
+
+    get_task_item(key: string): Task | undefined {
+        const task_item = this.task_map.get(key);
+        return task_item;
     }
 
     name_in_use(name: string): boolean {
@@ -322,7 +429,7 @@ export function activate({
     callback: (data: TodoWidgetOutboundData | undefined) => void;
     extra_data: unknown;
     message: Message;
-}): (events: Event[]) => void {
+}): (events: Event[], new_event?: boolean) => void {
     const parse_result = todo_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.warn("invalid todo extra data", {issues: parse_result.error.issues});
@@ -348,6 +455,22 @@ export function activate({
         $elem.find("button.todo-task-list-title-check").toggle(has_title);
     }
 
+    // Disables submit button for task edit if task name is empty.
+    function update_task_edit_submit_button(key: string): void {
+        const has_task =
+            $elem
+                .find(`input.task[data-key="${key}"]`)
+                .closest("li")
+                .find<HTMLInputElement>("input.add-task")
+                .val()
+                ?.trim() !== "";
+        $elem
+            .find(`input.task[data-key="${key}"]`)
+            .closest("li")
+            .find(".todo-task-list-item-check")
+            .toggle(has_task);
+    }
+
     function render_task_list_title(): void {
         const task_list_title = task_data.get_task_list_title();
         const input_mode = task_data.get_input_mode();
@@ -361,6 +484,15 @@ export function activate({
         $elem.find(".todo-task-list-title-bar").toggle(input_mode);
     }
 
+    function toggle_task_edit_controls(key: string): void {
+        const input_mode = task_data.get_item_input_mode(key);
+        const $task_list_item = $elem.find(`input.task[data-key="${key}"]`).closest("li");
+        const can_edit = is_my_task_list && !input_mode;
+        $task_list_item.find(".checkbox").toggle(!input_mode);
+        $task_list_item.find(".todo-task-list-item-bar").toggle(input_mode);
+        $task_list_item.find(".todo-edit-task-list-item").toggle(can_edit);
+    }
+
     function start_editing(): void {
         task_data.set_input_mode();
 
@@ -370,9 +502,25 @@ export function activate({
         $elem.find("input.todo-task-list-title").trigger("focus");
     }
 
+    function start_editing_item(key: string): void {
+        task_data.set_item_input_mode(key);
+        const task_item = task_data.get_task_item(key);
+        const $task_list_item = $elem.find(`input.task[data-key="${key}"]`).closest("li");
+        if (task_item) {
+            $task_list_item.find(".todo-task-list-item-bar input.add-task").val(task_item.task);
+            $task_list_item.find(".todo-task-list-item-bar input.add-desc").val(task_item.desc);
+        }
+        toggle_task_edit_controls(key);
+    }
+
     function abort_edit(): void {
         task_data.clear_input_mode();
         render_task_list_title();
+    }
+
+    function abort_edit_item(key: string): void {
+        task_data.remove_item_input_mode(key);
+        toggle_task_edit_controls(key);
     }
 
     function submit_task_list_title(): void {
@@ -397,6 +545,41 @@ export function activate({
 
         // Broadcast the new task list title to our peers.
         const data = task_data.handle.new_task_list_title.outbound(new_task_list_title);
+        callback(data);
+    }
+
+    function submit_task_list_item(key: string): void {
+        const $task_list_item = $elem.find(`input.task[data-key="${key}"]`).closest("li");
+        const new_task =
+            $task_list_item.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const new_desc =
+            $task_list_item.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+
+        if (new_task === "") {
+            return;
+        }
+        const task_exists = task_data.name_in_use(new_task);
+        const old_task_list_item = task_data.get_task_item(key);
+
+        assert(old_task_list_item);
+        const new_task_item = {
+            key,
+            task: new_task,
+            desc: new_desc,
+            completed: old_task_list_item.completed,
+            idx: old_task_list_item.idx,
+        };
+
+        task_data.remove_item_input_mode(key);
+        toggle_task_edit_controls(key);
+
+        if (task_exists && new_desc === old_task_list_item.desc) {
+            $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+            return;
+        }
+        $task_list_item.find("label.checkbox").html(render_todo_widget_task_item(new_task_item));
+
+        const data = task_data.handle.edit_task.outbound(new_task, new_desc, key);
         callback(data);
     }
 
@@ -441,15 +624,17 @@ export function activate({
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
             $elem.find(".widget-error").text("");
-            const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
-            const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+            const task =
+                $elem.find<HTMLInputElement>(".add-task-bar input.add-task").val()?.trim() ?? "";
+            const desc =
+                $elem.find<HTMLInputElement>(".add-task-bar input.add-desc").val()?.trim() ?? "";
 
             if (task === "") {
                 return;
             }
 
-            $elem.find("input.add-task").val("").trigger("focus");
-            $elem.find("input.add-desc").val("");
+            $elem.find(".add-task-bar input.add-task").val("").trigger("focus");
+            $elem.find(".add-task-bar input.add-desc").val("");
 
             const task_exists = task_data.name_in_use(task);
             if (task_exists) {
@@ -467,8 +652,81 @@ export function activate({
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".widget-error").text("");
+        $elem.find("ul.todo-widget .todo-task-list-item-bar").hide();
+        $elem.find("ul.todo-widget .todo-edit-task-list-item").toggle(is_my_task_list);
+    }
 
-        $elem.find("input.task").on("click", (e) => {
+    function update_todo_widget(): void {
+        const last_event = task_data.last_event;
+        if (!last_event || last_event.type === "new_task_list_title") {
+            render_task_list_title();
+            return;
+        }
+
+        const key = last_event.key;
+        const task = task_data.get_task_item(key!);
+        if (!task) {
+            return;
+        }
+
+        switch (last_event.type) {
+            case "new_task": {
+                const $html = $(render_widgets_todo_widget_tasks({all_tasks: [task]}));
+                $html.find(".todo-task-list-item-bar").hide();
+                $html.find(".todo-edit-task-list-item").toggle(is_my_task_list);
+                $elem.find("ul.todo-widget").append($html);
+                break;
+            }
+            case "strike":
+            case "edit_task":
+                $elem
+                    .find(`input.task[data-key="${key}"`)
+                    .closest("label.checkbox")
+                    .html(render_todo_widget_task_item(task));
+                break;
+        }
+    }
+
+    function register_click_handlers(): void {
+        $elem.find("ul.todo-widget").on("keyup", ".todo-task-list-item-bar input.add-task", (e) => {
+            e.stopPropagation();
+            const key = $(e.target).closest("li").find(".checkbox input.task").attr("data-key");
+            if (key) {
+                update_task_edit_submit_button(key);
+            }
+        });
+        $elem.find("ul.todo-widget").on("click", ".todo-edit-task-list-item", (e) => {
+            e.stopPropagation();
+            const key = $(e.target).closest("li").find(".checkbox input.task").attr("data-key");
+            assert(key !== undefined);
+            start_editing_item(key);
+        });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-list-item-bar .todo-task-list-item-check", (e) => {
+                e.stopPropagation();
+                const key = $(e.target)
+                    .closest("li")
+                    .find("label.checkbox input.task")
+                    .attr("data-key");
+                assert(key !== undefined);
+                submit_task_list_item(key);
+            });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-list-item-bar .todo-task-list-item-remove", (e) => {
+                e.stopPropagation();
+                const key = $(e.target)
+                    .closest("li")
+                    .find("label.checkbox input.task")
+                    .attr("data-key");
+                assert(key !== undefined);
+                abort_edit_item(key);
+            });
+
+        $elem.find("ul.todo-widget").on("click", "input.task", (e) => {
             e.stopPropagation();
 
             if (page_params.is_spectator) {
@@ -489,16 +747,21 @@ export function activate({
         });
     }
 
-    const handle_events = function (events: Event[]): void {
+    const handle_events = function (events: Event[], new_event = false): void {
         for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
         }
 
+        if (new_event) {
+            update_todo_widget();
+            return;
+        }
         render_task_list_title();
         render_results();
     };
 
     build_widget();
+    register_click_handlers();
     render_task_list_title();
     render_results();
 
