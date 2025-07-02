@@ -140,6 +140,13 @@
                         opacity: 1;
                     }
                 }
+
+                &:hover,
+                &:focus-visible {
+                    .collapsible-button {
+                        visibility: visible;
+                    }
+                }
             }
 
             .fa-lock {
@@ -160,6 +167,7 @@
 
             .collapsible-button {
                 grid-area: collapse_button;
+                visibility: hidden;
 
                 &:hover {
                     cursor: pointer;
