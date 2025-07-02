@@ -182,6 +182,11 @@ function user_status_post_render(): void {
         set_selected_emoji_info({});
         update_button();
     });
+
+    // Hide broken emoji images
+    $("#set-user-status-modal .emoji").on("error", function () {
+        $(this).hide();
+    });
 }
 
 export function initialize(): void {
@@ -216,3 +221,10 @@ export function initialize(): void {
         },
     ];
 }
+
+$(() => {
+    // Hide any emoji image that fails to load
+    $(document).on("error", "img.emoji", function () {
+        $(this).hide();
+    });
+});
