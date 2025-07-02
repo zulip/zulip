@@ -65,7 +65,7 @@ from zerver.lib.thumbnail import (
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
-from zerver.lib.url_encoding import encode_stream, hash_util_encode
+from zerver.lib.url_encoding import encode_channel, hash_util_encode
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
@@ -2072,7 +2072,7 @@ class StreamPattern(StreamTopicMessageProcessor):
         # href when it processes a message with one of these, to
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
-        stream_url = encode_stream(stream_id, name)
+        stream_url = encode_channel(stream_id, name)
         el.set("href", f"/#narrow/channel/{stream_url}")
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
@@ -2100,7 +2100,7 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         el = Element("a")
         el.set("class", "stream-topic")
         el.set("data-stream-id", str(stream_id))
-        stream_url = encode_stream(stream_id, stream_name)
+        stream_url = encode_channel(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
         channel_topic_object = ChannelTopicInfo(stream_name, topic_name)
         with_operand = self.get_with_operand(channel_topic_object)
@@ -2137,7 +2137,7 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
             return None, None, None
         el = Element("a")
         el.set("class", "message-link")
-        stream_url = encode_stream(stream_id, stream_name)
+        stream_url = encode_channel(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
         link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/near/{message_id}"
         el.set("href", link)
