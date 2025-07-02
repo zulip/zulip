@@ -183,9 +183,9 @@
             <span class="unread_count"></span>
         </div>
         <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-input-container">
-            {{#> input input_type="filter-input" icon="search" input_button_icon="close"}}
+            {{#> input_wrapper input_type="filter-input" icon="search" input_button_icon="close"}}
                 <input type="text" class="input-element direct-messages-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
-            {{/input}}
+            {{/input_wrapper}}
         </div>
     </div>
     {{~!-- squash whitespace --~}}
@@ -210,9 +210,9 @@
                     </span>
                 </div>
                 <div class="left-sidebar-filter-input-container">
-                    {{#> input input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
+                    {{#> input_wrapper input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
                         <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-                    {{/input}}
+                    {{/input_wrapper}}
                 </div>
             </div>
             <div id="topics_header">

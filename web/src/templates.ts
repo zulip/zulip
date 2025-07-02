@@ -1,6 +1,6 @@
 import Handlebars from "handlebars/runtime.js";
 
-import render_input from "../templates/components/input.hbs";
+import render_input_wrapper from "../templates/components/input_wrapper.hbs";
 
 import * as common from "./common.ts";
 import {default_html_elements, intl} from "./i18n.ts";
@@ -178,10 +178,10 @@ Handlebars.registerHelper("popover_hotkey_hints", (...args) => {
 
 // The below section is for registering global Handlebar partials.
 
-// The "input" partial block located at web/templates/components/input.hbs
+// The "input_wrapper" partial block located at web/templates/components/input_wrapper.hbs
 // is used to wrap any input element that needs to be styled as a Zulip input.
 // Usage example:
-//    {{#> input . input_type="filter-input" custom_classes="inbox-search-wrapper" icon="search" input_button_icon="close"}}
+//    {{#> input_wrapper . input_type="filter-input" custom_classes="inbox-search-wrapper" icon="search" input_button_icon="close"}}
 //        <input type="text" id="{{INBOX_SEARCH_ID}}" class="input-element" value="{{search_val}}" autocomplete="off" placeholder="{{t 'Filter' }}" />
-//    {{/input}}
-Handlebars.registerPartial("input", render_input);
+//    {{/input_wrapper}}
+Handlebars.registerPartial("input_wrapper", render_input_wrapper);
