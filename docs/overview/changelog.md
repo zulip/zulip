@@ -7,6 +7,31 @@ up-to-date list of all changes.
 
 ## Zulip Server 10.x series
 
+### Zulip Server 10.4
+
+_Released 2025-07-02_
+
+- CVE-2025-52559: Cross-site scripting vulnerability in digest email
+  preview page. This vulnerability can be mitigated without risk by
+  blocking access to the `/digest` URL, since the vulnerable page is a
+  developer tool for a rarely-used beta feature.
+- Added backported `libheif` packages, required to thumbnail images
+  taken on iOS 18.
+- Added an OpenSearch integration.
+- Improved email mirror filtering of prefixes in email subject lines.
+- Improved html2text exception handling in the Mattermost data import
+  tool.
+- Fixed a bug preventing uploading the same file twice within a
+  browser session.
+- Fixed several minor issues with the PostgreSQL upgrade tool.
+- Fixed documentation referring to the previous name for
+  `reset_authentication_attempt_count` management command.
+- Fixed lag in the mention typeahead in organizations with several
+  thousand users.
+- Fixed an exception in the password reset flow for systems hosted in
+  AWS that do not have AWS credentials configured.
+- Updated dependencies.
+
 ### Zulip Server 10.3
 
 _Released 2025-05-15_
