@@ -76,15 +76,14 @@
         .masked_unread_count {
             display: flex;
             grid-area: markers-and-unreads;
-            visibility: visible;
         }
 
         .unread_count {
-            visibility: hidden;
+            display: none;
         }
         /* When message summary count is 0, we dont want to show unread_count or masked_unread_count. */
         .unread_count.hide + .masked_unread_count {
-            visibility: hidden;
+            display: none;
         }
     }
 }
@@ -94,12 +93,11 @@
 .selected-home-view.top-left-active-filter {
     &.hide-unread-messages-count {
         .masked_unread_count {
-            visibility: hidden;
-            position: absolute;
+            display: none;
         }
 
         .unread_count {
-            visibility: visible;
+            display: inline;
         }
     }
 }
