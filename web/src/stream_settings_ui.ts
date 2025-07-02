@@ -816,6 +816,7 @@ function setup_page(callback: () => void): void {
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Stream settings".
         stream_ui_updates.set_show_subscribed(true);
+        stream_ui_updates.set_show_not_subscribed(false);
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
