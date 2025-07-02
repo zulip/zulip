@@ -216,3 +216,10 @@ export function initialize(): void {
         },
     ];
 }
+
+$(() => {
+    // Hide any emoji image that fails to load
+    $(document).on("error", "img.emoji", function () {
+        $(this).hide();
+    });
+});
