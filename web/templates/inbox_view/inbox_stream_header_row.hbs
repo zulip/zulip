@@ -1,7 +1,6 @@
 <div id="inbox-stream-header-{{stream_id}}" class="inbox-header {{#if is_hidden}}hidden_by_filters{{/if}}" tabindex="0" data-stream-id="{{stream_id}}" style="background: {{stream_header_color}};">
     <div class="inbox-focus-border">
         <div class="inbox-left-part-wrapper">
-            <div class="collapsible-button"><i class="zulip-icon zulip-icon-arrow-down toggle-inbox-header-icon {{#if is_collapsed}}icon-collapsed-state{{/if}}"></i></div>
             <div class="inbox-left-part">
                 <div tabindex="0" class="inbox-header-name">
                     <div class="inbox-header-name-focus-border">
@@ -16,6 +15,7 @@
                         {{/if}}
                     </div>
                 </div>
+                <div class="collapsible-button"><i class="zulip-icon zulip-icon-arrow-down toggle-inbox-header-icon {{#if is_collapsed}}icon-collapsed-state{{/if}}"></i></div>
                 <span class="unread_mention_info tippy-zulip-tooltip
                   {{#unless mention_in_unread}}hidden{{/unless}}"
                   data-tippy-content="{{t 'You have unread mentions'}}">@</span>

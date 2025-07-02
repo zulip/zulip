@@ -93,8 +93,8 @@
                 }
 
                 .inbox-left-part {
-                    grid-template: auto / auto min-content min-content;
-                    grid-template-areas: "header_name unread_mention_info unread_count";
+                    grid-template: auto / min-content auto min-content min-content;
+                    grid-template-areas: "header_name collapse_button unread_mention_info unread_count";
                 }
 
                 .inbox-header-name {
@@ -159,6 +159,8 @@
             }
 
             .collapsible-button {
+                grid-area: collapse_button;
+
                 &:hover {
                     cursor: pointer;
                 }
