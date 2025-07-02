@@ -26,7 +26,6 @@ import * as rows from "./rows.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as spectators from "./spectators.ts";
 import * as ui_util from "./ui_util.ts";
-import {user_settings} from "./user_settings.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import * as util from "./util.ts";
 
@@ -750,13 +749,13 @@ function handle_reaction_emoji_clicked(
 
 function handle_status_emoji_clicked(emoji_name: string): void {
     hide_emoji_popover();
-    let emoji_info = {
-        emoji_name,
-        emoji_alt_code: user_settings.emojiset === "text",
+    // Always get the full emoji details for the selected emoji
+    const emoji_details = emoji.get_emoji_details_by_name(emoji_name);
+    // Add emoji_alt_code for display if the theme is 'text', but always include full details
+    const emoji_info = {
+        ...emoji_details,
+        emoji_alt_code: false, // Always use image, never text for status emoji
     };
-    if (!emoji_info.emoji_alt_code) {
-        emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
-    }
     user_status_ui.set_selected_emoji_info(emoji_info);
     user_status_ui.update_button();
     user_status_ui.toggle_clear_message_button();
