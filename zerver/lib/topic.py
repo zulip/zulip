@@ -79,7 +79,7 @@ def messages_for_topic(
     )
 
 
-def get_first_message_for_user_in_topic(
+def get_latest_message_for_user_in_topic(
     realm_id: int,
     user_profile: UserProfile | None,
     recipient_id: int,
@@ -95,7 +95,7 @@ def get_first_message_for_user_in_topic(
         return (
             messages_for_topic(realm_id, recipient_id, topic_name)
             .values_list("id", flat=True)
-            .first()
+            .last()
         )
 
     elif user_profile is not None:
@@ -107,7 +107,7 @@ def get_first_message_for_user_in_topic(
                 message__is_channel_message=True,
             )
             .values_list("message_id", flat=True)
-            .first()
+            .last()
         )
 
     return None

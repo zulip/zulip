@@ -10,7 +10,7 @@ from django.db.models import Q
 from django_stubs_ext import StrPromise
 
 from zerver.lib.streams import get_content_access_streams
-from zerver.lib.topic import get_first_message_for_user_in_topic
+from zerver.lib.topic import get_latest_message_for_user_in_topic
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -255,7 +255,21 @@ class MentionBackend:
             topic_name = channel_topic.topic_name
             history_public_to_subscribers = channel_info.history_public_to_subscribers
 
-            topic_latest_message = get_first_message_for_user_in_topic(
+            # Any message in the topic is a valid choice for the
+            # /with/ anchor. There are two risks to manage here:
+            # - The target message could be deleted or be a mispost that
+            #   is off-topic and moved shortly.
+            # - The topic could be split into two topics.
+            #
+            # Originally, we picked the oldest message because that
+            # message is least likely to be deleted/moved for being a
+            # mispost/error -- i.e., trying to do a bit better in rare
+            # corner cases. We switched to preferring the latest
+            # message in API feature level 400. The "latest" algorithm
+            # is better when linking to an active conversation in a
+            # long topic that's a follow-up/tangent and ends up being
+            # moved/split, which users do constantly.
+            topic_latest_message = get_latest_message_for_user_in_topic(
                 self.realm_id,
                 acting_user,
                 recipient_id,

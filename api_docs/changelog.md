@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 400**
+
+* [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
+  The server now prefers the latest message in a topic, not the
+  oldest, when constructing topic permalinks using the `/with/` operator.
+
 **Feature level 399**
 
 * [`GET /events`](/api/get-events):
