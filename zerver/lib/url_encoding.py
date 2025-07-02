@@ -15,10 +15,10 @@ def hash_util_encode(string: str) -> str:
     return quote(string, safe=b"").replace(".", "%2E").replace("%", ".")
 
 
-def encode_stream(stream_id: int, stream_name: str) -> str:
-    # We encode streams for urls as something like 99-Verona.
-    stream_name = stream_name.replace(" ", "-")
-    return str(stream_id) + "-" + hash_util_encode(stream_name)
+def encode_channel(channel_id: int, channel_name: str) -> str:
+    # We encode channel for urls as something like 99-Verona.
+    channel_name = channel_name.replace(" ", "-")
+    return str(channel_id) + "-" + hash_util_encode(channel_name)
 
 
 def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
@@ -40,12 +40,14 @@ def direct_message_group_narrow_url(
 
 def stream_narrow_url(realm: Realm, stream: Stream) -> str:
     base_url = f"{realm.url}/#narrow/channel/"
-    return base_url + encode_stream(stream.id, stream.name)
+    return base_url + encode_channel(stream.id, stream.name)
 
 
 def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
     base_url = f"{realm.url}/#narrow/channel/"
-    return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
+    return (
+        f"{base_url}{encode_channel(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
+    )
 
 
 def message_link_url(
@@ -79,7 +81,7 @@ def stream_message_url(
     stream_name = message["display_recipient"]
     topic_name = get_topic_from_message_info(message)
     encoded_topic_name = hash_util_encode(topic_name)
-    encoded_stream = encode_stream(stream_id=stream_id, stream_name=stream_name)
+    encoded_stream = encode_channel(stream_id, stream_name)
 
     parts = [
         realm.url,
