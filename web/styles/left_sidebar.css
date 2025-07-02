@@ -181,10 +181,6 @@
         }
     }
 
-    .inactive_stream:not(.active-filter) {
-        opacity: 0.5;
-    }
-
     .toggle_stream_mute {
         margin-right: 3px;
         opacity: 0.5;
@@ -625,7 +621,8 @@ ul.filters {
         }
     }
 
-    & li.out_of_home_view {
+    & li.out_of_home_view,
+    .inactive_stream:not(.active-filter) {
         .stream-privacy,
         .stream-name,
         .channel-new-topic-button,
