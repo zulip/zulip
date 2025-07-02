@@ -132,9 +132,9 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
-    <div class="empty-feed-notice-description">
-        <h1> This is the html </h1>
-    </div>
+        <div class="empty-feed-notice-description">
+            <h1> This is the html </h1>
+        </div>
     </div>
 `,
     );
@@ -152,11 +152,11 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
-    <div class="empty-feed-notice-description">
-        Common words were excluded from your search: <br/>
-            <del>a</del>
-            <span class="search-query-word">search</span>
-    </div>
+        <div class="empty-feed-notice-description">
+            Common words were excluded from your search: <br/>
+                <del>a</del>
+                <span class="search-query-word">search</span>
+        </div>
 </div>
 `,
     );
@@ -175,13 +175,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
-    <div class="empty-feed-notice-description">
-        Common words were excluded from your search: <br/>
-            <del>a</del>
-            <span class="search-query-word">search</span>
-            <del>and</del>
-            <span class="search-query-word">return</span>
-    </div>
+        <div class="empty-feed-notice-description">
+            Common words were excluded from your search: <br/>
+                <del>a</del>
+                <span class="search-query-word">search</span>
+                <del>and</del>
+                <span class="search-query-word">return</span>
+        </div>
 </div>
 `,
     );
