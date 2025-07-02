@@ -30,7 +30,8 @@
 }
 
 .modal__header {
-    padding: 16px 16px 16px 24px;
+    /* 16px 16px 16px 24px at 16px/1em */
+    padding: 1em 1em 1em 1.5em;
     display: grid;
     /* 1.8em is the shortest round value for heading at which none of
        the letters of the english alphabet get cut by overflow:hidden
@@ -46,7 +47,8 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 20px 24px;
+    /* 20px 24px at 16px/1em */
+    padding: 1.25em 1.5em;
 }
 
 .modal__title {
@@ -118,14 +120,15 @@
 .modal__content {
     display: flex;
     flex-direction: column;
-    padding: 2px 24px;
+    /* 2px 24px at 16px/1em */
+    padding: 0.125em 1.5em;
     /* Prevent the appearance of a horizontal
        native scrollbar at certain
        info-density/zoom levels. */
     overflow: hidden auto;
-    /* Set a max-width, less the 24px of left and right
+    /* Set a max-width, less the 1.5em of left and right
        padding specified above. */
-    max-width: calc(100% - 48px);
+    max-width: calc(100% - 3em);
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid var(--color-border-modal-footer);
