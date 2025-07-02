@@ -20,12 +20,10 @@
                 <li role="none" class="text-item popover-menu-list-item">
                     <span class="personal-menu-status-wrapper">
                         {{#if status_emoji_info}}
-                            {{#if status_emoji_info.emoji_alt_code}}
-                            <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
-                            {{else if status_emoji_info.url}}
-                            <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                            {{#if status_emoji_info.url}}
+                                <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
                             {{else}}
-                            <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
+                                <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
                             {{/if}}
                         {{/if}}
                         <span class="status_text personal-menu-status-text">
