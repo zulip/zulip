@@ -1451,6 +1451,20 @@ div.topic_edit_spinner .loading_indicator_spinner {
     align-self: center;
 }
 
+.realm-emoji-wrapper {
+    &:not(:hover) {
+        .animated-emoji {
+            display: none;
+        }
+    }
+
+    &:hover {
+        .still-emoji {
+            display: none;
+        }
+    }
+}
+
 .status-emoji {
     /* 16px at 14px/1em */
     height: 1.1429em;

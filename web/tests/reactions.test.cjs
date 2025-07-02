@@ -66,7 +66,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 const current_user = {};
 set_current_user(current_user);
 set_realm(make_realm());
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "always"};
 initialize_user_settings({user_settings});
 
 const emoji_params = {
@@ -880,6 +880,7 @@ test("insert_new_reaction (first reaction)", ({mock_template, override_rewire}) 
                     },
                 ],
             },
+            emoji_animation_setting: "always",
         });
         return "<msg-reactions-section-stub>";
     });
@@ -942,6 +943,7 @@ test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
         assert.deepEqual(data, {
             count: 1,
             emoji_alt_code: false,
+            emoji_animation_setting: "always",
             emoji_name: "8ball",
             emoji_code: "1f3b1",
             local_id: "unicode_emoji,1f3b1",
@@ -1014,6 +1016,7 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
             is_realm_emoji: true,
             emoji_alt_code: false,
+            emoji_animation_setting: "always",
             emoji_name: "zulip",
             emoji_code: "zulip",
             local_id: "realm_emoji,zulip",

@@ -1,0 +1,10 @@
+<span class="realm-emoji-wrapper">
+    {{#if (and (eq emoji_animation_setting "on_hover") still_url)}}
+    <img src="{{url}}" class="emoji animated-emoji" />
+    <img src="{{still_url}}" class="emoji still-emoji" />
+    {{else if (and (eq emoji_animation_setting "never") still_url)}}
+    <img src="{{still_url}}" class="emoji " />
+    {{else}}
+    <img src="{{url}}" class="emoji " />
+    {{/if}}
+</span>
