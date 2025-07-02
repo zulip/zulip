@@ -96,6 +96,16 @@ Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, mo
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: web/shared/icons/message-edited.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/history)
+License: ISC License
+Comment: Icon has been modified by Karl Stolley
+
+Files: web/shared/icons/message-moved.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/move-right)
+License: ISC License
+Comment: Icon has been modified by Karl Stolley
+
 Files: web/shared/icons/mobile-arrow-left-right.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/arrow-left-right)
 License: ISC License

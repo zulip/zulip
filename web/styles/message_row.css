@@ -125,6 +125,12 @@
 
     .message_edit_notice {
         grid-area: edited;
+        /* We pull the icon out of the grid's baseline group,
+           and set a height so that the icon is properly
+           aligned with the first or only line of a senderless
+           message. */
+        align-self: start;
+        height: var(--message-box-sender-line-height);
     }
 
     .edit-notifications {
@@ -393,15 +399,13 @@
         }
 
         .message_edit_notice {
-            /* When the edit notice is inline, as on edited me-messages,
-              the inline-block and accompanying vertical-align styles will
-              apply */
-            display: inline-block;
-            vertical-align: baseline;
+            /* To align the icon correctly, we want the notice area
+               itself stretched to the full height of the sender row. */
+            align-self: stretch;
             /* A bit of margin here helps these not look associated with the name. */
-            margin-left: 4px;
-            /* Unset the padding used on edited notices under the avatar. */
-            padding-right: 0;
+            margin-left: 8px;
+            /* Unset the width used in the senderless edit notices. */
+            width: auto;
 
             &.hide {
                 display: none;
@@ -965,16 +969,21 @@ of the base style defined for a read-only textarea in dark mode. */
 }
 
 .message_edit_notice {
-    /* 10px at 14px/1em */
-    font-size: 0.7143em;
+    /* 14px at 16px/1em */
+    font-size: 0.875em;
     opacity: 0.5;
     user-select: none;
-    white-space: nowrap;
-    overflow-x: hidden;
-    overflow-x: clip;
-    text-overflow: ellipsis;
-    padding-right: 5.5px;
     cursor: pointer;
+    /* 40px + 2px righthand icon padding = 42px at 14px/1em */
+    width: 3em;
+    display: flex;
+    justify-content: end;
+
+    .zulip-icon {
+        align-self: center;
+        /* 2px at 14px/1em */
+        padding: 0 0.1429em;
+    }
 }
 
 .fade-in-message {
