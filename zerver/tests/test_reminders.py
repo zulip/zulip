@@ -344,3 +344,73 @@ class RemindersTest(ZulipTestCase):
         # Try deleting again to trigger failure.
         result = self.client_delete(f"/json/reminders/{reminder_id}")
         self.assert_json_error(result, "Reminder does not exist", status_code=404)
+
+    def test_reminder_for_poll(self) -> None:
+        content = "/poll What is your favorite color?"
+        reminder = self.create_reminder(content)
+
+        # mock current time to be greater than the scheduled time, so that the `scheduled_message` can be sent.
+        more_than_scheduled_delivery_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=1
+        )
+
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            result = try_deliver_one_scheduled_message()
+            self.assertTrue(result)
+            reminder.refresh_from_db()
+            self.assertEqual(
+                logs.output,
+                [
+                    f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})"
+                ],
+            )
+            self.assertEqual(reminder.delivered, True)
+            self.assertEqual(reminder.failed, False)
+            assert isinstance(reminder.delivered_message_id, int)
+            delivered_message = Message.objects.get(id=reminder.delivered_message_id)
+            assert isinstance(reminder.reminder_target_message_id, int)
+            self.assertEqual(
+                delivered_message.content,
+                "You requested a reminder for the following direct message."
+                "\n\n"
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12-pm/near/{reminder.reminder_target_message_id}) a poll.",
+            )
+            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+    def test_reminder_for_todo(self) -> None:
+        content = "/todo List of tasks"
+        reminder = self.create_reminder(content)
+
+        # mock current time to be greater than the scheduled time, so that the `scheduled_message` can be sent.
+        more_than_scheduled_delivery_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=1
+        )
+
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            result = try_deliver_one_scheduled_message()
+            self.assertTrue(result)
+            reminder.refresh_from_db()
+            self.assertEqual(
+                logs.output,
+                [
+                    f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})"
+                ],
+            )
+            self.assertEqual(reminder.delivered, True)
+            self.assertEqual(reminder.failed, False)
+            assert isinstance(reminder.delivered_message_id, int)
+            delivered_message = Message.objects.get(id=reminder.delivered_message_id)
+            assert isinstance(reminder.reminder_target_message_id, int)
+            self.assertEqual(
+                delivered_message.content,
+                "You requested a reminder for the following direct message."
+                "\n\n"
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12-pm/near/{reminder.reminder_target_message_id}) a todo list.",
+            )
+            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
