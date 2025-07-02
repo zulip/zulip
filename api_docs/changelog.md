@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 417**
+
+* [`POST channels/create`](/api/create-channel): Added a dedicated
+  endpoint for creating a new channel. Previously, channel creation
+  was done entirely through
+  [`POST /users/me/subscriptions`](/api/subscribe).
+
 **Feature level 416**
 
 * [`POST /invites`](/api/send-invites), [`POST

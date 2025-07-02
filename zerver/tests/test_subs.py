@@ -1439,9 +1439,9 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_error(result, "Channel already has that name.")
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "Denmark"})
-        self.assert_json_error(result, "Channel name is already in use.")
+        self.assert_json_error(result, "Channel 'Denmark' already exists", status_code=409)
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "denmark "})
-        self.assert_json_error(result, "Channel name is already in use.")
+        self.assert_json_error(result, "Channel 'denmark' already exists", status_code=409)
 
         # Do a rename that is case-only--this should succeed.
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "sTREAm_name1"})
