@@ -22871,7 +22871,7 @@ paths:
         membership, the deactivated group itself cannot be mentioned
         or used in the value of any permission without first being reactivated.
 
-        **Changes**: Starting with Zulip 11.0 (feature level ZF-61b9bf), this
+        **Changes**: Starting with Zulip 11.0 (feature level 386), this
         endpoint can be used to reactivate a user group.
 
         Prior to Zulip 10.0 (feature level 340), only the name field
