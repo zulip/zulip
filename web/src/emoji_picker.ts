@@ -879,6 +879,12 @@ function handle_status_emoji_clicked(emoji_name: string): void {
     assert(user_status_session);
     user_status_session.update_the_status_emoji_for_our_user(emoji_name);
     hide_emoji_popover();
+    // Always get the full emoji details for the selected emoji
+    const emoji_info = emoji.get_emoji_details_by_name(emoji_name);
+    // No need to set emoji_alt_code for status emoji
+    user_status_ui.set_selected_emoji_info(emoji_info);
+    user_status_ui.update_button();
+    user_status_ui.toggle_clear_status_button();
 }
 
 function handle_composition_emoji_clicked(emoji_name: string): void {
