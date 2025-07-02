@@ -10,7 +10,8 @@ all the messages in a channel, but may otherwise feel unnecessary.
 Zulip offers an option to display a dot instead of an unread counter for channels
 in the left sidebar. You can use a dot for all channels, or just for channels you
 have [muted](/help/mute-a-channel). You will still be able to see the number of
-unread messages in a channel by moving your mouse over it in the left sidebar.
+unread messages in a channel by moving your mouse over it in the left sidebar or
+opening it.
 
 {start_tabs}
 
@@ -25,10 +26,10 @@ unread messages in a channel by moving your mouse over it in the left sidebar.
 
 ## Configure unread summary counters
 
-You can also configure whether the summary unread message counters in the left
-sidebar are shown. You will still be able to see these summary counts of unread
-messages by moving your mouse over your home view or the channels header in
-the left sidebar.
+You can configure whether Zulip displays unread count summaries on your home
+view and channels section in the left sidebar. You will still be able to see the
+summary counts by moving your mouse over them in the left sidebar. The counter
+on your home view will also be shown when you're in that view.
 
 {start_tabs}
 
@@ -49,11 +50,6 @@ the left sidebar.
    left sidebar**.
 
 {end_tabs}
-
-!!! warn ""
-
-    **Note** that the unread summary counter for the home view will be
-    shown in the left sidebar when that view is selected.
 
 ## Related articles
 
