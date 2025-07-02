@@ -82,7 +82,7 @@ from zilencer.auth import (
     generate_registration_transfer_verification_secret,
 )
 from zilencer.models import RemoteZulipServerAuditLog
-from zilencer.views import DevicesToCleanUpDict
+from zilencer.views import DevicesToCleanUpDict, get_deleted_devices
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -1157,7 +1157,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         endpoints: list[tuple[str, str, int, Mapping[str, str]]] = [
             (
                 "/json/users/me/apns_device_token",
-                "c0ffee",
+                "c0fFeE",
                 RemotePushDeviceToken.APNS,
                 {"appid": "org.zulip.Zulip"},
             ),
@@ -3224,3 +3224,159 @@ class TestUserPushIdentityCompat(ZulipTestCase):
 
         # An integer can't be equal to an instance of the class.
         self.assertNotEqual(user_identity_a, 1)
+
+
+class TestDeletedDevices(BouncerTestCase):
+    def test_delete_android(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = self.server
+
+        # Android tokens are case-sensitive, so this is just 4 different tokens.
+        for token in ["aaaa", "aaAA", "bbbb", "BBBB"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                server=server,
+                user_id=hamlet.id,
+                token=token,
+            )
+
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=["aaaa", "aaAA", "bbbb", "BBBB"],
+                apple_devices=[],
+            ),
+        )
+
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=["aaAA", "bbbb"],
+                apple_devices=[],
+            ),
+        )
+
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=["more", "other"], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=["aaAA", "bbbb", "other", "more"],
+                apple_devices=[],
+            ),
+        )
+
+        # Add some tokens which have both user-id and user-UUIDs.
+        for token in ["cccc", "dddd"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                server=server,
+                user_id=hamlet.id,
+                user_uuid=hamlet.uuid,
+                token=token,
+            )
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=["more", "other"], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid)),
+                server,
+                android_devices=["aaAA", "bbbb", "cccc", "other", "more"],
+                apple_devices=[],
+            ),
+        )
+
+    def test_delete_apple(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = self.server
+
+        # APNs tokens are case-preserving but case-insensitive -- but
+        # old versions of the server did not know that.  We therefore
+        # must be able to correctly handle getting multiple cases of
+        # the same token, and always responding with the case that the
+        # caller provided.
+        for token in ["aaaa", "bBBb", "CCCC"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                server=server,
+                user_id=hamlet.id,
+                token=token,
+            )
+
+        # Simple case -- remote server and bouncer agree on tokens and
+        # their case.
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=[],
+                apple_devices=["aaaa", "bBBb", "CCCC"],
+            ),
+        )
+
+        # Same, but with extra tokens present
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=["cafe", "ffff"]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=[],
+                apple_devices=["aaaa", "bBBb", "CCCC", "ffff", "cafe"],
+            ),
+        )
+
+        # The remote server has a token in multiple cases, none of
+        # which potentially agree with our case.  It will tell the
+        # remote server to remove all but the first case it
+        # encountered.
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=["AAaa"]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=[],
+                apple_devices=["AAAA", "AAaa", "BBBB"],
+            ),
+        )
+
+        # Add some tokens which have both user-id and user-UUIDs.
+        for token in ["dddd", "EeeE"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                server=server,
+                user_id=hamlet.id,
+                user_uuid=hamlet.uuid,
+                token=token,
+            )
+        self.assertEqual(
+            DevicesToCleanUpDict(
+                android_devices=[],
+                apple_devices=["AAaa", "EEEE", "more", "other"],
+            ),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid)),
+                server,
+                android_devices=[],
+                apple_devices=["AAAA", "AAaa", "BBBB", "DDDD", "eeEE", "EEEE", "other", "more"],
+            ),
+        )
+
+        # It should not be possible to have a token be passed in more
+        # than once with the same case, but in such cases we should
+        # not return it in the to-clean-up list.
+        self.assertEqual(
+            DevicesToCleanUpDict(
+                android_devices=[],
+                apple_devices=["MORE"],
+            ),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid)),
+                server,
+                android_devices=[],
+                apple_devices=["AAAA", "AAAA", "MORE", "MORE"],
+            ),
+        )
