@@ -407,18 +407,8 @@
         justify-self: center;
     }
 
-    .markers-and-unreads {
-        grid-area: markers-and-unreads;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        grid-gap: 5px;
-        /* Extra margin for unreads. */
-        margin-right: var(--left-sidebar-unread-offset);
-
-        &:has(.unread_count:empty) {
-            margin-right: 0;
-        }
+    &.muted_count .markers-and-unreads {
+        opacity: var(--opacity-left-sidebar-muted);
     }
 }
 
