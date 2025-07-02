@@ -136,7 +136,7 @@
                         border-color: var(--color-outline-focus);
                     }
 
-                    .toggle-inbox-header-icon {
+                    .collapsible-button > .zulip-icon {
                         opacity: 1;
                     }
                 }
@@ -179,8 +179,12 @@
                     opacity: 0.5;
                 }
 
-                .icon-collapsed-state {
-                    transform: rotate(270deg);
+                &.icon-collapsed-state {
+                    visibility: visible;
+
+                    .zulip-icon-arrow-down {
+                        transform: rotate(270deg);
+                    }
                 }
             }
 
