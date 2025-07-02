@@ -4,8 +4,12 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
+import {the} from "./util.ts";
+
+type RangeContainer = "start" | "end";
 
 function find_boundary_tr(
     $initial_tr: JQuery,
@@ -52,6 +56,83 @@ function construct_recipient_header($message_row: JQuery): JQuery {
         .replace(/\s$/, "");
     return $("<p>").append($("<strong>").text(message_header_content));
 }
+
+// Returns the selected `.message_content`s in the current range.
+function get_selected_message_content_elements(): NodeListOf<HTMLElement> | undefined {
+    return document
+        .getSelection()
+        ?.getRangeAt(0)
+        .cloneContents()
+        .querySelectorAll(".message_content");
+}
+
+// Returns the the inner HTML of the `.message_content` element
+// for the first or last message of a single range selection.
+// The caller is expected to only pass the first or last message
+// from a selection range, as the intermediate selected messages
+// anyways contain the entire `.message_content` HTML.
+function get_html_for_bookend_message_content(
+    selected_message_content_element: Node | undefined,
+): string {
+    assert(window.getSelection()?.rangeCount === 1);
+    assert(
+        selected_message_content_element !== undefined &&
+            selected_message_content_element instanceof HTMLElement,
+    );
+
+    // Special case for /me messages.
+    // We wrap the /me message content in a `div` to ensure newlines are
+    // inserted before and after the message content, which is important
+    // when copy pasting multiple messages.
+    if (selected_message_content_element.classList.contains("status-message")) {
+        return `<div>` + selected_message_content_element.outerHTML + `</div>`;
+    }
+    return selected_message_content_element.innerHTML;
+}
+
+function is_container_within_message_row(type: RangeContainer): boolean {
+    const range_count = window.getSelection()?.rangeCount;
+    assert(range_count && range_count > 1);
+
+    const target_range_idx = type === "start" ? 0 : range_count - 1;
+    const range = window.getSelection()!.getRangeAt(target_range_idx);
+    const container = type === "start" ? range.startContainer : range.endContainer;
+    assert(container !== undefined);
+    return get_nearest_html_element(container)?.closest(".message_row") !== null;
+}
+
+function maybe_expand_selection_for_first_and_last_messages(
+    copy_rows: JQuery[],
+    range_count: number,
+): void {
+    // This is only meant for a multi-message selection involving
+    // multiple ranges.
+    assert(range_count > 1 && copy_rows.length > 1);
+
+    if (navigator.userAgent.includes("Chrome")) {
+        blueslip.error("Multiple ranges detected in Chrome for a multi-message selection.");
+    }
+
+    // We only want to expand the selection ranges if start/end range lies within a message.
+    // Not having these checks could alter the range in weird ways, like a message header
+    // selection getting removed to select the first message that follows that header.
+    if (is_container_within_message_row("start")) {
+        const $start = copy_rows[0];
+        assert($start?.[0] !== undefined);
+        const start_node = the($start.find(".message_content"));
+        window.getSelection()?.getRangeAt(0).setStartBefore(start_node);
+    }
+
+    if (is_container_within_message_row("end")) {
+        const $end = copy_rows.at(-1);
+        assert($end?.[0] !== undefined);
+        const end_node = the($end.find(".message_content"));
+        window
+            .getSelection()
+            ?.getRangeAt(range_count - 1)
+            .setEndAfter(end_node);
+    }
+}
 /*
 The techniques we use in this code date back to
 2013 and may be obsolete today (and may not have
@@ -71,7 +152,63 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     if (message_lists.current === undefined) {
         return;
     }
+    let $first_message_element;
+    let $last_message_element;
     const copy_rows = rows.visible_range(start_id, end_id);
+    const range_count = window.getSelection()?.rangeCount;
+    if (range_count && range_count > 1) {
+        // Expand selection to select content from all the messages
+        // belonging to the multi-message selection.
+        // We do this only for Firefox where multi-message selections are
+        // broken down into multiple-ranges.
+
+        // NOTE: FF 147 introduces Chrome-like behavior by not splitting up
+        // the selection into multiple ranges for non-selectable elements.
+        // We should get rid of this when that becomes the baseline.
+        // Details: https://github.com/zulip/zulip/pull/35100#issuecomment-4683858639
+        maybe_expand_selection_for_first_and_last_messages(copy_rows, range_count);
+    } else {
+        // Instead of copying the entire content of the first and last message,
+        // we only use the content that is part of the selection.
+        // This is only done on Chrome for now, because of the behavior of having
+        // a single range for a multi-message selection.
+        const selected_message_content_elements = get_selected_message_content_elements();
+        assert(selected_message_content_elements !== undefined);
+        // Case where the last message doesn't have any highlighted `.message_content`.
+        // Here, end_id is set to id of the message whose username at the top
+        // was highlighted, but has no highlighted `.message_content`.
+        // (See analyze_selection for details.)
+        // So the actually useful/contentful last message of this selection is
+        // at copy_rows[copy_rows.length - 2]
+        if (selected_message_content_elements.length === copy_rows.length - 1) {
+            copy_rows.splice(-1, 1);
+            if (copy_rows.length === 0) {
+                // In case this just involved selecting the username of a message.
+                return;
+            }
+        }
+        assert(copy_rows[0] && copy_rows.at(-1));
+        const first_selected_message_content_element = the(copy_rows[0]).querySelector(
+            ".message_content",
+        );
+        const last_selected_message_content_element = the(copy_rows.at(-1)!).querySelector(
+            ".message_content",
+        );
+        assert(first_selected_message_content_element && last_selected_message_content_element);
+        $first_message_element = $(
+            get_html_for_bookend_message_content(selected_message_content_elements[0]),
+        );
+
+        // We don't want to append the same content as the first message in the selection
+        // if we are trying to get the `.message_content` HTML for the last
+        // message when there is only one `.message_content` in the selected range.
+        if (selected_message_content_elements.length > 1) {
+            const len = selected_message_content_elements.length;
+            $last_message_element = $(
+                get_html_for_bookend_message_content(selected_message_content_elements[len - 1]),
+            );
+        }
+    }
 
     const $start_row = copy_rows[0];
     assert($start_row !== undefined);
@@ -80,7 +217,9 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     let should_include_start_recipient_header = false;
     let last_recipient_row_id = start_recipient_row_id;
 
-    for (const $row of copy_rows) {
+    for (let i = 0; i < copy_rows.length; i += 1) {
+        const $row = copy_rows[i];
+        assert($row !== undefined && $row[0] instanceof HTMLElement);
         const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row($row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
@@ -93,7 +232,16 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         }
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
-        const $content = $(message.content);
+        let $content;
+
+        if (i === 0 && $first_message_element) {
+            $content = $first_message_element;
+        } else if (i === copy_rows.length - 1 && $last_message_element) {
+            $content = $last_message_element;
+        } else {
+            $content = $(message.content);
+        }
+
         $content.first().prepend(
             $("<span>")
                 .text(message.sender_full_name + ": ")
