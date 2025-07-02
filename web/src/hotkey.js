@@ -1178,11 +1178,8 @@ export function process_hotkey(e, hotkey) {
                 let channel_id;
                 const selected_message = message_lists.current.selected_message();
                 if (selected_message === undefined) {
-                    const current_filter = narrow_state.filter();
-                    const current_channel = current_filter.get_operand("channel");
-                    if (current_channel) {
-                        channel_id = stream_data.get_stream_id(current_channel);
-                    }
+                    const only_valid_id = true;
+                    channel_id = narrow_state.stream_id(narrow_state.filter(), only_valid_id);
                 } else if (selected_message.type === "stream") {
                     channel_id = stream_data.get_stream_id(selected_message.stream);
                 }
