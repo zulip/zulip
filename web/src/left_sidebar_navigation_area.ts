@@ -10,10 +10,12 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
@@ -74,6 +76,21 @@ export function update_reminders_row(): void {
     ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
+function should_mask_header_unread_count(
+    show_muted: boolean,
+    unmuted_unread_count: number,
+): boolean {
+    if (!user_settings.web_left_sidebar_unreads_count_summary) {
+        return true;
+    }
+    return settings_data.should_mask_unread_count(show_muted, unmuted_unread_count);
+}
+
+type SectionUnreadCount = {
+    unmuted: number;
+    muted: number;
+};
+
 export function update_dom_with_unread_counts(
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
@@ -89,33 +106,65 @@ export function update_dom_with_unread_counts(
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
-    let pinned_unread_count = 0;
-    let normal_unread_count = 0;
-    let inactive_unread_count = 0;
+    const pinned_unread_counts: SectionUnreadCount = {
+        unmuted: 0,
+        muted: 0,
+    };
+    const normal_section_unread_counts: SectionUnreadCount = {
+        unmuted: 0,
+        muted: 0,
+    };
+    const inactive_section_unread_counts: SectionUnreadCount = {
+        unmuted: 0,
+        muted: 0,
+    };
 
     for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
         const sub = sub_store.get(stream_id);
         assert(sub);
         if (sub.pin_to_top) {
-            pinned_unread_count += stream_count_info.unmuted_count;
+            pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
+            pinned_unread_counts.muted += stream_count_info.muted_count;
         } else if (stream_list_sort.has_recent_activity(sub)) {
-            normal_unread_count += stream_count_info.unmuted_count;
+            normal_section_unread_counts.unmuted += stream_count_info.unmuted_count;
+            normal_section_unread_counts.muted += stream_count_info.muted_count;
         } else {
-            inactive_unread_count += stream_count_info.unmuted_count;
+            inactive_section_unread_counts.unmuted += stream_count_info.unmuted_count;
+            inactive_section_unread_counts.muted += stream_count_info.muted_count;
         }
     }
 
-    ui_util.update_unread_count_in_dom(
-        $("#stream-list-pinned-streams-container .markers-and-unreads"),
-        pinned_unread_count,
+    function update_section_unread_count(
+        $header: JQuery,
+        unmuted_count: number,
+        muted_count: number,
+    ): void {
+        const show_muted_count = unmuted_count === 0 && muted_count > 0;
+        if (show_muted_count) {
+            ui_util.update_unread_count_in_dom($header, muted_count);
+        } else {
+            ui_util.update_unread_count_in_dom($header, unmuted_count);
+        }
+        $header.toggleClass("has-only-muted-unreads", show_muted_count);
+        $header.toggleClass(
+            "hide-unread-messages-count",
+            should_mask_header_unread_count(show_muted_count, unmuted_count),
+        );
+    }
+    update_section_unread_count(
+        $("#stream-list-pinned-streams-container .stream-list-subsection-header"),
+        pinned_unread_counts.unmuted,
+        pinned_unread_counts.muted,
     );
-    ui_util.update_unread_count_in_dom(
-        $("#stream-list-normal-streams-container .markers-and-unreads"),
-        normal_unread_count,
+    update_section_unread_count(
+        $("#stream-list-normal-streams-container .stream-list-subsection-header"),
+        normal_section_unread_counts.unmuted,
+        normal_section_unread_counts.muted,
     );
-    ui_util.update_unread_count_in_dom(
-        $("#stream-list-dormant-streams-container .markers-and-unreads"),
-        inactive_unread_count,
+    update_section_unread_count(
+        $("#stream-list-dormant-streams-container .stream-list-subsection-header"),
+        inactive_section_unread_counts.unmuted,
+        inactive_section_unread_counts.muted,
     );
 
     if (!skip_animations) {
