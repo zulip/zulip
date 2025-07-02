@@ -19,7 +19,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_group_based_setting
+from zerver.actions.streams import do_change_stream_group_based_setting, do_set_stream_property
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -2619,3 +2619,38 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Channel administrators with content access can always move messages within
         # the channel even if they are not in `can_move_messages_within_channel_group`.
         self.assert_move_message("shiva", stream_1, topic_name="new topic")
+
+    def test_move_messages_within_channels_with_updated_topics_policy(self) -> None:
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            members_system_group,
+            acting_user=None,
+        )
+
+        stream_1 = get_stream("Denmark", realm)
+
+        self.assert_move_message("desdemona", stream_1, topic_name="")
+        self.assert_move_message("desdemona", stream_1, topic_name="new topic")
+
+        do_set_stream_property(
+            stream_1,
+            "topics_policy",
+            StreamTopicsPolicyEnum.disable_empty_topic.value,
+            acting_user=desdemona,
+        )
+        # Cannot move messages to empty topic as `topics_policy` is set to `disable_empty_topic`.
+        self.assert_move_message(
+            "desdemona",
+            stream_1,
+            topic_name="",
+            expected_error="Sending messages to the general chat is not allowed in this channel.",
+        )
+        self.assert_move_message("desdemona", stream_1, topic_name="new topic")
