@@ -15,6 +15,7 @@ import orjson
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Q
+from django.db.models.functions import Lower
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -360,8 +361,8 @@ def send_apple_push_notification(
             )
             # We remove all entries for this token (There
             # could be multiple for different Zulip servers).
-            DeviceTokenClass._default_manager.filter(
-                token=device.token, kind=DeviceTokenClass.APNS
+            DeviceTokenClass._default_manager.alias(lower_token=Lower("token")).filter(
+                lower_token=device.token.lower(), kind=DeviceTokenClass.APNS
             ).delete()
         else:
             logger.warning(
@@ -624,8 +625,9 @@ def send_notifications_to_bouncer(
         PushDeviceToken.objects.filter(
             kind=PushDeviceToken.FCM, token__in=android_deleted_devices
         ).delete()
-        PushDeviceToken.objects.filter(
-            kind=PushDeviceToken.APNS, token__in=apple_deleted_devices
+        PushDeviceToken.objects.alias(lower_token=Lower("token")).filter(
+            kind=PushDeviceToken.APNS,
+            lower_token__in=[token.lower() for token in apple_deleted_devices],
         ).delete()
 
     total_android_devices, total_apple_devices = (
@@ -723,7 +725,13 @@ def add_push_device_token(
 
 def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: int) -> None:
     try:
-        token = PushDeviceToken.objects.get(token=token_str, kind=kind, user=user_profile)
+        if kind == PushDeviceToken.APNS:
+            token_str = token_str.lower()
+            token: PushDeviceToken = PushDeviceToken.objects.alias(lower_token=Lower("token")).get(
+                lower_token=token_str, kind=kind, user=user_profile
+            )
+        else:
+            token = PushDeviceToken.objects.get(token=token_str, kind=kind, user=user_profile)
         token.delete()
     except PushDeviceToken.DoesNotExist:
         # If we are using bouncer, don't raise the exception. It will
