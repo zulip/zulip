@@ -14,7 +14,6 @@ import * as message_viewport from "./message_viewport.ts";
 import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
-import * as rendered_markdown from "./rendered_markdown.ts";
 import * as resize from "./resize.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -319,11 +318,6 @@ export function initialize_right_sidebar(): void {
     buddy_list.initialize_tooltips();
 
     update_invite_user_option();
-    if (page_params.is_spectator) {
-        rendered_markdown.update_elements(
-            $(".right-sidebar .realm-description .rendered_markdown"),
-        );
-    }
 
     $("#buddy-list-users-matching-view").on("mouseenter", ".user_sidebar_entry", (e) => {
         const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
