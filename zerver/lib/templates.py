@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from typing import Any
 
 import markdown
@@ -25,6 +26,11 @@ import zerver.lib.markdown.static
 import zerver.lib.markdown.tabbed_sections
 import zerver.openapi.markdown_extension
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
+from zerver.openapi.merge_api_changelogs import (
+    get_feature_level,
+    get_unmerged_changelogs,
+    merge_changelogs,
+)
 
 register = Library()
 
@@ -36,6 +42,15 @@ def and_n_others(values: list[str], limit: int) -> str:
         len(values) - limit,
         "" if len(values) == limit + 1 else "s",
     )
+
+
+def get_updated_changelog() -> str | None:
+    unmerged_changelogs = get_unmerged_changelogs(verbose=False)
+    if not unmerged_changelogs:
+        return None
+
+    new_feature_level = get_feature_level(update_feature_level=False)
+    return merge_changelogs(unmerged_changelogs, new_feature_level, False)
 
 
 @register.filter(name="display_list", is_safe=True)
@@ -167,6 +182,14 @@ def render_markdown_path(
             markdown_string = fp.read()
     else:
         markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+    if (
+        settings.DEVELOPMENT
+        and Path(markdown_file_path).resolve() == Path("api_docs/changelog.md").resolve()
+    ):
+        updated_changelog = get_updated_changelog()
+        if updated_changelog is not None:
+            markdown_string = updated_changelog
 
     API_ENDPOINT_NAME = context.get("API_ENDPOINT_NAME", "") if context is not None else ""
     markdown_string = markdown_string.replace("API_ENDPOINT_NAME", API_ENDPOINT_NAME)
