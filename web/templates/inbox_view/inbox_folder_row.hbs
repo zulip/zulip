@@ -8,7 +8,7 @@
                         <a tabindex="-1" role="button" href="/#narrow/is/private">{{t 'Direct messages'}}</a>
                     </div>
                 </div>
-                <div class="collapsible-button"><i class="zulip-icon zulip-icon-arrow-down toggle-inbox-header-icon {{#if is_dms_collapsed}}icon-collapsed-state{{/if}}"></i></div>
+                <div class="collapsible-button toggle-inbox-header-icon {{#if is_collapsed}}icon-collapsed-state{{/if}}"><i class="zulip-icon zulip-icon-arrow-down"></i></div>
                 <span class="unread_mention_info tippy-zulip-tooltip
                   {{#unless has_unread_mention}}hidden{{/unless}}"
                   data-tippy-content="{{t 'You have unread mentions' }}">@</span>
