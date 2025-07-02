@@ -4,13 +4,24 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common.ts";
 
+type PartialSelectionConfig = {
+    select_start_message_partially: boolean;
+    select_end_message_partially: boolean;
+    start_text_node_offset?: number;
+    end_text_node_offset?: number;
+};
 async function copy_messages(
     page: Page,
     start_message: string,
     end_message: string,
+    partial_selection_config?: PartialSelectionConfig,
 ): Promise<string[]> {
     return await page.evaluate(
-        (start_message: string, end_message: string) => {
+        (
+            start_message: string,
+            end_message: string,
+            partial_selection_config?: PartialSelectionConfig,
+        ) => {
             function get_message_node(message: string): Element {
                 return [...document.querySelectorAll(".message-list .message_content")].find(
                     (node) => node.textContent?.trim() === message,
@@ -19,8 +30,30 @@ async function copy_messages(
 
             // select messages from start_message to end_message
             const selectedRange = document.createRange();
-            selectedRange.setStartAfter(get_message_node(start_message));
-            selectedRange.setEndBefore(get_message_node(end_message));
+            if (partial_selection_config?.select_start_message_partially) {
+                const offset = partial_selection_config.start_text_node_offset!;
+                const start_message_text_node =
+                    get_message_node(start_message).querySelector(".message_content p")?.firstChild;
+                if (!(start_message_text_node instanceof Text)) {
+                    throw new TypeError("Expected a Text node");
+                }
+                selectedRange.setStart(start_message_text_node, offset);
+            } else {
+                selectedRange.setStartBefore(get_message_node(start_message));
+            }
+            if (partial_selection_config?.select_end_message_partially) {
+                const offset = partial_selection_config.end_text_node_offset!;
+                const end_message_text_node =
+                    get_message_node(end_message).querySelector(".message_content p")?.firstChild;
+                if (!(end_message_text_node instanceof Text)) {
+                    throw new TypeError("Expected a Text node");
+                }
+                // For the last message, the offset will be from the end of the message,
+                // just like how selecting text in the browser would work.
+                selectedRange.setEnd(end_message_text_node, end_message_text_node.length - offset);
+            } else {
+                selectedRange.setEndAfter(get_message_node(end_message));
+            }
             window.getSelection()!.removeAllRanges();
             window.getSelection()!.addRange(selectedRange);
 
@@ -43,6 +76,7 @@ async function copy_messages(
         },
         start_message,
         end_message,
+        partial_selection_config,
     );
 }
 
@@ -125,6 +159,35 @@ async function test_copying_messages_from_several_topics(page: Page): Promise<vo
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
+async function test_multiple_message_selection_with_partially_selected_bookend_messages(
+    page: Page,
+): Promise<void> {
+    const actual_copied_lines = await copy_messages(
+        page,
+        "copy paste test B",
+        "copy paste test F",
+        {
+            select_start_message_partially: true,
+            select_end_message_partially: true,
+            start_text_node_offset: 5,
+            end_text_node_offset: 7,
+        },
+    );
+    const expected_copied_lines = [
+        "Verona > copy-paste-topic #1 Today",
+        // w/o partial selection: "Desdemona: copy paste test B",
+        "Desdemona: paste test B",
+        "Verona > copy-paste-topic #2 Today",
+        "Desdemona: copy paste test C",
+        "Desdemona: copy paste test D",
+        "Desdemona: copy paste test E",
+        "Verona > copy-paste-topic #3 Today",
+        // w/o partial selection: "Desdemona: copy paste test F",
+        "Desdemona: copy paste",
+    ];
+    assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
+}
+
 async function copy_paste_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.send_multiple_messages(page, [
@@ -163,6 +226,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_last_from_prev_all_from_next(page);
     await test_copying_all_from_prev_first_from_next(page);
     await test_copying_messages_from_several_topics(page);
+    await test_multiple_message_selection_with_partially_selected_bookend_messages(page);
 }
 
 await common.run_test(copy_paste_test);
