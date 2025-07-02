@@ -16,6 +16,7 @@ export const stream_permission_group_settings_schema = z.enum([
     "can_move_messages_out_of_channel_group",
     "can_move_messages_within_channel_group",
     "can_remove_subscribers_group",
+    "can_resolve_topics_group",
     "can_send_message_group",
     "can_subscribe_group",
 ]);
@@ -35,6 +36,7 @@ export const stream_schema = z.object({
     can_move_messages_out_of_channel_group: group_setting_value_schema,
     can_move_messages_within_channel_group: group_setting_value_schema,
     can_remove_subscribers_group: group_setting_value_schema,
+    can_resolve_topics_group: group_setting_value_schema,
     can_send_message_group: group_setting_value_schema,
     can_subscribe_group: group_setting_value_schema,
     creator_id: z.number().nullable(),
