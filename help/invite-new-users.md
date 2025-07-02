@@ -65,6 +65,10 @@ users** menu option if you have permission to invite users.
     Any restrictions on [allowed authentication
     methods](/help/configure-authentication-methods) are not applied.
 
+## Example email invitation
+
+![Email invitation](/static/images/help/example-invitation-email.png)
+
 ## Create a reusable invitation link
 
 {start_tabs}
