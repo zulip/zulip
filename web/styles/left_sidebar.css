@@ -435,6 +435,14 @@
     }
 }
 
+/* Only show section header unread counts when the section is collapsed. */
+#streams_list .stream-list-section-container:not(.collapsed) {
+    .stream-list-subsection-header .unread_count,
+    .stream-list-subsection-header .masked_unread_count {
+        visibility: hidden;
+    }
+}
+
 .direct-messages-container {
     /* Properly offset all the grid rows
        in the DM section. */
