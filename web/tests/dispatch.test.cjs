@@ -1565,8 +1565,6 @@ run_test("user_status", ({override}) => {
             emoji_name: "smiley",
             emoji_code: "1f603",
             reaction_type: "unicode_emoji",
-            // Extra parameters that were added by `emoji.get_emoji_details_by_name`
-            emoji_alt_code: false,
         });
     }
 
