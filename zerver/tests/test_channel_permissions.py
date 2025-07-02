@@ -564,6 +564,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             user: UserProfile,
             can_remove_subscribers_group: NamedUserGroup | UserGroupMembersData,
             expect_fail: bool = False,
+            user_has_channel_access: bool = True,
             stream_list: list[Stream] | None = None,
             skip_changing_group_setting: bool = False,
         ) -> None:
@@ -588,7 +589,10 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
                 },
             )
             if expect_fail:
-                self.assert_json_error(result, "Insufficient permission")
+                if not user_has_channel_access:
+                    self.assert_json_error(result, "Invalid channel ID")
+                else:
+                    self.assert_json_error(result, "Insufficient permission")
                 return
 
             json = self.assert_json_success(result)
@@ -628,6 +632,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             shiva,
             leadership_group,
             expect_fail=True,
+            user_has_channel_access=False,
             stream_list=[private_stream],
         )
         check_unsubscribing_user(iago, leadership_group, stream_list=[private_stream])
@@ -650,6 +655,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             othello,
             setting_group_member_dict,
             expect_fail=True,
+            user_has_channel_access=False,
             stream_list=[private_stream],
         )
         check_unsubscribing_user(hamlet, setting_group_member_dict, stream_list=[private_stream])
