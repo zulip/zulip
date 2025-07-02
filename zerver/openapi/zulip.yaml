@@ -12048,22 +12048,7 @@ paths:
                   type: integer
                   example: 1
                 send_new_subscription_messages:
-                  description: |
-                    Whether any other users newly subscribed via this request should be
-                    sent a Notification Bot DM notifying them about their new
-                    subscription.
-
-                    The server will never send Notification Bot DMs if more than
-                    `max_bulk_new_subscription_messages` (available in the [`POST
-                    /register`](/api/register-queue) response) users were subscribed in
-                    this request.
-
-                    **Changes**: Before Zulip 11.0 (feature level 397), new subscribers
-                    were always sent a Notification Bot DM, which was unduly expensive
-                    when bulk-subscribing thousands of users to a channel.
-                  type: boolean
-                  default: true
-                  example: true
+                  $ref: "#/components/schemas/SendNewSubscriptionMessages"
               required:
                 - subscriptions
             encoding:
@@ -23503,6 +23488,221 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+
+  /channels/create:
+    post:
+      tags: ["channels"]
+      operationId: create-channel
+      summary: Create a channel
+      description: |
+        Create a new [channel](/help/create-channels) and optionally
+        subscribe users to the newly created channel. The initial [channel settings](/api/update-stream)
+        will be determined by the optional parameters, like `invite_only`, detailed below.
+
+        **Changes**: New in Zulip 11.0 (feature level 417). Previously, this was only possible via
+        the [`POST /api/subscribe`](/api/subscribe) endpoint, which handled both creation and subscription.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - name
+                - subscribers
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              description: |
+                An object containing the top-level fields used to create a channel.
+              properties:
+                name:
+                  type: string
+                  description: |
+                    The name of the new channel.
+
+                    Clients should use the `max_stream_name_length` returned by the
+                    [`POST /register`](/api/register-queue) endpoint to determine
+                    the maximum channel name length.
+                  example: "music"
+                description:
+                  type: string
+                  description: |
+                    The [description](/help/change-the-channel-description)
+                    to use for the new channel being created, in text/markdown format.
+
+                    Clients should use the `max_stream_description_length` returned
+                    by the [`POST /register`](/api/register-queue) endpoint to
+                    determine the maximum channel description length.
+                  example: "Channel for discussing all things music!"
+                subscribers:
+                  description: |
+                    A list of user IDs (preferred) or Zulip API email
+                    addresses of the users to be subscribed to the new channel specified in the `channel` parameter.
+                  oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: array
+                      items:
+                        type: integer
+                  example: [16, 12]
+                announce:
+                  description: |
+                    This determines whether [notification bot](/help/configure-automated-notices)
+                    will send an announcement about the new channel's creation.
+                  type: boolean
+                  default: false
+                  example: true
+                invite_only:
+                  description: |
+                    This parameter and the ones
+                    that follow are used to request an initial configuration of the new channel.
+
+                    This parameter determines whether the newly created channel will be
+                    a private channel.
+                  type: boolean
+                  default: false
+                  example: true
+                is_web_public:
+                  description: |
+                    This parameter determines whether the newly created channel will be
+                    a web-public channel.
+
+                    Note that creating web-public channels requires the
+                    `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
+                    to be enabled on the Zulip server in question, the organization
+                    to have enabled the `enable_spectator_access` realm setting, and
+                    the current user to have permission under the organization's
+                    `can_create_web_public_channel_group` realm setting.
+
+                    [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+                  type: boolean
+                  default: false
+                  example: true
+                is_default_stream:
+                  description: |
+                    This parameter determines whether the newly created channel will be
+                    added as a [default channel][default-channels] for new users joining
+                    the organization.
+
+                    [default-channels]: /help/set-default-channels-for-new-users
+                  type: boolean
+                  default: false
+                  example: true
+                folder_id:
+                  $ref: "#/components/schemas/FolderId"
+                send_new_subscription_messages:
+                  $ref: "#/components/schemas/SendNewSubscriptionMessages"
+                topics_policy:
+                  $ref: "#/components/schemas/TopicsPolicy"
+                history_public_to_subscribers:
+                  $ref: "#/components/schemas/HistoryPublicToSubscribers"
+                message_retention_days:
+                  $ref: "#/components/schemas/MessageRetentionDays"
+                can_add_subscribers_group:
+                  $ref: "#/components/schemas/ChannelCanAddSubscribersGroup"
+                can_delete_any_message_group:
+                  $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
+                can_delete_own_message_group:
+                  $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
+                can_remove_subscribers_group:
+                  $ref: "#/components/schemas/CanRemoveSubscribersGroup"
+                can_administer_channel_group:
+                  $ref: "#/components/schemas/CanAdministerChannelGroup"
+                can_move_messages_out_of_channel_group:
+                  $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
+                can_move_messages_within_channel_group:
+                  $ref: "#/components/schemas/CanMoveMessagesWithinChannelGroup"
+                can_send_message_group:
+                  $ref: "#/components/schemas/CanSendMessageGroup"
+                can_subscribe_group:
+                  $ref: "#/components/schemas/CanSubscribeGroup"
+                can_resolve_topics_group:
+                  $ref: "#/components/schemas/CanResolveTopicsGroup"
+              required:
+                - name
+                - subscribers
+            encoding:
+              announce:
+                contentType: application/json
+              can_add_subscribers_group:
+                contentType: application/json
+              can_administer_channel_group:
+                contentType: application/json
+              can_move_messages_out_of_channel_group:
+                contentType: application/json
+              can_move_messages_within_channel_group:
+                contentType: application/json
+              can_remove_subscribers_group:
+                contentType: application/json
+              can_resolve_topics_group:
+                contentType: application/json
+              can_send_message_group:
+                contentType: application/json
+              can_subscribe_group:
+                contentType: application/json
+              subscribers:
+                contentType: application/json
+              invite_only:
+                contentType: application/json
+              is_web_public:
+                contentType: application/json
+              is_default_stream:
+                contentType: application/json
+              history_public_to_subscribers:
+                contentType: application/json
+              folder_id:
+                contentType: application/json
+              topics_policy:
+                contentType: application/json
+        required: true
+
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                description: "Success response for creating a channel."
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      id:
+                        type: integer
+                        description: "The ID of the newly created channel."
+                example: {"result": "success", "msg": "", "id": 50}
+        "409":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                description: "Bad request as channel already exists."
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - type: object
+                    properties:
+                      result:
+                        type: string
+                        example: "error"
+                      msg:
+                        type: string
+                        example: "Channel 'discussions' already exists"
+                      code:
+                        type: string
+                        example: "CHANNEL_ALREADY_EXISTS"
+                example:
+                  {
+                    result: "error",
+                    msg: "Channel 'discussions' already exists",
+                    code: "CHANNEL_ALREADY_EXISTS",
+                  }
+
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -28402,6 +28602,23 @@ components:
         New in Zulip 11.0 (feature level 392).
 
         [realm-topics-policy]: /help/require-topics#set-the-default-general-chat-topic-configuration
+    SendNewSubscriptionMessages:
+      description: |
+        Whether any other users newly subscribed via this request should be
+        sent a Notification Bot DM notifying them about their new
+        subscription.
+
+        The server will never send Notification Bot DMs if more than
+        `max_bulk_new_subscription_messages` (available in the [`POST
+        /register`](/api/register-queue) response) users were subscribed in
+        this request.
+
+        **Changes**: Before Zulip 11.0 (feature level 397), new subscribers
+        were always sent a Notification Bot DM, which was unduly expensive
+        when bulk-subscribing thousands of users to a channel.
+      type: boolean
+      default: true
+      example: true
     ChannelCanAddSubscribersGroup:
       allOf:
         - $ref: "#/components/schemas/GroupSettingValue"
