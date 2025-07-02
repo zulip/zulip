@@ -864,7 +864,6 @@ export function get_candidates(
         if (default_language) {
             language_list.unshift(default_language);
         }
-        compose_ui.set_code_formatting_button_triggered(false);
         const matcher = get_language_matcher(token);
         const matches = language_list.filter((item) => matcher(item));
         const matches_list: LanguageSuggestion[] = matches.map((language) => ({
