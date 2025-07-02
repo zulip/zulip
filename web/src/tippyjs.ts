@@ -165,6 +165,11 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".user-status-emoji",
+        delay: INTERACTIVE_HOVER_DELAY,
+    });
+
+    tippy.delegate("body", {
         target: ".toggle-subscription-tooltip",
         trigger: "mouseenter",
         delay: EXTRA_LONG_HOVER_DELAY,
