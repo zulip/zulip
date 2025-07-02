@@ -594,7 +594,6 @@ export function setup_topic_search_typeahead(): void {
         if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            $input.addClass("shake");
         } else if (e.key === ",") {
             e.stopPropagation();
             return;
