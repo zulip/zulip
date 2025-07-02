@@ -347,7 +347,7 @@ h4.user_group_setting_subsection_title {
         margin-top: 10px;
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.25em; /* 20px at 16px/em */
 
             &.control-label-disabled {
                 width: fit-content;
@@ -1276,7 +1276,7 @@ div.settings-radio-input-parent {
 .advanced-configurations-container,
 .group-permissions {
     .input-group {
-        margin-bottom: 10px;
+        margin-bottom: 0.625em; /* 10px at 16px/em */
 
         &.message-retention-setting-group {
             & input {

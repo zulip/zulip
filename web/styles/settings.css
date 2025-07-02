@@ -362,7 +362,7 @@ select.settings_select {
 }
 
 .input-group {
-    margin: 0 0 20px;
+    margin: 0 0 1.25em; /* 20px at 16px/em */
 
     & label.checkbox + label {
         cursor: pointer;
