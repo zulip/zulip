@@ -79,7 +79,7 @@
         padding: 1px 0 0 1px;
         border-radius: 3px;
 
-        & i {
+        & .zulip-icon-more-vertical {
             /* 17px at 16px em */
             font-size: 1.0625em;
         }
