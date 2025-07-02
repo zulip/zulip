@@ -679,7 +679,7 @@ export function process_enter_key(e) {
     // For search views, renarrow to the current message's
     // conversation.
     const current_filter = narrow_state.filter();
-    if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+    if (current_filter !== undefined && !current_filter.contains_no_partial_conversations()) {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.selected_message();
 
