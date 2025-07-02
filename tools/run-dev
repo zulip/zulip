@@ -118,6 +118,11 @@ else:
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
 
+# Disable Djangos development server warning; we provide plenty of
+# warnings on this point in the documentation, which is a better place
+# to stop folks than the actual server.
+os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
+
 if options.behind_https_proxy:
     os.environ["BEHIND_HTTPS_PROXY"] = "1"
 
