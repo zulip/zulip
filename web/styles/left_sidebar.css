@@ -394,6 +394,10 @@
         &:has(.unread_count:empty) {
             margin-right: 0;
         }
+
+        &.muted_count {
+            opacity: var(--opacity-left-sidebar-muted);
+        }
     }
 }
 
