@@ -1663,6 +1663,20 @@ textarea.new_message_textarea {
     overflow: auto;
 
     border-radius: 3px 3px 0 0;
+
+    .animated-emoji {
+        display: none;
+    }
+
+    &:hover {
+        .still-emoji {
+            display: none;
+        }
+
+        .animated-emoji {
+            display: inline;
+        }
+    }
 }
 
 .markdown_preview_spinner {

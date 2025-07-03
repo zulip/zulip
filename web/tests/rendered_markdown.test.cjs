@@ -41,6 +41,20 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
+mock_esm("../src/emoji", {
+    all_realm_emojis_by_url: new Map(
+        Object.entries({
+            "/test/url": {
+                id: "emoji_id",
+                emoji_name: "party_parrot",
+                emoji_url: "/test/url",
+                still_url: "/test/still-url",
+                deactivated: true,
+            },
+        }),
+    ),
+});
+
 const iago = {
     email: "iago@zulip.com",
     user_id: 30,
@@ -147,6 +161,7 @@ const get_content_element = () => {
     $content.set_find_results("time", $array([]));
     $content.set_find_results("span.timestamp-error", $array([]));
     $content.set_find_results(".emoji", $array([]));
+    $content.set_find_results("img.emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
@@ -631,6 +646,24 @@ run_test("emoji", ({override}) => {
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
+    override(user_settings, "web_animate_image_previews", "on_hover");
+
+    $emoji.addClass("emoji");
+    $emoji.attr("src", "/test/url");
+    $content.set_find_results("img.emoji", $array([$emoji]));
+    $emoji.after = ($elem) => {
+        assert.equal($elem.attr("src"), "/test/still-url");
+        assert.equal($elem.hasClass("emoji still-emoji"), true);
+        assert.equal($elem.attr("alt"), ":party_parrot:");
+        assert.equal($elem.attr("title"), "party_parrot");
+    };
+    rm.update_elements($content);
+    assert.equal($emoji.hasClass("animated-emoji"), true);
+
+    override(user_settings, "web_animate_image_previews", "never");
+    rm.update_elements($content);
+
+    assert.equal($emoji.attr("src"), "/test/still-url");
 });
 
 run_test("spoiler-header", () => {
