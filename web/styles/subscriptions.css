@@ -435,6 +435,14 @@ h4.user_group_setting_subsection_title {
                 }
             }
         }
+
+        .user-group-info-title {
+            margin-left: 5px;
+        }
+
+        .deactivated-user-group-icon-right {
+            margin-right: 5px;
+        }
     }
 }
 
@@ -679,7 +687,7 @@ h4.user_group_setting_subsection_title {
     width: 100%;
 }
 
-.left .group-name .fa-ban,
+.left .group-name-wrapper .fa-ban,
 .right .group-name .fa-ban {
     font-size: 0.8em;
     opacity: 0.6;
@@ -690,7 +698,7 @@ h4.user_group_setting_subsection_title {
     opacity: 0.6;
 }
 
-.left .group-name,
+.left .group-name-wrapper,
 .right .group-name {
     display: flex;
     gap: 3px;
@@ -817,9 +825,18 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .sub-info-box {
+        width: calc(100% - 90px);
+    }
+
+    .group-info-box {
+        /* 41px = width of checkmark (25px) + right margin for checkmark (12px)
+        + right margin for this element (4px) */
+        width: calc(100% - 41px);
+    }
+
     .sub-info-box,
     .group-info-box {
-        width: calc(100% - 90px);
         margin-right: 4px;
 
         .top-bar,
@@ -829,12 +846,20 @@ h4.user_group_setting_subsection_title {
             position: relative;
         }
 
+        .top-bar .group-name-wrapper {
+            overflow: hidden;
+        }
+
         .top-bar .stream-name,
-        .top-bar .group-name-wrapper,
+        .top-bar .group-name,
         .bottom-bar .description {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .top-bar .stream-name,
+        .bottom-bar .description {
             margin-right: 12px;
         }
 
@@ -850,8 +875,7 @@ h4.user_group_setting_subsection_title {
             margin-right: 5px;
         }
 
-        .top-bar .stream-name,
-        .top-bar .group-name-wrapper {
+        .top-bar .stream-name {
             font-weight: 600;
         }
 
@@ -1504,10 +1528,14 @@ div.settings-radio-input-parent {
     }
 }
 
-.selected-stream-title {
+.selected-stream-title,
+.user-group-info-title {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.selected-stream-title {
     display: block;
     margin: auto;
 }
