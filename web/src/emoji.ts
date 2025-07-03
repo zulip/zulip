@@ -41,6 +41,7 @@ export type EmojiDict = {
 } & (
     | {
           is_realm_emoji: true;
+          url: string;
           emoji_code?: undefined;
       }
     | {
@@ -70,6 +71,7 @@ export const active_realm_emojis = new Map<
     string,
     Omit<RealmEmoji, "deactivated"> | typeof zulip_emoji
 >();
+export const all_realm_emojis_by_url = new Map<string, RealmEmoji | typeof zulip_emoji>();
 
 let default_emoji_aliases = new Map<string, string[]>();
 
@@ -241,13 +243,15 @@ export function update_emojis(realm_emojis: RealmEmojiMap): void {
     active_realm_emojis.clear();
 
     for (const data of Object.values(realm_emojis)) {
-        all_realm_emojis.set(data.id, {
+        const emoji = {
             id: data.id,
             emoji_name: data.name,
             emoji_url: data.source_url,
             still_url: data.still_url,
             deactivated: data.deactivated,
-        });
+        };
+        all_realm_emojis.set(data.id, emoji);
+        all_realm_emojis_by_url.set(data.source_url, emoji);
         if (!data.deactivated) {
             active_realm_emojis.set(data.name, {
                 id: data.id,
