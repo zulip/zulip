@@ -31,8 +31,6 @@ export function initialize(): void {
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
             popover_menus.on_show_prep(instance);
 
-            $("#streams_header").addClass("showing-streams-popover");
-
             //  When showing the popover menu, we want the
             // "Add channels" and the "Filter channels" tooltip
             //  to appear below the "Add channels" icon.
@@ -43,22 +41,11 @@ export function initialize(): void {
                 placement: "bottom",
             });
 
-            const filter_streams_tooltip: (tippy.ReferenceElement & HTMLElement) | undefined =
-                $("#filter_streams_tooltip").get(0);
-            // If `filter_streams_tooltip` is not triggered yet, this will set its initial placement.
-            assert(filter_streams_tooltip !== undefined);
-            filter_streams_tooltip.dataset.tippyPlacement = "bottom";
-            filter_streams_tooltip._tippy?.setProps({
-                placement: "bottom",
-            });
-
             return undefined;
         },
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.stream_settings = null;
-
-            $("#streams_header").removeClass("showing-streams-popover");
 
             //  After the popover menu is closed, we want the
             //  "Add channels" and the "Filter channels" tooltip
@@ -68,14 +55,6 @@ export function initialize(): void {
                 $("#add_streams_tooltip").get(0);
             assert(add_streams_tooltip !== undefined);
             add_streams_tooltip._tippy?.setProps({
-                placement: "top",
-            });
-
-            const filter_streams_tooltip: (tippy.ReferenceElement & HTMLElement) | undefined =
-                $("#filter_streams_tooltip").get(0);
-            assert(filter_streams_tooltip !== undefined);
-            filter_streams_tooltip.dataset.tippyPlacement = "top";
-            filter_streams_tooltip._tippy?.setProps({
                 placement: "top",
             });
         },
