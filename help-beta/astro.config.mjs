@@ -67,6 +67,7 @@ export default defineConfig({
                 Head: "./src/components/Head.astro",
             },
             pagination: false,
+            routeMiddleware: "./src/route_data.ts",
             customCss: ["./src/styles/main.css", "./src/styles/steps.css"],
             sidebar: [
                 {
