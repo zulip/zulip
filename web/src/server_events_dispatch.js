@@ -1144,6 +1144,7 @@ export function dispatch_normal_event(event) {
                     user_status.get_status_emoji(event.user_id),
                 );
             }
+            user_status.set_scheduled_end_time(event.scheduled_end_time);
             break;
 
         case "user_topic": {

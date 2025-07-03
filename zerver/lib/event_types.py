@@ -1244,6 +1244,7 @@ class EventUserStatus(EventUserStatusCore):
     emoji_name: str | None = None
     emoji_code: str | None = None
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"] | None = None
+    scheduled_end_time: int | None = None
 
 
 class EventUserTopic(BaseEvent):

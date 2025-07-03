@@ -194,6 +194,7 @@ def server_processes() -> list[list[str]]:
             "--quiet",
         ],
         ["./manage.py", "deliver_scheduled_messages"],
+        ["./manage.py", "clear_user_status"],
         [
             "./manage.py",
             "runtusd",

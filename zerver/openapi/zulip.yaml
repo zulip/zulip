@@ -1910,6 +1910,14 @@ paths:
                                     an emoji.
 
                                     **Changes**: New in Zulip 5.0 (feature level 86).
+                                scheduled_end_time:
+                                  type: integer
+                                  description: |
+                                    If present, it indicates a timestamp, at which the status of
+                                    the user is wiped out. Else, the status remains until the user
+                                    changes it.
+
+                                    **Changes**: New in Zulip 11.0 (feature level 401).
                                 user_id:
                                   type: integer
                                   description: |
@@ -1923,6 +1931,7 @@ paths:
                                   "emoji_name": "car",
                                   "emoji_code": "1f697",
                                   "reaction_type": "unicode_emoji",
+                                  "scheduled_end_time": 1706625128,
                                   "id": 0,
                                 }
                             - type: object
@@ -11316,6 +11325,16 @@ paths:
 
                     **Changes**: New in Zulip 5.0 (feature level 86).
                   example: unicode_emoji
+                scheduled_end_time:
+                  type: integer
+                  description: |
+                    An integer, if present indicates the timestamp at which the status of
+                    the user should be wiped out.
+
+                    If not present, then the status of the user stays until it is changed.
+
+                    **Changes**: New in Zulip 11.0 (feature level 401).
+                  example: 1706625128
             encoding:
               away:
                 contentType: application/json
@@ -11391,6 +11410,17 @@ paths:
                           }
                         description: |
                           An example JSON error response when the custom emoji is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Client does not have any status set.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when user tried to schedule the
+                          the time to clear the user status with no user status set.
   /users/me/{stream_id}/topics:
     get:
       operationId: get-stream-topics
@@ -26241,6 +26271,14 @@ components:
               "zulip").
 
             **Changes**: New in Zulip 5.0 (feature level 86).
+        scheduled_end_time:
+          type: integer
+          description: |
+            If present, it indicates a timestamp, at which the status of
+            the user is wiped out. Else, the status remains until the user
+            changes it.
+
+            **Changes**: New in Zulip 11.0 (feature level 401).
     Draft:
       type: object
       description: |
