@@ -1,30 +1,104 @@
-from typing import Any
-from urllib.parse import quote, urlsplit
+import urllib.parse
+from collections.abc import Sequence
+from typing import Any, Literal
+from urllib.parse import urlsplit
 
 import re2
 
+from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.streams import get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
 
+hash_replacements = {
+    "%": ".",
+    "(": ".28",
+    ")": ".29",
+    ".": ".2E",
+}
 
-def hash_util_encode(string: str) -> str:
-    # Do the same encoding operation as shared internal_url.encodeHashComponent
-    # on the frontend.
-    # `safe` has a default value of "/", but we want those encoded, too.
-    return quote(string, safe=b"").replace(".", "%2E").replace("%", ".")
+
+def encode_hash_component(s: str) -> str:
+    encoded = urllib.parse.quote(s, safe="*")
+    return "".join(hash_replacements.get(c, c) for c in encoded)
 
 
-def encode_stream(stream_id: int, stream_name: str) -> str:
-    # We encode streams for urls as something like 99-Verona.
+def encode_stream(stream_id: int, stream_name: str, with_operator: bool = False) -> str:
+    """
+    This encodes the given `stream_id` and `stream_name`
+    into a recipient slug string that can be used to
+    construct a narrow URL.
+
+    e.g., 9, "Verona" -> "99-Verona"
+
+    The `with_operator` parameter decides whether to append
+    the "channel" operator to the recipient slug or not.
+
+    e.g., "channel/99-Verona"
+    """
+    # We encode stream for urls as something like .
     stream_name = stream_name.replace(" ", "-")
-    return str(stream_id) + "-" + hash_util_encode(stream_name)
+    encoded_stream = str(stream_id) + "-" + encode_hash_component(stream_name)
+    if with_operator:
+        return f"channel/{encoded_stream}"
+    return encoded_stream
+
+
+def encode_user_ids(
+    user_ids: list[int],
+    prefix: Literal["group", "pm"] = "group",
+    with_operator: bool = False,
+) -> str:
+    """
+    This encodes the given `user_ids` into recipient slug
+    string that can be used to construct a narrow URL.
+
+    e.g., [13, 23, 9] -> "13,23,9-group"
+
+    The `with_operator` parameter decides whether to append
+    the "dm" operator to the recipient slug or not.
+
+    e.g., "dm/13,23,9-group"
+
+    The `prefix` parameter is used to determine which format
+    to use for the recipient slug.
+     - "-pm" prefix is the "perma-link" format, the `user_ids`
+        should include all users in the group direct message.
+     - "-group" prefix is used  to format group links that only
+        include the user ids of participants other than the
+        client user.
+    """
+    assert len(user_ids) > 0
+    pm_slug = ",".join([str(user_id) for user_id in sorted(user_ids)]) + "-" + prefix
+    if with_operator:
+        return f"dm/{pm_slug}"
+    return pm_slug
+
+
+def encode_full_name_and_id(full_name: str, user_id: int, with_operator: bool = False) -> str:
+    """
+    This encodes the given `full_name` and `user_id` into a
+    recipient slug string that can be used to construct a
+    narrow URL.
+
+    e.g., 9, "King Hamlet" -> "9-King-Hamlet"
+
+    The `with_operator` parameter decides whether to append
+    the "dm" operator to the recipient slug or not.
+
+    e.g., "dm/9-King-Hamlet"
+    """
+    encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", full_name.strip())
+    pm_slug = str(user_id) + "-" + encoded_user_name
+    if with_operator:
+        return f"dm/{pm_slug}"
+    return pm_slug
 
 
 def personal_narrow_url(*, realm: Realm, sender: UserProfile) -> str:
     base_url = f"{realm.url}/#narrow/dm/"
-    encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", sender.full_name)
-    pm_slug = str(sender.id) + "-" + encoded_user_name
+    pm_slug = encode_full_name_and_id(sender.full_name, sender.id)
     return base_url + pm_slug
 
 
@@ -33,7 +107,7 @@ def direct_message_group_narrow_url(
 ) -> str:
     realm = user.realm
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
-    pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"
+    pm_slug = encode_user_ids(other_user_ids, "group")
     base_url = f"{realm.url}/#narrow/dm/"
     return base_url + pm_slug
 
@@ -45,7 +119,7 @@ def stream_narrow_url(realm: Realm, stream: Stream) -> str:
 
 def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
     base_url = f"{realm.url}/#narrow/channel/"
-    return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{hash_util_encode(topic_name)}"
+    return f"{base_url}{encode_stream(stream.id, stream.name)}/topic/{encode_hash_component(topic_name)}"
 
 
 def message_link_url(
@@ -78,7 +152,7 @@ def stream_message_url(
     stream_id = message["stream_id"]
     stream_name = message["display_recipient"]
     topic_name = get_topic_from_message_info(message)
-    encoded_topic_name = hash_util_encode(topic_name)
+    encoded_topic_name = encode_hash_component(topic_name)
     encoded_stream = encode_stream(stream_id=stream_id, stream_name=stream_name)
 
     parts = [
@@ -104,11 +178,11 @@ def pm_message_url(
         with_or_near = "near"
 
     message_id = str(message["id"])
-    str_user_ids = [str(recipient["id"]) for recipient in message["display_recipient"]]
+    user_ids = [recipient["id"] for recipient in message["display_recipient"]]
 
     # Use the "perma-link" format here that includes the sender's
     # user_id, so they're easier to share between people.
-    pm_str = ",".join(str_user_ids) + "-pm"
+    pm_str = encode_user_ids(user_ids, "pm")
 
     parts = [
         realm.url,
@@ -126,3 +200,60 @@ def append_url_query_string(original_url: str, query: str) -> str:
     u = urlsplit(original_url)
     query = u.query + ("&" if u.query and query else "") + query
     return u._replace(query=query).geturl()
+
+
+def generate_narrow_link_from_narrow_terms(
+    terms: Sequence[NarrowTerm],
+    realm: Realm,
+    sort_terms: bool = True,
+) -> str:
+    """
+    This converts a list of narrow terms into a narrow URL link.
+
+    If one of the terms is not supported, an `AssertionError`
+    will be raised.
+
+    If `sort_terms` is `True`, the operators in the narrow links
+    will be sorted from general("channel") to specific("near", "with").
+    """
+    from zerver.lib.narrow import BadNarrowOperatorError
+    from zerver.lib.url_decoding import Filter
+
+    if len(terms) == 0:
+        # Return to home-view
+        return "#"
+
+    narrow_terms = terms
+    if sort_terms:
+        narrow_terms = Filter.sorted_terms(list(terms))
+
+    link = ["/#narrow"]
+    for term in narrow_terms:
+        match term.operator:
+            case "channel":
+                channel_id_or_name = term.operand
+                assert isinstance(channel_id_or_name, str | int)
+                try:
+                    channel = get_stream_by_narrow_operand_access_unchecked(
+                        channel_id_or_name, realm
+                    )
+                except Stream.DoesNotExist:
+                    raise BadNarrowOperatorError("unknown channel " + str(channel_id_or_name))
+                link.append(encode_stream(channel.id, channel.name, with_operator=True))
+            case "dm":
+                # Use the "perma-link" format here so that we can format all types
+                # of direct messages; to self, one-on-one, or group.
+                user_ids = term.operand
+                assert isinstance(user_ids, list)
+                link.append(encode_user_ids(user_ids, prefix="pm", with_operator=True))
+            case "topic":
+                topic_name = term.operand
+                assert isinstance(topic_name, str)
+                link.append(f"topic/{encode_hash_component(topic_name)}")
+            case "near" | "with":
+                assert isinstance(term.operand, int)
+                message_id = str(term.operand)
+                link.append(f"{term.operator}/{message_id}")
+            case _:
+                raise AssertionError(f"This operator is not yet supported: '{term.operator}'.")
+    return "/".join(link)
