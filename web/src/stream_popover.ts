@@ -1070,6 +1070,20 @@ export async function build_move_topic_to_stream_popover(
                 if (stream.stream_id === current_stream_id) {
                     return true;
                 }
+                const current_stream = stream_data.get_sub_by_id(current_stream_id);
+                assert(current_stream !== undefined);
+                // If the user can't edit the topic, it is not possible for them to make
+                // following kind of moves:
+                //  1) messages from empty topics to channels where empty topics are disabled.
+                // So we filter them out here.
+                if (
+                    !stream_data.user_can_move_messages_within_channel(current_stream) &&
+                    !stream_data.user_can_move_messages_within_channel(stream) &&
+                    topic_name === "" &&
+                    !stream_data.can_use_empty_topic(stream.stream_id)
+                ) {
+                    return false;
+                }
                 return stream_data.can_post_messages_in_stream(stream);
             });
 
