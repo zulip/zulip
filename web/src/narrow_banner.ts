@@ -490,6 +490,35 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 ),
             };
         }
+        case "mentions": {
+            const mentioned_user = people.get_by_email(first_operand);
+            if (!mentioned_user) {
+                return {
+                    title: $t({
+                        defaultMessage: "The user does not exist!",
+                    }),
+                };
+            }
+
+            if (people.is_my_user_id(mentioned_user.user_id)) {
+                return {
+                    title: $t({
+                        defaultMessage: "No messages mention you yet.",
+                    }),
+                };
+            }
+
+            return {
+                title: $t(
+                    {
+                        defaultMessage: "No messages mention {person} yet.",
+                    },
+                    {
+                        person: mentioned_user.full_name,
+                    },
+                ),
+            };
+        }
     }
     return default_banner;
 }

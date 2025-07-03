@@ -340,6 +340,15 @@ function get_person_suggestions(
             incompatible_patterns = [{operator: "channel"}, {operator: "is", operand: "resolved"}];
             break;
         case "dm":
+        case "mentions":
+            incompatible_patterns = [
+                {operator: "dm"},
+                {operator: "pm-with"},
+                {operator: "dm-including"},
+                {operator: "is", operand: "dm"},
+                {operator: "is", operand: "resolved"},
+            ];
+            break;
         case "pm-with":
             incompatible_patterns = [
                 {operator: "dm"},
@@ -862,6 +871,7 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         "topic",
         "dm",
         "dm-including",
+        "mentions",
         "sender",
         "near",
         "from",
@@ -1045,7 +1055,7 @@ export function get_search_result(
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
+    const person_suggestion_ops = ["sender", "dm", "dm-including", "mentions", "from", "pm-with"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1118,6 +1128,7 @@ export function get_search_result(
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
+        get_people("mentions"),
         get_people("from"),
         get_topic_suggestions,
         get_operator_suggestions,
