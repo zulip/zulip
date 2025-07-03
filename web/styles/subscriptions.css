@@ -905,6 +905,7 @@ h4.user_group_setting_subsection_title {
 
     .pill-container {
         cursor: not-allowed;
+        pointer-events: none;
     }
 }
 

@@ -555,10 +555,12 @@ export function initialize(): void {
             const button_is_disabled = Boolean($button.prop("disabled"));
             const container_is_enabled =
                 $container.find(".input").prop("contenteditable") === "true";
+            const has_loading_button = $button.find(".button-loading-indicator").length > 0;
             if (
                 button_is_disabled &&
                 container_is_enabled &&
-                !$button.hasClass("hidden-below")
+                !$button.hasClass("hidden-below") &&
+                !has_loading_button
             ) {
                 instance.setContent(
                     $t({

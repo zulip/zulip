@@ -433,16 +433,24 @@ function add_new_members({
         return;
     }
 
+    const $pill_widget_button_wrapper = $(".add_member_button_wrapper");
+    const $add_member_button = $pill_widget_button_wrapper.find(".add-member-button");
+    $add_member_button.prop("disabled", true);
+    $(".add_members_container").addClass("add_members_disabled");
+    buttons.show_button_loading_indicator($add_member_button);
     function invite_success(): void {
-        const $pill_widget_button_wrapper = $(".add_member_button_wrapper");
+        $(".add_members_container").removeClass("add_members_disabled");
         const $check_icon = $pill_widget_button_wrapper.find(".check");
-        const $add_member_button = $pill_widget_button_wrapper.find(".add-member-button");
 
         $check_icon.removeClass("hidden-below");
         $add_member_button.addClass("hidden-below");
         setTimeout(() => {
             $check_icon.addClass("hidden-below");
             $add_member_button.removeClass("hidden-below");
+            buttons.hide_button_loading_indicator($add_member_button);
+            // To undo the effect of hide_button_loading_indicator enabling the button.
+            // This will keep the `Add` button disabled when input is empty.
+            $add_member_button.prop("disabled", true);
         }, 1000);
 
         pill_widget.clear();
@@ -457,6 +465,9 @@ function add_new_members({
     }
 
     function invite_failure(xhr?: JQuery.jqXHR): void {
+        $(".add_members_container").removeClass("add_members_disabled");
+        buttons.hide_button_loading_indicator($add_member_button);
+
         let error_message = "Failed to add user!";
 
         const parsed = z

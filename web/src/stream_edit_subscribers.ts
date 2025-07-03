@@ -325,7 +325,14 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         return;
     }
 
+    const $pill_widget_button_wrapper = $(".add_subscriber_button_wrapper");
+    const $add_subscriber_button = $pill_widget_button_wrapper.find(".add-subscriber-button");
+    $add_subscriber_button.prop("disabled", true);
+    $(".add_subscribers_container").addClass("add_subscribers_disabled");
+    buttons.show_button_loading_indicator($add_subscriber_button);
+
     function invite_success(raw_data: unknown): void {
+        $(".add_subscribers_container").removeClass("add_subscribers_disabled");
         const data = add_user_ids_api_response_schema.parse(raw_data);
         pill_widget.clear();
         const subscribed_users = Object.keys(data.subscribed).map((user_id) =>
@@ -335,15 +342,17 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
             people.get_by_user_id(Number(user_id)),
         );
 
-        const $pill_widget_button_wrapper = $(".add_subscriber_button_wrapper");
         const $check_icon = $pill_widget_button_wrapper.find(".check");
-        const $add_subscriber_button = $pill_widget_button_wrapper.find(".add-subscriber-button");
 
         $check_icon.removeClass("hidden-below");
         $add_subscriber_button.addClass("hidden-below");
         setTimeout(() => {
             $check_icon.addClass("hidden-below");
             $add_subscriber_button.removeClass("hidden-below");
+            buttons.hide_button_loading_indicator($add_subscriber_button);
+            // To undo the effect of hide_button_loading_indicator enabling the button.
+            // This will keep the `Add` button disabled when input is empty.
+            $add_subscriber_button.prop("disabled", true);
         }, 1000);
 
         show_stream_subscription_request_success_result({
@@ -354,8 +363,10 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     }
 
     function invite_failure(xhr: JQuery.jqXHR): void {
-        let error_message = "Failed to subscribe user!";
+        buttons.hide_button_loading_indicator($add_subscriber_button);
+        $(".add_subscribers_container").removeClass("add_subscribers_disabled");
 
+        let error_message = "Failed to subscribe user!";
         const parsed = z
             .object({
                 result: z.literal("error"),
