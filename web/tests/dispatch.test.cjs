@@ -44,6 +44,9 @@ const navbar_alerts = mock_esm("../src/navbar_alerts");
 const pm_list = mock_esm("../src/pm_list");
 const reactions = mock_esm("../src/reactions", {
     generate_clean_reactions() {},
+    emoji_alt_code: {
+        value: true,
+    },
 });
 const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");

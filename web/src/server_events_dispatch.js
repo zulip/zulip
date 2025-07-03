@@ -1003,6 +1003,7 @@ export function dispatch_normal_event(event) {
                 );
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    reactions.emoji_alt_code.value = user_settings.emojiset === "text";
                     msg_list.rerender();
                 }
                 // Rerender buddy list status emoji
