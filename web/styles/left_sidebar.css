@@ -76,6 +76,7 @@
         .masked_unread_count {
             display: flex;
             grid-area: markers-and-unreads;
+            justify-self: end;
             visibility: visible;
         }
 
