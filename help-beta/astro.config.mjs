@@ -66,6 +66,7 @@ export default defineConfig({
                 Footer: "./src/components/Footer.astro",
             },
             pagination: false,
+            routeMiddleware: "./src/route_data.ts",
             customCss: ["./src/styles/main.css", "./src/styles/steps.css"],
             sidebar: [
                 {
