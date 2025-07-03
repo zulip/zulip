@@ -137,7 +137,11 @@ function message_in_home(message: Message): boolean {
     return user_topics.is_topic_visible_in_home(message.stream_id, message.topic);
 }
 
-function message_matches_search_term(message: Message, operator: string, operand: string): boolean {
+export function message_matches_search_term(
+    message: Message,
+    operator: string,
+    operand: string,
+): boolean {
     switch (operator) {
         case "has":
             switch (operand) {
@@ -217,8 +221,15 @@ function message_matches_search_term(message: Message, operator: string, operand
             if (realm.realm_is_zephyr_mirror_realm) {
                 return zephyr_topic_name_match(message, operand);
             }
-            return message.topic.toLowerCase() === operand;
-
+            return (
+                message.topic.toLowerCase().split(/\s+/).includes(operand.toLowerCase()) ||
+                message.topic.toLowerCase() === operand.toLowerCase()
+            );
+        case "exact-topic":
+            if (message.type !== "stream") {
+                return false;
+            }
+            return message.topic === operand;
         case "sender":
             return people.id_matches_email_operand(message.sender_id, operand);
 
@@ -311,7 +322,7 @@ export class Filter {
         }
 
         if (util.is_topic_synonym(operator)) {
-            return "topic";
+            return "exact-topic";
         }
 
         if (util.is_channel_synonym(operator)) {
@@ -344,6 +355,8 @@ export class Filter {
             case "channel":
                 break;
             case "topic":
+                break;
+            case "exact-topic":
                 break;
             case "sender":
             case "dm":
@@ -400,6 +413,9 @@ export class Filter {
                 case "topic":
                     contains_topic_term = true;
                     break;
+                case "exact-topic":
+                    contains_topic_term = true;
+                    break;
                 case "dm":
                     contains_dm_term = true;
             }
@@ -412,7 +428,7 @@ export class Filter {
             return undefined;
         }
 
-        const conversation_terms = new Set(["channel", "topic", "dm"]);
+        const conversation_terms = new Set(["channel", "exact-topic", "dm"]);
 
         const non_conversation_terms = orig_terms.filter((term) => {
             const operator = Filter.canonicalize_operator(term.operator);
@@ -420,9 +436,8 @@ export class Filter {
         });
 
         assert(message.type === "stream");
-
         const channel_term = {operator: "channel", operand: message.stream_id.toString()};
-        const topic_term = {operator: "topic", operand: message.topic};
+        const topic_term = {operator: "exact-topic", operand: message.topic};
 
         const updated_terms = [channel_term, topic_term, ...non_conversation_terms];
         return updated_terms;
@@ -574,6 +589,8 @@ export class Filter {
                 return term.operand === "public";
             case "topic":
                 return true;
+            case "exact-topic":
+                return true;
             case "sender":
             case "from":
             case "dm":
@@ -645,6 +662,7 @@ export class Filter {
             "channels-public",
             "channel",
             "topic",
+            "exact-topic",
             "dm",
             "dm-including",
             "with",
@@ -710,6 +728,8 @@ export class Filter {
 
             case "topic":
                 return verb + "topic";
+            case "exact-topic":
+                return verb + "exact topic";
 
             case "sender":
                 return verb + "sent by";
@@ -733,7 +753,6 @@ export class Filter {
     // Convert a list of terms to a human-readable description.
     static parts_for_describe(terms: NarrowTerm[], is_operator_suggestion: boolean): Part[] {
         const parts: Part[] = [];
-
         if (terms.length === 0) {
             parts.push({type: "plain_text", content: "combined feed"});
             return parts;
@@ -1064,6 +1083,15 @@ export class Filter {
                 term.operand.toLowerCase() === operand.toLowerCase(),
         );
     }
+    partial_operand_case_insensitive(operator: string, operand: string): boolean {
+        return this._terms.some(
+            (term) =>
+                !term.negated &&
+                term.operator === operator &&
+                (term.operand.toLowerCase().split(/\s+/).includes(operand.toLowerCase()) ||
+                    term.operand.toLowerCase() === operand.toLowerCase()),
+        );
+    }
 
     has_operand(operator: string, operand: string): boolean {
         return this._terms.some(
@@ -1122,6 +1150,8 @@ export class Filter {
         const valid_term_types = new Set([
             "channel",
             "not-channel",
+            "exact-topic",
+            "not-exact-topic",
             "topic",
             "not-topic",
             "dm",
@@ -1770,7 +1800,9 @@ export class Filter {
         const term_types = this.sorted_term_types();
         if (
             _.isEqual(term_types, ["channel", "topic", "with"]) ||
+            _.isEqual(term_types, ["channel", "exact-topic", "with"]) ||
             _.isEqual(term_types, ["channel", "topic"]) ||
+            _.isEqual(term_types, ["channel", "exact-topic"]) ||
             _.isEqual(term_types, ["dm", "with"]) ||
             _.isEqual(term_types, ["dm"])
         ) {
@@ -1783,6 +1815,7 @@ export class Filter {
         const term_types = this.sorted_term_types();
         if (
             _.isEqual(term_types, ["channel", "topic", "near"]) ||
+            _.isEqual(term_types, ["channel", "exact-topic", "near"]) ||
             _.isEqual(term_types, ["dm", "near"])
         ) {
             return true;
@@ -1801,6 +1834,7 @@ export class Filter {
     may_contain_multiple_conversations(): boolean {
         return !(
             (this.has_operator("channel") && this.has_operator("topic")) ||
+            (this.has_operator("channel") && this.has_operator("exact-topic")) ||
             this.has_operator("dm")
         );
     }
@@ -1809,6 +1843,8 @@ export class Filter {
         return (
             // not narrowed to a topic
             !(this.has_operator("channel") && this.has_operator("topic")) &&
+            // not narrowed to a exact-topic
+            !(this.has_operator("channel") && this.has_operator("exact-topic")) &&
             // not narrowed to search
             !this.is_keyword_search() &&
             // not narrowed to dms
@@ -1857,7 +1893,10 @@ export class Filter {
             return true;
         }
 
-        if (this.has_operand_case_insensitive("topic", new_topic)) {
+        if (this.partial_operand_case_insensitive("topic", new_topic)) {
+            return true;
+        }
+        if (this.has_operand_case_insensitive("exact-topic", new_topic)) {
             return true;
         }
 
@@ -1872,6 +1911,7 @@ export class Filter {
             // are very unlikely to be used in practice.
             "not-channel",
             "not-topic",
+            "not-exact-topic",
             "is-followed",
             "not-is-followed",
             "is-resolved",

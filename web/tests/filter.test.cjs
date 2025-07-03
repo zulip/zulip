@@ -17,6 +17,7 @@ const resolved_topic = zrequire("../shared/src/resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
+const {message_matches_search_term} = zrequire("../src/filter");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const muted_users = zrequire("muted_users");
@@ -614,6 +615,62 @@ test("basics", () => {
     terms = [{operator: "channel", operand: "foo", negated: false}];
     filter = new Filter(terms);
     assert.ok(filter.is_channel_view());
+
+    terms = [
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "exact-topic", operand: "Announcements"},
+    ];
+    filter = new Filter(terms);
+
+    assert.ok(filter.has_operator("exact-topic"));
+    assert.ok(!filter.has_operator("topic"));
+
+    // Operand presence
+    assert.ok(filter.has_operand("exact-topic", "Announcements"));
+    assert.ok(!filter.has_operand("exact-topic", "announcements")); // exact case-sensitive in has_operand
+
+    // Case-insensitive operand check
+    assert.ok(filter.has_operand_case_insensitive("exact-topic", "announcements"));
+
+    // Matching terms
+    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
+    assert.deepEqual(filter.operands("exact-topic"), ["Announcements"]);
+
+    // Filter capabilities
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(filter.can_bucket_by("channel"));
+    assert.ok(filter.can_bucket_by("channel", "exact-topic"));
+    assert.ok(!filter.has_exactly_channel_topic_operators());
+
+    terms = [
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "exact-topic", operand: "Meta"},
+        {operator: "exact-topic", operand: "Random", negated: true}, // exclusion
+    ];
+    filter = new Filter(terms);
+
+    assert.ok(filter.has_operator("exact-topic"));
+    assert.ok(filter.has_operand("exact-topic", "Meta"));
+    assert.ok(!filter.has_operand("exact-topic", "Random")); // negated operand should not appear
+
+    // Internal behavior
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(filter.supports_collapsing_recipients());
+
+    terms = [
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "exact-topic", operand: "General"},
+        {operator: "search", operand: "bugs"},
+    ];
+    filter = new Filter(terms);
+
+    assert.ok(filter.has_operator("search"));
+    assert.ok(filter.is_keyword_search());
+    assert.ok(!filter.can_apply_locally());
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
@@ -950,7 +1007,7 @@ test("redundancies", () => {
 test("canonicalization", () => {
     assert.equal(Filter.canonicalize_operator("Is"), "is");
     assert.equal(Filter.canonicalize_operator("Stream"), "channel");
-    assert.equal(Filter.canonicalize_operator("Subject"), "topic");
+    assert.equal(Filter.canonicalize_operator("Subject"), "exact-topic");
     assert.equal(Filter.canonicalize_operator("FROM"), "sender");
 
     let term;
@@ -1011,6 +1068,7 @@ test("canonicalization", () => {
 
 test("ensure_channel_topic_terms", () => {
     const channel_term = {operator: "channel", operand: `${general_sub.stream_id}`};
+    const exact_topic_term = {operator: "exact-topic", operand: "discussion"};
     const topic_term = {operator: "topic", operand: "discussion"};
 
     const message = {
@@ -1026,7 +1084,7 @@ test("ensure_channel_topic_terms", () => {
         message,
     );
     const term_2 = Filter.ensure_channel_topic_terms(
-        [topic_term, {operator: "with", operand: message.id}],
+        [exact_topic_term, {operator: "with", operand: message.id}],
         message,
     );
     const term_3 = Filter.ensure_channel_topic_terms(
@@ -1044,11 +1102,20 @@ test("ensure_channel_topic_terms", () => {
         [{operator: "with", operand: message.id}],
         message,
     );
-
+    const term_6 = Filter.ensure_channel_topic_terms(
+        [topic_term, {operator: "with", operand: message.id}],
+        message,
+    );
+    assert.deepEqual(term_6, [
+        channel_term,
+        exact_topic_term,
+        topic_term,
+        {operator: "with", operand: 12},
+    ]);
     const terms = [term_1, term_2, term_3, term_4, term_5];
 
     for (const term of terms) {
-        assert.deepEqual(term, [channel_term, topic_term, {operator: "with", operand: 12}]);
+        assert.deepEqual(term, [channel_term, exact_topic_term, {operator: "with", operand: 12}]);
     }
 });
 
@@ -1644,7 +1711,7 @@ test("unparse", () => {
         {operator: "stream", operand: foo_stream_id.toString()},
         {operator: "subject", operand: "Bar"},
     ];
-    string = `channel:${foo_stream_id} topic:Bar`;
+    string = `channel:${foo_stream_id} exact-topic:Bar`;
     assert.deepEqual(Filter.unparse(terms), string);
 
     terms = [
@@ -1801,7 +1868,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "stream", operand: devel_id.toString()},
         {operator: "subject", operand: "JS", negated: true},
     ];
-    string = "channel devel, exclude topic JS";
+    string = "channel devel, exclude exact topic JS";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     // Empty string topic involved.
@@ -1935,6 +2002,7 @@ test("term_type", () => {
         };
     }
 
+    // Term type classification
     assert_term_type(term("channels", "public"), "channels-public");
     assert_term_type(term("channel", "whatever"), "channel");
     assert_term_type(term("dm", "whomever"), "dm");
@@ -1943,38 +2011,41 @@ test("term_type", () => {
     assert_term_type(term("is", "private"), "is-private");
     assert_term_type(term("has", "link"), "has-link");
     assert_term_type(term("has", "attachment", true), "not-has-attachment");
+    assert_term_type(term("topic", "Ghost Town"), "topic");
+    assert_term_type(term("topic", "Ghost Town", true), "not-topic");
+    assert_term_type(term("exact-topic", "Ghost Town"), "exact-topic");
+    assert_term_type(term("exact-topic", "Ghost Town", true), "not-exact-topic");
 
+    // Sorting utility
     function assert_term_sort(in_terms, expected) {
         const sorted_terms = Filter.sorted_term_types(in_terms);
         assert.deepEqual(sorted_terms, expected);
     }
 
+    // Sorting tests with both topic and exact-topic
     assert_term_sort(["topic", "channel", "sender"], ["channel", "topic", "sender"]);
-
     assert_term_sort(
         ["has-link", "near", "is-unread", "dm"],
         ["dm", "near", "is-unread", "has-link"],
     );
-
     assert_term_sort(["topic", "channel", "with"], ["channel", "topic", "with"]);
-
     assert_term_sort(["bogus", "channel", "topic"], ["channel", "topic", "bogus"]);
     assert_term_sort(["channel", "topic", "channel"], ["channel", "channel", "topic"]);
-
     assert_term_sort(["search", "channels-public"], ["channels-public", "search"]);
+    assert_term_sort(["exact-topic", "topic", "channel"], ["channel", "topic", "exact-topic"]);
 
+    // Filter instance test with both topic types
     const terms = [
-        {operator: "topic", operand: "lunch"},
+        {operator: "topic", operand: "Lunch"},
+        {operator: "exact-topic", operand: "Ghost Town"},
         {operator: "sender", operand: "steve@foo.com"},
         {operator: "channel", operand: new_stream_id().toString()},
     ];
     let filter = new Filter(terms);
     const term_types = filter.sorted_term_types();
+    assert.deepEqual(term_types, ["channel", "topic", "exact-topic", "sender"]);
 
-    assert.deepEqual(term_types, ["channel", "topic", "sender"]);
-
-    // test caching of term types
-    // init and stub
+    // Caching test
     filter = new Filter(terms);
     filter.stub = filter._build_sorted_term_types;
     filter._build_sorted_term_types = function () {
@@ -1985,13 +2056,13 @@ test("term_type", () => {
     // uncached trial
     filter._build_sorted_term_types_called = false;
     const built_terms = filter.sorted_term_types();
-    assert.deepEqual(built_terms, ["channel", "topic", "sender"]);
+    assert.deepEqual(built_terms, ["channel", "topic", "exact-topic", "sender"]);
     assert.ok(filter._build_sorted_term_types_called);
 
     // cached trial
     filter._build_sorted_term_types_called = false;
     const cached_terms = filter.sorted_term_types();
-    assert.deepEqual(cached_terms, ["channel", "topic", "sender"]);
+    assert.deepEqual(cached_terms, ["channel", "topic", "exact-topic", "sender"]);
     assert.ok(!filter._build_sorted_term_types_called);
 });
 
@@ -2038,6 +2109,11 @@ test("is_valid_search_term", () => {
         ["channels:public", true],
         ["channels:private", false],
         ["topic:GhostTown", true],
+        ["topic:GhostTown,foo", true],
+        ["topic:GhostTown,foo,bar", true],
+        ["exact-topic:GhostTown", true],
+        ["exact-topic:GhostTown,foo", true],
+        ["exact-topic:GhostTown,foo,bar", true],
         ["dm-including:alice@example.com", true],
         ["sender:ghost@zulip.com", false],
         ["sender:me", true],
@@ -2059,6 +2135,40 @@ test("is_valid_search_term", () => {
         }),
         false,
     );
+});
+test("message_matches_search_term", () => {
+    const stream_message = {
+        id: 1,
+        type: "stream",
+        stream_id: 10,
+        topic: "Ghost Town",
+    };
+
+    const pm_message = {
+        id: 2,
+        type: "private",
+        topic: undefined,
+    };
+
+    const test_data = [
+        ["topic", "Ghost", true], // partial match
+        ["topic", "ghost", true], // partial match
+        ["topic", "town", true], // partial match
+        ["topic", "Town", true], // exact match
+        ["topic", "ghost town", true],
+        ["topic", "notfound", false],
+        ["exact-topic", "Ghost Town", true],
+        ["exact-topic", "ghost town", false],
+        ["exact-topic", "Ghost", false], // partial match doesn't work
+        ["exact-topic", "Town", false], // partial match doesn't work
+        ["topic", "Ghost", false, pm_message],
+        ["exact-topic", "Ghost Town", false, pm_message],
+    ];
+
+    for (const [operator, operand, expected, custom_msg] of test_data) {
+        const message = custom_msg || stream_message;
+        assert.equal(message_matches_search_term(message, operator, operand), expected);
+    }
 });
 
 test("update_email", () => {
@@ -2166,7 +2276,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     assert.deepEqual(filter.requires_adjustment_for_moved_with_target, false);
     assert.deepEqual(filter.terms(), [
         {operator: "channel", operand: scotland_id.toString(), negated: false},
-        {operator: "topic", operand: "Test 1", negated: false},
+        {operator: "exact-topic", operand: "Test 1", negated: false},
         {operator: "with", operand: "12", negated: false},
     ]);
 
@@ -3005,11 +3115,21 @@ run_test("can_newly_match_moved_messages", () => {
     assert.deepEqual(filter.can_newly_match_moved_messages("General", "test"), true);
     assert.deepEqual(filter.can_newly_match_moved_messages("random-stream", "test"), false);
 
-    // Matches topic
+    // Matches topic (case-insensitive, partial match allowed)
     filter = new Filter([{operator: "topic", operand: "Test topic"}]);
     assert.deepEqual(filter.can_newly_match_moved_messages("general", "Test topic"), true);
     assert.deepEqual(filter.can_newly_match_moved_messages("general", "test topic"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "Test"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
     assert.deepEqual(filter.can_newly_match_moved_messages("general", "random topic"), false);
+
+    // Matches exact-topic (case-sensitive, exact match only)
+    filter = new Filter([{operator: "exact-topic", operand: "Test Topic"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "Test Topic"), true);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test topic"), true); // different case
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "Test"), false); // partial
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), false); // partial
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "Test Topic random"), false);
 
     // Matches common narrows
     filter = new Filter([{operator: "is", operand: "followed"}]);
@@ -3036,5 +3156,22 @@ run_test("get_stringified_narrow_for_server_query", () => {
     assert.equal(
         narrow,
         '[{"negated":false,"operator":"channel","operand":1},{"negated":false,"operator":"topic","operand":"bar"}]',
+    );
+});
+run_test("get_stringified_narrow_for_server_query with exact-topic", () => {
+    const filter = new Filter([{operator: "exact-topic", operand: "λ-topic"}]);
+    const narrow = filter.get_stringified_narrow_for_server_query();
+    assert.equal(narrow, '[{"negated":false,"operator":"exact-topic","operand":"λ-topic"}]');
+});
+
+run_test("get_stringified_narrow_for_server_query with channel and exact-topic", () => {
+    const filter = new Filter([
+        {operator: "channel", operand: "1"},
+        {operator: "exact-topic", operand: "λ-topic"},
+    ]);
+    const narrow = filter.get_stringified_narrow_for_server_query();
+    assert.equal(
+        narrow,
+        '[{"negated":false,"operator":"channel","operand":1},{"negated":false,"operator":"exact-topic","operand":"λ-topic"}]',
     );
 });
