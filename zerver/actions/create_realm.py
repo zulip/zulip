@@ -100,11 +100,15 @@ def do_change_realm_subdomain(
 
 @transaction.atomic(savepoint=False)
 def set_default_for_realm_permission_group_settings(
-    realm: Realm, group_settings_defaults_for_org_types: dict[str, dict[int, str]] | None = None
+    realm: Realm,
+    group_settings_defaults_for_org_types: dict[str, dict[int, str]] | None = None,
 ) -> None:
     system_groups_dict = get_role_based_system_groups_dict(realm)
 
-    for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+    for (
+        setting_name,
+        permission_configuration,
+    ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         group_name = permission_configuration.default_group_name
 
         # Below code updates the group_name if the setting default depends on org_type.
@@ -160,7 +164,10 @@ def do_create_realm(
     how_realm_creator_found_zulip: str | None = None,
     how_realm_creator_found_zulip_extra_context: str | None = None,
 ) -> Realm:
-    if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
+    if string_id in [
+        settings.SOCIAL_AUTH_SUBDOMAIN,
+        settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN,
+    ]:
         raise AssertionError(
             "Creating a realm on SOCIAL_AUTH_SUBDOMAIN or SELF_HOSTING_MANAGEMENT_SUBDOMAIN is not allowed!"
         )
@@ -239,15 +246,16 @@ def do_create_realm(
             },
         )
 
-        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        if realm.org_type in (
-            Realm.ORG_TYPES["education_nonprofit"]["id"],
-            Realm.ORG_TYPES["education"]["id"],
-        ):
-            # Email address of users should be initially visible to admins only.
-            realm_default_email_address_visibility = (
-                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
-            )
+        VISIBILITY_MAPPING = {
+            Realm.ORG_TYPES["business"]["id"]: UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            Realm.ORG_TYPES["education"]["id"]: UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            Realm.ORG_TYPES["education_nonprofit"][
+                "id"
+            ]: UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        }
+        realm_default_email_address_visibility = VISIBILITY_MAPPING.get(
+            realm.org_type, RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
 
         RealmUserDefault.objects.create(
             realm=realm, email_address_visibility=realm_default_email_address_visibility

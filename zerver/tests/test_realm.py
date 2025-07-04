@@ -147,6 +147,74 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
 
+    def test_email_visibility_policy_on_realm_creation_and_update(self) -> None:
+        realm_business = do_create_realm(
+            "test_business", "Test Business", org_type=Realm.ORG_TYPES["business"]["id"]
+        )
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_business).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        )
+
+        realm_edu_nonprofit = do_create_realm(
+            "test_edu_nonprofit",
+            "Test Education Nonprofit",
+            org_type=Realm.ORG_TYPES["education_nonprofit"]["id"],
+        )
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_edu_nonprofit).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        )
+
+        realm_edu = do_create_realm(
+            "test_edu", "Test Education", org_type=Realm.ORG_TYPES["education"]["id"]
+        )
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_edu).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        )
+
+        realm_gov = do_create_realm(
+            "test_gov", "Test Government", org_type=Realm.ORG_TYPES["government"]["id"]
+        )
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_gov).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        )
+
+        realm_unspecified = do_create_realm(
+            "test_unspecified", "Test Unspecified", org_type=Realm.ORG_TYPES["unspecified"]["id"]
+        )
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_unspecified).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        )
+
+        # Change from business to government (should update to ADMINS)
+        do_change_realm_org_type(
+            realm_business, Realm.ORG_TYPES["government"]["id"], acting_user=None
+        )
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_business).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        )
+
+        # Change from government to education (should update to MODERATORS)
+        do_change_realm_org_type(realm_gov, Realm.ORG_TYPES["education"]["id"], acting_user=None)
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_gov).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        )
+
+        # Change from education_nonprofit to business (should update to EVERYONE)
+        do_change_realm_org_type(
+            realm_edu_nonprofit, Realm.ORG_TYPES["business"]["id"], acting_user=None
+        )
+        self.assertEqual(
+            RealmUserDefault.objects.get(realm=realm_edu_nonprofit).email_address_visibility,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        )
+
     def test_realm_enable_spectator_access(self) -> None:
         realm = do_create_realm(
             "test_web_public_true",
