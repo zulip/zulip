@@ -632,7 +632,7 @@ def support(
             user.id for user in PreregistrationRealm.objects.filter(email__in=key_words)
         ]
         confirmations += get_confirmations(
-            [Confirmation.REALM_CREATION],
+            [Confirmation.NEW_REALM_USER_REGISTRATION],
             preregistration_realm_ids,
             hostname=request.get_host(),
         )

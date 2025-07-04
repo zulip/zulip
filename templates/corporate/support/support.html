@@ -76,7 +76,7 @@
                 {% set email = object.email %}
                 {% set realm = object.realm %}
                 {% set show_realm_details = True %}
-                {% elif confirmation.type == Confirmation.REALM_CREATION %}
+                {% elif confirmation.type == Confirmation.NEW_REALM_USER_REGISTRATION %}
                 <h3>Realm creation</h3>
                 {% set email = object.email %}
                 {% set show_realm_details = False %}
