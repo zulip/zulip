@@ -346,6 +346,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         clear_box();
     }
 
+    compose_state.private_message_recipient_ids(opts.private_message_recipient_ids);
+
     if (opts.message_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
         compose_recipient.on_compose_select_recipient_update();
@@ -370,8 +372,6 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         compose_recipient.toggle_compose_recipient_dropdown();
     }
     compose_recipient.update_topic_displayed_text(opts.topic);
-
-    compose_state.private_message_recipient_ids(opts.private_message_recipient_ids);
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
