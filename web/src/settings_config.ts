@@ -758,6 +758,7 @@ export const all_group_setting_labels = {
             defaultMessage: "Who can move messages inside this channel",
         }),
         can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
+        can_create_topic_group: $t({defaultMessage: "Who can start new topics"}),
         can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
         can_subscribe_group: $t({defaultMessage: "Who can subscribe to this channel"}),
         can_remove_subscribers_group: $t({
@@ -858,6 +859,7 @@ export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
+    "can_create_topic_group",
 ];
 
 export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [

@@ -17,6 +17,7 @@ export const stream_permission_group_settings_schema = z.enum([
     "can_move_messages_within_channel_group",
     "can_remove_subscribers_group",
     "can_send_message_group",
+    "can_create_topic_group",
     "can_subscribe_group",
 ]);
 export type StreamPermissionGroupSetting = z.infer<typeof stream_permission_group_settings_schema>;
@@ -32,6 +33,7 @@ export type StreamTopicsPolicy = z.infer<typeof stream_topics_policy_schema>;
 export const stream_schema = z.object({
     can_add_subscribers_group: group_setting_value_schema,
     can_administer_channel_group: group_setting_value_schema,
+    can_create_topic_group: group_setting_value_schema,
     can_move_messages_out_of_channel_group: group_setting_value_schema,
     can_move_messages_within_channel_group: group_setting_value_schema,
     can_remove_subscribers_group: group_setting_value_schema,

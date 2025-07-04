@@ -85,6 +85,7 @@ const devel = {
     pin_to_top: true,
     is_recently_active: false,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 const social = {
@@ -94,6 +95,7 @@ const social = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 // flag to check if subheader is rendered
@@ -318,6 +320,7 @@ const develSub = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 const RomeSub = {
@@ -328,6 +331,7 @@ const RomeSub = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 const testSub = {
@@ -338,6 +342,7 @@ const testSub = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 const announceSub = {
@@ -348,6 +353,7 @@ const announceSub = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 const DenmarkSub = {
@@ -358,6 +364,7 @@ const DenmarkSub = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 const carSub = {
@@ -368,6 +375,7 @@ const carSub = {
     subscribed: true,
     is_recently_active: false,
     can_send_message_group: everyone_group.id,
+    can_create_topic_group: everyone_group.id,
 };
 
 function initialize_stream_data() {
@@ -730,6 +738,7 @@ test_ui("rename_stream", ({mock_template, override}) => {
             pin_to_top: true,
             hide_unread_count: true,
             can_post_messages: true,
+            can_create_topics: true,
         });
         return {to_$: () => $li_stub};
     });
@@ -757,6 +766,7 @@ test_ui("refresh_pin", ({override, override_rewire, mock_template}) => {
         color: "blue",
         pin_to_top: false,
         can_send_message_group: everyone_group.id,
+        can_create_topic_group: everyone_group.id,
     };
 
     stream_data.add_sub(sub);

@@ -18,6 +18,14 @@ exports.server_supported_permission_settings = {
             default_group_name: "stream_creator_or_nobody",
             allowed_system_groups: [],
         },
+        can_create_topic_group: {
+            require_system_group: false,
+            allow_internet_group: true,
+            allow_nobody_group: true,
+            allow_everyone_group: true,
+            default_group_name: "role:everyone",
+            allowed_system_groups: [],
+        },
         can_remove_subscribers_group: {
             require_system_group: true,
             allow_internet_group: false,
