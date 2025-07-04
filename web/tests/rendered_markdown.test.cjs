@@ -103,7 +103,9 @@ const $array = (array) => {
             func.call(e);
         }
     };
-    return {each};
+    const eq = (i) => array[i];
+    const length = array.length;
+    return {each, eq, length};
 };
 
 function set_message_for_message_content($content, value) {
@@ -137,6 +139,33 @@ function set_message_for_message_content($content, value) {
     };
 }
 
+function make_content_with_p(...children) {
+    const $content = get_content_element();
+
+    const $p = $.create("p");
+
+    $p.find = (arg) => {
+        const $arr = children.filter((c) => c.hasClass?.(arg));
+        $arr.remove = () => {
+            children = children.filter((c) => !c.hasClass?.(arg));
+        };
+        return $arr;
+    };
+
+    $p.text = () => children.filter((c) => typeof c === "string").join("");
+
+    $p.clone = () => {
+        const pClone = $.create("p-clone");
+        pClone.find = $p.find;
+        pClone.text = $p.text;
+        return pClone;
+    };
+
+    $content.set_find_results("p", $array([$p]));
+
+    return $content;
+}
+
 const get_content_element = () => {
     const $content = $.create("content-stub");
     $content.set_find_results(".user-mention", $array([]));
@@ -150,6 +179,7 @@ const get_content_element = () => {
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
+    $content.set_find_results("p", $array([]));
 
     set_message_for_message_content($content, undefined);
 
@@ -631,6 +661,45 @@ run_test("emoji", ({override}) => {
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
+});
+
+run_test("is_emojis_only_message - single emoji", () => {
+    const $emoji = $.create("span").addClass(".emoji");
+    const $content = make_content_with_p($emoji);
+
+    assert.ok(rm.is_emojis_only_message($content));
+});
+
+run_test("is_emojis_only_message - multiple emojis", () => {
+    const $emoji1 = $.create("emoji1").addClass(".emoji");
+    const $emoji2 = $.create("emoji2").addClass(".emoji");
+    const $content = make_content_with_p($emoji1, $emoji2);
+
+    assert.ok(rm.is_emojis_only_message($content));
+});
+
+run_test("is_emojis_only_message - text + emoji", () => {
+    const $emoji = $.create("span").addClass(".emoji");
+    const $content = make_content_with_p("hello", $emoji);
+
+    assert.ok(!rm.is_emojis_only_message($content));
+});
+
+run_test("is_emojis_only_message - text only", () => {
+    const $content = make_content_with_p("hello");
+
+    assert.ok(!rm.is_emojis_only_message($content));
+});
+
+run_test("large-emoji is added", () => {
+    const $emoji = $.create("span").addClass(".emoji");
+    const $content = make_content_with_p($emoji);
+
+    $content.set_find_results(".emoji", $emoji);
+
+    rm.update_elements($content);
+
+    assert.ok($emoji.hasClass("large-emoji"));
 });
 
 run_test("spoiler-header", () => {
