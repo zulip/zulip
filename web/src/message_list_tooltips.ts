@@ -310,19 +310,28 @@ export function initialize(): void {
         },
     );
 
-    message_list_tooltip("#message_feed_container .change_visibility_policy > i", {
-        ...topic_visibility_policy_tooltip_props,
-    });
-
     message_list_tooltip(
-        "#message_feed_container .recipient_bar_icon:not(.recipient-row-topic-menu):not(.toggle_resolve_topic_spinner)",
+        "#message_feed_container .change_visibility_policy > .recipient-bar-control-icon",
         {
-            delay: LONG_HOVER_DELAY,
-            onHidden(instance) {
-                instance.destroy();
-            },
+            ...topic_visibility_policy_tooltip_props,
         },
     );
+
+    message_list_tooltip("#message_feed_container .recipient-bar-control-icon", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $reference = $(instance.reference);
+            if ($reference.hasClass("loading-resolve-topic-state")) {
+                // Don't show tooltip when the loading indicator is being
+                // displayed while resolving/unresolving a topic.
+                return false;
+            }
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 
     message_list_tooltip(".rendered_markdown time", {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

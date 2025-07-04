@@ -87,21 +87,27 @@ export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
     appendTo: () => document.body,
     onShow(instance: tippy.Instance) {
-        const $elem = $(instance.reference);
         let should_render_privacy_icon;
-        let current_visibility_policy_str;
-        if ($elem.hasClass("zulip-icon-inherit")) {
-            should_render_privacy_icon = true;
-        } else {
-            should_render_privacy_icon = false;
-            current_visibility_policy_str = $elem.attr("data-tippy-content");
-        }
         let current_stream_obj;
-        if (should_render_privacy_icon) {
+        const $elem = $(instance.reference);
+        if ($elem.hasClass("recipient-bar-control-icon")) {
+            // The topic visibility policy button located in the recipient bar
+            // uses the icon button component, and extracts the stream id from
+            // the message header instead of the button itself. This results in
+            // the need for a different logic to extract the required data.
+            should_render_privacy_icon = $elem
+                .children(".zulip-icon")
+                .hasClass("zulip-icon-inherit");
+            current_stream_obj = stream_data.get_sub_by_id(
+                Number($elem.closest(".message_header").attr("data-stream-id")),
+            );
+        } else {
+            should_render_privacy_icon = $elem.hasClass("zulip-icon-inherit");
             current_stream_obj = stream_data.get_sub_by_id(
                 Number($elem.parent().attr("data-stream-id")),
             );
         }
+        const current_visibility_policy_str = $elem.attr("data-tippy-content");
         const tooltip_context = {
             ...current_stream_obj,
             current_visibility_policy_str,
