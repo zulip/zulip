@@ -240,6 +240,14 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "full_name": "cn",
     # "first_name": "fn",
     # "last_name": "ln",
+    #
+    ## unique_account_id configuration causes Zulip accounts to become associated
+    ## with the value of the configured LDAP attribute in the users' LDAP data - allowing them to
+    ## be successfully tracked if their email changes in LDAP, and to automatically
+    ## update the Zulip account email to the new email at sign-in time.
+    ## For details, see:
+    ## https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#identifying-user-accounts-via-a-unique-ldap-attribute
+    # "unique_account_id": "dn",
     ##
     ## Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
     # "avatar": "thumbnailPhoto",
