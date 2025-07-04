@@ -564,7 +564,7 @@ export function setup_topic_search_typeahead(): void {
             return typeahead_helper.render_topic_state(item);
         },
         matcher(item: string, query: string) {
-            return item.toLowerCase().includes(query.toLowerCase());
+            return item.toLowerCase().startsWith(query.toLowerCase());
         },
         sorter(items: string[]) {
             return items;
@@ -594,7 +594,6 @@ export function setup_topic_search_typeahead(): void {
         if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            $input.addClass("shake");
         } else if (e.key === ",") {
             e.stopPropagation();
             return;
