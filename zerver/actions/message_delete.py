@@ -96,7 +96,11 @@ def _process_grouped_messages_deletion(
 
 
 def do_delete_messages(
-    realm: Realm, messages: Iterable[Message], *, acting_user: UserProfile | None
+    realm: Realm,
+    messages: Iterable[Message],
+    *,
+    acting_user: UserProfile | None,
+    streams_by_recipient_id: dict[int, Stream] | None = None,
 ) -> None:
     """1:1 Direct messages must be grouped to a single convesration by
     the caller, since this logic does not know how to handle multiple
@@ -104,12 +108,15 @@ def do_delete_messages(
 
     When the Recipient.PERSONAL is no longer a case to consider, this
     restriction can be deleted.
+    Args:
+        streams_by_recipient_id: Optional dict mapping recipient_id to Stream objects
+                                to avoid redundant database queries.
     """
     private_messages_by_recipient: defaultdict[int, list[Message]] = defaultdict(list)
     stream_messages_by_recipient_and_topic: defaultdict[tuple[int, str], list[Message]] = (
         defaultdict(list)
     )
-    stream_by_recipient_id = {}
+    stream_by_recipient_id = streams_by_recipient_id or {}
     for message in messages:
         if message.is_stream_message():
             recipient_id = message.recipient_id
