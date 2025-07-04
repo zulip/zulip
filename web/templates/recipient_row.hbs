@@ -51,7 +51,7 @@
 
             {{! edit topic pencil icon }}
             {{#if is_topic_editable}}
-                {{> components/icon_button icon="edit" intent="neutral" custom_classes="on_hover_topic_edit recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Edit topic") aria-label=(t "Edit topic") }}
+                {{> components/icon_button icon="pencil" intent="neutral" custom_classes="on_hover_topic_edit recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Edit topic") aria-label=(t "Edit topic") }}
             {{/if}}
 
             {{#if (and user_can_resolve_topic (not is_empty_string_topic))}}
