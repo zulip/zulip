@@ -192,7 +192,7 @@ def check_prereg_key(
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
         Confirmation.INVITATION,
-        Confirmation.REALM_CREATION,
+        Confirmation.REALM_ACTIVATION,
     ]
 
     prereg_object = get_object_from_key(
@@ -201,7 +201,7 @@ def check_prereg_key(
     assert isinstance(prereg_object, PreregistrationRealm | PreregistrationUser)
 
     confirmation_obj = prereg_object.confirmation.get()
-    realm_creation = confirmation_obj.type == Confirmation.REALM_CREATION
+    realm_creation = confirmation_obj.type == Confirmation.REALM_ACTIVATION
 
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
@@ -996,7 +996,7 @@ def prepare_realm_activation_url(
         import_form,
     )
     activation_url = create_confirmation_link(
-        prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
+        prereg_realm, Confirmation.REALM_ACTIVATION, no_associated_realm_object=True
     )
 
     if settings.DEVELOPMENT:
@@ -1050,7 +1050,7 @@ def realm_import_status(
     try:
         preregistration_realm = get_object_from_key(
             confirmation_key,
-            [Confirmation.REALM_CREATION],
+            [Confirmation.REALM_ACTIVATION],
             mark_object_used=False,
             allow_used=True,
         )
@@ -1145,7 +1145,7 @@ def realm_import_post_process(
     try:
         preregistration_realm = get_object_from_key(
             confirmation_key,
-            [Confirmation.REALM_CREATION],
+            [Confirmation.REALM_ACTIVATION],
             mark_object_used=False,
             allow_used=True,
         )
