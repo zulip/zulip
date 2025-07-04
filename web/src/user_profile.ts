@@ -283,6 +283,8 @@ export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[
 function format_user_stream_list_item_html(stream: StreamSubscription, user: User): string {
     const show_unsubscribe_button =
         people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
+    const unsubscribe_button_disabled =
+        people.is_my_user_id(user.user_id) && !stream_data.can_unsubscribe(stream);
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
     const show_last_user_in_private_stream_unsub_tooltip =
@@ -294,6 +296,7 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
         show_unsubscribe_button,
+        unsubscribe_button_disabled,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
         stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),

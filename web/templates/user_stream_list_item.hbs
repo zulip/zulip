@@ -10,7 +10,11 @@
     {{#if show_unsubscribe_button}}
     <td class="remove_subscription">
         <div class="remove-button-wrapper">
-            {{#if show_private_stream_unsub_tooltip}}
+            {{#if unsubscribe_button_disabled}}
+                <span class="tippy-zulip-tooltip" data-tippy-content="{{t 'You are not allowed to unsubscribe from this channel.'}}">
+                    {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-subscription-button" intent="neutral" aria-label=(t "Unsubscribe") disabled=true}}
+                </span>
+            {{else if show_private_stream_unsub_tooltip}}
                 {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-subscription-button tippy-zulip-tooltip" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Use channel settings to unsubscribe from private channels.") }}
             {{else if show_last_user_in_private_stream_unsub_tooltip}}
                 {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-subscription-button tippy-zulip-tooltip" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Use channel settings to unsubscribe the last user from a private channel.") }}

@@ -564,6 +564,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             user: UserProfile,
             can_remove_subscribers_group: NamedUserGroup | UserGroupMembersData,
             expect_fail: bool = False,
+            user_has_channel_access: bool = True,
             stream_list: list[Stream] | None = None,
             skip_changing_group_setting: bool = False,
         ) -> None:
@@ -588,7 +589,10 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
                 },
             )
             if expect_fail:
-                self.assert_json_error(result, "Insufficient permission")
+                if not user_has_channel_access:
+                    self.assert_json_error(result, "Invalid channel ID")
+                else:
+                    self.assert_json_error(result, "Insufficient permission")
                 return
 
             json = self.assert_json_success(result)
@@ -628,6 +632,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             shiva,
             leadership_group,
             expect_fail=True,
+            user_has_channel_access=False,
             stream_list=[private_stream],
         )
         check_unsubscribing_user(iago, leadership_group, stream_list=[private_stream])
@@ -650,6 +655,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             othello,
             setting_group_member_dict,
             expect_fail=True,
+            user_has_channel_access=False,
             stream_list=[private_stream],
         )
         check_unsubscribing_user(hamlet, setting_group_member_dict, stream_list=[private_stream])
@@ -736,6 +742,139 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             stream_list=[private_stream, private_stream_2],
             skip_changing_group_setting=True,
         )
+
+    def test_user_unsubscribe_themselves(self) -> None:
+        admin = self.example_user("iago")
+        realm = admin.realm
+        desdemona = self.example_user("desdemona")
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        stream = self.make_stream("hümbüǵ")
+        stream_name_list = [stream.name]
+
+        def check_unsubscribing_user(
+            user: UserProfile,
+            expect_fail: bool = False,
+        ) -> None:
+            self.subscribe(user, stream.name)
+            result = self.api_delete(
+                user,
+                "/api/v1/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps(stream_name_list).decode(),
+                    "principals": orjson.dumps([user.id]).decode(),
+                },
+            )
+            if expect_fail:
+                self.assert_json_error(result, "Insufficient permission")
+                return
+
+            json = self.assert_json_success(result)
+            self.assert_length(json["removed"], len(stream_name_list))
+            self.assert_length(json["not_removed"], 0)
+            self.assertFalse(subscribed_to_stream(user, stream.id))
+
+        anonymous_group_member_dict = UserGroupMembersData(
+            direct_members=[aaron.id], direct_subgroups=[]
+        )
+
+        # Test that a user in the can_unsubscribe_group can
+        # unsubscribe themselves
+        do_change_stream_group_based_setting(
+            stream,
+            "can_unsubscribe_group",
+            anonymous_group_member_dict,
+            acting_user=aaron,
+        )
+        check_unsubscribing_user(aaron)
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_unsubscribe_group",
+            owners_group,
+            acting_user=admin,
+        )
+        check_unsubscribing_user(desdemona)
+        check_unsubscribing_user(aaron, expect_fail=True)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_unsubscribe_group",
+            hamletcharacters_group,
+            acting_user=admin,
+        )
+        check_unsubscribing_user(hamlet)
+        check_unsubscribing_user(aaron, expect_fail=True)
+
+        # Test that an admin can always unsubscribe themselves.
+        check_unsubscribing_user(admin)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_unsubscribe_group",
+            nobody_group,
+            acting_user=admin,
+        )
+
+        # Test that a user in the can_administer_channel_group can
+        # unsubscribe themselves
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            anonymous_group_member_dict,
+            acting_user=aaron,
+        )
+        check_unsubscribing_user(aaron)
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            nobody_group,
+            acting_user=aaron,
+        )
+
+        # Test that a user in the can_remove_subscribers_group can
+        # unsubscribe themselves
+        do_change_stream_group_based_setting(
+            stream,
+            "can_remove_subscribers_group",
+            anonymous_group_member_dict,
+            acting_user=aaron,
+        )
+        check_unsubscribing_user(aaron)
+
+        # Test that a user not in any of the permission groups cannot
+        # unsubscribe themselves
+        check_unsubscribing_user(cordelia, expect_fail=True)
+
+        # Test that a user cannot unsubscribe from an inaccessible private stream.
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        aaron_unsubscribe_group = UserGroupMembersData(
+            direct_members=[aaron.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_unsubscribe_group",
+            aaron_unsubscribe_group,
+            acting_user=admin,
+        )
+        result = self.api_delete(
+            aaron,
+            "/api/v1/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([private_stream.name]).decode(),
+                "principals": orjson.dumps([aaron.id]).decode(),
+            },
+        )
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
         user_profile = self.example_user("iago")
