@@ -570,7 +570,7 @@ export class Filter {
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
-                return term.operand === "public";
+                return term.operand === "public" || term.operand === "archived";
             case "topic":
                 return true;
             case "sender":
@@ -642,6 +642,7 @@ export class Filter {
         const levels = [
             "in",
             "channels-public",
+            "channels-archived",
             "channel",
             "topic",
             "dm",
@@ -809,6 +810,12 @@ export class Filter {
                     content: this.describe_public_channels(term.negated ?? false),
                 };
             }
+            if (canonicalized_operator === "channels" && operand === "archived") {
+                return {
+                    type: "plain_text",
+                    content: this.describe_archived_channels(term.negated ?? false),
+                };
+            }
             const prefix_for_operator = Filter.operator_to_prefix(
                 canonicalized_operator,
                 term.negated,
@@ -875,6 +882,14 @@ export class Filter {
             return possible_prefix + "all public channels that you can view";
         }
         return possible_prefix + "all public channels";
+    }
+
+    static describe_archived_channels(negated: boolean): string {
+        const possible_prefix = negated ? "exclude " : "";
+        if (page_params.is_spectator || current_user.is_guest) {
+            return possible_prefix + "all archived channels that you can view";
+        }
+        return possible_prefix + "all archived channels";
     }
 
     static search_description_as_html(
@@ -1138,6 +1153,8 @@ export class Filter {
             "in-all",
             "channels-public",
             "not-channels-public",
+            "channels-archived",
+            "not-channels-archived",
             "channels-web-public",
             "not-channels-web-public",
             "near",
@@ -1242,6 +1259,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-archived"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
@@ -1311,6 +1331,8 @@ export class Filter {
                     return "/#narrow/is/mentioned";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "channels-archived":
+                    return "/#narrow/channels/archived";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1479,6 +1501,8 @@ export class Filter {
                     return $t({defaultMessage: "All messages including muted channels"});
                 case "channels-public":
                     return $t({defaultMessage: "Messages in all public channels"});
+                case "channels-archived":
+                    return $t({defaultMessage: "Messages in all archived channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -1596,7 +1620,11 @@ export class Filter {
 
         // TODO: It's not clear why `channels:` filters would not be
         // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
+        if (
+            this.has_operator("channels") ||
+            this.has_negated_operand("channels", "public") ||
+            this.has_negated_operand("channels", "archived")
+        ) {
             return false;
         }
 
@@ -1877,6 +1905,8 @@ export class Filter {
             "not-is-resolved",
             "channels-public",
             "not-channels-public",
+            "channels-archived",
+            "not-channels-archived",
             "is-muted",
             "not-is-muted",
             "in-home",
