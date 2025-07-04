@@ -823,7 +823,7 @@ test("stream_settings", ({override}) => {
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
     assert.equal(sub_rows[0].message_retention_days, 10);
 
-    const sub = stream_data.get_sub("a");
+    let sub = stream_data.get_sub("a");
     stream_data.update_stream_privacy(sub, {
         invite_only: false,
         history_public_to_subscribers: false,
@@ -857,6 +857,12 @@ test("stream_settings", ({override}) => {
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
     assert.equal(sub_rows.length, 2);
+
+    sub = stream_data.get_sub("b");
+    stream_data.update_stream_privacy(sub, {
+        is_web_public: true,
+    });
+    assert.equal(sub.is_web_public, true);
 });
 
 test("default_stream_names", () => {
@@ -1230,6 +1236,7 @@ test("create_sub", () => {
         stream_id: 102,
         name: "India",
         subscribed: true,
+        is_web_public: true,
     };
 
     const canada = {
