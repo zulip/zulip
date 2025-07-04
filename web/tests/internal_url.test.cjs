@@ -63,3 +63,28 @@ run_test("test by_stream_topic_url", () => {
     result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name, 12);
     assert.equal(result, "#narrow/channel/123-a-test-stream/topic/test.20topic/with/12");
 });
+
+run_test("test encode_slug", () => {
+    const test_cases = [
+        [false, "0-精选 - 译文", "0-.E7.B2.BE.E9.80.89.20-.20.E8.AF.91.E6.96.87"],
+        [false, "1-精选 - 原创", "1-.E7.B2.BE.E9.80.89.20-.20.E5.8E.9F.E5.88.9B"],
+        [false, "2-ビデオゲーム", "2-.E3.83.93.E3.83.87.E3.82.AA.E3.82.B2.E3.83.BC.E3.83.A0"],
+        [false, "3-goûta à l'œuf brûlé", "3-go.C3.BBta.20.C3.A0.20l'.C5.93uf.20br.C3.BBl.C3.A9"],
+        [true, "4-(2+3)%5", "4-.282.2B3.29.255"],
+        [true, "5-$um @nd m%d", "5-.24um.20.40nd.20m.25d"],
+        [true, "6-books.2C-film.2C-tv.2C-and-games", "6-books.2E2C-film.2E2C-tv.2E2C-and-games"],
+        [true, "7-test-stream-autocomplete", "7-test-stream-autocomplete"],
+        [true, "8-ñoño", "8-.C3.B1o.C3.B1o"],
+        [true, "9-యశ", "9-.E0.B0.AF.E0.B0.B6"],
+        [true, "10-l'été", "10-l'.C3.A9t.C3.A9"],
+        [true, "11-书籍", "11-.E4.B9.A6.E7.B1.8D"],
+    ];
+
+    for (const [i, [include_slug, channel_name, encoded_channel_name]] of test_cases.entries()) {
+        if (!include_slug) {
+            assert.equal(internal_url.encode_slug(i, channel_name), String(i));
+        } else {
+            assert.equal(internal_url.encode_slug(i, channel_name), encoded_channel_name);
+        }
+    }
+});
