@@ -8,14 +8,16 @@ from email.headerregistry import Address
 from typing import Any, TypedDict
 
 import orjson
+import psycopg2
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.db.models import F, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from psycopg2.sql import SQL, Identifier, Placeholder
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_topics import (
@@ -30,6 +32,7 @@ from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
     JsonableError,
+    LockedError,
     MarkdownRenderingError,
     MessagesNotAllowedInEmptyTopicError,
     StreamDoesNotExistError,
@@ -98,6 +101,7 @@ from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
+    IdempotentRequest,
     Message,
     Realm,
     Recipient,
@@ -591,6 +595,7 @@ def build_message_send_dict(
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
     no_previews: bool = False,
+    idempotency_key: str | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -690,6 +695,7 @@ def build_message_send_dict(
 
     message_send_dict = SendMessageRequest(
         stream=stream,
+        idempotency_key=idempotency_key,
         sender_muted_stream=info.sender_muted_stream,
         local_id=local_id,
         sender_queue_id=sender_queue_id,
@@ -857,6 +863,101 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
+def insert_idempotent_msg(send_request: SendMessageRequest) -> None:
+    """
+    Insert a single Message row in db, ensuring Idempotency using Idempotency-Key header.
+    """
+
+    field_names = [
+        "sender_id",
+        "recipient_id",
+        "realm_id",
+        "type",
+        "subject",
+        "content",
+        "rendered_content",
+        "rendered_content_version",
+        "date_sent",
+        "sending_client_id",
+        "last_edit_time",
+        "edit_history",
+        "has_attachment",
+        "has_image",
+        "has_link",
+        "is_channel_message",
+        "search_tsvector",
+    ]
+
+    col_to_val: dict[str, Any] = {
+        col_name: getattr(send_request.message, col_name) for col_name in field_names
+    }
+
+    query = SQL(
+        """
+        INSERT INTO {idempotency_table} (idempotency_key)
+            VALUES (%(idempotency_key_value)s)
+        ON CONFLICT DO NOTHING;
+
+        WITH work_cte AS MATERIALIZED (
+            SELECT identifier
+            FROM {idempotency_table}
+            WHERE idempotency_key = %(idempotency_key_value)s
+            FOR UPDATE NOWAIT
+        ),
+        insertion_cte AS (
+            INSERT INTO {message_table} ({msg_cols})
+            SELECT {vals_placeholders}
+            WHERE (SELECT identifier FROM work_cte) IS NULL
+            RETURNING {pk_name} AS message_id
+        ),
+        update_cte AS (
+            UPDATE {idempotency_table}
+            SET identifier = insertion_cte.message_id FROM insertion_cte
+            WHERE idempotency_key = %(idempotency_key_value)s AND (SELECT identifier FROM work_cte) IS NULL
+        )
+        SELECT * FROM insertion_cte
+        UNION ALL
+        SELECT NULL WHERE NOT EXISTS (SELECT 1 FROM insertion_cte)
+        UNION ALL
+        SELECT identifier AS cached_id FROM work_cte;
+    """
+    ).format(
+        message_table=Identifier(Message._meta.db_table),
+        idempotency_table=Identifier(IdempotentRequest._meta.db_table),
+        msg_cols=SQL(", ").join(map(Identifier, field_names)),
+        vals_placeholders=SQL(", ").join(map(Placeholder, field_names)),
+        pk_name=Identifier(Message._meta.pk.name),
+    )
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute(
+                query, {**col_to_val, "idempotency_key_value": send_request.idempotency_key}
+            )
+            result = cursor.fetchall()
+            new_msg_id = result[0][0]
+            cached_msg_id = result[1][0]
+
+            # We either inserted a new message or fetched the cached message id.
+            assert (new_msg_id or cached_msg_id) is not None
+
+            if new_msg_id is not None:
+                # Set the DB-generated ID on the Message object manually,
+                # since we're using raw SQL instead of bulk_create() which would have done this for us.
+                setattr(send_request.message, Message._meta.pk.name, new_msg_id)
+
+            else:
+                # TODO: Prevent further processing and return the cached result.
+                raise Exception("Idempotency Error: This message has already been sent.")
+
+        except psycopg2.Error as e:
+            # Matching but locked row: Abort as another concurent request is doing the work.
+            if e.pgcode == "55P03":
+                raise LockedError("Another request is sending the message.")
+            # Raise unrecognized exceptions.
+            else:
+                raise
+
+
 @transaction.atomic(savepoint=False)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
@@ -878,7 +979,11 @@ def do_send_messages(
     # Save the message receipts in the database
     user_message_flags: dict[int, dict[int, list[str]]] = defaultdict(dict)
 
-    Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
+    # Currently, it's optional for clients to send the Idempotency-Key header.
+    if len(send_message_requests) == 1 and send_message_requests[0].idempotency_key is not None:
+        insert_idempotent_msg(send_message_requests[0])
+    else:
+        Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
     # Claim attachments in message
     for send_request in send_message_requests:
@@ -1435,6 +1540,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    idempotency_key: str | None = None,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
@@ -1451,6 +1557,7 @@ def check_send_message(
             sender_queue_id,
             widget_content,
             skip_stream_access_check=skip_stream_access_check,
+            idempotency_key=idempotency_key,
         )
     except ZephyrMessageAlreadySentError as e:
         return SentMessageResult(message_id=e.message_id)
@@ -1728,6 +1835,7 @@ def check_message(
     archived_channel_notice: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    idempotency_key: str | None = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1883,6 +1991,7 @@ def check_message(
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
         no_previews=no_previews,
+        idempotency_key=idempotency_key,
     )
 
     if (

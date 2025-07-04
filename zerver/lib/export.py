@@ -220,6 +220,9 @@ NON_EXPORTED_TABLES = {
     # export, since invitations links will be broken by the server URL
     # change anyway:
     "zerver_emailchangestatus",
+    # This table is just used to ensure a request idempotency,
+    # and its rows are short-lived anyway.
+    "zerver_idempotentrequest",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
     "zerver_multiuseinvite_groups",

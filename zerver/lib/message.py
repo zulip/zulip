@@ -123,6 +123,7 @@ class UnreadMessagesResult(TypedDict):
 @dataclass
 class SendMessageRequest:
     message: Message
+    idempotency_key: str | None
     rendering_result: MessageRenderingResult
     stream: Stream | None
     sender_muted_stream: bool | None
