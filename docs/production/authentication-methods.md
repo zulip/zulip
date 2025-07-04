@@ -31,6 +31,7 @@ authentication providers:
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
 - Microsoft Entra ID (AzureAD), with `AzureADAuthBackend`
+- Microsoft Entra B2C ID (AzureADB2C), with `AzureADB2CAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
@@ -754,7 +755,7 @@ integration](../production/scim.md).
          You can run the above on the Zulip server. If you instead run
          it on a Mac, you may want to use the keychain
          administration tool to generate the JKS keystore with a UI instead of
-         using the `keytool` command. (see also: https://stackoverflow.com/a/41250334)
+         using the `keytool` command. (see also: <https://stackoverflow.com/a/41250334>)
 
       3. Then switch to the `SAML Keys` tab of your Keycloak
          client. Import `domainname.pfx` into Keycloak. After

@@ -154,6 +154,7 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
     # "zproject.backends.GitLabAuthBackend",  # GitLab auth, setup below
     # "zproject.backends.AzureADAuthBackend",  # Microsoft Entra ID (AzureAD) auth, setup below
+    # "zproject.backends.AzureADB2CAuthBackend",  # Microsoft Entra B2C ID (AzureAD) auth, setup below
     # "zproject.backends.AppleAuthBackend",  # Apple auth, setup below
     # "zproject.backends.SAMLAuthBackend",  # SAML, setup below
     # "zproject.backends.ZulipLDAPAuthBackend",  # LDAP, setup below
@@ -554,6 +555,46 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## (4) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY below
 ## and the generated secret Value in zulip-secrets.conf as `social_auth_azuread_oauth2_secret`.
 # SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ""
+
+########
+## Microsoft Entra B2C ID (AzureADB2C) OAuth.
+##
+## To set up Microsoft Entra B2C ID authentication, you'll need to do the following:
+##
+## (1) Log into the Tenant Directory within your Azure Root Subscription and
+## navigate to "Azure AD B2C" -> "Manage" -> "App registrations", open
+## "App registrations" and click "New registration".
+##
+## (2) Give the Application a name, such as "Zulip Auth" and select
+## "Accounts in any identity provider or organizational directory (for authenticating users with user flows)"
+## under Supported account types.
+##
+## (3) In the "Redirect URI (recommended)" section, select Web as the platform
+## and enter https://zulip.example.com/complete/azuread-b2c-oauth2/ as the redirect URI,
+## based on your values of EXTERNAL_HOST and SOCIAL_AUTH_SUBDOMAIN.
+##
+## (4) Select "Authentication" and under "Implicit grant and hybrid flows" select
+## "Access tokens" and "ID tokens" and under "Advanced settings" set "Allow public client flows"
+## to "Yes"
+##
+## (5) Next, go to "Certificates & secrets" and generate a new client secret.
+## Make sure to save the generated Value.
+##
+## (4) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_KEY below
+## and the generated secret Value in zulip-secrets.conf as `social_auth_azuread_b2c_oauth2_secret`.
+##
+## (5) Return to the "Azure AD B2C" Blade and select "Policies" then "User flows" and create
+## a new User Flow of the type you require. At a minimum, this should be "Sign in"
+##
+## (6) Click "Create" then configure the values as you require, but ensure that under "2. Identity Providers" you
+## select "Email signin" and under "5. Application claims" you select "Email Addresses"
+##
+## (7) Enter the B2C User flow policy name below as "SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY"
+##
+## (8) Enter the name of your tenant as "SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_TENANT_NAME" below
+# SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_KEY = ""
+# SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY = ""
+# SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_TENANT_NAME = ""
 
 ########
 ## SSO via REMOTE_USER.
