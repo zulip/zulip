@@ -912,6 +912,7 @@ export type FullUnreadCountsData = {
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
     followed_topic_unread_messages_with_mention_count: number;
+    unfollowed_topic_unread_messages_count: number;
     muted_topic_unread_messages_count: number;
     stream_count: Map<number, StreamCountInfo>;
     streams_with_mentions: number[];
@@ -939,6 +940,8 @@ export function get_counts(): FullUnreadCountsData {
         followed_topic_unread_messages_count: topic_res.followed_topic_unread_messages,
         followed_topic_unread_messages_with_mention_count:
             unread_topic_counter.get_followed_topic_unread_mentions(),
+        unfollowed_topic_unread_messages_count:
+            unread_messages.size - topic_res.followed_topic_unread_messages - pm_res.total_count,
         muted_topic_unread_messages_count:
             unread_messages.size - topic_res.stream_unread_messages - pm_res.total_count,
         stream_count: topic_res.stream_count,
