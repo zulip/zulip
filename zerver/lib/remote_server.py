@@ -225,6 +225,8 @@ def send_to_push_bouncer(
             raise RequestExpiredError
         elif endpoint == "push/e2ee/register" and code == "MISSING_REMOTE_REALM":
             raise MissingRemoteRealmError
+        elif endpoint == "push/e2ee/notify" and code == "MISSING_REMOTE_REALM":
+            raise MissingRemoteRealmError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)

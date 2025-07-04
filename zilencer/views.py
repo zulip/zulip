@@ -57,6 +57,7 @@ from zerver.lib.push_notifications import (
     PUSH_REGISTRATION_LIVENESS_TIMEOUT,
     HostnameAlreadyInUseBouncerError,
     InvalidRemotePushDeviceTokenError,
+    RealmPushStatusDict,
     UserPushIdentityCompat,
     send_android_push_notification,
     send_apple_push_notification,
@@ -91,6 +92,7 @@ from zilencer.auth import (
     generate_registration_transfer_verification_secret,
     validate_registration_transfer_verification_secret,
 )
+from zilencer.lib.push_notifications import send_e2ee_push_notifications
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteInstallationCount,
@@ -1800,3 +1802,64 @@ def remote_server_check_analytics(request: HttpRequest, server: RemoteZulipServe
         "last_realmauditlog_id": get_last_id_from_server(server, RemoteRealmAuditLog),
     }
     return json_success(request, data=result)
+
+
+class SendE2EEPushNotificationPayload(BaseModel):
+    realm_uuid: str
+    device_id_to_encrypted_data: dict[str, str]
+
+
+@typed_endpoint
+def remote_server_send_e2ee_push_notification(
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    *,
+    payload: JsonBodyPayload[SendE2EEPushNotificationPayload],
+) -> HttpResponse:
+    from corporate.lib.stripe import get_push_status_for_remote_request
+
+    remote_realm = get_remote_realm_helper(request, server, payload.realm_uuid)
+    if remote_realm is None:
+        raise MissingRemoteRealmError
+    else:
+        remote_realm.last_request_datetime = timezone_now()
+        remote_realm.save(update_fields=["last_request_datetime"])
+
+    push_status = get_push_status_for_remote_request(server, remote_realm)
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[can_push={push_status.can_push}/{push_status.message}]"
+    if not push_status.can_push:
+        reason = push_status.message
+        raise PushNotificationsDisallowedError(reason=reason)
+
+    device_id_to_encrypted_data = payload.device_id_to_encrypted_data
+
+    do_increment_logging_stat(
+        remote_realm,
+        COUNT_STATS["mobile_pushes_received::day"],
+        None,
+        timezone_now(),
+        increment=len(device_id_to_encrypted_data),
+    )
+
+    response_data = send_e2ee_push_notifications(
+        device_id_to_encrypted_data, remote_realm=remote_realm
+    )
+
+    do_increment_logging_stat(
+        remote_realm,
+        COUNT_STATS["mobile_pushes_forwarded::day"],
+        None,
+        timezone_now(),
+        increment=response_data["apple_successfully_sent_count"]
+        + response_data["android_successfully_sent_count"],
+    )
+    realm_push_status_dict: RealmPushStatusDict = {
+        "can_push": push_status.can_push,
+        "expected_end_timestamp": push_status.expected_end_timestamp,
+    }
+
+    return json_success(
+        request, data={**response_data, "realm_push_status": realm_push_status_dict}
+    )
