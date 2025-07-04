@@ -325,7 +325,7 @@ async function test_duplicate_alert_words_cannot_be_added(
     const alert_word_status_selector = "#dialog_error";
     await page.waitForSelector(alert_word_status_selector, {visible: true});
     const status_text = await common.get_text_from_selector(page, alert_word_status_selector);
-    assert.strictEqual(status_text, "Alert word already exists!");
+    assert.strictEqual(status_text, "Watched phrase already exists!");
 
     await page.click("#add-alert-word .dialog_exit_button");
     await common.wait_for_micromodal_to_close(page);
@@ -340,7 +340,7 @@ async function delete_alert_word(page: Page, word: string): Promise<void> {
 async function test_alert_word_deletion(page: Page, word: string): Promise<void> {
     await delete_alert_word(page, word);
     const status_text = await get_alert_words_status_text(page);
-    assert.strictEqual(status_text, `Alert word ${word} removed successfully!`);
+    assert.strictEqual(status_text, `Watched phrase ${word} removed successfully!`);
     await close_alert_words_status(page);
 }
 
@@ -427,7 +427,7 @@ async function test_default_language_setting(page: Page): Promise<void> {
 
 async function test_notifications_section(page: Page): Promise<void> {
     await page.click('[data-section="notifications"]');
-    // At the beginning, "DMs, mentions, and alerts"(checkbox name=enable_sounds) audio will be on
+    // At the beginning, "DMs and mentions"(checkbox name=enable_sounds) audio will be on
     // and "Streams"(checkbox name=enable_stream_audible_notifications) audio will be off by default.
 
     const notification_sound_enabled =

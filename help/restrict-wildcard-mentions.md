@@ -25,4 +25,4 @@ This permission can be granted to any combination of [roles](/help/user-roles),
 
 ## Related articles
 
-* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [DMs and mentions](/help/dm-mention-alert-notifications)
