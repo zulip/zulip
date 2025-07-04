@@ -2,7 +2,7 @@
     <h3 class="light no-margin small-line-height float-left feedback_title"></h3>
     <div class="exit-me float-right">&#215;</div>
     {{#if has_undo_button}}
-        <button class="button small rounded float-right feedback_undo" type="button" name="button"></button>
+        {{> components/action_button intent="neutral" attention="quiet" class="float-right feedback_undo"}}
     {{/if}}
     <div class="float-clear"></div>
 </div>

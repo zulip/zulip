@@ -9,8 +9,6 @@
         {{t 'No matching results'}}
     </div>
     {{#if sticky_bottom_option}}
-    <button class="button rounded sticky-bottom-option">
-        {{sticky_bottom_option}}
-    </button>
+    {{> components/action_button intent="neutral" attention="quiet" custom_classes="sticky-bottom-option" label=sticky_bottom_option }}
     {{/if}}
 </div>
