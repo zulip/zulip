@@ -232,7 +232,7 @@ class Confirmation(models.Model):
     UNSUBSCRIBE = 4
     SERVER_REGISTRATION = 5
     MULTIUSE_INVITE = 6
-    REALM_CREATION = 7
+    NEW_REALM_USER_REGISTRATION = 7
     REALM_REACTIVATION = 8
     REMOTE_SERVER_BILLING_LEGACY_LOGIN = 9
     REMOTE_REALM_BILLING_LEGACY_LOGIN = 10
@@ -272,7 +272,7 @@ _properties = {
     Confirmation.MULTIUSE_INVITE: ConfirmationType(
         "join", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.REALM_CREATION: ConfirmationType("get_prereg_key_and_redirect"),
+    Confirmation.NEW_REALM_USER_REGISTRATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation_get"),
 }
 if settings.ZILENCER_ENABLED:
@@ -298,7 +298,7 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
 # management command.
 # Note that being validated here will just allow the user to access the create_realm
 # form, where they will enter their email and go through the regular
-# Confirmation.REALM_CREATION pathway.
+# Confirmation.NEW_REALM_USER_REGISTRATION pathway.
 # Arguably RealmCreationKey should just be another ConfirmationObjT and we should
 # add another Confirmation.type for this; it's this way for historical reasons.
 

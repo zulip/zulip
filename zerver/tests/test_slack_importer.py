@@ -2273,7 +2273,9 @@ by Pieter
 
         # Confirmation key at this point is marked, used but since we
         # are mocking the process, we need to do it manually here.
-        get_object_from_key(confirmation_key, [Confirmation.REALM_CREATION], mark_object_used=True)
+        get_object_from_key(
+            confirmation_key, [Confirmation.NEW_REALM_USER_REGISTRATION], mark_object_used=True
+        )
         result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
         self.assert_in_success_response(["No users matching provided email"], result)
 
