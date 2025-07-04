@@ -76,6 +76,8 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_delete_any_message_group", null],
+    ["can_delete_own_message_group", null],
     ["can_move_messages_out_of_channel_group", null],
     ["can_move_messages_within_channel_group", null],
     ["can_remove_subscribers_group", null],
@@ -541,6 +543,15 @@ export function show_new_stream_modal(): void {
     $("#id_new_topics_policy").val(settings_config.get_stream_topics_policy_values().inherit.code);
     if (!stream_data.user_can_set_topics_policy()) {
         $("#id_new_topics_policy").prop("disabled", true);
+    }
+
+    if (!stream_data.user_can_set_delete_message_policy()) {
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_any_message_group"),
+        );
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_own_message_group"),
+        );
     }
 
     // set default state for "announce stream" and "default stream" option.

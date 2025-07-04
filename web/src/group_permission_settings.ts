@@ -60,6 +60,7 @@ export const realm_group_setting_name_schema = z.enum([
     "can_move_messages_between_channels_group",
     "can_move_messages_between_topics_group",
     "can_resolve_topics_group",
+    "can_set_delete_message_policy_group",
     "can_set_topics_policy_group",
     "can_summarize_topics_group",
     "create_multiuse_invite_group",
@@ -71,6 +72,8 @@ export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_sche
 export const stream_group_setting_name_schema = z.enum([
     "can_add_subscribers_group",
     "can_administer_channel_group",
+    "can_delete_any_message_group",
+    "can_delete_own_message_group",
     "can_move_messages_out_of_channel_group",
     "can_move_messages_within_channel_group",
     "can_remove_subscribers_group",

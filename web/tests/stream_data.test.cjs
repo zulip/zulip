@@ -1518,6 +1518,63 @@ test("can_post_messages_in_stream", ({override}) => {
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
+test("can_delete_any_message_in_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        name: "social",
+        stream_id: 10,
+        can_administer_channel_group: nobody_group.id,
+        can_delete_any_message_group: nobody_group.id,
+    };
+
+    override(realm, "realm_can_delete_any_message_group", nobody_group.id);
+    override(current_user, "user_id", admin_user_id);
+    social.can_administer_channel_group = admins_group.id;
+    assert.equal(stream_data.user_can_delete_any_message_in_channel(social), false);
+
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.user_can_delete_any_message_in_channel(social), false);
+
+    social.can_delete_any_message_group = moderators_group.id;
+    assert.equal(stream_data.user_can_delete_any_message_in_channel(social), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.user_can_delete_any_message_in_channel(social), false);
+
+    page_params.is_spectator = false;
+    social.is_archived = true;
+    assert.equal(stream_data.user_can_delete_any_message_in_channel(social), false);
+});
+
+test("can_delete_own_message_in_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        name: "social",
+        stream_id: 10,
+        can_administer_channel_group: nobody_group.id,
+        can_delete_own_message_group: nobody_group.id,
+    };
+
+    override(realm, "realm_can_delete_own_message_group", nobody_group.id);
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+    social.can_administer_channel_group = admins_group.id;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+
+    social.can_delete_own_message_group = moderators_group.id;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+
+    page_params.is_spectator = false;
+    social.is_archived = true;
+    assert.equal(stream_data.user_can_delete_own_message_in_channel(social), false);
+});
+
 test("can_move_messages_out_of_channel", ({override}) => {
     const social = {
         subscribed: true,
@@ -1754,6 +1811,41 @@ test("user_can_set_topics_policy", ({override}) => {
     assert.equal(stream_data.user_can_set_topics_policy(), true);
     override(realm, "realm_can_set_topics_policy_group", nobody_group.id);
     assert.equal(stream_data.user_can_set_topics_policy(sub), false);
+});
+
+test("user_can_set_delete_message_policy", ({override}) => {
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_remove_subscribers_group: admins_group.id,
+    };
+    stream_data.add_sub(sub);
+
+    override(realm, "realm_can_set_delete_message_policy_group", nobody_group.id);
+    // Admins can always change per-channel delete_message policy.
+    initialize_and_override_current_user(admin_user_id, override);
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), true);
+
+    initialize_and_override_current_user(moderator_user_id, override);
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
+
+    // Not allowed as user not in can_administer_channel_group.
+    override(realm, "realm_can_set_delete_message_policy_group", everyone_group.id);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
+
+    sub.can_administer_channel_group = moderators_group.id;
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), true);
+
+    // Only realm_can_set_delete_message_policy_group is checked if sub is not provided.
+    assert.equal(stream_data.user_can_set_delete_message_policy(), true);
+    override(realm, "realm_can_set_delete_message_policy_group", nobody_group.id);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
 });
 
 test("options for dropdown widget", () => {

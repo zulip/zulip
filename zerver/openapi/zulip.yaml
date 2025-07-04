@@ -4786,6 +4786,20 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Everyone`, and
                                             `false` to `Admins`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_set_delete_message_policy_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to change per-channel `can_delete_any_message_group`
+                                            and `can_delete_own_message_group` permission settings. Note that the user
+                                            must be a member of both this group and the `can_administer_channel_group`
+                                            of the channel whose message delete settings they want to change.
+
+                                            Organization administrators can always change these settings of
+                                            every channel.
+
+                                            **Changes**: New in Zulip 11.0 (feature level ZF-4ce648).
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_set_topics_policy_group:
                                       allOf:
                                         - description: |
@@ -11741,6 +11755,10 @@ paths:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroup"
                 can_administer_channel_group:
                   $ref: "#/components/schemas/CanAdministerChannelGroup"
+                can_delete_any_message_group:
+                  $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
+                can_delete_own_message_group:
+                  $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
                 can_move_messages_out_of_channel_group:
                   $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
                 can_move_messages_within_channel_group:
@@ -11803,6 +11821,10 @@ paths:
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_delete_any_message_group:
+                contentType: application/json
+              can_delete_own_message_group:
                 contentType: application/json
               can_move_messages_out_of_channel_group:
                 contentType: application/json
@@ -16471,6 +16493,8 @@ paths:
                                 can_add_subscribers_group: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_delete_any_message_group: {}
+                                can_delete_own_message_group: {}
                                 can_move_messages_out_of_channel_group: {}
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
@@ -18099,6 +18123,22 @@ paths:
                               Before Zulip 5.0 (feature level 101), the `allow_message_deleting` boolean
                               setting controlled this permission; `true` corresponded to `Everyone`, and
                               `false` to `Admins`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_set_delete_message_policy_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to change per-channel `can_delete_any_message_group`
+                              and `can_delete_own_message_group` permission settings. Note that the user
+                              must be a member of both this group and the `can_administer_channel_group`
+                              of the channel whose message delete settings they want to change.
+
+                              Organization administrators can always change these settings of
+                              every channel.
+
+                              **Changes**: New in Zulip 11.0 (feature level ZF-4ce648).
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_set_topics_policy_group:
                         allOf:
@@ -21757,6 +21797,8 @@ paths:
                                 can_add_subscribers_group: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
+                                can_delete_any_message_group: {}
+                                can_delete_own_message_group: {}
                                 can_move_messages_out_of_channel_group: {}
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
@@ -22182,6 +22224,58 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_delete_any_message_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to delete any message in the channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Note that a user must [have content access](/help/channel-permissions) to a
+                        channel in order to delete any message in the channel.
+
+                        Users present in the organization-level `can_delete_any_message_group` setting
+                        can always delete any message in the channel if they
+                        [have content access](/help/channel-permissions) to that channel.
+
+                        **Changes**: New in Zulip 11.0 (feature level ZF-f80828). Prior to this
+                        change, only the users in `can_delete_any_message_group` were able
+                        delete any message in the organization.
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_delete_own_message_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to delete the messages that they have
+                        sent in the channel expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Note that a user must [have content access](/help/channel-permissions) to a
+                        channel in order to delete their own message in the channel.
+
+                        Users with permission to delete any message in the channel
+                        and users present in the organization-level `can_delete_own_message_group` setting
+                        can always delete their own messages in the channel if they
+                        [have content access](/help/channel-permissions) to that channel.
+
+                        **Changes**: New in Zulip 11.0 (feature level ZF-e165db). Prior to this
+                        change, only the users in the organization-level `can_delete_any_message_group`
+                        and `can_delete_own_message_group` settings were able delete their own messages in
+                        the organization.
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_move_messages_out_of_channel_group:
                   allOf:
                     - description: |
@@ -22298,6 +22392,10 @@ paths:
               can_remove_subscribers_group:
                 contentType: application/json
               can_administer_channel_group:
+                contentType: application/json
+              can_delete_any_message_group:
+                contentType: application/json
+              can_delete_own_message_group:
                 contentType: application/json
               can_move_messages_out_of_channel_group:
                 contentType: application/json
@@ -24289,6 +24387,8 @@ components:
             can_add_subscribers_group: {}
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
+            can_delete_any_message_group: {}
+            can_delete_own_message_group: {}
             can_move_messages_out_of_channel_group: {}
             can_move_messages_within_channel_group: {}
             can_send_message_group: {}
@@ -24486,6 +24586,10 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_delete_any_message_group:
+          $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
+        can_delete_own_message_group:
+          $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
         can_move_messages_out_of_channel_group:
           $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
         can_move_messages_within_channel_group:
@@ -25581,6 +25685,10 @@ components:
           $ref: "#/components/schemas/CanRemoveSubscribersGroup"
         can_administer_channel_group:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
+        can_delete_any_message_group:
+          $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
+        can_delete_own_message_group:
+          $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
         can_move_messages_out_of_channel_group:
           $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
         can_move_messages_within_channel_group:
@@ -27525,6 +27633,48 @@ components:
             New in Zulip 10.0 (feature level 325). Prior to this
             change, the permission to administer channels was limited to realm
             administrators.
+
+            [setting-values]: /api/group-setting-values
+    CanDeleteAnyMessageGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to delete any message in the channel.
+
+            Note that a user must [have content access](/help/channel-permissions) to a
+            channel in order to delete any message in the channel.
+
+            Users present in the organization-level `can_delete_any_message_group`
+            setting can always delete any message in the channel if they
+            [have content access](/help/channel-permissions) to that channel.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-f80828). Prior to this
+            change, only the users in `can_delete_any_message_group` were able
+            delete any message in the organization.
+
+            [setting-values]: /api/group-setting-values
+    CanDeleteOwnMessageGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to delete the messages that they have sent in the channel.
+
+            [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+            Note that a user must [have content access](/help/channel-permissions) to a
+            channel in order to delete their own message in the channel.
+
+            Users with permission to delete any message in the channel
+            and users present in the organization-level `can_delete_own_message_group` setting
+            can always delete their own messages in the channel if they
+            [have content access](/help/channel-permissions) to that channel.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-e165db). Prior to this
+            change, only the users in the organization-level `can_delete_any_message_group`
+            and `can_delete_own_message_group` settings were able delete their own messages in
+            the organization.
 
             [setting-values]: /api/group-setting-values
     CanMoveMessagesOutOfChannelGroup:
