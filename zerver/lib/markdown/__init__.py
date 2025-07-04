@@ -54,6 +54,7 @@ from zerver.lib.mention import (
     MentionData,
     get_user_group_mention_display_name,
 )
+from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -67,7 +68,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_channel, encode_hash_component
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import Message, Realm, UserProfile
+from zerver.models import Attachment, Message, Realm, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_realm_emoji
 
@@ -134,6 +135,7 @@ class DbData:
     topic_info: dict[ChannelTopicInfo, int | None]
     translate_emoticons: bool
     user_upload_previews: dict[str, MarkdownImageMetadata]
+    previewable_user_uploads: set[str]
 
 
 # Format version of the Markdown rendering; stored along with rendered
@@ -300,6 +302,25 @@ def rewrite_local_links_to_relative(db_data: DbData | None, link: str) -> str:
             return link.removeprefix(realm_url_prefix)
 
     return link
+
+
+def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
+    # Due to rewrite_local_links_to_relative, we need to
+    # handle both relative URLs beginning with
+    # `/user_uploads` and beginning with `user_uploads`.
+    # This urllib construction converts the latter into
+    # the former.
+    parsed_url = urlsplit(urljoin("/", url))
+    host = parsed_url.netloc
+
+    if host != "" and (zmd.zulip_realm is None or host != zmd.zulip_realm.host):
+        return
+
+    if not parsed_url.path.startswith("/user_uploads/"):
+        return
+
+    path_id = parsed_url.path.removeprefix("/user_uploads/")
+    zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
 
 def url_embed_preview_enabled(
@@ -1310,24 +1331,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             self.zmd.zulip_message.has_image = False  # This is updated in self.add_a
 
             for url in unique_urls:
-                # Due to rewrite_local_links_to_relative, we need to
-                # handle both relative URLs beginning with
-                # `/user_uploads` and beginning with `user_uploads`.
-                # This urllib construction converts the latter into
-                # the former.
-                parsed_url = urlsplit(urljoin("/", url))
-                host = parsed_url.netloc
-
-                if host != "" and (
-                    self.zmd.zulip_realm is None or host != self.zmd.zulip_realm.host
-                ):
-                    continue
-
-                if not parsed_url.path.startswith("/user_uploads/"):
-                    continue
-
-                path_id = parsed_url.path.removeprefix("/user_uploads/")
-                self.zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
+                maybe_add_attachment_path_id(url, self.zmd)
 
         if len(found_urls) == 0:
             return
@@ -2287,6 +2291,85 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
+class AudioInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
+    def __init__(self, pattern: str, zmd: "ZulipMarkdown") -> None:
+        super().__init__(pattern, zmd)
+        self.zmd = zmd
+
+    def is_supported_audio_url(self, url: str) -> bool:
+        url_type = guess_type(url)[0]
+        return url_type in AUDIO_INLINE_MIME_TYPES
+
+    def maybe_audio_element(self, src: str, title: str) -> Element | None:
+        el = Element("audio")
+        el.set("src", src)
+        title = title.strip()
+        if title:
+            el.set("title", title)
+
+        return self.zulip_specific_src_changes(el)
+
+    def zulip_specific_src_changes(self, el: Element) -> None | Element:
+        src = el.get("src")
+        assert src is not None
+
+        # Sanitize URL or don't parse link. See linkify_tests in markdown_test_cases for banned syntax.
+        src = sanitize_url(self.unescape(src.strip()))
+        if src is None:
+            return None  # no-op; the link is not processed.
+
+        # Rewrite local links to be relative
+        db_data: DbData | None = self.zmd.zulip_db_data
+        src = rewrite_local_links_to_relative(db_data, src)
+        maybe_add_attachment_path_id(src, self.zmd)
+
+        if src.startswith("/user_uploads/") and db_data:
+            path_id = src.removeprefix("/user_uploads/")
+
+            # We should have pulled the previewable path ids from
+            # from the database before rendering; If the path_id
+            # is not found, then it is not a previewable MIME type.
+            if path_id not in db_data.previewable_user_uploads:
+                return None
+
+        elif not self.is_supported_audio_url(src):
+            return None
+
+        # Make changes to <audio> tag attributes
+        if is_static_or_current_realm_url(src, self.zmd.zulip_realm):
+            # Don't rewrite audios on our own site (e.g. user uploads).
+            el.set("src", src)
+        else:
+            el.set("src", get_camo_url(src))
+
+        el.set("controls", "controls")
+        el.set("preload", "metadata")
+
+        if src != el.get("src"):
+            el.set("data-original-url", src)
+
+        return el
+
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> tuple[Element | str | None, int | None, int | None]:
+        title, index, handled = self.getText(data, m.end(0))
+        if not handled:
+            return None, None, None
+
+        src, non_src, index, handled = self.getLink(data, index)
+        if not handled or non_src is not None:
+            return None, None, None
+
+        el = self.maybe_audio_element(src, title)
+
+        if el is not None:
+            return el, m.start(0), index
+
+        return None, None, None
+
+
 def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -2450,6 +2533,7 @@ class ZulipMarkdown(markdown.Markdown):
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 57)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)
@@ -2714,6 +2798,22 @@ def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub("x", content))
 
 
+def get_previewable_user_uploads(realm_id: int, content: str) -> set[str]:
+    path_ids = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
+    if not path_ids:
+        return set()
+
+    attachment_path_ids = set()
+
+    attachments = Attachment.objects.filter(realm_id=realm_id, path_id__in=path_ids).order_by("id")
+
+    for attachment in attachments:
+        if attachment.content_type in AUDIO_INLINE_MIME_TYPES:
+            attachment_path_ids.add(attachment.path_id)
+
+    return attachment_path_ids
+
+
 def do_convert(
     content: str,
     realm_alert_words_automaton: ahocorasick.Automaton | None = None,
@@ -2818,6 +2918,7 @@ def do_convert(
             active_realm_emoji = {}
 
         user_upload_previews = get_user_upload_previews(message_realm.id, content)
+        previewable_user_uploads = get_previewable_user_uploads(message_realm.id, content)
         _md_engine.zulip_db_data = DbData(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
@@ -2828,6 +2929,7 @@ def do_convert(
             topic_info=topic_info,
             translate_emoticons=translate_emoticons,
             user_upload_previews=user_upload_previews,
+            previewable_user_uploads=previewable_user_uploads,
         )
 
     try:
