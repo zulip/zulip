@@ -391,7 +391,9 @@ test("empty_query_suggestions", () => {
     const suggestions = get_suggestions(query);
 
     const expected = [
+        "channels:all",
         "channels:public",
+        "channels:subscribed",
         "is:dm",
         "is:starred",
         "is:mentioned",
@@ -579,7 +581,14 @@ test("check_is_suggestions", ({override, mock_template}) => {
     // but shows html description used for "channels:public"
     query = "st";
     suggestions = get_suggestions(query);
-    expected = ["st", "streams:public", "is:starred", "channel:"];
+    expected = [
+        "st",
+        "streams:all",
+        "streams:public",
+        "streams:subscribed",
+        "is:starred",
+        "channel:",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "channel:66 has:link is:sta";
@@ -1040,7 +1049,7 @@ test("operator_suggestions", ({override, mock_template}) => {
 
     query = "ch";
     suggestions = get_suggestions(query);
-    expected = ["ch", "channels:public", "channel:"];
+    expected = ["ch", "channels:all", "channels:public", "channels:subscribed", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-s";

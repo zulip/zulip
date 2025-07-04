@@ -629,27 +629,47 @@ function get_special_filter_suggestions(
 }
 
 function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    let search_string = "channels:public";
-    // show "channels:public" option for users who
+    let search_string_for_public = "channels:public";
+    let search_string_for_all = "channels:all";
+    let search_string_for_subscribed = "channels:subscribed";
+
+    // Show "channels:all", "channels:subscribed" and "channels:public" option for users who
     // have "streams" in their muscle memory
     if (last.operator === "search" && common.phrase_match(last.operand, "streams")) {
-        search_string = "streams:public";
+        search_string_for_subscribed = "streams:subscribed";
+        search_string_for_public = "streams:public";
+        search_string_for_all = "streams:all";
     }
-    let description_html = Filter.describe_public_channels(last.negated ?? false);
-    description_html = description_html.charAt(0).toUpperCase() + description_html.slice(1);
+    let description_html_for_public = Filter.describe_public_channels(last.negated ?? false);
+    description_html_for_public =
+        description_html_for_public.charAt(0).toUpperCase() + description_html_for_public.slice(1);
+
+    const incompatible_patterns = [
+        {operator: "is", operand: "dm"},
+        {operator: "channel"},
+        {operator: "dm-including"},
+        {operator: "dm"},
+        {operator: "in"},
+        {operator: "channels"},
+    ];
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
-            search_string,
-            description_html,
+            search_string: search_string_for_all,
+            description_html: "all channels that you can view",
             is_people: false,
-            incompatible_patterns: [
-                {operator: "is", operand: "dm"},
-                {operator: "channel"},
-                {operator: "dm-including"},
-                {operator: "dm"},
-                {operator: "in"},
-                {operator: "channels"},
-            ],
+            incompatible_patterns,
+        },
+        {
+            search_string: search_string_for_public,
+            description_html: description_html_for_public,
+            is_people: false,
+            incompatible_patterns,
+        },
+        {
+            search_string: search_string_for_subscribed,
+            description_html: "all subscribed channels",
+            is_people: false,
+            incompatible_patterns,
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);

@@ -61,6 +61,12 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="operator">channels:all</td>
+                        <td class="definition">
+                            {{t 'Search all channels that you can view.'}}
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="operator">channels:public</td>
                         <td class="definition">
                             {{#if can_access_all_public_channels }}
@@ -68,6 +74,12 @@
                             {{else}}
                             {{t 'Search all public channels that you can view.'}}
                             {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">channels:subscribed</td>
+                        <td class="definition">
+                            {{t 'Search all subscribed channels.'}}
                         </td>
                     </tr>
                     <tr>
