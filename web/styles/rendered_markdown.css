@@ -562,6 +562,10 @@
         }
     }
 
+    .message_inline_image.true_inline {
+        display: inline-grid;
+    }
+
     /* In browsers that support `:has()`, we pull
        `.rendered_markdown` out of the baseline group
        formed with EDITED/MOVED markers and the

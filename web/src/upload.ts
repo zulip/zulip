@@ -28,6 +28,13 @@ let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy<ZulipMeta, TusBody>;
 const upload_objects_by_message_edit_row = new Map<number, Uppy<ZulipMeta, TusBody>>();
 
+// This list is identical to the one defined in zerver/lib/markdown/__init__.py
+const IMAGE_EXTENSIONS = new Set([".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]);
+
+function is_image(file_name: string): boolean {
+    return IMAGE_EXTENSIONS.has(file_name.slice(file_name.lastIndexOf(".")));
+}
+
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
 }
@@ -522,7 +529,10 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         }
 
         const filtered_filename = file.name!.replaceAll("[", "").replaceAll("]", "");
-        const syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
+        let syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
+        if (is_image(file.name!)) {
+            syntax_to_insert = "!" + syntax_to_insert;
+        }
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
             // We need to replace the original file name, and not the
