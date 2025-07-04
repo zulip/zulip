@@ -89,6 +89,10 @@
             flex-grow: 1;
             display: flex;
             overflow: hidden;
+
+            .compose_reply_button:disabled {
+                cursor: default;
+            }
         }
 
         #left_bar_compose_reply_button_big {
