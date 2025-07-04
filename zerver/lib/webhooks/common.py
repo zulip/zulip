@@ -57,7 +57,14 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 @dataclass
 class WebhookConfigOption:
     name: str
-    description: str
+    label: str
+    validator: Callable[[str, str], str | bool | None]
+
+
+@dataclass
+class WebhookUrlOption:
+    name: str
+    label: str
     validator: Callable[[str, str], str | bool | None]
 
 
