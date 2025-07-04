@@ -2,7 +2,7 @@ import logging
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
-from typing import Annotated, Any, TypedDict, TypeVar
+from typing import Annotated, Any, TypedDict, TypeVar, Iterable
 from urllib.parse import urljoin, urlsplit
 from uuid import UUID
 
@@ -22,6 +22,8 @@ from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 from dns import resolver as dns_resolver
 from dns.exception import DNSException
+from firebase_admin import exceptions as firebase_exceptions
+from firebase_admin import messaging as firebase_messaging
 from nacl.encoding import Base64Encoder
 from nacl.exceptions import CryptoError
 from nacl.public import PrivateKey, SealedBox
@@ -61,6 +63,8 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
     validate_token,
+    get_apns_context,
+    fcm_app,
 )
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.rate_limiter import rate_limit_endpoint_absolute
@@ -816,6 +820,103 @@ class RemoteServerNotificationPayload(BaseModel):
 
     android_devices: list[str] = []
     apple_devices: list[str] = []
+
+
+def do_push_e2ee_notify(device_id_to_encrypted_zulip_data: dict[int, str]) -> None:
+    import aioapns
+    import asyncio
+
+    device_ids = device_id_to_encrypted_zulip_data.keys()
+    remote_push_devices = RemotePushDevice.objects.filter(device_id__in=device_ids)
+
+    apns_requests = []
+    apns_remote_push_devices: RemotePushDevice = []
+    apns_message_payload = {
+        "aps" : {
+            "mutable-content" : 1,
+            "alert" : {
+                "title" : "TBD - Fixed string",
+                "subtitle" : "TBD - Fixed string",
+                "body"  : "TBD - Fixed string"
+            },
+        },
+    }
+
+    gcm_requests = []
+    gcm_remote_push_devices: RemotePushDevice = []
+
+    # TODO: "normal" if remove event. But the data is encrypted.
+    # Should we send that separately.
+    priority = "high"
+
+    for remote_push_device in remote_push_devices:
+        if remote_push_device.token_kind == RemotePushDevice.TokenKind.APNS:
+            if remote_push_device.ios_app_id is None:
+                # TODO: Log missing `ios_app_id`.
+                # Is it even possible with the new approach.
+                continue
+
+            apns_message_payload["encrypted_data"] = device_id_to_encrypted_zulip_data[remote_push_device.device_id]
+            apns_requests.append(aioapns.NotificationRequest(apns_topic=remote_push_device.ios_app_id, device_token=remote_push_device.token, message=apns_message_payload, time_to_live=24 * 3600,))
+            apns_remote_push_devices.append(remote_push_device)
+        else:
+            encrypted_data = device_id_to_encrypted_zulip_data[remote_push_device.device_id]
+            gcm_requests.append(firebase_messaging.Message(data=encrypted_data, token=remote_push_device.token, android=firebase_messaging.AndroidConfig(priority=priority)))
+            gcm_remote_push_devices.append(remote_push_device)
+
+    if len(apns_requests) > 0:
+        apns_context = get_apns_context()
+
+        async def send_all_notifications() -> Iterable[
+            tuple[RemotePushDevice, aioapns.common.NotificationResult | BaseException]
+        ]:
+            results = await asyncio.gather(
+                *(apns_context.apns.send_notification(request) for request in requests),
+                return_exceptions=True,
+            )
+            return zip(apns_remote_push_devices, results, strict=False)
+
+        results = apns_context.loop.run_until_complete(send_all_notifications())
+
+        # Handle sucess + error
+
+    if len(gcm_requests) > 0:
+        try:
+            batch_response = firebase_messaging.send_each(gcm_requests, app=fcm_app)
+        except firebase_exceptions.FirebaseError:
+            logger.warning("Error while pushing to FCM", exc_info=True)
+            return 0
+
+        # Handle success + error
+        successfully_sent_count = 0
+        for idx, response in enumerate(batch_response.responses):
+            # We enumerate to have idx to track which token the response
+            # corresponds to. send_each() preserves the order of the messages,
+            # so this works.
+
+            token = gcm_remote_push_devices[idx].token
+            if response.success:
+                successfully_sent_count += 1
+                logger.info("FCM: Sent message with ID: %s to %s", response.message_id, token)
+            else:
+                error = response.exception
+                if isinstance(error, FCMUnregisteredError):
+                    pass
+                else:
+                    logger.warning("FCM: Delivery failed for %s: %s:%s", token, error.__class__, error)
+
+
+@typed_endpoint
+def remote_push_e2ee_notify(
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    *,
+    device_id_to_encrypted_zulip_data: dict[int, str], # TODO: Pydantic
+) -> HttpResponse:
+
+    do_push_e2ee_notify(device_id_to_encrypted_zulip_data)
+
+    return json_success(request)
 
 
 @typed_endpoint

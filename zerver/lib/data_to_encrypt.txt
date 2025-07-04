@@ -1,0 +1,64 @@
+    # Data to encrypt
+    content = {}
+
+    # Data needed by bouncer and FCM / APNs
+    payload = {}
+
+Calculated in handle_push_notifications:
+
+Legacy APNs payload
+    data["server"] = settings.EXTERNAL_HOST
+    data["realm_id"] = user_profile.realm.id
+    data["realm_uri"] = user_profile.realm.url
+    data["realm_url"] = user_profile.realm.url
+    data["realm_name"] = user_profile.realm.name
+    data["user_id"] = user_profile.id
+    data["sender_id"] = message.sender.id
+    data["sender_email"]
+    data["time"] = message.date_sent // used on bouncer
+
+    data["mentioned_user_group_id"] = mentioned_user_group_id
+    data["mentioned_user_group_name"] = mentioned_user_group_name
+    data["recipient_type"] = "stream" | "private"
+    data["stream"] = get_message_stream_name_from_database(message)
+    data["stream_id"] = message.recipient.type_id
+    data["topic"] = get_topic_display_name(message.topic_name(), user_profile.default_language)
+    data["pm_users"] = direct_message_group_users(message.recipient.id)
+
+    data["message_ids"]
+
+
+    apns_data = {
+            "alert": {
+                "title": get_apns_alert_title(message, user_profile.default_language),
+                "subtitle": get_apns_alert_subtitle(
+                    message, trigger, user_profile, mentioned_user_group_name, can_access_sender
+                ),
+                "body": content, # calculated from message.rendered_content TODO: remove redact content.
+            },
+            "sound": "default",
+            "badge": get_apns_badge_count(user_profile),
+            "custom": {"zulip": zulip_data},
+        }
+    apns_payload = apns_data
+
+########################################################
+
+Legacy FCM payload
+
+data is the same as mentioned above. Except data["message_ids"].
+Then,
+
+data.update(
+    event="message",
+    zulip_message_id=message.id,  # message_id is reserved for CCS
+    # content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+    content=content,
+    content_truncated=truncated,
+    sender_full_name=sender_name,
+    sender_avatar_url=sender_avatar_url,
+)
+
+
+gcm_payload = data
+gcm_options = {"priority": "high"}
