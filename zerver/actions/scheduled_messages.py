@@ -23,7 +23,12 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.markdown import render_message_markdown
-from zerver.lib.message import SendMessageRequest, access_message, truncate_topic
+from zerver.lib.message import (
+    SendMessageRequest,
+    access_message,
+    is_message_to_self,
+    truncate_topic,
+)
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.reminders import get_reminder_formatted_content
 from zerver.lib.scheduled_messages import access_scheduled_message
@@ -64,8 +69,8 @@ def check_schedule_message(
         # Legacy default: a scheduled message you sent from a non-API client is
         # automatically marked as read for yourself, unless it was sent to
         # yourself only.
-        read_by_sender = (
-            client.default_read_by_sender() and send_request.message.recipient != sender.recipient
+        read_by_sender = client.default_read_by_sender() and not is_message_to_self(
+            send_request.message
         )
 
     return do_schedule_messages(
