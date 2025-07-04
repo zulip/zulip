@@ -68,7 +68,7 @@ from zerver.lib.subscription_info import (
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.user_groups import UserGroupMembershipDetails, is_user_in_group
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -2252,49 +2252,6 @@ class StreamAdminTest(ZulipTestCase):
             {"topics_policy": 2},
         )
         self.assert_json_error(result, "Invalid topics_policy")
-
-        # Users can't change the setting if they are not in `can_administer_channel_group`.
-        hamlet = self.example_user("hamlet")
-        self.login_user(hamlet)
-
-        self.subscribe(hamlet, "stream_name1")
-
-        stream = get_stream("stream_name1", realm)
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, hamlet))
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
-        )
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        # Hamlet can change the setting now as he is in `can_administer_channel_group`.
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
-        do_change_stream_group_based_setting(
-            stream, "can_administer_channel_group", hamletcharacters_group, acting_user=user_profile
-        )
-
-        self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, hamlet))
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"topics_policy": StreamTopicsPolicyEnum.inherit.name}
-        )
-        self.assert_json_success(result)
-
-        # Users cannot change channel's `topics_policy` if they are not in `can_set_topics_policy_group`.
-        owners_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
-        )
-        do_change_realm_permission_group_setting(
-            realm,
-            "can_set_topics_policy_group",
-            owners_system_group,
-            acting_user=None,
-        )
-
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
-        )
-        self.assert_json_error(result, "Insufficient permission")
 
     def test_can_set_topics_policy_group(self) -> None:
         user = self.example_user("hamlet")
