@@ -2174,3 +2174,30 @@ run_test("can_archive_stream", ({override}) => {
     social.can_administer_channel_group = me_group.id;
     assert.equal(stream_data.can_archive_stream(social), true);
 });
+
+run_test("can_use_empty_topic_only", ({override}) => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        topics_policy: "empty_topic_only",
+    };
+    stream_data.add_sub(social);
+    const scotland = {
+        subscribed: true,
+        color: "red",
+        name: "scotland",
+        stream_id: 3,
+        topics_policy: "inherit",
+    };
+    override(realm, "realm_topics_policy", "allow_empty_topic");
+    assert.equal(stream_data.can_use_empty_topic_only(undefined), false);
+
+    stream_data.add_sub(scotland);
+    override(current_user, "user_id", me.user_id);
+
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.can_use_empty_topic_only(social.stream_id), true);
+    assert.equal(stream_data.can_use_empty_topic_only(scotland.stream_id), false);
+});

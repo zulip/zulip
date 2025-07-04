@@ -1107,6 +1107,11 @@ textarea.new_message_textarea {
     #recipient_box_clear_topic_button {
         background: none;
         border: none;
+
+        &:disabled {
+            cursor: default;
+            opacity: 1;
+        }
     }
 
     /* Styles for input in the recipient_box */
@@ -1180,9 +1185,19 @@ textarea.new_message_textarea {
         ~ #recipient_box_clear_topic_button {
         visibility: hidden;
     }
+
+    #stream_message_recipient_topic:disabled
+        ~ #recipient_box_clear_topic_button {
+        visibility: hidden;
+    }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
     & input {
         margin-bottom: 0;
+    }
+
+    &.disabled {
+        background-color: transparent;
+        border-color: transparent;
     }
 }
 
@@ -1293,7 +1308,7 @@ textarea.new_message_textarea {
             outline: 1px solid var(--color-outline-low-attention-input-pill);
         }
 
-        &:hover {
+        &:hover:not(.disabled) {
             background-color: var(
                 --color-compose-recipient-box-background-color
             );
