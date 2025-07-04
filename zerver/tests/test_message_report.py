@@ -8,6 +8,7 @@ from zerver.lib.message import truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.models import UserProfile
 from zerver.models.messages import Message
 from zerver.models.recipients import get_or_create_direct_message_group
@@ -139,6 +140,32 @@ class ReportMessageTest(ZulipTestCase):
         private_message = self.get_last_message()
         result = self.report_message(reporting_user, private_message.id, report_type, description)
         self.assert_json_error(result, msg="Invalid message(s)")
+
+        # Check object IDs in message link syntax is accurate.
+        # This channel name will generate a narrow URL for its link syntax.
+        obscure_channel = self.make_stream("Sw*den", self.realm)
+        self.subscribe(self.reported_user, obscure_channel.name, True)
+        message_id = self.send_stream_message(
+            self.reported_user,
+            obscure_channel.name,
+            topic_name="",
+            content="foo baz",
+        )
+
+        result = self.report_message(
+            reporting_user,
+            message_id,
+            report_type,
+            description,
+        )
+        expected_message_link_syntax = get_message_link_syntax(
+            obscure_channel.id,
+            obscure_channel.name,
+            "",
+            message_id,
+        )
+        reports = list(self.get_submitted_moderation_requests())
+        self.assertIn(expected_message_link_syntax, reports[-1]["content"])
 
     def test_dm_report(self) -> None:
         # Send a DM to be reported

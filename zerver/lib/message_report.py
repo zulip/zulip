@@ -6,6 +6,7 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import is_1_to_1_message, truncate_content
+from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.recipients import Recipient
 from zerver.models.users import get_system_bot
@@ -59,8 +60,14 @@ def send_message_report(
     else:
         assert reported_message.is_stream_message() is True
         topic_name = reported_message.topic_name()
-        channel = reported_message.recipient.label()
-        channel_message_link = f"#**{channel}>{topic_name}@{reported_message.id}**"
+        channel_id = reported_message.recipient.type_id
+        channel_name = reported_message.recipient.label()
+        channel_message_link = get_message_link_syntax(
+            channel_id,
+            channel_name,
+            topic_name,
+            reported_message.id,
+        )
         report_header = _(
             "{reporting_user_mention} reported {channel_message_link} sent by {reported_user_mention}."
         ).format(
