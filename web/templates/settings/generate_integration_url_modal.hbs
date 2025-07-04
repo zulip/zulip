@@ -40,8 +40,8 @@
 <div class="input-group hide" id="integrations-event-container">
     <label for="integrations-event-options">{{t "Events to include:"}}</label>
     <div class="integration-all-events-buttons">
-        <button class="button rounded" id="add-all-integration-events">{{t "Check all"}}</button>
-        <button class="button rounded" id="remove-all-integration-events">{{t "Uncheck all"}}</button>
+        {{> ../components/action_button attention="quiet" intent="neutral" id="add-all-integration-events" label=(t "Check all") }}
+        {{> ../components/action_button attention="quiet" intent="neutral" id="remove-all-integration-events" label=(t "Uncheck all") }}
     </div>
     <div id="integrations-event-options"></div>
 </div>

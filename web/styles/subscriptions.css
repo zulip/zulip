@@ -1336,17 +1336,23 @@ div.settings-radio-input-parent {
 }
 
 .stream-settings-color-selector {
+    border: 1px solid var(--color-border-zulip-button);
     display: flex;
     align-items: center;
     gap: 10px;
     overflow: hidden;
+
+    &.action-button-quiet-neutral {
+        box-shadow: none;
+    }
 }
 
 .stream-settings-color-preview {
-    /* 33px at 12.8 font size (from .button.small) at 14px em */
-    width: 2.5781em;
-    height: 2.5781em;
-    margin: -6px 0 -6px -10px;
+    /* 28px at 16px font size */
+    width: 1.75em;
+    height: 1.75em;
+    /* -6px 0 -6px 10px at 16px font size. */
+    margin: -0.375em 0 -0.375em -0.625em;
 }
 
 #subscription_overlay .channel-folder-widget-container {
