@@ -881,6 +881,10 @@ ul.popover-group-menu-member-list {
             &.empty-topic-display::placeholder {
                 color: inherit;
             }
+
+            &.empty-topic-only {
+                cursor: default;
+            }
         }
     }
 

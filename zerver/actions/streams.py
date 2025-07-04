@@ -191,7 +191,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
         internal_send_stream_message(
             sender,
             stream,
-            topic_name=channel_events_topic_name(),
+            topic_name=channel_events_topic_name(stream),
             content=_("Channel #**{channel_name}** has been archived.").format(
                 channel_name=stream.name
             ),
@@ -315,7 +315,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
         internal_send_stream_message(
             sender,
             stream,
-            channel_events_topic_name(),
+            channel_events_topic_name(stream),
             _("Channel #**{channel_name}** has been unarchived.").format(channel_name=new_name),
         )
 
@@ -1247,7 +1247,7 @@ def send_change_stream_permission_notification(
         internal_send_stream_message(
             sender,
             stream,
-            channel_events_topic_name(),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1481,7 +1481,7 @@ def send_stream_posting_permission_update_notification(
         internal_send_stream_message(
             sender,
             stream,
-            channel_events_topic_name(),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1536,7 +1536,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         internal_send_stream_message(
             sender,
             stream,
-            channel_events_topic_name(),
+            channel_events_topic_name(stream),
             _("{user_name} renamed channel {old_channel_name} to {new_channel_name}.").format(
                 user_name=silent_mention_syntax_for_user(user_profile),
                 old_channel_name=f"**{old_name}**",
@@ -1573,7 +1573,7 @@ def send_change_stream_description_notification(
         internal_send_stream_message(
             sender,
             stream,
-            channel_events_topic_name(),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1667,7 +1667,7 @@ def send_change_stream_message_retention_days_notification(
         internal_send_stream_message(
             sender,
             stream,
-            channel_events_topic_name(),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1756,6 +1756,9 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
         StreamTopicsPolicyEnum.disable_empty_topic.value: _(
             "No *{empty_topic_display_name}* topic"
         ).format(empty_topic_display_name=empty_topic_display_name),
+        StreamTopicsPolicyEnum.empty_topic_only.value: _(
+            "Only *{empty_topic_display_name}* topic allowed"
+        ).format(empty_topic_display_name=empty_topic_display_name),
     }
 
     NOTIFICATION_MESSAGES = {
@@ -1772,7 +1775,7 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
             internal_send_stream_message(
                 sender,
                 stream,
-                channel_events_topic_name(),
+                channel_events_topic_name(stream),
                 NOTIFICATION_MESSAGES[name],
             )
 

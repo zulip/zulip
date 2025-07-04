@@ -910,7 +910,8 @@ export function set_event_handlers({
 
         if (
             user_settings.web_channel_default_view ===
-            web_channel_default_view_values.list_of_topics.code
+                web_channel_default_view_values.list_of_topics.code &&
+            !stream_data.can_use_empty_topic_only(stream_id)
         ) {
             browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
             return;
