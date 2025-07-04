@@ -157,17 +157,4 @@ class Command(compilemessages.Command):
                 if value == "":
                     not_translated += 1
 
-        # mobile stats
-        with open(os.path.join(locale_path, "mobile_info.json"), "rb") as mob:
-            mobile_info = orjson.loads(mob.read())
-        try:
-            info = mobile_info[locale]
-        except KeyError:
-            if self.strict:
-                raise
-            info = {"total": 0, "not_translated": 0}
-
-        total += info["total"]
-        not_translated += info["not_translated"]
-
         return (total - not_translated) * 100 // total
