@@ -465,6 +465,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
+    const can_create_topics = stream_data.can_create_new_topics_in_stream(sub.stream_id);
     let url = hash_util.channel_url_by_user_setting(sub.stream_id);
     if (
         web_channel_default_view_values.list_of_topics.code ===
@@ -483,6 +484,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         pin_to_top: sub.pin_to_top,
         hide_unread_count: settings_data.should_mask_unread_count(is_muted),
         can_post_messages,
+        can_create_topics,
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;

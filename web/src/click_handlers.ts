@@ -34,6 +34,7 @@ import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
@@ -663,6 +664,10 @@ export function initialize(): void {
         e.stopPropagation();
         e.preventDefault();
         const stream_id = Number.parseInt(this.dataset.streamId!, 10);
+        const can_create_new_topics = stream_data.can_create_new_topics_in_stream(stream_id);
+        if (!can_create_new_topics) {
+            return;
+        }
         compose_actions.start({
             message_type: "stream",
             stream_id,
