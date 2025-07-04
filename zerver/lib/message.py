@@ -41,7 +41,11 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import FormattedEditHistoryEvent, UserDisplayRecipient
-from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
+from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
+    get_recursive_membership_groups,
+    user_has_permission_for_group_setting,
+)
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -1742,6 +1746,33 @@ def is_1_to_1_message(message: Message) -> bool:
         return direct_message_group.group_size <= 2
 
     if message.recipient.type == Recipient.PERSONAL:
+        return True
+
+    return False
+
+
+def can_resolve_topics_in_stream(user: UserProfile, stream: Stream) -> bool:
+    return user_has_permission_for_group_setting(
+        stream.can_resolve_topics_group_id,
+        user,
+        Stream.stream_permission_group_settings["can_resolve_topics_group"],
+        direct_member_only=False,
+    )
+
+
+def can_resolve_topics(user: UserProfile, orig_stream: Stream, target_stream: Stream) -> bool:
+    # Users can only resolve topics if they have either of these permissions:
+    #   1) organization-level permission to resolve topics
+    #   2) channel-level permission to resolve topics in the original channel
+    #   3) channel-level permission to resolve topics in the target channel
+    # If none apply, throw error.
+    if user.can_resolve_topic():
+        return True
+
+    if can_resolve_topics_in_stream(user, orig_stream):
+        return True
+
+    if orig_stream != target_stream and can_resolve_topics_in_stream(user, target_stream):
         return True
 
     return False

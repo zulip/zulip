@@ -40,6 +40,7 @@ from zerver.lib.mention import MentionBackend, MentionData, silent_mention_synta
 from zerver.lib.message import (
     access_message,
     bulk_access_stream_messages_query,
+    can_resolve_topics,
     check_user_group_mention_allowed,
     event_recipient_ids_for_action_on_messages,
     normalize_body,
@@ -1493,8 +1494,12 @@ def check_update_message(
         and message_edit_request.is_topic_edited
     ):
         if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
-            if not user_profile.can_resolve_topic():
-                raise JsonableError(_("You don't have permission to resolve topics."))
+            if not can_resolve_topics(
+                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+            ):
+                raise JsonableError(
+                    _("You don't have permission to resolve topics in this channel.")
+                )
         else:
             if not can_edit_topic(
                 user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
