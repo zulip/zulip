@@ -605,6 +605,7 @@ def support(
                 if parse_result.port:
                     hostname = f"{hostname}:{parse_result.port}"
                 subdomain = get_subdomain_from_hostname(hostname)
+                assert subdomain is not None
                 with suppress(Realm.DoesNotExist):
                     realms.add(get_realm(subdomain))
             except ValidationError:
