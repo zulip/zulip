@@ -117,6 +117,7 @@ class HomeTest(ZulipTestCase):
         "password_max_length",
         "presences",
         "presence_last_update_id",
+        "push_accounts",
         "queue_id",
         "realm_allow_edit_history",
         "realm_allow_message_editing",

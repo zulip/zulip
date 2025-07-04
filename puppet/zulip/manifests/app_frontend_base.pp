@@ -163,6 +163,7 @@ class zulip::app_frontend_base {
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
+    'register_push_device_to_bouncer',
     'thumbnail',
     'user_activity',
     'user_activity_interval',

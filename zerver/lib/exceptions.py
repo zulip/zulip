@@ -59,6 +59,9 @@ class ErrorCode(Enum):
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
+    INVALID_BOUNCER_PUBLIC_KEY = auto()
+    PUSH_REGISTRATION_LIVENESS_TIMEDOUT = auto()
+    INVALID_ENCRYPTED_PUSH_REGISTRATION = auto()
 
 
 class JsonableError(Exception):
@@ -801,3 +804,39 @@ class SlackImportInvalidFileError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class InvalidBouncerPublicKeyError(JsonableError):
+    code = ErrorCode.INVALID_BOUNCER_PUBLIC_KEY
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid bouncer_public_key")
+
+
+class PushRegistrationLivenessTimedOutError(JsonableError):
+    code = ErrorCode.PUSH_REGISTRATION_LIVENESS_TIMEDOUT
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Push registration liveness timedout")
+
+
+class InvalidEncryptedPushRegistrationError(JsonableError):
+    code = ErrorCode.INVALID_ENCRYPTED_PUSH_REGISTRATION
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid encrypted_push_registration")
