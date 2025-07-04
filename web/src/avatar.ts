@@ -4,7 +4,9 @@ import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confi
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
+import * as people from "./people.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as upload_widget from "./upload_widget.ts";
@@ -120,6 +122,51 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         get_file_input,
         $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
         $("#user-avatar-upload-widget .image_upload_button").expectOne(),
+        upload_function,
+        realm.max_avatar_file_size_mib,
+    );
+}
+
+export function build_user_avatar_widget_by_id(upload_function: UploadFunction): void {
+    if (!settings_data.user_can_change_avatar()) {
+        return;
+    }
+    const get_file_input = function (): JQuery<HTMLInputElement> {
+        return $<HTMLInputElement>(
+            "#edit-user-form #user-avatar-upload-widget input.image_file_input",
+        ).expectOne();
+    };
+
+    const user_id = Number($("#edit-user-form").attr("data-user-id"));
+    // Use get_user_by_id_assert_valid which throws if user doesn't exist
+    const person = people.get_user_by_id_assert_valid(user_id);
+    if (person.avatar_source === "G") {
+        $("#edit-user-form #user-avatar-upload-widget .image-delete-button").hide();
+        $("#edit-user-form #user-avatar-source").show();
+    } else {
+        $("#edit-user-form #user-avatar-source").hide();
+    }
+
+    $("#edit-user-form #user-avatar-upload-widget .image-delete-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        function delete_user_avatar(): void {
+            dialog_widget.submit_api_request(channel.del, `/json/users/${user_id}/avatar`, {});
+        }
+        const html_body = render_confirm_delete_user_avatar({});
+
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Delete profile picture"}),
+            html_body,
+            on_click: delete_user_avatar,
+            loading_spinner: true,
+        });
+    });
+
+    upload_widget.build_direct_upload_widget(
+        get_file_input,
+        $("#edit-user-form #user-avatar-upload-widget .image_file_input_error").expectOne(),
+        $("#edit-user-form #user-avatar-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_avatar_file_size_mib,
     );
