@@ -404,14 +404,6 @@ export function initialize(): void {
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
-    $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
-        e.stopPropagation();
-        const $recipient_row = $(e.target).closest(".recipient_row");
-        const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).closest(".message_header").attr("data-topic-name")!;
-        message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
-    });
-
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem: HTMLElement): number {

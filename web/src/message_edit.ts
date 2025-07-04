@@ -787,12 +787,12 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
 }
 
 function show_toggle_resolve_topic_spinner($row: JQuery): void {
-    const $button = $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").expectOne();
+    const $button = $row.find(".on_hover_topic_resolve").expectOne();
     $button.addClass("loading-resolve-topic-state");
     // While we call the show_button_loading_indicator method to
     // show the spinner, we don't need to call the corresponding
     // hide_button_loading_indicator method later in the code
-    // for a successful resolve/unresolve request, as that results
+    // for a successful resolve request, as that results
     // in a rerender of the message feed which replaces the button.
     buttons.show_button_loading_indicator($button);
 }
@@ -961,7 +961,7 @@ function do_toggle_resolve_topic(
         data: request,
         error(xhr) {
             if ($row) {
-                const $button = $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve");
+                const $button = $row.find(".on_hover_topic_resolve");
                 buttons.hide_button_loading_indicator($button);
                 $button.removeClass("loading-resolve-topic-state");
                 // Remove any existing tippy instance on the button.
@@ -973,15 +973,9 @@ function do_toggle_resolve_topic(
                     trigger: "manual",
                     appendTo: () => document.body,
                     onShow(instance) {
-                        if ($button.hasClass("on_hover_topic_resolve")) {
-                            instance.setContent(
-                                $t({defaultMessage: "Error: Could not resolve topic."}),
-                            );
-                        } else if ($button.hasClass("on_hover_topic_unresolve")) {
-                            instance.setContent(
-                                $t({defaultMessage: "Error: Could not unresolve topic."}),
-                            );
-                        }
+                        instance.setContent(
+                            $t({defaultMessage: "Error: Could not resolve topic."}),
+                        );
                     },
                 });
                 // Manually trigger the error tooltip, and remove it after 2 seconds.
