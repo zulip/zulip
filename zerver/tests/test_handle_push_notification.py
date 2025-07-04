@@ -148,7 +148,8 @@ class HandlePushNotificationTest(PushNotificationTestCase):
 
     @activate_push_notification_service()
     @responses.activate
-    def test_end_to_end_failure_due_to_no_plan(self) -> None:
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications")
+    def test_end_to_end_failure_due_to_no_plan(self, unused_mock: mock.MagicMock) -> None:
         self.add_mock_response()
 
         self.setup_apns_tokens()
@@ -480,7 +481,8 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 ],
             )
 
-    def test_send_notifications_to_bouncer(self) -> None:
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications")
+    def test_send_notifications_to_bouncer(self, unused_mock: mock.MagicMock) -> None:
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
 

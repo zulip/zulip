@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, TypeAlias, Union
 
 import lxml.html
 import orjson
+from aioapns.common import NotificationResult
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Q
@@ -25,7 +26,9 @@ from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import initialize_app as firebase_initialize_app
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
-from typing_extensions import TypedDict, override
+from nacl.encoding import Base64Encoder
+from nacl.public import PublicKey, SealedBox
+from typing_extensions import NotRequired, TypedDict, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (
@@ -35,7 +38,7 @@ from zerver.actions.realm_settings import (
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
-from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.exceptions import ErrorCode, JsonableError, MissingRemoteRealmError
 from zerver.lib.message import access_message_and_usermessage, direct_message_group_users
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.remote_server import (
@@ -72,7 +75,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
+    from zilencer.models import RemotePushDevice, RemotePushDeviceToken, RemoteZulipServer
 
 # Time (in seconds) for which the server should retry registering
 # a push device to the bouncer. 24 hrs is a good time limit because
@@ -252,6 +255,43 @@ def dedupe_device_tokens(
     return result
 
 
+@dataclass
+class APNsResultInfo:
+    successfully_sent: bool
+    delete_device_id: int | None = None
+    delete_device_token: str | None = None
+
+
+def get_info_from_apns_result(
+    result: NotificationResult | BaseException,
+    device: "DeviceToken | RemotePushDevice",
+    log_context: str,
+) -> APNsResultInfo:
+    import aioapns.exceptions
+
+    result_info = APNsResultInfo(successfully_sent=False)
+
+    if isinstance(result, aioapns.exceptions.ConnectionError):
+        logger.error("APNs: ConnectionError sending %s; check certificate expiration", log_context)
+    elif isinstance(result, BaseException):
+        logger.error("APNs: Error sending %s", log_context, exc_info=result)
+    elif result.is_successful:
+        result_info.successfully_sent = True
+        logger.info("APNs: Success sending %s", log_context)
+    elif result.description in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
+        logger.info(
+            "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
+        )
+        if isinstance(device, RemotePushDevice):
+            result_info.delete_device_id = device.device_id
+        else:
+            result_info.delete_device_token = device.token
+    else:
+        logger.warning("APNs: Failed to send %s: %s", log_context, result.description)
+
+    return result_info
+
+
 def send_apple_push_notification(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
@@ -265,7 +305,6 @@ def send_apple_push_notification(
     # notification queue worker, it's best to only import them in the
     # code that needs them.
     import aioapns
-    import aioapns.exceptions
 
     apns_context = get_apns_context()
     if apns_context is None:
@@ -337,40 +376,18 @@ def send_apple_push_notification(
 
     successfully_sent_count = 0
     for device, result in results:
-        if isinstance(result, aioapns.exceptions.ConnectionError):
-            logger.error(
-                "APNs: ConnectionError sending for user %s to device %s; check certificate expiration",
-                user_identity,
-                device.token,
-            )
-        elif isinstance(result, BaseException):
-            logger.error(
-                "APNs: Error sending for user %s to device %s",
-                user_identity,
-                device.token,
-                exc_info=result,
-            )
-        elif result.is_successful:
+        log_context = f"for user {user_identity} to device {device.token}"
+        result_info = get_info_from_apns_result(result, device, log_context)
+
+        if result_info.successfully_sent:
             successfully_sent_count += 1
-            logger.info(
-                "APNs: Success sending for user %s to device %s", user_identity, device.token
-            )
-        elif result.description in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
-            logger.info(
-                "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
-            )
+        elif result_info.delete_device_token is not None:
             # We remove all entries for this token (There
             # could be multiple for different Zulip servers).
             DeviceTokenClass._default_manager.alias(lower_token=Lower("token")).filter(
-                lower_token=device.token.lower(), kind=DeviceTokenClass.APNS
+                lower_token=result_info.delete_device_token.lower(),
+                kind=DeviceTokenClass.APNS,
             ).delete()
-        else:
-            logger.warning(
-                "APNs: Failed to send for user %s to device %s: %s",
-                user_identity,
-                device.token,
-                result.description,
-            )
 
     return successfully_sent_count
 
@@ -1131,6 +1148,35 @@ def get_apns_badge_count_future(
     )
 
 
+def get_apns_payload_data_to_encrypt(
+    user_profile: UserProfile,
+    message: Message,
+    trigger: str,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
+    can_access_sender: bool = True,
+) -> dict[str, Any]:
+    zulip_data = get_message_payload(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
+    )
+    zulip_data.update(
+        message_ids=[message.id],
+    )
+
+    assert message.rendered_content is not None
+    with override_language(user_profile.default_language):
+        content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
+
+        zulip_data["alert_title"] = get_apns_alert_title(message, user_profile.default_language)
+        zulip_data["alert_subtitle"] = get_apns_alert_subtitle(
+            message, trigger, user_profile, mentioned_user_group_name, can_access_sender
+        )
+        zulip_data["alert_body"] = content
+        zulip_data["badge"] = get_apns_badge_count(user_profile)
+
+    return zulip_data
+
+
 def get_message_payload_apns(
     user_profile: UserProfile,
     message: Message,
@@ -1315,6 +1361,179 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]
         ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
 
 
+def send_push_notifications_legacy(
+    user_profile: UserProfile,
+    apns_payload: dict[str, Any],
+    gcm_payload: dict[str, Any],
+    gcm_options: dict[str, Any],
+) -> None:
+    android_devices = list(
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
+    )
+    apple_devices = list(
+        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
+    )
+
+    if uses_notification_bouncer():
+        send_notifications_to_bouncer(
+            user_profile, apns_payload, gcm_payload, gcm_options, android_devices, apple_devices
+        )
+        return
+
+    logger.info(
+        "Sending mobile push notifications for local user %s: %s via FCM devices, %s via APNs devices",
+        user_profile.id,
+        len(android_devices),
+        len(apple_devices),
+    )
+    user_identity = UserPushIdentityCompat(user_id=user_profile.id)
+
+    apple_successfully_sent_count = send_apple_push_notification(
+        user_identity, apple_devices, apns_payload
+    )
+    android_successfully_sent_count = send_android_push_notification(
+        user_identity, android_devices, gcm_payload, gcm_options
+    )
+
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["mobile_pushes_sent::day"],
+        None,
+        timezone_now(),
+        increment=apple_successfully_sent_count + android_successfully_sent_count,
+    )
+
+
+class RealmPushStatusDict(TypedDict):
+    can_push: bool
+    expected_end_timestamp: int | None
+
+
+class SendNotificationResponseData(TypedDict):
+    android_successfully_sent_count: int
+    apple_successfully_sent_count: int
+    delete_device_ids: list[int]
+    realm_push_status: NotRequired[RealmPushStatusDict]
+
+
+def send_push_notifications(
+    user_profile: UserProfile,
+    apns_payload_data_to_encrypt: dict[str, Any],
+    fcm_payload_data_to_encrypt: dict[str, Any],
+) -> None:
+    # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
+    push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+
+    if len(push_devices) == 0:
+        logger.info(
+            "Skipping E2EE push notifications for user %s because there are no registered devices",
+            user_profile.id,
+        )
+        return
+
+    # Prepare payload with encrypted data to send.
+    device_id_to_encrypted_data: dict[str, str] = {}
+    for push_device in push_devices:
+        public_key_str: str = push_device.push_public_key
+        public_key = PublicKey(public_key_str.encode("utf-8"), Base64Encoder)
+        sealed_box = SealedBox(public_key)
+
+        if push_device.token_kind == PushDevice.TokenKind.APNS:
+            encrypted_data_bytes = sealed_box.encrypt(
+                orjson.dumps(apns_payload_data_to_encrypt), Base64Encoder
+            )
+        else:
+            encrypted_data_bytes = sealed_box.encrypt(
+                orjson.dumps(fcm_payload_data_to_encrypt), Base64Encoder
+            )
+
+        encrypted_data = encrypted_data_bytes.decode("utf-8")
+        assert push_device.bouncer_device_id is not None  # for mypy
+        device_id_to_encrypted_data[str(push_device.bouncer_device_id)] = encrypted_data
+
+    # Send push notification
+    try:
+        if settings.ZILENCER_ENABLED:
+            from zilencer.lib.push_notifications import send_e2ee_push_notifications
+
+            response_data: SendNotificationResponseData = send_e2ee_push_notifications(
+                device_id_to_encrypted_data, realm=user_profile.realm
+            )
+        else:
+            post_data = {
+                "realm_uuid": str(user_profile.realm.uuid),
+                "device_id_to_encrypted_data": device_id_to_encrypted_data,
+            }
+            result = send_json_to_push_bouncer("POST", "push/e2ee/notify", post_data)
+            assert isinstance(result["android_successfully_sent_count"], int)  # for mypy
+            assert isinstance(result["apple_successfully_sent_count"], int)  # for mypy
+            assert isinstance(result["delete_device_ids"], list)  # for mypy
+            assert isinstance(result["realm_push_status"], dict)  # for mypy
+            response_data = {
+                "android_successfully_sent_count": result["android_successfully_sent_count"],
+                "apple_successfully_sent_count": result["apple_successfully_sent_count"],
+                "delete_device_ids": result["delete_device_ids"],
+                "realm_push_status": result["realm_push_status"],  # type: ignore[typeddict-item] # TODO: Can't use isinstance() with TypedDict type
+            }
+    except (MissingRemoteRealmError, PushNotificationsDisallowedByBouncerError) as e:
+        reason = e.reason if isinstance(e, PushNotificationsDisallowedByBouncerError) else e.msg
+        logger.warning("Bouncer refused to send E2EE push notification: %s", reason)
+        do_set_realm_property(
+            user_profile.realm,
+            "push_notifications_enabled",
+            False,
+            acting_user=None,
+        )
+        do_set_push_notifications_enabled_end_timestamp(user_profile.realm, None, acting_user=None)
+        return
+
+    # Handle success response data
+    delete_device_ids = response_data["delete_device_ids"]
+    apple_successfully_sent_count = response_data["apple_successfully_sent_count"]
+    android_successfully_sent_count = response_data["android_successfully_sent_count"]
+
+    if len(delete_device_ids) > 0:
+        logger.info(
+            "Deleting PushDevice rows with the following device IDs based on response from bouncer: %s",
+            sorted(delete_device_ids),
+        )
+        # Filtering on `user_profile` is not necessary here, we do it to take
+        # advantage of 'zerver_pushdevice_user_bouncer_device_id_idx' index.
+        PushDevice.objects.filter(
+            user=user_profile, bouncer_device_id__in=delete_device_ids
+        ).delete()
+
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["mobile_pushes_sent::day"],
+        None,
+        timezone_now(),
+        increment=apple_successfully_sent_count + android_successfully_sent_count,
+    )
+
+    logger.info(
+        "Sent E2EE mobile push notifications for user %s: %s via FCM, %s via APNs",
+        user_profile.id,
+        android_successfully_sent_count,
+        apple_successfully_sent_count,
+    )
+
+    realm_push_status_dict = response_data.get("realm_push_status")
+    if realm_push_status_dict is not None:
+        can_push = realm_push_status_dict["can_push"]
+        do_set_realm_property(
+            user_profile.realm,
+            "push_notifications_enabled",
+            can_push,
+            acting_user=None,
+        )
+        do_set_push_notifications_enabled_end_timestamp(
+            user_profile.realm, realm_push_status_dict["expected_end_timestamp"], acting_user=None
+        )
+        if can_push:
+            record_push_notifications_recently_working()
+
+
 def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any]) -> None:
     """
     missed_message is the event received by the
@@ -1437,43 +1656,25 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     gcm_payload, gcm_options = get_message_payload_gcm(
         user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
+    apns_payload_data_to_encrypt = get_apns_payload_data_to_encrypt(
+        user_profile,
+        message,
+        trigger,
+        mentioned_user_group_id,
+        mentioned_user_group_name,
+        can_access_sender,
+    )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
-    android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
-    )
-
-    apple_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
-    )
-    if uses_notification_bouncer():
-        send_notifications_to_bouncer(
-            user_profile, apns_payload, gcm_payload, gcm_options, android_devices, apple_devices
-        )
-        return
-
-    logger.info(
-        "Sending mobile push notifications for local user %s: %s via FCM devices, %s via APNs devices",
-        user_profile_id,
-        len(android_devices),
-        len(apple_devices),
-    )
-    user_identity = UserPushIdentityCompat(user_id=user_profile.id)
-
-    apple_successfully_sent_count = send_apple_push_notification(
-        user_identity, apple_devices, apns_payload
-    )
-    android_successfully_sent_count = send_android_push_notification(
-        user_identity, android_devices, gcm_payload, gcm_options
-    )
-
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["mobile_pushes_sent::day"],
-        None,
-        timezone_now(),
-        increment=apple_successfully_sent_count + android_successfully_sent_count,
-    )
+    # TODO: We plan to offer a personal, realm-level, and server-level setting
+    # to require all notifications to be end-to-end encrypted. When either setting
+    # is enabled, we skip calling 'send_push_notifications_legacy'.
+    send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
+    if settings.DEVELOPMENT:
+        # TODO: Remove the 'settings.DEVELOPMENT' check when mobile clients start
+        # to offer a way to register for E2EE push notifications; otherwise it'll
+        # do needless DB query and logging.
+        send_push_notifications(user_profile, apns_payload_data_to_encrypt, gcm_payload)
 
 
 def send_test_push_notification_directly_to_devices(

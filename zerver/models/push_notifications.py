@@ -124,6 +124,15 @@ class PushDevice(AbstractPushDevice):
                 name="unique_push_device_user_push_account_id",
             ),
         ]
+        indexes = [
+            models.Index(
+                # Used in 'send_push_notifications' function,
+                # in 'zerver/lib/push_notifications'.
+                fields=["user", "bouncer_device_id"],
+                condition=Q(bouncer_device_id__isnull=False),
+                name="zerver_pushdevice_user_bouncer_device_id_idx",
+            ),
+        ]
 
     @property
     def status(self) -> Literal["active", "pending", "failed"]:
