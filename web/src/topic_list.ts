@@ -530,6 +530,16 @@ export function update_clear_button(): void {
     }
 }
 
+function rebuild_topic_list(): void {
+    const stream_id = active_stream_id();
+    if (stream_id !== undefined) {
+        const widget = active_widgets.get(stream_id);
+        if (widget) {
+            widget.build();
+        }
+    }
+}
+
 export function setup_topic_search_typeahead(): void {
     const $input = $("#topic_filter_query");
     const $pill_container = $("#left-sidebar-filter-topic-input");
@@ -539,6 +549,11 @@ export function setup_topic_search_typeahead(): void {
     }
 
     search_pill_widget = search_pill.create_pills($pill_container);
+
+    // Add the "Unresolved topics" pill by default and rebuild the topic list.
+    const default_filter = filter_options.get($t({defaultMessage: "Unresolved topics"}))!;
+    search_pill_widget.appendValue(default_filter);
+    rebuild_topic_list();
 
     const typeahead_input: TypeaheadInputElement = {
         $element: $input,
@@ -603,13 +618,7 @@ export function setup_topic_search_typeahead(): void {
 
     search_pill_widget.onPillRemove(() => {
         update_clear_button();
-        const stream_id = active_stream_id();
-        if (stream_id !== undefined) {
-            const widget = active_widgets.get(stream_id);
-            if (widget) {
-                widget.build();
-            }
-        }
+        rebuild_topic_list();
     });
 }
 
