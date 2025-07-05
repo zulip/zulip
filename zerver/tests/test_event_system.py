@@ -528,7 +528,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertIn("gravatar.com", message["avatar_url"])
 
         do_change_user_setting(
-            user_profile,
+            [user_profile],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -680,7 +680,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -691,7 +691,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
@@ -708,7 +708,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -719,7 +719,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,

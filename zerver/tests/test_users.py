@@ -373,7 +373,7 @@ class PermissionTest(ZulipTestCase):
         # is automatically disabled for the user.
         with self.captureOnCommitCallbacks(execute=True):
             do_change_user_setting(
-                user,
+                [user],
                 "email_address_visibility",
                 UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 acting_user=None,
@@ -1116,7 +1116,7 @@ class UpdateUserByEmailEndpointTest(ZulipTestCase):
         self.login("iago")
         hamlet = self.example_user("hamlet")
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -1131,7 +1131,7 @@ class UpdateUserByEmailEndpointTest(ZulipTestCase):
         self.assertEqual(hamlet.full_name, "Newname")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
             acting_user=None,
@@ -1145,7 +1145,7 @@ class UpdateUserByEmailEndpointTest(ZulipTestCase):
         self.assertEqual(hamlet.full_name, "Newname2")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
@@ -1524,18 +1524,20 @@ class UserProfileTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
 
-        do_change_user_setting(cordelia, "default_language", "de", acting_user=None)
-        do_change_user_setting(cordelia, "web_home_view", "all_messages", acting_user=None)
-        do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
-        do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
+        do_change_user_setting([cordelia], "default_language", "de", acting_user=None)
+        do_change_user_setting([cordelia], "web_home_view", "all_messages", acting_user=None)
+        do_change_user_setting([cordelia], "emojiset", "twitter", acting_user=None)
+        do_change_user_setting([cordelia], "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(
-            cordelia, "color_scheme", UserProfile.COLOR_SCHEME_DARK, acting_user=None
+            [cordelia], "color_scheme", UserProfile.COLOR_SCHEME_DARK, acting_user=None
         )
         do_change_user_setting(
-            cordelia, "enable_offline_email_notifications", False, acting_user=None
+            [cordelia], "enable_offline_email_notifications", False, acting_user=None
         )
-        do_change_user_setting(cordelia, "enable_stream_push_notifications", True, acting_user=None)
-        do_change_user_setting(cordelia, "enter_sends", False, acting_user=None)
+        do_change_user_setting(
+            [cordelia], "enable_stream_push_notifications", True, acting_user=None
+        )
+        do_change_user_setting([cordelia], "enter_sends", False, acting_user=None)
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
 
@@ -2294,7 +2296,7 @@ class RecipientInfoTest(ZulipTestCase):
         # testing the full code path anyway.
         for user in [hamlet, cordelia, othello]:
             do_change_user_setting(
-                user, "enable_online_push_notifications", False, acting_user=None
+                [user], "enable_online_push_notifications", False, acting_user=None
             )
 
         realm = hamlet.realm
@@ -2351,9 +2353,11 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info, expected_info)
 
         do_change_user_setting(
-            hamlet, "enable_offline_email_notifications", False, acting_user=None
+            [hamlet], "enable_offline_email_notifications", False, acting_user=None
         )
-        do_change_user_setting(hamlet, "enable_offline_push_notifications", False, acting_user=None)
+        do_change_user_setting(
+            [hamlet], "enable_offline_push_notifications", False, acting_user=None
+        )
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
@@ -2363,11 +2367,15 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.dm_mention_email_disabled_user_ids, {hamlet.id})
         self.assertEqual(info.dm_mention_push_disabled_user_ids, {hamlet.id})
-        do_change_user_setting(hamlet, "enable_offline_email_notifications", True, acting_user=None)
-        do_change_user_setting(hamlet, "enable_offline_push_notifications", True, acting_user=None)
+        do_change_user_setting(
+            [hamlet], "enable_offline_email_notifications", True, acting_user=None
+        )
+        do_change_user_setting(
+            [hamlet], "enable_offline_push_notifications", True, acting_user=None
+        )
 
-        do_change_user_setting(cordelia, "wildcard_mentions_notify", False, acting_user=None)
-        do_change_user_setting(hamlet, "enable_stream_push_notifications", True, acting_user=None)
+        do_change_user_setting([cordelia], "wildcard_mentions_notify", False, acting_user=None)
+        do_change_user_setting([hamlet], "enable_stream_push_notifications", True, acting_user=None)
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
@@ -2388,7 +2396,7 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "wildcard_mentions_notify",
             True,
             acting_user=None,
@@ -2453,7 +2461,9 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.stream_push_user_ids, set())
 
-        do_change_user_setting(hamlet, "enable_stream_push_notifications", False, acting_user=None)
+        do_change_user_setting(
+            [hamlet], "enable_stream_push_notifications", False, acting_user=None
+        )
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = True
         sub.save()
@@ -2630,21 +2640,21 @@ class RecipientInfoTest(ZulipTestCase):
 
         # Omit Hamlet from followed_topic_email_user_ids
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "enable_followed_topic_email_notifications",
             False,
             acting_user=None,
         )
         # Omit Hamlet from followed_topic_push_user_ids
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "enable_followed_topic_push_notifications",
             False,
             acting_user=None,
         )
         # Omit Hamlet from stream_wildcard_mention_in_followed_topic_user_ids
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "enable_followed_topic_wildcard_mentions_notify",
             False,
             acting_user=None,
@@ -2827,7 +2837,7 @@ class GetProfileTest(ZulipTestCase):
         iago = self.example_user("iago")
         # Change iago's email address visibility so that hamlet can't see it.
         do_change_user_setting(
-            iago,
+            [iago],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
@@ -2844,7 +2854,7 @@ class GetProfileTest(ZulipTestCase):
 
         # Allow members to see iago's email address, thus giving hamlet access.
         do_change_user_setting(
-            iago,
+            [iago],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
             acting_user=None,
@@ -2861,7 +2871,7 @@ class GetProfileTest(ZulipTestCase):
         # as the API understands the dummy email as a user ID. This is a nicer interface,
         # as it allow clients not to worry about the implementation details of .email.
         do_change_user_setting(
-            iago,
+            [iago],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -2892,7 +2902,7 @@ class GetProfileTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
@@ -2906,7 +2916,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
@@ -2926,7 +2936,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
             acting_user=None,
@@ -2946,7 +2956,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
             acting_user=None,
@@ -2966,7 +2976,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
