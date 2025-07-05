@@ -13,7 +13,7 @@ from django.core.management.base import CommandError
 from django.test import override_settings
 from typing_extensions import override
 
-from confirmation.models import RealmCreationKey, generate_realm_creation_url
+from confirmation.models import Confirmation, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.management import ZulipBaseCommand, check_config
@@ -360,11 +360,13 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=False)
     def test_realm_creation_with_expired_link(self) -> None:
         generated_link = generate_realm_creation_url(by_admin=True)
-        key = generated_link[-24:]
-        # Manually expire the link by changing the date of creation
-        obj = RealmCreationKey.objects.get(creation_key=key)
-        obj.date_created -= timedelta(days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1)
-        obj.save()
+        key = generated_link.split("/")[-1]
+        # Manually expire the link by changing the date of expiry.
+        confirmation = Confirmation.objects.get(confirmation_key=key)
+        assert confirmation.expiry_date is not None
+
+        confirmation.expiry_date -= timedelta(days=settings.CAN_CREATE_REALM_LINK_VALIDITY_DAYS + 1)
+        confirmation.save()
 
         result = self.client_get(generated_link)
         self.assert_in_success_response(["Organization creation link expired or invalid"], result)

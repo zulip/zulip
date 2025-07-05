@@ -217,6 +217,8 @@ _Released 2025-07-29_
   preserve and update your `postfix` configuration.
 - The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting has been removed.
   It was deprecated in favor of `SOCIAL_AUTH_SYNC_ATTRS_DICT` in 10.0.
+- The obscure `REALM_CREATION_LINK_VALIDITY_DAYS` setting was renamed to
+  `CAN_CREATE_REALM_LINK_VALIDITY_DAYS`.
 
 ## Zulip Server 10.x series
 

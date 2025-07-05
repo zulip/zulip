@@ -182,6 +182,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realm",
     "zerver_realmauditlog",
     "zerver_realmauthenticationmethod",
+    "zerver_realmcreationstatus",
     "zerver_realmdomain",
     "zerver_realmemoji",
     "zerver_realmexport",
@@ -230,6 +231,7 @@ NON_EXPORTED_TABLES = {
     "zerver_preregistrationuser_streams",
     "zerver_preregistrationuser_groups",
     "zerver_realmreactivationstatus",
+    "zerver_realmcreationstatus",
     # Missed message addresses are low value to export since
     # missed-message email addresses include the server's hostname and
     # expire after a few days.

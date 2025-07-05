@@ -516,7 +516,7 @@ PERSONAL_ZMIRROR_SERVER: str | None = None
 # When security-relevant links in emails expire.
 CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS = 1
 INVITATION_LINK_VALIDITY_DAYS = 10
-REALM_CREATION_LINK_VALIDITY_DAYS = 7
+CAN_CREATE_REALM_LINK_VALIDITY_DAYS = 7
 
 # Version number for ToS.  Change this if you want to force every
 # user to click through to re-accept terms of service before using

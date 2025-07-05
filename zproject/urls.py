@@ -698,7 +698,7 @@ i18n_urls = [
     # Realm creation
     path("json/antispam_challenge", get_challenge),
     path("new/", create_realm),
-    path("new/<creation_key>", create_realm, name="create_realm"),
+    path("new/<confirmation_key>", create_realm, name="create_realm"),
     # Realm reactivation
     path("reactivate/", realm_reactivation, name="realm_reactivation"),
     path("reactivate/<confirmation_key>", realm_reactivation_get, name="realm_reactivation_get"),

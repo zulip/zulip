@@ -170,3 +170,14 @@ class RealmReactivationStatus(models.Model):
     status = models.IntegerField(default=0)
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+
+class RealmCreationStatus(models.Model):
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_USED
+    status = models.IntegerField(default=0)
+    date_created = models.DateTimeField(default=timezone_now)
+
+    # True just if we should presume the email address the user enters
+    # is theirs, and skip sending mail to it to confirm that.
+    presume_email_valid = models.BooleanField(default=False)
