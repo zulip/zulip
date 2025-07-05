@@ -435,10 +435,10 @@ def json_change_settings(
     request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
     for k, v in request_settings.items():
         if v is not None and getattr(user_profile, k) != v:
-            do_change_user_setting(user_profile, k, v, acting_user=user_profile)
+            do_change_user_setting([user_profile], k, v, acting_user=user_profile)
 
     if timezone is not None and user_profile.timezone != timezone:
-        do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
+        do_change_user_setting([user_profile], "timezone", timezone, acting_user=user_profile)
 
     return json_success(request, data=result)
 

@@ -370,7 +370,7 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_change_delivery_email_end_to_end_with_admins_visibility(self) -> None:
         user_profile = self.example_user("hamlet")
         do_change_user_setting(
-            user_profile,
+            [user_profile],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,

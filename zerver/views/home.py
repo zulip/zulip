@@ -52,7 +52,7 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
                 and email_address_visibility != request.user.email_address_visibility
             ):
                 do_change_user_setting(
-                    request.user,
+                    [request.user],
                     "email_address_visibility",
                     email_address_visibility,
                     acting_user=request.user,
@@ -64,7 +64,7 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
                 and enable_marketing_emails != request.user.enable_marketing_emails
             ):
                 do_change_user_setting(
-                    request.user,
+                    [request.user],
                     "enable_marketing_emails",
                     enable_marketing_emails,
                     acting_user=request.user,

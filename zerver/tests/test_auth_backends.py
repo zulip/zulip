@@ -7451,7 +7451,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_update_with_hidden_emails(self) -> None:
         hamlet = self.example_user("hamlet")
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,

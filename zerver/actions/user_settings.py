@@ -1,5 +1,5 @@
-from collections.abc import Iterable
-from datetime import timedelta
+from collections.abc import Callable, Iterable
+from datetime import datetime, timedelta
 from enum import Enum
 
 from django.conf import settings
@@ -432,14 +432,16 @@ def update_scheduled_email_notifications_time(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_setting(
-    user_profile: UserProfile,
+    user_profiles: list[UserProfile],
     setting_name: str,
     setting_value: bool | str | int | Enum,
     *,
     acting_user: UserProfile | None,
 ) -> None:
-    old_value = getattr(user_profile, setting_name)
     event_time = timezone_now()
+    audit_logs = []
+    old_values = {}
+    realm = user_profiles[0].realm
 
     if isinstance(setting_value, Enum):
         db_setting_value = setting_value.value
@@ -460,32 +462,37 @@ def do_change_user_setting(
         else:
             assert isinstance(db_setting_value, property_type)
             assert isinstance(event_value, property_type)
-    setattr(user_profile, setting_name, db_setting_value)
 
-    # TODO: Move these database actions into a transaction.atomic block.
-    user_profile.save(update_fields=[setting_name])
+    for user in user_profiles:
+        old_value = getattr(user, setting_name)
+        old_values[user.id] = old_value
 
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        event_type=AuditLogEventType.USER_SETTING_CHANGED,
-        event_time=event_time,
-        acting_user=acting_user,
-        modified_user=user_profile,
-        extra_data={
-            RealmAuditLog.OLD_VALUE: old_value,
-            RealmAuditLog.NEW_VALUE: db_setting_value,
-            "property": setting_name,
-        },
-    )
+        setattr(user, setting_name, db_setting_value)
 
-    # Disabling digest emails should clear a user's email queue
-    if setting_name == "enable_digest_emails" and not db_setting_value:
-        clear_scheduled_emails([user_profile.id], ScheduledEmail.DIGEST)
+        audit_logs.append(
+            RealmAuditLog(
+                realm=user.realm,
+                event_type=AuditLogEventType.USER_SETTING_CHANGED,
+                event_time=event_time,
+                acting_user=acting_user,
+                modified_user=user,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: db_setting_value,
+                    "property": setting_name,
+                },
+            )
+        )
 
-    if setting_name == "email_notifications_batching_period_seconds":
-        assert isinstance(old_value, int)
-        assert isinstance(db_setting_value, int)
-        update_scheduled_email_notifications_time(user_profile, old_value, db_setting_value)
+    UserProfile.objects.bulk_update(user_profiles, [setting_name])
+    RealmAuditLog.objects.bulk_create(audit_logs)
+
+    for user in user_profiles:
+
+        def make_flush_function(user_profile: UserProfile) -> Callable[[], None]:
+            return lambda: flush_user_profile(sender=UserProfile, instance=user_profile)
+
+        transaction.on_commit(make_flush_function(user))
 
     event = {
         "type": "user_settings",
@@ -493,161 +500,178 @@ def do_change_user_setting(
         "property": setting_name,
         "value": event_value,
     }
-
     if setting_name == "default_language":
         assert isinstance(db_setting_value, str)
         event["language_name"] = get_language_name(db_setting_value)
 
-    transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
+    user_ids = [u.id for u in user_profiles]
+    send_event_on_commit(realm, event, user_ids)
 
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
-
-    if setting_name == "allow_private_data_export":
-        realm_export_event = {
-            "type": "realm_export_consent",
-            "user_id": user_profile.id,
-            "consented": event_value,
-        }
-        send_event_on_commit(
-            user_profile.realm,
-            realm_export_event,
-            list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
-        )
-
-    # Updates to the time zone display setting are sent to all users
-    if setting_name == "timezone":
-        payload = dict(
-            email=user_profile.email,
-            user_id=user_profile.id,
-            timezone=canonicalize_timezone(user_profile.timezone),
-        )
-        timezone_event = dict(type="realm_user", op="update", person=payload)
-        send_event_on_commit(
-            user_profile.realm,
-            timezone_event,
-            get_user_ids_who_can_access_user(user_profile),
-        )
-
-    if setting_name == "email_address_visibility":
-        send_delivery_email_update_events(
-            user_profile, old_value, user_profile.email_address_visibility
-        )
-
-        if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, db_setting_value]:
-            # We use real email addresses on UserProfile.email only if
-            # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
-            # changes between values that will not require changing
-            # that field, so we can save work and return here.
-            return
-
-        user_profile.email = get_display_email_address(user_profile)
-        user_profile.save(update_fields=["email"])
-
-        send_user_email_update_event(user_profile)
-        notify_avatar_url_change(user_profile)
+    # Disabling digest emails should clear a user's email queue
+    if setting_name == "enable_digest_emails" and not db_setting_value:
+        clear_scheduled_emails(user_ids, ScheduledEmail.DIGEST)
 
     if setting_name == "enable_drafts_synchronization" and db_setting_value is False:
         # Delete all of the drafts from the backend but don't send delete events
         # for them since all that's happened is that we stopped syncing changes,
         # not deleted every previously synced draft - to do that use the DELETE
         # endpoint.
-        Draft.objects.filter(user_profile=user_profile).delete()
+        Draft.objects.filter(user_profile__in=user_profiles).delete()
 
-    if setting_name == "presence_enabled":
-        # The presence_enabled setting's primary function is to stop
-        # doing presence updates for the user altogether.
-        #
-        # When a user toggles the presence_enabled setting, we
-        # immediately trigger a presence update, so all users see the
-        # user's current presence state as consistent with the new
-        # setting; not doing so can make it look like the settings
-        # change didn't have any effect.
-        if db_setting_value:
-            status = UserPresence.LEGACY_STATUS_ACTIVE_INT
-            presence_time = timezone_now()
-        else:
-            # We want to ensure the user's presence data is such that
-            # they will be treated as offline by correct clients,
-            # There are two cases:
-            #
-            # (1) If the user's presence was current, we backdate it
-            #     so that the user will, for as long as presence
-            #     remains disabled, appear to have been last online a
-            #     few minutes before they disabled presence.
-            #
-            # (2) If the user only has a presence older than what our
-            #     backdate would be, we keep the original value - it
-            #     already guarantees that the user will appear to be
-            #     offline.
-            backdated_presence_time = timezone_now() - timedelta(
-                # We add a small additional offset as a fudge factor in
-                # case of clock skew.
-                seconds=settings.OFFLINE_THRESHOLD_SECS
-                + settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
-                + 10
-            )
-            minimum_previous_presence_time = backdated_presence_time - timedelta(
-                seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 10
+    for user_profile in user_profiles:
+        if setting_name == "email_notifications_batching_period_seconds":
+            old_value = old_values[user_profile.id]
+            assert isinstance(old_value, int)
+            assert isinstance(db_setting_value, int)
+            update_scheduled_email_notifications_time(user_profile, old_value, db_setting_value)
+
+        if setting_name == "allow_private_data_export":
+            realm_export_event = {
+                "type": "realm_export_consent",
+                "user_id": user_profile.id,
+                "consented": event_value,
+            }
+            send_event_on_commit(
+                user_profile.realm,
+                realm_export_event,
+                list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
             )
 
-            try:
-                presence: UserPresence | None = UserPresence.objects.get(user_profile=user_profile)
-                assert presence is not None
-                assert presence.last_connected_time is not None
+        # Updates to the time zone display setting are sent to all users
+        if setting_name == "timezone":
+            payload = dict(
+                email=user_profile.email,
+                user_id=user_profile.id,
+                timezone=canonicalize_timezone(user_profile.timezone),
+            )
+            timezone_event = dict(type="realm_user", op="update", person=payload)
+            send_event_on_commit(
+                realm,
+                timezone_event,
+                get_user_ids_who_can_access_user(user_profile),
+            )
 
-                original_last_active_time = presence.last_active_time
-                if presence.last_connected_time <= backdated_presence_time:
-                    # This is case (2), so we don't need to do
-                    # anything. presence is already as intended.
-                    # last_active_time <= last_connected_time always holds, so
-                    # last_active_time <= backdated_presence_time is also ensured here.
-                    return
+        if setting_name == "email_address_visibility":
+            old_value = old_values[user_profile.id]
+            send_delivery_email_update_events(
+                user_profile, old_value, user_profile.email_address_visibility
+            )
 
-                # do_update_user_presence will only send an event if
-                # the presence event it receives is sufficiently newer
-                # than whatever it had before, so we backdate the
-                # existing presence data if necessary to ensure that
-                # our new update event will be seen as new by clients.
-                presence_time = backdated_presence_time
-                presence.last_connected_time = min(
-                    minimum_previous_presence_time, presence.last_connected_time
+            if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, db_setting_value]:
+                # We use real email addresses on UserProfile.email only if
+                # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
+                # changes between values that will not require changing
+                # that field, so we can save work and return here.
+                continue
+
+            user_profile.email = get_display_email_address(user_profile)
+            user_profile.save(update_fields=["email"])
+
+            send_user_email_update_event(user_profile)
+            notify_avatar_url_change(user_profile)
+
+        if setting_name == "presence_enabled":
+            # The presence_enabled setting's primary function is to stop
+            # doing presence updates for the user altogether.
+            #
+            # When a user toggles the presence_enabled setting, we
+            # immediately trigger a presence update, so all users see the
+            # user's current presence state as consistent with the new
+            # setting; not doing so can make it look like the settings
+            # change didn't have any effect.
+            if db_setting_value:
+                status = UserPresence.LEGACY_STATUS_ACTIVE_INT
+                presence_time = timezone_now()
+            else:
+                # We want to ensure the user's presence data is such that
+                # they will be treated as offline by correct clients,
+                # There are two cases:
+                #
+                # (1) If the user's presence was current, we backdate it
+                #     so that the user will, for as long as presence
+                #     remains disabled, appear to have been last online a
+                #     few minutes before they disabled presence.
+                #
+                # (2) If the user only has a presence older than what our
+                #     backdate would be, we keep the original value - it
+                #     already guarantees that the user will appear to be
+                #     offline.
+                backdated_presence_time = timezone_now() - timedelta(
+                    # We add a small additional offset as a fudge factor in
+                    # case of clock skew.
+                    seconds=settings.OFFLINE_THRESHOLD_SECS
+                    + settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
+                    + 10
                 )
-                update_fields = ["last_connected_time"]
+                minimum_previous_presence_time = backdated_presence_time - timedelta(
+                    seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 10
+                )
 
-                if (
-                    original_last_active_time is None
-                    or original_last_active_time < backdated_presence_time
-                ):
-                    # If the user's last_active_time was old enough (or nonexistent), we don't want to perturb
-                    # it, as it's already in a correct state. Thus we only do_update_user_presence with an
-                    # IDLE status - which will only update the last_connected_time.
-                    status = UserPresence.LEGACY_STATUS_IDLE_INT
-                else:
-                    assert presence.last_active_time is not None
-                    presence.last_active_time = min(
-                        minimum_previous_presence_time, presence.last_active_time
+                try:
+                    presence: UserPresence | None = UserPresence.objects.get(
+                        user_profile=user_profile
                     )
-                    update_fields.append("last_active_time")
-                    status = UserPresence.LEGACY_STATUS_ACTIVE_INT
-                presence.save(update_fields=update_fields)
+                    assert presence is not None
+                    assert presence.last_connected_time is not None
 
-            except UserPresence.DoesNotExist:
-                # If the user has no presence data at all, that should
-                # logically get consistent treatment with having very
-                # old presence data (case (2) above). We want to leave
-                # their presence state intact - so just return without
-                # doing anything.
-                return
+                    original_last_active_time = presence.last_active_time
+                    if presence.last_connected_time <= backdated_presence_time:
+                        # This is case (2), so we don't need to do
+                        # anything. presence is already as intended.
+                        # last_active_time <= last_connected_time always holds, so
+                        # last_active_time <= backdated_presence_time is also ensured here.
+                        continue
 
-        # do_update_user_presence doesn't allow being run inside another
-        # transaction.atomic block, so we need to use on_commit here to ensure
-        # it gets executed outside of our current transaction.
-        transaction.on_commit(
-            lambda: do_update_user_presence(
-                user_profile,
-                get_client("website"),
-                presence_time,
-                status,
-                force_send_update=True,
+                    # do_update_user_presence will only send an event if
+                    # the presence event it receives is sufficiently newer
+                    # than whatever it had before, so we backdate the
+                    # existing presence data if necessary to ensure that
+                    # our new update event will be seen as new by clients.
+                    presence_time = backdated_presence_time
+                    presence.last_connected_time = min(
+                        minimum_previous_presence_time, presence.last_connected_time
+                    )
+                    update_fields = ["last_connected_time"]
+
+                    if (
+                        original_last_active_time is None
+                        or original_last_active_time < backdated_presence_time
+                    ):
+                        # If the user's last_active_time was old enough (or nonexistent), we don't want to perturb
+                        # it, as it's already in a correct state. Thus we only do_update_user_presence with an
+                        # IDLE status - which will only update the last_connected_time.
+                        status = UserPresence.LEGACY_STATUS_IDLE_INT
+                    else:
+                        assert presence.last_active_time is not None
+                        presence.last_active_time = min(
+                            minimum_previous_presence_time, presence.last_active_time
+                        )
+                        update_fields.append("last_active_time")
+                        status = UserPresence.LEGACY_STATUS_ACTIVE_INT
+                    presence.save(update_fields=update_fields)
+
+                except UserPresence.DoesNotExist:
+                    # If the user has no presence data at all, that should
+                    # logically get consistent treatment with having very
+                    # old presence data (case (2) above). We want to leave
+                    # their presence state intact - so just return without
+                    # doing anything.
+                    continue
+
+            def make_presence_update_function(
+                user_profile: UserProfile, presence_time: datetime, status: int
+            ) -> Callable[[], None]:
+                return lambda: do_update_user_presence(
+                    user_profile,
+                    get_client("website"),
+                    presence_time,
+                    status,
+                    force_send_update=True,
+                )
+
+            # do_update_user_presence doesn't allow being run inside another
+            # transaction.atomic block, so we need to use on_commit here to ensure
+            # it gets executed outside of our current transaction.
+            transaction.on_commit(
+                make_presence_update_function(user_profile, presence_time, status)
             )
-        )

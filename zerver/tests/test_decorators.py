@@ -730,7 +730,7 @@ class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_email_address_visibility(self) -> None:
         user = self.example_user("cordelia")
         do_change_user_setting(
-            user,
+            [user],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
