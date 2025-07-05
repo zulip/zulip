@@ -631,7 +631,7 @@ def support(
             user.id for user in PreregistrationRealm.objects.filter(email__in=key_words)
         ]
         confirmations += get_confirmations(
-            [Confirmation.REALM_CREATION],
+            [Confirmation.REALM_ACTIVATION],
             preregistration_realm_ids,
             hostname=request.get_host(),
         )

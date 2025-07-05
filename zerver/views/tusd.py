@@ -320,7 +320,7 @@ def handle_tusd_hook(
         return reject_upload("Unauthenticated upload", 401)
     try:
         prereg_object = get_object_from_key(
-            key, [Confirmation.REALM_CREATION], mark_object_used=False
+            key, [Confirmation.REALM_ACTIVATION], mark_object_used=False
         )
     except ConfirmationKeyError:
         return reject_upload("Unauthenticated upload", 401)

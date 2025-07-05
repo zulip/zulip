@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Iterable
 from contextlib import suppress
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 from urllib.parse import urlencode, urljoin
 
 import orjson
@@ -27,11 +27,9 @@ from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyError,
-    RealmCreationKey,
     create_confirmation_link,
     get_object_from_key,
     render_confirmation_key_error,
-    validate_key,
 )
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_activate_mirror_dummy_user, do_create_user
@@ -101,6 +99,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.prereg_users import RealmCreationStatus
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import (
     DisposableEmailError,
@@ -192,7 +191,7 @@ def check_prereg_key(
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
         Confirmation.INVITATION,
-        Confirmation.REALM_CREATION,
+        Confirmation.REALM_ACTIVATION,
     ]
 
     prereg_object = get_object_from_key(
@@ -201,7 +200,7 @@ def check_prereg_key(
     assert isinstance(prereg_object, PreregistrationRealm | PreregistrationUser)
 
     confirmation_obj = prereg_object.confirmation.get()
-    realm_creation = confirmation_obj.type == Confirmation.REALM_CREATION
+    realm_creation = confirmation_obj.type == Confirmation.REALM_ACTIVATION
 
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
@@ -996,12 +995,25 @@ def prepare_realm_activation_url(
         import_form,
     )
     activation_url = create_confirmation_link(
-        prereg_realm, Confirmation.REALM_CREATION, no_associated_realm_object=True
+        prereg_realm, Confirmation.REALM_ACTIVATION, no_associated_realm_object=True
     )
 
     if settings.DEVELOPMENT:
         session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-1]}
     return activation_url
+
+
+def prepare_realm_creation_url(
+    presume_email_valid: bool = False,
+) -> str:
+    realm_creation_status = RealmCreationStatus.objects.create(
+        presume_email_valid=presume_email_valid
+    )
+    confirmation_url = create_confirmation_link(
+        realm_creation_status, Confirmation.REALM_CREATION, no_associated_realm_object=True
+    )
+
+    return confirmation_url
 
 
 def send_confirm_registration_email(
@@ -1050,7 +1062,7 @@ def realm_import_status(
     try:
         preregistration_realm = get_object_from_key(
             confirmation_key,
-            [Confirmation.REALM_CREATION],
+            [Confirmation.REALM_ACTIVATION],
             mark_object_used=False,
             allow_used=True,
         )
@@ -1145,7 +1157,7 @@ def realm_import_post_process(
     try:
         preregistration_realm = get_object_from_key(
             confirmation_key,
-            [Confirmation.REALM_CREATION],
+            [Confirmation.REALM_ACTIVATION],
             mark_object_used=False,
             allow_used=True,
         )
@@ -1244,15 +1256,9 @@ def realm_import_post_process(
 
 
 @add_google_analytics
-def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpResponse:
-    try:
-        key_record = validate_key(creation_key)
-    except RealmCreationKey.InvalidError:
-        return TemplateResponse(
-            request,
-            "zerver/portico_error_pages/realm_creation_link_invalid.html",
-        )
-    if key_record is None:
+def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> HttpResponse:
+    if confirmation_key is None:
+        realm_creation_obj: RealmCreationStatus | None = None
         if not settings.OPEN_REALM_CREATION:
             return TemplateResponse(
                 request,
@@ -1262,6 +1268,19 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             return TemplateResponse(
                 request,
                 "zerver/portico_error_pages/realm_creation_disabled.html",
+            )
+    else:
+        try:
+            realm_creation_obj = cast(
+                RealmCreationStatus,
+                get_object_from_key(
+                    confirmation_key, [Confirmation.REALM_CREATION], mark_object_used=False
+                ),
+            )
+        except ConfirmationKeyError:
+            return TemplateResponse(
+                request,
+                "zerver/portico_error_pages/realm_creation_link_invalid.html",
             )
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
@@ -1298,12 +1317,13 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
                 realm_default_language,
                 import_from,
             )
-            if key_record is not None and key_record.presume_email_valid:
+            if realm_creation_obj is not None and realm_creation_obj.presume_email_valid:
                 # The user has a token created from the server command line;
                 # skip confirming the email is theirs, taking their word for it.
                 # This is essential on first install if the admin hasn't stopped
                 # to configure outbound email up front, or it isn't working yet.
-                key_record.delete()
+                realm_creation_obj.status = getattr(settings, "STATUS_USED", 1)
+                realm_creation_obj.save(update_fields=["status"])
                 return HttpResponseRedirect(activation_url)
 
             try:
@@ -1320,8 +1340,10 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
 
-            if key_record is not None:
-                key_record.delete()
+            if realm_creation_obj is not None:
+                realm_creation_obj.status = getattr(settings, "STATUS_USED", 1)
+                realm_creation_obj.save(update_fields=["status"])
+
             url = reverse(
                 "new_realm_send_confirm",
                 query={
