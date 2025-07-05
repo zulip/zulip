@@ -944,7 +944,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
 
         # Topic wildcard mention in followed topic should soft reactivate the user
@@ -988,7 +988,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
         )
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", True, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", True, acting_user=None
         )
 
         # Topic Wildcard mention should soft reactivate the user
