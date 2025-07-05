@@ -68,7 +68,7 @@ import * as util from "./util.ts";
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
 let currently_deleting_messages: number[] = [];
 let currently_topic_editing_message_ids: number[] = [];
-const currently_echoing_messages = new Map<number, EchoedMessageData>();
+export const currently_echoing_messages = new Map<number, EchoedMessageData>();
 
 type EchoedMessageData = {
     raw_content: string;
@@ -1322,7 +1322,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         success(res) {
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
-                currently_echoing_messages.delete(message_id);
+                // currently_echoing_messages.delete(message_id);
             }
 
             // Ordinarily, in a code path like this, we'd make

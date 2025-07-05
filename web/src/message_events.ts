@@ -436,6 +436,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             } else {
                 message_edit.end_message_edit(event.message_id);
             }
+            message_edit.currently_echoing_messages.delete(event.message_id);
 
             // Save the content edit to the front end anchor_message.edit_history
             // before topic edits to ensure that combined topic / content
