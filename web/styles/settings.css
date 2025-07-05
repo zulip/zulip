@@ -129,11 +129,24 @@ h3,
     gap: 0.5rem;
 }
 
-.admin-realm-description {
+.admin-realm-description,
+.admin-realm-welcome-message-custom-text {
     height: 16em;
     width: 100%;
     max-width: 500px;
     box-sizing: border-box;
+}
+
+#id_realm_welcome_message_custom_text {
+    height: auto;
+    margin-bottom: 10px;
+}
+
+#welcome_message_custom_text_buttons_container {
+    display: inline-flex;
+    /* 5px at 16px em */
+    gap: 0.3125em;
+    align-items: center;
 }
 
 .setting_notification_sound,
