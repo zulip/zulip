@@ -1519,7 +1519,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         color: hsl(0deg 0% 67%);
     }
 
-    .overlay-content {
+    .overlay-container {
         width: 440px;
         border-radius: 4px;
     }
@@ -1543,6 +1543,21 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .overlay-body {
         max-height: 60vh;
         padding: 15px;
+    }
+}
+
+#about-zulip {
+    .overlay-container {
+        transform: translateY(20px);
+        transition: transform 0.2s ease-in;
+        z-index: 102;
+    }
+
+    &.show {
+        .overlay-container {
+            transform: translateY(0);
+            transition-timing-function: ease-out;
+        }
     }
 }
 

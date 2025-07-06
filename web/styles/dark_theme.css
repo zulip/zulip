@@ -176,6 +176,7 @@
     #subscription_overlay .overlay-container,
     #groups_overlay .overlay-container,
     #reminders-overlay .overlay-container,
+    #about-zulip .overlay-container,
     .informational-overlays .overlay-content {
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
     }
