@@ -393,6 +393,7 @@ div.overlay {
 div.overlay .flex.overlay-content > .overlay-container,
 #settings_page,
 #subscription_overlay .overlay-container,
+#reminders-overlay .overlay-container,
 .informational-overlays .overlay-content {
     box-shadow: 0 0 30px var(--color-box-shadow-overlay);
 }
