@@ -1074,8 +1074,7 @@ input.settings_text_input {
 }
 
 div.overlay .flex.overlay-content > .overlay-container,
-div.overlay:not(#about-zulip) .overlay-container,
-.informational-overlays .overlay-content {
+div.overlay:not(#about-zulip) .overlay-container {
     box-shadow: var(--box-shadow-overlay);
 }
 
