@@ -172,7 +172,7 @@
     }
 
     & div.overlay .flex.overlay-content > .overlay-container,
-    #settings_page,
+    #settings_page .overlay-container,
     #subscription_overlay .overlay-container,
     #groups_overlay .overlay-container,
     #reminders-overlay .overlay-container,
