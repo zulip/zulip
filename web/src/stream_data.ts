@@ -997,10 +997,6 @@ export let is_user_subscribed = (stream_id: number, user_id: number): boolean =>
     return peer_data.is_user_subscribed(stream_id, user_id);
 };
 
-export function rewire_is_user_subscribed(value: typeof is_user_subscribed): void {
-    is_user_subscribed = value;
-}
-
 // This function parallels `is_user_subscribed` but fetches subscriber data for the
 // `stream_id` if we don't have complete data yet.
 export async function maybe_fetch_is_user_subscribed(

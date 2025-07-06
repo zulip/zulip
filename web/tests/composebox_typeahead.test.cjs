@@ -34,9 +34,6 @@ const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
-mock_esm("../src/channel", {
-    get: () => ({subscribers: []}),
-});
 
 let set_timeout_called;
 set_global("setTimeout", (f, time) => {
@@ -54,6 +51,7 @@ const emoji_picker = zrequire("emoji_picker");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const peer_data = zrequire("peer_data");
 const user_groups = zrequire("user_groups");
 const user_pill = zrequire("user_pill");
 const stream_data = zrequire("stream_data");
@@ -2640,9 +2638,7 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [mention_all, call_center]);
 });
 
-test("direct message recipients sorted according to stream / topic being viewed", ({
-    override_rewire,
-}) => {
+test("direct message recipients sorted according to stream / topic being viewed", () => {
     // This tests that direct message recipient results are sorted with
     // subscribers of the stream / topic being viewed being given priority.
     // If no stream is being viewed, the sort is alphabetical (for testing,
@@ -2650,12 +2646,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     let results;
 
     // Simulating just cordelia being subscribed to denmark.
-    override_rewire(
-        stream_data,
-        "is_user_subscribed",
-        (stream_id, user_id) =>
-            stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
-    );
+    peer_data.set_subscribers(denmark_stream.stream_id, [cordelia.user_id]);
     mock_banners();
 
     // When viewing no stream, sorting is alphabetical
@@ -2670,11 +2661,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     assert.deepEqual(results, [cordelia_item, ali_item, alice_item]);
 
     // Simulating just alice being subscribed to denmark.
-    override_rewire(
-        stream_data,
-        "is_user_subscribed",
-        (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
-    );
+    peer_data.set_subscribers(denmark_stream.stream_id, [alice.user_id]);
 
     // When viewing denmark stream to which alice is subscribed, ali is not
     // 1st despite having an exact name match with the query.
