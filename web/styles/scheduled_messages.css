@@ -9,7 +9,8 @@
     }
 }
 
-#reminders-overlay.overlay {
+#reminders-overlay.overlay,
+#scheduled_messages_overlay.overlay {
     .overlay-container {
         margin: 2.5vh auto;
         transform: translateY(20px);
