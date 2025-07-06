@@ -1405,7 +1405,8 @@ div.settings-radio-input-parent {
     }
 }
 
-#subscription_overlay.overlay {
+#subscription_overlay.overlay,
+#groups_overlay.overlay {
     .overlay-container {
         margin: 2.5vh auto;
         transform: translateY(20px);
