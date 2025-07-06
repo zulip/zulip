@@ -1400,7 +1400,7 @@ label.preferences-radio-choice-label {
 }
 
 /* -- new settings overlay -- */
-#settings_page {
+#settings_page .overlay-container {
     height: 95vh;
     width: 97vw;
     max-width: 73.1429em; /* 1024px at 14px em */
@@ -1619,6 +1619,21 @@ label.preferences-radio-choice-label {
 
     .preferences-settings-form select {
         width: var(--modal-input-width);
+    }
+}
+
+#settings_page.overlay {
+    .overlay-container {
+        transform: translateY(20px);
+        transition: transform 0.2s ease-in;
+        z-index: 102;
+    }
+
+    &.show {
+        .overlay-container {
+            transform: translateY(0);
+            transition-timing-function: ease-out;
+        }
     }
 }
 
@@ -1917,7 +1932,7 @@ label.preferences-radio-choice-label {
         --single-column: yes;
     }
 
-    #settings_page {
+    #settings_page .overlay-container {
         .settings-header.mobile {
             display: flex;
             justify-content: space-between;
