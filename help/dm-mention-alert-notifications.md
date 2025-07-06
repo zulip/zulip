@@ -30,15 +30,14 @@ messages) from desktop notifications.
 
 ## Wildcard mentions
 
-By default, wildcard mentions (`@**all**`, `@**everyone**`, `@**channel**`,
-or `@**topic**`) trigger email/push notifications as though they were
-personal @-mentions. You can toggle whether you receive notifications
-for wildcard mentions.
+You can configure which types of notifications you want to receive for wildcard
+mentions (**@all**, **@everyone**, **@channel**) and **@topic** mentions
+separately from personal @-mentions.
 
 !!! tip ""
 
-    Unlike personal mentions, wildcard mentions do not trigger notifications
-    in muted channels or topics.
+    These mentions don't trigger notifications in muted channels or topics,
+    unlike personal mentions.
 
 {start_tabs}
 

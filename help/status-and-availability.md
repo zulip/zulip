@@ -32,6 +32,16 @@ You can set a status emoji, status message, or both.
 
 {!set-status.md!}
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/198). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ### Clear a status
@@ -72,6 +82,16 @@ and compose box. Status emoji and status messages are also shown on
     sent to view their status in their **user card**, or configure status text
     to always be shown in the right sidebar.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/197). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ### Configure how statuses are displayed
@@ -99,18 +119,40 @@ With the compact option, only status emoji are shown.
 
 There are three availability states:
 
-* **Active** (<span class="user-circle user-circle-active zulip-icon zulip-icon-user-circle-active"></span>): Zulip is
-  open and in focus on web, desktop or mobile, or was in the last 140
-  seconds.
+* **Active** (<span class="user-circle user-circle-active zulip-icon
+  zulip-icon-user-circle-active"></span>): Zulip is open and in focus on web,
+  desktop or mobile, or was in the last 140 seconds.
 
-* **Idle** (<span class="user-circle user-circle-idle zulip-icon zulip-icon-user-circle-idle"></span>): Zulip is open on
-  your computer (either desktop or web), but you are not active.
+* **Idle** (<span class="user-circle user-circle-idle zulip-icon
+  zulip-icon-user-circle-idle"></span>): Zulip is open on your computer (either
+  desktop or web), but you are not active.
 
-* **Offline** (<span class="user-circle user-circle-offline zulip-icon zulip-icon-user-circle-offline"></span>): Zulip is not open
-  on your computer, or you have turned on invisible mode.
+* **Offline** (<span class="user-circle user-circle-offline zulip-icon
+  zulip-icon-user-circle-offline"></span>): Zulip is not open on your computer,
+  or you have turned on invisible mode.
 
-You can see when someone offline was last active by hovering over their
-name in the left or right sidebar.
+### View availability
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. View a user's availability on the [user list](/help/user-list) in the right
+   sidebar, the [direct messages](/help/direct-messages) list in the left
+   sidebar, or their [user card](/help/user-cards). If there is no availability
+   indicator, the user is offline.
+
+!!! tip ""
+
+    You can see when someone offline was last active by hovering over their
+    name in the left or right sidebar.
+
+{tab|mobile}
+
+1. Tap on a user's profile picture or name. Their availability appears to the
+   left of their name on their profile.
+
+{end_tabs}
 
 ### Invisible mode
 
@@ -145,6 +187,16 @@ Your activity will still be included in your organization's [statistics](/help/a
 
     You can also toggle this setting in the **Account & privacy**
     tab of your **Personal settings** menu.
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1578). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 

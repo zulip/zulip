@@ -821,9 +821,34 @@ class EventScheduledMessagesUpdate(BaseEvent):
     scheduled_message: ScheduledMessageFields
 
 
+class ReminderFields(BaseModel):
+    reminder_id: int
+    type: Literal["private"]
+    to: list[int]
+    content: str
+    rendered_content: str
+    scheduled_delivery_timestamp: int
+    failed: bool
+    reminder_target_message_id: int
+
+
+class EventRemindersAdd(BaseEvent):
+    type: Literal["reminders"]
+    op: Literal["add"]
+    reminders: list[ReminderFields]
+
+
+class EventRemindersRemove(BaseEvent):
+    type: Literal["reminders"]
+    op: Literal["remove"]
+    reminder_id: int
+
+
 class BasicStreamFields(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_move_messages_out_of_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     creator_id: int | None
@@ -887,6 +912,8 @@ class EventSubmessage(BaseEvent):
 class SingleSubscription(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_move_messages_out_of_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     creator_id: int | None

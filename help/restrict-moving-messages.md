@@ -1,11 +1,13 @@
 # Restrict moving messages
 
-{!admin-only.md!}
-
 Zulip lets you configure who can edit message topics and move topics between
 channels. These permissions can be granted to any combination of
 [roles](/help/user-roles), [groups](/help/user-groups), and individual
 [users](/help/introduction-to-users).
+
+In addition to granting organization-wide permissions, you can configure
+permissions for each channel. For example, you could allow the "engineering"
+group to move messages just in the #engineering channel.
 
 In general, allowing all organization members to edit message topics is highly
 recommended because:
@@ -20,14 +22,34 @@ administrators and moderators.
 
 Permissions for moving messages between channels can be configured separately.
 
-## Configure who can edit topics
+## Configure who can edit topics in any channel
+
+{!admin-only.md!}
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-1. Under **Moving messages**, configure **Who can move messages to another
-   topic**.
+1. Under **Moving messages**, configure **Who can edit topics in any channel**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Configure who can edit topics in a channel
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|channel|all}
+
+1. Select a channel.
+
+{!select-channel-view-general.md!}
+
+1. Under **Channel permissions**, configure **Who can move messages inside this
+   channel**.
 
 {!save-changes.md!}
 
@@ -48,18 +70,37 @@ Permissions for moving messages between channels can be configured separately.
 
 {end_tabs}
 
-## Configure who can move messages to another channel
+## Configure who can move messages out of any channel
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-1. Under **Moving messages**, configure **Who can move messages to another
+1. Under **Moving messages**, configure **Who can move messages out of any channel**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Configure who can move messages to another channel from a specific channel
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|channel|all}
+
+1. Select a channel.
+
+{!select-channel-view-general.md!}
+
+1. Under **Channel permissions**, configure **Who can move messages out of this
    channel**.
 
 {!save-changes.md!}
 
 {end_tabs}
+
 
 ## Set a time limit for moving messages between channels
 

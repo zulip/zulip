@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 
 from scripts.lib.zulip_tools import deport
-from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
+from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEVELOPMENT, PRODUCTION, get_config, get_secret
 
@@ -681,6 +681,10 @@ MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 # be soft-reactivated in the case of user group mention.
 MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION = 11
 
+# The maximum number of newly subscribed users for which the server
+# will consider sending DMs to each new subscriber.
+MAX_BULK_NEW_SUBSCRIPTION_MESSAGES = 100
+
 # Limiting guest access to other users via the
 # can_access_all_users_group setting makes presence queries much more
 # expensive. This can be a significant performance problem for
@@ -730,3 +734,10 @@ NAVIGATION_TOUR_VIDEO_URL: str | None = (
 
 # Webhook signature verification.
 VERIFY_WEBHOOK_SIGNATURES = True
+
+# SCIM API configuration.
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
+
+# Minimum number of subscribers in a channel for us to no longer
+# send full subscriber data to the client.
+MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 250

@@ -29,6 +29,16 @@ their organization.
     You can also use <kbd>Shift</kbd> + <kbd>V</kbd> to show or hide read receipts
     for the selected message.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/667). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 !!! tip ""

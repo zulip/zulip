@@ -74,7 +74,11 @@ export function initialize() {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
         }
-        compose_validate.warn_if_topic_resolved(false);
+        const recipient_widget_hidden =
+            $(".compose_select_recipient-dropdown-list-container").length === 0;
+        if (recipient_widget_hidden) {
+            compose_validate.warn_if_topic_resolved(false);
+        }
         const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
 
         // Change compose close button tooltip as per condition.
@@ -133,9 +137,9 @@ export function initialize() {
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
-                compose_send_menu_popover.open_send_later_menu();
+                compose_send_menu_popover.open_schedule_message_menu();
 
-                // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
+                // We need to set this flag to true here because `open_schedule_message_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
                 // would again show the wildcard warning banner when we actually send the message from 'send-later' modal.
                 compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
@@ -295,7 +299,7 @@ export function initialize() {
 
             const sub = sub_store.get(stream_id);
 
-            subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
+            subscriber_api.add_user_ids_to_stream([user_id], sub, true, success, xhr_failure);
         },
     );
 

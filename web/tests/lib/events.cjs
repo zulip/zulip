@@ -56,6 +56,8 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_move_messages_out_of_channel_group: 2,
+        can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
@@ -77,6 +79,8 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_move_messages_out_of_channel_group: 2,
+        can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
@@ -651,6 +655,29 @@ exports.fixtures = {
         value: false,
     },
 
+    reminders__add: {
+        type: "reminders",
+        op: "add",
+        reminders: [
+            {
+                reminder_id: 17,
+                type: "private",
+                to: [6],
+                content: "Hello there!",
+                rendered_content: "<p>Hello there!</p>",
+                scheduled_delivery_timestamp: 1681662420,
+                failed: false,
+                reminder_target_message_id: 213,
+            },
+        ],
+    },
+
+    reminders__remove: {
+        type: "reminders",
+        op: "remove",
+        reminder_id: 17,
+    },
+
     restart: {
         type: "restart",
         zulip_version: "9.0-dev-753-gced3e85da9",
@@ -1172,6 +1199,13 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_left_sidebar_unreads_count_summary: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_unreads_count_summary",
+        value: false,
     },
 
     user_settings__web_line_height_percent: {

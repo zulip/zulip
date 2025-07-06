@@ -84,15 +84,15 @@ def update_user_status_backend(
     user_profile: UserProfile,
     *,
     away: Json[bool] | None = None,
-    status_text: Annotated[
-        str | None, StringConstraints(strip_whitespace=True, max_length=60)
-    ] = None,
-    emoji_name: str | None = None,
     emoji_code: str | None = None,
+    emoji_name: str | None = None,
     # TODO: emoji_type is the more appropriate name for this parameter, but changing
     # that requires nontrivial work on the API documentation, since it's not clear
     # that the reactions endpoint would prefer such a change.
     emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
+    status_text: Annotated[
+        str | None, StringConstraints(strip_whitespace=True, max_length=60)
+    ] = None,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
@@ -153,12 +153,12 @@ def update_active_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    status: str,
-    ping_only: Json[bool] = False,
-    new_user_input: Json[bool] = False,
-    slim_presence: Json[bool] = False,
-    last_update_id: Json[int] | None = None,
     history_limit_days: Json[int] | None = None,
+    last_update_id: Json[int] | None = None,
+    new_user_input: Json[bool] = False,
+    ping_only: Json[bool] = False,
+    slim_presence: Json[bool] = False,
+    status: str,
 ) -> HttpResponse:
     if last_update_id is not None:
         # This param being submitted by the client, means they want to use

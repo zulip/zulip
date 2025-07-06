@@ -18,8 +18,7 @@ type SendOption = Partial<Record<TimeKey, {text: string; stamp: number}>>;
 
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 
-// scheduled_messages_data is a map where key=scheduled_message_id and value=scheduled_messages
-export const scheduled_messages_data = new Map<number, ScheduledMessage>();
+export const scheduled_messages_by_id = new Map<number, ScheduledMessage>();
 
 let selected_send_later_timestamp: number | undefined;
 
@@ -27,6 +26,10 @@ let selected_send_later_timestamp: number | undefined;
 // confirmation banner if the message is scheduled for the minimal 5 minutes ahead time,
 // regardless of whether the user tried to schedule it for sooner or not.
 export let show_minimum_scheduled_message_delay_minutes_note = false;
+
+export function get_all_scheduled_messages(): ScheduledMessage[] {
+    return [...scheduled_messages_by_id.values()];
+}
 
 function compute_send_times(now = new Date()): Record<TimeKey, number> {
     const send_times: Record<string, number> = {};
@@ -54,22 +57,22 @@ function compute_send_times(now = new Date()): Record<TimeKey, number> {
 
 export function add_scheduled_messages(scheduled_messages: ScheduledMessage[]): void {
     for (const scheduled_message of scheduled_messages) {
-        scheduled_messages_data.set(scheduled_message.scheduled_message_id, scheduled_message);
+        scheduled_messages_by_id.set(scheduled_message.scheduled_message_id, scheduled_message);
     }
 }
 
 export function remove_scheduled_message(scheduled_message_id: number): void {
-    if (scheduled_messages_data.has(scheduled_message_id)) {
-        scheduled_messages_data.delete(scheduled_message_id);
+    if (scheduled_messages_by_id.has(scheduled_message_id)) {
+        scheduled_messages_by_id.delete(scheduled_message_id);
     }
 }
 
 export function update_scheduled_message(scheduled_message: ScheduledMessage): void {
-    if (!scheduled_messages_data.has(scheduled_message.scheduled_message_id)) {
+    if (!scheduled_messages_by_id.has(scheduled_message.scheduled_message_id)) {
         return;
     }
 
-    scheduled_messages_data.set(scheduled_message.scheduled_message_id, scheduled_message);
+    scheduled_messages_by_id.set(scheduled_message.scheduled_message_id, scheduled_message);
 }
 
 export function delete_scheduled_message(scheduled_msg_id: number, success?: () => void): void {
@@ -80,7 +83,7 @@ export function delete_scheduled_message(scheduled_msg_id: number, success?: () 
 }
 
 export function get_count(): number {
-    return scheduled_messages_data.size;
+    return scheduled_messages_by_id.size;
 }
 
 export function get_filtered_send_opts(date: Date): {

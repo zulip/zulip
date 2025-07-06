@@ -90,6 +90,16 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 
 1. Hover over an emoji reaction to see who reacted with that emoji.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/740). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ### Toggle whether names of reacting users are displayed

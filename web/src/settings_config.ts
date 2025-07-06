@@ -67,6 +67,10 @@ export const web_channel_default_view_values = {
         code: 1,
         description: $t({defaultMessage: "Top topic in the channel"}),
     },
+    top_unread_topic_in_channel: {
+        code: 4,
+        description: $t({defaultMessage: "Top unread topic in the channel"}),
+    },
     list_of_topics: {
         code: 3,
         description: $t({defaultMessage: "List of topics"}),
@@ -619,6 +623,9 @@ export const preferences_settings_labels = {
     ),
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
+    web_left_sidebar_unreads_count_summary: $t({
+        defaultMessage: "Show unread count summaries in the left sidebar",
+    }),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
         $t_html({
@@ -715,10 +722,10 @@ export const all_group_setting_labels = {
         can_manage_billing_group: $t({defaultMessage: "Who can manage plans and billing"}),
         can_create_groups: $t({defaultMessage: "Who can create user groups"}),
         can_move_messages_between_topics_group: $t({
-            defaultMessage: "Who can move messages to another topic",
+            defaultMessage: "Who can edit topics in any channel",
         }),
         can_move_messages_between_channels_group: $t({
-            defaultMessage: "Who can move messages to another channel",
+            defaultMessage: "Who can move messages out of any channel",
         }),
         can_resolve_topics_group: $t({defaultMessage: "Who can resolve topics"}),
         can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),
@@ -744,6 +751,12 @@ export const all_group_setting_labels = {
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
+        can_move_messages_out_of_channel_group: $t({
+            defaultMessage: "Who can move messages out of this channel",
+        }),
+        can_move_messages_within_channel_group: $t({
+            defaultMessage: "Who can move messages inside this channel",
+        }),
         can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
         can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
         can_subscribe_group: $t({defaultMessage: "Who can subscribe to this channel"}),
@@ -840,6 +853,8 @@ export const owner_editable_realm_group_permission_settings = new Set([
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_send_message_group",
     "can_administer_channel_group",
+    "can_move_messages_out_of_channel_group",
+    "can_move_messages_within_channel_group",
     "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",

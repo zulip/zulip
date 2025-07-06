@@ -55,6 +55,8 @@ from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_id_for_message,
     can_access_stream_history,
+    can_edit_topic,
+    can_move_messages_out_of_channel,
     check_stream_access_based_on_can_send_message_group,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
@@ -77,7 +79,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
-from zerver.lib.url_encoding import near_stream_message_url
+from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -335,7 +337,7 @@ def send_message_moved_breadcrumbs(
         "display_recipient": new_stream.name,
         "topic": new_topic_name,
     }
-    moved_message_link = near_stream_message_url(target_message.realm, message)
+    moved_message_link = stream_message_url(target_message.realm, message)
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
@@ -1494,7 +1496,9 @@ def check_update_message(
             if not user_profile.can_resolve_topic():
                 raise JsonableError(_("You don't have permission to resolve topics."))
         else:
-            if not user_profile.can_move_messages_to_another_topic():
+            if not can_edit_topic(
+                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+            ):
                 raise JsonableError(_("You don't have permission to edit this message"))
 
             # If there is a change to the topic, check that the user is allowed to
@@ -1558,7 +1562,7 @@ def check_update_message(
     if isinstance(message_edit_request, StreamMessageEditRequest):
         if message_edit_request.is_stream_edited:
             assert message.is_stream_message()
-            if not user_profile.can_move_messages_between_streams():
+            if not can_move_messages_out_of_channel(user_profile, message_edit_request.orig_stream):
                 raise JsonableError(_("You don't have permission to move this message"))
 
             check_stream_access_based_on_can_send_message_group(

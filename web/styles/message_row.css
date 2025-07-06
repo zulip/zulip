@@ -79,10 +79,6 @@
     padding: 0 5px 0 3px;
 
     &:hover .message_controls {
-        .empty-star:hover {
-            cursor: pointer;
-        }
-
         > .message_control_button {
             opacity: 1;
             visibility: visible;
@@ -529,6 +525,7 @@
         }
 
         & .message-controls-icon {
+            cursor: pointer;
             /* The icon body is 16px square at 16px/1em; the clickable
                area for the icon is 26px wide by 25px tall, so these
                values ensure a 26px x 25px clickable area for the icon. */
@@ -579,10 +576,6 @@
 
     .edit_content {
         width: var(--message-box-icon-width);
-
-        &:hover {
-            cursor: pointer;
-        }
 
         .move_message_button,
         .edit_content_button {

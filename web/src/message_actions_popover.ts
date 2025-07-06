@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 
 import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
@@ -64,7 +65,14 @@ export function toggle_message_actions_menu(message: Message): boolean {
     return true;
 }
 
-export function initialize(): void {
+export function initialize({
+    message_reminder_click_handler,
+}: {
+    message_reminder_click_handler: (
+        remind_message_id: number,
+        target: tippy.ReferenceElement,
+    ) => void;
+}): void {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
         theme: "popover-menu",
         placement: "bottom",
@@ -139,6 +147,14 @@ export function initialize(): void {
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".message-reminder", (e) => {
+                const remind_message_id = Number($(e.currentTarget).attr("data-message-id"));
+                popover_menus.hide_current_popover_if_visible(instance);
+                message_reminder_click_handler(remind_message_id, instance.reference);
+                e.preventDefault();
+                e.stopPropagation();
             });
 
             $popper.one("click", ".popover_move_message", (e) => {

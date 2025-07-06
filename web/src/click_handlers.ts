@@ -197,7 +197,7 @@ export function initialize(): void {
         // user to the message's near view instead of opening the
         // compose box.
         const current_filter = narrow_state.filter();
-        if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+        if (current_filter !== undefined && !current_filter.contains_no_partial_conversations()) {
             const message = message_store.get(id);
 
             if (message === undefined) {
@@ -566,10 +566,7 @@ export function initialize(): void {
                 mutation: MutationRecord,
                 instance: tippy.Instance,
             ): boolean {
-                return Array.prototype.includes.call(
-                    mutation.removedNodes,
-                    instance.reference.parentElement,
-                );
+                return Array.prototype.includes.call(mutation.removedNodes, instance.reference);
             }
 
             do_render_buddy_list_tooltip(
@@ -883,7 +880,7 @@ export function initialize(): void {
         window.location.hash = "narrow/is/dm";
     });
 
-    $("body").on("click", ".direct-messages-list-filter", (e) => {
+    $("body").on("click", ".direct-messages-search-section", (e) => {
         // We don't want clicking on the filter to trigger the DM
         // narrow defined on click for
         // `#direct-messages-section-header.zoom-in`.

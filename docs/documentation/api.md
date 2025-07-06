@@ -352,6 +352,10 @@ above.
    **Changes**: New in Zulip 11.0 (feature level ZF-1f4a39).
    ```
 
+1. Proofread your new documentation in its rendered HTML, including
+   all links! Unmerged changelog entries are conveniently previewed on
+   `/api/changelog`.
+
 ## Why a custom system?
 
 Given that our documentation is written in large part using the

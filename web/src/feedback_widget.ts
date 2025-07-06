@@ -36,6 +36,7 @@ type FeedbackWidgetOptions = {
     title_text: string;
     undo_button_text?: string;
     on_undo?: () => void;
+    hide_delay?: number;
 };
 
 const meta: FeedbackWidgetMeta = {
@@ -169,7 +170,7 @@ export function show(opts: FeedbackWidgetOptions): void {
     meta.undo = opts.on_undo;
 
     // add a four second delay before closing up.
-    meta.hide_me_time = Date.now() + 4000;
+    meta.hide_me_time = Date.now() + (opts.hide_delay ?? 4000);
 
     meta.$container.find(".feedback_title").text(opts.title_text);
     meta.$container.find(".feedback_undo").text(opts.undo_button_text ?? "");

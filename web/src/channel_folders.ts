@@ -35,3 +35,7 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
         return true;
     });
 }
+
+export function is_valid_folder_id(folder_id: number): boolean {
+    return channel_folder_by_id_dict.has(folder_id);
+}

@@ -1,8 +1,8 @@
 ---
-import EmojiCodes from '../../../static/generated/emoji/emoji_codes.json';
+import EmojiCodes from "../../../static/generated/emoji/emoji_codes.json";
 
-const nameToCodePoint: {[key: string]: string} = EmojiCodes["name_to_codepoint"];
-const rowHTML = (emoticon: string, codepoint: string, name: string) => (`
+const nameToCodePoint: Record<string, string> = EmojiCodes.name_to_codepoint;
+const rowHTML = (emoticon: string, codepoint: string, name: string) => `
 <tr>
     <td><code>${emoticon}</code></td>
     <td>
@@ -12,14 +12,15 @@ const rowHTML = (emoticon: string, codepoint: string, name: string) => (`
             class="emoji-big">
     </td>
 </tr>
-`);
+`;
 
 let body = "";
-const emoticonConversions: {[key: string]: string} = EmojiCodes["emoticon_conversions"]
-Object.keys(emoticonConversions).forEach((name: string) => {
+const emoticonConversions: Record<string, string> =
+    EmojiCodes.emoticon_conversions;
+for (const name of Object.keys(emoticonConversions)) {
     const emoticon: string = emoticonConversions[name]!;
-    body += rowHTML(name, nameToCodePoint[emoticon.slice(1, -1)]!, emoticon)
-})
+    body += rowHTML(name, nameToCodePoint[emoticon.slice(1, -1)]!, emoticon);
+}
 ---
 
 <table>

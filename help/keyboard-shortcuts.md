@@ -105,6 +105,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
+* **Go to list of topics for the current channel**: <kbd>Y</kbd>
+
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 
 * **Cycle between channel views**: <kbd>Shift</kbd> + <kbd>A</kbd>

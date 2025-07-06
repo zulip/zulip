@@ -34,18 +34,16 @@ formatting:
 
 {!start-composing.md!}
 
-1. To use inline LaTeX, use double dollar signs (`$$`) around the text:
+1.  To use inline LaTeX, use double dollar signs (`$$`) around the text:
 
-~~~
-$$O(n^2)$$
-~~~
-   To use displayed LaTeX, use triple backticks and the word math
-   (````math`) followed by some text and triple backticks at the end:
-~~~
-``` math
-\int_a^b f(t)\, dt = F(b) - F(a)
-```
-~~~
+        $$O(n^2)$$
+
+    To use displayed LaTeX, use triple backticks and the word math
+    (````math`) followed by some text and triple backticks at the end:
+
+        ``` math
+        \int_a^b f(t)\, dt = F(b) - F(a)
+        ```
 
 {end_tabs}
 

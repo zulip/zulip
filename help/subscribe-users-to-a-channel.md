@@ -24,12 +24,24 @@ You will only see the options below if you have the required permissions.
 1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the channel.
 
+1. Configure **Send notification message to newly subscribed users** as desired.
+
 1. Click **Add**.
 
 !!! tip ""
 
       To subscribe users in bulk, you can copy members from an
       existing channel or [user group](/help/user-groups).
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1222). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 
@@ -51,6 +63,8 @@ You will only see the options below if you have the required permissions.
 
 1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the channel.
+
+1. Configure **Send notification message to newly subscribed users** as desired.
 
 1. Click **Add**.
 

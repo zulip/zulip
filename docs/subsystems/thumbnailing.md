@@ -87,7 +87,7 @@ producing the 100x100 size.
 When an image file (as determined by the browser-supplied content-type) is
 uploaded, we immediately upload the original content into S3 or onto disk. Its
 headers are then examined, and used to create an ImageAttachment row, with
-properties determined from the image; `thumbnailed_metadata` is left empty. A
+properties determined from the image; `thumbnail_metadata` is left empty. A
 task is dispatched to the `thumbnail` worker to generate thumbnails in all of
 the format/size combinations that the server currently has configured.
 
@@ -98,7 +98,7 @@ the image is determined to be invalid at this stage, the file upload returns
 inline image.
 
 When a message is sent, it checks the ImageAttachment rows for each referenced
-image; if they have a non-empty `thumbnailed_metadata`, then it writes out an
+image; if they have a non-empty `thumbnail_metadata`, then it writes out an
 `img` tag pointing to one of them (see below); otherwise, it writes out a
 specially-tagged "spinner" image, which indicates the server is still processing
 the upload. The image tag encodes the original dimensions and if the image is
@@ -114,7 +114,7 @@ Since the worker takes no action if all necessary thumbnails already exist,
 this has little cost in general.
 
 The `thumbnail` worker generates the thumbnails, uploads them to S3 or disk, and
-then updates the `thumbnailed_metadata` of the ImageAttachment row to contain a
+then updates the `thumbnail_metadata` of the ImageAttachment row to contain a
 list of formats/sizes which thumbnails were generated in. At the time of commit,
 if there are already messages which reference the attachment row, then we do a
 "silent" update of all of them to remove the "spinner" and insert an image.
@@ -135,7 +135,7 @@ may return any other thumbnail of its choosing (preferring similar sizes, and
 accepted formats based on the client's `Accepts` header).
 
 If the request is for a thumbnail format/size which is supported by the server,
-but not in the ImageAttachment's `thumbnailed_metadata` (as would happen if the
+but not in the ImageAttachment's `thumbnail_metadata` (as would happen if the
 server's supported set is added to over time) then the server should generate,
 store, and return the requested format/size on-demand.
 

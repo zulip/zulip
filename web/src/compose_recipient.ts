@@ -312,6 +312,8 @@ function on_show_callback(): void {
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
     $("#compose_select_recipient_widget").removeClass("widget-open");
+    compose_state.set_is_processing_forward_message(false);
+    compose_validate.warn_if_topic_resolved(false);
     if (!compose_select_recipient_dropdown_widget.item_clicked) {
         // If the dropdown was NOT closed due to selecting an item,
         // don't do anything.
@@ -355,7 +357,6 @@ export function initialize(): void {
         tippy_props: {
             offset: [-10, 5],
         },
-        keep_focus_on_search: true,
         tab_moves_focus_to_target() {
             if (compose_state.get_message_type() === "stream") {
                 return "#stream_message_recipient_topic";

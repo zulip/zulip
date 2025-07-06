@@ -59,6 +59,9 @@
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Inbox' }}</span>
                     <span class="unread_count normal-count"></span>
+                    <span class="masked_unread_count">
+                        <i class="zulip-icon zulip-icon-masked-unread"></i>
+                    </span>
                 </a>
                 <span class="arrow sidebar-menu-icon inbox-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Inbox options'}}"></i></span>
             </li>
@@ -70,6 +73,9 @@
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Recent conversations' }}</span>
                     <span class="unread_count normal-count"></span>
+                    <span class="masked_unread_count">
+                        <i class="zulip-icon zulip-icon-masked-unread"></i>
+                    </span>
                 </a>
                 <span class="arrow sidebar-menu-icon recent-view-sidebar-menu-icon hidden-for-spectators">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Recent conversations options'}}"></i>
@@ -83,6 +89,9 @@
                     {{~!-- squash whitespace --~}}
                     <span class="left-sidebar-navigation-label">{{t 'Combined feed' }}</span>
                     <span class="unread_count normal-count"></span>
+                    <span class="masked_unread_count">
+                        <i class="zulip-icon zulip-icon-masked-unread"></i>
+                    </span>
                 </a>
                 <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Combined feed options'}}"></i>
@@ -143,9 +152,22 @@
                     <span class="unread_count quiet-count"></span>
                 </a>
             </li>
+            <li class="top_left_reminders top_left_row hidden-for-spectators">
+                <a class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" href="#reminders" data-tooltip-template-id="reminders-tooltip-template">
+                    <span class="filter-icon">
+                        <i class="zulip-icon zulip-icon-alarm-clock" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span class="left-sidebar-navigation-label">{{t 'Reminders' }}</span>
+                    <span class="unread_count quiet-count"></span>
+                </a>
+            </li>
         </ul>
     </div>
 
+    <a id="hide-more-direct-messages">
+        <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
+    </a>
     <div id="direct-messages-section-header" class="direct-messages-container hidden-for-spectators zoom-out zoom-in-sticky">
         <i id="toggle-direct-messages-section-icon" class="zulip-icon zulip-icon-heading-triangle-right sidebar-heading-icon rotate-icon-down dm-tooltip-target zoom-in-hide" aria-hidden="true" tabindex="0" role="button"></i>
         <h4 class="left-sidebar-title"><span class="dm-tooltip-target">{{t 'DIRECT MESSAGES' }}</span></h4>
@@ -160,14 +182,10 @@
         <div class="heading-markers-and-unreads">
             <span class="unread_count"></span>
         </div>
-        <a class="zoom-out-hide" id="hide-more-direct-messages">
-            <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
-        </a>
-        <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-row">
-            <input class="direct-messages-list-filter filter_text_input home-page-input" type="text" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
-            <button type="button" class="clear_search_button" id="clear-direct-messages-search-button">
-                <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-            </button>
+        <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-input-container">
+            {{#> input_wrapper input_type="filter-input" icon="search" input_button_icon="close"}}
+                <input type="text" class="input-element direct-messages-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
+            {{/input_wrapper}}
         </div>
     </div>
     {{~!-- squash whitespace --~}}
@@ -177,11 +195,11 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide {{#if hide_unread_counts}}hide_unread_counts{{/if}}">
+            <div id="streams_header" class="zoom-in-hide">
                 <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'CHANNELS' }}</span></h4>
                 <div class="left-sidebar-controls">
                     <i id="filter_streams_tooltip" class="streams_filter_icon zulip-icon zulip-icon-search" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
-                    <span id="add_streams_tooltip" class="hidden-for-spectators" data-tippy-content="{{t 'Add channels' }}">
+                    <span id="add_streams_tooltip" class="hidden-for-spectators">
                         <i id="streams_inline_icon" class="zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
                     </span>
                 </div>
@@ -191,12 +209,10 @@
                         <i class="zulip-icon zulip-icon-masked-unread"></i>
                     </span>
                 </div>
-
-                <div class="notdisplayed stream_search_section left-sidebar-filter-row">
-                    <input class="stream-list-filter home-page-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-                    <button type="button" class="clear_search_button" id="clear_search_stream_button">
-                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                    </button>
+                <div class="left-sidebar-filter-input-container">
+                    {{#> input_wrapper input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
+                        <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
+                    {{/input_wrapper}}
                 </div>
             </div>
             <div id="topics_header">

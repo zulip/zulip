@@ -4,5 +4,5 @@ from zerver.worker.email_senders_base import EmailSendingWorker
 
 
 @assign_queue("deferred_email_senders")
-class ImmediateEmailSenderWorker(EmailSendingWorker):
+class DeferredEmailSenderWorker(EmailSendingWorker):
     pass

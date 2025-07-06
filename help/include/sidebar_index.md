@@ -113,6 +113,7 @@
 * [Emoji reactions](/help/emoji-reactions)
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
+* [Schedule a reminder](/help/schedule-a-reminder)
 * [View images and videos](/help/view-images-and-videos)
 * [View messages sent by a user](/help/view-messages-sent-by-a-user)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)

@@ -31,8 +31,8 @@ def create_channel_folder(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    name: Annotated[str, StringConstraints(max_length=ChannelFolder.MAX_NAME_LENGTH)],
     description: Annotated[str, StringConstraints(max_length=ChannelFolder.MAX_DESCRIPTION_LENGTH)],
+    name: Annotated[str, StringConstraints(max_length=ChannelFolder.MAX_NAME_LENGTH)],
 ) -> HttpResponse:
     realm = user_profile.realm
     check_channel_folder_name(name, realm)
@@ -59,9 +59,9 @@ def update_channel_folder(
     user_profile: UserProfile,
     *,
     channel_folder_id: PathOnly[int],
-    name: str | None = None,
     description: str | None = None,
     is_archived: Json[bool] | None = None,
+    name: str | None = None,
 ) -> HttpResponse:
     channel_folder = get_channel_folder_by_id(channel_folder_id, user_profile.realm)
 

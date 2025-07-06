@@ -51,7 +51,7 @@ from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME, messages_for_topic
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.upload import create_attachment
-from zerver.lib.url_encoding import near_message_url
+from zerver.lib.url_encoding import message_link_url
 from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.lib.user_topics import set_topic_visibility_policy
 from zerver.models import (
@@ -5637,8 +5637,8 @@ class MessageVisibilityTest(ZulipTestCase):
         m.assert_called_once_with(realm)
 
 
-class PersonalMessagesNearTest(ZulipTestCase):
-    def test_near_pm_message_url(self) -> None:
+class PersonalMessagesTest(ZulipTestCase):
+    def test_pm_message_url(self) -> None:
         realm = get_realm("zulip")
         message = dict(
             type="personal",
@@ -5648,8 +5648,15 @@ class PersonalMessagesNearTest(ZulipTestCase):
                 dict(id=80),
             ],
         )
-        url = near_message_url(
+        url = message_link_url(
             realm=realm,
             message=message,
         )
-        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80-pm/near/555")
+        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80/near/555")
+
+        url = message_link_url(
+            realm=realm,
+            message=message,
+            conversation_link=True,
+        )
+        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80/with/555")

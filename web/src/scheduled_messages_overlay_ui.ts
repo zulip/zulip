@@ -39,9 +39,11 @@ type ScheduledMessageRenderContext = ScheduledMessage &
 export const keyboard_handling_context = {
     get_items_ids() {
         const scheduled_messages_ids = [];
-        const sorted_messages = sort_scheduled_messages(scheduled_messages.scheduled_messages_data);
-        for (const message of sorted_messages) {
-            scheduled_messages_ids.push(message.scheduled_message_id.toString());
+        const sorted_scheduled_messages = sort_scheduled_messages(
+            scheduled_messages.get_all_scheduled_messages(),
+        );
+        for (const scheduled_message of sorted_scheduled_messages) {
+            scheduled_messages_ids.push(scheduled_message.scheduled_message_id.toString());
         }
         return scheduled_messages_ids;
     },
@@ -71,61 +73,57 @@ export const keyboard_handling_context = {
     id_attribute_name: "data-scheduled-message-id",
 };
 
-function sort_scheduled_messages(
-    scheduled_messages: Map<number, ScheduledMessage>,
-): ScheduledMessage[] {
-    const sorted_messages = [...scheduled_messages.values()].sort(
+function sort_scheduled_messages(scheduled_messages: ScheduledMessage[]): ScheduledMessage[] {
+    const sorted_scheduled_messages = scheduled_messages.sort(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
-    return sorted_messages;
+    return sorted_scheduled_messages;
 }
 
 export function handle_keyboard_events(event_key: string): void {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
-function format(
-    scheduled_messages: Map<number, ScheduledMessage>,
-): ScheduledMessageRenderContext[] {
-    const formatted_msgs = [];
-    const sorted_messages = sort_scheduled_messages(scheduled_messages);
+function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderContext[] {
+    const formatted_scheduled_msgs = [];
+    const sorted_scheduled_messages = sort_scheduled_messages(scheduled_messages);
 
-    for (const msg of sorted_messages) {
-        let msg_render_context;
-        const time = new Date(msg.scheduled_delivery_timestamp * 1000);
+    for (const scheduled_msg of sorted_scheduled_messages) {
+        let scheduled_msg_render_context;
+        const time = new Date(scheduled_msg.scheduled_delivery_timestamp * 1000);
         const formatted_send_at_time = timerender.get_full_datetime(time, "time");
-        if (msg.type === "stream") {
-            const stream_id = msg.to;
+        if (scheduled_msg.type === "stream") {
+            const stream_id = scheduled_msg.to;
             const stream_name = sub_store.maybe_get_stream_name(stream_id);
             const color = stream_data.get_color(stream_id);
             const recipient_bar_color = stream_color.get_recipient_bar_color(color);
             const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
 
             assert(stream_name !== undefined);
-            msg_render_context = {
-                ...msg,
+            scheduled_msg_render_context = {
+                ...scheduled_msg,
                 is_stream: true as const,
                 stream_id,
                 stream_name,
                 recipient_bar_color,
                 stream_privacy_icon_color,
                 formatted_send_at_time,
-                topic_display_name: util.get_final_topic_display_name(msg.topic),
-                is_empty_string_topic: msg.topic === "",
+                topic_display_name: util.get_final_topic_display_name(scheduled_msg.topic),
+                is_empty_string_topic: scheduled_msg.topic === "",
             };
         } else {
-            const user_ids_string = msg.to.join(",");
+            const user_ids_string = scheduled_msg.to.join(",");
             const recipients = people.format_recipients(user_ids_string, "long");
-            msg_render_context = {
-                ...msg,
+            scheduled_msg_render_context = {
+                ...scheduled_msg,
                 is_stream: false as const,
                 recipients,
                 formatted_send_at_time,
             };
         }
-        formatted_msgs.push(msg_render_context);
+        formatted_scheduled_msgs.push(scheduled_msg_render_context);
     }
-    return formatted_msgs;
+    return formatted_scheduled_msgs;
 }
 
 export function launch(): void {
@@ -139,7 +137,7 @@ export function launch(): void {
     });
 
     const rendered_list = render_scheduled_message({
-        scheduled_messages_data: format(scheduled_messages.scheduled_messages_data),
+        scheduled_messages_data: format(scheduled_messages.get_all_scheduled_messages()),
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.append($(rendered_list));
@@ -153,7 +151,7 @@ export function rerender(): void {
         return;
     }
     const rendered_list = render_scheduled_message({
-        scheduled_messages_data: format(scheduled_messages.scheduled_messages_data),
+        scheduled_messages_data: format(scheduled_messages.get_all_scheduled_messages()),
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.find(".scheduled-message-row").remove();

@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -47,48 +46,6 @@ export type CombinedPillContainer = InputPillContainer<CombinedPill>;
 
 export type GroupSettingPill = UserGroupPill | UserPill;
 export type GroupSettingPillContainer = InputPillContainer<GroupSettingPill>;
-
-export function build_highlight_regex(query: string): RegExp {
-    const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
-    return regex;
-}
-
-export function highlight_with_escaping_and_regex(regex: RegExp, item: string): string {
-    // if regex is empty return entire item escaped
-    if (regex.source === "()") {
-        return Handlebars.Utils.escapeExpression(item);
-    }
-
-    // We need to assemble this manually (as opposed to doing 'join') because we need to
-    // (1) escape all the pieces and (2) the regex is case-insensitive, and we need
-    // to know the case of the content we're replacing (you can't just use a bolded
-    // version of 'query')
-
-    const pieces = item.split(regex).filter(Boolean);
-    let result = "";
-
-    for (const [i, piece] of pieces.entries()) {
-        if (regex.test(piece) && (i === 0 || pieces[i - 1]!.endsWith(" "))) {
-            // only highlight if the matching part is a word prefix, ie
-            // if it is the 1st piece or if there was a space before it
-            result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
-        } else {
-            result += Handlebars.Utils.escapeExpression(piece);
-        }
-    }
-
-    return result;
-}
-
-export function make_query_highlighter(query: string): (phrase: string) => string {
-    query = query.toLowerCase();
-
-    const regex = build_highlight_regex(query);
-
-    return function (phrase) {
-        return highlight_with_escaping_and_regex(regex, phrase);
-    };
-}
 
 type StreamData = {
     invite_only: boolean;
@@ -174,6 +131,15 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
 export function rewire_render_person(value: typeof render_person): void {
     render_person = value;
+}
+
+export let render_topic_state = (state: string): string =>
+    render_typeahead_item({
+        primary: state,
+    });
+
+export function rewire_render_topic_state(value: typeof render_topic_state): void {
+    render_topic_state = value;
 }
 
 export let render_user_group = (user_group: {name: string; description: string}): string =>

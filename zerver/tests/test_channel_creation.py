@@ -328,6 +328,7 @@ class TestCreateStreams(ZulipTestCase):
                 "8": ["brand new stream"],
             },
             "already_subscribed": {},
+            "new_subscription_messages_sent": True,
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(orjson.loads(response.content), expected_response)

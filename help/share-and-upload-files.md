@@ -75,6 +75,14 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 
 1. _(optional)_ Modify the link text as desired.
 
+!!! warn ""
+
+    Implementation of sharing files from other applications in the
+    mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/52). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+
 {end_tabs}
 
 !!! tip ""

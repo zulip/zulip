@@ -8,9 +8,6 @@ type QueryWord = {
 export type SearchData = {
     query_words: QueryWord[];
     has_stop_word: boolean;
-    stream_query?: string;
-    topic_query?: string;
-    is_empty_string_topic?: boolean;
 };
 
 export type NarrowBannerData = {

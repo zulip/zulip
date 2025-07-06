@@ -1,14 +1,12 @@
 # Move content to another channel
 
-Zulip makes it possible to move messages, or an entire topic, to another channel.
-Organizations can [configure][configure-moving-permissions] which
-[roles](/help/user-roles) have permission to move messages between
+Zulip makes it possible to move messages, or an entire topic, to another
+channel. Organization administrators can
+[configure](/help/restrict-moving-messages) who can move messages between
 channels.
 
-[configure-moving-permissions]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel
-
-To help others find moved content, you can have the [notification
-bot][notification-bot] send automated notices to the source topic, the
+To help others find moved content, you can have [Notification
+Bot][notification-bot] send automated notices to the source topic, the
 destination topic, or both. These notices include:
 
 * A link to the source or destination topic.
@@ -16,9 +14,6 @@ destination topic, or both. These notices include:
 * Who moved the content.
 
 ## Move a topic to another channel
-
-To move a topic, you must have access to both the source and
-destination channels.
 
 {start_tabs}
 
@@ -35,12 +30,10 @@ destination channels.
 
 1. Click **Confirm** to move the topic to another channel.
 
-
 !!! warn ""
 
     **Note**: When a topic is moved to a private channel with protected history,
               messages in the topic will be visible to all the subscribers.
-
 
 {end_tabs}
 
@@ -64,7 +57,6 @@ destination channels.
 1. Toggle whether automated notices should be sent.
 
 1. Click **Confirm** to move the selected content to another channel.
-
 
 !!! warn ""
 

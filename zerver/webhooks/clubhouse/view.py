@@ -77,7 +77,7 @@ STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE = "{operation} with {entity}"
 
 def get_action_with_primary_id(payload: WildValue) -> WildValue:
     for action in payload["actions"]:
-        if payload["primary_id"] == action["id"]:
+        if payload["primary_id"].tame(check_int) == action["id"].tame(check_int):
             action_with_primary_id = action
 
     return action_with_primary_id
@@ -176,9 +176,9 @@ def get_comment_added_body(entity: str, payload: WildValue, ignored_action: Wild
     actions = payload["actions"]
     kwargs = {"entity": entity}
     for action in actions:
-        if action["id"] == payload["primary_id"]:
+        if action["id"].tame(check_int) == payload["primary_id"].tame(check_int):
             kwargs["text"] = action["text"].tame(check_string)
-        elif action["entity_type"] == entity:
+        elif action["entity_type"].tame(check_string) == entity:
             name_template = get_name_template(entity).format(
                 name=action["name"].tame(check_string),
                 app_url=action.get("app_url").tame(check_none_or(check_string)),
@@ -663,7 +663,7 @@ def get_story_update_batch_body(payload: WildValue, action: WildValue) -> str | 
 def get_entity_name(entity: str, payload: WildValue, action: WildValue) -> str | None:
     name = action["name"].tame(check_string) if "name" in action else None
 
-    if name is None or action["entity_type"] == "branch":
+    if name is None or action["entity_type"].tame(check_string) == "branch":
         for other_action in payload["actions"]:
             if other_action["entity_type"].tame(check_string) == entity:
                 name = other_action["name"].tame(check_string)

@@ -111,8 +111,8 @@ def get_message_edit_history(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    message_id: PathOnly[NonNegativeInt],
     allow_empty_topic_name: Json[bool] = False,
+    message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     user_realm_message_edit_history_visibility_policy = (
         user_profile.realm.message_edit_history_visibility_policy
@@ -149,14 +149,14 @@ def update_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    content: str | None = None,
     message_id: PathOnly[NonNegativeInt],
+    prev_content_sha256: str | None = None,
+    propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
+    send_notification_to_new_thread: Json[bool] = True,
+    send_notification_to_old_thread: Json[bool] = False,
     stream_id: Json[NonNegativeInt] | None = None,
     topic_name: OptionalTopic = None,
-    propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
-    send_notification_to_old_thread: Json[bool] = False,
-    send_notification_to_new_thread: Json[bool] = True,
-    content: str | None = None,
-    prev_content_sha256: str | None = None,
 ) -> HttpResponse:
     updated_message_result = check_update_message(
         user_profile,
@@ -224,9 +224,9 @@ def json_fetch_raw_message(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    message_id: PathOnly[NonNegativeInt],
-    apply_markdown: Json[bool] = True,
     allow_empty_topic_name: Json[bool] = False,
+    apply_markdown: Json[bool] = True,
+    message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)

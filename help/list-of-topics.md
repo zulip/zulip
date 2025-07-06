@@ -20,6 +20,10 @@ overview if you like reading your messages one channel at a time.
    the list of topics when done (e.g., by using the **back** button in your
    browser or desktop app) to select the next conversation.
 
+!!! keyboard_tip ""
+
+    Use <kbd>Y</kbd> to go to the list of topics for the current channel.
+
 {tab|mobile}
 
 {!mobile-channels.md!}

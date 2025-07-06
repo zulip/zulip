@@ -540,7 +540,17 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("opencollective", ["financial"], display_name="Open Collective"),
     WebhookIntegration("openproject", ["project-management"], display_name="OpenProject"),
     WebhookIntegration("opensearch", ["monitoring"], display_name="OpenSearch"),
-    WebhookIntegration("opsgenie", ["meta-integration", "monitoring"]),
+    WebhookIntegration(
+        "opsgenie",
+        ["meta-integration", "monitoring"],
+        config_options=[
+            WebhookConfigOption(
+                name="eu_region",
+                description="Use Opsgenie's European service region",
+                validator=check_bool,
+            )
+        ],
+    ),
     WebhookIntegration("pagerduty", ["monitoring"], display_name="PagerDuty"),
     WebhookIntegration("papertrail", ["monitoring"]),
     WebhookIntegration("patreon", ["financial"]),

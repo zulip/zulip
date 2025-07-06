@@ -14,7 +14,6 @@ import * as message_viewport from "./message_viewport.ts";
 import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
-import * as rendered_markdown from "./rendered_markdown.ts";
 import * as resize from "./resize.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -129,6 +128,17 @@ export function update_invite_user_option(): void {
         $("#right-sidebar .invite-user-link").hide();
     } else {
         $("#right-sidebar .invite-user-link").show();
+    }
+}
+
+export function update_unread_counts_visibility(): void {
+    const hidden = !user_settings.web_left_sidebar_unreads_count_summary;
+
+    const $streams_header: JQuery = $("#streams_header");
+    const $home_view_li: JQuery = $(".top_left_row");
+
+    for (const $el of [$home_view_li, $streams_header]) {
+        $el.toggleClass("hide-unread-messages-count", hidden);
     }
 }
 
@@ -291,13 +301,13 @@ export function initialize_left_sidebar(): void {
             user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
         is_recent_view_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
-        hide_unread_counts: settings_data.should_mask_unread_count(false),
         is_spectator: page_params.is_spectator,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
     // make sure home-view and left_sidebar order persists
     reorder_left_sidebar_navigation_list(user_settings.web_home_view);
+    update_unread_counts_visibility();
 }
 
 export function initialize_right_sidebar(): void {
@@ -308,11 +318,6 @@ export function initialize_right_sidebar(): void {
     buddy_list.initialize_tooltips();
 
     update_invite_user_option();
-    if (page_params.is_spectator) {
-        rendered_markdown.update_elements(
-            $(".right-sidebar .realm-description .rendered_markdown"),
-        );
-    }
 
     $("#buddy-list-users-matching-view").on("mouseenter", ".user_sidebar_entry", (e) => {
         const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");

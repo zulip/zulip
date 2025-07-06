@@ -256,14 +256,14 @@ export function quote_message(opts: {
             topic = message.topic;
             stream_id = message.stream_id;
         }
-
+        compose_state.set_is_processing_forward_message(true);
         compose_actions.start({
             message_type: message.type,
             topic,
             keep_composebox_empty: opts.keep_composebox_empty,
             content: quoting_placeholder,
             stream_id,
-            private_message_recipient_ids: people.pm_with_user_ids(message) ?? [],
+            private_message_recipient_ids: [],
         });
         compose_recipient.toggle_compose_recipient_dropdown();
     } else {

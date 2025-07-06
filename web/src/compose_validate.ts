@@ -439,6 +439,17 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     //
     // Pass topic_changed=true if this function was called in response
     // to a topic being edited.
+    const recipient_widget_hidden =
+        $(".compose_select_recipient-dropdown-list-container").length === 0;
+    if (compose_state.get_is_processing_forward_message() && recipient_widget_hidden) {
+        // This is for the case of forwarding a message when the
+        // channel picker is opened. There is a possibility that
+        // this banner might be displayed at the same time the
+        // channel picker is opened. We don't want that situation.
+        // Therefore, we are preventing the display of this
+        // banner when the channel picker is opened.
+        return;
+    }
 
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
@@ -461,7 +472,7 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
             return;
         }
 
-        const button_text = settings_data.user_can_move_messages_to_another_topic()
+        const button_text = settings_data.user_can_resolve_topic()
             ? $t({defaultMessage: "Unresolve topic"})
             : null;
 
@@ -549,7 +560,7 @@ export function inform_if_topic_is_moved(orig_topic: string, old_stream_id: numb
 
 export function warn_if_in_search_view(): void {
     const filter = narrow_state.filter();
-    if (filter && !filter.supports_collapsing_recipients()) {
+    if (filter && !filter.contains_no_partial_conversations()) {
         const context = {
             banner_type: compose_banner.WARNING,
             banner_text: $t({

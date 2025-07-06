@@ -3,3 +3,10 @@ deb-src http://apt.postgresql.org/pub/repos/apt/ noble-pgdg main
 
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu noble main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu noble main
+
+deb https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ noble main
+deb-src https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ noble main
+
+# libde265 in 24.04 is up-to-date, so the PPA doesn't provide 24.04 packages
+#deb https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ noble main
+#deb-src https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ noble main

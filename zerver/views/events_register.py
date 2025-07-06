@@ -40,19 +40,19 @@ def events_register_backend(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    apply_markdown: Json[bool] = False,
-    client_gravatar_raw: Annotated[Json[bool | None], ApiParamConfig("client_gravatar")] = None,
-    slim_presence: Json[bool] = False,
-    presence_history_limit_days: Json[int] | None = None,
     all_public_streams: Json[bool] | None = None,
-    include_subscribers: Json[bool] = False,
+    apply_markdown: Json[bool] = False,
     client_capabilities: Json[ClientCapabilities] = DEFAULT_CLIENT_CAPABILITIES,
+    client_gravatar_raw: Annotated[Json[bool | None], ApiParamConfig("client_gravatar")] = None,
     event_types: Json[list[str]] | None = None,
     fetch_event_types: Json[list[str]] | None = None,
+    include_subscribers: Json[bool] = False,
     narrow: Json[NarrowT] | None = None,
+    presence_history_limit_days: Json[int] | None = None,
     queue_lifespan_secs: Annotated[
         Json[int], ApiParamConfig(documentation_status=DocumentationStatus.DOCUMENTATION_PENDING)
     ] = 0,
+    slim_presence: Json[bool] = False,
 ) -> HttpResponse:
     if narrow is None:
         narrow = []

@@ -1,4 +1,4 @@
-<tr data-group-id="{{group_id}}">
+<tr data-group-id="{{group_id}}" class="hidden-remove-button-row">
     <td class="user-profile-group-row">
         {{#if is_guest}}
             {{name}}
@@ -8,13 +8,15 @@
     </td>
     {{#if can_remove_members }}
     <td class="remove_member">
-        {{#if is_direct_member}}
-            {{> components/action_button label=(t "Remove") custom_classes="remove-member-button" attention="quiet" intent="danger" aria-label=(t "Remove") }}
-        {{else}}
-            <span class="tippy-zulip-tooltip" data-tippy-content="{{#if is_me}}{{t 'You are a member of {name} because you are a member of a subgroup ({subgroups_name}).'}} {{else}}{{t 'This user is a member of {name} because they are a member of a subgroup ({subgroups_name}).'}}{{/if}}">
-                {{> components/action_button label=(t "Remove") custom_classes="remove-member-button" attention="quiet" intent="danger" aria-label=(t "Remove") disabled="disabled" }}
-            </span>
-        {{/if}}
+        <div class="remove-button-wrapper">
+            {{#if is_direct_member}}
+                {{> components/icon_button icon="close" custom_classes="hidden-remove-button remove-member-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove") data-tippy-content=(t "Remove") }}
+            {{else}}
+                <span class="tippy-zulip-tooltip" data-tippy-content="{{#if is_me}}{{t 'You are a member of {name} because you are a member of a subgroup ({subgroups_name}).'}} {{else}}{{t 'This user is a member of {name} because they are a member of a subgroup ({subgroups_name}).'}}{{/if}}">
+                    {{> components/icon_button icon="close" custom_classes="hidden-remove-button remove-member-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove") data-tippy-content=(t "Remove") disabled="disabled" }}
+                </span>
+            {{/if}}
+        </div>
     </td>
     {{/if}}
 </tr>

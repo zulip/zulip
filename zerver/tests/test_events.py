@@ -297,6 +297,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.bots import get_bot_services
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -3517,8 +3518,38 @@ class NormalActionsTest(BaseAction):
             interface_type=Service.GENERIC,
         )
         with self.verify_action() as events:
-            do_update_outgoing_webhook_service(bot, 2, "http://hostname.domain2.com")
+            do_update_outgoing_webhook_service(
+                bot,
+                interface=2,
+                base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
+            )
+
         check_realm_bot_update("events[0]", events[0], "services")
+
+        # Check the updated Service data we send as event on commit.
+        bot_service = get_bot_services(bot.id)[0]
+        event_data_service = events[0]["bot"]["services"][0]
+        self.assertEqual(
+            {
+                "base_url": bot_service.base_url,
+                "interface": bot_service.interface,
+                "token": bot_service.token,
+            },
+            event_data_service,
+        )
+
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_outgoing_webhook_service(bot, acting_user=self.user_profile)
+
+        # Trying to update with the same value as existing value results in no op.
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_outgoing_webhook_service(
+                bot,
+                interface=2,
+                base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
+            )
 
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
@@ -4733,7 +4764,7 @@ class UserDisplayActionTest(BaseAction):
             web_home_view=["all_messages", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
-            web_channel_default_view=[2, 1, 3],
+            web_channel_default_view=[2, 1, 3, 4],
             user_list_style=[1, 2, 3],
             web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=[1, 2, 3],

@@ -47,6 +47,7 @@ import * as reactions from "./reactions.ts";
 import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
@@ -55,6 +56,7 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
@@ -177,6 +179,7 @@ const KEYDOWN_MAPPINGS = {
     V: {name: "show_lightbox", message_view_only: true},
     W: {name: "query_users", message_view_only: true},
     X: {name: "compose_private_message", message_view_only: true},
+    Y: {name: "list_of_channel_topics", message_view_only: true},
     Z: {name: "zoom_to_message_near", message_view_only: true},
     Tab: {name: "tab", message_view_only: false},
     Escape: {name: "escape", message_view_only: false},
@@ -614,6 +617,11 @@ export function process_enter_key(e) {
         return true;
     }
 
+    if (overlays.reminders_open()) {
+        reminders_overlay_ui.handle_keyboard_events("enter");
+        return true;
+    }
+
     // Transfer the enter keypress from button to the `<i>` tag inside
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
@@ -677,7 +685,7 @@ export function process_enter_key(e) {
     // For search views, renarrow to the current message's
     // conversation.
     const current_filter = narrow_state.filter();
-    if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+    if (current_filter !== undefined && !current_filter.contains_no_partial_conversations()) {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.selected_message();
 
@@ -868,6 +876,10 @@ export function process_hotkey(e, hotkey) {
             }
             if (overlays.scheduled_messages_open()) {
                 scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
+                return true;
+            }
+            if (overlays.reminders_open()) {
+                reminders_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
             if (overlays.message_edit_history_open()) {
@@ -1171,6 +1183,26 @@ export function process_hotkey(e, hotkey) {
                 return true;
             }
             return false;
+        case "list_of_channel_topics":
+            if (message_lists.current !== undefined) {
+                let channel_id;
+                const selected_message = message_lists.current.selected_message();
+                if (selected_message === undefined) {
+                    const only_valid_id = true;
+                    channel_id = narrow_state.stream_id(narrow_state.filter(), only_valid_id);
+                } else if (selected_message.type === "stream") {
+                    channel_id = stream_data.get_stream_id(selected_message.stream);
+                }
+
+                if (channel_id === undefined) {
+                    return false;
+                }
+
+                const channel_topic_list_url = hash_util.by_channel_topic_list_url(channel_id);
+                browser_history.go_to_location(channel_topic_list_url);
+                return true;
+            }
+            return false;
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
@@ -1432,6 +1464,14 @@ export function process_keydown(e) {
 
 export function initialize() {
     $(document).on("keydown", (e) => {
+        if (e.key === undefined) {
+            /* Some browsers trigger a 'keydown' event with `key === undefined`
+            on selecting autocomplete suggestion. These are not real keypresses
+            and can be safely ignored.
+            See: https://issues.chromium.org/issues/41425904
+            */
+            return;
+        }
         if (process_keydown(e)) {
             e.preventDefault();
         }

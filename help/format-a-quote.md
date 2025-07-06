@@ -24,21 +24,19 @@
 
 {!start-composing.md!}
 
-1. To create a multi-line quote, type `>` followed by a space and some text:
+1.  To create a multi-line quote, type `>` followed by a space and some text:
 
-~~~
-> a multi-line
-quote on two lines
-~~~
-   To create a multi-paragraph quote, use triple backticks and the word quote
-   (````quote`) followed by some text and triple backticks at the end:
-~~~
-```quote
-A multi-paragraph
+        > a multi-line
+        quote on two lines
 
-quote in two paragraphs
-```
-~~~
+    To create a multi-paragraph quote, use triple backticks and the word quote
+    (````quote`) followed by some text and triple backticks at the end:
+
+        ```quote
+        A multi-paragraph
+
+        quote in two paragraphs
+        ```
 
 {end_tabs}
 

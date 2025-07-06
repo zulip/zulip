@@ -33,6 +33,7 @@ import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as util from "./util.ts";
+import * as watchdog from "./watchdog.ts";
 
 let loading_indicator_displayed = false;
 let unsubscribed_ignored_channels: number[] = [];
@@ -276,7 +277,14 @@ function bulk_update_read_flags_for_narrow(
                             term.negated === false
                         ),
                 );
-                if (message_lists.current?.data.filter.equals(new Filter(filter_terms))) {
+                // Current narrow may have "with" or "near" operator around a message
+                // target which we would want to ignore for bulk reading a message list.
+                if (
+                    message_lists.current?.data.filter.equals(new Filter(filter_terms), [
+                        "with",
+                        "near",
+                    ])
+                ) {
                     message_lists.current?.resume_reading();
                     unread_ui.hide_unread_banner();
                 }
@@ -341,11 +349,32 @@ export function mark_as_unread_from_here(message_id: number): void {
     const has_found_newest = message_lists.current.data.fetch_status.has_found_newest();
     const may_contain_multiple_conversations = current_filter.may_contain_multiple_conversations();
 
+    // If we are certain we have all messages below the current point,
+    // or believe we're offline, then we prefer the locally available
+    // message IDs over asking the server to mark the view as unread.
+    //
+    // Using a list of message IDs is faster for small sets and also
+    // is the only option that makes sense if we're offline: Just
+    // process the messages the user can see, and not some that might
+    // be below them in the view but are unavailable.
+    const likely_offline = watchdog.suspects_user_is_offline();
+    const prefer_local_ids = has_found_newest || watchdog.suspects_user_is_offline();
+
+    const locally_available_matching_message_ids = message_lists.current
+        .all_messages()
+        .filter((msg) => msg.id >= message_id && !msg.unread)
+        .map((msg) => msg.id);
+    const locally_available_message_count = locally_available_matching_message_ids.length;
+    let display_count: string;
+
     function do_mark_unread(message_ids_to_update: number[] | undefined): void {
         // If we have already fully fetched the current view, we can
         // send the server the set of IDs to update, rather than
         // updating on the basis of the narrow.
-        if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
+        if (
+            message_ids_to_update !== undefined &&
+            (message_ids_to_update.length < 200 || likely_offline)
+        ) {
             do_mark_unread_by_ids(message_ids_to_update);
         } else {
             const include_anchor = true;
@@ -361,29 +390,29 @@ export function mark_as_unread_from_here(message_id: number): void {
         }
     }
 
-    const locally_available_matching_message_ids = message_lists.current
-        .all_messages()
-        .filter((msg) => msg.id >= message_id && !msg.unread)
-        .map((msg) => msg.id);
-    const locally_available_message_count = locally_available_matching_message_ids.length;
-    let display_count: string;
-
-    if (has_found_newest) {
+    if (!may_contain_multiple_conversations) {
+        // Never display a prompt in a conversation view.
+        if (prefer_local_ids) {
+            do_mark_unread(locally_available_matching_message_ids);
+        } else {
+            do_mark_unread(undefined);
+        }
+        return;
+    } else if (prefer_local_ids) {
         // Since we have the anchor message ID and the newest
         // messages, we know exactly which messages to mark as unread.
-
-        // If it's a single topic, or the number is small, we just do
-        // the request without a confirmation dialog.
-        if (
-            !may_contain_multiple_conversations ||
-            locally_available_matching_message_ids.length < MIN_MARK_AS_UNREAD_COUNT_KNOWN
-        ) {
+        if (locally_available_matching_message_ids.length < MIN_MARK_AS_UNREAD_COUNT_KNOWN) {
+            // If the number is sufficiently small, we proceed without
+            // a confirmation dialog.
             do_mark_unread(locally_available_matching_message_ids);
             return;
         }
 
         display_count = locally_available_message_count.toString();
     } else if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
+        // TODO: This logic should have a case for where we're
+        // offline, and skip the prompt in interleaved views in that
+        // case.
         display_count = locally_available_message_count.toString();
     } else {
         // Otherwise, we round down to the nearest
@@ -416,7 +445,7 @@ export function mark_as_unread_from_here(message_id: number): void {
         html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
         html_body: render_confirm_mark_as_unread_from_here(context),
         on_click() {
-            if (has_found_newest) {
+            if (prefer_local_ids) {
                 do_mark_unread(locally_available_matching_message_ids);
             } else {
                 do_mark_unread(undefined);
@@ -508,6 +537,7 @@ function do_mark_unread_by_narrow(
 }
 
 function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
+    // TODO: Add support for locally echoing when we're offline.
     void channel.post({
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
@@ -604,6 +634,10 @@ export function process_read_messages_event(message_ids: number[]): void {
         if (message) {
             process_newly_read_message(message, options);
         }
+    }
+
+    if (message_lists.current !== undefined && !message_lists.current.has_unread_messages()) {
+        unread_ui.hide_unread_banner();
     }
 
     unread_ui.update_unread_counts();

@@ -20,11 +20,13 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from lxml.html import builder as e
+from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
@@ -34,6 +36,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
+    message_link_url,
     personal_narrow_url,
     stream_narrow_url,
     topic_narrow_url,
@@ -218,11 +221,13 @@ def build_message_list(
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def prepend_sender_to_message(
-        message_plain: str, message_html: str, sender: str
-    ) -> tuple[str, str]:
+        message_plain: str, message_html: Markup, sender: str
+    ) -> tuple[str, Markup]:
         message_plain = f"{sender}:\n{message_plain}"
         message_soup = BeautifulSoup(message_html, "html.parser")
-        sender_name_soup = BeautifulSoup(f"<b>{sender}</b>: ", "html.parser")
+        sender_name_soup = BeautifulSoup(
+            Markup("<b>{sender}</b>: ").format(sender=sender), "html.parser"
+        )
         first_tag = message_soup.find()
         if first_tag and first_tag.name == "div":
             first_tag = first_tag.find()
@@ -230,9 +235,11 @@ def build_message_list(
             first_tag.insert(0, sender_name_soup)
         else:
             message_soup.insert(0, sender_name_soup)
-        return message_plain, str(message_soup)
+        return message_plain, Markup(BeautifulSoup.decode(message_soup))
 
-    def build_message_payload(message: Message, sender: str | None = None) -> dict[str, str]:
+    def build_message_payload(
+        message: Message, sender: str | None = None
+    ) -> dict[str, str | Markup]:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -251,7 +258,7 @@ def build_message_list(
         fix_spoilers_in_html(fragment, user.default_language)
         change_katex_to_raw_latex(fragment)
 
-        html = lxml.html.tostring(fragment, encoding="unicode")
+        html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
         return {"plain": plain, "html": html}
@@ -268,7 +275,9 @@ def build_message_list(
                 sender=message.sender,
             )
             header = f"You and {message.sender.full_name}"
-            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            header_html = Markup(
+                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            ).format(narrow_link=narrow_link, header=header)
         elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
@@ -278,7 +287,9 @@ def build_message_list(
             )
             other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user.id]
             header = "You and {}".format(", ".join(other_recipients))
-            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            header_html = Markup(
+                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            ).format(narrow_link=narrow_link, header=header)
         else:
             assert message.recipient.type == Recipient.STREAM
             grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
@@ -296,7 +307,14 @@ def build_message_list(
             )
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
-            header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
+            header_html = Markup(
+                "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+            ).format(
+                stream_link=stream_link,
+                stream_name=stream.name,
+                narrow_link=narrow_link,
+                topic_name=message.topic_name(),
+            )
         return {
             "grouping": grouping,
             "plain": header,
@@ -535,10 +553,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         message = missed_messages[0]["message"]
         assert message.recipient.type == Recipient.STREAM
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
-        narrow_url = topic_narrow_url(
-            realm=user_profile.realm,
-            stream=stream,
-            topic_name=message.topic_name(),
+        narrow_url = message_link_url(
+            user_profile.realm, MessageDict.wide_dict(message), conversation_link=not mention
         )
         context.update(narrow_url=narrow_url)
         topic_resolved, bare_topic_name = get_topic_resolution_and_bare_name(message.topic_name())

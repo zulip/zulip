@@ -108,7 +108,7 @@
 
 1. Under **Members**, find the user or group you would like to remove.
 
-1. Click the **Remove** button in that row. Zulip will notify everyone who is
+1. Click the **Remove** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row. Zulip will notify everyone who is
    removed from the group.
 
 {tab|via-user-profile}
@@ -119,7 +119,7 @@
 
 1. Find the group you would like to remove the user from.
 
-1. Click the **Remove** button in that row.
+1. Click the **Remove** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
 
 {end_tabs}
 

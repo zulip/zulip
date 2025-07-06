@@ -237,6 +237,13 @@ button {
             transition: 0.2s ease;
             transition-property: background-color, border-color, color;
         }
+
+        &:disabled {
+            cursor: not-allowed;
+            filter: saturate(0);
+            background-color: var(--color-background-zulip-button-disabled);
+            color: hsl(0deg 3% 52%);
+        }
     }
 }
 
@@ -307,4 +314,18 @@ input {
 
 .current-user-vote {
     background-color: hsl(156deg 10% 90% / 90%);
+}
+
+.add-task-wrapper {
+    display: inline;
+    position: relative;
+    z-index: 1;
+
+    /* Unlike other browsers like Chrome, Microsoft Edge, etc.,
+    Firefox does not automatically display the "not-allowed"
+    cursor for disabled elements. The below css ensures that the
+    correct cursor is shown across all browsers. */
+    &:hover {
+        cursor: not-allowed;
+    }
 }

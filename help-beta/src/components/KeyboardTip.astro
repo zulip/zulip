@@ -1,9 +1,10 @@
 ---
-import ZulipIconsKeyboard from "~icons/zulip-icon/keyboard"
+/* eslint-disable-next-line import/extensions */
+import ZulipIconsKeyboard from "~icons/zulip-icon/keyboard";
 
-let { title } = Astro.props;
+let {title} = Astro.props;
 if (!title) {
-	title = "Keyboard Shortcut";
+    title = "Keyboard Shortcut";
 }
 ---
 
@@ -16,10 +17,13 @@ component along with a custom icon (keyboard in out case).
 Link: https://github.com/withastro/starlight/pull/2261
 -->
 <aside aria-label={title} class={`starlight-aside starlight-aside--tip`}>
-	<p class="starlight-aside__title" aria-hidden="true">
-		<ZulipIconsKeyboard fill="currentColor" class="starlight-aside__icon" />{title}
-	</p>
-	<div class="starlight-aside__content">
-		<slot />
-	</div>
+    <p class="starlight-aside__title" aria-hidden="true">
+        <ZulipIconsKeyboard
+            fill="currentColor"
+            class="starlight-aside__icon"
+        />{title}
+    </p>
+    <div class="starlight-aside__content">
+        <slot />
+    </div>
 </aside>

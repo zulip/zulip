@@ -160,57 +160,10 @@ def group_handle_match(key: str) -> str:
     return group_all_instructions.format(item=item)
 
 
-draft_instructions = """
-1. Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
-"""
-
-scheduled_instructions = """
-1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left
-   sidebar. If you do not see this link, you have no scheduled messages.
-"""
-
-recent_instructions = """
-1. Click on <i class="fa fa-clock-o"></i> **Recent conversations** in the left
-   sidebar, or use the <kbd>T</kbd> keyboard shortcut..
-"""
-
-all_instructions = """
-1. Click on <i class="fa fa-align-left"></i> **Combined feed** in the left
-   sidebar, or use the <kbd>A</kbd> keyboard shortcut.
-"""
-
-starred_instructions = """
-1. Click on <i class="fa fa-star"></i> **Starred messages** in the left
-   sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
-"""
-
-inbox_instructions = """
-1. Click on <i class="zulip-icon zulip-icon-inbox"></i> **Inbox** in the left
-   sidebar, or use the <kbd>Shift</kbd> + <kbd>I</kbd> keyboard shortcut.
-"""
-
-message_info = {
-    "drafts": ["Drafts", "/#drafts", draft_instructions],
-    "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
-    "recent": ["Recent conversations", "/#recent", recent_instructions],
-    "all": ["Combined feed", "/#feed", all_instructions],
-    "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
-    "inbox": ["Inbox", "/#inbox", inbox_instructions],
-}
-
-
-def message_handle_match(key: str) -> str:
-    if relative_help_links:
-        return f"1. Go to [{message_info[key][0]}]({message_info[key][1]})."
-    else:
-        return message_info[key][2]
-
-
 LINK_TYPE_HANDLERS = {
     "gear": gear_handle_match,
     "gear-billing": billing_handle_match,
     "channel": channel_handle_match,
-    "message": message_handle_match,
     "help": help_handle_match,
     "group": group_handle_match,
 }

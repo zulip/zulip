@@ -32,7 +32,7 @@ problematic behavior.
   announcements](/help/configure-automated-notices#new-channel-announcements).
 * Restrict who can [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
 * Restrict who can [move messages to another
-  channel](/help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel),
+  channel](/help/restrict-moving-messages#configure-who-can-move-messages-out-of-any-channel),
   and set a [time
   limit](/help/restrict-moving-messages#set-a-time-limit-for-editing-topics) for
   editing topics.

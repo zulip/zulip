@@ -13,7 +13,7 @@ import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import {csrf_token} from "./csrf.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
-import type {PillUpdateField} from "./custom_profile_fields_ui.ts";
+import type {CustomProfileFieldData, PillUpdateField} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -202,43 +202,15 @@ function settings_change_error(message_html: string, xhr?: JQuery.jqXHR): void {
     dialog_widget.hide_dialog_spinner();
 }
 
-function update_custom_profile_field(
-    field: CustomProfileFieldData,
-    method: channel.AjaxRequestHandler,
-): void {
-    let data;
-    if (method === channel.del) {
-        data = JSON.stringify([field.id]);
-    } else {
-        data = JSON.stringify([field]);
-    }
-
-    const $spinner_element = $(
-        `.custom_user_field[data-field-id="${CSS.escape(field.id.toString())}"] .custom-field-status`,
-    ).expectOne();
-    settings_ui.do_settings_change(method, "/json/users/me/profile_data", {data}, $spinner_element);
-}
-
-type CustomProfileFieldData = {
-    id: number;
-    value?: number[] | string;
-};
-
-function update_user_custom_profile_fields(
-    fields: CustomProfileFieldData[],
-    method: channel.AjaxRequestHandler,
-): void {
-    for (const field of fields) {
-        update_custom_profile_field(field, method);
-    }
-}
-
 function update_user_type_field(field: PillUpdateField, pills: UserPillWidget): void {
     const user_ids = user_pill.get_user_ids(pills);
     if (user_ids.length === 0) {
-        update_user_custom_profile_fields([{id: field.id}], channel.del);
+        custom_profile_fields_ui.update_user_custom_profile_fields([{id: field.id}], channel.del);
     } else {
-        update_user_custom_profile_fields([{id: field.id, value: user_ids}], channel.patch);
+        custom_profile_fields_ui.update_user_custom_profile_fields(
+            [{id: field.id, value: user_ids}],
+            channel.patch,
+        );
     }
 }
 
@@ -261,7 +233,10 @@ export function add_custom_profile_fields_to_settings(): void {
         true,
         pill_update_handler,
     );
-    custom_profile_fields_ui.initialize_custom_date_type_fields(element_id);
+    custom_profile_fields_ui.initialize_custom_date_type_fields(
+        element_id,
+        people.my_current_user_id(),
+    );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
 
@@ -745,26 +720,33 @@ export function set_up(): void {
             e.stopPropagation();
             const $field = $(this).closest(".custom_user_field").expectOne();
             const field_id = Number.parseInt($field.attr("data-field-id")!, 10);
-            update_user_custom_profile_fields([{id: field_id}], channel.del);
+            custom_profile_fields_ui.update_user_custom_profile_fields(
+                [{id: field_id}],
+                channel.del,
+            );
         },
     );
 
-    $("#profile-settings").on("change", ".custom_user_field_value", function (this: HTMLElement) {
-        const fields: CustomProfileFieldData[] = [];
-        const value = $(this).val()!;
-        assert(typeof value === "string");
-        const field_id = Number.parseInt(
-            $(this).closest(".custom_user_field").attr("data-field-id")!,
-            10,
-        );
-        if (value) {
-            fields.push({id: field_id, value});
-            update_user_custom_profile_fields(fields, channel.patch);
-        } else {
-            fields.push({id: field_id});
-            update_user_custom_profile_fields(fields, channel.del);
-        }
-    });
+    $("#profile-settings").on(
+        "change",
+        ".custom_user_field_value:not(.datepicker)",
+        function (this: HTMLElement) {
+            const fields: CustomProfileFieldData[] = [];
+            const value = $(this).val()!;
+            assert(typeof value === "string");
+            const field_id = Number.parseInt(
+                $(this).closest(".custom_user_field").attr("data-field-id")!,
+                10,
+            );
+            if (value) {
+                fields.push({id: field_id, value});
+                custom_profile_fields_ui.update_user_custom_profile_fields(fields, channel.patch);
+            } else {
+                fields.push({id: field_id});
+                custom_profile_fields_ui.update_user_custom_profile_fields(fields, channel.del);
+            }
+        },
+    );
 
     $("#account-settings .deactivate_realm_button").on(
         "click",

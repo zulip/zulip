@@ -455,6 +455,29 @@ def get_resource_access_token_expiry_event_body(payload: WildValue, include_titl
     )
 
 
+def get_deployment_event_body(payload: WildValue, include_title: bool) -> str:
+    user_text = (
+        f"[{payload['user']['name'].tame(check_string)}]({payload['user_url'].tame(check_string)})"
+    )
+
+    deployment_status = payload["status"].tame(check_string)
+    deployable_url = payload.get("deployable_url", "").tame(check_string)
+    deployment_text = f"[deployment]({deployable_url})" if deployable_url else "deployment"
+
+    commit_title = payload["commit_title"].tame(check_string)
+    commit_url = payload["commit_url"].tame(check_string)
+    commit_sha = commit_url.split("/")[-1][:7]
+
+    deployment_event_body_map = {
+        "running": f"{user_text} started a new {deployment_text}:\n> [{commit_sha}]({commit_url}) {commit_title}",
+        "success": f"The {deployment_text} was successful.",
+        "failed": f"The {deployment_text} failed.",
+        "canceled": f"The {deployment_text} was canceled.",
+    }
+
+    return deployment_event_body_map[deployment_status]
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -544,6 +567,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Release Hook": get_release_event_body,
     "Feature Flag Hook": get_feature_flag_event_body,
     "Resource Access Token Hook": get_resource_access_token_expiry_event_body,
+    "Deployment Hook": get_deployment_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -655,6 +679,11 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
 
     elif event == "Resource Access Token Hook" and payload.get("group"):
         return payload["group"]["group_name"].tame(check_string)
+    elif event == "Deployment Hook":
+        return "{} / {}".format(
+            get_repo_name(payload),
+            payload["environment"].tame(check_string),
+        )
     return get_repo_name(payload)
 
 

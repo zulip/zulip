@@ -67,6 +67,7 @@ const overlays = mock_esm("../src/overlays", {
     lightbox_open: () => false,
     drafts_open: () => false,
     scheduled_messages_open: () => false,
+    reminders_open: () => false,
     info_overlay_open: () => false,
     message_edit_history_open: () => false,
 });

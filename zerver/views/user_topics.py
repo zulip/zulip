@@ -67,10 +67,10 @@ def update_muted_topic(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    stream_id: Json[int] | None = None,
-    stream: str | None = None,
-    topic: Annotated[str, StringConstraints(max_length=MAX_TOPIC_NAME_LENGTH)],
     op: Literal["add", "remove"],
+    topic: Annotated[str, StringConstraints(max_length=MAX_TOPIC_NAME_LENGTH)],
+    stream: str | None = None,
+    stream_id: Json[int] | None = None,
 ) -> HttpResponse:
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 

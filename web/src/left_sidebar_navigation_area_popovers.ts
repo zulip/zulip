@@ -18,6 +18,7 @@ import * as settings_config from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -46,6 +47,26 @@ function register_mark_all_read_handler(
 ): void {
     const {instance} = event.data;
     unread_ops.confirm_mark_all_as_read();
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function register_toggle_unread_message_count(
+    event: JQuery.ClickEvent<
+        tippy.PopperElement,
+        {
+            instance: tippy.Instance;
+        }
+    >,
+): void {
+    const unread_message_count = user_settings.web_left_sidebar_unreads_count_summary;
+    const {instance} = event.data;
+    const data = {
+        web_left_sidebar_unreads_count_summary: JSON.stringify(!unread_message_count),
+    };
+    void channel.patch({
+        url: "/json/settings",
+        data,
+    });
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
@@ -137,15 +158,27 @@ export function initialize(): void {
                 {instance},
                 register_mark_all_read_handler,
             );
+
+            $popper.one(
+                "click",
+                ".toggle_display_unread_message_count",
+                {instance},
+                register_toggle_unread_message_count,
+            );
         },
         onShow(instance) {
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.inbox.code;
+            const counts = unread.get_counts();
+            const unread_messages_present =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_inbox_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
+                        show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                        unread_messages_present,
                     }),
                 ),
             );
@@ -168,6 +201,13 @@ export function initialize(): void {
                 {instance},
                 register_mark_all_read_handler,
             );
+
+            $popper.one(
+                "click",
+                ".toggle_display_unread_message_count",
+                {instance},
+                register_toggle_unread_message_count,
+            );
         },
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
@@ -175,11 +215,17 @@ export function initialize(): void {
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.all_messages.code;
+            const counts = unread.get_counts();
+            const unread_messages_present =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_all_messages_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
+                        show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                        unread_messages_present,
                     }),
                 ),
             );
@@ -202,6 +248,13 @@ export function initialize(): void {
                 {instance},
                 register_mark_all_read_handler,
             );
+
+            $popper.one(
+                "click",
+                ".toggle_display_unread_message_count",
+                {instance},
+                register_toggle_unread_message_count,
+            );
         },
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
@@ -209,11 +262,16 @@ export function initialize(): void {
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.recent_topics.code;
+            const counts = unread.get_counts();
+            const unread_messages_present =
+                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_recent_view_popover({
                         is_home_view: user_settings.web_home_view === view_code,
                         view_code,
+                        show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                        unread_messages_present,
                     }),
                 ),
             );

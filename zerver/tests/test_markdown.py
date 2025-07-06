@@ -1062,32 +1062,42 @@ class MarkdownEmbedsTest(ZulipTestCase):
             self.assertFalse(url_embed_preview_enabled(message, no_previews=True))
 
     def test_inline_dropbox(self) -> None:
-        msg = "Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG"
+        msg = "Look at how hilarious our old office was: https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0"
         image_info = {
-            "image": "https://photos-4.dropbox.com/t/2/AABIre1oReJgPYuc_53iv0IHq1vUzRaDg2rrCfTpiWMccQ/12/129/jpeg/1024x1024/2/_/0/4/IMG_0923.JPG/CIEBIAEgAiAHKAIoBw/ymdijjcg67hv2ta/AABz2uuED1ox3vpWWvMpBxu6a/IMG_0923.JPG",
-            "desc": "Shared with Dropbox",
-            "title": "IMG_0923.JPG",
+            "image": "https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0&raw=1",
         }
         with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
             converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(
             converted,
-            f"""<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" title="IMG_0923.JPG"><img src="{get_camo_url("https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?raw=1")}"></a></div>""",
+            f"""<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0">https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0&amp;raw=1"><img src="{get_camo_url("https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0&raw=1")}"></a></div>""",
         )
 
-        msg = "Look at my hilarious drawing folder: https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl="
+        msg = "Look at my hilarious drawing folder: https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&st=dz5p1ytw"  # codespell:ignore fo
         image_info = {
-            "image": "https://cf.dropboxstatic.com/static/images/icons128/folder_dropbox.png",
-            "desc": "Shared with Dropbox",
-            "title": "Saves",
+            "image": "https://www.dropbox.com/static/metaserver/static/images/opengraph/opengraph-content-icon-folder-dropbox-landscape.png",
         }
         with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
             converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(
             converted,
-            f"""<p>Look at my hilarious drawing folder: <a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=">https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=</a></p>\n<div class="message_inline_ref"><a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=" title="Saves"><img src="{get_camo_url("https://cf.dropboxstatic.com/static/images/icons128/folder_dropbox.png")}"></a><div><div class="message_inline_image_title">Saves</div><desc class="message_inline_image_desc"></desc></div></div>""",
+            """<p>Look at my hilarious drawing folder: <a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw">https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw</a></p>\n<div class="message_embed"><a class="message_embed_image" href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" style="background-image: url(&quot;https://external-content.zulipcdn.net/external_content/a301902b9942efb85cfe2a6f4bb07d76ba7b86de/68747470733a2f2f7777772e64726f70626f782e636f6d2f7374617469632f6d6574617365727665722f7374617469632f696d616765732f6f70656e67726170682f6f70656e67726170682d636f6e74656e742d69636f6e2d666f6c6465722d64726f70626f782d6c616e6473636170652e706e67&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" title="Dropbox folder">Dropbox folder</a></div><div class="message_embed_description">Click to open folder.</div></div></div>""",  # codespell:ignore fo
+        )
+
+    def test_inline_dropbox_video(self) -> None:
+        msg = "Look at this video: https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&st=kjtkea8h&dl=0"
+        image_info = {
+            "image": "https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&st=kjtkea8h&dl=0&raw=1",
+        }
+        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
+            converted = markdown_convert_wrapper(msg)
+
+        self.assertEqual(
+            converted,
+            """<p>Look at this video: <a href="https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0">https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0</a></p>
+<div class="message_inline_image message_inline_video"><a href="https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0&amp;raw=1"><video preload="metadata" src="https://external-content.zulipcdn.net/external_content/eca04355025c60f40334c9a03d220c3298d4df47/68747470733a2f2f7777772e64726f70626f782e636f6d2f73636c2f66692f78387a3031726f6471316e367067797a6e74316b682f53616d706c65566964656f5f31323830783732305f316d622e6d70343f726c6b65793d6669696273676e753036746d7330343176667a666f706d6f732673743d6b6a746b6561386826646c3d30267261773d31"></video></a></div>""",
         )
 
     def test_inline_dropbox_preview(self) -> None:
@@ -1095,15 +1105,14 @@ class MarkdownEmbedsTest(ZulipTestCase):
         msg = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"
         image_info = {
             "image": "https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0",
-            "desc": "Shared with Dropbox",
-            "title": "1 photo",
         }
         with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
             converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(
             converted,
-            f"""<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="1 photo"><img src="{get_camo_url("https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0")}"></a></div>""",
+            """<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>
+<div class="message_embed"><a class="message_embed_image" href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" style="background-image: url(&quot;https://external-content.zulipcdn.net/external_content/e7584a56d9ba7f2a2aee96ee1427a6b746eab5ff/68747470733a2f2f70686f746f732d362e64726f70626f782e636f6d2f742f322f4141416c6177616544363154794e65774f357656692d444766325a6575617966794846644e544e7a7047712d51412f31322f3237313534343734352f6a7065672f3130323478313032342f322f5f2f302f352f626162792d7069676c65742e6a70672f434b6e6a7659454249414967427967434b41632f7464697470396e69746b6f36306e352f41414458303356414972516c546c32384374756a44634d6c612f30&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="Dropbox folder">Dropbox folder</a></div><div class="message_embed_description">Click to open folder.</div></div></div>""",
         )
 
     def test_inline_dropbox_negative(self) -> None:
@@ -3172,12 +3181,16 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/">#{denmark.name} &gt; <em>{Message.EMPTY_TOPIC_FALLBACK_NAME}</em></a></p>',
         )
 
-    def test_topic_single_containing_message(self) -> None:
+    def test_topic_single_containing_messages(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
-        first_message_id = self.send_stream_message(
+        self.send_stream_message(
             sender_user_profile, "Denmark", topic_name="some topic", content="test"
         )
+        latest_message_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test 2"
+        )
+
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
@@ -3186,7 +3199,7 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         content = "#**Denmark>some topic**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{first_message_id}">#{denmark.name} &gt; some topic</a></p>',
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{latest_message_id}">#{denmark.name} &gt; some topic</a></p>',
         )
 
     def test_topic_atomic_string(self) -> None:
@@ -3218,8 +3231,11 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         denmark = get_stream("Denmark", get_realm("zulip"))
         scotland = get_stream("Scotland", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
-        first_message_id = self.send_stream_message(
+        self.send_stream_message(
             sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
+        latest_message_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test 2"
         )
         msg = Message(
             sender=sender_user_profile,
@@ -3231,7 +3247,7 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             render_message_markdown(msg, content).rendered_content,
             "<p>This has two links: "
             f'<a class="stream-topic" data-stream-id="{denmark.id}" '
-            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/some.20topic/with/{first_message_id}">'
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/some.20topic/with/{latest_message_id}">'
             f"#{denmark.name} &gt; some topic</a>"
             " and "
             f'<a class="stream-topic" data-stream-id="{scotland.id}" '
@@ -3244,8 +3260,11 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         realm = get_realm("zulip")
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
-        first_message_id = self.send_stream_message(
+        self.send_stream_message(
             sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
+        latest_message_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test 2"
         )
 
         msg = Message(
@@ -3266,7 +3285,7 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         ):
             self.assertEqual(
                 render_message_markdown(msg, content, mention_data=mention_data).rendered_content,
-                f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{first_message_id}">#{denmark.name} &gt; some topic</a></p>',
+                f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{latest_message_id}">#{denmark.name} &gt; some topic</a></p>',
             )
 
         # test topic linked doesn't have any message in it in case
@@ -3282,7 +3301,7 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         content = "#**Denmark>some topic**"
         self.assertEqual(
             markdown_convert_wrapper(content),
-            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{first_message_id}">#{denmark.name} &gt; some topic</a></p>',
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{latest_message_id}">#{denmark.name} &gt; some topic</a></p>',
         )
 
         # test topic links for channel with protected history

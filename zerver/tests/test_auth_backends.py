@@ -73,6 +73,7 @@ from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.storage import static_path
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -1611,6 +1612,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         email = "newuser@zulip.com"
         name = "Full Name"
         subdomain = "zulip"
+        desdemona = self.example_user("desdemona")
         realm = get_realm("zulip")
         realm.invite_required = True
         realm.save()
@@ -1620,9 +1622,18 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             ensure_stream(realm, stream_name, acting_user=None) for stream_name in stream_names
         ]
 
+        testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=desdemona)
+        testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=desdemona)
+        groups = [testgroup1, testgroup2]
+
         referrer = self.example_user("hamlet")
-        multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
+        multiuse_obj = MultiuseInvite.objects.create(
+            realm=realm,
+            referred_by=referrer,
+            invited_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
         multiuse_obj.streams.set(streams)
+        multiuse_obj.groups.set(groups)
         validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
             multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
@@ -1657,6 +1668,28 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         assert prereg_user is not None
         self.assertEqual(prereg_user.email, email)
         self.assertEqual(prereg_user.multiuse_invite, multiuse_obj)
+
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        subscribed_stream_ids = set(get_subscribed_stream_ids_for_user(user_profile))
+        for stream in streams:
+            self.assertIn(stream.id, subscribed_stream_ids)
+
+        self.assertTrue(
+            is_user_in_group(
+                testgroup1.id,
+                user_profile,
+                direct_member_only=True,
+            )
+        )
+        self.assertTrue(
+            is_user_in_group(
+                testgroup2.id,
+                user_profile,
+                direct_member_only=True,
+            )
+        )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_using_multiuse_invite_realm_validation(self) -> None:

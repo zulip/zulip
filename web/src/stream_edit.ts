@@ -502,6 +502,11 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
 
     const email_address_clipboard = new ClipboardJS(
         "#copy_email_address_modal .copy-email-address",
+        {
+            text() {
+                return $(".email-address").text();
+            },
+        },
     );
     email_address_clipboard.on("success", (e) => {
         assert(e.trigger instanceof HTMLElement);

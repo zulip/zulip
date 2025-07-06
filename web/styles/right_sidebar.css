@@ -79,14 +79,9 @@
         padding: 1px 0 0 1px;
         border-radius: 3px;
 
-        & i {
+        & .zulip-icon-more-vertical {
             /* 17px at 16px em */
             font-size: 1.0625em;
-            /* Ensure the icon takes the same baseline
-               as the rest of the row, for perfect
-               vertical alignment with the username and
-               status circle. */
-            line-height: inherit;
         }
 
         /*
@@ -501,6 +496,7 @@
 #userlist-header {
     cursor: pointer;
     display: grid;
+    gap: 5px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -511,41 +507,18 @@
     padding-right: var(--width-simplebar-scroll-hover);
     background-color: var(--color-background);
 
-    #userlist-header-search {
-        display: grid;
-        grid-template-rows: var(--line-height-sidebar-row-prominent);
-        grid-template-columns: minmax(0, 1fr) 30px;
-        align-items: center;
-
-        & .user-list-filter {
-            grid-area: 1 / 1 / 2 / 3;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            /* Prevent text from colliding with #clear_search_button */
-            padding-right: 28px;
-            height: var(--line-height-sidebar-row-prominent);
-            box-sizing: border-box;
-        }
-
-        .user-list-filter:placeholder-shown + #clear_search_people_button {
-            visibility: hidden;
-        }
-    }
-
     #buddy-list-menu-icon {
         color: var(--color-vdots-visible);
-        justify-content: center;
-        display: grid;
         width: var(--right-sidebar-vdots-width);
-        margin-left: 5px;
+        /* Match the height of the buddy list filter input */
+        height: 100%;
         /* Push back against default right-sidebar
            spacing for better vdots alignment. */
-        margin-right: 0;
-        padding-left: 0;
+        padding: 0;
 
         &:hover {
             color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
     }
 }

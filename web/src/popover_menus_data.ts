@@ -38,6 +38,7 @@ type ActionPopoverContext = {
     view_source_menu_item: string | undefined;
     should_display_hide_option: boolean;
     should_display_mark_as_unread: boolean;
+    should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
     should_display_quote_message: boolean;
@@ -214,6 +215,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
 
     const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
+    const should_display_remind_me_option = not_spectator;
 
     function is_add_reaction_icon_visible(): boolean {
         assert(message_lists.current !== undefined);
@@ -237,6 +239,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         editability_menu_item,
         move_message_menu_item,
         should_display_mark_as_unread,
+        should_display_remind_me_option,
         view_source_menu_item,
         should_display_collapse,
         should_display_uncollapse,
@@ -263,10 +266,8 @@ export function get_topic_popover_content_context({
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
-    const can_move_topic =
-        !sub.is_archived && settings_data.user_can_move_messages_between_streams();
-    const can_rename_topic =
-        !sub.is_archived && settings_data.user_can_move_messages_to_another_topic();
+    const can_move_topic = stream_data.user_can_move_messages_out_of_channel(sub);
+    const can_rename_topic = stream_data.user_can_move_messages_within_channel(sub);
     const can_resolve_topic = !sub.is_archived && settings_data.user_can_resolve_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;

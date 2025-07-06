@@ -162,14 +162,14 @@ def maybe_send_to_registration(
     request: HttpRequest,
     email: str,
     *,
-    full_name: str = "",
-    role: int | None = None,
-    mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
-    is_signup: bool = False,
-    multiuse_object_key: str = "",
+    full_name: str = "",
     full_name_validated: bool = False,
+    is_signup: bool = False,
+    mobile_flow_otp: str | None = None,
+    multiuse_object_key: str = "",
     params_to_store_in_authenticated_session: dict[str, str] | None = None,
+    role: int | None = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -289,17 +289,20 @@ def maybe_send_to_registration(
         )
 
         streams_to_subscribe = None
+        user_groups = None
         include_realm_default_subscriptions = None
         if multiuse_obj is not None:
             # If the user came here explicitly via a multiuse invite link, then
             # we use the defaults implied by the invite.
             streams_to_subscribe = list(multiuse_obj.streams.all())
+            user_groups = list(multiuse_obj.groups.all())
             include_realm_default_subscriptions = multiuse_obj.include_realm_default_subscriptions
         elif existing_prereg_user:
             # Otherwise, the user is doing this signup not via any invite link,
             # but we can use the pre-existing PreregistrationUser for these values
             # since it tells how they were intended to be, when the user was invited.
             streams_to_subscribe = list(existing_prereg_user.streams.all())
+            user_groups = list(existing_prereg_user.groups.all())
             include_realm_default_subscriptions = (
                 existing_prereg_user.include_realm_default_subscriptions
             )
@@ -307,6 +310,8 @@ def maybe_send_to_registration(
 
         if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)
+        if user_groups:
+            prereg_user.groups.set(user_groups)
         if include_realm_default_subscriptions is not None:
             prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
 
@@ -517,8 +522,8 @@ def create_response_for_otp_flow(
 def remote_user_sso(
     request: HttpRequest,
     *,
-    mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
+    mobile_flow_otp: str | None = None,
     next: str = "/",
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
@@ -629,10 +634,10 @@ def oauth_redirect_to_root(
     # positional parameters.
     /,
     *,
-    next: str | None = None,
-    multiuse_object_key: str = "",
-    mobile_flow_otp: str | None = None,
     desktop_flow_otp: str | None = None,
+    mobile_flow_otp: str | None = None,
+    multiuse_object_key: str = "",
+    next: str | None = None,
 ) -> HttpResponse:
     main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":

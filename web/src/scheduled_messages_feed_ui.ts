@@ -8,7 +8,7 @@ import type {ScheduledMessage} from "./scheduled_messages.ts";
 import * as util from "./util.ts";
 
 function get_scheduled_messages_matching_narrow(): ScheduledMessage[] {
-    const scheduled_messages_list = [...scheduled_messages.scheduled_messages_data.values()];
+    const scheduled_messages_list = scheduled_messages.get_all_scheduled_messages();
     const filter = narrow_state.filter();
     const is_conversation_view =
         filter === undefined

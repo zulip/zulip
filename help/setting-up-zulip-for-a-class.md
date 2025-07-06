@@ -173,7 +173,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 
 [user-group-permissions]: /help/manage-user-groups#configure-who-can-create-user-groups
-[move-between-channels]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel
+[move-between-channels]: /help/restrict-moving-messages#configure-who-can-move-messages-out-of-any-channel
 
 #### Recommended roles and permissions for a department
 

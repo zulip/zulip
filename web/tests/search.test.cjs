@@ -7,10 +7,10 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
-const search_suggestion = mock_esm("../src/search_suggestion");
 
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
+const search_suggestion = zrequire("search_suggestion");
 const stream_data = zrequire("stream_data");
 
 function stub_pills() {
@@ -60,7 +60,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return html;
     });
 
-    search_suggestion.max_num_of_search_results = 999;
+    override_rewire(search_suggestion, "max_num_of_search_results", 999);
     let terms;
 
     function mock_pill_removes(widget) {
@@ -96,7 +96,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     [
                         "stream:Verona",
                         {
-                            description_html: "Stream <strong>Ver</strong>ona",
+                            description_html: "Stream Verona",
                             search_string: "stream:Verona",
                         },
                     ],
@@ -112,17 +112,17 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("ver");
             assert.deepStrictEqual(source, expected_source_value);
 
-            /* Test highlighter */
+            /* Test item_html */
             let expected_value = `<div class="search_list_item">\n    <span>Search for ver</span>\n</div>\n`;
-            assert.equal(opts.highlighter_html(source[0]), expected_value);
+            assert.equal(opts.item_html(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>Stream <strong>Ver</strong>ona</span>\n</div>\n`;
-            assert.equal(opts.highlighter_html(source[1]), expected_value);
+            expected_value = `<div class="search_list_item">\n    <span>Stream Verona</span>\n</div>\n`;
+            assert.equal(opts.item_html(source[1]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
@@ -140,7 +140,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                             users: [
                                 {
                                     user_pill_context: {
-                                        display_value: "<strong>Zo</strong>e",
+                                        display_value: "Zoe",
                                         has_image: true,
                                         id: 7,
                                         img_src:
@@ -159,7 +159,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                             users: [
                                 {
                                     user_pill_context: {
-                                        display_value: "<strong>Zo</strong>e",
+                                        display_value: "Zoe",
                                         has_image: true,
                                         id: 7,
                                         img_src:
@@ -178,7 +178,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                             users: [
                                 {
                                     user_pill_context: {
-                                        display_value: "<strong>Zo</strong>e",
+                                        display_value: "Zoe",
                                         has_image: true,
                                         id: 7,
                                         img_src:
@@ -200,23 +200,23 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
             const expected_source_value = search_suggestions.strings;
             const source = opts.source("zo");
             assert.deepStrictEqual(source, expected_source_value);
 
-            /* Test highlighter */
+            /* Test item_html */
             let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
-            assert.equal(opts.highlighter_html(source[0]), expected_value);
+            assert.equal(opts.item_html(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
-            assert.equal(opts.highlighter_html(source[1]), expected_value);
+            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            Zoe\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            assert.equal(opts.item_html(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
-            assert.equal(opts.highlighter_html(source[2]), expected_value);
+            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            Zoe\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            assert.equal(opts.item_html(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            &lt;strong&gt;Zo&lt;/strong&gt;e\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
-            assert.equal(opts.highlighter_html(source[3]), expected_value);
+            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n        <span class="pill-container">\n            <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1" />\n    <div class="pill-image-border"></div>\n    <span class="pill-label">\n        <span class="pill-value">\n            Zoe\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n        </span>\n</div>\n`;
+            assert.equal(opts.item_html(source[3]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);

@@ -3,6 +3,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_banner from "../../templates/components/banner.hbs";
+import render_filter_input from "../../templates/components/showroom/filter_input.hbs";
 import {$t, $t_html} from "../i18n.ts";
 import type {HTMLSelectOneElement} from "../types.ts";
 
@@ -169,11 +170,11 @@ const alert_banners: Record<string, AlertBanner> = {
     "insecure-desktop-app": {
         process: "insecure-desktop-app",
         intent: "danger",
-        label: "You are using an old version of the Zulip desktop app with known security bugs.",
+        label: "Zulip desktop is not updating automatically. Please upgrade for security updates and other improvements.",
         buttons: [
             {
                 attention: "quiet",
-                intent: "danger",
+                intent: "warning",
                 label: "Download the latest version",
             },
         ],
@@ -675,4 +676,9 @@ $(window).on("load", () => {
             $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
         }
     });
+
+    if (window.location.pathname === "/devtools/inputs/") {
+        const $filter_input_container = $<HTMLInputElement>(".showroom-filter-input-container");
+        $filter_input_container.html(render_filter_input());
+    }
 });

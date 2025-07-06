@@ -38,6 +38,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -424,6 +425,7 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
             // Add search box for topics list.
             $elt.children("div.bottom_left_row").append($(render_filter_topics()));
             $("#left-sidebar-filter-topic-input").trigger("focus");
+            topic_list.setup_topic_search_typeahead();
         } else {
             $elt.hide();
         }
@@ -644,12 +646,6 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
 }
 
 export function update_dom_unread_counts_visibility(): void {
-    const $streams_header = $("#streams_header");
-    if (settings_data.should_mask_unread_count(false)) {
-        $streams_header.addClass("hide_unread_counts");
-    } else {
-        $streams_header.removeClass("hide_unread_counts");
-    }
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 
@@ -775,7 +771,7 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
-
+    topic_list.topic_state_typeahead?.lookup(true);
     return $stream_li;
 }
 
@@ -949,7 +945,27 @@ export function set_event_handlers({
                 false,
                 (topic_names: string[]) => topic_names,
             );
-            const topic_item = topic_list_info.items[0];
+            // This initial value handles both the
+            // top_topic_in_channel mode as well as the
+            // top_unread_topic_in_channel fallback when there are no
+            // (unmuted) unreads in the channel.
+            let topic_item = topic_list_info.items[0];
+
+            if (
+                user_settings.web_channel_default_view ===
+                web_channel_default_view_values.top_unread_topic_in_channel.code
+            ) {
+                for (const topic_list_item of topic_list_info.items) {
+                    if (
+                        unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
+                        !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
+                    ) {
+                        topic_item = topic_list_item;
+                        break;
+                    }
+                }
+            }
+
             if (topic_item !== undefined) {
                 const destination_url = hash_util.by_channel_topic_permalink(
                     stream_id,
@@ -978,13 +994,14 @@ export function set_event_handlers({
         }
     });
 
-    $("#clear_search_stream_button").on("click", clear_search);
-
     $("#streams_header")
         .expectOne()
         .on("click", (e) => {
             e.preventDefault();
-            if (e.target.id === "streams_inline_icon") {
+            if (
+                e.target.id === "streams_inline_icon" ||
+                $(e.target).parent().hasClass("input-button")
+            ) {
                 return;
             }
             toggle_filter_displayed(e);
@@ -1059,13 +1076,8 @@ export function searching(): boolean {
     return $(".stream-list-filter").expectOne().is(":focus");
 }
 
-export function clear_search(e: JQuery.ClickEvent): void {
-    e.stopPropagation();
+export function test_clear_search(): void {
     const $filter = $(".stream-list-filter").expectOne();
-    if ($filter.val() === "") {
-        clear_and_hide_search();
-        return;
-    }
     $filter.val("");
     $filter.trigger("blur");
     update_streams_for_search();
@@ -1116,7 +1128,7 @@ export function toggle_filter_displayed(e: JQuery.ClickEvent): void {
     e.preventDefault();
 }
 
-export function scroll_stream_into_view($stream_li: JQuery): void {
+function scroll_stream_into_view($stream_li: JQuery): void {
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {

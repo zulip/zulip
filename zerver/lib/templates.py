@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from typing import Any
 
 import markdown
@@ -12,6 +13,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
 from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
+from markupsafe import Markup
 
 import zerver.lib.markdown.api_arguments_table_generator
 import zerver.lib.markdown.api_return_values_table_generator
@@ -25,11 +27,16 @@ import zerver.lib.markdown.static
 import zerver.lib.markdown.tabbed_sections
 import zerver.openapi.markdown_extension
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
+from zerver.openapi.merge_api_changelogs import (
+    get_feature_level,
+    get_unmerged_changelogs,
+    merge_changelogs,
+)
 
 register = Library()
 
 
-def and_n_others(values: list[str], limit: int) -> str:
+def and_n_others(values: list[str | Markup], limit: int) -> str | Markup:
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
     return " and {} other{}".format(
@@ -38,8 +45,17 @@ def and_n_others(values: list[str], limit: int) -> str:
     )
 
 
+def get_updated_changelog() -> str | None:
+    unmerged_changelogs = get_unmerged_changelogs(verbose=False)
+    if not unmerged_changelogs:
+        return None
+
+    new_feature_level = get_feature_level(update_feature_level=False)
+    return merge_changelogs(unmerged_changelogs, new_feature_level, False)
+
+
 @register.filter(name="display_list", is_safe=True)
-def display_list(values: list[str], display_limit: int) -> str:
+def display_list(values: list[str | Markup], display_limit: int) -> str | Markup:
     """
     Given a list of values, return a string nicely formatting those values,
     summarizing when you have more than `display_limit`. Eg, for a
@@ -51,16 +67,17 @@ def display_list(values: list[str], display_limit: int) -> str:
     Jessica, Waseem, Tim, and 1 other
     Jessica, Waseem, Tim, and 2 others
     """
+    sep = Markup(", ") if any(isinstance(value, Markup) for value in values) else ", "
     if len(values) == 1:
         # One value, show it.
-        display_string = f"{values[0]}"
+        display_string = values[0]
     elif len(values) <= display_limit:
         # Fewer than `display_limit` values, show all of them.
-        display_string = ", ".join(f"{value}" for value in values[:-1])
-        display_string += f" and {values[-1]}"
+        display_string = sep.join(value for value in values[:-1])
+        display_string += " and " + values[-1]
     else:
         # More than `display_limit` values, only mention a few.
-        display_string = ", ".join(f"{value}" for value in values[:display_limit])
+        display_string = sep.join(value for value in values[:display_limit])
         display_string += and_n_others(values, display_limit)
 
     return display_string
@@ -167,6 +184,14 @@ def render_markdown_path(
             markdown_string = fp.read()
     else:
         markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+    if (
+        settings.DEVELOPMENT
+        and Path(markdown_file_path).resolve() == Path("api_docs/changelog.md").resolve()
+    ):
+        updated_changelog = get_updated_changelog()
+        if updated_changelog is not None:
+            markdown_string = updated_changelog
 
     API_ENDPOINT_NAME = context.get("API_ENDPOINT_NAME", "") if context is not None else ""
     markdown_string = markdown_string.replace("API_ENDPOINT_NAME", API_ENDPOINT_NAME)

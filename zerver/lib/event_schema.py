@@ -65,6 +65,8 @@ from zerver.lib.event_types import (
     EventRealmUserRemove,
     EventRealmUserSettingsDefaultsUpdate,
     EventRealmUserUpdate,
+    EventRemindersAdd,
+    EventRemindersRemove,
     EventRestart,
     EventSavedSnippetsAdd,
     EventSavedSnippetsRemove,
@@ -197,6 +199,8 @@ check_realm_linkifiers = make_checker(EventRealmLinkifiers)
 check_realm_playgrounds = make_checker(EventRealmPlaygrounds)
 check_realm_user_add = make_checker(EventRealmUserAdd)
 check_realm_user_remove = make_checker(EventRealmUserRemove)
+check_reminder_add = make_checker(EventRemindersAdd)
+check_reminder_remove = make_checker(EventRemindersRemove)
 check_restart = make_checker(EventRestart)
 check_saved_snippets_add = make_checker(EventSavedSnippetsAdd)
 check_saved_snippets_remove = make_checker(EventSavedSnippetsRemove)

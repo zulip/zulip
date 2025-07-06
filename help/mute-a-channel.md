@@ -12,6 +12,16 @@
 
 1. Click **Mute channel**.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/347). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ## Unmute a channel
@@ -23,6 +33,16 @@
 {!channel-actions.md!}
 
 1. Click **Unmute channel**.
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/347). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 

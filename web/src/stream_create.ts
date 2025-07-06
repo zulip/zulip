@@ -14,7 +14,6 @@ import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
-import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -77,6 +76,8 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_move_messages_out_of_channel_group", null],
+    ["can_move_messages_within_channel_group", null],
     ["can_remove_subscribers_group", null],
     ["can_send_message_group", null],
 ]);
@@ -454,7 +455,7 @@ function create_stream(): void {
     });
 }
 
-export function new_stream_clicked(stream_name: string): void {
+export function new_stream_clicked(stream_name: string, folder_id: number | undefined): void {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
@@ -464,6 +465,11 @@ export function new_stream_clicked(stream_name: string): void {
         $("#create_stream_name").val(stream_name);
     }
     show_new_stream_modal();
+    if (folder_id) {
+        folder_widget!.render(folder_id);
+    } else {
+        folder_widget!.render(-1);
+    }
     $("#create_stream_name").trigger("focus");
 }
 
@@ -477,7 +483,6 @@ export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
     stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
-    resize.resize_settings_creation_overlay($("#channels_overlay_container"));
 
     stream_create_subscribers.build_widgets();
 

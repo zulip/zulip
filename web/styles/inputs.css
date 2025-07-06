@@ -1,0 +1,95 @@
+.input-active-styles {
+    color: var(--color-text-input-focus);
+    background-color: var(--color-background-input-focus);
+    border-color: var(--color-border-input-focus);
+}
+
+.input-element-wrapper {
+    display: grid;
+    grid-template:
+        [input-element-start] "icon-starting-offset input-icon icon-content-gap content button-content-gap input-button button-ending-offset" auto [input-element-end] / [input-element-start] var(
+            --input-icon-starting-offset
+        )
+        var(--input-icon-width) var(--input-icon-content-gap) minmax(0, 1fr)
+        var(--input-button-content-gap) var(--input-button-width) var(
+            --input-button-ending-offset
+        )
+        [input-element-end];
+    align-items: center;
+
+    .input-element {
+        grid-area: input-element;
+        box-sizing: border-box;
+        padding: 0.1875em 0.5em; /* 3px at 16px/1em and 8px at 16px/1em */
+        font-size: var(--base-font-size-px);
+        font-family: "Source Sans 3 VF", sans-serif;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        color: var(--color-text-input);
+        background: var(--color-background-input);
+        border: 1px solid var(--color-border-input);
+        border-radius: 4px;
+        outline: none;
+        transition: 0.1s linear;
+        transition-property: border-color, box-shadow;
+
+        &:hover {
+            border-color: var(--color-border-input-hover);
+        }
+
+        &:focus {
+            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
+        }
+
+        &:focus,
+        &.input-element-nonempty {
+            @extend .input-active-styles;
+        }
+    }
+
+    &.has-input-icon .input-element {
+        padding-left: calc(
+            var(--input-icon-starting-offset) + var(--input-icon-width) +
+                var(--input-icon-content-gap)
+        );
+    }
+
+    &.has-input-button .input-element {
+        padding-right: calc(
+            var(--input-button-content-gap) + var(--input-button-width) +
+                var(--input-button-ending-offset)
+        );
+    }
+}
+
+.input-icon {
+    grid-area: input-icon;
+    color: var(--color-text-input);
+    /* We need to set the z-index, since the input icon
+       comes before the input element in the DOM, but we
+       want to display it over the input element in the UI. */
+    z-index: 1;
+    pointer-events: none;
+}
+
+.input-button {
+    grid-area: input-button;
+    padding: 0.25em; /* 4px at 16px/1em */
+}
+
+.filter-input .input-element {
+    &:placeholder-shown {
+        /* In case of filter inputs, when the input field
+        is empty, we hide the input button and adjust
+        the right padding to compensate for the same. */
+        padding-right: 0.5em;
+
+        ~ .input-button {
+            visibility: hidden;
+        }
+    }
+
+    &:not(:placeholder-shown) {
+        @extend .input-active-styles;
+    }
+}

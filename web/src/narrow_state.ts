@@ -40,7 +40,7 @@ export function search_terms(current_filter: Filter | undefined = filter()): Nar
 }
 
 export function is_search_view(current_filter: Filter | undefined = filter()): boolean {
-    if (current_filter && !current_filter.supports_collapsing_recipients()) {
+    if (current_filter && !current_filter.contains_no_partial_conversations()) {
         return true;
     }
     return false;

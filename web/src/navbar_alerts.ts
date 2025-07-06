@@ -230,10 +230,10 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
 
 const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     process: "insecure-desktop-app",
-    intent: "danger",
+    intent: "warning",
     label: $t({
         defaultMessage:
-            "You are using an old version of the Zulip desktop app with known security bugs.",
+            "Zulip desktop is not updating automatically. Please upgrade for security updates and other improvements.",
     }),
     buttons: [
         {

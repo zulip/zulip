@@ -2007,6 +2007,26 @@ class TestEmailMirrorServer(ZulipTestCase):
 
         return [r.decode() for r in responses]
 
+    @override_settings(EMAIL_GATEWAY_PATTERN="")
+    async def test_unconfigured(self) -> None:
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    "RCPT TO: <bogus@other.example.com>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.1.1 Bad destination mailbox address: This server is not configured for incoming email.\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
     @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
     async def test_handler_error(self) -> None:
         with (

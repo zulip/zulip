@@ -1,6 +1,6 @@
 You can configure whether channel links in the [left
 sidebar](/help/left-sidebar) go to the channel feed, a list of topics in the
-channel, or to the top topic.
+channel, the top topic, or the top unread topic.
 
 {start_tabs}
 

@@ -619,9 +619,9 @@ def rewrite_client_arrays(value_arrays: dict[str, list[int]]) -> dict[str, list[
         mapped_label = client_label_map(label)
         if mapped_label in mapped_arrays:
             for i in range(len(array)):
-                mapped_arrays[mapped_label][i] += value_arrays[label][i]
+                mapped_arrays[mapped_label][i] += array[i]
         else:
-            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(len(array))]
+            mapped_arrays[mapped_label] = array.copy()
     return mapped_arrays
 
 

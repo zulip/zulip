@@ -56,12 +56,12 @@ class RemindersTest(ZulipTestCase):
     def get_dm_reminder_content(self, msg_content: str, msg_id: int) -> str:
         return (
             "You requested a reminder for the following direct message.\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12-pm/near/{msg_id}):\n```quote\n{msg_content}\n```"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{msg_id}):\n```quote\n{msg_content}\n```"
         )
 
     def get_channel_message_reminder_content(self, msg_content: str, msg_id: int) -> str:
         return (
-            "You requested a reminder for the following message sent to [Verona > test](http://zulip.testserver/#narrow/channel/3-Verona/topic/test).\n\n"
+            f"You requested a reminder for #**Verona>test@{msg_id}**.\n\n"
             f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}):\n```quote\n{msg_content}\n```"
         )
 
@@ -287,5 +287,130 @@ class RemindersTest(ZulipTestCase):
             self.assertEqual(
                 delivered_message.content,
                 self.get_dm_reminder_content(content, reminder.reminder_target_message_id),
+            )
+            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+    def test_delete_reminder(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        response = self.api_get(hamlet, "/api/v1/reminders")
+        self.assert_json_success(response)
+        response_data = response.json()
+        self.assertEqual(response_data["reminders"], [])
+
+        # Create a test message to schedule a reminder for.
+        message_id = self.send_stream_message(
+            hamlet,
+            "Denmark",
+        )
+
+        # Schedule a reminder for the created message.
+        deliver_at = int(time.time() + 86400)
+
+        response = self.do_schedule_reminder(
+            message_id=message_id,
+            scheduled_delivery_timestamp=deliver_at,
+        )
+        self.assert_json_success(response)
+        response_data = response.json()
+        self.assertIn("reminder_id", response_data)
+        reminder_id = response_data["reminder_id"]
+
+        # Verify that the reminder was scheduled correctly.
+        reminders_response = self.api_get(hamlet, "/api/v1/reminders")
+        self.assert_json_success(reminders_response)
+        reminders_data = reminders_response.json()
+        self.assert_length(reminders_data["reminders"], 1)
+        reminder = reminders_data["reminders"][0]
+        self.assertEqual(reminder["reminder_id"], reminder_id)
+        self.assertEqual(reminder["reminder_target_message_id"], message_id)
+
+        # Test deleting the reminder with the wrong user.
+        result = self.api_delete(cordelia, f"/api/v1/reminders/{reminder_id}")
+        self.assert_json_error(result, "Reminder does not exist", status_code=404)
+
+        # Test deleting the reminder.
+        result = self.client_delete(f"/json/reminders/{reminder_id}")
+        self.assert_json_success(result)
+
+        # Verify that the reminder was deleted.
+        self.assertEqual(response.status_code, 200)
+        reminders_response = self.api_get(hamlet, "/api/v1/reminders")
+        self.assert_json_success(reminders_response)
+        reminders_data = reminders_response.json()
+        self.assert_length(reminders_data["reminders"], 0)
+
+        # Try deleting again to trigger failure.
+        result = self.client_delete(f"/json/reminders/{reminder_id}")
+        self.assert_json_error(result, "Reminder does not exist", status_code=404)
+
+    def test_reminder_for_poll(self) -> None:
+        content = "/poll What is your favorite color?"
+        reminder = self.create_reminder(content)
+
+        # mock current time to be greater than the scheduled time, so that the `scheduled_message` can be sent.
+        more_than_scheduled_delivery_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=1
+        )
+
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            result = try_deliver_one_scheduled_message()
+            self.assertTrue(result)
+            reminder.refresh_from_db()
+            self.assertEqual(
+                logs.output,
+                [
+                    f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})"
+                ],
+            )
+            self.assertEqual(reminder.delivered, True)
+            self.assertEqual(reminder.failed, False)
+            assert isinstance(reminder.delivered_message_id, int)
+            delivered_message = Message.objects.get(id=reminder.delivered_message_id)
+            assert isinstance(reminder.reminder_target_message_id, int)
+            self.assertEqual(
+                delivered_message.content,
+                "You requested a reminder for the following direct message."
+                "\n\n"
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a poll.",
+            )
+            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+    def test_reminder_for_todo(self) -> None:
+        content = "/todo List of tasks"
+        reminder = self.create_reminder(content)
+
+        # mock current time to be greater than the scheduled time, so that the `scheduled_message` can be sent.
+        more_than_scheduled_delivery_datetime = reminder.scheduled_timestamp + datetime.timedelta(
+            minutes=1
+        )
+
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO") as logs,
+        ):
+            result = try_deliver_one_scheduled_message()
+            self.assertTrue(result)
+            reminder.refresh_from_db()
+            self.assertEqual(
+                logs.output,
+                [
+                    f"INFO:root:Sending scheduled message {reminder.id} with date {reminder.scheduled_timestamp} (sender: {reminder.sender_id})"
+                ],
+            )
+            self.assertEqual(reminder.delivered, True)
+            self.assertEqual(reminder.failed, False)
+            assert isinstance(reminder.delivered_message_id, int)
+            delivered_message = Message.objects.get(id=reminder.delivered_message_id)
+            assert isinstance(reminder.reminder_target_message_id, int)
+            self.assertEqual(
+                delivered_message.content,
+                "You requested a reminder for the following direct message."
+                "\n\n"
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a todo list.",
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)

@@ -816,6 +816,7 @@ function setup_page(callback: () => void): void {
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Stream settings".
         stream_ui_updates.set_show_subscribed(true);
+        stream_ui_updates.set_show_not_subscribed(false);
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
@@ -971,13 +972,13 @@ export function change_state(
     section: string,
     left_side_tab: string | undefined,
     right_side_tab: string,
+    folder_id?: number,
 ): void {
     assert(toggler !== undefined);
     // if in #channels/new form.
     if (section === "new") {
-        do_open_create_stream();
+        do_open_create_stream(folder_id);
         show_right_section();
-        resize.resize_settings_creation_overlay($("#channels_overlay_container"));
         return;
     }
 
@@ -1036,6 +1037,7 @@ export function launch(
     section: string,
     left_side_tab: string | undefined,
     right_side_tab: string,
+    folder_id?: number,
 ): void {
     setup_page(() => {
         overlays.open_overlay({
@@ -1045,7 +1047,7 @@ export function launch(
                 browser_history.exit_overlay();
             },
         });
-        change_state(section, left_side_tab, right_side_tab);
+        change_state(section, left_side_tab, right_side_tab, folder_id);
         setTimeout(() => {
             if (!stream_settings_components.get_active_data().id) {
                 if (section === "new") {
@@ -1148,7 +1150,7 @@ export function view_stream(): void {
     }
 }
 
-export function do_open_create_stream(): void {
+export function do_open_create_stream(folder_id?: number): void {
     // Only call this directly for hash changes.
     // Prefer open_create_stream().
 
@@ -1161,7 +1163,7 @@ export function do_open_create_stream(): void {
         return;
     }
 
-    stream_create.new_stream_clicked(stream.trim());
+    stream_create.new_stream_clicked(stream.trim(), folder_id);
 }
 
 export function open_create_stream(): void {
@@ -1202,6 +1204,9 @@ export function initialize(): void {
     $("#channels_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#channels_overlay_container .two-pane-settings-header").removeClass("slide-left");
+        resize.resize_settings_overlay_subheader_for_narrow_screens(
+            $("#channels_overlay_container"),
+        );
     });
 
     $("#channels_overlay_container").on("click", "#preview-stream-button", () => {

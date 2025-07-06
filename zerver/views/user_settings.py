@@ -212,108 +212,73 @@ def json_change_settings(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    full_name: str | None = None,
-    email: str | None = None,
-    old_password: str | None = None,
-    new_password: str | None = None,
-    twenty_four_hour_time: Json[bool] | None = None,
-    web_mark_read_on_scroll_policy: Annotated[
-        Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
-    ]
-    | None = None,
-    web_channel_default_view: Annotated[
-        Json[int], check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)
-    ]
-    | None = None,
-    starred_message_counts: Json[bool] | None = None,
-    receives_typing_notifications: Json[bool] | None = None,
-    fluid_layout_width: Json[bool] | None = None,
-    high_contrast_mode: Json[bool] | None = None,
-    color_scheme: Annotated[Json[int], check_int_in_validator(UserProfile.COLOR_SCHEME_CHOICES)]
-    | None = None,
-    web_font_size_px: Json[int] | None = None,
-    web_line_height_percent: Json[int] | None = None,
-    translate_emoticons: Json[bool] | None = None,
-    display_emoji_reaction_users: Json[bool] | None = None,
-    default_language: str | None = None,
-    web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
-    web_escape_navigates_to_home_view: Json[bool] | None = None,
-    left_side_userlist: Json[bool] | None = None,
-    emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,
-    demote_inactive_streams: Annotated[
-        Json[int], check_int_in_validator(UserProfile.DEMOTE_STREAMS_CHOICES)
-    ]
-    | None = None,
-    web_stream_unreads_count_display_policy: Annotated[
-        Json[int],
-        check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
-    ]
-    | None = None,
-    timezone: Annotated[str, timezone_validator()] | None = None,
-    email_notifications_batching_period_seconds: Json[int] | None = None,
-    enable_drafts_synchronization: Json[bool] | None = None,
-    enable_stream_desktop_notifications: Json[bool] | None = None,
-    enable_stream_email_notifications: Json[bool] | None = None,
-    enable_stream_push_notifications: Json[bool] | None = None,
-    enable_stream_audible_notifications: Json[bool] | None = None,
-    wildcard_mentions_notify: Json[bool] | None = None,
-    enable_followed_topic_desktop_notifications: Json[bool] | None = None,
-    enable_followed_topic_email_notifications: Json[bool] | None = None,
-    enable_followed_topic_push_notifications: Json[bool] | None = None,
-    enable_followed_topic_audible_notifications: Json[bool] | None = None,
-    enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
-    notification_sound: str | None = None,
-    enable_desktop_notifications: Json[bool] | None = None,
-    enable_sounds: Json[bool] | None = None,
-    enable_offline_email_notifications: Json[bool] | None = None,
-    enable_offline_push_notifications: Json[bool] | None = None,
-    enable_online_push_notifications: Json[bool] | None = None,
-    enable_digest_emails: Json[bool] | None = None,
-    enable_login_emails: Json[bool] | None = None,
-    enable_marketing_emails: Json[bool] | None = None,
-    message_content_in_email_notifications: Json[bool] | None = None,
-    pm_content_in_desktop_notifications: Json[bool] | None = None,
-    desktop_icon_count_display: Annotated[
-        Json[int], check_int_in_validator(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES)
-    ]
-    | None = None,
-    realm_name_in_email_notifications_policy: Annotated[
-        Json[int],
-        check_int_in_validator(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
-    ]
-    | None = None,
+    allow_private_data_export: Json[bool] | None = None,
     automatically_follow_topics_policy: Annotated[
         Json[int],
         check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
     ]
     | None = None,
+    automatically_follow_topics_where_mentioned: Json[bool] | None = None,
     automatically_unmute_topics_in_muted_streams_policy: Annotated[
         Json[int],
         check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
     ]
     | None = None,
-    automatically_follow_topics_where_mentioned: Json[bool] | None = None,
-    presence_enabled: Json[bool] | None = None,
-    enter_sends: Json[bool] | None = None,
-    send_private_typing_notifications: Json[bool] | None = None,
-    send_stream_typing_notifications: Json[bool] | None = None,
-    send_read_receipts: Json[bool] | None = None,
-    allow_private_data_export: Json[bool] | None = None,
-    user_list_style: Annotated[
-        Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
+    color_scheme: Annotated[Json[int], check_int_in_validator(UserProfile.COLOR_SCHEME_CHOICES)]
+    | None = None,
+    default_language: str | None = None,
+    demote_inactive_streams: Annotated[
+        Json[int], check_int_in_validator(UserProfile.DEMOTE_STREAMS_CHOICES)
     ]
     | None = None,
-    web_animate_image_previews: Annotated[
-        str, check_string_in_validator(web_animate_image_previews_options)
+    desktop_icon_count_display: Annotated[
+        Json[int], check_int_in_validator(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES)
     ]
     | None = None,
+    display_emoji_reaction_users: Json[bool] | None = None,
+    email: str | None = None,
     email_address_visibility: Annotated[
         Json[int], check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)
     ]
     | None = None,
-    web_navigate_to_sent_message: Json[bool] | None = None,
-    web_suggest_update_timezone: Json[bool] | None = None,
+    email_notifications_batching_period_seconds: Json[int] | None = None,
+    emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,
+    enable_desktop_notifications: Json[bool] | None = None,
+    enable_digest_emails: Json[bool] | None = None,
+    enable_drafts_synchronization: Json[bool] | None = None,
+    enable_followed_topic_audible_notifications: Json[bool] | None = None,
+    enable_followed_topic_desktop_notifications: Json[bool] | None = None,
+    enable_followed_topic_email_notifications: Json[bool] | None = None,
+    enable_followed_topic_push_notifications: Json[bool] | None = None,
+    enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
+    enable_login_emails: Json[bool] | None = None,
+    enable_marketing_emails: Json[bool] | None = None,
+    enable_offline_email_notifications: Json[bool] | None = None,
+    enable_offline_push_notifications: Json[bool] | None = None,
+    enable_online_push_notifications: Json[bool] | None = None,
+    enable_sounds: Json[bool] | None = None,
+    enable_stream_audible_notifications: Json[bool] | None = None,
+    enable_stream_desktop_notifications: Json[bool] | None = None,
+    enable_stream_email_notifications: Json[bool] | None = None,
+    enable_stream_push_notifications: Json[bool] | None = None,
+    enter_sends: Json[bool] | None = None,
+    fluid_layout_width: Json[bool] | None = None,
+    full_name: str | None = None,
+    high_contrast_mode: Json[bool] | None = None,
     hide_ai_features: Json[bool] | None = None,
+    left_side_userlist: Json[bool] | None = None,
+    message_content_in_email_notifications: Json[bool] | None = None,
+    new_password: str | None = None,
+    notification_sound: str | None = None,
+    old_password: str | None = None,
+    pm_content_in_desktop_notifications: Json[bool] | None = None,
+    presence_enabled: Json[bool] | None = None,
+    realm_name_in_email_notifications_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
+    ]
+    | None = None,
+    receives_typing_notifications: Json[bool] | None = None,
     resolved_topic_notice_auto_read_policy: Annotated[
         str | None,
         AfterValidator(
@@ -324,6 +289,42 @@ def json_change_settings(
             )
         ),
     ] = None,
+    send_private_typing_notifications: Json[bool] | None = None,
+    send_read_receipts: Json[bool] | None = None,
+    send_stream_typing_notifications: Json[bool] | None = None,
+    starred_message_counts: Json[bool] | None = None,
+    timezone: Annotated[str, timezone_validator()] | None = None,
+    translate_emoticons: Json[bool] | None = None,
+    twenty_four_hour_time: Json[bool] | None = None,
+    user_list_style: Annotated[
+        Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
+    ]
+    | None = None,
+    web_animate_image_previews: Annotated[
+        str, check_string_in_validator(web_animate_image_previews_options)
+    ]
+    | None = None,
+    web_channel_default_view: Annotated[
+        Json[int], check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)
+    ]
+    | None = None,
+    web_escape_navigates_to_home_view: Json[bool] | None = None,
+    web_font_size_px: Json[int] | None = None,
+    web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
+    web_line_height_percent: Json[int] | None = None,
+    web_mark_read_on_scroll_policy: Annotated[
+        Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
+    ]
+    | None = None,
+    web_navigate_to_sent_message: Json[bool] | None = None,
+    web_stream_unreads_count_display_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+    ]
+    | None = None,
+    web_suggest_update_timezone: Json[bool] | None = None,
+    wildcard_mentions_notify: Json[bool] | None = None,
 ) -> HttpResponse:
     # UserProfile object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a

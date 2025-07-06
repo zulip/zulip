@@ -24,9 +24,9 @@
   channel.
 
 * For open source projects or other volunteer organizations, consider
-  adding default channels like `#announce` for announcements, `#new
-  members` for new members to introduce themselves and be welcomed,
-  and `#help` so that there's a clear place users stopping by with
+  adding default channels like **#announce** for announcements, **#new
+  members** for new members to introduce themselves and be welcomed,
+  and **#help** so that there's a clear place users stopping by with
   just a single question can post.
 
 ## Related articles

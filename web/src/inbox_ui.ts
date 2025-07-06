@@ -200,6 +200,8 @@ const per_channel_filters = new Map<number, Set<string>>();
 let collapsed_containers = new Set<string>();
 
 let search_keyword = "";
+let inbox_last_search_keyword = "";
+const per_channel_last_search_keyword = new Map<number, string>();
 const INBOX_SEARCH_ID = "inbox-search";
 const INBOX_FILTERS_DROPDOWN_ID = "inbox-filter_widget";
 export let current_focus_id: string | undefined;
@@ -226,19 +228,24 @@ function save_data_to_ls(): void {
     ls.set(ls_collapsed_containers_key, [...collapsed_containers]);
 }
 
-function save_channel_view_navigation_state(): void {
+function save_channel_view_state(): void {
     channel_view_navigation_state.col_focus = col_focus;
     channel_view_navigation_state.row_focus = row_focus;
     channel_view_navigation_state.channel_id = inbox_util.get_channel_id();
+    per_channel_last_search_keyword.set(channel_view_navigation_state.channel_id, search_keyword);
 }
 
-function save_inbox_view_navigation_state(): void {
+function save_inbox_view_state(): void {
     inbox_view_navigation_state.col_focus = col_focus;
     inbox_view_navigation_state.row_focus = row_focus;
+    inbox_last_search_keyword = search_keyword;
 }
 
-function restore_channel_view_navigation_state(): void {
-    if (channel_view_navigation_state.channel_id === inbox_util.get_channel_id()) {
+function restore_channel_view_state(): void {
+    const current_channel_id = inbox_util.get_channel_id();
+    search_keyword = per_channel_last_search_keyword.get(current_channel_id) ?? "";
+
+    if (channel_view_navigation_state.channel_id === current_channel_id) {
         col_focus = channel_view_navigation_state.col_focus;
         row_focus = channel_view_navigation_state.row_focus;
         return;
@@ -249,14 +256,16 @@ function restore_channel_view_navigation_state(): void {
     row_focus = DEFAULT_ROW_FOCUS;
 }
 
-function restore_inbox_view_navigation_state(): void {
+function restore_inbox_view_state(): void {
     col_focus = inbox_view_navigation_state.col_focus;
     row_focus = inbox_view_navigation_state.row_focus;
+    search_keyword = inbox_last_search_keyword;
 }
 
 export function show(filter?: Filter): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
+    const was_inbox_already_visible = inbox_util.is_visible();
     // Avoid setting col_focus to recipient when moving to inbox from other narrows.
     // We prefer to focus entire row instead of stream name for inbox-header.
     // Since inbox-row doesn't has a collapse button, focus on COLUMNS.COLLAPSE_BUTTON
@@ -279,12 +288,12 @@ export function show(filter?: Filter): void {
             // do anything here if view for the same channel is visible.
             return;
         }
-    } else if (!was_inbox_channel_view && is_new_filter_channel_view) {
-        save_inbox_view_navigation_state();
+    } else if (was_inbox_already_visible && !was_inbox_channel_view && is_new_filter_channel_view) {
+        save_inbox_view_state();
     }
 
-    if (was_inbox_channel_view) {
-        save_channel_view_navigation_state();
+    if (was_inbox_already_visible && was_inbox_channel_view) {
+        save_channel_view_state();
     }
 
     // Before we set the filter, we need to check if the inbox view is already visible.
@@ -292,7 +301,7 @@ export function show(filter?: Filter): void {
 
     inbox_util.set_filter(filter);
     if (inbox_util.is_channel_view()) {
-        restore_channel_view_navigation_state();
+        restore_channel_view_state();
         views_util.show({
             highlight_view_in_left_sidebar() {
                 assert(filter !== undefined);
@@ -311,7 +320,7 @@ export function show(filter?: Filter): void {
         return;
     }
 
-    restore_inbox_view_navigation_state();
+    restore_inbox_view_state();
     views_util.show({
         highlight_view_in_left_sidebar() {
             views_util.handle_message_view_deactivated(
@@ -357,6 +366,12 @@ export function hide(): void {
         $view: $("#inbox-view"),
         set_visible: inbox_util.set_visible,
     });
+
+    if (inbox_util.is_channel_view()) {
+        save_channel_view_state();
+    } else {
+        save_inbox_view_state();
+    }
 
     inbox_util.set_filter(undefined);
 }
@@ -1880,7 +1895,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
     );
 
     $("body").on(
-        "keyup",
+        "input",
         "#inbox-search",
         _.debounce(() => {
             search_and_update();
@@ -1994,12 +2009,6 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         const $elt = $(this);
         col_focus = COLUMNS.TOPIC_VISIBILITY;
         focus_clicked_list_element($elt);
-    });
-
-    $("body").on("click", "#inbox-clear-search", () => {
-        $("#inbox-search").val("");
-        search_and_update();
-        focus_inbox_search();
     });
 
     $("body").on("click", "#inbox-search", () => {

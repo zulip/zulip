@@ -134,11 +134,13 @@ class UserBaseSettings(models.Model):
     WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC = 1
     WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED = 2
     WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST = 3
+    WEB_CHANNEL_DEFAULT_VIEW_TOP_UNREAD = 4
 
     WEB_CHANNEL_DEFAULT_VIEW_CHOICES = [
         WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
         WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST,
         WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED,
+        WEB_CHANNEL_DEFAULT_VIEW_TOP_UNREAD,
     ]
 
     web_channel_default_view = models.SmallIntegerField(
@@ -182,6 +184,8 @@ class UserBaseSettings(models.Model):
     web_stream_unreads_count_display_policy = models.PositiveSmallIntegerField(
         default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
     )
+
+    web_left_sidebar_unreads_count_summary = models.BooleanField(default=True, db_default=True)
 
     # Setting to control whether to automatically go to the
     # conversation where message was sent.
@@ -379,6 +383,7 @@ class UserBaseSettings(models.Model):
         web_suggest_update_timezone=bool,
         hide_ai_features=bool,
         resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
+        web_left_sidebar_unreads_count_summary=bool,
     )
 
     modern_notification_settings = dict(

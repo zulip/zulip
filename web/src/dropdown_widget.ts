@@ -78,8 +78,6 @@ export type DropdownWidgetOptions = {
     // Boolean variable to check whether the dropdown is opened
     // with a keyboard trigger or not.
     dropdown_triggered_via_keyboard?: boolean;
-    // Keep focus on search box while navigation.
-    keep_focus_on_search?: boolean;
     // When this is set, pressing tab will move focus to the target element.
     tab_moves_focus_to_target?: string | (() => string);
 };
@@ -154,7 +152,7 @@ export class DropdownWidget {
             options.dropdown_input_visible_selector ?? this.widget_selector;
         this.prefer_top_start_placement = options.prefer_top_start_placement ?? false;
         this.dropdown_triggered_via_keyboard = false;
-        this.keep_focus_on_search = options.keep_focus_on_search ?? false;
+        this.keep_focus_on_search = !this.hide_search_box;
         this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
         this.current_hover_index = 0;
     }

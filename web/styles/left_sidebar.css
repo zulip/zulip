@@ -61,6 +61,50 @@
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
+.selected-home-view {
+    &.hide-unread-messages-count {
+        .masked_unread_count {
+            /* Adding margin-right aligns the .masked_unread_count with the rest of the masked unread counts. */
+            margin-right: var(--left-sidebar-unread-offset);
+        }
+    }
+}
+
+.selected-home-view,
+#streams_header {
+    &.hide-unread-messages-count {
+        .masked_unread_count {
+            display: flex;
+            grid-area: markers-and-unreads;
+            justify-self: end;
+            visibility: visible;
+        }
+
+        .unread_count {
+            visibility: hidden;
+        }
+        /* When message summary count is 0, we dont want to show unread_count or masked_unread_count. */
+        .unread_count.hide + .masked_unread_count {
+            visibility: hidden;
+        }
+    }
+}
+
+.selected-home-view:hover,
+#streams_header:hover,
+.selected-home-view.top-left-active-filter {
+    &.hide-unread-messages-count {
+        .masked_unread_count {
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .unread_count {
+            visibility: visible;
+        }
+    }
+}
+
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
@@ -68,7 +112,7 @@
     font-weight: normal;
 
     .topic_search_section {
-        margin: 3px 0 3px var(--left-sidebar-toggle-width-offset);
+        margin: 3px 0;
     }
 
     & li {
@@ -138,10 +182,6 @@
         }
     }
 
-    .inactive_stream:not(.active-filter) {
-        opacity: 0.5;
-    }
-
     .toggle_stream_mute {
         margin-right: 3px;
         opacity: 0.5;
@@ -172,6 +212,7 @@
     }
 }
 
+#hide-more-direct-messages,
 #direct-messages-section-header {
     grid-template-columns:
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
@@ -179,7 +220,33 @@
             --left-sidebar-vdots-width
         )
         0;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
+}
+
+#hide-more-direct-messages {
+    /* Keep the DM zoom-out option hidden until zoomed-in. */
+    display: none;
+    margin-right: var(--left-sidebar-right-margin);
+    line-height: var(--line-height-sidebar-row);
+    text-decoration: none;
+    color: inherit;
+
+    .hide-more-direct-messages-text {
+        color: var(--color-text-sidebar-action-heading);
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        text-transform: var(--text-transform-sidebar-action-heading);
+        grid-area: row-content;
+    }
+
+    &:hover {
+        background-color: var(--color-background-sidebar-action-heading-hover);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        border-radius: 4px;
+    }
+}
+
+#direct-messages-section-header {
     cursor: pointer;
     white-space: nowrap;
     border-radius: 4px;
@@ -339,7 +406,7 @@
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
-    #direct-messages-section-header {
+    &#direct-messages-section-header {
         border-radius: 4px 4px 0 0;
     }
 
@@ -444,6 +511,7 @@
         0;
     padding-left: var(--left-sidebar-toggle-width-offset);
     border-radius: 4px;
+    text-decoration: none;
 
     &:hover {
         background: var(--color-background-sidebar-action-heading-hover);
@@ -497,11 +565,6 @@
            for better vertical centering. */
         font-size: var(--font-size-sidebar-action-heading);
     }
-}
-
-#subscribe-to-more-streams,
-#login-to-mmore-streams {
-    text-decoration: none;
 }
 
 ul.filters {
@@ -586,7 +649,8 @@ ul.filters {
         }
     }
 
-    & li.out_of_home_view {
+    & li.out_of_home_view,
+    .inactive_stream:not(.active-filter) {
         .stream-privacy,
         .stream-name,
         .channel-new-topic-button,
@@ -786,9 +850,11 @@ li.active-sub-filter {
 }
 
 /* Don't show the scheduled messages item... */
+li.top_left_reminders,
 li.top_left_scheduled_messages {
     display: none;
     /* ...unless there are scheduled messages to show. */
+    &.show-with-reminders,
     &.show-with-scheduled-messages {
         /* Use display: grid to preserve the grid
            layout when visible. */
@@ -937,7 +1003,7 @@ li.top_left_scheduled_messages {
 
 /* New grid definitions here. */
 #views-label-container,
-.zoom-in #hide-more-direct-messages,
+#hide-more-direct-messages.dm-zoomed-in,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
@@ -983,16 +1049,32 @@ li.top_left_scheduled_messages {
     display: grid;
     align-items: center;
     /* This extends the general pattern of left sidebar rows, but includes a
-       second grid row for placing filter boxes. This pattern keeps the box
-       aligned with the text content in `row-content` and includes the
-       `ending-anchor-element` space.
-
-       There is currently no filter box on DM rows, but we can prepare for
-       that now by having it share this grid template. Its row and column
-       definitions have the final say about dimensions and placement. */
+       second grid row for placing filter boxes. */
     grid-template-areas:
-        "starting-offset starting-anchor-element icon-content-gap row-content controls   markers-and-unreads ending-anchor-element ending-offset"
-        ".               filter-box              filter-box       filter-box  filter-box filter-box          filter-box            .            ";
+        "starting-offset   starting-anchor-element  icon-content-gap  row-content       controls          markers-and-unreads  ending-anchor-element  ending-offset"
+        "filter-container  filter-container         filter-container  filter-container  filter-container  filter-container     filter-container       filter-container";
+    grid-template-rows: var(--line-height-sidebar-row-prominent) minmax(
+            0,
+            max-content
+        );
+}
+
+.left-sidebar-filter-input-container {
+    grid-area: filter-container;
+    display: grid;
+    align-items: center;
+    grid-template:
+        "starting-offset filter-input ending-offset" minmax(0, max-content)
+        / calc(
+            var(--left-sidebar-toggle-width-offset) -
+                var(--input-icon-starting-offset)
+        )
+        minmax(0, 1fr) var(--left-sidebar-vdots-width);
+
+    .filter-input,
+    .filter-topics {
+        grid-area: filter-input;
+    }
 }
 
 #views-label-container {
@@ -1281,11 +1363,6 @@ li.top_left_scheduled_messages {
     }
 }
 
-.direct-messages-list-filter {
-    grid-area: filter-box;
-    padding-right: var(--line-height-sidebar-row-prominent);
-}
-
 .topic-list-filter {
     grid-area: filter-box;
     padding-right: var(--line-height-sidebar-row-prominent);
@@ -1293,11 +1370,24 @@ li.top_left_scheduled_messages {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    gap: 0.125em; /* 2px at 16px em */
+    background-color: var(--color-background-active-narrow-filter);
+    font-weight: 400;
+
+    .input:empty::before {
+        color: var(--color-text-placeholder);
+        content: attr(data-placeholder);
+    }
+
+    .input {
+        flex-grow: 1;
+        min-width: 0;
+    }
 }
 
-#left-sidebar-filter-topic-input:placeholder-shown
-    + #clear_search_topic_button {
+#clear_search_topic_button {
     visibility: hidden;
+    height: 2em; /* 32px at 16px/1em */
 }
 
 .searching-for-more-topics img {
@@ -1623,6 +1713,7 @@ li.topic-list-item {
 }
 
 #topics_header {
+    display: grid;
     position: sticky;
     top: 0;
     z-index: 2;
@@ -1633,7 +1724,7 @@ li.topic-list-item {
         [topics-content-area-end] var(--left-sidebar-right-margin);
     grid-template-rows:
         [topics-content-area-start] var(--line-height-sidebar-row-prominent)
-        [topics-content-area-end];
+        [topics-content-area-end] 0;
     padding-top: var(--left-sidebar-sections-vertical-gutter);
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
@@ -1680,8 +1771,6 @@ li.topic-list-item {
         )
         minmax(0, max-content) var(--left-sidebar-vdots-width)
         0;
-    /* Keep the stream-search area rows collapsed. */
-    grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
     cursor: pointer;
     margin: var(--left-sidebar-sections-vertical-gutter)
         var(--left-sidebar-right-margin) 3px 0;
@@ -1694,10 +1783,9 @@ li.topic-list-item {
     background-color: var(--color-background);
 
     &.showing-stream-search-section {
-        /* Open up the stream-search rows. The 3px gap + 7px
-           row maintains space with the streams list
-           below. */
-        grid-template-rows: var(--line-height-sidebar-row-prominent) auto 7px;
+        /* Open up the stream-search rows and maintain
+           space with the streams list below. */
+        padding-bottom: var(--left-sidebar-sections-vertical-gutter);
         row-gap: 3px;
 
         /* When the search section is showing, switch
@@ -1775,57 +1863,6 @@ li.topic-list-item {
             display: flex;
         }
     }
-
-    .stream_search_section {
-        grid-area: filter-box;
-        white-space: nowrap;
-    }
-
-    .stream-list-filter {
-        grid-area: filter-box;
-        padding-right: var(--line-height-sidebar-row-prominent);
-    }
-
-    &.hide_unread_counts {
-        .unread_count,
-        .unread_count.hide,
-        .masked_unread_count {
-            display: none;
-        }
-
-        /* When an empty unread count is hidden,
-           hide the masked unread count, too. */
-        .unread_count.hide + .masked_unread_count {
-            display: none;
-        }
-
-        .masked_unread_count {
-            display: flex;
-        }
-
-        &:hover {
-            .unread_count {
-                display: block;
-            }
-
-            .hide,
-            .masked_unread_count {
-                display: none;
-            }
-        }
-    }
-}
-
-.stream_search_section,
-.direct-messages-search-section {
-    .direct-messages-list-filter:placeholder-shown
-        + #clear-direct-messages-search-button {
-        visibility: hidden;
-    }
-
-    .stream-list-filter:placeholder-shown + #clear_search_stream_button {
-        visibility: hidden;
-    }
 }
 
 /* Prepare an adjusted grid for the logged-out state,
@@ -1891,13 +1928,6 @@ li.topic-list-item {
     }
 }
 
-.direct-messages-list-filter,
-.stream-list-filter {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
 .zero_count {
     visibility: hidden;
 }
@@ -1939,34 +1969,9 @@ li.topic-list-item {
         margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
     }
 
-    #hide-more-direct-messages {
-        grid-template-columns: inherit;
-        grid-column: 1 / -1;
-        line-height: var(--line-height-sidebar-row);
-        text-decoration: none;
-        color: inherit;
-
-        .hide-more-direct-messages-text {
-            color: var(--color-text-sidebar-action-heading);
-            font-size: var(--font-size-sidebar-action-heading);
-            font-weight: var(--font-weight-sidebar-action-heading);
-            font-variant: var(--font-variant-sidebar-action-heading);
-            text-transform: var(--text-transform-sidebar-action-heading);
-            grid-area: row-content;
-        }
-
-        &:hover {
-            background-color: var(
-                --color-background-sidebar-action-heading-hover
-            );
-            box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-            border-radius: 4px;
-        }
-    }
-
     .direct-messages-search-section {
-        grid-column: filter-box;
-        margin: 5px 0 5px var(--left-sidebar-toggle-width-offset);
+        grid-column: filter-container;
+        margin: 5px 0;
     }
 
     .zoom-in-hide {

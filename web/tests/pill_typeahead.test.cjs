@@ -38,6 +38,7 @@ let sort_stream_or_group_members_options_called = false;
 const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
+const $fake_rendered_topic_state = $.create("fake-rendered-topic-state");
 
 function override_typeahead_helper({mock_template, override_rewire}) {
     mock_template("typeahead_list_item.hbs", false, (args) => {
@@ -185,7 +186,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         assert.ok(config.stopAdvance);
 
         assert.equal(typeof config.source, "function");
-        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.item_html, "function");
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
@@ -193,8 +194,8 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         // test queries
         const person_query = "me";
 
-        (function test_highlighter() {
-            assert.equal(config.highlighter_html(me_item, person_query), $fake_rendered_person);
+        (function test_item_html() {
+            assert.equal(config.item_html(me_item, person_query), $fake_rendered_person);
         })();
 
         (function test_matcher() {
@@ -277,7 +278,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         assert.ok(config.stopAdvance);
 
         assert.equal(typeof config.source, "function");
-        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.item_html, "function");
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
@@ -285,11 +286,8 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         // test queries
         const stream_query = "#denmark";
 
-        (function test_highlighter() {
-            assert.equal(
-                config.highlighter_html(denmark_item, stream_query),
-                $fake_rendered_stream,
-            );
+        (function test_item_html() {
+            assert.equal(config.item_html(denmark_item, stream_query), $fake_rendered_stream);
         })();
 
         (function test_matcher() {
@@ -373,15 +371,15 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
         assert.ok(config.stopAdvance);
 
         assert.equal(typeof config.source, "function");
-        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.item_html, "function");
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
 
         const group_query = "testers";
 
-        (function test_highlighter() {
-            assert.equal(config.highlighter_html(testers_item, group_query), $fake_rendered_group);
+        (function test_item_html() {
+            assert.equal(config.item_html(testers_item, group_query), $fake_rendered_group);
         })();
 
         (function test_matcher() {
@@ -422,6 +420,21 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
     assert.ok(input_pill_typeahead_called);
 });
 
+run_test("render_topic_state", ({override_rewire}) => {
+    override_rewire(typeahead_helper, "render_typeahead_item", (args) => {
+        assert.equal(args.primary, "Resolved");
+        return $fake_rendered_topic_state;
+    });
+
+    const result = typeahead_helper.render_topic_state("Resolved");
+    assert.equal(result, $fake_rendered_topic_state);
+
+    override_rewire(typeahead_helper, "render_topic_state", (state) => `${state}`);
+
+    const new_result = typeahead_helper.render_topic_state("Unresolved");
+    assert.equal(new_result, "Unresolved");
+});
+
 run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     override_typeahead_helper({mock_template, override_rewire});
     mock_template("input_pill.hbs", true, (_data, html) => html);
@@ -458,7 +471,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         assert.ok(config.stopAdvance);
 
         assert.equal(typeof config.source, "function");
-        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.item_html, "function");
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
@@ -468,31 +481,22 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         const person_query = "me";
         const group_query = "test";
 
-        (function test_highlighter() {
+        (function test_item_html() {
             if (opts.stream) {
-                // Test stream highlighter_html for widgets that allow stream pills.
-                assert.equal(
-                    config.highlighter_html(denmark_item, stream_query),
-                    $fake_rendered_stream,
-                );
+                // Test stream item_html for widgets that allow stream pills.
+                assert.equal(config.item_html(denmark_item, stream_query), $fake_rendered_stream);
             }
             if (opts.user_group && opts.user) {
                 // If user is also allowed along with user_group
                 // then we should check that each of them rendered correctly.
-                assert.equal(
-                    config.highlighter_html(testers_item, group_query),
-                    $fake_rendered_group,
-                );
-                assert.equal(config.highlighter_html(me_item, person_query), $fake_rendered_person);
+                assert.equal(config.item_html(testers_item, group_query), $fake_rendered_group);
+                assert.equal(config.item_html(me_item, person_query), $fake_rendered_person);
             }
             if (opts.user && !opts.user_group) {
-                assert.equal(config.highlighter_html(me_item, person_query), $fake_rendered_person);
+                assert.equal(config.item_html(me_item, person_query), $fake_rendered_person);
             }
             if (!opts.user && opts.user_group) {
-                assert.equal(
-                    config.highlighter_html(testers_item, group_query),
-                    $fake_rendered_group,
-                );
+                assert.equal(config.item_html(testers_item, group_query), $fake_rendered_group);
             }
         })();
 
@@ -754,7 +758,7 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         assert.ok(config.stopAdvance);
 
         assert.equal(typeof config.source, "function");
-        assert.equal(typeof config.highlighter_html, "function");
+        assert.equal(typeof config.item_html, "function");
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
@@ -763,11 +767,11 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         const person_query = "me";
         const group_query = "test";
 
-        (function test_highlighter() {
+        (function test_item_html() {
             // If user is also allowed along with user_group
             // then we should check that each of them rendered correctly.
-            assert.equal(config.highlighter_html(testers_item, group_query), $fake_rendered_group);
-            assert.equal(config.highlighter_html(me_item, person_query), $fake_rendered_person);
+            assert.equal(config.item_html(testers_item, group_query), $fake_rendered_group);
+            assert.equal(config.item_html(me_item, person_query), $fake_rendered_person);
         })();
 
         (function test_matcher() {

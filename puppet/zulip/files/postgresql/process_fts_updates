@@ -45,6 +45,7 @@ from collections.abc import Sequence
 
 import psycopg2
 import psycopg2.extensions
+from psycopg2.sql import SQL
 
 BATCH_SIZE = 1000
 
@@ -79,16 +80,22 @@ def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
 
         if message_ids:
             if USING_PGROONGA:
-                update_sql = "search_pgroonga = escape_html(subject) || ' ' || rendered_content"
+                update_sql = SQL(
+                    "search_pgroonga = escape_html(subject) || ' ' || rendered_content"
+                )
             else:
-                update_sql = "search_tsvector = to_tsvector('zulip.english_us_search', subject || rendered_content)"
+                update_sql = SQL(
+                    "search_tsvector = to_tsvector('zulip.english_us_search', subject || rendered_content)"
+                )
             cursor.execute(
-                f"UPDATE zerver_message SET {update_sql} "  # noqa: S608
-                "WHERE ctid IN ("
-                "  SELECT ctid FROM zerver_message"
-                "  WHERE id IN %s"
-                "  ORDER BY id FOR UPDATE"
-                ")",
+                SQL(
+                    "UPDATE zerver_message SET {update_sql} "
+                    "WHERE ctid IN ("
+                    "  SELECT ctid FROM zerver_message"
+                    "  WHERE id IN %s"
+                    "  ORDER BY id FOR UPDATE"
+                    ")"
+                ).format(update_sql=update_sql),
                 (message_ids,),
             )
         if row_ids:

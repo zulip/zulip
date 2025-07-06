@@ -2,6 +2,7 @@ import {FlatCompat} from "@eslint/eslintrc";
 import js from "@eslint/js";
 import confusingBrowserGlobals from "confusing-browser-globals";
 import prettier from "eslint-config-prettier";
+import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
 import importPlugin from "eslint-plugin-import";
 import noJquery from "eslint-plugin-no-jquery";
@@ -291,4 +292,5 @@ export default tseslint.config(
             "unicorn/prefer-string-replace-all": "off",
         },
     },
+    ...astroConfigs.recommended,
 );

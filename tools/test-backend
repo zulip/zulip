@@ -108,6 +108,8 @@ not_yet_fully_covered = [
     "zerver/openapi/javascript_examples.py",
     "zerver/openapi/python_examples.py",
     "zerver/openapi/test_curl_examples.py",
+    # Helper for tooling; doesn't need coverage
+    "zerver/openapi/merge_api_changelogs.py",
     # Tornado should ideally have full coverage, but we're not there.
     "zerver/tornado/descriptors.py",
     "zerver/tornado/django_api.py",

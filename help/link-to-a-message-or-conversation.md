@@ -149,6 +149,16 @@ formatted for you. You can paste as plain text if you prefer with
     If using Zulip in a browser, you can also click on a topic name,
     and copy the URL from your browser's address bar.
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/792). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 ### Get a link to a specific channel
@@ -160,6 +170,16 @@ formatted for you. You can paste as plain text if you prefer with
 {!channel-actions.md!}
 
 1. Click **Copy link to channel**.
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1227). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 

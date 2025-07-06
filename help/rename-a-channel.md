@@ -20,6 +20,16 @@ and Unicode emoji.
 
 {!channel-settings-general-tab-tip.md!}
 
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1102). If
+you're interested in this feature, please react to the issue's
+description with 👍.
+
 {end_tabs}
 
 {!automated-notice-channel-event.md!}

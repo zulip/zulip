@@ -104,6 +104,7 @@ class HomeTest(ZulipTestCase):
         "max_message_length",
         "max_stream_description_length",
         "max_stream_name_length",
+        "max_bulk_new_subscription_messages",
         "max_topic_length",
         "muted_topics",
         "muted_users",
@@ -222,6 +223,7 @@ class HomeTest(ZulipTestCase):
         "realm_zulip_update_announcements_stream_id",
         "realm_moderation_request_channel_id",
         "recent_private_conversations",
+        "reminders",
         "saved_snippets",
         "scheduled_messages",
         "server_avatar_changes_disabled",
@@ -283,7 +285,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(56),
+            self.assert_database_query_count(57),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -591,7 +593,7 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(55),
+            self.assert_database_query_count(56),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
@@ -623,7 +625,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(52):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.

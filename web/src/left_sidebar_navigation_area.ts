@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
+import * as message_reminder from "./message_reminder.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
@@ -59,6 +60,17 @@ export function update_scheduled_messages_row(): void {
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
+export function update_reminders_row(): void {
+    const $reminders_li = $(".top_left_reminders");
+    const count = message_reminder.get_count();
+    if (count > 0) {
+        $reminders_li.addClass("show-with-reminders");
+    } else {
+        $reminders_li.removeClass("show-with-reminders");
+    }
+    ui_util.update_unread_count_in_dom($reminders_li, count);
+}
+
 export function update_dom_with_unread_counts(
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
@@ -75,14 +87,6 @@ export function update_dom_with_unread_counts(
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
-
-    const show_sidebar_menu_icon =
-        counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
-    if (!show_sidebar_menu_icon) {
-        $home_view_li.find(".sidebar-menu-icon").addClass("hide");
-    } else {
-        $home_view_li.find(".sidebar-menu-icon").removeClass("hide");
-    }
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
@@ -248,10 +252,6 @@ export function handle_home_view_changed(new_home_view: string): void {
     const $new_home_view = get_view_rows_by_view_name(new_home_view);
     const res = unread.get_counts();
 
-    if ($current_home_view.find(".sidebar-menu-icon").hasClass("hide")) {
-        $current_home_view.find(".sidebar-menu-icon").removeClass("hide");
-    }
-
     // Remove class from current home view
     $current_home_view.removeClass("selected-home-view");
 
@@ -263,6 +263,7 @@ export function handle_home_view_changed(new_home_view: string): void {
 }
 
 export function initialize(): void {
+    update_reminders_row();
     update_scheduled_messages_row();
     restore_views_state();
 

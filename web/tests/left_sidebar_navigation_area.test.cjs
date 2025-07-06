@@ -14,6 +14,9 @@ const scheduled_messages = mock_esm("../src/scheduled_messages");
 
 scheduled_messages.get_count = () => 555;
 
+const message_reminder = mock_esm("../src/message_reminder");
+message_reminder.get_count = () => 888;
+
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
 
@@ -116,6 +119,8 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_scheduled_messages"), "<scheduled-count>");
 
+    make_elem($(".top_left_reminders"), "<reminders-count>");
+
     make_elem($("#streams_header"), "<stream-count>");
 
     make_elem($("#topics_header"), "<topics-count>");
@@ -129,18 +134,22 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
     assert.equal($("<scheduled-count>").text(), "555");
+    assert.equal($("<reminders-count>").text(), "888");
     assert.equal($("<stream-count>").text(), "666");
     assert.equal($("<topics-count>").text(), "666");
 
     counts.mentioned_message_count = 0;
     scheduled_messages.get_count = () => 0;
+    message_reminder.get_count = () => 0;
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     left_sidebar_navigation_area.update_starred_count(444, true);
     left_sidebar_navigation_area.update_scheduled_messages_row();
+    left_sidebar_navigation_area.update_reminders_row();
 
     assert.ok(!$("<mentioned-count>").visible());
     assert.equal($("<mentioned-count>").text(), "");
     assert.equal($("<starred-count>").text(), "444");
     assert.ok(!$(".top_left_scheduled_messages").visible());
+    assert.ok(!$(".top_left_reminders").visible());
 });

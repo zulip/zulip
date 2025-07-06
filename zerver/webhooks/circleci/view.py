@@ -78,7 +78,10 @@ def api_circleci_webhook(
         # We currently don't support projects using VCS providers other than GitHub,
         # BitBucket and GitLab.
         pipeline = payload["pipeline"]
-        if "trigger_parameters" in pipeline and pipeline["trigger"]["type"] != "gitlab":
+        if (
+            "trigger_parameters" in pipeline
+            and pipeline["trigger"]["type"].tame(check_string) != "gitlab"
+        ):
             raise JsonableError(
                 _("Projects using this version control system provider aren't supported")
             )  # nocoverage
@@ -102,7 +105,7 @@ def get_commit_details(payload: WildValue) -> str:
         revision = payload["pipeline"]["vcs"]["revision"].tame(check_string)
         commit_id = get_short_sha(revision)
 
-        if payload["pipeline"]["vcs"]["provider_name"] == "github":
+        if payload["pipeline"]["vcs"]["provider_name"].tame(check_string) == "github":
             commit_link = GITHUB_COMMIT_LINK.format(
                 target_repository_url=payload["pipeline"]["vcs"]["target_repository_url"].tame(
                     check_url

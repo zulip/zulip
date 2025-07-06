@@ -571,8 +571,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         var_dir = "var"  # TODO make sure path is robust here
         fn = os.path.join(var_dir, "url_coverage.txt")
         with open(fn, "wb") as f:
-            for call in calls:
-                f.write(orjson.dumps(call, option=orjson.OPT_APPEND_NEWLINE))
+            f.writelines(orjson.dumps(call, option=orjson.OPT_APPEND_NEWLINE) for call in calls)
 
         if full_suite:
             print(f"INFO: URL coverage report is in {fn}")

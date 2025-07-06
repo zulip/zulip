@@ -1,9 +1,11 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
 import type {AjaxRequestHandler} from "./channel.ts";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import {$t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
@@ -121,6 +123,9 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
             if (this instanceof HTMLInputElement && this.type === "file" && this.files?.length) {
                 // If the input is a file input and a file has been selected, set value to file object
                 current_values[property_name] = this.files[0];
+            } else if (this instanceof HTMLInputElement && this.type === "checkbox") {
+                // If the input is a checkbox, check the inputs `checked` attribute.
+                current_values[property_name] = this.checked;
             } else if (property_name === "edit_bot_owner") {
                 current_values[property_name] = $(this).find(".dropdown_widget_value").text();
             } else if ($(this).hasClass("pill-container")) {
@@ -131,6 +136,24 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
             } else {
                 current_values[property_name] = $(this).val();
             }
+        }
+
+        if ($(this).hasClass("date-field-alt-input")) {
+            // For date type custom profile fields, we convert the
+            // input to the date format passed to the API.
+            const value = $(this).val()!;
+            const name = $(this).parent().find(".custom_user_field_value").attr("name")!;
+
+            if (value === "") {
+                // This case is handled separately, because it will
+                // otherwise be parsed as an invalid date.
+                current_values[name] = value;
+                return;
+            }
+
+            assert(typeof value === "string");
+            const date_str = new Date(value);
+            current_values[name] = custom_profile_fields_ui.format_date(date_str, "Y-m-d");
         }
     });
     return current_values;
