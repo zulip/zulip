@@ -1801,6 +1801,83 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a user's clients when registration status of
+                                their push account changes.
+
+                                Currently, only the status change from `"pending"` to `"active"`
+                                is possible.
+
+                                **Changes**: New in Zulip 11.0 (feature level ZF-1653f2).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - push_account
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                push_account_id:
+                                  type: string
+                                  description: |
+                                    The push account ID whose registration status changed.
+                                status:
+                                  type: string
+                                  description: |
+                                    The updated registration status.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "push_account",
+                                  "op": "update",
+                                  "push_account_id": "1234",
+                                  "status": "active",
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when registration to bouncer fails.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - push_account
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                push_account_id:
+                                  type: string
+                                  description: |
+                                    The push account ID.
+                                reason:
+                                  type: string
+                                  nullable: true
+                                  description: |
+                                    If the registration fails due to invalid `bouncer_public_key`
+                                    provided in [`POST /mobile_push/register`](/api/register-push-account),
+                                    endpoint, this field is set to `"Invalid bouncer_public_key"`,
+                                    otherwise `null`.
+
+                                    It helps the client to inform the user that they need to update
+                                    the app to continue using push notifications.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "push_account",
+                                  "op": "remove",
+                                  "push_account_id": "1234",
+                                  "reason": "Invalid bouncer_public_key",
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent when a submessage is added to a message.
 
                                 Submessages are an **experimental** API used for widgets such as the
@@ -12289,6 +12366,54 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/InvalidPushDeviceTokenError"
                   - $ref: "#/components/schemas/InvalidRemotePushDeviceTokenError"
+  /mobile_push/register:
+    post:
+      operationId: register-push-account
+      summary: Register push account for E2EE notifications
+      tags: ["mobile"]
+      description: |
+        Register an account on an install of the app to receive
+        end-to-end encrypted mobile push notifications.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-1653f2).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token_kind:
+                  description: |
+                    Whether the token was generated by FCM or APNs.
+
+                    - APNs = 1
+                    - FCM = 2
+                  type: integer
+                  example: 1
+                push_account_id:
+                  description: |
+                    The ID of the account on an install of the app to register.
+                  type: integer
+                  example: 9006
+                push_public_key:
+                  description: |
+                    The public key to use to encrypt the notifications.
+                  type: string
+                  example: "push-public-key"
+                bouncer_public_key:
+                  description: |
+                    The public key used to encrypt `encrypted_push_registration`.
+                  type: string
+                  example: "bouncer-public-key"
+                encrypted_push_registration:
+                  description: |
+                    The encrypted data to be used by bouncer.
+                  type: string
+                  example: "encrypted-push-registration-data"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_topics:
     post:
       operationId: update-user-topic
@@ -17332,6 +17457,27 @@ paths:
                           before using this API key.
 
                           **Changes**: Added in Zulip 4.0 (feature level 47).
+                      push_accounts:
+                        type: object
+                        description: |
+                          Present if `push_account` is present in `fetch_event_types`.
+
+                          Dictionary where each entry describes the user's currently valid
+                          push account ID and it's registration status for push notifications.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-1653f2).
+                        additionalProperties:
+                          description: |
+                            `{push_account_id}`: Dictionary containing the details of
+                            a push account with the push account ID as the key.
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            status:
+                              type: string
+                              description: |
+                                The push account's registration status.
+                                Either `"active"` or `"pending"`.
                       enable_desktop_notifications:
                         deprecated: true
                         type: boolean

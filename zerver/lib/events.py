@@ -49,6 +49,7 @@ from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.navigation_views import get_navigation_views_for_user
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
+from zerver.lib.push_notifications import get_push_accounts
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import (
@@ -907,6 +908,9 @@ def fetch_initial_state_data(
         # to exist at all so that they can deactivate them in cases of
         # abuse.
         state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+
+    if want("push_account"):
+        state["push_accounts"] = {} if user_profile is None else get_push_accounts(user_profile)
 
     if user_profile is None:
         # To ensure we have the correct user state set.
@@ -1943,6 +1947,11 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
+    elif event["type"] == "push_account":
+        if event["op"] == "update":
+            state["push_accounts"][event["push_account_id"]]["status"] = event["status"]
+        elif event["op"] == "remove":
+            del state["push_accounts"][event["push_account_id"]]
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
