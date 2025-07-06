@@ -118,10 +118,8 @@ function org_notification_default_language_modal_post_render(): void {
             assert(setting_value !== undefined);
             const new_language = $link.attr("data-name");
             assert(new_language !== undefined);
-            const $language_element = $(
-                "#org-notifications .language_selection_widget .language_selection_button span",
-            );
-            $language_element.text(new_language);
+            const $language_element = $("#org-notifications .language_selection_widget");
+            $language_element.find(".language_selection_button").text(new_language);
             $language_element.attr("data-language-code", setting_value);
             settings_components.save_discard_realm_settings_widget_status_handler(
                 $("#org-notifications"),
@@ -144,10 +142,10 @@ function user_default_language_modal_post_render(): void {
 
             const new_language = $link.attr("data-name");
             assert(new_language !== undefined);
-            $("#user-preferences .language_selection_widget .language_selection_button span").text(
+            $("#user-preferences .language_selection_widget .language_selection_button").text(
                 new_language,
             );
-            $("#user-preferences .language_selection_widget .language_selection_button span").attr(
+            $("#user-preferences .language_selection_widget").attr(
                 "data-language-code",
                 setting_value,
             );
@@ -442,7 +440,7 @@ export function update_page(property: UserSettingsProperty): void {
     // The default_language button text updates to the language
     // name and not the value of the user_settings property.
     if (property === "default_language") {
-        $container.find(".default_language_name").text(user_default_language_name ?? "");
+        $container.find(".language_selection_button").text(user_default_language_name ?? "");
         return;
     }
 

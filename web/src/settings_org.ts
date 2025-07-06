@@ -536,11 +536,11 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         }
         case "realm_default_language":
             assert(typeof property_value === "string");
-            $("#org-notifications .language_selection_widget .language_selection_button span").attr(
+            $("#org-notifications .language_selection_widget").attr(
                 "data-language-code",
                 property_value,
             );
-            $("#org-notifications .language_selection_widget .language_selection_button span").text(
+            $("#org-notifications .language_selection_widget .language_selection_button").text(
                 // We know this is defined, since we got the `property_value` from a dropdown
                 // of valid language options.
                 get_language_name(property_value)!,

@@ -718,7 +718,7 @@ export let get_input_element_value = (
         case "field-data-setting":
             return get_field_data_input_value($input_elem);
         case "language-setting":
-            return $input_elem.find(".language_selection_button span").attr("data-language-code");
+            return $input_elem.attr("data-language-code");
         case "auth-methods":
             return JSON.stringify(get_auth_method_list_data());
         case "group-setting-type": {
@@ -882,9 +882,9 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             proposed_val = get_jitsi_server_url_setting_value($(elem), false);
             break;
         case "realm_default_language":
-            proposed_val = $(
-                "#org-notifications .language_selection_widget .language_selection_button span",
-            ).attr("data-language-code");
+            proposed_val = $("#org-notifications .language_selection_widget").attr(
+                "data-language-code",
+            );
             break;
         default:
             if (current_val !== undefined) {
