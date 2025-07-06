@@ -76,3 +76,19 @@
         width: 15px;
     }
 }
+
+#draft_overlay.overlay {
+    .overlay-container {
+        margin: 2.5vh auto;
+        transform: translateY(20px);
+        transition: transform 0.2s ease-in;
+        z-index: 102;
+    }
+
+    &.show {
+        .overlay-container {
+            transform: translateY(0);
+            transition-timing-function: ease-out;
+        }
+    }
+}
