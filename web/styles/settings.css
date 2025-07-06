@@ -1635,21 +1635,6 @@ label.preferences-radio-choice-label {
     }
 }
 
-#settings_page.overlay {
-    .overlay-container {
-        transform: translateY(20px);
-        transition: transform 0.2s ease-in;
-        z-index: 102;
-    }
-
-    &.show {
-        .overlay-container {
-            transform: translateY(0);
-            transition-timing-function: ease-out;
-        }
-    }
-}
-
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
