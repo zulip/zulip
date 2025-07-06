@@ -816,11 +816,12 @@ run_test("realm_bot add", ({override}) => {
     const event = event_fixtures.realm_bot__add;
     const bot_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
+    override(settings_users, "rerender_bot_section", bot_stub.f);
     dispatch(event);
 
-    assert.equal(bot_stub.num_calls, 1);
+    assert.equal(bot_stub.num_calls, 2);
     const args = bot_stub.get_args("bot");
-    assert_same(args.bot, event.bot);
+    assert_same(args.bot, event.bot.user_id);
 });
 
 run_test("realm_bot delete", ({override}) => {

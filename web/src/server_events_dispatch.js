@@ -491,6 +491,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
+                    settings_users.rerender_bot_section(event.bot.user_id);
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
