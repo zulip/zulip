@@ -347,7 +347,8 @@ div.overlay {
     transition-property: opacity, visibility;
     overflow: hidden;
 
-    .overlay-content {
+    .overlay-container {
+        background-color: var(--color-background-modal);
         transform: translateY(20px);
         transition: transform 0.2s ease-in;
         z-index: 102;
@@ -359,7 +360,7 @@ div.overlay {
         visibility: visible;
         transition: opacity 0.2s ease-out;
 
-        .overlay-content {
+        .overlay-container {
             transform: translateY(0);
             transition-timing-function: ease-out;
         }
@@ -368,10 +369,6 @@ div.overlay {
     .overlay-scroll-container {
         max-height: 60vh;
         padding: 15px;
-    }
-
-    .overlay-container {
-        background-color: var(--color-background-modal);
     }
 }
 
@@ -1073,7 +1070,6 @@ input.settings_text_input {
     }
 }
 
-div.overlay .flex.overlay-content > .overlay-container,
 div.overlay:not(#about-zulip) .overlay-container {
     box-shadow: var(--box-shadow-overlay);
 }
