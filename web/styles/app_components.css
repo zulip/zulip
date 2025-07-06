@@ -395,6 +395,7 @@ div.overlay .flex.overlay-content > .overlay-container,
 #subscription_overlay .overlay-container,
 #groups_overlay .overlay-container,
 #reminders-overlay .overlay-container,
+#about-zulip .overlay-container,
 .informational-overlays .overlay-content {
     box-shadow: 0 0 30px var(--color-box-shadow-overlay);
 }
