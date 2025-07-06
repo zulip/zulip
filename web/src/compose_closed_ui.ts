@@ -182,6 +182,23 @@ function update_buttons(disable_reply?: boolean): void {
     update_reply_button_state(disable_reply);
 }
 
+// Type guard to check if an element has a tippy instance
+function has_tippy_instance(
+    element: Element,
+): element is Element & {_tippy: {destroy: () => void}} {
+    return "_tippy" in element;
+}
+
+// Destroy any existing tooltip instances for the new conversation button
+// to ensure the tooltip content updates when the conversation type changes
+function destroy_new_conversation_button_tooltip(): void {
+    const $new_conversation_button = $("#new_conversation_button");
+    const element = $new_conversation_button[0];
+    if (element && has_tippy_instance(element)) {
+        element._tippy.destroy();
+    }
+}
+
 export function update_buttons_for_private(): void {
     const pm_ids_string = narrow_state.pm_ids_string();
 
@@ -196,16 +213,19 @@ export function update_buttons_for_private(): void {
     }
 
     $("#new_conversation_button").attr("data-conversation-type", "direct");
+    destroy_new_conversation_button_tooltip();
     update_buttons(disable_reply);
 }
 
 export function update_buttons_for_stream_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "stream");
+    destroy_new_conversation_button_tooltip();
     update_buttons(should_disable_compose_reply_button_for_stream());
 }
 
 export function update_buttons_for_non_specific_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "non-specific");
+    destroy_new_conversation_button_tooltip();
     update_buttons(should_disable_compose_reply_button_for_stream());
 }
 

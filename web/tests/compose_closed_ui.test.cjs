@@ -231,3 +231,59 @@ run_test("test_non_message_list_input", () => {
     label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });
+
+run_test("conversation_type_updates", () => {
+    // Test that the conversation type is properly set and tooltip is destroyed
+    // when switching between different view types
+
+    // Set up the new conversation button element
+    const $new_conversation_button = $("#new_conversation_button");
+
+    // Mock a tippy instance
+    const mock_tippy_instance = {
+        destroy() {},
+    };
+    $new_conversation_button[0] = {
+        _tippy: mock_tippy_instance,
+    };
+
+    // Test stream view
+    compose_closed_ui.update_buttons_for_stream_views();
+    assert.equal($new_conversation_button.attr("data-conversation-type"), "stream");
+
+    // Test non-specific view
+    compose_closed_ui.update_buttons_for_non_specific_views();
+    assert.equal($new_conversation_button.attr("data-conversation-type"), "non-specific");
+
+    // Test private view
+    compose_closed_ui.update_buttons_for_private();
+    assert.equal($new_conversation_button.attr("data-conversation-type"), "direct");
+});
+
+run_test("conversation_type_updates", () => {
+    // Test that the conversation type is properly set and tooltip is destroyed
+    // when switching between different view types
+
+    // Set up the new conversation button element
+    const $new_conversation_button = $("#new_conversation_button");
+
+    // Mock a tippy instance
+    const mock_tippy_instance = {
+        destroy() {},
+    };
+    $new_conversation_button[0] = {
+        _tippy: mock_tippy_instance,
+    };
+
+    // Test stream view
+    compose_closed_ui.update_buttons_for_stream_views();
+    assert.equal($new_conversation_button.attr("data-conversation-type"), "stream");
+
+    // Test non-specific view
+    compose_closed_ui.update_buttons_for_non_specific_views();
+    assert.equal($new_conversation_button.attr("data-conversation-type"), "non-specific");
+
+    // Test private view
+    compose_closed_ui.update_buttons_for_private();
+    assert.equal($new_conversation_button.attr("data-conversation-type"), "direct");
+});
