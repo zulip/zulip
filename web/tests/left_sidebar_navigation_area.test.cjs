@@ -19,6 +19,10 @@ message_reminder.get_count = () => 888;
 
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 run_test("narrowing", ({override_rewire}) => {
     override_rewire(
@@ -92,10 +96,13 @@ run_test("narrowing", ({override_rewire}) => {
     assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
 });
 
-run_test("update_count_in_dom", () => {
+run_test("update_count_in_dom", ({override}) => {
+    override(user_settings, "web_left_sidebar_unreads_count_summary", true);
+
     function make_elem($elem, count_selector) {
         const $count = $(count_selector);
         $elem.set_find_results(".unread_count", $count);
+        $elem.closest(() => $("#stub"));
         $count.set_parent($elem);
 
         return $elem;
@@ -105,6 +112,7 @@ run_test("update_count_in_dom", () => {
         mentioned_message_count: 222,
         home_unread_messages: 333,
         stream_unread_messages: 666,
+        stream_count: new Map(),
     };
 
     $(".selected-home-view").set_find_results(".sidebar-menu-icon", $("<menu-icon>"));
@@ -121,7 +129,18 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_reminders"), "<reminders-count>");
 
-    make_elem($("#streams_header"), "<stream-count>");
+    make_elem(
+        $("#stream-list-pinned-streams-container .heading-markers-and-unreads"),
+        "<pinned-stream-count>",
+    );
+    make_elem(
+        $("#stream-list-normal-streams-container .heading-markers-and-unreads"),
+        "<normal-stream-count>",
+    );
+    make_elem(
+        $("#stream-list-dormant-streams-container .heading-markers-and-unreads"),
+        "<normal-stream-count>",
+    );
 
     make_elem($("#topics_header"), "<topics-count>");
 
