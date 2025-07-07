@@ -45,9 +45,9 @@ Standard hosting.
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Channel permissions**, configure the
+1. Under **Administrative permissions**, configure the
    **Message retention period**.
 
 {!save-changes.md!}

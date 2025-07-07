@@ -10,9 +10,9 @@ unsubscribe anyone from a channel.
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Advanced configurations**, configure **Who can unsubscribe anyone
+1. Under **Subscription permissions**, configure **Who can unsubscribe anyone
    from this channel**.
 
 {!save-changes.md!}

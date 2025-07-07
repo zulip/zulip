@@ -34,9 +34,9 @@ have content access in order to change this configuration.
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Channel permissions**, configure **Who can subscribe to this
+1. Under **Subscription permissions**, configure **Who can subscribe to this
    channel**.
 
 {!save-changes.md!}
