@@ -19,6 +19,7 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
@@ -625,6 +626,15 @@ export function initialize(): void {
         // chat* is permitted.
         compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
+    });
+
+    $("#compose-direct-recipient").on("click", "#compose-new-direct-recipient-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $input = $("#private_message_recipient");
+        $input.trigger("focus");
+        composebox_typeahead.private_message_recipient_typeahead.lookup(false, true);
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {
