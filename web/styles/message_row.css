@@ -867,6 +867,13 @@
     }
 }
 
+.message-edit-saving .slow-send-spinner {
+    display: inline-block;
+    margin-right: 6px;
+    place-self: auto;
+    grid-area: auto;
+}
+
 .message_edit_cancel,
 .message_edit_close {
     color: var(--color-exit-button-text);

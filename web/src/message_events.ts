@@ -473,8 +473,9 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 anchor_message.is_me_message = event.is_me_message;
             }
 
-            // mark the current message edit attempt as complete.
-            message_edit.end_message_edit(event.message_id);
+            // mark the current message edit attempt as complete if the
+            // message edit box is hidden.
+            message_edit.handle_message_edit_event(event.message_id);
 
             // Save the content edit to the front end anchor_message.edit_history
             // before topic edits to ensure that combined topic / content
