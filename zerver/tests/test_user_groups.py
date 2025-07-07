@@ -1319,6 +1319,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         leadership_group.deactivated = False
         leadership_group.save()
 
+        # Test updating with value not in the form of GroupSettingChangeRequest
+        params[setting_name] = orjson.dumps(support_group.id).decode()
+        result = self.client_patch(f"/json/user_groups/{leadership_group.id}", info=params)
+        self.assert_json_error(result, f"{setting_name} does not have the expected format")
+
     def test_update_user_group_permission_settings(self) -> None:
         hamlet = self.example_user("hamlet")
         check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=hamlet)
