@@ -1784,8 +1784,7 @@ export function create_stream_group_setting_widget({
 
     if (sub !== undefined) {
         set_group_setting_widget_value(pill_widget, sub[setting_name]);
-        const $edit_container = stream_settings_containers.get_edit_container(sub);
-        const $subsection = $edit_container.find(".advanced-configurations-container");
+        const $subsection = $pill_container.closest(".settings-subsection-parent");
 
         pill_widget.onTextInputHook(() => {
             save_discard_stream_settings_widget_status_handler($subsection, sub);
