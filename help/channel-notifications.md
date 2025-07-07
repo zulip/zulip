@@ -11,7 +11,7 @@ channels](/help/mute-a-channel), channel notification settings apply only to
 
 {start_tabs}
 
-{tab|via-left-sidebar}
+{tab|via-channel-settings}
 
 {!channel-actions.md!}
 
