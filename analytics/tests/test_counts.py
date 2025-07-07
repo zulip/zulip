@@ -77,7 +77,7 @@ from zerver.models.clients import get_client
 from zerver.models.messages import Attachment
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import NotificationTriggers
-from zerver.models.users import get_user, is_cross_realm_bot_email
+from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,
@@ -507,8 +507,8 @@ class TestCountStats(AnalyticsTestCase):
                 name=f"stream {minutes_ago}", realm=self.second_realm, date_created=creation_time
             )[1]
             self.create_message(user, recipient, date_sent=creation_time)
-        self.hourly_user = get_user("user-1@second.analytics", self.second_realm)
-        self.daily_user = get_user("user-61@second.analytics", self.second_realm)
+        self.hourly_user = get_user_by_delivery_email("user-1@second.analytics", self.second_realm)
+        self.daily_user = get_user_by_delivery_email("user-61@second.analytics", self.second_realm)
 
         # This realm should not show up in the *Count tables for any of the
         # messages_* CountStats
