@@ -31,6 +31,11 @@ type MessageType = "stream" | "private";
 let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 function composing_to_current_topic_narrow(): boolean {
+    // If the narrow state's stream ID is undefined, then
+    // the user cannot be composing to a current topic narrow.
+    if (narrow_state.stream_id() === undefined) {
+        return false;
+    }
     return (
         compose_state.stream_id() === narrow_state.stream_id() &&
         util.lower_same(compose_state.topic(), narrow_state.topic() ?? "")
@@ -65,7 +70,7 @@ export let update_recipient_row_attention_level = (): void => {
     const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
     if (
         is_compose_textarea_focused &&
-        composing_to_current_topic_narrow() &&
+        (composing_to_current_topic_narrow() || composing_to_current_private_message_narrow()) &&
         compose_state.has_full_recipient() &&
         !compose_state.is_recipient_edited_manually()
     ) {
