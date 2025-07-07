@@ -466,13 +466,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
-    let url = hash_util.channel_url_by_user_setting(sub.stream_id);
-    if (
-        web_channel_default_view_values.list_of_topics.code ===
-        user_settings.web_channel_default_view
-    ) {
-        url = hash_util.by_channel_topic_list_url(sub.stream_id);
-    }
+    const url = hash_util.channel_url_by_user_setting(sub.stream_id);
     const args = {
         name,
         id: sub.stream_id,
