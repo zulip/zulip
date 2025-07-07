@@ -867,6 +867,27 @@
     }
 }
 
+.message-edit-saving {
+    /* Use grid overlay so the spinner is centered while
+       the hidden "Saving" text holds the button width. */
+    display: grid;
+    grid-template: "button-display";
+}
+
+.message-edit-saving .fa-circle-o-notch {
+    display: inline-block;
+    grid-area: button-display;
+    justify-self: center;
+    z-index: 1;
+    animation: rotate 1s infinite linear;
+}
+
+.message-edit-saving .message-edit-saving-text {
+    visibility: hidden;
+    grid-area: button-display;
+    z-index: 0;
+}
+
 .message_edit_cancel,
 .message_edit_close {
     color: var(--color-exit-button-text);
