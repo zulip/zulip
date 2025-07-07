@@ -39,6 +39,7 @@ export const CLASSNAMES = {
     non_interleaved_view_messages_fading: "non_interleaved_view_messages_fading",
     interleaved_view_messages_fading: "interleaved_view_messages_fading",
     topic_is_moved: "topic_is_moved",
+    convert_pasted_text_to_file: "convert_pasted_text_to_file",
     // unmute topic notifications are styled like warnings but have distinct behaviour
     unmute_topic_notification: "unmute_topic_notification warning-style",
     // warnings
@@ -289,4 +290,21 @@ export function show_unknown_zoom_user_error(email: string): void {
 
 export function has_error(): boolean {
     return $("#compose_banners .error").length > 0;
+}
+
+export function show_convert_pasted_text_to_file_banner(cb: () => void): JQuery {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
+    const $new_row = $(
+        render_compose_banner({
+            banner_type: INFO,
+            banner_text: $t({
+                defaultMessage: "Do you want to convert the pasted text into a file?",
+            }),
+            button_text: $t({defaultMessage: "Yes, convert"}),
+            classname: CLASSNAMES.convert_pasted_text_to_file,
+        }),
+    );
+    $new_row.on("click", ".main-view-banner-action-button", cb);
+    append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
+    return $new_row;
 }
