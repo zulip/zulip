@@ -73,6 +73,7 @@ from zerver.lib.streams import (
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
     access_web_public_stream,
+    channel_events_topic_name,
     check_stream_name_available,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
@@ -108,7 +109,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import ChannelFolder, Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import ChannelFolder, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -1001,7 +1002,7 @@ def send_messages_for_new_subscribers(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
-                        topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+                        topic_name=channel_events_topic_name(stream),
                         content=new_channel_message.format(
                             user_name=silent_mention_syntax_for_user(user_profile),
                         )

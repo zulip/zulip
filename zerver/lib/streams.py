@@ -263,6 +263,10 @@ def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> s
     return users_with_metadata_access_dict[stream.id]
 
 
+def channel_events_topic_name(stream: Stream) -> str:
+    return str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+
+
 @transaction.atomic(savepoint=False)
 def create_stream_if_needed(
     realm: Realm,
