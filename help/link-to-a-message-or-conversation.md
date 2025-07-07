@@ -98,7 +98,9 @@ In addition, links to messages, topics, and channels are **permanent**:
 
 When you copy a Zulip link and paste it anywhere that accepts HTML
 formatting (e.g., your email, GitHub, docs, etc.), the link will be
-formatted as it would be in Zulip (e.g., [#channel > topic](/)).
+formatted as it would be in Zulip (e.g., [#channel > topic](/)). To paste the
+plain URL, you can paste without formatting (likely <kbd>Ctrl</kbd> +
+<kbd>Shift</kbd> + <kbd>V</kbd> in your browser).
 
 ### Get a link to a specific message
 
