@@ -449,7 +449,7 @@ def register_remote_push_device(
         assert isinstance(user_uuid, str), (
             "Servers new enough to send realm_uuid, should also have user_uuid"
         )
-        remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+        remote_realm = get_remote_realm_helper(request, server, realm_uuid)
         if remote_realm is not None:
             # We want to associate the RemotePushDeviceToken with the RemoteRealm.
             kwargs["remote_realm_id"] = remote_realm.id
@@ -525,7 +525,7 @@ def update_remote_realm_last_request_datetime_helper(
 ) -> None:
     if realm_uuid is not None:
         assert user_uuid is not None
-        remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+        remote_realm = get_remote_realm_helper(request, server, realm_uuid)
         if remote_realm is not None:
             remote_realm.last_request_datetime = timezone_now()
             remote_realm.save(update_fields=["last_request_datetime"])
@@ -640,7 +640,9 @@ def remote_server_send_test_notification(
 
 
 def get_remote_realm_helper(
-    request: HttpRequest, server: RemoteZulipServer, realm_uuid: str, user_uuid: str
+    request: HttpRequest,
+    server: RemoteZulipServer,
+    realm_uuid: str,
 ) -> RemoteRealm | None:
     """
     Tries to fetch RemoteRealm for the given realm_uuid and server. Otherwise,
@@ -652,11 +654,10 @@ def get_remote_realm_helper(
         remote_realm = RemoteRealm.objects.get(uuid=realm_uuid)
     except RemoteRealm.DoesNotExist:
         logger.info(
-            "%s: Received request for unknown realm %s, server %s, user %s",
+            "%s: Received request for unknown realm %s, server %s",
             request.path,
             realm_uuid,
             server.id,
-            user_uuid,
         )
         return None
 
@@ -724,7 +725,7 @@ def remote_server_notify_push(
         assert isinstance(user_uuid, str), (
             "Servers new enough to send realm_uuid, should also have user_uuid"
         )
-        remote_realm = get_remote_realm_helper(request, server, realm_uuid, user_uuid)
+        remote_realm = get_remote_realm_helper(request, server, realm_uuid)
 
     push_status = get_push_status_for_remote_request(server, remote_realm)
     log_data = RequestNotes.get_notes(request).log_data
