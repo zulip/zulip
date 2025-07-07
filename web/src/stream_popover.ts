@@ -996,6 +996,32 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
+    function update_topic_input_placeholder_on_focus(): void {
+        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+
+        $topic_input.attr("placeholder", "");
+        $topic_input.removeClass("empty-topic-display");
+
+        if ($topic_input.val() === "" && stream_data.can_use_empty_topic(stream_widget_value)) {
+            $topic_not_mandatory_placeholder.addClass("move-topic-new-topic-placeholder-visible");
+            update_clear_move_topic_button_state();
+        }
+    }
+
+    function update_topic_input_placeholder_on_blur(): void {
+        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+
+        $topic_not_mandatory_placeholder.removeClass("move-topic-new-topic-placeholder-visible");
+
+        if ($topic_input.val() === "" && stream_data.can_use_empty_topic(stream_widget_value)) {
+            $topic_input.attr("placeholder", empty_string_topic_display_name);
+            $topic_input.addClass("empty-topic-display");
+            update_clear_move_topic_button_state();
+        }
+    }
+
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
         $("#move_topic_modal .move_topic_warning_container").hide();
@@ -1014,27 +1040,10 @@ export async function build_move_topic_to_stream_popover(
         }
 
         $topic_input.on("focus", () => {
-            $topic_input.attr("placeholder", "");
-            $topic_input.removeClass("empty-topic-display");
-            if ($topic_input.val() === "" && stream_data.can_use_empty_topic(stream_widget_value)) {
-                $topic_not_mandatory_placeholder.addClass(
-                    "move-topic-new-topic-placeholder-visible",
-                );
-                $("#clear_move_topic_new_topic_name").css("visibility", "hidden");
-            }
+            update_topic_input_placeholder_on_focus();
 
             $topic_input.one("blur", () => {
-                $topic_not_mandatory_placeholder.removeClass(
-                    "move-topic-new-topic-placeholder-visible",
-                );
-                if (
-                    $topic_input.val() === "" &&
-                    stream_data.can_use_empty_topic(stream_widget_value)
-                ) {
-                    $topic_input.attr("placeholder", empty_string_topic_display_name);
-                    $topic_input.addClass("empty-topic-display");
-                    $("#clear_move_topic_new_topic_name").css("visibility", "visible");
-                }
+                update_topic_input_placeholder_on_blur();
             });
         });
 
