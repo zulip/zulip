@@ -1232,8 +1232,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_success(result)
             self.assertIn(
                 "INFO:zilencer.views:/api/v1/remotes/push/register: Received request for "
-                f"unknown realm {user.realm.uuid!s}, server {server.id}, "
-                f"user {user.uuid!s}",
+                f"unknown realm {user.realm.uuid!s}, server {server.id}",
                 info_log.output,
             )
 
