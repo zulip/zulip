@@ -884,6 +884,7 @@ export async function build_move_topic_to_stream_popover(
         set_stream_topic_typeahead();
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
+        update_clear_move_topic_button_state();
         update_topic_input_placeholder_visibility(topic_input_value);
         const selected_propagate_mode = String($("#message_move_select_options").val());
         void warn_unsubscribed_participants(selected_propagate_mode);
@@ -989,7 +990,7 @@ export async function build_move_topic_to_stream_popover(
     function update_clear_move_topic_button_state(): void {
         const $clear_topic_name_button = $("#clear_move_topic_new_topic_name");
         const topic_input_value = $("input#move-topic-new-topic-name").val();
-        if (topic_input_value === "") {
+        if (topic_input_value === "" || $("input#move-topic-new-topic-name").prop("disabled")) {
             $clear_topic_name_button.css("visibility", "hidden");
         } else {
             $clear_topic_name_button.css("visibility", "visible");
