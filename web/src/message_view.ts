@@ -1580,13 +1580,7 @@ export function narrow_to_next_pm_string(opts = {}): void {
 
     const filter_expr: NarrowTerm[] = [{operator: "dm", operand: direct_message}];
 
-    // force_close parameter is true to not auto open compose_box
-    const updated_opts = {
-        ...opts,
-        force_close: true,
-    };
-
-    show(filter_expr, updated_opts);
+    show(filter_expr, opts);
 }
 
 export function narrow_by_topic(

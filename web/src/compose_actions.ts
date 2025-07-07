@@ -50,6 +50,7 @@ type ComposeActionsStartOpts = {
     is_reply?: boolean;
     keep_composebox_empty?: boolean | undefined;
     defer_focus?: boolean | undefined;
+    blur_compose?: boolean | undefined;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -99,6 +100,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
             trigger: opts.trigger,
             message_type: "private",
             private_message_recipient_ids: opts.private_message_recipient_ids,
+            blur_compose: opts.blur_compose,
         };
     } else {
         opts_by_message_type = {
@@ -106,6 +108,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
             message_type: "stream",
             stream_id: opts.stream_id,
             topic: opts.topic,
+            blur_compose: opts.blur_compose,
         };
     }
     compose_recipient.update_compose_for_message_type(opts_by_message_type);
@@ -556,27 +559,13 @@ export function on_show_navigation_view(): void {
 }
 
 export let on_topic_narrow = (): void => {
-    if (!compose_state.composing()) {
-        // If our compose box is closed, then just
-        // leave it closed, assuming that the user is
-        // catching up on their feed and not actively
-        // composing.
-        return;
-    }
-
-    if (compose_state.stream_name() !== narrow_state.stream_name()) {
+    if (
         // If we changed streams, then we only leave the
         // compose box open if there is content or if the recipient was edited.
-        if (
-            compose_state.has_novel_message_content() ||
-            compose_state.is_recipient_edited_manually()
-        ) {
-            compose_fade.update_message_list();
-            return;
-        }
-
-        // Otherwise, avoid a mix.
-        cancel();
+        compose_state.stream_name() !== narrow_state.stream_name() &&
+        (compose_state.has_novel_message_content() || compose_state.is_recipient_edited_manually())
+    ) {
+        compose_fade.update_message_list();
         return;
     }
 
@@ -601,12 +590,10 @@ export let on_topic_narrow = (): void => {
     // we should update the compose topic to match the new narrow.
     // See #3300 for context--a couple users specifically asked for
     // this convenience.
-    compose_recipient.update_topic_displayed_text(narrow_state.topic());
-    compose_validate.warn_if_topic_resolved(true);
-    compose_fade.set_focused_recipient("stream");
-    compose_fade.update_message_list();
-    drafts.update_compose_draft_count();
-    $("textarea#compose-textarea").trigger("focus");
+    start({
+        message_type: "stream",
+        blur_compose: true,
+    });
 };
 
 export function rewire_on_topic_narrow(value: typeof on_topic_narrow): void {
@@ -689,12 +676,8 @@ export function on_narrow(opts: NarrowActivateOpts): void {
             // Defer setting focus on the compose box to avoid a
             // whole-screen scrolling bug on iPad/Safari.
             defer_focus: true,
+            blur_compose: true,
         });
         return;
     }
-
-    // If we got this far, then we assume the user is now in "reading"
-    // mode, so we close the compose box to make it easier to use navigation
-    // hotkeys and to provide more screen real estate for messages.
-    cancel();
 }

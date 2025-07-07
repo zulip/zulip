@@ -39,6 +39,7 @@ export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your mes
 export type ComposeTriggeredOptions = {
     trigger: string;
     defer_focus?: boolean | undefined;
+    blur_compose?: boolean | undefined;
 } & (
     | {
           message_type: "stream";
@@ -246,6 +247,13 @@ export function rewire_blur_compose_inputs(value: typeof blur_compose_inputs): v
 }
 
 export function set_focus(opts: ComposeTriggeredOptions): void {
+    // For the always-open compose box, we can use opts.blur_compose
+    // to prevent focusing, especially when moving from narrow to
+    // narrow or view to view with an empty compose box.
+    if (opts.blur_compose === true) {
+        blur_compose_inputs();
+        return;
+    }
     // Called mainly when opening the compose box or switching the
     // message type to set the focus in the first empty input in the
     // compose box.
