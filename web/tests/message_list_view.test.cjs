@@ -343,6 +343,11 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
         rerendered_group_ids.push(message_group_id);
     };
 
+    // rerender_messages re-applies autosize to any open edit textareas; with
+    // no message being edited, the lookup returns an empty set.
+    const empty_list_stub = $.set_results("empty-stub", []);
+    view.$list.set_find_results(".message_edit_content", empty_list_stub);
+
     view.rerender_messages([dm1.msg, dm2.msg, dm3.msg]);
 
     // One header rerender per distinct bar; the rowless message is skipped.

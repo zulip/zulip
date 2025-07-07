@@ -70,7 +70,7 @@ import * as util from "./util.ts";
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
 const resized_edit_box_height = new Map<number, number>();
 let currently_topic_editing_message_ids: number[] = [];
-const currently_echoing_messages = new Map<number, EchoedMessageData>();
+export const currently_echoing_messages = new Map<number, EchoedMessageData>();
 
 type EchoedMessageData = {
     raw_content: string;
@@ -182,11 +182,9 @@ export function is_message_editable_ignoring_permissions(message: Message): bool
         return false;
     }
 
-    // Messages where we're currently locally echoing an edit not yet acknowledged
-    // by the server.
-    if (currently_echoing_messages.has(message.id)) {
-        return false;
-    }
+    // Messages with locally echoed edits that have not yet been acknowledged
+    // by the server remain editable; the edit form shows a "Saving"
+    // indicator while waiting for the server response.
     return true;
 }
 
@@ -409,9 +407,14 @@ function handle_message_edit_enter(
     if (composebox_typeahead.should_enter_send(e)) {
         const $row = $message_edit_content.closest(".message_row");
         const $message_edit_save_button = $row.find(".message_edit_save");
-        if ($message_edit_save_button.prop("disabled")) {
-            // In cases when the save button is disabled
-            // we need to disable save on pressing Enter
+        const $message_edit_save_container = $row.find(".message_edit_save_container");
+        if (
+            $message_edit_save_button.prop("disabled") ||
+            $message_edit_save_container.hasClass("hide")
+        ) {
+            // In cases when the save button is disabled,
+            // or the save button is hidden to show the saving
+            // indicator, we need to disable save on pressing Enter
             // Prevent default to avoid new-line on pressing
             // Enter inside the textarea in this case
             e.preventDefault();
@@ -424,6 +427,18 @@ function handle_message_edit_enter(
     } else {
         composebox_typeahead.handle_enter($message_edit_content, e);
         return;
+    }
+}
+export function handle_message_edit_update(message_id: number): void {
+    currently_echoing_messages.delete(message_id);
+    if (currently_editing_messages.has(message_id)) {
+        const $row = message_lists.current?.get_row(message_id);
+        if ($row) {
+            $row.find(".message-edit-saving-container").addClass("hide");
+            $row.find(".message_edit_save_container").removeClass("hide");
+        }
+    } else {
+        end_message_edit(message_id);
     }
 }
 
@@ -628,12 +643,14 @@ function edit_message($row: JQuery, raw_content: string): void {
     }
 
     const is_editable = is_content_editable(message, seconds_left_buffer);
+    const currently_echoing = currently_echoing_messages.has(message.id);
 
     const $form = $(
         render_message_edit_form({
             message_id: message.id,
             is_editable,
             content: raw_content,
+            is_echoing: currently_echoing,
             file_upload_enabled,
             giphy_enabled: gif_state.is_giphy_enabled(),
             tenor_enabled: gif_state.is_tenor_enabled(),
@@ -650,6 +667,10 @@ function edit_message($row: JQuery, raw_content: string): void {
     const previous_height = resized_edit_box_height.get(message.id);
     const do_autosize = previous_height === undefined;
     message_lists.current.show_edit_message($row, $form, do_autosize);
+
+    if (currently_echoing) {
+        buttons.show_button_loading_indicator($form.find(".message-edit-saving"));
+    }
 
     if (previous_height) {
         $(the($message_edit_content)).height(previous_height + "px");
@@ -1393,7 +1414,6 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         success(res) {
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
-                currently_echoing_messages.delete(message_id);
             }
 
             // Ordinarily, in a code path like this, we'd make
@@ -1492,8 +1512,11 @@ export function maybe_show_edit($row: JQuery, id: number): void {
     }
 
     if (currently_editing_messages.has(id)) {
-        const $message_edit_content = currently_editing_messages.get(id);
-        edit_message($row, $message_edit_content?.val() ?? "");
+        const message_edit_content = currently_editing_messages.get(id)?.val();
+        start_edit_with_content($row, message_edit_content ?? "");
+        if ($row.hasClass("show_preview")) {
+            show_preview_area($row);
+        }
     }
 }
 

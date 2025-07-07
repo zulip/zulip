@@ -867,6 +867,16 @@
     }
 }
 
+.message-edit-saving {
+    position: relative;
+    color: var(--color-compose-send-button-icon-color);
+    background-color: var(--color-compose-send-button-background);
+}
+
+.message-edit-saving .message-edit-saving-text {
+    visibility: hidden;
+}
+
 .message_edit_cancel,
 .message_edit_close {
     color: var(--color-exit-button-text);
