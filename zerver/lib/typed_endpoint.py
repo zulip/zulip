@@ -316,6 +316,7 @@ def parse_view_func_signature(
 ERROR_TEMPLATES = {
     "bool_parsing": _("{var_name} is not a boolean"),
     "bool_type": _("{var_name} is not a boolean"),
+    "dataclass_type": _("{var_name} does not have the expected format"),
     "datetime_parsing": _("{var_name} is not a date"),
     "datetime_type": _("{var_name} is not a date"),
     "dict_type": _("{var_name} is not a dict"),
