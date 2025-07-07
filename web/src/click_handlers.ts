@@ -13,6 +13,7 @@ import * as buddy_data from "./buddy_data.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_ui from "./compose_ui.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
@@ -978,7 +979,7 @@ export function initialize(): void {
                 // of overlays or selecting text (for copy+paste) trigger cancelling.
                 // Check if the click is within the body to prevent extensions from
                 // interfering with the compose box.
-                compose_actions.cancel();
+                compose_ui.blur_compose_inputs();
             }
         }
     });

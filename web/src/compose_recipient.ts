@@ -67,9 +67,7 @@ export let update_recipient_row_attention_level = (): void => {
     // row is focused, that puts us outside the low-attention
     // recipient-row state--including the `c` hotkey or the
     // Start new conversation button being clicked.
-    const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
     if (
-        is_compose_textarea_focused &&
         (composing_to_current_topic_narrow() || composing_to_current_private_message_narrow()) &&
         compose_state.has_full_recipient() &&
         !compose_state.is_recipient_edited_manually()
