@@ -82,7 +82,7 @@
     <div class="advance-config-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
         <div class="advance-config-toggle-area">
             <i class="fa fa-sm fa-caret-right toggle-advanced-configurations-icon" aria-hidden="true"></i>
-            <h4 class="stream_setting_subsection_title"><span>{{t 'Advanced configurations' }}</span></h4>
+            <h4 class="stream_setting_subsection_title"><span>{{t 'Advanced configuration' }}</span></h4>
         </div>
         {{#if is_stream_edit}}
             {{> ../settings/settings_save_discard_widget section_name="stream-permissions" }}
@@ -92,24 +92,6 @@
         <div class="admin-permissions-tip">
             {{t 'Organization administrators can automatically administer all channels.'}}
         </div>
-
-        {{> ../settings/group_setting_value_pill_input
-          setting_name="can_send_message_group"
-          label=group_setting_labels.can_send_message_group
-          prefix=prefix
-          help_link="/help/stream-sending-policy" }}
-
-        <div class="input-group">
-            <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>
-            <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
-                {{> ../settings/dropdown_options_widget option_values=stream_topics_policy_values}}
-            </select>
-        </div>
-
-        {{> ../settings/group_setting_value_pill_input
-          setting_name="can_administer_channel_group"
-          label=group_setting_labels.can_administer_channel_group
-          prefix=prefix }}
 
         {{> ../settings/group_setting_value_pill_input
           setting_name="can_subscribe_group"
@@ -127,6 +109,19 @@
           prefix=prefix }}
 
         {{> ../settings/group_setting_value_pill_input
+          setting_name="can_send_message_group"
+          label=group_setting_labels.can_send_message_group
+          prefix=prefix
+          help_link="/help/stream-sending-policy" }}
+
+        <div class="input-group">
+            <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>
+            <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                {{> ../settings/dropdown_options_widget option_values=stream_topics_policy_values}}
+            </select>
+        </div>
+
+        {{> ../settings/group_setting_value_pill_input
           setting_name="can_move_messages_within_channel_group"
           label=group_setting_labels.can_move_messages_within_channel_group
           prefix=prefix }}
@@ -136,6 +131,10 @@
           label=group_setting_labels.can_move_messages_out_of_channel_group
           prefix=prefix }}
 
+        {{> ../settings/group_setting_value_pill_input
+          setting_name="can_administer_channel_group"
+          label=group_setting_labels.can_administer_channel_group
+          prefix=prefix }}
 
         {{#if (or is_owner is_stream_edit)}}
             <div>
