@@ -5,11 +5,15 @@ import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
+import * as compose_banner from "./compose_banner.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
+
+const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -593,7 +597,16 @@ export function try_stream_topic_syntax_text(text: string): string | null {
     return syntax_text;
 }
 
-export function paste_handler(this: HTMLTextAreaElement, event: JQuery.TriggeredEvent): void {
+function create_text_file(text: string, filename: string): File {
+    const blob = new Blob([text], {type: "text/plain"});
+    return new File([blob], filename, {type: "text/plain"});
+}
+
+export function paste_handler(
+    this: HTMLTextAreaElement,
+    event: JQuery.TriggeredEvent,
+    upload_pasted_file: (textarea: HTMLTextAreaElement, pasted_file: File) => void,
+): void {
     assert(event.originalEvent instanceof ClipboardEvent);
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -607,10 +620,40 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
 
     if (clipboardData.getData) {
         const $textarea = $(this);
+        const existing_text = $textarea.val() ?? "";
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
+        const pasted_text_length = paste_text.length;
+
+        // Idea: We could consider having two thresholds: Very large
+        // files could prompt before running the paste handler and
+        // putting the content into the compose box.
+        const is_paste_large_enough_for_file =
+            pasted_text_length >= MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT;
+
+        // If the pasted or combined text is too large, present a
+        // banner offering to upload as a file.
+        if (is_paste_large_enough_for_file) {
+            const filename = `${$t({defaultMessage: "PastedText"})}.txt`;
+            const pasted_file = create_text_file(paste_text, filename);
+            const $banner = compose_banner.show_convert_pasted_text_to_file_banner(() => {
+                // Important: This undo mechanism is only correct if
+                // the compose area hasn't changed since the banner
+                // was created.
+                $textarea.val(existing_text);
+                upload_pasted_file(this, pasted_file);
+            });
+            setTimeout(() => {
+                $("textarea#compose-textarea").one("input", () => {
+                    // The banner only displays until the user does
+                    // some further input. This is both reasonable UI
+                    // and also is required for undo, see above.
+                    $banner.remove();
+                });
+            }, 0);
+        }
 
         // Only intervene to generate formatted links when dealing
         // with a URL and a URL-safe range selection.
@@ -674,7 +717,23 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
     }
 }
 
-export function initialize(): void {
-    $<HTMLTextAreaElement>("textarea#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", "textarea.message_edit_content", paste_handler);
+export function initialize({
+    upload_pasted_file,
+}: {
+    upload_pasted_file: (textarea: HTMLTextAreaElement, pasted_file: File) => void;
+}): void {
+    $<HTMLTextAreaElement>("textarea#compose-textarea").on(
+        "paste",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
+
+    $("body").on(
+        "paste",
+        "textarea.message_edit_content",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
 }

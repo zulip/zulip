@@ -80,6 +80,8 @@ IGNORED_PHRASES = [
     r"email",
     r"enabled",
     r"signups",
+    # Pasted text filename
+    r"PastedText",
     # Placeholders
     r"keyword",
     r"streamname",
