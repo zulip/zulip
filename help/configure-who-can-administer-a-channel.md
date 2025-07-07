@@ -14,9 +14,9 @@
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Channel permissions**, configure **Who can administer
+1. Under **Administrative permissions**, configure **Who can administer
    this channel**.
 
 {!save-changes.md!}

@@ -46,9 +46,9 @@ Permissions for moving messages between channels can be configured separately.
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Channel permissions**, configure **Who can move messages inside this
+1. Under **Moderation permissions**, configure **Who can move messages inside this
    channel**.
 
 {!save-changes.md!}
@@ -72,6 +72,8 @@ Permissions for moving messages between channels can be configured separately.
 
 ## Configure who can move messages out of any channel
 
+{!admin-only.md!}
+
 {start_tabs}
 
 {settings_tab|organization-permissions}
@@ -92,9 +94,9 @@ Permissions for moving messages between channels can be configured separately.
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Channel permissions**, configure **Who can move messages out of this
+1. Under **Moderation permissions**, configure **Who can move messages out of this
    channel**.
 
 {!save-changes.md!}

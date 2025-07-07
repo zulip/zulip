@@ -9,7 +9,7 @@
 
 1. Fill out the requested information.
 
-1. _(optional)_ Click on **Advanced configurations** to review and update
+1. _(optional)_ Click on **Advanced configuration** to review and update
    additional channel settings.
 
 1. Click **Continue to add subscribers**.
