@@ -32,7 +32,7 @@ let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 function composing_to_current_topic_narrow(): boolean {
     return (
-        util.lower_same(compose_state.stream_name(), narrow_state.stream_name() ?? "") &&
+        compose_state.stream_id() === narrow_state.stream_id() &&
         util.lower_same(compose_state.topic(), narrow_state.topic() ?? "")
     );
 }
