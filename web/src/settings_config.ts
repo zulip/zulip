@@ -309,6 +309,7 @@ type RealmTopicsPolicyValues = {
 
 type StreamTopicsPolicyValues = {
     inherit: PolicyValue;
+    empty_topic_only: PolicyValue;
 } & RealmTopicsPolicyValues;
 
 export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
@@ -331,6 +332,7 @@ export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
 
 export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
     const realm_topics_policy_values = get_realm_topics_policy_values();
+    const empty_topic_name = util.get_final_topic_display_name("");
 
     return {
         inherit: {
@@ -338,6 +340,13 @@ export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
             description: $t({defaultMessage: "Automatic"}),
         },
         ...realm_topics_policy_values,
+        empty_topic_only: {
+            code: "empty_topic_only",
+            description: $t(
+                {defaultMessage: 'Only "{empty_topic_name}" topic allowed'},
+                {empty_topic_name},
+            ),
+        },
     };
 };
 

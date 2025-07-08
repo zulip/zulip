@@ -181,6 +181,7 @@ function test_change_save_button_state() {
         props,
     } = createSaveButtons("msg-editing");
     $save_button_header.attr("id", "org-msg-editing");
+    $("#org-msg-editing").closest = () => ({});
 
     {
         settings_components.change_save_button_state($save_button_controls, "unsaved");

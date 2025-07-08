@@ -32,6 +32,7 @@ from zerver.lib.exceptions import (
     MessagesNotAllowedInEmptyTopicError,
     PreviousMessageContentMismatchedError,
     StreamWildcardMentionNotAllowedError,
+    TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
 from zerver.lib.markdown import MessageRenderingResult, topic_links
@@ -1482,15 +1483,21 @@ def build_message_edit_request(
         target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
         is_stream_edited = True
 
+    topics_policy = get_stream_topics_policy(message.realm, target_stream)
+    empty_topic_display_name = get_topic_display_name("", user_profile.default_language)
+    target_topic_empty = ("(no topic)", "")
     if (
-        target_topic_name in ("(no topic)", "")
+        target_topic_name in target_topic_empty
         and (is_topic_edited or is_stream_edited)
-        and get_stream_topics_policy(message.realm, target_stream)
-        == StreamTopicsPolicyEnum.disable_empty_topic.value
+        and topics_policy == StreamTopicsPolicyEnum.disable_empty_topic.value
     ):
-        raise MessagesNotAllowedInEmptyTopicError(
-            get_topic_display_name("", user_profile.default_language)
-        )
+        raise MessagesNotAllowedInEmptyTopicError(empty_topic_display_name)
+
+    if (
+        topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value
+        and target_topic_name not in target_topic_empty
+    ):
+        raise TopicsNotAllowedError(empty_topic_display_name)
 
     return StreamMessageEditRequest(
         is_content_edited=is_content_edited,

@@ -549,6 +549,32 @@ class MessagesNotAllowedInEmptyTopicError(JsonableError):
         )
 
 
+class TopicsNotAllowedError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Only the {empty_topic_display_name} topic is allowed in this channel.")
+
+
+class CannotSetTopicsPolicyError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "To enable this configuration, all messages in this channel must be in the {empty_topic_display_name} topic. Consider renaming or deleting other topics."
+        )
+
+
 class DirectMessagePermissionError(JsonableError):
     def __init__(self, is_nobody_group: bool) -> None:
         if is_nobody_group:

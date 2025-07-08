@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 404**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added new `empty_topic_only`
+  option to `topics_policy` field in Stream and Subscription objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added new
+  `empty_topic_only` option to `topics_policy` to support channels
+  with topics disabled.
+
 **Feature level 403**
 
 * [`POST /register`](/api/register-queue): Added a `url_options` object

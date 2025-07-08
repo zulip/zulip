@@ -98,6 +98,7 @@ run_test("is_topic_editable", ({override}) => {
     override(stream_data, "is_stream_archived", () => false);
     override(stream_data, "user_can_move_messages_within_channel", () => true);
     override(stream_data, "get_sub_by_id", () => ({}));
+    override(stream_data, "is_empty_topic_only_channel", () => false);
     override(current_user, "is_moderator", true);
 
     assert.equal(message_edit.is_topic_editable(message), false);
