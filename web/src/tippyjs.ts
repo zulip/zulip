@@ -549,14 +549,17 @@ export function initialize(): void {
         target: ".add-users-button-wrapper",
         onShow(instance) {
             const $wrapper = $(instance.reference);
-            const $button = $wrapper.find("button");
+            const $button = $wrapper.find(".add-users-button");
             const $container = $wrapper.closest(".add-button-container").find(".pill-container");
 
             const button_is_disabled = Boolean($button.prop("disabled"));
             const container_is_enabled =
                 $container.find(".input").prop("contenteditable") === "true";
-
-            if (button_is_disabled && container_is_enabled) {
+            if (
+                button_is_disabled &&
+                container_is_enabled &&
+                !$button.hasClass("hidden-below")
+            ) {
                 instance.setContent(
                     $t({
                         defaultMessage: "Enter who should be added.",
