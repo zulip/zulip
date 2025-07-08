@@ -512,6 +512,10 @@ export function initialize(): void {
                     observer.disconnect();
                 }
             },
+            onCreate(instance) {
+                const $popover = $(instance.popper);
+                $popover.addClass("buddy-list-tooltip-root");
+            },
             onShow(instance) {
                 if (!is_custom_observer_needed) {
                     return;
@@ -577,7 +581,13 @@ export function initialize(): void {
             $(".user_sidebar_entry .status-emoji-name").on("mouseenter", () => {
                 const element: tippy.ReferenceElement = util.the($elem);
                 const instance = element._tippy;
-                if (instance?.state.isVisible) {
+                // We make sure instance is of buddy list since we don't want to
+                // close any other tippy instances.
+                if (
+                    instance?.state.isVisible &&
+                    instance.reference.classList.contains("user_sidebar_entry") &&
+                    instance.popper.classList.contains("buddy-list-tooltip-root")
+                ) {
                     instance.destroy();
                 }
             });
