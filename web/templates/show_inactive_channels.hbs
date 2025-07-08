@@ -1,8 +1,20 @@
 <div class="stream-list-toggle-inactive-channels bottom_left_row">
-    <span class="show-inactive-channels sidebar-topic-action-heading">
-        {{#tr}}
-        + {inactive_count, plural, =1 {# inactive channel} other {# inactive channels}}
-        {{/tr}}
-    </span>
-    <span class="hide-inactive-channels sidebar-topic-action-heading">{{t "Hide inactive channels"}}</span>
+    <div class="show-inactive-channels sidebar-topic-action-heading">
+        <div class="stream-list-toggle-inactive-channels-text">
+            {{#tr}}
+            + {inactive_count, plural, =1 {# inactive channel} other {# inactive channels}}
+            {{/tr}}
+        </div>
+        <div class="markers-and-unreads">
+            <span class="unread_count quiet-count"></span>
+            <span class="masked_unread_count">
+                <i class="zulip-icon zulip-icon-masked-unread"></i>
+            </span>
+        </div>
+    </div>
+    <div class="hide-inactive-channels sidebar-topic-action-heading">
+        <div class="stream-list-toggle-inactive-channels-text">
+            {{t "Hide inactive channels"}}
+        </div>
+    </div>
 </div>

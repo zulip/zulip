@@ -105,10 +105,14 @@ export function update_dom_with_unread_counts(
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
+    // TODO(evy) Make some data structures to clean up this function a bit.
     let pinned_unmuted_unread_count = 0;
     let pinned_muted_unread_count = 0;
     const folder_unmuted_unread_counts = new Map<number, number>();
     const folder_muted_unread_counts = new Map<number, number>();
+    // These are used for the "+ n inactive channels" button
+    const folder_inactive_muted_unread_counts = new Map<number, number>();
+    const folder_inactive_unmuted_unread_counts = new Map<number, number>();
     let normal_unmuted_unread_count = 0;
     let normal_muted_unread_count = 0;
     let inactive_unmuted_unread_count = 0;
@@ -131,6 +135,21 @@ export function update_dom_with_unread_counts(
                 sub.folder_id,
                 prev_muted_count + stream_count_info.muted_count,
             );
+
+            if (!stream_list_sort.has_recent_activity(sub)) {
+                const prev_muted_inactive_count =
+                    folder_inactive_muted_unread_counts.get(sub.folder_id) ?? 0;
+                folder_inactive_muted_unread_counts.set(
+                    sub.folder_id,
+                    prev_muted_inactive_count + stream_count_info.muted_count,
+                );
+                const prev_unmuted_inactive_count =
+                    folder_inactive_unmuted_unread_counts.get(sub.folder_id) ?? 0;
+                folder_inactive_unmuted_unread_counts.set(
+                    sub.folder_id,
+                    prev_unmuted_inactive_count + stream_count_info.unmuted_count,
+                );
+            }
         } else if (stream_list_sort.has_recent_activity(sub)) {
             normal_unmuted_unread_count += stream_count_info.unmuted_count;
             normal_muted_unread_count += stream_count_info.muted_count;
@@ -178,6 +197,11 @@ export function update_dom_with_unread_counts(
             $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
             folder_unmuted_unread_counts.get(folder_id) ?? 0,
             folder_muted_unread_counts.get(folder_id) ?? 0,
+        );
+        update_section_unread_count(
+            $(`#stream-list-${folder_id}-container .show-inactive-channels`),
+            folder_inactive_unmuted_unread_counts.get(folder_id) ?? 0,
+            folder_inactive_muted_unread_counts.get(folder_id) ?? 0,
         );
     }
 

@@ -73,7 +73,8 @@
 }
 
 #left-sidebar-navigation-list .selected-home-view,
-.stream-list-subsection-header {
+.stream-list-subsection-header,
+.show-inactive-channels {
     &.hide-unread-messages-count {
         .masked_unread_count {
             display: flex;
@@ -94,6 +95,7 @@
 
 #left-sidebar-navigation-list .selected-home-view:hover,
 .stream-list-subsection-header:hover,
+.stream-list-toggle-inactive-channels:hover .show-inactive-channels,
 .selected-home-view.top-left-active-filter {
     &.hide-unread-messages-count {
         .masked_unread_count {
@@ -401,20 +403,21 @@
         opacity: var(--opacity-sidebar-heading-icon);
         justify-self: center;
     }
+}
 
-    .stream-list-subsection-header {
-        .markers-and-unreads {
-            grid-area: markers-and-unreads;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            grid-gap: 5px;
-            /* Extra margin for unreads. */
-            margin-right: var(--left-sidebar-unread-offset);
+.stream-list-subsection-header,
+.show-inactive-channels {
+    .markers-and-unreads {
+        grid-area: markers-and-unreads;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        grid-gap: 5px;
+        /* Extra margin for unreads. */
+        margin-right: var(--left-sidebar-unread-offset);
 
-            &:has(.unread_count:empty) {
-                margin-right: 0;
-            }
+        &:has(.unread_count:empty) {
+            margin-right: 0;
         }
     }
 
@@ -425,6 +428,17 @@
 
 .stream-list-toggle-inactive-channels {
     padding-left: var(--left-sidebar-toggle-width-offset);
+
+    .show-inactive-channels {
+        /* Override the action heading font size, so that em measurements
+        on child elements are sized properly */
+        font-size: var(--base-font-size-px);
+        padding: 0;
+
+        .stream-list-toggle-inactive-channels-text {
+            font-size: var(--font-size-sidebar-action-heading);
+        }
+    }
 }
 
 .stream-list-section-container:not(.showing-inactive) {
@@ -458,6 +472,14 @@
     }
 }
 
+.show-inactive-channels {
+    display: grid;
+    grid-template:
+        "content markers-and-unreads three-dot-placeholder" auto
+        / minmax(0, 1fr) minmax(0, max-content) var(--left-sidebar-vdots-width);
+    align-items: center;
+}
+
 .stream-list-section {
     margin: 0;
 }
@@ -471,7 +493,8 @@
 }
 
 .stream-list-section-container.collapsed {
-    .narrow-filter:not(.stream-expanded) {
+    .narrow-filter:not(.stream-expanded),
+    .stream-list-toggle-inactive-channels {
         display: none;
     }
 }
