@@ -79,7 +79,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
-from zerver.models.users import get_system_bot, get_user
+from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.message_send import InvalidMirrorInputError
 
 
@@ -3166,7 +3166,9 @@ class InternalPrepTest(ZulipTestCase):
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
-        realm = do_create_realm(string_id=domain, name=domain)
+        realm = do_create_realm(
+            string_id=domain, name=domain, org_type=Realm.ORG_TYPES["business"]["id"]
+        )
         do_set_realm_property(realm, "invite_required", False, acting_user=None)
         RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
@@ -3178,7 +3180,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # for the new user. We don't want that in these tests.
         self.logout()
 
-        return get_user(email, get_realm(subdomain))
+        return get_user_by_delivery_email(email, get_realm(subdomain))
 
     @override_settings(
         CROSS_REALM_BOT_EMAILS=[
@@ -3189,7 +3191,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     )
     def test_realm_scenarios(self) -> None:
         self.make_realm("1.example.com")
-        r2 = self.make_realm("2.example.com")
+        self.make_realm("2.example.com")
         self.make_realm("3.example.com")
 
         def assert_message_received(to_user: UserProfile, from_user: UserProfile) -> None:
@@ -3234,7 +3236,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # (They need lower level APIs to do this.)
         internal_send_private_message(
             sender=notification_bot,
-            recipient_user=get_user(user2_email, r2),
+            recipient_user=user2,
             content="bla",
         )
         assert_message_received(user2, notification_bot)
