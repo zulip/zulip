@@ -19,6 +19,7 @@ import ldap
 import orjson
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.sessions.backends.base import SessionBase
 from django.db.migrations.state import StateApps
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.request import QueryDict
@@ -397,6 +398,7 @@ class HostRequestMock(HttpRequest):
         self.user = user_profile or AnonymousUser()
         self._body = orjson.dumps(post_data)
         self.content_type = ""
+        self.session = SessionBase()
 
         RequestNotes.set_notes(
             self,
