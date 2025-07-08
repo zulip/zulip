@@ -233,6 +233,14 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
 // Export for testing
 export const _get_focus_area = get_focus_area;
 
+export let blur_compose_inputs = (): void => {
+    $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
+};
+
+export function rewire_blur_compose_inputs(value: typeof blur_compose_inputs): void {
+    blur_compose_inputs = value;
+}
+
 export function set_focus(opts: ComposeTriggeredOptions): void {
     // Called mainly when opening the compose box or switching the
     // message type to set the focus in the first empty input in the

@@ -49,6 +49,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
     is_expanded: () => false,
     set_focus: noop,
     compute_placeholder_text: noop,
+    blur_compose_inputs: noop,
 });
 const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
@@ -156,7 +157,6 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "autosize_message_content", noop);
     override_rewire(compose_actions, "expand_compose_box", noop);
     override_rewire(compose_actions, "complete_starting_tasks", noop);
-    override_rewire(compose_actions, "blur_compose_inputs", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
     const $composeContent = $("#compose-content");
     const $elem = $("#send_message_form");

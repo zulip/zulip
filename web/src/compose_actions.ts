@@ -73,18 +73,10 @@ function call_hooks(hooks: ComposeHook[]): void {
     }
 }
 
-export let blur_compose_inputs = (): void => {
-    $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
-};
-
-export function rewire_blur_compose_inputs(value: typeof blur_compose_inputs): void {
-    blur_compose_inputs = value;
-}
-
 function hide_box(): void {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
-    blur_compose_inputs();
+    compose_ui.blur_compose_inputs();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
     // Assume a muted recipient row for the next time
