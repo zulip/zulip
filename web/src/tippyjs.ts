@@ -849,11 +849,9 @@ export function initialize(): void {
         onShow(instance) {
             const $elem = $(instance.reference);
             if ($($elem).find(".topic_edit_save").prop("disabled")) {
-                const error_message = compose_validate.get_topics_required_error_message_html();
+                const error_message =
+                    compose_validate.get_topics_required_error_tooltip_message_html();
                 instance.setContent(ui_util.parse_html(error_message));
-                // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
-                // is in the error message.
-                $(instance.popper).find(".tippy-content").css("display", "block");
                 return undefined;
             }
             instance.destroy();
